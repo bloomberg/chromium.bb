@@ -217,6 +217,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   std::unique_ptr<UploadProgressTracker> upload_progress_tracker_;
 
+  // Whether a redirect is currently deferred.
+  bool deferred_redirect_ = false;
+
   bool should_pause_reading_body_ = false;
   // The response body stream is open, but transferring data is paused.
   bool paused_reading_body_ = false;
