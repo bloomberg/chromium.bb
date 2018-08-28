@@ -8,6 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
 
 namespace content {
@@ -43,7 +44,7 @@ void MockIndexedDBCallbacks::OnSuccess(
 void MockIndexedDBCallbacks::OnUpgradeNeeded(
     int64_t old_version,
     std::unique_ptr<IndexedDBConnection> connection,
-    const content::IndexedDBDatabaseMetadata& metadata,
+    const IndexedDBDatabaseMetadata& metadata,
     const IndexedDBDataLossInfo& data_loss_info) {
   connection_ = std::move(connection);
   upgrade_called_ = true;

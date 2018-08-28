@@ -32,19 +32,19 @@ bool IsValidOrigin(const url::Origin& origin) {
   return !origin.unique();
 }
 
-::indexed_db::mojom::Status GetIndexedDBStatus(leveldb::Status status) {
+blink::mojom::IDBStatus GetIndexedDBStatus(leveldb::Status status) {
   if (status.ok())
-    return ::indexed_db::mojom::Status::OK;
+    return blink::mojom::IDBStatus::OK;
   else if (status.IsNotFound())
-    return ::indexed_db::mojom::Status::NotFound;
+    return blink::mojom::IDBStatus::NotFound;
   else if (status.IsCorruption())
-    return ::indexed_db::mojom::Status::Corruption;
+    return blink::mojom::IDBStatus::Corruption;
   else if (status.IsNotSupportedError())
-    return ::indexed_db::mojom::Status::NotSupported;
+    return blink::mojom::IDBStatus::NotSupported;
   else if (status.IsInvalidArgument())
-    return ::indexed_db::mojom::Status::InvalidArgument;
+    return blink::mojom::IDBStatus::InvalidArgument;
   else
-    return ::indexed_db::mojom::Status::IOError;
+    return blink::mojom::IDBStatus::IOError;
 }
 
 void DoCallCompactionStatusCallback(
@@ -142,19 +142,19 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 }
 
 void IndexedDBDispatcherHost::AddBinding(
-    ::indexed_db::mojom::FactoryRequest request) {
+    blink::mojom::IDBFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
-    std::unique_ptr<::indexed_db::mojom::Database> database,
-    ::indexed_db::mojom::DatabaseAssociatedRequest request) {
+    std::unique_ptr<blink::mojom::IDBDatabase> database,
+    blink::mojom::IDBDatabaseAssociatedRequest request) {
   database_bindings_.AddBinding(std::move(database), std::move(request));
 }
 
 void IndexedDBDispatcherHost::AddCursorBinding(
-    std::unique_ptr<::indexed_db::mojom::Cursor> cursor,
-    ::indexed_db::mojom::CursorAssociatedRequest request) {
+    std::unique_ptr<blink::mojom::IDBCursor> cursor,
+    blink::mojom::IDBCursorAssociatedRequest request) {
   cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
 }
 
@@ -169,7 +169,7 @@ void IndexedDBDispatcherHost::RenderProcessExited(
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -187,9 +187,8 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
 }
 
 void IndexedDBDispatcherHost::Open(
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
-    ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
-        database_callbacks_info,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+    blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo database_callbacks_info,
     const url::Origin& origin,
     const base::string16& name,
     int64_t version,
@@ -215,7 +214,7 @@ void IndexedDBDispatcherHost::Open(
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     const url::Origin& origin,
     const base::string16& name,
     bool force_close) {

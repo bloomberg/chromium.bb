@@ -12,10 +12,13 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using base::StringPiece;
+using blink::IndexedDBDatabaseMetadata;
+using blink::IndexedDBIndexMetadata;
 using blink::IndexedDBKeyPath;
+using blink::IndexedDBObjectStoreMetadata;
 using leveldb::Status;
 
 namespace content {

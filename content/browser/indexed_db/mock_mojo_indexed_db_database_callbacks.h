@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -16,12 +15,12 @@
 namespace content {
 
 class MockMojoIndexedDBDatabaseCallbacks
-    : public ::indexed_db::mojom::DatabaseCallbacks {
+    : public blink::mojom::IDBDatabaseCallbacks {
  public:
   MockMojoIndexedDBDatabaseCallbacks();
   ~MockMojoIndexedDBDatabaseCallbacks() override;
 
-  ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo
   CreateInterfacePtrAndBind();
 
   MOCK_METHOD0(ForcedClose, void());
@@ -33,13 +32,13 @@ class MockMojoIndexedDBDatabaseCallbacks
   MOCK_METHOD1(Complete, void(int64_t transaction_id));
 
   MOCK_METHOD1(MockedChanges,
-               void(::indexed_db::mojom::ObserverChangesPtr* changes));
-  void Changes(::indexed_db::mojom::ObserverChangesPtr changes) override {
+               void(blink::mojom::IDBObserverChangesPtr* changes));
+  void Changes(blink::mojom::IDBObserverChangesPtr changes) override {
     MockedChanges(&changes);
   }
 
  private:
-  mojo::AssociatedBinding<::indexed_db::mojom::DatabaseCallbacks> binding_;
+  mojo::AssociatedBinding<blink::mojom::IDBDatabaseCallbacks> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMojoIndexedDBDatabaseCallbacks);
 };

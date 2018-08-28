@@ -9,31 +9,31 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
-using ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
 
 namespace content {
 
 class IndexedDBDatabaseCallbacks::IOThreadHelper {
  public:
-  explicit IOThreadHelper(DatabaseCallbacksAssociatedPtrInfo callbacks_info);
+  explicit IOThreadHelper(IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info);
   ~IOThreadHelper();
 
   void SendForcedClose();
   void SendVersionChange(int64_t old_version, int64_t new_version);
   void SendAbort(int64_t transaction_id, const IndexedDBDatabaseError& error);
   void SendComplete(int64_t transaction_id);
-  void SendChanges(::indexed_db::mojom::ObserverChangesPtr changes);
+  void SendChanges(blink::mojom::IDBObserverChangesPtr changes);
   void OnConnectionError();
 
  private:
-  ::indexed_db::mojom::DatabaseCallbacksAssociatedPtr callbacks_;
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtr callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     scoped_refptr<IndexedDBContextImpl> context,
-    DatabaseCallbacksAssociatedPtrInfo callbacks_info)
+    IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info)
     : indexed_db_context_(std::move(context)),
       io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -98,7 +98,7 @@ void IndexedDBDatabaseCallbacks::OnComplete(
 }
 
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(
-    ::indexed_db::mojom::ObserverChangesPtr changes) {
+    blink::mojom::IDBObserverChangesPtr changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_helper_);
   BrowserThread::PostTask(
@@ -108,7 +108,7 @@ void IndexedDBDatabaseCallbacks::OnDatabaseChange(
 }
 
 IndexedDBDatabaseCallbacks::IOThreadHelper::IOThreadHelper(
-    DatabaseCallbacksAssociatedPtrInfo callbacks_info) {
+    IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info) {
   if (!callbacks_info.is_valid())
     return;
   callbacks_.Bind(std::move(callbacks_info));
@@ -144,7 +144,7 @@ void IndexedDBDatabaseCallbacks::IOThreadHelper::SendComplete(
 }
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendChanges(
-    ::indexed_db::mojom::ObserverChangesPtr changes) {
+    blink::mojom::IDBObserverChangesPtr changes) {
   if (callbacks_)
     callbacks_->Changes(std::move(changes));
 }

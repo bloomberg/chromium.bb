@@ -7,13 +7,18 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
+using blink::IndexedDBKeyRange;
+
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace blink {
+class IndexedDBKeyRange;
 }
 
 namespace content {
@@ -22,7 +27,7 @@ class IndexedDBConnection;
 class IndexedDBDispatcherHost;
 
 // Expected to be constructed, called, and destructed on the IO thread.
-class DatabaseImpl : public ::indexed_db::mojom::Database {
+class DatabaseImpl : public blink::mojom::IDBDatabase {
  public:
   explicit DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
                         const url::Origin& origin,
@@ -30,7 +35,7 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
                         scoped_refptr<base::SequencedTaskRunner> idb_runner);
   ~DatabaseImpl() override;
 
-  // ::indexed_db::mojom::Database implementation
+  // blink::mojom::IDBDatabase implementation
   void CreateObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& name,
@@ -58,22 +63,21 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
            int64_t index_id,
            const IndexedDBKeyRange& key_range,
            bool key_only,
-           ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
-  void GetAll(
-      int64_t transaction_id,
-      int64_t object_store_id,
-      int64_t index_id,
-      const IndexedDBKeyRange& key_range,
-      bool key_only,
-      int64_t max_count,
-      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
+           blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+  void GetAll(int64_t transaction_id,
+              int64_t object_store_id,
+              int64_t index_id,
+              const IndexedDBKeyRange& key_range,
+              bool key_only,
+              int64_t max_count,
+              blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void Put(int64_t transaction_id,
            int64_t object_store_id,
-           ::blink::mojom::IDBValuePtr value,
+           blink::mojom::IDBValuePtr value,
            const blink::IndexedDBKey& key,
            blink::WebIDBPutMode mode,
            const std::vector<blink::IndexedDBIndexKeys>& index_keys,
-           ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
+           blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void SetIndexKeys(
       int64_t transaction_id,
       int64_t object_store_id,
@@ -90,22 +94,20 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
       blink::WebIDBCursorDirection direction,
       bool key_only,
       blink::WebIDBTaskType task_type,
-      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) override;
-  void Count(
-      int64_t transaction_id,
-      int64_t object_store_id,
-      int64_t index_id,
-      const IndexedDBKeyRange& key_range,
-      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
+      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
+  void Count(int64_t transaction_id,
+             int64_t object_store_id,
+             int64_t index_id,
+             const IndexedDBKeyRange& key_range,
+             blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void DeleteRange(
       int64_t transaction_id,
       int64_t object_store_id,
       const IndexedDBKeyRange& key_range,
-      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
-  void Clear(
-      int64_t transaction_id,
-      int64_t object_store_id,
-      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
+      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+  void Clear(int64_t transaction_id,
+             int64_t object_store_id,
+             blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void CreateIndex(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id,

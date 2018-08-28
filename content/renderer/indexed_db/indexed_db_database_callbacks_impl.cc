@@ -49,7 +49,7 @@ void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
 }
 
 void IndexedDBDatabaseCallbacksImpl::Changes(
-    indexed_db::mojom::ObserverChangesPtr changes) {
+    blink::mojom::IDBObserverChangesPtr changes) {
   WebVector<WebIDBObservation> web_observations;
   web_observations.reserve(changes->observations.size());
   for (const auto& observation : changes->observations) {

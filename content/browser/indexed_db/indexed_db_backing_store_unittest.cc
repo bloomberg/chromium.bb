@@ -39,8 +39,12 @@
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 using base::ASCIIToUTF16;
+using blink::IndexedDBDatabaseMetadata;
+using blink::IndexedDBIndexMetadata;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
+using blink::IndexedDBKeyRange;
+using blink::IndexedDBObjectStoreMetadata;
 using url::Origin;
 
 namespace content {

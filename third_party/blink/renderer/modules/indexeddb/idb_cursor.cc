@@ -314,8 +314,9 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
   request_->SetPendingCursor(this);
   request_->AssignNewMetrics(std::move(metrics));
   got_value_ = false;
-  backend_->Continue(WebIDBKeyView(key.get()), WebIDBKeyView(primary_key.get()),
-                     request_->CreateWebCallbacks().release());
+  backend_->CursorContinue(WebIDBKeyView(key.get()),
+                           WebIDBKeyView(primary_key.get()),
+                           request_->CreateWebCallbacks().release());
 }
 
 IDBRequest* IDBCursor::Delete(ScriptState* script_state,

@@ -18,14 +18,13 @@ using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseCallbacks;
 using blink::WebSecurityOrigin;
 using blink::WebString;
-using indexed_db::mojom::CallbacksAssociatedPtrInfo;
-using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
-using indexed_db::mojom::FactoryPtr;
-using indexed_db::mojom::FactoryPtrInfo;
+using blink::mojom::IDBCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBFactoryPtrInfo;
 
 namespace content {
 
-WebIDBFactoryImpl::WebIDBFactoryImpl(FactoryPtrInfo factory_info)
+WebIDBFactoryImpl::WebIDBFactoryImpl(IDBFactoryPtrInfo factory_info)
     : factory_(std::move(factory_info)) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
@@ -72,17 +71,18 @@ void WebIDBFactoryImpl::DeleteDatabase(
                            url::Origin(origin), name.Utf16(), force_close);
 }
 
-CallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetCallbacksProxy(
+IDBCallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  CallbacksAssociatedPtrInfo ptr_info;
+  IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }
 
-DatabaseCallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
+IDBDatabaseCallbacksAssociatedPtrInfo
+WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
     std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
-  DatabaseCallbacksAssociatedPtrInfo ptr_info;
+  IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;

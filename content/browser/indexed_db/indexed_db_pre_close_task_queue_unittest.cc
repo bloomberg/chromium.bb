@@ -14,9 +14,11 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
+
+using blink::IndexedDBDatabaseMetadata;
 
 namespace content {
 

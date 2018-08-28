@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
-#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_RANGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_RANGE_H_
 
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT IndexedDBKeyRange {
+class BLINK_COMMON_EXPORT IndexedDBKeyRange {
  public:
   IndexedDBKeyRange();
   explicit IndexedDBKeyRange(const blink::IndexedDBKey& key);
@@ -37,6 +37,6 @@ class CONTENT_EXPORT IndexedDBKeyRange {
   bool upper_open_ = false;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_RANGE_H_

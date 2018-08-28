@@ -33,7 +33,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -579,7 +578,7 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
 
 std::unique_ptr<blink::WebIDBFactory>
 RendererBlinkPlatformImpl::CreateIdbFactory() {
-  indexed_db::mojom::FactoryPtrInfo web_idb_factory_host_info;
+  blink::mojom::IDBFactoryPtrInfo web_idb_factory_host_info;
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_idb_factory_host_info));
   return std::make_unique<WebIDBFactoryImpl>(

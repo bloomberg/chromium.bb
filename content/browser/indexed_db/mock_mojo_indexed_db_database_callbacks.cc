@@ -10,9 +10,9 @@ MockMojoIndexedDBDatabaseCallbacks::MockMojoIndexedDBDatabaseCallbacks()
     : binding_(this) {}
 MockMojoIndexedDBDatabaseCallbacks::~MockMojoIndexedDBDatabaseCallbacks() {}
 
-::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
+blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo
 MockMojoIndexedDBDatabaseCallbacks::CreateInterfacePtrAndBind() {
-  ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo ptr_info;
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
   binding_.Bind(::mojo::MakeRequest(&ptr_info));
   return ptr_info;
 }

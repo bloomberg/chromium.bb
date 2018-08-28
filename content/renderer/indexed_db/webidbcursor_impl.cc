@@ -21,13 +21,13 @@ using blink::WebIDBCallbacks;
 using blink::WebIDBKey;
 using blink::WebIDBKeyView;
 using blink::WebIDBValue;
-using indexed_db::mojom::CallbacksAssociatedPtrInfo;
-using indexed_db::mojom::CursorAssociatedPtrInfo;
+using blink::mojom::IDBCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBCursorAssociatedPtrInfo;
 
 namespace content {
 
 WebIDBCursorImpl::WebIDBCursorImpl(
-    indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
+    blink::mojom::IDBCursorAssociatedPtrInfo cursor_info,
     int64_t transaction_id)
     : transaction_id_(transaction_id),
       cursor_(std::move(cursor_info)),
@@ -65,9 +65,9 @@ void WebIDBCursorImpl::Advance(unsigned long count,
   cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
-void WebIDBCursorImpl::Continue(WebIDBKeyView key,
-                                WebIDBKeyView primary_key,
-                                WebIDBCallbacks* callbacks_ptr) {
+void WebIDBCursorImpl::CursorContinue(WebIDBKeyView key,
+                                      WebIDBKeyView primary_key,
+                                      WebIDBCallbacks* callbacks_ptr) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   if (key.KeyType() == blink::kWebIDBKeyTypeNull &&
@@ -108,9 +108,9 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
-  cursor_->Continue(IndexedDBKeyBuilder::Build(key),
-                    IndexedDBKeyBuilder::Build(primary_key),
-                    GetCallbacksProxy(std::move(callbacks_impl)));
+  cursor_->CursorContinue(IndexedDBKeyBuilder::Build(key),
+                          IndexedDBKeyBuilder::Build(primary_key),
+                          GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {
@@ -204,9 +204,9 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   pending_onsuccess_callbacks_ = 0;
 }
 
-CallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
+IDBCallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  CallbacksAssociatedPtrInfo ptr_info;
+  IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;

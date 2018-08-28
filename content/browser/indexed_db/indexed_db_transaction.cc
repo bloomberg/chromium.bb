@@ -571,18 +571,18 @@ void IndexedDBTransaction::RemovePendingObservers(
 
 void IndexedDBTransaction::AddObservation(
     int32_t connection_id,
-    ::indexed_db::mojom::ObservationPtr observation) {
+    blink::mojom::IDBObservationPtr observation) {
   auto it = connection_changes_map_.find(connection_id);
   if (it == connection_changes_map_.end()) {
     it = connection_changes_map_
-             .insert(std::make_pair(
-                 connection_id, ::indexed_db::mojom::ObserverChanges::New()))
+             .insert(std::make_pair(connection_id,
+                                    blink::mojom::IDBObserverChanges::New()))
              .first;
   }
   it->second->observations.push_back(std::move(observation));
 }
 
-::indexed_db::mojom::ObserverChangesPtr*
+blink::mojom::IDBObserverChangesPtr*
 IndexedDBTransaction::GetPendingChangesForConnection(int32_t connection_id) {
   auto it = connection_changes_map_.find(connection_id);
   if (it != connection_changes_map_.end())

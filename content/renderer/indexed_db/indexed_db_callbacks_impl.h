@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 #define CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -24,7 +23,7 @@ class WebIDBCursorImpl;
 // Implements the child-process end of the pipe used to deliver callbacks. It
 // is owned by the IO thread. |callback_runner_| is used to post tasks back to
 // the thread which owns the blink::WebIDBCallbacks.
-class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
+class IndexedDBCallbacksImpl : public blink::mojom::IDBCallbacks {
  public:
   enum : int64_t { kNoTransaction = -1 };
 
@@ -36,24 +35,23 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
                          const base::WeakPtr<WebIDBCursorImpl>& cursor);
   ~IndexedDBCallbacksImpl() override;
 
-  // indexed_db::mojom::Callbacks implementation:
+  // blink::mojom::IDBCallbacks implementation:
   void Error(int32_t code, const base::string16& message) override;
   void SuccessStringList(const std::vector<base::string16>& value) override;
   void Blocked(int64_t existing_version) override;
-  void UpgradeNeeded(
-      indexed_db::mojom::DatabaseAssociatedPtrInfo database_info,
-      int64_t old_version,
-      blink::WebIDBDataLoss data_loss,
-      const std::string& data_loss_message,
-      const content::IndexedDBDatabaseMetadata& metadata) override;
+  void UpgradeNeeded(blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,
+                     int64_t old_version,
+                     blink::WebIDBDataLoss data_loss,
+                     const std::string& data_loss_message,
+                     const blink::IndexedDBDatabaseMetadata& metadata) override;
   void SuccessDatabase(
-      indexed_db::mojom::DatabaseAssociatedPtrInfo database_info,
-      const content::IndexedDBDatabaseMetadata& metadata) override;
-  void SuccessCursor(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
+      blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,
+      const blink::IndexedDBDatabaseMetadata& metadata) override;
+  void SuccessCursor(blink::mojom::IDBCursorAssociatedPtrInfo cursor,
                      const IndexedDBKey& key,
                      const IndexedDBKey& primary_key,
                      blink::mojom::IDBValuePtr value) override;
-  void SuccessValue(indexed_db::mojom::ReturnValuePtr value) override;
+  void SuccessValue(blink::mojom::IDBReturnValuePtr value) override;
   void SuccessCursorContinue(const IndexedDBKey& key,
                              const IndexedDBKey& primary_key,
                              blink::mojom::IDBValuePtr value) override;
@@ -62,7 +60,7 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
       const std::vector<IndexedDBKey>& primary_keys,
       std::vector<blink::mojom::IDBValuePtr> values) override;
   void SuccessArray(
-      std::vector<indexed_db::mojom::ReturnValuePtr> values) override;
+      std::vector<blink::mojom::IDBReturnValuePtr> values) override;
   void SuccessKey(const IndexedDBKey& key) override;
   void SuccessInteger(int64_t value) override;
   void Success() override;

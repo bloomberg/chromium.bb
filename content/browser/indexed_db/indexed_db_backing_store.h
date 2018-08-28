@@ -31,8 +31,6 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key_range.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -42,6 +40,11 @@
 namespace base {
 class SequencedTaskRunner;
 }
+
+namespace blink {
+class IndexedDBKeyRange;
+struct IndexedDBDatabaseMetadata;
+}  // namespace blink
 
 namespace storage {
 class FileWriterDelegate;
@@ -463,7 +466,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
-      const IndexedDBKeyRange&) WARN_UNUSED_RESULT;
+      const blink::IndexedDBKeyRange&) WARN_UNUSED_RESULT;
   virtual leveldb::Status GetKeyGeneratorCurrentNumber(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
@@ -520,14 +523,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
-      const IndexedDBKeyRange& key_range,
+      const blink::IndexedDBKeyRange& key_range,
       blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenObjectStoreCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
-      const IndexedDBKeyRange& key_range,
+      const blink::IndexedDBKeyRange& key_range,
       blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenIndexKeyCursor(
@@ -535,7 +538,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t database_id,
       int64_t object_store_id,
       int64_t index_id,
-      const IndexedDBKeyRange& key_range,
+      const blink::IndexedDBKeyRange& key_range,
       blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenIndexCursor(
@@ -543,7 +546,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t database_id,
       int64_t object_store_id,
       int64_t index_id,
-      const IndexedDBKeyRange& key_range,
+      const blink::IndexedDBKeyRange& key_range,
       blink::WebIDBCursorDirection,
       leveldb::Status*);
 
@@ -604,7 +607,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.
   leveldb::Status GetCompleteMetadata(
-      std::vector<IndexedDBDatabaseMetadata>* output);
+      std::vector<blink::IndexedDBDatabaseMetadata>* output);
 
   virtual bool WriteBlobFile(
       int64_t database_id,

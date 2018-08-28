@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db/indexed_db_key_range.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 
 #include "base/logging.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
-namespace content {
+namespace blink {
 
 IndexedDBKeyRange::IndexedDBKeyRange() = default;
 
@@ -41,4 +41,4 @@ bool IndexedDBKeyRange::IsEmpty() const {
   return !lower_.IsValid() && !upper_.IsValid();
 }
 
-}  // namespace content
+}  // namespace blink

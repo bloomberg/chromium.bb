@@ -49,9 +49,9 @@ class WebIDBCursor {
   //
   // The keys pointed to by WebIDBKeyView are only guaranteed to be alive for
   // the duration of the call.
-  virtual void Continue(WebIDBKeyView,
-                        WebIDBKeyView primary_key,
-                        WebIDBCallbacks*) = 0;
+  virtual void CursorContinue(WebIDBKeyView,
+                              WebIDBKeyView primary_key,
+                              WebIDBCallbacks*) = 0;
 
   // Called after a cursor request's success handler is executed.
   //
