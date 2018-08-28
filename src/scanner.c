@@ -35,7 +35,6 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
-#include <expat.h>
 #include <getopt.h>
 #include <limits.h>
 #include <unistd.h>
@@ -47,6 +46,10 @@
 extern char DTD_DATA_begin;
 extern int DTD_DATA_len;
 #endif
+
+/* Expat must be included after libxml as both want to declare XMLCALL; see
+ * the Git commit that 'git blame' for this comment points to for more. */
+#include <expat.h>
 
 #include "wayland-util.h"
 
