@@ -128,15 +128,21 @@ public class PickerCategoryView extends RelativeLayout
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
+    /**
+     * @param context The context to use.
+     * @param multiSelectionAllowed Whether to allow the user to select more than one image.
+     */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context) {
+    public PickerCategoryView(Context context, boolean multiSelectionAllowed) {
         super(context);
         mActivity = (ChromeActivity) context;
+        mMultiSelectionAllowed = multiSelectionAllowed;
 
         mDecoderServiceHost = new DecoderServiceHost(this, context);
         mDecoderServiceHost.bind(context);
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
+        if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
 
         View root = LayoutInflater.from(context).inflate(R.layout.photo_picker_dialog, this);
         mSelectableListLayout =
@@ -144,10 +150,11 @@ public class PickerCategoryView extends RelativeLayout
 
         mPickerAdapter = new PickerAdapter(this);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
+        int titleId = multiSelectionAllowed ? R.string.photo_picker_select_images
+                                            : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.photo_picker_toolbar, mSelectionDelegate,
-                R.string.photo_picker_select_images, null, 0, 0, R.color.default_primary_color,
-                null, false, false);
+                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0,
+                R.color.default_primary_color, null, false, false);
         toolbar.setNavigationOnClickListener(this);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
@@ -196,15 +203,11 @@ public class PickerCategoryView extends RelativeLayout
      * Initializes the PickerCategoryView object.
      * @param dialog The dialog showing us.
      * @param listener The listener who should be notified of actions.
-     * @param multiSelectionAllowed Whether to allow the user to select more than one image.
      * @param mimeTypes A list of mime types to show in the dialog.
      */
-    public void initialize(PhotoPickerDialog dialog, PhotoPickerListener listener,
-            boolean multiSelectionAllowed, List<String> mimeTypes) {
-        if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
-
+    public void initialize(
+            PhotoPickerDialog dialog, PhotoPickerListener listener, List<String> mimeTypes) {
         mDialog = dialog;
-        mMultiSelectionAllowed = multiSelectionAllowed;
         mListener = listener;
         mMimeTypes = new ArrayList<>(mimeTypes);
 

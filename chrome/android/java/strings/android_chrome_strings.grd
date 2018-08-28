@@ -3704,8 +3704,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
 
       <!-- Photo picker -->
-      <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">
+      <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting that the user can make multiple selections.">
         Select images
+      </message>
+      <message name="IDS_PHOTO_PICKER_SELECT_IMAGE" desc="The label in the title bar of the Photo Picker dialog, suggesting that the user can make a single selection.">
+        Select an image
       </message>
       <message name="IDS_PHOTO_PICKER_CAMERA" desc="The label for the Camera action in the Photo Picker (opening the camera system intent).">
         Camera
