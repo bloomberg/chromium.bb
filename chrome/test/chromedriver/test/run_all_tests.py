@@ -14,7 +14,8 @@ import tempfile
 import traceback
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
+_PARENT_DIR = os.path.join(_THIS_DIR, os.pardir)
+sys.path.insert(0, _PARENT_DIR)
 
 import archive
 import chrome_paths
@@ -55,6 +56,31 @@ def _GenerateTestCommand(script,
     cmd = ['xvfb-run', '-a'] + cmd
     cmd.append('--android-package=' + android_package)
   return cmd
+
+
+def RunReplayTests(chromedriver, chrome,
+                   chrome_version=None, chrome_version_name=None):
+  version_info = ''
+  if chrome_version_name:
+    version_info = '(%s)' % chrome_version_name
+  util.MarkBuildStepStart('replay_tests%s' % version_info)
+
+  _, log_path = tempfile.mkstemp(prefix='chromedriver_log_')
+  print 'chromedriver server log: %s' % log_path
+  cmd = [
+    sys.executable,
+    os.path.join(_PARENT_DIR, 'log_replay', 'client_replay_test.py'),
+    chromedriver,
+    chrome,
+    '--output-log-path=%s' % log_path
+  ]
+  if chrome_version:
+    cmd.append('--chrome-version=%s' % chrome_version)
+  code = util.RunCommand(cmd)
+
+  if code:
+    util.MarkBuildStepError()
+  return code
 
 
 def RunPythonTests(chromedriver, ref_chromedriver,
@@ -195,13 +221,11 @@ def main():
       versions['68'] = '561732'
       versions['67'] = '550422'
 
-
     # Mac build numbers
     elif util.IsMac():
       versions['69'] = '576753'
       versions['68'] = '561733'
       versions['67'] = '550418'
-
 
     # Windows build numbers
     elif util.IsWindows():
@@ -231,7 +255,11 @@ def main():
                            chrome_version=version,
                            chrome_version_name='v%s' % version_name,
                            verbose=True)
-      code = code or code1 or code2
+      code3 = RunReplayTests(chromedriver,
+                             chrome=chrome_path,
+                             chrome_version=version,
+                             chrome_version_name='v%s' % version_name)
+      code = code or code1 or code2 or code3
       _KillChromes()
       shutil.rmtree(temp_dir)
     cpp_tests = os.path.join(build_dir, cpp_tests_name)

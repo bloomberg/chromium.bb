@@ -2894,9 +2894,9 @@ if __name__ == '__main__':
       '', '--chrome-version', default='HEAD',
       help='Version of chrome. Default is \'HEAD\'.')
   parser.add_option(
-      '', '--filter', type='string', default='*',
-      help=('Filter for specifying what tests to run, "*" will run all. E.g., '
-            '*testStartStop'))
+      '', '--filter', type='string', default='',
+      help='Filter for specifying what tests to run, \"*\" will run all,'
+      'including tests excluded by default. E.g., *testRunMethod')
   parser.add_option(
       '', '--android-package',
       help=('Android package key. Possible values: ' +
@@ -2954,7 +2954,7 @@ if __name__ == '__main__':
   if _ANDROID_PACKAGE_KEY:
     devil_chromium.Initialize()
 
-  if options.filter == '*':
+  if options.filter == '':
     if _ANDROID_PACKAGE_KEY:
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE_KEY]
     else:
