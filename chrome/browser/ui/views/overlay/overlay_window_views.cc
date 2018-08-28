@@ -590,6 +590,12 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
+void OverlayWindowViews::OnNativeWidgetBeginUserBoundsChange() {
+  // Hide the controls when the window is being dragged or resized. The
+  // controls will reappear when the user hovers over the window again.
+  UpdateControlsVisibility(false);
+}
+
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
