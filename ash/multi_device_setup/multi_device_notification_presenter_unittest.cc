@@ -14,6 +14,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
@@ -29,6 +30,8 @@ namespace ash {
 namespace {
 
 const char kTestUserEmail[] = "test@example.com";
+const char kTestHostDeviceName[] = "Test Device";
+
 // Note: Must be formatted as a GUID.
 const char kTestServiceUserId[] = "01234567-89ab-cdef-0123-456789abcdef";
 
@@ -183,8 +186,8 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
 
   void ShowExistingUserHostSwitchedNotification() {
     EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
-    fake_multidevice_setup_->delegate()
-        ->OnConnectedHostSwitchedForExistingUser();
+    fake_multidevice_setup_->delegate()->OnConnectedHostSwitchedForExistingUser(
+        kTestHostDeviceName);
     InvokePendingMojoCalls();
   }
 
@@ -283,8 +286,9 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
         break;
       case MultiDeviceNotificationPresenter::Status::
           kExistingUserHostSwitchedNotificationVisible:
-        title = l10n_util::GetStringUTF16(
-            IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE);
+        title = l10n_util::GetStringFUTF16(
+            IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE,
+            base::ASCIIToUTF16(kTestHostDeviceName));
         message = l10n_util::GetStringUTF16(
             IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE);
         break;

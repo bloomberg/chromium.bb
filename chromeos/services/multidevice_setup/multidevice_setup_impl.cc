@@ -22,6 +22,10 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
+namespace {
+const char kTestDeviceNameForDebugNotification[] = "Test Device";
+}  // namespace
+
 // static
 MultiDeviceSetupImpl::Factory* MultiDeviceSetupImpl::Factory::test_factory_ =
     nullptr;
@@ -248,7 +252,8 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
       delegate->OnPotentialHostExistsForNewUser();
       break;
     case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
-      delegate->OnConnectedHostSwitchedForExistingUser();
+      delegate->OnConnectedHostSwitchedForExistingUser(
+          kTestDeviceNameForDebugNotification);
       break;
     case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
       delegate->OnNewChromebookAddedForExistingUser();

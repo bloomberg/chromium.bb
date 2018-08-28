@@ -23,7 +23,8 @@ void FakeAccountStatusChangeDelegate::OnPotentialHostExistsForNewUser() {
   ++num_new_user_events_handled_;
 }
 
-void FakeAccountStatusChangeDelegate::OnConnectedHostSwitchedForExistingUser() {
+void FakeAccountStatusChangeDelegate::OnConnectedHostSwitchedForExistingUser(
+    const std::string& new_host_device_name) {
   ++num_existing_user_host_switched_events_handled_;
 }
 
