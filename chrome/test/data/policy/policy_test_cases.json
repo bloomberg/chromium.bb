@@ -3934,5 +3934,37 @@
     "can_be_recommended": false,
     "test_policy": { "SafeSitesFilterBehavior": 0 },
     "note": "pref_mappings cannot be tested here as the code where the pref will be registered is not yet ready."
+  },
+
+  "ReportVersionData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportVersionData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_version_data" }
+    ]
+  },
+
+  "ReportPolicyData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportPolicyData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_policy_data" }
+    ]
+  },
+
+  "ReportMachineIDData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportMachineIDData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_machine_id_data" }
+    ]
+  },
+
+  "ReportUserIDData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportUserIDData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_user_id_data" }
+    ]
   }
 }
