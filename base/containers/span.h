@@ -72,12 +72,30 @@ using EnableIfSpanCompatibleArray =
 
 // SFINAE check if Container can be converted to a span<T>.
 template <typename Container, typename T>
+using IsSpanCompatibleContainer =
+    std::conditional_t<!IsSpan<Container>::value &&
+                           !IsStdArray<Container>::value &&
+                           !IsCArray<Container>::value &&
+                           ContainerHasConvertibleData<Container, T>::value &&
+                           ContainerHasIntegralSize<Container>::value,
+                       std::true_type,
+                       std::false_type>;
+
+template <typename Container, typename T>
 using EnableIfSpanCompatibleContainer =
-    std::enable_if_t<!internal::IsSpan<Container>::value &&
-                     !internal::IsStdArray<Container>::value &&
-                     !internal::IsCArray<Container>::value &&
-                     ContainerHasConvertibleData<Container, T>::value &&
-                     ContainerHasIntegralSize<Container>::value>;
+    std::enable_if_t<IsSpanCompatibleContainer<Container, T>::value>;
+
+template <typename Container, typename T, size_t Extent>
+using EnableIfSpanCompatibleContainerAndSpanIsDynamic =
+    std::enable_if_t<IsSpanCompatibleContainer<Container, T>::value &&
+                         Extent == dynamic_extent,
+                     bool>;
+
+template <typename Container, typename T, size_t Extent>
+using EnableIfSpanCompatibleContainerAndSpanIsStatic =
+    std::enable_if_t<IsSpanCompatibleContainer<Container, T>::value &&
+                         Extent != dynamic_extent,
+                     bool>;
 
 // A helper template for storing the size of a span. Spans with static extents
 // don't require additional storage, since the extent itself is specified in the
@@ -171,6 +189,10 @@ struct ExtentStorage<dynamic_extent> {
 // Differences in constants and types:
 // - index_type is aliased to size_t
 //
+// Differences from [span.cons]:
+// - Constructing a static span (i.e. Extent != dynamic_extent) from a dynamic
+//   sized container (e.g. std::vector) requires an explicit conversion.
+//
 // Differences from [span.sub]:
 // - using size_t instead of ptrdiff_t for indexing
 //
@@ -245,15 +267,36 @@ class span : public internal::ExtentStorage<Extent> {
 
   // Conversion from a container that has compatible base::data() and integral
   // base::size().
-  template <typename Container,
-            typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
+  template <
+      typename Container,
+      internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<Container&,
+                                                                T,
+                                                                Extent> = false>
   constexpr span(Container& container) noexcept
       : span(base::data(container), base::size(container)) {}
 
   template <
       typename Container,
-      typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
-  span(const Container& container) noexcept
+      internal::EnableIfSpanCompatibleContainerAndSpanIsStatic<Container&,
+                                                               T,
+                                                               Extent> = false>
+  constexpr explicit span(Container& container) noexcept
+      : span(base::data(container), base::size(container)) {}
+
+  template <typename Container,
+            internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<
+                const Container&,
+                T,
+                Extent> = false>
+  constexpr span(const Container& container) noexcept
+      : span(base::data(container), base::size(container)) {}
+
+  template <
+      typename Container,
+      internal::EnableIfSpanCompatibleContainerAndSpanIsStatic<const Container&,
+                                                               T,
+                                                               Extent> = false>
+  constexpr explicit span(const Container& container) noexcept
       : span(base::data(container), base::size(container)) {}
 
   constexpr span(const span& other) noexcept = default;
@@ -465,6 +508,23 @@ template <
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T> make_span(const Container& container) noexcept {
   return container;
+}
+
+template <size_t N,
+          typename Container,
+          typename T = typename Container::value_type,
+          typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
+constexpr span<T, N> make_span(Container& container) noexcept {
+  return span<T, N>(container);
+}
+
+template <
+    size_t N,
+    typename Container,
+    typename T = const typename Container::value_type,
+    typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
+constexpr span<T, N> make_span(const Container& container) noexcept {
+  return span<T, N>(container);
 }
 
 template <typename T, size_t X>

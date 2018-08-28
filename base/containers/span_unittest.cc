@@ -1101,11 +1101,25 @@ TEST(SpanTest, MakeSpanFromConstContainer) {
   static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
 }
 
+TEST(SpanTest, MakeStaticSpanFromConstContainer) {
+  const std::vector<int> vector = {-1, -2, -3, -4, -5};
+  span<const int, 5> span(vector);
+  EXPECT_EQ(span, make_span<5>(vector));
+  static_assert(decltype(make_span<5>(vector))::extent == 5, "");
+}
+
 TEST(SpanTest, MakeSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
   span<int> span(vector);
   EXPECT_EQ(span, make_span(vector));
   static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
+}
+
+TEST(SpanTest, MakeStaticSpanFromContainer) {
+  std::vector<int> vector = {-1, -2, -3, -4, -5};
+  span<int, 5> span(vector);
+  EXPECT_EQ(span, make_span<5>(vector));
+  static_assert(decltype(make_span<5>(vector))::extent == 5, "");
 }
 
 TEST(SpanTest, MakeSpanFromDynamicSpan) {

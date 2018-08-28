@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -64,7 +65,9 @@ void VirtualAuthenticator::AddRegistration(
       ::device::VirtualFidoDevice::RegistrationData(
           crypto::ECPrivateKey::CreateFromPrivateKeyInfo(
               registration->private_key),
-          registration->application_parameter, registration->counter));
+          base::make_span<device::kRpIdHashLength>(
+              registration->application_parameter),
+          registration->counter));
   std::move(callback).Run(success);
 }
 

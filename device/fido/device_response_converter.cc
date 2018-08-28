@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -186,8 +187,9 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     return base::nullopt;
   }
 
-  AuthenticatorGetInfoResponse response(std::move(protocol_versions),
-                                        it->second.GetBytestring());
+  AuthenticatorGetInfoResponse response(
+      std::move(protocol_versions),
+      base::make_span<kAaguidLength>(it->second.GetBytestring()));
 
   it = response_map.find(CBOR(2));
   if (it != response_map.end()) {
