@@ -9,8 +9,14 @@
 
 #include "base/macros.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace chromeos {
 namespace assistant {
+
+base::FilePath GetRootPath();
 
 std::string CreateLibAssistantConfig(bool disable_hotword);
 
