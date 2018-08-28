@@ -60,6 +60,13 @@ xxd -p test.example.org_test.sxg |
   sed '1s/^737867312d623200/737867312d787800/' |
   xxd -r -p > test.example.org_test_invalid_magic_string.sxg
 
+# Generate the signed exchange file with invalid cbor header.
+# 0x82 : start array of 2 elements.
+# 0xa1 : start map of 1 element -> 0xa4 : 4 elements.
+xxd -p test.example.org_test.sxg |
+  sed '1s/82a1/82a4/' |
+  xxd -r -p > test.example.org_test_invalid_cbor_header.sxg
+
 # Generate the signed exchange file with noext certificate
 gen-signedexchange \
   -version 1b2 \
