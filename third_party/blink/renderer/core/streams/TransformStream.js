@@ -311,14 +311,8 @@
       if (typeof transformMethod !== 'function') {
         throw new TypeError('transformer.transform is not a function');
       }
-      transformAlgorithm = chunk => {
-        const transformPromise =
-            PromiseCall2(transformMethod, transformer, chunk, controller);
-        return thenPromise(transformPromise, undefined, e => {
-          TransformStreamError(stream, e);
-          throw e;
-        });
-      };
+      transformAlgorithm = chunk =>
+          PromiseCall2(transformMethod, transformer, chunk, controller);
     } else {
       transformAlgorithm = chunk => {
         try {
@@ -369,6 +363,14 @@
     TransformStreamError(controller[_controlledTransformStream], e);
   }
 
+  function TransformStreamDefaultControllerPerformTransform(controller, chunk) {
+    const transformPromise = controller[_transformAlgorithm](chunk, controller);
+    return thenPromise(transformPromise, undefined, r => {
+      TransformStreamError(controller[_controlledTransformStream], r);
+      throw r;
+    });
+  }
+
   function TransformStreamDefaultControllerTerminate(controller) {
     const stream = controller[_controlledTransformStream];
     const readableController =
@@ -404,11 +406,12 @@
         // assert(binding.isWritableStreamWritable(writable),
         //        `state is "writable"`);
 
-        return controller[_transformAlgorithm](chunk, controller);
+        return TransformStreamDefaultControllerPerformTransform(controller,
+                                                                chunk);
       });
     }
 
-    return controller[_transformAlgorithm](chunk, controller);
+    return TransformStreamDefaultControllerPerformTransform(controller, chunk);
   }
 
   function TransformStreamDefaultSinkAbortAlgorithm(stream, reason) {
