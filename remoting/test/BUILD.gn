@@ -79,6 +79,7 @@ static_library("test_support") {
     "//remoting/codec:encoder",
     "//remoting/protocol",
     "//remoting/signaling",
+    "//services/network:test_support",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/gfx",
   ]
