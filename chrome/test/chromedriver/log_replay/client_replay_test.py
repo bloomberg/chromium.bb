@@ -75,6 +75,7 @@ def GenerateTestLog(test_name, chromedriver_path, chrome_path, log_dir):
     RuntimeError: run_py_tests.py had a test failure or other error.
   """
   args = [
+      sys.executable,
       _PY_TESTS,
       "--chromedriver=%s" % chromedriver_path,
       "--chrome=%s" % chrome_path,
