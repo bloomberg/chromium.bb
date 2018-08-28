@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -31,7 +32,10 @@ constexpr base::TimeDelta kFailsafeTimerTimeout =
     base::TimeDelta::FromSeconds(60);
 
 // Override for the LogOut function inside of tests.
-base::OnceClosure g_log_out_override_callback;
+base::OnceClosure& GetLogOutOverrideCallbackForTest() {
+  static base::NoDestructor<base::OnceClosure> callback;
+  return *callback;
+}
 
 }  // namespace
 
@@ -56,15 +60,17 @@ bool RemoveUsersIfNeeded() {
 }
 
 void LogOut() {
-  if (!g_log_out_override_callback.is_null()) {
-    std::move(g_log_out_override_callback).Run();
+  auto& log_out_override_callback = GetLogOutOverrideCallbackForTest();
+  if (log_out_override_callback) {
+    std::move(log_out_override_callback).Run();
     return;
   }
   chrome::AttemptUserExit();
 }
 
 void OverrideLogOutForTesting(base::OnceClosure callback) {
-  g_log_out_override_callback = std::move(callback);
+  auto& log_out_override_callback = GetLogOutOverrideCallbackForTest();
+  log_out_override_callback = std::move(callback);
 }
 
 void InitiateUserRemoval(base::OnceClosure on_pref_persisted_callback) {
@@ -77,7 +83,7 @@ void InitiateUserRemoval(base::OnceClosure on_pref_persisted_callback) {
         base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE, base::BindOnce(&LogOut), kFailsafeTimerTimeout);
 
-        if (!on_pref_persisted_callback.is_null())
+        if (on_pref_persisted_callback)
           std::move(on_pref_persisted_callback).Run();
       },
       std::move(on_pref_persisted_callback)));
