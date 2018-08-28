@@ -328,6 +328,7 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
       ::GetThreadPriority(PlatformThread::CurrentHandle().platform_handle());
 
   switch (priority) {
+    case THREAD_PRIORITY_IDLE:
     case kWin7BackgroundThreadModePriority:
       DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
       FALLTHROUGH;
@@ -341,7 +342,7 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;
     case THREAD_PRIORITY_ERROR_RETURN:
-      PCHECK(false) << "GetThreadPriority error";
+      DPCHECK(false) << "GetThreadPriority error";
   }
 
   NOTREACHED() << "GetCurrentThreadPriority returned " << priority << ".";
