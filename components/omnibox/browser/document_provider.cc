@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -135,6 +136,28 @@ bool DocumentProvider::IsDocumentProviderAllowed(
              template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 }
 
+// static
+bool DocumentProvider::IsInputLikelyURL(const AutocompleteInput& input) {
+  if (input.type() == metrics::OmniboxInputType::URL)
+    return true;
+
+  // Special cases when the user might be starting to type the most common URL
+  // prefixes, but the SchemeClassifier won't have classified them as URLs yet.
+  // Note these checks are of the form "(string constant) starts with input."
+  if (input.text().length() <= 8) {
+    if (StartsWith(base::ASCIIToUTF16("https://"), input.text(),
+                   base::CompareCase::INSENSITIVE_ASCII) ||
+        StartsWith(base::ASCIIToUTF16("http://"), input.text(),
+                   base::CompareCase::INSENSITIVE_ASCII) ||
+        StartsWith(base::ASCIIToUTF16("www."), input.text(),
+                   base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void DocumentProvider::Start(const AutocompleteInput& input,
                              bool minimal_changes) {
   TRACE_EVENT0("omnibox", "DocumentProvider::Start");
@@ -151,6 +174,11 @@ void DocumentProvider::Start(const AutocompleteInput& input,
       static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
           omnibox::kDocumentProvider, "DocumentProviderMinQueryLength", 4));
   if (input.text().length() < min_query_length) {
+    return;
+  }
+
+  // Don't issue queries for input likely to be a URL.
+  if (IsInputLikelyURL(input)) {
     return;
   }
 
