@@ -455,6 +455,18 @@ bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
+gfx::Size ExtensionHost::EnterPictureInPicture(const viz::SurfaceId& surface_id,
+                                               const gfx::Size& natural_size) {
+  // TODO(crbug.com/870609): Increment the keepalive count of the background
+  // page to avoid it shutting down while playing video.
+  return delegate_->EnterPictureInPicture(web_contents(), surface_id,
+                                          natural_size);
+}
+
+void ExtensionHost::ExitPictureInPicture() {
+  delegate_->ExitPictureInPicture();
+}
+
 void ExtensionHost::RecordStopLoadingUMA() {
   CHECK(load_start_.get());
   if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {

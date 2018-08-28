@@ -36,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1113,6 +1114,49 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
 #if !defined(OS_CHROMEOS)
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 #endif
+}
+
+// Verify video can enter and exit Picture-in_Picture when browser action icon
+// is clicked.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
+                       TestPictureInPictureOnBrowserActionIconClick) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ASSERT_TRUE(
+      RunExtensionTest("trigger_actions/browser_action_picture_in_picture"))
+      << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Test that there is a browser action in the toolbar.
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+
+  ExtensionAction* browser_action = GetBrowserAction(*extension);
+  EXPECT_TRUE(browser_action);
+
+  // Find the background page.
+  ProcessManager* process_manager =
+      extensions::ProcessManager::Get(browser()->profile());
+  content::WebContents* web_contents =
+      process_manager->GetBackgroundHostForExtension(extension->id())
+          ->web_contents();
+  ASSERT_TRUE(web_contents);
+  content::PictureInPictureWindowController* window_controller =
+      content::PictureInPictureWindowController::GetOrCreateForWebContents(
+          web_contents);
+  ASSERT_TRUE(window_controller->GetWindowForTesting());
+  EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
+
+  // Click on the browser action icon to enter Picture-in-Picture.
+  ResultCatcher catcher;
+  GetBrowserActionsBar()->Press(0);
+  EXPECT_TRUE(catcher.GetNextResult());
+  EXPECT_TRUE(window_controller->GetWindowForTesting()->IsVisible());
+
+  // Click on the browser action icon to exit Picture-in-Picture.
+  GetBrowserActionsBar()->Press(0);
+  EXPECT_TRUE(catcher.GetNextResult());
+  EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
 }
 
 }  // namespace

@@ -278,6 +278,7 @@
 # https://crbug.com/827327
 -PictureInPictureWindowControllerBrowserTest.*
 -ControlPictureInPictureWindowControllerBrowserTest.*
+-BrowserActionApiTest.TestPictureInPictureOnBrowserActionIconClick
 
 # These started failing with the switch to ws2.
 # https:://crbug.com/855767

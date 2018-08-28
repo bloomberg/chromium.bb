@@ -127,6 +127,9 @@ class ExtensionHost : public DeferredStartRenderHost,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;
+  gfx::Size EnterPictureInPicture(const viz::SurfaceId& surface_id,
+                                  const gfx::Size& natural_size) override;
+  void ExitPictureInPicture() override;
 
   // ExtensionRegistryObserver:
   void OnExtensionReady(content::BrowserContext* browser_context,

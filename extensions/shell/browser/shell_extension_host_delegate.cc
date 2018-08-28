@@ -71,4 +71,16 @@ ExtensionHostQueue* ShellExtensionHostDelegate::GetExtensionHostQueue() const {
   return g_queue.Pointer();
 }
 
+gfx::Size ShellExtensionHostDelegate::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  NOTREACHED();
+  return gfx::Size();
+}
+
+void ShellExtensionHostDelegate::ExitPictureInPicture() {
+  NOTREACHED();
+}
+
 }  // namespace extensions

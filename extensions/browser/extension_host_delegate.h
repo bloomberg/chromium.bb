@@ -18,6 +18,11 @@ class WebContents;
 
 namespace gfx {
 class Rect;
+class Size;
+}  // namespace gfx
+
+namespace viz {
+class SurfaceId;
 }
 
 namespace extensions {
@@ -71,6 +76,17 @@ class ExtensionHostDelegate {
   // Returns the ExtensionHostQueue implementation to use for creating
   // ExtensionHost renderers.
   virtual ExtensionHostQueue* GetExtensionHostQueue() const = 0;
+
+  // Notifies the Picture-in-Picture controller that there is a new player
+  // entering Picture-in-Picture.
+  // Returns the size of the Picture-in-Picture window.
+  virtual gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                          const viz::SurfaceId& surface_id,
+                                          const gfx::Size& natural_size) = 0;
+
+  // Updates the Picture-in-Picture controller with a signal that
+  // Picture-in-Picture mode has ended.
+  virtual void ExitPictureInPicture() = 0;
 };
 
 }  // namespace extensions
