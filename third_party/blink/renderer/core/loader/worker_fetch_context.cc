@@ -281,6 +281,10 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
       wrapped, CreateResourceLoadingTaskRunnerHandle());
 }
 
+std::unique_ptr<CodeCacheLoader> WorkerFetchContext::CreateCodeCacheLoader() {
+  return web_context_->CreateCodeCacheLoader();
+}
+
 blink::mojom::ControllerServiceWorkerMode
 WorkerFetchContext::IsControlledByServiceWorker() const {
   return web_context_->IsControlledByServiceWorker();

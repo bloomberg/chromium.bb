@@ -88,7 +88,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                      const char*,
                      size_t) override;
   void FetchCachedCode(
-      const blink::WebURL&,
+      const GURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>)
       override;
   void ClearCodeCacheEntry(const GURL&) override;
@@ -220,6 +220,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
+  std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(

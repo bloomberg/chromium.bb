@@ -205,6 +205,8 @@ target(link_target_type, "renderer") {
     "layout_test_dependencies.h",
     "loader/child_url_loader_factory_bundle.cc",
     "loader/child_url_loader_factory_bundle.h",
+    "loader/code_cache_loader_impl.cc",
+    "loader/code_cache_loader_impl.h",
     "loader/frame_request_blocker.cc",
     "loader/frame_request_blocker.h",
     "loader/ftp_directory_listing_response_delegate.cc",

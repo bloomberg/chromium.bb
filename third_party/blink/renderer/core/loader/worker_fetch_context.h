@@ -76,6 +76,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
       const ResourceLoaderOptions&) override;
+  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       const override;

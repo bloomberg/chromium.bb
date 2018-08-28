@@ -53,6 +53,7 @@
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
+#include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -322,6 +323,11 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactory() {
       CreateDefaultURLLoaderFactoryBundle());
 }
 
+std::unique_ptr<blink::CodeCacheLoader>
+RendererBlinkPlatformImpl::CreateCodeCacheLoader() {
+  return std::make_unique<CodeCacheLoaderImpl>();
+}
+
 std::unique_ptr<blink::WebURLLoaderFactory>
 RendererBlinkPlatformImpl::WrapURLLoaderFactory(
     mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
@@ -461,7 +467,7 @@ void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
-    const blink::WebURL& url,
+    const GURL& url,
     base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
         callback) {
   RenderThreadImpl::current()->render_message_filter()->FetchCachedCode(

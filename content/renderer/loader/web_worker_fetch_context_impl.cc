@@ -19,6 +19,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
+#include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/frame_request_blocker.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -286,6 +287,11 @@ WebWorkerFetchContextImpl::WrapURLLoaderFactory(
           network::mojom::URLLoaderFactoryPtrInfo(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));
+}
+
+std::unique_ptr<blink::CodeCacheLoader>
+WebWorkerFetchContextImpl::CreateCodeCacheLoader() {
+  return std::make_unique<CodeCacheLoaderImpl>(terminate_sync_load_event_);
 }
 
 void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {

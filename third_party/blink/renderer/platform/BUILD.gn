@@ -1543,6 +1543,8 @@ jumbo_static_library("test_support") {
 
   sources = [
     "graphics/gpu/drawing_buffer_test_helpers.h",
+    "testing/code_cache_loader_mock.cc",
+    "testing/code_cache_loader_mock.h",
     "testing/compositor_test.cc",
     "testing/compositor_test.h",
     "testing/empty_web_media_player.cc",
