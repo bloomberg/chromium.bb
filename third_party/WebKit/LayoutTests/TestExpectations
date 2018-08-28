@@ -3930,7 +3930,7 @@ crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-m
 crbug.com/746486 external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/746486 external/wpt/wasm/serialization/broadcastchannel-success.html [ Failure ]
 crbug.com/746486 external/wpt/wasm/serialization/identity-not-preserved.html [ Timeout ]
-crbug.com/746486 external/wpt/wasm/serialization/nested-worker-success.any.worker.html [ Failure ]
+crbug.com/746486 external/wpt/wasm/serialization/nested-worker-success.any.worker.html [ Timeout Failure ]
 crbug.com/746486 external/wpt/wasm/serialization/no-transferring.html [ Failure ]
 crbug.com/746486 external/wpt/wasm/serialization/window-domain-success.sub.html [ Failure ]
 crbug.com/746486 external/wpt/wasm/serialization/window-messagechannel-success.html [ Failure ]
