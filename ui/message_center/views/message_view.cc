@@ -310,15 +310,7 @@ ui::Layer* MessageView::GetSlideOutLayer() {
   return is_nested_ ? layer() : GetWidget()->GetLayer();
 }
 
-void MessageView::OnSlideChanged() {
-  for (auto* observer : slide_observers_) {
-    observer->OnSlideChanged(notification_id_);
-  }
-}
-
-void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
-  slide_observers_.push_back(observer);
-}
+void MessageView::OnSlideChanged() {}
 
 void MessageView::OnSlideOut() {
   MessageCenter::Get()->RemoveNotification(notification_id_,
@@ -366,12 +358,10 @@ void MessageView::OnCloseButtonPressed() {
 }
 
 void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
-  slide_out_controller_.CloseSwipeControl();
   MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
 }
 
 void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
-  slide_out_controller_.CloseSwipeControl();
   // No default implementation for snooze.
 }
 
