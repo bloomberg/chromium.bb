@@ -54,22 +54,31 @@ class ModelTypeSyncBridge {
   // model type store.
   virtual std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() = 0;
 
-  // Perform the initial merge between local and sync data. This should only be
-  // called when a data type is first enabled to start syncing, and there is no
-  // sync metadata. Best effort should be made to match local and sync data.
+  // Perform the initial merge between local and sync data.
+  //
+  // If the bridge supports incremental updates, this is only called when a data
+  // type is first enabled to start syncing, and there is no sync metadata.
+  // In this case, best effort should be made to match local and sync data.
+  //
+  // For datatypes that do not support incremental updates, the processor will
+  // call this method every time it gets new sync data from the server. It is
+  // then the responsibility of the bridge to clear all existing sync data, and
+  // replace it with the passed in |entity_data|.
+  //
   // Storage key in entity_data elements will be set to result of
   // GetStorageKey() call if the bridge supports it. Otherwise it will be left
   // empty, bridge is responsible for updating storage keys of new entities with
-  // change_processor()->UpdateStorageKey() in this case. If a local and sync
-  // data should match/merge but disagree on storage key, the bridge should
-  // delete one of the records (preferably local). Any local pieces of data that
-  // are not present in sync should immediately be Put(...) to the processor
-  // before returning. The same MetadataChangeList that was passed into this
-  // function can be passed to Put(...) calls. Delete(...) can also be called
-  // but should not be needed for most model types. Durable storage writes, if
-  // not able to combine all change atomically, should save the metadata after
-  // the data changes, so that this merge will be re-driven by sync if is not
-  // completely saved during the current run.
+  // change_processor()->UpdateStorageKey() in this case.
+  //
+  // If a local and sync data should match/merge but disagree on storage key,
+  // the bridge should delete one of the records (preferably local). Any local
+  // pieces of data that are not present in sync should immediately be Put(...)
+  // to the processor before returning. The same MetadataChangeList that was
+  // passed into this function can be passed to Put(...) calls. Delete(...) can
+  // also be called but should not be needed for most model types. Durable
+  // storage writes, if not able to combine all change atomically, should save
+  // the metadata after the data changes, so that this merge will be re-driven
+  // by sync if is not completely saved during the current run.
   virtual base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_data) = 0;
@@ -125,6 +134,12 @@ class ModelTypeSyncBridge {
   // MergeSyncData and ApplySyncChanges will have empty storage_key. It is
   // datatype's responsibility to call UpdateStorageKey for such entities.
   virtual bool SupportsGetStorageKey() const;
+
+  // By returning true in this function, the datatype indicates that it supports
+  // receiving partial (incremental) updates. If it returns false, the type
+  // indicates that it requires the full data set to be sent to it through
+  // MergeSyncData for any change to the data set.
+  virtual bool SupportsIncrementalUpdates() const;
 
   // Resolve a conflict between the client and server versions of data. They are
   // guaranteed not to match (both be deleted or have identical specifics). A

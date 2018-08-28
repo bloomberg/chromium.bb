@@ -216,6 +216,9 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
     // Initialize the processor with initial_sync_done.
     sync_pb::ModelTypeState state;
     state.set_initial_sync_done(true);
+    state.mutable_progress_marker()
+        ->mutable_gc_directive()
+        ->set_version_watermark(1);
     syncer::UpdateResponseDataList initial_updates;
     for (const AutofillWalletSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));

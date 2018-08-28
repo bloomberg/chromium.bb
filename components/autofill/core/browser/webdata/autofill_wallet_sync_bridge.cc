@@ -113,7 +113,9 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
 base::Optional<syncer::ModelError> AutofillWalletSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  SetSyncData(entity_data, /*is_initial_data=*/false);
+  // This bridge does not support incremental updates, so whenever this is
+  // called, the change list should be empty.
+  DCHECK(entity_data.empty()) << "Received an unsupported incremental update.";
   return base::nullopt;
 }
 
@@ -233,6 +235,14 @@ void AutofillWalletSyncBridge::SetSyncData(
 
   if (web_data_backend_ && (!cards_diff.IsEmpty() || !addresses_diff.IsEmpty()))
     web_data_backend_->NotifyOfMultipleAutofillChanges();
+}
+
+bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
+  // The payments server always returns the full dataset whenever there's any
+  // change to the user's payments data. Therefore, we don't implement full
+  // incremental-update support in this bridge, and clear all data
+  // before inserting new instead.
+  return false;
 }
 
 // static

@@ -54,6 +54,7 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
     void PutMetadata(const std::string& key,
                      const sync_pb::EntityMetadata& metadata);
     void RemoveData(const std::string& key);
+    void ClearAllData();
     void RemoveMetadata(const std::string& key);
     bool HasData(const std::string& key) const;
     bool HasMetadata(const std::string& key) const;

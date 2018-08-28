@@ -28,6 +28,10 @@ bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
   return true;
 }
 
+bool ModelTypeSyncBridge::SupportsIncrementalUpdates() const {
+  return true;
+}
+
 ConflictResolution ModelTypeSyncBridge::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {

@@ -111,6 +111,11 @@ void FakeModelTypeSyncBridge::Store::RemoveData(const std::string& key) {
   data_store_.erase(key);
 }
 
+void FakeModelTypeSyncBridge::Store::ClearAllData() {
+  data_change_count_++;
+  data_store_.clear();
+}
+
 void FakeModelTypeSyncBridge::Store::RemoveMetadata(const std::string& key) {
   metadata_change_count_++;
   metadata_store_.erase(key);
