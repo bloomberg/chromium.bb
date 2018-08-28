@@ -26,7 +26,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -237,10 +237,10 @@ base::LazyInstance<ProfileLaunchObserver>::DestructorAtExit
 // The file is overwritten if it exists. This function should only be called in
 // the blocking pool.
 void DumpBrowserHistograms(const base::FilePath& output_file) {
-  base::AssertBlockingAllowed();
-
   std::string output_string(
       base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL));
+
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::WriteFile(output_file, output_string.data(),
                   static_cast<int>(output_string.size()));
 }
