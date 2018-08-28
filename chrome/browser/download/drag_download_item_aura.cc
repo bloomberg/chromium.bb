@@ -65,11 +65,9 @@ void DragDownloadItem(const download::DownloadItem* download,
 
   gfx::Point location = display::Screen::GetScreen()->GetCursorScreenPoint();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
-  aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-      data,
-      root_window,
-      view,
-      location,
-      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK,
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  aura::client::GetDragDropClient(root_window)
+      ->StartDragAndDrop(
+          data, root_window, view, location,
+          ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK,
+          ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 }

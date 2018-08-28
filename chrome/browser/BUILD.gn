@@ -3244,6 +3244,7 @@ jumbo_split_static_library("browser") {
 
   if (is_mac) {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
+    sources += [ "download/drag_download_item_mac.mm" ]
     deps += [
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
@@ -3483,8 +3484,7 @@ jumbo_split_static_library("browser") {
   if (use_aura) {
     # Cross-platform Aura files.
     sources += [
-      # This file is called _views but has Aura calls in it.
-      "download/drag_download_item_views.cc",
+      "download/drag_download_item_aura.cc",
       "lifetime/application_lifetime_aura.cc",
       "platform_util_aura.cc",
     ]
