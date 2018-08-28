@@ -39,7 +39,7 @@ camera.bg.INITIAL_ASPECT_RATIO = 1.3333333333;
  * @type {string}
  * @const
  */
-camera.bg.TOPBAR_COLOR = "#1E2023";
+camera.bg.TOPBAR_COLOR = '#000000';
 
 /**
  * Creates the window. Note, that only one window at once is supported.
