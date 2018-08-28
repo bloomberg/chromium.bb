@@ -58,7 +58,8 @@ const char kHelpMsg[] = R"(
     * match_rules --input_file=<json_file_path> --min_matches=<optional>
         For each record in the given whitespace delimited file (see
         match_batch for input file format), records the matching rule (see
-        match command above) and prints all of the matched rules at the end.
+        match command above) and prints all of the matched rules and the
+        number of times they matched at the end.
 
         Which rules get recorded:
         If only a blacklist rule(s) matches, a blacklist rule is
