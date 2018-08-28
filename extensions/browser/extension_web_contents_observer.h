@@ -95,6 +95,7 @@ class ExtensionWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,

@@ -457,8 +457,6 @@ bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
 
 gfx::Size ExtensionHost::EnterPictureInPicture(const viz::SurfaceId& surface_id,
                                                const gfx::Size& natural_size) {
-  // TODO(crbug.com/870609): Increment the keepalive count of the background
-  // page to avoid it shutting down while playing video.
   return delegate_->EnterPictureInPicture(web_contents(), surface_id,
                                           natural_size);
 }

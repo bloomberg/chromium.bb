@@ -6488,6 +6488,11 @@ void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
     observer.MediaEffectivelyFullscreenChanged(is_fullscreen);
 }
 
+void WebContentsImpl::MediaPictureInPictureChanged(bool is_picture_in_picture) {
+  for (auto& observer : observers_)
+    observer.MediaPictureInPictureChanged(is_picture_in_picture);
+}
+
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {
   base::Optional<WebContentsObserver::MediaPlayerId> id =
       media_web_contents_observer_->GetFullscreenVideoMediaPlayerId();
