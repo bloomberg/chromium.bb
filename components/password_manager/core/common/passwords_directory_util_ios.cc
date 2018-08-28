@@ -9,14 +9,14 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace password_manager {
 
 namespace {
 // Synchronously deletes passwords directoy.
 void DeletePasswordsDirectorySync() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath downloads_directory;
   if (GetPasswordsDirectory(&downloads_directory)) {
     // It is assumed that deleting the directory always succeeds.
