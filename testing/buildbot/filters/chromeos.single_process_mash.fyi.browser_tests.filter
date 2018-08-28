@@ -106,8 +106,30 @@
 -KioskTest.LaunchAppNetworkDownConfigureNotAllowed
 -KioskTest.LaunchInDiagnosticMode
 -KioskTest.NotSignedInWithGAIAAccount
-
-# login_display_host == NULL || login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() == 0.0f
+-KioskUpdateTest.IncompliantPlatformDelayInstall
+-KioskUpdateTest.IncompliantPlatformFirstInstall
+-KioskUpdateTest.LaunchAppWithSecondaryArcLikeAppAndExtension
+-KioskUpdateTest.LaunchAppWithSharedModuleAndSecondaryApp
+-KioskUpdateTest.LaunchAppWithSharedModuleNoSecondary
+-KioskUpdateTest.LaunchAppWithUpdatedModule
+-KioskUpdateTest.LaunchCachedNewVersionOfflineEnabledAppNoNetwork
+-KioskUpdateTest.LaunchCachedOfflineEnabledAppNoNetwork
+-KioskUpdateTest.LaunchKioskAppWithSecondaryExtension
+-KioskUpdateTest.LaunchOfflineEnabledAppHasUpdate
+-KioskUpdateTest.LaunchOfflineEnabledAppNoNetwork
+-KioskUpdateTest.LaunchOfflineEnabledAppNoUpdate
+-KioskUpdateTest.LaunchTestKioskAppWithTwoSecondaryApps
+-KioskUpdateTest.PermissionChange
+-KioskUpdateTest.PreserveLocalData
+-KioskUpdateTest.UpdateAppWithSharedModuleRemoveAllSecondaryApps
+-KioskUpdateTest.UpdateMultiAppKioskAddOneApp
+-KioskUpdateTest.UpdateMultiAppKioskRemoveOneApp
+-KioskUpdateTest.UsbStickUpdateAppBadCrx
+-KioskUpdateTest.UsbStickUpdateAppBadManifest
+-KioskUpdateTest.UsbStickUpdateAppLowerAppVersion
+-KioskUpdateTest.UsbStickUpdateAppLowerCrxVersion
+-KioskUpdateTest.UsbStickUpdateAppNoManifest
+-KioskUpdateTest.UsbStickUpdateAppNoNetwork
 -KioskVirtualKeyboardTest.RestrictFeatures
 
 # Launcher tests.
@@ -309,4 +331,6 @@
 -WindowOpenApiTest.VerifyCommandsInLockedFullscreen
 
 # Value of: immersive_controller->IsRevealed()
+-WizardControllerKioskFlowTest.ControlFlowEnrollmentBack
+-WizardControllerKioskFlowTest.ControlFlowKioskForcedEnrollment
 -ZoomBubbleBrowserTest.ImmersiveFullscreen
