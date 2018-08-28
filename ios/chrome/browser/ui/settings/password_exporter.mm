@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -61,12 +61,13 @@ enum class ReauthenticationStatus {
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
   WriteToURLStatus (^writeToFile)() = ^{
-    base::AssertBlockingAllowed();
     NSError* error = nil;
 
     NSURL* directoryURL = [fileURL URLByDeletingLastPathComponent];
     NSFileManager* fileManager = [NSFileManager defaultManager];
 
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::WILL_BLOCK);
     if (![fileManager createDirectoryAtURL:directoryURL
                withIntermediateDirectories:YES
                                 attributes:nil
@@ -350,8 +351,9 @@ enum class ReauthenticationStatus {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(^{
-        base::AssertBlockingAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];
+        base::ScopedBlockingCall scoped_blocking_call(
+            base::BlockingType::WILL_BLOCK);
         [fileManager removeItemAtURL:uniqueDirectoryURL error:nil];
       }));
 }
