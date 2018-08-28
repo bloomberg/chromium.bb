@@ -165,12 +165,11 @@ bool CompareByUser(TrackingEvent a, TrackingEvent b) {
 std::string Str(const std::vector<TrackingEvent>& events) {
   std::string str = "[";
   bool needs_comma = false;
-  for (std::vector<TrackingEvent>::const_iterator it =
-       events.begin(); it != events.end(); ++it) {
+  for (const TrackingEvent& event : events) {
     if (needs_comma)
       str += ",\n ";
     needs_comma = true;
-    str += it->ToString();
+    str += event.ToString();
   }
   str += "]";
   return str;
@@ -184,13 +183,8 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
   void Clear();
   void SortEventsByUser();
 
-  testing::AssertionResult CheckEvents();
-  testing::AssertionResult CheckEvents(const TrackingEvent& e1);
-  testing::AssertionResult CheckEvents(const TrackingEvent& e1,
-                                       const TrackingEvent& e2);
-  testing::AssertionResult CheckEvents(const TrackingEvent& e1,
-                                       const TrackingEvent& e2,
-                                       const TrackingEvent& e3);
+  testing::AssertionResult CheckEvents(
+      const std::vector<TrackingEvent>& events);
 
  private:
   // AccountTrackerService::Observer implementation
@@ -198,9 +192,6 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
   void OnAccountImageUpdated(const std::string& account_id,
                              const gfx::Image& image) override;
   void OnAccountRemoved(const AccountInfo& ids) override;
-
-  testing::AssertionResult CheckEvents(
-      const std::vector<TrackingEvent>& events);
 
   std::vector<TrackingEvent> events_;
 };
@@ -225,38 +216,6 @@ void AccountTrackerObserver::Clear() {
 
 void AccountTrackerObserver::SortEventsByUser() {
   std::stable_sort(events_.begin(), events_.end(), CompareByUser);
-}
-
-testing::AssertionResult AccountTrackerObserver::CheckEvents() {
-  std::vector<TrackingEvent> events;
-  return CheckEvents(events);
-}
-
-testing::AssertionResult AccountTrackerObserver::CheckEvents(
-    const TrackingEvent& e1) {
-  std::vector<TrackingEvent> events;
-  events.push_back(e1);
-  return CheckEvents(events);
-}
-
-testing::AssertionResult AccountTrackerObserver::CheckEvents(
-    const TrackingEvent& e1,
-    const TrackingEvent& e2) {
-  std::vector<TrackingEvent> events;
-  events.push_back(e1);
-  events.push_back(e2);
-  return CheckEvents(events);
-}
-
-testing::AssertionResult AccountTrackerObserver::CheckEvents(
-    const TrackingEvent& e1,
-    const TrackingEvent& e2,
-    const TrackingEvent& e3) {
-  std::vector<TrackingEvent> events;
-  events.push_back(e1);
-  events.push_back(e2);
-  events.push_back(e3);
-  return CheckEvents(events);
 }
 
 testing::AssertionResult AccountTrackerObserver::CheckEvents(
@@ -435,7 +394,7 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable) {
   account_tracker()->AddObserver(&observer);
   SimulateTokenAvailable("alpha");
   EXPECT_FALSE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -445,7 +404,7 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_Revoked) {
   SimulateTokenAvailable("alpha");
   SimulateTokenRevoked("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -455,11 +414,15 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
   SimulateTokenAvailable("alpha");
   ReturnAccountInfoFetchSuccess("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
 
   EXPECT_TRUE(account_tracker()->GetAccountImage("alpha").IsEmpty());
   ReturnAccountImageFetchSuccess("alpha");
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(IMAGE_UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(IMAGE_UPDATED, "alpha"),
+  }));
   EXPECT_FALSE(account_tracker()->GetAccountImage("alpha").IsEmpty());
 
   account_tracker()->RemoveObserver(&observer);
@@ -471,7 +434,9 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
   SimulateTokenAvailable("alpha");
   ReturnAccountInfoFetchSuccess("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
 
   EXPECT_TRUE(account_tracker()->GetAccountImage("alpha").IsEmpty());
   ReturnAccountImageFetchFailure("alpha");
@@ -486,9 +451,13 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_Revoked) {
   SimulateTokenAvailable("alpha");
   ReturnAccountInfoFetchSuccess("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
   SimulateTokenRevoked("alpha");
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, "alpha"),
+  }));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -498,7 +467,7 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfoFailed) {
   SimulateTokenAvailable("alpha");
   ReturnAccountInfoFetchFailure("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -508,11 +477,13 @@ TEST_F(AccountTrackerServiceTest, TokenAvailableTwice_UserInfoOnce) {
   SimulateTokenAvailable("alpha");
   ReturnAccountInfoFetchSuccess("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
 
   SimulateTokenAvailable("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -529,7 +500,7 @@ TEST_F(AccountTrackerServiceTest, TokenAlreadyExists) {
                      std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   EXPECT_FALSE(fetcher.IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
   tracker.RemoveObserver(&observer);
   tracker.Shutdown();
   fetcher.Shutdown();
@@ -543,8 +514,9 @@ TEST_F(AccountTrackerServiceTest, TwoTokenAvailable_TwoUserInfo) {
   ReturnAccountInfoFetchSuccess("alpha");
   ReturnAccountInfoFetchSuccess("beta");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha"),
-                                   TrackingEvent(UPDATED, "beta")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"), TrackingEvent(UPDATED, "beta"),
+  }));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -555,10 +527,14 @@ TEST_F(AccountTrackerServiceTest, TwoTokenAvailable_OneUserInfo) {
   SimulateTokenAvailable("beta");
   ReturnAccountInfoFetchSuccess("beta");
   EXPECT_FALSE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "beta")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "beta"),
+  }));
   ReturnAccountInfoFetchSuccess("alpha");
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
   account_tracker()->RemoveObserver(&observer);
 }
 
@@ -689,12 +665,15 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     AccountTrackerObserver observer;
     tracker.AddObserver(&observer);
     tracker.Initialize(prefs(), scoped_user_data_dir.GetPath());
-    EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha"),
-                                     TrackingEvent(UPDATED, "beta")));
+    EXPECT_TRUE(observer.CheckEvents({
+        TrackingEvent(UPDATED, "alpha"), TrackingEvent(UPDATED, "beta"),
+    }));
     // Wait until all account images are loaded.
     scoped_task_environment_.RunUntilIdle();
-    EXPECT_TRUE(observer.CheckEvents(TrackingEvent(IMAGE_UPDATED, "alpha"),
-                                     TrackingEvent(IMAGE_UPDATED, "beta")));
+    EXPECT_TRUE(observer.CheckEvents({
+        TrackingEvent(IMAGE_UPDATED, "alpha"),
+        TrackingEvent(IMAGE_UPDATED, "beta"),
+    }));
 
     tracker.RemoveObserver(&observer);
 
@@ -776,8 +755,9 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   EXPECT_EQ(info.gaia, stored_info.gaia);
   EXPECT_EQ(info.email, stored_info.email);
   EXPECT_EQ(info.full_name, stored_info.full_name);
-  EXPECT_TRUE(
-      observer.CheckEvents(TrackingEvent(UPDATED, info.account_id, info.gaia)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, info.account_id, info.gaia),
+  }));
 
   // Validate that seeding new full informations to an existing account works
   // and sends a notification.
@@ -790,8 +770,9 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   EXPECT_EQ(info.gaia, stored_info.gaia);
   EXPECT_EQ(info.email, stored_info.email);
   EXPECT_EQ(info.given_name, stored_info.given_name);
-  EXPECT_TRUE(
-      observer.CheckEvents(TrackingEvent(UPDATED, info.account_id, info.gaia)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, info.account_id, info.gaia),
+  }));
 
   // Validate that seeding invalid information to an existing account doesn't
   // work and doesn't send a notification.
@@ -800,7 +781,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   stored_info = account_tracker()->GetAccountInfo(info.account_id);
   EXPECT_EQ(info.gaia, stored_info.gaia);
   EXPECT_NE(info.given_name, stored_info.given_name);
-  EXPECT_TRUE(observer.CheckEvents());
+  EXPECT_TRUE(observer.CheckEvents({}));
 
   account_tracker()->RemoveObserver(&observer);
 }
@@ -857,7 +838,9 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     fetcher.Initialize(signin_client(), token_service(), &tracker,
                        std::make_unique<TestImageDecoder>());
 
-    EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "incomplete")));
+    EXPECT_TRUE(observer.CheckEvents({
+        TrackingEvent(UPDATED, "incomplete"),
+    }));
     // Enabling network fetches shouldn't cause any actual fetch since the
     // AccountInfos loaded from prefs should be valid.
     fetcher.EnableNetworkFetchesForTest();
@@ -866,7 +849,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     ASSERT_EQ(1u, infos.size());
     EXPECT_TRUE(infos[0].IsValid());
     // Check that no network fetches were made.
-    EXPECT_TRUE(observer.CheckEvents());
+    EXPECT_TRUE(observer.CheckEvents({}));
 
     tracker.RemoveObserver(&observer);
     tracker.Shutdown();
@@ -1173,7 +1156,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountBasic) {
 #endif
     // Response was processed but observer is not notified as the account state
     // is invalid.
-    EXPECT_TRUE(observer.CheckEvents());
+    EXPECT_TRUE(observer.CheckEvents({}));
     AccountInfo info = tracker.GetAccountInfo(child_id);
     EXPECT_TRUE(info.is_child_account);
     SimulateTokenRevoked(child_id);
@@ -1202,11 +1185,15 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
   tracker.SetIsChildAccount(child_id, false);
 #endif
   FakeUserInfoFetchSuccess(&fetcher, child_id);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id),
+  }));
   AccountInfo info = tracker.GetAccountInfo(child_id);
   EXPECT_FALSE(info.is_child_account);
   SimulateTokenRevoked(child_id);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, child_id),
+  }));
 
   tracker.RemoveObserver(&observer);
   fetcher.Shutdown();
@@ -1232,16 +1219,21 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
   tracker.SetIsChildAccount(child_id, true);
 #endif
   FakeUserInfoFetchSuccess(&fetcher, child_id);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id),
+  }));
   AccountInfo info = tracker.GetAccountInfo(child_id);
   EXPECT_TRUE(info.is_child_account);
   SimulateTokenRevoked(child_id);
 #if defined(OS_ANDROID)
   // On Android, is_child_account is set to false before removing it.
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
-                                   TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id), TrackingEvent(REMOVED, child_id),
+  }));
 #else
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, child_id),
+  }));
 #endif
 
   tracker.RemoveObserver(&observer);
@@ -1271,15 +1263,19 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedTwiceThenRevoked) {
 #else
   tracker.SetIsChildAccount(child_id, true);
 #endif
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
-                                   TrackingEvent(UPDATED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id), TrackingEvent(UPDATED, child_id),
+  }));
   SimulateTokenRevoked(child_id);
 #if defined(OS_ANDROID)
   // On Android, is_child_account is set to false before removing it.
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
-                                   TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id), TrackingEvent(REMOVED, child_id),
+  }));
 #else
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, child_id),
+  }));
 #endif
 
   tracker.RemoveObserver(&observer);
@@ -1310,7 +1306,9 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
   AccountInfo info = tracker.GetAccountInfo(child_id);
   EXPECT_TRUE(info.is_child_account);
   FakeUserInfoFetchSuccess(&fetcher, child_id);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id),
+  }));
 
   // Now simulate child account graduation.
 #if defined(OS_ANDROID)
@@ -1320,10 +1318,14 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
 #endif
   info = tracker.GetAccountInfo(child_id);
   EXPECT_FALSE(info.is_child_account);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, child_id),
+  }));
 
   SimulateTokenRevoked(child_id);
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, child_id),
+  }));
 
   tracker.RemoveObserver(&observer);
   fetcher.Shutdown();
@@ -1336,11 +1338,15 @@ TEST_F(AccountTrackerServiceTest, RemoveAccountBeforeImageFetchDone) {
   SimulateTokenAvailable("alpha");
 
   ReturnAccountInfoFetchSuccess("alpha");
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(UPDATED, "alpha"),
+  }));
 
   SimulateTokenRevoked("alpha");
   ReturnAccountImageFetchFailure("alpha");
-  EXPECT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, "alpha")));
+  EXPECT_TRUE(observer.CheckEvents({
+      TrackingEvent(REMOVED, "alpha"),
+  }));
 
   account_tracker()->RemoveObserver(&observer);
 }
