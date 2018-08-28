@@ -5054,6 +5054,9 @@ crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-list
 # Does not set correct realm as scope in current implementation
 crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Timeout Pass ]
 
+# Flaky
+crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavior.html [ Pass Failure ]
+
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
