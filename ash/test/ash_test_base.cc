@@ -77,11 +77,10 @@ class AshEventGeneratorDelegate
   ~AshEventGeneratorDelegate() override = default;
 
   // aura::test::EventGeneratorDelegateAura overrides:
-  aura::WindowTreeHost* GetHostAt(
-      const gfx::Point& point_in_screen) const override {
+  ui::EventTarget* GetTargetAt(const gfx::Point& point_in_screen) override {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
-    return Shell::GetRootWindowForDisplayId(display.id())->GetHost();
+    return Shell::GetRootWindowForDisplayId(display.id())->GetHost()->window();
   }
 
   aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -214,8 +213,8 @@ UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
 
 ui::test::EventGenerator* AshTestBase::GetEventGenerator() {
   if (!event_generator_) {
-    event_generator_.reset(
-        new ui::test::EventGenerator(new AshEventGeneratorDelegate()));
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        std::make_unique<AshEventGeneratorDelegate>());
   }
   return event_generator_.get();
 }

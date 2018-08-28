@@ -40,8 +40,8 @@ class TestEventGeneratorDelegate
   ~TestEventGeneratorDelegate() override = default;
 
   // EventGeneratorDelegateAura overrides:
-  aura::WindowTreeHost* GetHostAt(const gfx::Point& point) const override {
-    return root_window_->GetHost();
+  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
+    return root_window_->GetHost()->window();
   }
 
   aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -113,8 +113,8 @@ class PartialMagnificationControllerTest : public aura::test::AuraTestBase {
 
   ui::test::EventGenerator& GetEventGenerator() {
     if (!event_generator_) {
-      event_generator_.reset(new ui::test::EventGenerator(
-          new TestEventGeneratorDelegate(root_window())));
+      event_generator_ = std::make_unique<ui::test::EventGenerator>(
+          std::make_unique<TestEventGeneratorDelegate>(root_window()));
     }
     return *event_generator_.get();
   }

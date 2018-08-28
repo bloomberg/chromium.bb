@@ -83,18 +83,32 @@ class TestTouchEvent : public ui::TouchEvent {
 
 const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
+EventGeneratorDelegate::FactoryFunction g_event_generator_delegate_factory;
+
 }  // namespace
 
-EventGeneratorDelegate* EventGenerator::default_delegate = NULL;
+// static
+void EventGeneratorDelegate::SetFactoryFunction(FactoryFunction factory) {
+  g_event_generator_delegate_factory = std::move(factory);
+}
+
+// static
+std::unique_ptr<EventGeneratorDelegate> EventGeneratorDelegate::Create(
+    EventGenerator* owner,
+    gfx::NativeWindow root_window,
+    gfx::NativeWindow window) {
+  DCHECK(g_event_generator_delegate_factory);
+  return g_event_generator_delegate_factory.Run(owner, root_window, window);
+}
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window) {
-  Init(root_window, NULL);
+  Init(root_window, nullptr);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                const gfx::Point& point)
     : current_location_(point) {
-  Init(root_window, NULL);
+  Init(root_window, nullptr);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
@@ -102,14 +116,13 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
   Init(root_window, window);
 }
 
-EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
-    : delegate_(delegate) {
-  Init(NULL, NULL);
+EventGenerator::EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate)
+    : delegate_(std::move(delegate)) {
+  Init(nullptr, nullptr);
 }
 
 EventGenerator::~EventGenerator() {
   pending_events_.clear();
-  delegate()->SetContext(NULL, NULL, NULL);
   ui::SetEventTickClockForTesting(nullptr);
 }
 
@@ -165,15 +178,9 @@ void EventGenerator::SendMouseExit() {
   Dispatch(&mouseev);
 }
 
+#if defined(OS_CHROMEOS)
 void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
                                            const gfx::Point& point_for_native) {
-#if defined(USE_X11)
-  ui::ScopedXI2Event xevent;
-  xevent.InitMotionEvent(point_in_host, point_for_native, flags_);
-  static_cast<XEvent*>(xevent)->xmotion.time =
-      (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
-  ui::MouseEvent mouseev(xevent);
-#elif defined(USE_OZONE)
   // Ozone uses the location in native event as a system location.
   // Create a fake event with the point in host, which will be passed
   // to the non native event, then update the native event with the native
@@ -183,17 +190,12 @@ void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
                          ui::EventTimeForNow(), flags_, 0));
   ui::MouseEvent mouseev(native_event.get());
   native_event->set_location(point_for_native);
-#else
-  ui::MouseEvent mouseev(ui::ET_MOUSE_MOVED, point_in_host, point_for_native,
-                         ui::EventTimeForNow(), flags_, 0);
-  LOG(FATAL)
-      << "Generating a native motion event is not supported on this platform";
-#endif
   Dispatch(&mouseev);
 
   current_location_ = point_in_host;
   delegate()->ConvertPointFromHost(current_target_, &current_location_);
 }
+#endif
 
 void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
@@ -633,7 +635,11 @@ void EventGenerator::Init(gfx::NativeWindow root_window,
                           gfx::NativeWindow window_context) {
   tick_clock_ = std::make_unique<TestTickClock>();
   ui::SetEventTickClockForTesting(tick_clock_.get());
-  delegate()->SetContext(this, root_window, window_context);
+  if (!delegate_) {
+    DCHECK(g_event_generator_delegate_factory);
+    delegate_ = g_event_generator_delegate_factory.Run(this, root_window,
+                                                       window_context);
+  }
   if (window_context)
     current_location_ = delegate()->CenterOfWindow(window_context);
   current_target_ = delegate()->GetTargetAt(current_location_);
@@ -776,19 +782,6 @@ void EventGenerator::DispatchNextPendingEvent() {
         FROM_HERE, base::BindOnce(&EventGenerator::DispatchNextPendingEvent,
                                   base::Unretained(this)));
   }
-}
-
-const EventGeneratorDelegate* EventGenerator::delegate() const {
-  if (delegate_)
-    return delegate_.get();
-
-  DCHECK(default_delegate);
-  return default_delegate;
-}
-
-EventGeneratorDelegate* EventGenerator::delegate() {
-  return const_cast<EventGeneratorDelegate*>(
-      const_cast<const EventGenerator*>(this)->delegate());
 }
 
 }  // namespace test

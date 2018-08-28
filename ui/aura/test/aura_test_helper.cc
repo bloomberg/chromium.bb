@@ -53,7 +53,6 @@ AuraTestHelper::AuraTestHelper()
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::test::EnableTestConfigForPlatformWindows();
-  InitializeAuraEventGeneratorDelegate();
 }
 
 AuraTestHelper::~AuraTestHelper() {
@@ -91,6 +90,8 @@ void AuraTestHelper::DeleteWindowTreeClient() {
 
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
                            ui::ContextFactoryPrivate* context_factory_private) {
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&EventGeneratorDelegateAura::Create));
   // If Env has been configured with MUS, but |mode_| is still |LOCAL|, switch
   // to MUS. This is used for tests suites that setup Env globally.
   if (Env::HasInstance() && Env::GetInstance()->mode() == Env::Mode::MUS &&
@@ -203,6 +204,9 @@ void AuraTestHelper::TearDown() {
     EnvTestHelper().SetMode(env_mode_to_restore_);
   }
   wm_state_.reset();
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      ui::test::EventGeneratorDelegate::FactoryFunction());
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {

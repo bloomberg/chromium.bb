@@ -5,10 +5,24 @@
 #ifndef UI_VIEWS_TEST_EVENT_GENERATOR_DELEGATE_MAC_H_
 #define UI_VIEWS_TEST_EVENT_GENERATOR_DELEGATE_MAC_H_
 
+#include <memory>
+
+#include "ui/gfx/native_widget_types.h"
+
+namespace ui {
+namespace test {
+class EventGenerator;
+class EventGeneratorDelegate;
+}  // namespace test
+}  // namespace ui
+
 namespace views {
 namespace test {
 
-void InitializeMacEventGeneratorDelegate();
+std::unique_ptr<ui::test::EventGeneratorDelegate>
+CreateEventGeneratorDelegateMac(ui::test::EventGenerator* owner,
+                                gfx::NativeWindow root_window,
+                                gfx::NativeWindow window);
 
 }  // namespace test
 }  // namespace views

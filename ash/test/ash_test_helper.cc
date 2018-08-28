@@ -157,7 +157,6 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
     : ash_test_environment_(ash_test_environment),
       command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
   ui::test::EnableTestConfigForPlatformWindows();
-  aura::test::InitializeAuraEventGeneratorDelegate();
 }
 
 AshTestHelper::~AshTestHelper() {
@@ -194,6 +193,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     command_line_->GetProcessCommandLine()->AppendSwitch(
         switches::kAshDisableSmoothScreenRotation);
   }
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
 
   display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();
@@ -334,6 +336,9 @@ void AshTestHelper::TearDown() {
 #if !defined(NDEBUG)
   aura::Window::SetEnvArgRequired(nullptr);
 #endif
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      ui::test::EventGeneratorDelegate::FactoryFunction());
 }
 
 void AshTestHelper::SetRunningOutsideAsh() {

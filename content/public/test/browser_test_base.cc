@@ -141,6 +141,11 @@ BrowserTestBase::BrowserTestBase()
   base::i18n::AllowMultipleInitializeCallsForTesting();
 
   embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
+
+#if defined(USE_AURA)
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
+#endif
 }
 
 BrowserTestBase::~BrowserTestBase() {
@@ -205,8 +210,6 @@ void BrowserTestBase::SetUp() {
   // us to, or it's requested on the command line.
   if (!enable_pixel_output_ && !use_software_compositing_)
     command_line->AppendSwitch(switches::kDisableGLDrawingForTests);
-
-  aura::test::InitializeAuraEventGeneratorDelegate();
 #endif
 
   bool use_software_gl = true;
@@ -327,6 +330,10 @@ void BrowserTestBase::SetUp() {
 }
 
 void BrowserTestBase::TearDown() {
+#if defined(USE_AURA)
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      ui::test::EventGeneratorDelegate::FactoryFunction());
+#endif
 }
 
 bool BrowserTestBase::AllowFileAccessFromFiles() const {

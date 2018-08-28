@@ -5,7 +5,6 @@
 #include "ui/aura/test/event_generator_delegate_aura.h"
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -20,40 +19,22 @@ namespace {
 
 class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
  public:
-  static DefaultEventGeneratorDelegate* GetInstance() {
-    return base::Singleton<DefaultEventGeneratorDelegate>::get();
-  }
+  explicit DefaultEventGeneratorDelegate(gfx::NativeWindow root_window)
+      : root_window_(root_window) {}
 
-  // EventGeneratorDelegate:
-  void SetContext(ui::test::EventGenerator* owner,
-                  gfx::NativeWindow root_window,
-                  gfx::NativeWindow window) override {
-    root_window_ = root_window;
-  }
+  ~DefaultEventGeneratorDelegate() override = default;
 
   // EventGeneratorDelegateAura:
-  WindowTreeHost* GetHostAt(const gfx::Point& point) const override {
-    return root_window_->GetHost();
+  ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
+    return root_window_->GetHost()->window();
   }
 
   client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const override {
-    return NULL;
+    return nullptr;
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<DefaultEventGeneratorDelegate>;
-
-  DefaultEventGeneratorDelegate() : root_window_(NULL) {
-    DCHECK(!ui::test::EventGenerator::default_delegate);
-    ui::test::EventGenerator::default_delegate = this;
-  }
-
-  ~DefaultEventGeneratorDelegate() override {
-    DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
-    ui::test::EventGenerator::default_delegate = NULL;
-  }
-
   Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultEventGeneratorDelegate);
@@ -65,23 +46,17 @@ const Window* WindowFromTarget(const ui::EventTarget* event_target) {
 
 }  // namespace
 
-void InitializeAuraEventGeneratorDelegate() {
-  if (!ui::test::EventGenerator::default_delegate)
-    DefaultEventGeneratorDelegate::GetInstance();
+// static
+std::unique_ptr<ui::test::EventGeneratorDelegate>
+EventGeneratorDelegateAura::Create(ui::test::EventGenerator* owner,
+                                   gfx::NativeWindow root_window,
+                                   gfx::NativeWindow window) {
+  return std::make_unique<DefaultEventGeneratorDelegate>(root_window);
 }
 
-EventGeneratorDelegateAura::EventGeneratorDelegateAura() {
-}
+EventGeneratorDelegateAura::EventGeneratorDelegateAura() = default;
 
-EventGeneratorDelegateAura::~EventGeneratorDelegateAura() {
-}
-
-ui::EventTarget* EventGeneratorDelegateAura::GetTargetAt(
-    const gfx::Point& location) {
-  // TODO(andresantoso): Add support for EventGenerator::targeting_application()
-  // if needed for Ash.
-  return GetHostAt(location)->window();
-}
+EventGeneratorDelegateAura::~EventGeneratorDelegateAura() = default;
 
 ui::EventSource* EventGeneratorDelegateAura::GetEventSource(
     ui::EventTarget* target) {

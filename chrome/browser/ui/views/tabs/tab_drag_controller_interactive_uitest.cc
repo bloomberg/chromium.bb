@@ -273,8 +273,8 @@ class ScreenEventGeneratorDelegate
   ~ScreenEventGeneratorDelegate() override {}
 
   // EventGeneratorDelegateAura overrides:
-  aura::WindowTreeHost* GetHostAt(const gfx::Point& point) const override {
-    return root_window_->GetHost();
+  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
+    return root_window_->GetHost()->window();
   }
 
   aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -426,8 +426,9 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return;
 #if defined(OS_CHROMEOS)
-    event_generator_.reset(new ui::test::EventGenerator(
-        new ScreenEventGeneratorDelegate(ash::wm::GetRootWindowAt(point))));
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        std::make_unique<ScreenEventGeneratorDelegate>(
+            ash::wm::GetRootWindowAt(point)));
 #endif
   }
 

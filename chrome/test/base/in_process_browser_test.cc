@@ -89,6 +89,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
+#include "ui/events/test/event_generator.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
@@ -153,7 +154,8 @@ InProcessBrowserTest::InProcessBrowserTest()
 #endif
 
 #if defined(OS_CHROMEOS)
-  DefaultAshEventGeneratorDelegate::GetInstance();
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&CreateAshEventGeneratorDelegate));
 #endif
 
 #if defined(TOOLKIT_VIEWS)
