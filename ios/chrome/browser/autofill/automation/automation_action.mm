@@ -8,11 +8,13 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/js_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,7 +42,25 @@ using web::test::ElementSelector;
 @end
 
 // An action that simply tap on an element on the page.
+// Right now this always assumes a click event of the following format:
+//  {
+//    "selectorType": "xpath",
+//    "selector": "//*[@id=\"add-to-cart-button\"]",
+//    "context": [],
+//    "type": "click"
+//  },
 @interface AutomationActionClick : AutomationAction
+@end
+
+// An action that waits for a series of JS assertions to become true before
+// continuing. We assume this action has a format resembling:
+// {
+//   "context": [],
+//   "type": "waitFor",
+//   "assertions": ["return document.querySelector().style.display ===
+//   'none';"]
+// },
+@interface AutomationActionWaitFor : AutomationAction
 @end
 
 @implementation AutomationAction
@@ -61,6 +81,7 @@ using web::test::ElementSelector;
 + (Class)classForType:(NSString*)type {
   static NSDictionary* classForType = @{
     @"click" : [AutomationActionClick class],
+    @"waitFor" : [AutomationActionWaitFor class],
     // More to come.
   };
 
@@ -89,14 +110,6 @@ using web::test::ElementSelector;
 @implementation AutomationActionClick
 
 - (void)execute {
-  // Right now this always assumes a click event of the following format:
-  //  {
-  //    "selectorType": "xpath",
-  //    "selector": "//*[@id=\"add-to-cart-button\"]",
-  //    "context": [],
-  //    "type": "click"
-  //  },
-
   const base::Value* xpathValue(self.actionDictionary->FindKeyOfType(
       "selector", base::Value::Type::STRING));
   GREYAssert(xpathValue, @"Selector is missing in action.");
@@ -115,6 +128,62 @@ using web::test::ElementSelector;
   // Tap on the element.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:web::WebViewTapElement(web_state, selector)];
+}
+
+@end
+
+@implementation AutomationActionWaitFor
+
+- (void)execute {
+  const base::Value* assertionsValue(self.actionDictionary->FindKeyOfType(
+      "assertions", base::Value::Type::LIST));
+  GREYAssert(assertionsValue, @"Assertions key is missing in action.");
+
+  const base::Value::ListStorage& assertionsValues(assertionsValue->GetList());
+  GREYAssert(assertionsValues.size(), @"Assertions list is empty.");
+
+  std::vector<std::string> state_assertions;
+
+  for (auto const& assertionValue : assertionsValues) {
+    const std::string assertionString(assertionValue.GetString());
+    GREYAssert(!assertionString.empty(), @"assertionString is an empty value.");
+    state_assertions.push_back(assertionString);
+  }
+
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^{
+                   return [self CheckForJsAssertionFailures:state_assertions] ==
+                          nil;
+                 }),
+             @"waitFor State change hasn't completed within timeout.");
+}
+
+// Executes a vector of Javascript assertions on the webpage, returning the
+// first assertion that fails to be true, or nil if all assertions are true.
+- (NSString*)CheckForJsAssertionFailures:
+    (const std::vector<std::string>&)assertions {
+  for (std::string const& assertion : assertions) {
+    NSError* error;
+    NSString* assertionString =
+        [NSString stringWithUTF8String:assertion.c_str()];
+
+    id result = chrome_test_util::ExecuteJavaScript(
+        [NSString stringWithFormat:@""
+                                    "    (function() {"
+                                    "      try {"
+                                    "        %@"
+                                    "      } catch (ex) {}"
+                                    "      return false;"
+                                    "    })();",
+                                   assertionString],
+        &error);
+
+    if (![result boolValue] || error) {
+      return assertionString;
+    }
+  }
+  return nil;
 }
 
 @end
