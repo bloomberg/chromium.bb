@@ -407,6 +407,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
     # Passthrough command decoder / Windows / OpenGL / Intel
+    self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=854100)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=809594)
     self.Fail('conformance2/renderbuffers/' +
