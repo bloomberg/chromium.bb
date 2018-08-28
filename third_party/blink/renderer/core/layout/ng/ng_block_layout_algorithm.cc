@@ -181,11 +181,13 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
   LayoutUnit float_right_inline_size = input.float_right_inline_size;
 
-  LayoutUnit extrinsic_block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), NGSizeIndefinite);
+  NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
+                              ComputePadding(ConstraintSpace(), Node());
+  LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Style(), NGSizeIndefinite, border_padding);
   if (extrinsic_block_size != NGSizeIndefinite) {
     extrinsic_block_size -=
-        CalculateBorderScrollbarPadding(ConstraintSpace(), Node()).BlockSum();
+        (border_padding + Node().GetScrollbarSizes()).BlockSum();
     extrinsic_block_size = extrinsic_block_size.ClampNegativeToZero();
   }
 
@@ -353,13 +355,14 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Node());
+  border_padding_ = borders + padding;
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
                                   ? NGBoxStrut()
-                                  : borders + padding + scrollbars;
+                                  : border_padding_ + scrollbars;
 
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), CalculateDefaultBlockSize());
+      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
 
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
@@ -607,7 +610,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), intrinsic_block_size_);
+      ConstraintSpace(), Style(), intrinsic_block_size_, border_padding_);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block offset is still unknown, there's one last thing to take
@@ -1516,7 +1519,8 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), used_block_size + intrinsic_block_size_);
+      ConstraintSpace(), Style(), used_block_size + intrinsic_block_size_,
+      border_padding_);
 
   block_size -= used_block_size;
   DCHECK_GE(block_size, LayoutUnit())
@@ -1809,7 +1813,10 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   // to resolve auto margins before layout, to be able to position child floats
   // correctly.
   if (!child.CreatesNewFormattingContext()) {
-    LayoutUnit child_inline_size = ComputeInlineSizeForFragment(*space, child);
+    NGBoxStrut child_border_padding =
+        ComputeBorders(*space, child) + ComputePadding(*space, child);
+    LayoutUnit child_inline_size =
+        ComputeInlineSizeForFragment(*space, child, child_border_padding);
 
     ResolveInlineMargins(child_style, Style(),
                          space->AvailableSize().inline_size, child_inline_size,
