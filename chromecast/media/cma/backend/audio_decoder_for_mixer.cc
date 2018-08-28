@@ -258,6 +258,7 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
   DCHECK(!got_eos_);
   DCHECK(!mixer_error_);
   DCHECK(!pending_buffer_complete_);
+  DCHECK(mixer_input_);
 
   uint64_t input_bytes = buffer->end_of_stream() ? 0 : buffer->data_size();
   scoped_refptr<DecoderBufferBase> buffer_base(
@@ -415,6 +416,10 @@ void AudioDecoderForMixer::OnBufferDecoded(
   DCHECK(!pending_buffer_complete_);
   DCHECK(rate_shifter_);
 
+  if (!mixer_input_) {
+    LOG(DFATAL) << "Buffer pushed before Start() or after Stop()";
+    return;
+  }
   if (status == CastAudioDecoder::Status::kDecodeError) {
     LOG(ERROR) << "Decode error";
     delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
