@@ -19863,6 +19863,7 @@ Called by update_net_error_codes.py.-->
   <int value="2533" label="V8WasmThreadOpcodes"/>
   <int value="2534" label="CacheStorageAddAllSuccessWithDuplicate"/>
   <int value="2535" label="LegendDelegateFocusOrAccessKey"/>
+  <int value="2536" label="FeaturePolicyReport"/>
 </enum>
 
 <enum name="FeedbackSource">
