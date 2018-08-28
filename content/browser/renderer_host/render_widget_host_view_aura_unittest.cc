@@ -5908,15 +5908,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
         FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
     run_loop.Run();
   }
-  if (base::FeatureList::IsEnabled(features::kEnableSurfaceSynchronization)) {
-    // When using surface sync, the timer should not fire, because the surface
-    // id did not change.
-    EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
-  } else {
-    // When not using surface sync, the timer will fire because the source id
-    // changed.
-    EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
-  }
+
+  EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
   widget_host_->reset_new_content_rendering_timeout_fired();
 
   // Start the timer. Verify that a new LocalSurfaceId is allocated.
