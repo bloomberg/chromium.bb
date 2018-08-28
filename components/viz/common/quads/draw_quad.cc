@@ -37,11 +37,6 @@ void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
 
   DCHECK(shared_quad_state);
   DCHECK(material != INVALID);
-
-  // The purpose of this check is to make sure |shared_quad_state| has a valid
-  // address.
-  // TODO(samans): Remove once https://crbug.com/852294 is resolved.
-  CHECK_GE(shared_quad_state->quad_layer_rect.size().width(), 0);
 }
 
 DrawQuad::~DrawQuad() {}
