@@ -260,13 +260,17 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
 
 void RenderMessageFilter::FetchCachedCode(const GURL& url,
                                           FetchCachedCodeCallback callback) {
-  if (!generated_code_cache_context_->generated_code_cache())
+  if (!generated_code_cache_context_->generated_code_cache()) {
+    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
+  }
 
   base::Optional<url::Origin> requesting_origin =
       GetRendererOrigin(url, render_process_id_);
-  if (!requesting_origin)
+  if (!requesting_origin) {
+    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
+  }
 
   base::RepeatingCallback<void(const base::Time&, const std::vector<uint8_t>&)>
       read_callback = base::BindRepeating(
