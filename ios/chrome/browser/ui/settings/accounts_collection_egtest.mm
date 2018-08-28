@@ -293,7 +293,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
     browser_sync::ProfileSyncService* profile_sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
-        syncer::REASON_DECRYPTION, sync_pb::EncryptedData());
+        syncer::REASON_DECRYPTION,
+        syncer::KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+        sync_pb::EncryptedData());
     return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);
   };
   [self checkSyncCellWithExpectedTextLabelCallback:callback];

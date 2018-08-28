@@ -994,7 +994,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
     cryptographer = directory()->GetCryptographer(&trans);
   }
 
-  KeyParams params = {"localhost", "dummy", "foobar"};
+  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                      "dummy", "foobar"};
   cryptographer->AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
@@ -1084,7 +1085,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
       syncable::ReadTransaction trans(FROM_HERE, directory());
       cryptographer = directory()->GetCryptographer(&trans);
 
-      KeyParams params = {"localhost", "dummy", "foobar"};
+      KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                          "localhost", "dummy", "foobar"};
       cryptographer->AddKey(params);
 
       cryptographer->Encrypt(data,
@@ -1096,7 +1098,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
   {
     // Create a new cryptographer, independent of the one in the cycle.
     Cryptographer other_cryptographer(cryptographer->encryptor());
-    KeyParams params = {"localhost", "dummy", "bazqux"};
+    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                        "dummy", "bazqux"};
     other_cryptographer.AddKey(params);
 
     sync_pb::EntitySpecifics specifics;

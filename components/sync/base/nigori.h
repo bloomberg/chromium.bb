@@ -10,6 +10,8 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/base/passphrase_enums.h"
+
 namespace crypto {
 class SymmetricKey;
 }  // namespace crypto
@@ -34,13 +36,14 @@ class Nigori {
   Nigori();
   virtual ~Nigori();
 
-  // Initialize the client with the given |hostname|, |username| and |password|.
-  bool InitByDerivation(const std::string& hostname,
+  // Initialize by deriving keys based on the given |method|, |hostname|,
+  // |username| and |password|.
+  bool InitByDerivation(KeyDerivationMethod method,
+                        const std::string& hostname,
                         const std::string& username,
                         const std::string& password);
 
-  // Initialize the client by importing the given keys instead of deriving new
-  // ones.
+  // Initialize by importing the given keys instead of deriving new ones.
   bool InitByImport(const std::string& user_key,
                     const std::string& encryption_key,
                     const std::string& mac_key);

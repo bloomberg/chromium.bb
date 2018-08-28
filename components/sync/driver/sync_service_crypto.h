@@ -55,6 +55,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
       PassphraseRequiredReason reason,
+      KeyDerivationMethod key_derivation_method,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
@@ -86,13 +87,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   bool encryption_pending() { return encryption_pending_; }
 
  private:
-  // Checks if |passphrase| can be used to decrypt the cryptographer's pending
-  // keys that were cached during NotifyPassphraseRequired. Returns true if
-  // decryption was successful. Returns false otherwise. Must be called with a
-  // non-empty pending keys cache.
-  bool CheckPassphraseAgainstCachedPendingKeys(
-      const std::string& passphrase) const;
-
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
 
@@ -146,6 +140,14 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // manually changes their passphrase state. Cached so we can synchronously
   // check it from the UI thread.
   PassphraseType cached_passphrase_type_ = PassphraseType::IMPLICIT_PASSPHRASE;
+
+  // The key derivation method for the passphrase. We save it when we receive a
+  // passphrase required event, as it is a necessary piece of information to be
+  // able to properly perform a decryption attempt, and we want to be able to
+  // synchronously do that from the UI thread. This is needed only for custom
+  // passphrase users, as for all other passphrase types we will only ever
+  // receive PBKDF2 as the key derivation method.
+  KeyDerivationMethod passphrase_key_derivation_method_;
 
   // If an explicit passphrase is in use, the time at which the passphrase was
   // first set (if available).

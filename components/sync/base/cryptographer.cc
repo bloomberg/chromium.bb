@@ -24,6 +24,25 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
+KeyParams::KeyParams()
+    : derivation_method(KeyDerivationMethod::UNKNOWN),
+      hostname(),
+      username(),
+      password() {}
+
+KeyParams::KeyParams(KeyDerivationMethod derivation_method,
+                     const std::string& hostname,
+                     const std::string& username,
+                     const std::string& password)
+    : derivation_method(derivation_method),
+      hostname(hostname),
+      username(username),
+      password(password) {}
+
+KeyParams::KeyParams(const KeyParams& other) = default;
+KeyParams::KeyParams(KeyParams&& other) = default;
+KeyParams::~KeyParams() = default;
+
 Cryptographer::Cryptographer(Encryptor* encryptor) : encryptor_(encryptor) {
   DCHECK(encryptor);
 }
@@ -159,8 +178,8 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
 bool Cryptographer::AddKey(const KeyParams& params) {
   // Create the new Nigori and make it the default encryptor.
   std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.hostname, params.username,
-                                params.password)) {
+  if (!nigori->InitByDerivation(params.derivation_method, params.hostname,
+                                params.username, params.password)) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
@@ -171,8 +190,8 @@ bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
   DCHECK(is_initialized());
   // Create the new Nigori and add it to the keybag.
   std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.hostname, params.username,
-                                params.password)) {
+  if (!nigori->InitByDerivation(params.derivation_method, params.hostname,
+                                params.username, params.password)) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
@@ -240,8 +259,8 @@ const sync_pb::EncryptedData& Cryptographer::GetPendingKeys() const {
 
 bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
   Nigori nigori;
-  if (!nigori.InitByDerivation(params.hostname, params.username,
-                               params.password)) {
+  if (!nigori.InitByDerivation(params.derivation_method, params.hostname,
+                               params.username, params.password)) {
     NOTREACHED();
     return false;
   }

@@ -48,8 +48,9 @@ static const char kKeystoreKey[] = "a2V5c3RvcmVfa2V5";
 class SyncEncryptionHandlerObserverMock
     : public SyncEncryptionHandler::Observer {
  public:
-  MOCK_METHOD2(OnPassphraseRequired,
+  MOCK_METHOD3(OnPassphraseRequired,
                void(PassphraseRequiredReason,
+                    KeyDerivationMethod,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());         // NOLINT
   MOCK_METHOD2(OnBootstrapTokenUpdated,
@@ -175,14 +176,16 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       EXPECT_EQ(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE,
                 nigori.passphrase_type());
       Cryptographer keystore_cryptographer(&encryptor_);
-      KeyParams params = {"localhost", "dummy", kKeystoreKey};
+      KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                          "localhost", "dummy", kKeystoreKey};
       keystore_cryptographer.AddKey(params);
       EXPECT_TRUE(keystore_cryptographer.CanDecryptUsingDefaultKey(
           nigori.keystore_decryptor_token()));
     }
 
     Cryptographer temp_cryptographer(&encryptor_);
-    KeyParams params = {"localhost", "dummy", passphrase};
+    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                        "dummy", passphrase};
     temp_cryptographer.AddKey(params);
     EXPECT_TRUE(temp_cryptographer.CanDecryptUsingDefaultKey(
         nigori.encryption_keybag()));
@@ -200,10 +203,12 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     if (default_key.empty()) {
       default_key = keystore_key;
     } else {
-      KeyParams keystore_params = {"localhost", "dummy", keystore_key};
+      KeyParams keystore_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                                   "localhost", "dummy", keystore_key};
       other_cryptographer.AddKey(keystore_params);
     }
-    KeyParams params = {"localhost", "dummy", default_key};
+    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                        "dummy", default_key};
     other_cryptographer.AddKey(params);
     EXPECT_TRUE(other_cryptographer.is_ready());
 
@@ -297,7 +302,8 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
                             PassphraseType passphrase_type) {
     DCHECK_NE(passphrase_type, PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-    KeyParams default_key = {"localhost", "dummy", default_passphrase};
+    KeyParams default_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                             "localhost", "dummy", default_passphrase};
     other_cryptographer.AddKey(default_key);
     EXPECT_TRUE(other_cryptographer.is_ready());
 
@@ -522,8 +528,10 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
 // not revert our default key or encrypted types, and should post a task to
 // overwrite the existing nigori with the correct data.
 TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
-  KeyParams old_key = {"localhost", "dummy", "old"};
-  KeyParams current_key = {"localhost", "dummy", "cur"};
+  KeyParams old_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", "old"};
+  KeyParams current_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                           "localhost", "dummy", "cur"};
 
   // Data for testing encryption/decryption.
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
@@ -685,7 +693,8 @@ TEST_F(SyncEncryptionHandlerImplTest, GetKeystoreDecryptor) {
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -716,7 +725,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
     WriteNode nigori_node(&trans);
     ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-    KeyParams other_key = {"localhost", "dummy", kOtherKey};
+    KeyParams other_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                           "localhost", "dummy", kOtherKey};
     other_cryptographer.AddKey(other_key);
 
     sync_pb::NigoriSpecifics nigori;
@@ -724,7 +734,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
     nigori.set_keybag_is_frozen(false);
     nigori.set_encrypt_everything(false);
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
     nigori_node.SetNigoriSpecifics(nigori);
   }
@@ -767,7 +777,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
     WriteNode nigori_node(&trans);
     ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-    KeyParams other_key = {"localhost", "dummy", kOtherKey};
+    KeyParams other_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                           "localhost", "dummy", kOtherKey};
     other_cryptographer.AddKey(other_key);
 
     sync_pb::NigoriSpecifics nigori;
@@ -775,7 +786,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
     nigori.set_keybag_is_frozen(true);
     nigori.set_encrypt_everything(false);
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(),
                 OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
@@ -814,7 +825,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
 // to PassphraseType::KEYSTORE_PASSPHRASE.
 TEST_F(SyncEncryptionHandlerImplTest, MigrateOnKeystoreKeyAvailableImplicit) {
   const char kCurKey[] = "cur";
-  KeyParams current_key = {"localhost", "dummy", kCurKey};
+  KeyParams current_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                           "localhost", "dummy", kCurKey};
   GetCryptographer()->AddKey(current_key);
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
@@ -847,7 +859,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnKeystoreKeyAvailableImplicit) {
 TEST_F(SyncEncryptionHandlerImplTest,
        MigrateOnKeystoreKeyAvailableFrozenImplicit) {
   const char kCurKey[] = "cur";
-  KeyParams current_key = {"localhost", "dummy", kCurKey};
+  KeyParams current_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                           "localhost", "dummy", kCurKey};
   GetCryptographer()->AddKey(current_key);
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
@@ -900,7 +913,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
        MigrateOnKeystoreKeyAvailableCustomWithEncryption) {
   const char kCurKey[] = "cur";
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
@@ -956,7 +969,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
        MigrateOnKeystoreKeyAvailableCustomNoEncryption) {
   const char kCurKey[] = "cur";
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
@@ -1005,7 +1018,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1063,7 +1077,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
 
   // Check that the cryptographer can decrypt keystore key based encryption.
   Cryptographer keystore_cryptographer(GetCryptographer()->encryptor());
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   keystore_cryptographer.AddKey(keystore_key);
   sync_pb::EncryptedData keystore_encrypted;
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
@@ -1078,7 +1093,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
@@ -1095,7 +1111,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
     EXPECT_CALL(
         *observer(),
         OnPassphraseTypeChanged(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, _));
-    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
     WriteTransaction trans(FROM_HERE, user_share());
@@ -1138,7 +1154,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
 
   // Check that the cryptographer can decrypt keystore key based encryption.
   Cryptographer keystore_cryptographer(GetCryptographer()->encryptor());
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   keystore_cryptographer.AddKey(keystore_key);
   sync_pb::EncryptedData keystore_encrypted;
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
@@ -1153,7 +1170,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
@@ -1169,7 +1187,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
   {
     EXPECT_CALL(*observer(),
                 OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
-    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
     WriteTransaction trans(FROM_HERE, user_share());
@@ -1211,7 +1229,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
 
   // Check that the cryptographer can decrypt keystore key based encryption.
   Cryptographer keystore_cryptographer(GetCryptographer()->encryptor());
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   keystore_cryptographer.AddKey(keystore_key);
   sync_pb::EncryptedData keystore_encrypted;
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
@@ -1225,8 +1244,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
   const char kOldKey[] = "old";
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
-  KeyParams old_key = {"localhost", "dummy", kOldKey};
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams old_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   GetCryptographer()->AddKey(old_key);
   GetCryptographer()->AddKey(cur_key);
 
@@ -1314,8 +1335,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   const char kOldKey[] = "old";
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
-  KeyParams old_key = {"localhost", "dummy", kOldKey};
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams old_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   GetCryptographer()->AddKey(old_key);
   GetCryptographer()->AddKey(cur_key);
 
@@ -1407,7 +1430,8 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1437,7 +1461,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
     EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
                                  PassphraseType::KEYSTORE_PASSPHRASE, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+    EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
     nigori_node.SetNigoriSpecifics(nigori);
   }
@@ -1475,7 +1499,8 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
 
   // Check that the cryptographer can decrypt keystore key based encryption.
   Cryptographer keystore_cryptographer(GetCryptographer()->encryptor());
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   keystore_cryptographer.AddKey(keystore_key);
   sync_pb::EncryptedData keystore_encrypted;
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
@@ -1489,7 +1514,8 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   const char kOldKey[] = "old";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
   other_cryptographer.AddKey(cur_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1565,14 +1591,16 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
 
   // Check that the cryptographer can decrypt keystore key based encryption.
   Cryptographer keystore_cryptographer(GetCryptographer()->encryptor());
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   keystore_cryptographer.AddKey(keystore_key);
   sync_pb::EncryptedData keystore_encrypted;
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 
   // Check the the cryptographer is encrypting with the new key.
-  KeyParams new_key = {"localhost", "dummy", kNewKey};
+  KeyParams new_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kNewKey};
   Cryptographer new_cryptographer(GetCryptographer()->encryptor());
   new_cryptographer.AddKey(new_key);
   sync_pb::EncryptedData new_encrypted;
@@ -1595,9 +1623,11 @@ TEST_F(SyncEncryptionHandlerImplTest,
   const char kOldKey[] = "old";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
   other_cryptographer.AddKey(cur_key);
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   other_cryptographer.AddNonDefaultKey(keystore_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1621,7 +1651,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
     nigori_node.SetNigoriSpecifics(nigori);
   }
 
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
@@ -1680,7 +1710,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 
   // Check the the cryptographer is encrypting with the new key.
-  KeyParams new_key = {"localhost", "dummy", kNewKey};
+  KeyParams new_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kNewKey};
   Cryptographer new_cryptographer(GetCryptographer()->encryptor());
   new_cryptographer.AddKey(new_key);
   sync_pb::EncryptedData new_encrypted;
@@ -1703,9 +1734,11 @@ TEST_F(SyncEncryptionHandlerImplTest,
   const char kOldKey[] = "old";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
   other_cryptographer.AddKey(cur_key);
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   other_cryptographer.AddNonDefaultKey(keystore_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1728,7 +1761,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
     nigori_node.SetNigoriSpecifics(nigori);
   }
 
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
@@ -1774,7 +1807,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 
   // Check the the cryptographer does not have the new key.
-  KeyParams new_key = {"localhost", "dummy", kNewKey};
+  KeyParams new_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kNewKey};
   Cryptographer new_cryptographer(GetCryptographer()->encryptor());
   new_cryptographer.AddKey(new_key);
   sync_pb::EncryptedData new_encrypted;
@@ -1791,9 +1825,11 @@ TEST_F(SyncEncryptionHandlerImplTest,
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData keystore_decryptor_token;
   Cryptographer other_cryptographer(GetCryptographer()->encryptor());
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   other_cryptographer.AddKey(cur_key);
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  KeyParams keystore_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                            "localhost", "dummy", kKeystoreKey};
   other_cryptographer.AddNonDefaultKey(keystore_key);
   EXPECT_TRUE(other_cryptographer.is_ready());
   EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
@@ -1816,7 +1852,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
     nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
     nigori_node.SetNigoriSpecifics(nigori);
   }
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
@@ -1881,8 +1917,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriWithOldPassphrase) {
   const char kOldKey[] = "old";
   const char kCurKey[] = "cur";
   sync_pb::EncryptedData encrypted;
-  KeyParams old_key = {"localhost", "dummy", kOldKey};
-  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams old_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kOldKey};
+  KeyParams cur_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", kCurKey};
   GetCryptographer()->AddKey(old_key);
   GetCryptographer()->AddKey(cur_key);
 
@@ -2054,7 +2092,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysAfterPendingGaiaResolved) {
   const char kOldGaiaKey[] = "old_gaia_key";
   const char kRawOldKeystoreKey[] = "old_keystore_key";
 
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitUnmigratedNigori(kOldGaiaKey, PassphraseType::IMPLICIT_PASSPHRASE);
 
   {
@@ -2135,7 +2173,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
   std::string old_keystore_key;
   base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
 
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitUnmigratedNigori(kOldGaiaKey, PassphraseType::IMPLICIT_PASSPHRASE);
 
   {
@@ -2181,7 +2219,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   const char kCustomPass[] = "custom_passphrase";
   const char kRawOldKeystoreKey[] = "old_keystore_key";
 
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitUnmigratedNigori(kCustomPass, PassphraseType::CUSTOM_PASSPHRASE);
 
   {
@@ -2227,7 +2265,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
   const char kCustomPass[] = "custom_passphrase";
   const char kRawOldKeystoreKey[] = "old_keystore_key";
 
-  KeyParams custom_key = {"localhost", "dummy", kCustomPass};
+  KeyParams custom_key = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                          "localhost", "dummy", kCustomPass};
   GetCryptographer()->AddKey(custom_key);
 
   const int64_t migration_time = 1;
@@ -2269,7 +2308,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
 // the keystore migration time field.
 TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   encryption_handler()->Init();
   Mock::VerifyAndClearExpectations(observer());
@@ -2278,7 +2317,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
   // migration time. It should be interpreted properly, and the passphrase type
   // should switch to keystore passphrase.
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   {

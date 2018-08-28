@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/nigori.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/protocol/encryption.pb.h"
 
 namespace sync_pb {
@@ -25,6 +26,18 @@ extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
 struct KeyParams {
+  KeyParams();
+  KeyParams(KeyDerivationMethod derivation_method,
+            const std::string& hostname,
+            const std::string& username,
+            const std::string& password);
+  KeyParams(const KeyParams& other);
+  KeyParams(KeyParams&& other);
+  ~KeyParams();
+
+  KeyDerivationMethod derivation_method;
+  // TODO(vitaliii): Delete hostname and username from here and hardcode them
+  // into the old key derivation function instead.
   std::string hostname;
   std::string username;
   std::string password;

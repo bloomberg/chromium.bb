@@ -32,11 +32,12 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 
   void OnPassphraseRequired(
       PassphraseRequiredReason reason,
+      KeyDerivationMethod key_derivation_method,
       const sync_pb::EncryptedData& pending_keys) override {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&SyncEncryptionHandler::Observer::OnPassphraseRequired,
-                       observer_, reason, pending_keys));
+                       observer_, reason, key_derivation_method, pending_keys));
   }
 
   void OnPassphraseAccepted() override {
@@ -102,6 +103,24 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
+// Checks if |passphrase| can be used to decrypt the given pending keys. Returns
+// true if decryption was successful. Returns false otherwise. Must be called
+// with non-empty pending keys cache.
+bool CheckPassphraseAgainstPendingKeys(
+    const sync_pb::EncryptedData pending_keys,
+    KeyDerivationMethod key_derivation_method,
+    const std::string& passphrase) {
+  DCHECK(pending_keys.has_blob());
+  DCHECK(!passphrase.empty());
+  Nigori nigori;
+  nigori.InitByDerivation(key_derivation_method, "localhost", "dummy",
+                          passphrase);
+  std::string plaintext;
+  bool result = nigori.Decrypt(pending_keys.blob(), &plaintext);
+  DVLOG_IF(1, !result) << "Passphrase failed to decrypt pending keys.";
+  return result;
+}
+
 }  // namespace
 
 SyncServiceCrypto::SyncServiceCrypto(
@@ -111,6 +130,7 @@ SyncServiceCrypto::SyncServiceCrypto(
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
+      passphrase_key_derivation_method_(KeyDerivationMethod::UNKNOWN),
       weak_factory_(this) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);
@@ -191,10 +211,15 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK(cached_pending_keys_.has_blob());
 
   // Check the passphrase that was provided against our local cache of the
-  // cryptographer's pending keys. If this was unsuccessful, the UI layer can
-  // immediately call OnPassphraseRequired without showing the user a spinner.
-  if (!CheckPassphraseAgainstCachedPendingKeys(passphrase))
+  // cryptographer's pending keys (which we cached during a previous
+  // OnPassphraseRequired event). If this was unsuccessful, the UI layer can
+  // immediately call OnPassphraseRequired again without showing the user a
+  // spinner.
+  if (!CheckPassphraseAgainstPendingKeys(cached_pending_keys_,
+                                         passphrase_key_derivation_method_,
+                                         passphrase)) {
     return false;
+  }
 
   engine_->SetDecryptionPassphrase(passphrase);
 
@@ -237,11 +262,15 @@ ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
 
 void SyncServiceCrypto::OnPassphraseRequired(
     PassphraseRequiredReason reason,
+    KeyDerivationMethod key_derivation_method,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update our cache of the cryptographer's pending keys.
   cached_pending_keys_ = pending_keys;
+
+  // Update the key derivation method to be used.
+  passphrase_key_derivation_method_ = key_derivation_method;
 
   DVLOG(1) << "Passphrase required with reason: "
            << PassphraseRequiredReasonToString(reason);
@@ -361,16 +390,5 @@ SyncServiceCrypto::TakeSavedNigoriState() {
   return std::move(saved_nigori_state_);
 }
 
-bool SyncServiceCrypto::CheckPassphraseAgainstCachedPendingKeys(
-    const std::string& passphrase) const {
-  DCHECK(cached_pending_keys_.has_blob());
-  DCHECK(!passphrase.empty());
-  Nigori nigori;
-  nigori.InitByDerivation("localhost", "dummy", passphrase);
-  std::string plaintext;
-  bool result = nigori.Decrypt(cached_pending_keys_.blob(), &plaintext);
-  DVLOG_IF(1, result) << "Passphrase failed to decrypt pending keys.";
-  return result;
-}
 
 }  // namespace syncer

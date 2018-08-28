@@ -45,7 +45,8 @@ TEST_F(CryptographerTest, EmptyCantEncrypt) {
 }
 
 TEST_F(CryptographerTest, MissingCantDecrypt) {
-  KeyParams params = {"localhost", "dummy", "dummy"};
+  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                      "dummy", "dummy"};
   cryptographer_.AddKey(params);
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -57,7 +58,8 @@ TEST_F(CryptographerTest, MissingCantDecrypt) {
 }
 
 TEST_F(CryptographerTest, CanEncryptAndDecrypt) {
-  KeyParams params = {"localhost", "dummy", "dummy"};
+  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                      "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params));
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -76,7 +78,8 @@ TEST_F(CryptographerTest, CanEncryptAndDecrypt) {
 }
 
 TEST_F(CryptographerTest, EncryptOnlyIfDifferent) {
-  KeyParams params = {"localhost", "dummy", "dummy"};
+  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                      "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params));
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -94,7 +97,8 @@ TEST_F(CryptographerTest, EncryptOnlyIfDifferent) {
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted2));
 
   // Now encrypt with a new default key. Should overwrite the old data.
-  KeyParams params_new = {"localhost", "dummy", "dummy2"};
+  KeyParams params_new = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                          "localhost", "dummy", "dummy2"};
   cryptographer_.AddKey(params_new);
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted3));
 
@@ -107,7 +111,8 @@ TEST_F(CryptographerTest, EncryptOnlyIfDifferent) {
 }
 
 TEST_F(CryptographerTest, AddKeySetsDefault) {
-  KeyParams params1 = {"localhost", "dummy", "dummy1"};
+  KeyParams params1 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", "dummy1"};
   EXPECT_TRUE(cryptographer_.AddKey(params1));
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -121,7 +126,8 @@ TEST_F(CryptographerTest, AddKeySetsDefault) {
   sync_pb::EncryptedData encrypted2;
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted2));
 
-  KeyParams params2 = {"localhost", "dummy", "dummy2"};
+  KeyParams params2 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", "dummy2"};
   EXPECT_TRUE(cryptographer_.AddKey(params2));
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -147,7 +153,8 @@ TEST_F(CryptographerTest, EncryptExportDecrypt) {
   {
     Cryptographer cryptographer(&encryptor_);
 
-    KeyParams params = {"localhost", "dummy", "dummy"};
+    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                        "dummy", "dummy"};
     cryptographer.AddKey(params);
     EXPECT_TRUE(cryptographer.is_ready());
 
@@ -163,7 +170,8 @@ TEST_F(CryptographerTest, EncryptExportDecrypt) {
     EXPECT_FALSE(cryptographer.is_ready());
     EXPECT_TRUE(cryptographer.has_pending_keys());
 
-    KeyParams params = {"localhost", "dummy", "dummy"};
+    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                        "dummy", "dummy"};
     EXPECT_TRUE(cryptographer.DecryptPendingKeys(params));
     EXPECT_TRUE(cryptographer.is_ready());
     EXPECT_FALSE(cryptographer.has_pending_keys());
@@ -175,7 +183,8 @@ TEST_F(CryptographerTest, EncryptExportDecrypt) {
 }
 
 TEST_F(CryptographerTest, Bootstrap) {
-  KeyParams params = {"localhost", "dummy", "dummy"};
+  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                      "dummy", "dummy"};
   cryptographer_.AddKey(params);
 
   std::string token;
@@ -206,14 +215,16 @@ TEST_F(CryptographerTest, CopyConstructor) {
   original.set_password_value("p4ssw0rd");
 
   // Start by testing the original cryptogprapher.
-  KeyParams params1 = {"localhost", "dummy", "dummy"};
+  KeyParams params1 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params1));
   EXPECT_TRUE(cryptographer_.is_ready());
 
   sync_pb::EncryptedData encrypted_k1;
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted_k1));
 
-  KeyParams params2 = {"localhost", "fatuous", "fatuous"};
+  KeyParams params2 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "fatuous", "fatuous"};
   EXPECT_TRUE(cryptographer_.AddKey(params2));
   EXPECT_TRUE(cryptographer_.is_ready());
 
@@ -265,14 +276,16 @@ TEST_F(CryptographerTest, GetKeysThenInstall) {
   original.set_password_value("p4ssw0rd");
 
   // First, encrypt the same value using two different keys.
-  KeyParams params1 = {"localhost", "dummy", "dummy"};
+  KeyParams params1 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params1));
   EXPECT_TRUE(cryptographer_.is_ready());
 
   sync_pb::EncryptedData encrypted_k1;
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted_k1));
 
-  KeyParams params2 = {"localhost", "dummy2", "dummy2"};
+  KeyParams params2 = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
+                       "dummy2", "dummy2"};
   EXPECT_TRUE(cryptographer_.AddKey(params2));
   EXPECT_TRUE(cryptographer_.is_ready());
 
