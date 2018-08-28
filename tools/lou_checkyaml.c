@@ -398,7 +398,7 @@ read_inPos(yaml_parser_t *parser, int translen) {
 	}
 	if (i < translen)
 		error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
-				"Too  few input positions (%i) for translation of length %i\n", i,
+				"Too few input positions (%i) for translation of length %i\n", i,
 				translen);
 	if (!parse_error) yaml_parse_error(parser);
 	if (event.type != YAML_SEQUENCE_END_EVENT)
@@ -556,7 +556,8 @@ read_typeforms(yaml_parser_t *parser, int len) {
 static void
 read_options(yaml_parser_t *parser, int direction, int wordLen, int translationLen,
 		int *xfail, translationModes *mode, formtype **typeform, int **inPos,
-		int **outPos, int *cursorPos, int *cursorOutPos, int *maxOutputLen) {
+		int **outPos, int *cursorPos, int *cursorOutPos, int *maxOutputLen,
+		int *realInputLen) {
 	yaml_event_t event;
 	char *option_name;
 	int parse_error = 1;
@@ -618,6 +619,22 @@ read_options(yaml_parser_t *parser, int direction, int wordLen, int translationL
 						"length (%i)\n",
 						translationLen, *maxOutputLen);
 			yaml_event_delete(&event);
+		} else if (!strcmp(option_name, "realInputLength")) {
+			yaml_event_delete(&event);
+			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+				yaml_error(YAML_SCALAR_EVENT, &event);
+			*realInputLen = parse_number((const char *)event.data.scalar.value,
+					"Real input length", event.start_mark.line + 1);
+			if (*realInputLen < 0)
+				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+						"Real input length (%i) must not be a negative number\n",
+						*realInputLen);
+			if (*realInputLen > wordLen)
+				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+						"Real input length (%i) must not exceed total input "
+						"length (%i)\n",
+						*realInputLen, wordLen);
+			yaml_event_delete(&event);
 		} else {
 			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 					"Unsupported option %s", option_name);
@@ -640,6 +657,22 @@ my_strlen_utf8_c(char *s) {
 	return j;
 }
 
+/*
+ * String parsing is also done later in check_base. At this point we
+ * only need it to compute the actual string length in order to be
+ * able to provide error messages when parsing typeform and position arrays.
+ */
+static int
+parsed_strlen(char *s) {
+	widechar *buf;
+	int len, maxlen;
+	maxlen = my_strlen_utf8_c(s);
+	buf = malloc(sizeof(widechar) * maxlen);
+	len = _lou_extParseChars(s, buf);
+	free(buf);
+	return len;
+}
+
 static void
 read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) {
 	yaml_event_t event;
@@ -654,6 +687,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int cursorPos = -1;
 	int cursorOutPos = -1;
 	int maxOutputLen = -1;
+	int realInputLen = -1;
 
 	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
 		simple_error("Word expected", parser, &event);
@@ -683,9 +717,9 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 
 	if (event.type == YAML_MAPPING_START_EVENT) {
 		yaml_event_delete(&event);
-		read_options(parser, direction, my_strlen_utf8_c(word),
-				my_strlen_utf8_c(translation), &xfail, &mode, &typeform, &inPos, &outPos,
-				&cursorPos, &cursorOutPos, &maxOutputLen);
+		read_options(parser, direction, parsed_strlen(word), parsed_strlen(translation),
+				&xfail, &mode, &typeform, &inPos, &outPos, &cursorPos, &cursorOutPos,
+				&maxOutputLen, &realInputLen);
 
 		if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_END_EVENT))
 			yaml_error(YAML_SEQUENCE_END_EVENT, &event);
@@ -709,8 +743,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 			result |= check(*table, word, translation, .typeform = typeform, .mode = mode,
 					.expected_inputPos = inPos, .expected_outputPos = outPos,
 					.cursorPos = cursorPos, .expected_cursorPos = cursorOutPos,
-					.max_outlen = maxOutputLen, .direction = direction,
-					.diagnostics = !xfail);
+					.max_outlen = maxOutputLen, .real_inlen = realInputLen,
+					.direction = direction, .diagnostics = !xfail);
 		}
 		table++;
 	}

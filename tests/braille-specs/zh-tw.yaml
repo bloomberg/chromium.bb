@@ -1,0 +1,14 @@
+display: unicode.dis
+table:
+  locale: cmn-TW
+  __assert-match: zh_TW.tbl # zh-tw.ctb
+tests:
+  - [一,⠡⠄]
+  - [不,⠕⠌⠐]
+  - [什,⠊⠱⠂]
+  - [子,⠓⠱⠁]
+  - [為,⠫⠂]
+  - [率,⠉⠳⠐]
+  - [行,⠑⠽⠂]
+  - [調,⠙⠪⠐]
+  - [鋪,⠏⠌⠄]

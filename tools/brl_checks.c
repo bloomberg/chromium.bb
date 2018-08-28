@@ -91,10 +91,17 @@ check_base(const char *tableList, const char *input, const char *expected,
 		fprintf(stderr, "maxOutputLength not supported with testmode 'bothDirections'\n");
 		return 1;
 	}
+	if (in.real_inlen >= 0 && in.max_outlen < 0) {
+		fprintf(stderr,
+				"realInputLength not supported when maxOutputLength is not specified\n");
+		return 1;
+	}
 	while (1) {
 		widechar *inbuf, *outbuf, *expectedbuf;
 		int inlen = strlen(input);
-		int outlen = inlen * 10;
+		int actualInlen;
+		const int outlen_multiplier = 4 + sizeof(widechar) * 2;
+		int outlen = inlen * outlen_multiplier;
 		int expectedlen = strlen(expected);
 		int funcStatus = 0;
 		formtype *typeformbuf = NULL;
@@ -120,23 +127,57 @@ check_base(const char *tableList, const char *input, const char *expected,
 			retval = 1;
 			goto fail;
 		}
+		if (in.real_inlen > inlen) {
+			fprintf(stderr,
+					"expected realInputLength (%d) may not exceed total input length "
+					"(%d)\n",
+					in.real_inlen, inlen);
+			return 1;
+		}
 		if (expected_inputPos) {
 			inputPos = malloc(sizeof(int) * outlen);
 		}
 		if (expected_outputPos) {
 			outputPos = malloc(sizeof(int) * inlen);
 		}
-		if (direction == 1) {
-			funcStatus = lou_backTranslate(tableList, inbuf, &inlen, outbuf, &outlen,
-					typeformbuf, NULL, outputPos, inputPos, &cursorPos, in.mode);
-		} else {
-			funcStatus = lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
-					typeformbuf, NULL, outputPos, inputPos, &cursorPos, in.mode);
-		}
-		if (!funcStatus) {
-			fprintf(stderr, "Translation failed.\n");
-			retval = 1;
-			goto fail;
+		actualInlen = inlen;
+		// Note that this loop is not strictly needed to make the current tests pass, but
+		// in the general case it is needed because it is theoretically possible that we
+		// provided a too short output buffer.
+		for (int k = 1; k <= 3; k++) {
+			if (direction == 1) {
+				funcStatus = lou_backTranslate(tableList, inbuf, &actualInlen, outbuf,
+						&outlen, typeformbuf, NULL, outputPos, inputPos, &cursorPos,
+						in.mode);
+			} else {
+				funcStatus = lou_translate(tableList, inbuf, &actualInlen, outbuf,
+						&outlen, typeformbuf, NULL, outputPos, inputPos, &cursorPos,
+						in.mode);
+			}
+			if (!funcStatus) {
+				fprintf(stderr, "Translation failed.\n");
+				retval = 1;
+				goto fail;
+			}
+			if (in.max_outlen >= 0 || inlen == actualInlen) {
+				break;
+			} else if (k < 3) {
+				// Hm, something is not quite right. Try again with a larger outbuf
+				free(outbuf);
+				outlen = inlen * outlen_multiplier * (k + 1);
+				outbuf = malloc(sizeof(widechar) * outlen);
+				if (expected_inputPos) {
+					free(inputPos);
+					inputPos = malloc(sizeof(int) * outlen);
+				}
+				fprintf(stderr,
+						"Warning: For %s: returned inlen (%d) differs from passed inlen "
+						"(%d) "
+						"using outbuf of size %d. Trying again with bigger outbuf "
+						"(%d).\n",
+						input, actualInlen, inlen, inlen * outlen_multiplier * k, outlen);
+				actualInlen = inlen;
+			}
 		}
 		expectedlen = _lou_extParseChars(expected, expectedbuf);
 		for (i = 0; i < outlen && i < expectedlen && expectedbuf[i] == outbuf[i]; i++)
@@ -220,6 +261,23 @@ check_base(const char *tableList, const char *input, const char *expected,
 			fprintf(stderr, "Cursor position failure:\n");
 			fprintf(stderr, "Initial:%d Expected:%d Actual:%d \n", in.cursorPos,
 					in.expected_cursorPos, cursorPos);
+			retval = 1;
+		}
+		if (in.max_outlen < 0 && inlen != actualInlen) {
+			fprintf(stderr,
+					"Unexpected error happened: input length is not the same before as "
+					"after the translation:\n");
+			fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
+			retval = 1;
+		} else if (actualInlen > inlen) {
+			fprintf(stderr,
+					"Unexpected error happened: returned input length (%d) exceeds "
+					"total input length (%d)\n",
+					actualInlen, inlen);
+			retval = 1;
+		} else if (in.real_inlen >= 0 && in.real_inlen != actualInlen) {
+			fprintf(stderr, "Real input length failure:\n");
+			fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen, actualInlen);
 			retval = 1;
 		}
 
@@ -406,7 +464,7 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 		goto fail;
 	}
 
-	if (strlen(expected) != (int)hyphenatedlen ||
+	if (strlen(expected) != hyphenatedlen ||
 			strncmp(expected, (const char *)hyphenated, hyphenatedlen)) {
 		fprintf(stderr, "Input:    '%s'\n", str);
 		fprintf(stderr, "Expected: '%s'\n", expected);

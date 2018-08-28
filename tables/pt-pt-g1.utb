@@ -64,7 +64,6 @@ punctuation , 2					coma							44
 punctuation - 36				hyphen-minus			45
 punctuation . 3					point							46
 math / 6-2							solidus						47
-include digits6Dots.uti
 punctuation : 25			colon					58		x003A
 punctuation ;	23			semicolon			59		x003B
 math < 246													60		x003C
@@ -73,7 +72,9 @@ math > 135													62		x003E
 punctuation ? 26										63		x003F
 sign @ 156						commercial at	64		x0040
 
-include latinLetterDef6Dots.uti
+include latinLetterDef6Dots.uti 
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
 
 punctuation [ 12356-3		left square bracket			x005B
 sign \\ 5-3							reverse solidus					x005C

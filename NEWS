@@ -8,13 +8,51 @@ issues]].
 ** Bug fixes
 - Fix another stack-based buffer overflow in input parsing reported by
   Henri Salo thanks to Christian Egli.
+- Fix input/output positions for back-translation. Thanks to excellent
+  bug reports and patches by Timothy Lee, Bert Frees heroically sat down and
+  reworked the handling of the input/output positions for
+  back-translation. This solves numerous issues with backward
+  translation.
+- The returned ~inlen~ and ~outlen~ now always match thanks to the
+  above work on input/output positions by Bert Frees.
+
 ** Braille table improvements
+- Danish grade 2 tables: Reduced hyphenation to only the hyphens
+  necessary for correct Braille translation. Replaced the longer rules
+  with hyphenation for better cursor positioning. Corrected some words.
+  Thanks to Bue Vester-Andersen
+- New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
+  Sunian Loomee. The first one is for Chinese Common Braille, commonly
+  known as the old Braille where a Chinese character is composed of
+  three Braille Symbols, consonants, vowels and tones. The second
+  table is for Chinese double spelling Braille, commonly known as the
+  new Braille where Chinese character is composed of two Braille
+  Symbols, consonants and vowels and the tones are included in vowels.
+- Major update to the Urdu tables thanks to Jake Kyle.
+- Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
+  and Swedish has been fixed thanks to Bue Vester-Andersen.
+
 ** Other changes
+- Test suite improvements: In addition to checking the translation the
+  tests now also check if the provided ~inlen~ is the same as the
+  returned ~inlen~ and retry the test with a larger output buffer.
+- Fix a problem in the Makefiles that prevented liblouis from being
+  built with automake 1.16. This is fixed now thanks to a patch from
+  Samuel Thibault.
+- Removal of the code for the /scripting language/ for multipass
+  opcodes. This code was originaly introduced in 2012 but never
+  documented. Consequently it was never used. Meanwhile the original
+  code for multipass opcodes was much improved. So there is no more
+  need for this (duplicate) code and we are removing it.
+- The nightly snapshots of pre-built windows binaries are now built
+  with UCS4 enabled.
+
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
 *** New
-- None
+- zhcn-g1.ctb
+- zhcn-g2.ctb
 *** Renamed
 - None
 *** Removed

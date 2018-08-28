@@ -29,7 +29,7 @@ matrix:
     - compiler: gcc
       env: MODE=build-gcc ENABLE_UCS4=--enable-ucs4
     - compiler: i586-mingw32msvc-gcc
-      env: MODE=build-mingw
+      env: MODE=build-mingw ENABLE_UCS4=--enable-ucs4
     - compiler: gcc
       env: MODE=build-js
     - env: MODE=check-format

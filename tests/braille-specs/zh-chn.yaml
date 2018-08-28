@@ -1,6 +1,8 @@
 display: unicode.dis
 table:
-  locale: zh-CHN
+  locale: cmn-Hans-CN
+  system: cmn-traditional
+  variant: no-tone
   __assert-match: zh_CHN.tbl # zh-chn.ctb
 tests:
   - [八,⠃⠔]

@@ -27,9 +27,6 @@ en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
-hyphenate_achena_SOURCES = hyphenate_achena.c
-hyphenate_alderen_SOURCES = hyphenate_alderen.c
-hyphenate_straightforward_SOURCES = hyphenate_straightforward.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
 inpos_SOURCES = inpos.c
 inpos_compbrl_SOURCES = default_table.h inpos_compbrl.c
@@ -65,9 +62,6 @@ program_TESTS =					\
 	findTable				\
 	getTable				\
 	hash_collision				\
-	hyphenate_achena			\
-	hyphenate_alderen			\
-	hyphenate_straightforward		\
 	hyphenate_xxx				\
 	inpos					\
 	inpos_compbrl				\
@@ -148,6 +142,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/en-ueb-g2_backward_no_dis.yaml	  \
 	braille-specs/en-ueb-math.yaml			  \
 	braille-specs/en-ueb-symbols_harness.yaml	  \
+	braille-specs/en-ueb-michael-robin.yaml		  \
 	braille-specs/en-us-comp8-ext-back_harness.yaml	  \
 	braille-specs/en-us-comp8-ext-for_harness.yaml	  \
 	braille-specs/en-us-g2-dictionary_harness.yaml	  \
@@ -163,6 +158,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/fr-bfu-g2_harness.yaml		  \
 	braille-specs/ga-g1_harness.yaml		  \
 	braille-specs/ga-g2_harness.yaml		  \
+	braille-specs/hi_harness.yaml			  \
 	braille-specs/hr-8dots_harness.yaml		  \
 	braille-specs/hu-hu-comp8_backward.yaml		  \
 	braille-specs/hu-hu-comp8_harness.yaml		  \
@@ -187,9 +183,12 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/sr-g1_harness.yaml		  \
 	braille-specs/ta-ta-g1_harness.yaml		  \
 	braille-specs/uk.yaml				  \
+	braille-specs/ur-pk-g2.yaml			  \
 	braille-specs/vi-g1_backward.yaml		  \
 	braille-specs/vi-g1_harness.yaml		  \
-	braille-specs/zh-chn.yaml
+	braille-specs/zh-chn.yaml			  \
+	braille-specs/zhcn-g1.yaml			  \
+	braille-specs/zhcn-g2.yaml
 
 # This test hangs when configured without --enable-ucs4
 if HAVE_UCS4
@@ -209,6 +208,7 @@ dist_yaml_TESTS =			  \
 	yaml/emphasis-no-context.yaml	  \
 	yaml/example_test.yaml		  \
 	yaml/foo.yaml			  \
+	yaml/hyphenation_nocross_harness.yaml  \
 	yaml/inpos_outpos.yaml		  \
 	yaml/issue-238.yaml		  \
 	yaml/issue-35.yaml		  \
@@ -220,6 +220,8 @@ dist_yaml_TESTS =			  \
 	yaml/issue-479.yaml		  \
 	yaml/issue-498.yaml		  \
 	yaml/issue-537.yaml		  \
+	yaml/issue-583.yaml		  \
+	yaml/issue-584.yaml		  \
 	yaml/issue-77.yaml 		  \
 	yaml/letterDefTest_harness.yaml	  \
 	yaml/multipass-backward.yaml	  \
@@ -227,7 +229,6 @@ dist_yaml_TESTS =			  \
 	yaml/multipass.yaml		  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
-	yaml/nocross_harness.yaml	  \
 	yaml/noletsignafter.yaml	  \
 	yaml/syllable.yaml
 
