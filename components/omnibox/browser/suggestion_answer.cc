@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -45,9 +46,8 @@ void AppendWithSpace(const SuggestionAnswer::TextField* text,
 
 // SuggestionAnswer::TextField -------------------------------------------------
 
-SuggestionAnswer::TextField::TextField()
-    : type_(-1), has_num_lines_(false), num_lines_(1) {}
-SuggestionAnswer::TextField::~TextField() {}
+SuggestionAnswer::TextField::TextField() = default;
+SuggestionAnswer::TextField::~TextField() = default;
 
 // static
 bool SuggestionAnswer::TextField::ParseTextField(
@@ -205,9 +205,26 @@ size_t SuggestionAnswer::ImageLine::EstimateMemoryUsage() const {
   return res;
 }
 
+void SuggestionAnswer::ImageLine::SetTextStyles(
+    int from_type,
+    SuggestionAnswer::TextStyle style) {
+  const auto replace = [=](auto* field) {
+    if (field->style() == TextStyle::NONE &&
+        (from_type == 0 || from_type == field->type())) {
+      field->set_style(style);
+    }
+  };
+  for (auto& field : text_fields_)
+    replace(&field);
+  if (additional_text_)
+    replace(additional_text_.get());
+  if (status_text_)
+    replace(status_text_.get());
+}
+
 // SuggestionAnswer ------------------------------------------------------------
 
-SuggestionAnswer::SuggestionAnswer() : type_(-1) {}
+SuggestionAnswer::SuggestionAnswer() = default;
 
 SuggestionAnswer::SuggestionAnswer(const SuggestionAnswer& answer) = default;
 
@@ -215,8 +232,14 @@ SuggestionAnswer::~SuggestionAnswer() = default;
 
 // static
 std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
-    const base::DictionaryValue* answer_json) {
+    const base::DictionaryValue* answer_json,
+    const base::string16& answer_type_str) {
+  int answer_type = 0;
+  if (!base::StringToInt(answer_type_str, &answer_type))
+    return nullptr;
+
   auto result = std::make_unique<SuggestionAnswer>();
+  result->set_type(answer_type);
 
   const base::ListValue* lines_json;
   if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||
@@ -245,7 +268,7 @@ std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
   } else {
     result->image_url_ = result->second_line_.image_url();
   }
-
+  result->InterpretTextTypes();
   return result;
 }
 
@@ -271,4 +294,43 @@ size_t SuggestionAnswer::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(second_line_);
 
   return res;
+}
+
+void SuggestionAnswer::InterpretTextTypes() {
+  if (!OmniboxFieldTrial::IsNewAnswerLayoutEnabled())
+    return;
+
+  switch (type()) {
+    case SuggestionAnswer::ANSWER_TYPE_WEATHER: {
+      second_line_.SetTextStyles(SuggestionAnswer::TOP_ALIGNED,
+                                 TextStyle::SUPERIOR);
+      break;
+    }
+    case SuggestionAnswer::ANSWER_TYPE_FINANCE: {
+      first_line_.SetTextStyles(
+          SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL,
+          TextStyle::SECONDARY);
+      second_line_.SetTextStyles(SuggestionAnswer::DESCRIPTION_POSITIVE,
+                                 TextStyle::POSITIVE);
+      second_line_.SetTextStyles(SuggestionAnswer::DESCRIPTION_NEGATIVE,
+                                 TextStyle::NEGATIVE);
+      second_line_.SetTextStyles(SuggestionAnswer::ANSWER_TEXT_LARGE,
+                                 TextStyle::BOLD);
+      break;
+    }
+    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY: {
+      // Because dictionary answers are excepted from line reversal, they
+      // get the expected normal first line and dim second line.
+      first_line_.SetTextStyles(0, TextStyle::NORMAL);
+      second_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
+      break;
+    }
+    default:
+      break;
+  }
+
+  // Most answers uniformly apply different styling for each answer line.
+  // Any old styles not replaced above will get these by default.
+  first_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
+  second_line_.SetTextStyles(0, TextStyle::NORMAL);
 }

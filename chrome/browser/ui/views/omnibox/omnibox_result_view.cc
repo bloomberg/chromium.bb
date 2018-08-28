@@ -145,21 +145,19 @@ void OmniboxResultView::Invalidate() {
       suggestion_view_->content()->SetText(match_.answer->second_line());
       suggestion_view_->description()->SetText(match_.contents,
                                                match_.contents_class, true);
+      suggestion_view_->description()->ApplyTextColor(
+          OmniboxPart::RESULTS_TEXT_DIMMED);
       suggestion_view_->description()->AppendExtraText(
           match_.answer->first_line());
     } else {
       suggestion_view_->content()->SetText(match_.contents,
                                            match_.contents_class);
+      suggestion_view_->content()->ApplyTextColor(
+          OmniboxPart::RESULTS_TEXT_DEFAULT);
       suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
       suggestion_view_->description()->SetText(match_.answer->second_line(),
                                                true);
     }
-    // AppendExtraText has side effect on color, so explicitly set color.
-    // TODO(orinj): Consolidate text color specification in one place.
-    suggestion_view_->content()->ApplyTextColor(
-        OmniboxPart::RESULTS_TEXT_DEFAULT);
-    suggestion_view_->description()->ApplyTextColor(
-        OmniboxPart::RESULTS_TEXT_DIMMED);
   } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
     // Entities use match text and calculated classifications, but with style
     // adjustments like answers above.

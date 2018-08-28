@@ -19,6 +19,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
@@ -70,7 +71,7 @@ struct TextStyle {
 // following LargeFont text, so for consistency they specify LargeFont for the
 // first value even though this is not actually used (since they're not the
 // first value).
-TextStyle GetTextStyle(int type) {
+TextStyle GetTextStyle(int text_type) {
   // The size delta for large fonts in the legacy spec (per comment above, the
   // result is usually smaller due to the baseline style).
   constexpr int kLarge = ui::ResourceBundle::kLargeFontDelta;
@@ -79,7 +80,7 @@ TextStyle GetTextStyle(int type) {
   // will always use the same baseline style.
   constexpr int kTouchableSmall = -3;
 
-  switch (type) {
+  switch (text_type) {
     case SuggestionAnswer::TOP_ALIGNED:
       return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge, kTouchableSmall,
               gfx::SUPERIOR};
@@ -132,6 +133,57 @@ const gfx::FontList& GetFontForType(int text_type) {
     return omnibox_font;
 
   return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(delta);
+}
+
+// The new answer layout has separate and different treatment of text styles,
+// and as of writing both styling approaches need to be supported.  When old
+// answer styles are deprecated, the above TextStyle structure and related
+// logic can be removed, and this used exclusively.  This utility function
+// applies new answer text styling for given text_type over range on render_text
+// using result_view as a source for omnibox part colors.
+void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
+                           OmniboxResultView* result_view,
+                           gfx::RenderText* render_text,
+                           const gfx::Range& range) {
+  struct TextStyleNewAnswers {
+    void Apply(gfx::RenderText* render_text, const gfx::Range& range) {
+      render_text->ApplyWeight(weight, range);
+      render_text->ApplyBaselineStyle(baseline, range);
+      render_text->ApplyColor(color, range);
+    }
+    SkColor color;
+    gfx::BaselineStyle baseline = gfx::NORMAL_BASELINE;
+    gfx::Font::Weight weight = gfx::Font::Weight::NORMAL;
+  };
+
+  TextStyleNewAnswers style;
+  const SkColor part_color = result_view->GetColor(
+      (text_style == SuggestionAnswer::TextStyle::NORMAL_DIM)
+          ? OmniboxPart::RESULTS_TEXT_DIMMED
+          : OmniboxPart::RESULTS_TEXT_DEFAULT);
+  switch (text_style) {
+    case SuggestionAnswer::TextStyle::SECONDARY:
+      style = {gfx::kGoogleGrey600};
+      break;
+    case SuggestionAnswer::TextStyle::POSITIVE:
+      style = {gfx::kGoogleGreen600};
+      break;
+    case SuggestionAnswer::TextStyle::NEGATIVE:
+      style = {gfx::kGoogleRed600};
+      break;
+    case SuggestionAnswer::TextStyle::SUPERIOR:
+      style = {part_color, .baseline = gfx::SUPERIOR};
+      break;
+    case SuggestionAnswer::TextStyle::BOLD:
+      style = {part_color, .weight = gfx::Font::Weight::BOLD};
+      break;
+    case SuggestionAnswer::TextStyle::NORMAL:
+    case SuggestionAnswer::TextStyle::NORMAL_DIM:
+    default:
+      style = {part_color};
+      break;
+  }
+  style.Apply(render_text, range);
 }
 
 }  // namespace
@@ -244,7 +296,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   }
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
-    AppendText(text_field.text(), text_field.type());
+    AppendText(text_field, base::string16());
   if (!line.text_fields().empty()) {
     constexpr int kMaxDisplayLines = 3;
     const SuggestionAnswer::TextField& first_field = line.text_fields().front();
@@ -264,14 +316,14 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
 }
 
 void OmniboxTextView::AppendExtraText(const SuggestionAnswer::ImageLine& line) {
-  const base::char16 space(' ');
+  const base::string16 space(1, base::char16(' '));
   const auto* text_field = line.additional_text();
   if (text_field) {
-    AppendText(space + text_field->text(), text_field->type());
+    AppendText(*text_field, space);
   }
   text_field = line.status_text();
   if (text_field) {
-    AppendText(space + text_field->text(), text_field->type());
+    AppendText(*text_field, space);
   }
   SetPreferredSize(CalculatePreferredSize());
 }
@@ -329,28 +381,20 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
   return render_text;
 }
 
-void OmniboxTextView::AppendText(const base::string16& text, int text_type) {
+void OmniboxTextView::AppendText(const SuggestionAnswer::TextField& field,
+                                 const base::string16& prefix) {
+  const base::string16& text =
+      prefix.empty() ? field.text() : (prefix + field.text());
   if (text.empty())
     return;
   int offset = render_text_->text().length();
   gfx::Range range(offset, offset + text.length());
   render_text_->AppendText(text);
   if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
-    render_text_->ApplyWeight(gfx::Font::Weight::NORMAL, range);
-    render_text_->ApplyColor(
-        result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED), range);
-
-    // Selectively apply baseline style so that weather results will raise °F.
-    // TODO(orinj): Integrate other selected styles like red/green for stocks.
-    if (text_type == SuggestionAnswer::TOP_ALIGNED) {
-      // This usually comes from GetTextStyle (see below) but here it is known.
-      render_text_->ApplyBaselineStyle(gfx::SUPERIOR, range);
-    } else {
-      // Apply normal baseline so that later appends don't carry forward the
-      // previously applied superior baseline.
-      render_text_->ApplyBaselineStyle(gfx::NORMAL_BASELINE, range);
-    }
+    ApplyTextStyleForType(field.style(), result_view_, render_text_.get(),
+                          range);
   } else {
+    const int text_type = field.type();
     const TextStyle& text_style = GetTextStyle(text_type);
     // TODO(dschuyler): follow up on the problem of different font sizes within
     // one RenderText.  Maybe with render_text_->SetFontList(...).

@@ -83,6 +83,26 @@ class SuggestionAnswer {
     SUGGESTION_SECONDARY_TEXT_MEDIUM = 20,
   };
 
+  // The above TextType values match what is sent by server, but are not used
+  // normally by new answers.  These enum values are used instead, styling
+  // answer text through a client-side process of interpretation that depends
+  // on answer type, text type, and even line rank (first|second).  This
+  // interpretation process happens during answer parsing and allows
+  // downstream logic to remain simple, deciding how to present answers
+  // based on a finite set of text types instead of answer properties and rules.
+  // Performance is also improved by doing this once at parse time instead of
+  // every time render text is invalidated.
+  enum class TextStyle {
+    NONE,
+    NORMAL,
+    NORMAL_DIM,
+    SECONDARY,
+    BOLD,
+    POSITIVE,
+    NEGATIVE,
+    SUPERIOR,  // This is not superscript (see gfx::BaselineStyle).
+  };
+
   class TextField {
    public:
     TextField();
@@ -96,6 +116,8 @@ class SuggestionAnswer {
 
     const base::string16& text() const { return text_; }
     int type() const { return type_; }
+    TextStyle style() const { return style_; }
+    void set_style(TextStyle style) { style_ = style; }
     bool has_num_lines() const { return has_num_lines_; }
     int num_lines() const { return num_lines_; }
 
@@ -107,9 +129,10 @@ class SuggestionAnswer {
 
    private:
     base::string16 text_;
-    int type_;
-    bool has_num_lines_;
-    int num_lines_;
+    int type_ = -1;
+    bool has_num_lines_ = false;
+    int num_lines_ = 1;
+    TextStyle style_ = TextStyle::NONE;
 
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
 
@@ -145,6 +168,10 @@ class SuggestionAnswer {
     // See base/trace_event/memory_usage_estimator.h for more info.
     size_t EstimateMemoryUsage() const;
 
+    // Set text style on all fields where text type matches from_type and style
+    // is not already set. Using from_type = 0 matches all values from TextType.
+    void SetTextStyles(int from_type, TextStyle style);
+
    private:
     // Forbid assignment.
     ImageLine& operator=(const ImageLine&);
@@ -166,7 +193,8 @@ class SuggestionAnswer {
   // contents.  If the supplied data is not well formed or is missing required
   // elements, returns nullptr instead.
   static std::unique_ptr<SuggestionAnswer> ParseAnswer(
-      const base::DictionaryValue* answer_json);
+      const base::DictionaryValue* answer_json,
+      const base::string16& answer_type_str);
 
   // TODO(jdonnelly): Once something like std::optional<T> is available in base/
   // (see discussion at http://goo.gl/zN2GNy) remove this in favor of having
@@ -194,6 +222,9 @@ class SuggestionAnswer {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  // For new answers, replace old answer text types with appropriate new types.
+  void InterpretTextTypes();
+
  private:
   // Forbid assignment.
   SuggestionAnswer& operator=(const SuggestionAnswer&);
@@ -201,7 +232,7 @@ class SuggestionAnswer {
   GURL image_url_;
   ImageLine first_line_;
   ImageLine second_line_;
-  int type_;
+  int type_ = -1;
 
   FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
 };

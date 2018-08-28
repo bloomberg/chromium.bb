@@ -71,11 +71,10 @@ class OmniboxTextView : public views::View {
   std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
-  // Adds |text| to the render text.  |text_type| is an index into the
-  // kTextStyles constant defined in the .cc file and is used to style the text,
-  // including setting the font size, color, and baseline style.  See the
-  // TextStyle struct in the .cc file for more.
-  void AppendText(const base::string16& text, int text_type);
+  // Adds text from an answer field to the render text using appropriate style.
+  // A prefix (such as separating space) may also be prepended to field text.
+  void AppendText(const SuggestionAnswer::TextField& field,
+                  const base::string16& prefix);
 
   // Updates the cached maximum line height.
   void UpdateLineHeight();
