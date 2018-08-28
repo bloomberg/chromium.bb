@@ -870,6 +870,7 @@ test("browser_tests") {
       "../browser/ui/search/instant_test_utils.cc",
       "../browser/ui/search/instant_test_utils.h",
       "../browser/ui/search/instant_theme_browsertest.cc",
+      "../browser/ui/search/local_ntp_backgrounds_browsertest.cc",
       "../browser/ui/search/local_ntp_browsertest.cc",
       "../browser/ui/search/local_ntp_doodle_browsertest.cc",
       "../browser/ui/search/local_ntp_js_browsertest.cc",
