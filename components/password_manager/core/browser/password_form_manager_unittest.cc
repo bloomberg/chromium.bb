@@ -122,10 +122,6 @@ class MockFormSaver : public StubFormSaver {
            const std::map<base::string16, const PasswordForm*>& best_matches,
            const std::vector<autofill::PasswordForm>* credentials_to_update,
            const autofill::PasswordForm* old_primary_key));
-  MOCK_METHOD3(WipeOutdatedCopies,
-               void(const autofill::PasswordForm& pending,
-                    std::map<base::string16, const PasswordForm*>* best_matches,
-                    const autofill::PasswordForm** preferred_match));
   MOCK_METHOD1(PresaveGeneratedPassword,
                void(const autofill::PasswordForm& generated));
   MOCK_METHOD0(RemovePresavedPassword, void());
@@ -2657,33 +2653,6 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
       }
     }
   }
-}
-
-// Test that if WipeStoreCopyIfOutdated is called before password store
-// callback, the UMA is signalled accordingly.
-TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
-  PasswordForm form(*saved_match());
-  form.password_value = ASCIIToUTF16("nonempty-password");
-
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form,
-                                   std::make_unique<MockFormSaver>(), &fetcher);
-  form_manager.Init(nullptr);
-  // The creation of |fetcher| keeps it waiting for store results. This test
-  // keeps the fetcher waiting on purpose.
-
-  PasswordForm submitted_form(form);
-  submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
-  form_manager.ProvisionallySave(submitted_form);
-
-  base::HistogramTester histogram_tester;
-  EXPECT_CALL(MockFormSaver::Get(&form_manager),
-              WipeOutdatedCopies(form_manager.GetPendingCredentials(), _, _));
-  form_manager.WipeStoreCopyIfOutdated();
-  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 0,
-                                      1);
 }
 
 TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {

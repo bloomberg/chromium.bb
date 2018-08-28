@@ -950,15 +950,6 @@ const autofill::PasswordForm* PasswordFormManager::GetPreferredMatch() const {
   return preferred_match_;
 }
 
-void PasswordFormManager::WipeStoreCopyIfOutdated() {
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.StoreReadyWhenWiping",
-      form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING);
-
-  form_saver_->WipeOutdatedCopies(pending_credentials_, &best_matches_,
-                                  &preferred_match_);
-}
-
 void PasswordFormManager::ResetStoredMatches() {
   preferred_match_ = nullptr;
   best_matches_.clear();

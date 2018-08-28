@@ -68,34 +68,6 @@ void FormSaverImpl::RemovePresavedPassword() {
   presaved_ = nullptr;
 }
 
-void FormSaverImpl::WipeOutdatedCopies(
-    const PasswordForm& pending,
-    std::map<base::string16, const PasswordForm*>* best_matches,
-    const PasswordForm** preferred_match) {
-  DCHECK(preferred_match);  // Note: *preferred_match may still be null.
-  if (!url::Origin::Create(GURL(pending.signon_realm))
-           .IsSameOriginWith(url::Origin::Create(
-               GaiaUrls::GetInstance()->gaia_url().GetOrigin()))) {
-    // GAIA change password forms might be skipped since success detection may
-    // fail on them.
-    return;
-  }
-
-  for (auto it = best_matches->begin(); it != best_matches->end();
-       /* increment inside the for loop */) {
-    if ((pending.password_value != it->second->password_value) &&
-        gaia::AreEmailsSame(base::UTF16ToUTF8(pending.username_value),
-                            base::UTF16ToUTF8(it->second->username_value))) {
-      if (it->second == *preferred_match)
-        *preferred_match = nullptr;
-      store_->RemoveLogin(*it->second);
-      it = best_matches->erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
 std::unique_ptr<FormSaver> FormSaverImpl::Clone() {
   auto result = std::make_unique<FormSaverImpl>(store_);
   if (presaved_)

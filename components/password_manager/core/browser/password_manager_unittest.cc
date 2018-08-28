@@ -999,52 +999,6 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
-// When there is a sync password saved, and the user successfully uses an
-// updated version of it, the obsolete one should be dropped, to avoid filling
-// it later.
-TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
-  PasswordForm form(MakeSimpleGAIAForm());
-  form.password_value = ASCIIToUTF16("old pa55word");
-  // Pretend that the password store contains "old pa55word" stored for |form|.
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
-
-  // Load the page, pretend the password was updated.
-  PasswordForm updated_form(form);
-  updated_form.password_value = ASCIIToUTF16("n3w passw0rd");
-  std::vector<PasswordForm> observed;
-  observed.push_back(updated_form);
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-
-  // Submit form and finish navigation.
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
-      .WillByDefault(Return(true));
-  ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
-      .WillByDefault(Return(true));
-  EXPECT_CALL(*store_,
-              SaveGaiaPasswordHash(
-                  "googleuser", ASCIIToUTF16("n3w passw0rd"),
-                  metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
-#endif
-  manager()->ProvisionallySavePassword(updated_form, nullptr);
-
-  client_.FilterAllResultsForSaving();
-
-  // Because the user successfully uses an updated sync password, Chrome should
-  // remove the obsolete copy of it.
-  EXPECT_CALL(*store_, RemoveLogin(form));
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-  observed.clear();
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-}
-
 // While sync credentials are not saved, they are still filled to avoid users
 // thinking they lost access to their accounts.
 TEST_F(PasswordManagerTest, SyncCredentialsStillFilled) {

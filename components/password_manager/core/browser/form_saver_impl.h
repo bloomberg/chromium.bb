@@ -36,10 +36,6 @@ class FormSaverImpl : public FormSaver {
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& generated) override;
   void RemovePresavedPassword() override;
-  void WipeOutdatedCopies(
-      const autofill::PasswordForm& pending,
-      std::map<base::string16, const autofill::PasswordForm*>* best_matches,
-      const autofill::PasswordForm** preferred_match) override;
   std::unique_ptr<FormSaver> Clone() override;
 
  private:
