@@ -108,10 +108,6 @@
   return 0;
 }
 
-- (void)setFakeboxHighlighted:(BOOL)highlighted {
-  // Not implemented pre-ui-refresh.
-}
-
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
