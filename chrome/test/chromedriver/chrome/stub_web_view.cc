@@ -166,7 +166,9 @@ Status StubWebView::OverrideNetworkConditions(
   return Status(kOk);
 }
 
-Status StubWebView::CaptureScreenshot(std::string* screenshot) {
+Status StubWebView::CaptureScreenshot(
+    std::string* screenshot,
+    const base::DictionaryValue& params) {
   return Status(kOk);
 }
 

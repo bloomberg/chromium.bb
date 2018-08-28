@@ -634,11 +634,12 @@ Status WebViewImpl::OverrideNetworkConditions(
       network_conditions);
 }
 
-Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {
-  base::DictionaryValue params;
+Status WebViewImpl::CaptureScreenshot(
+    std::string* screenshot,
+    const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(
-      "Page.captureScreenshot", params, &result);
+  Status status = client_->SendCommandAndGetResult("Page.captureScreenshot",
+                                                   params, &result);
   if (status.IsError())
     return status;
   if (!result->GetString("data", screenshot))

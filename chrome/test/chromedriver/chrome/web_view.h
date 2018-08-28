@@ -184,7 +184,9 @@ class WebView {
       const NetworkConditions& network_conditions) = 0;
 
   // Captures the visible portions of the web view as a base64-encoded PNG.
-  virtual Status CaptureScreenshot(std::string* screenshot) = 0;
+  virtual Status CaptureScreenshot(
+      std::string* screenshot,
+      const base::DictionaryValue& params) = 0;
 
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.

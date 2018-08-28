@@ -57,4 +57,4 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | GET    | /session/{session id}/alert/text                               | Get Alert Text             | Complete           |
 | POST   | /session/{session id}/alert/text                               | Send Alert Text            | Partially Complete | [2003](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2003)
 | GET    | /session/{session id}/screenshot                               | Take Screenshot            |                    |
-| GET    | /session/{session id}/element/{element id}/screenshot          | Take Element Screenshot    | Incomplete         | [1938](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1938)
+| GET    | /session/{session id}/element/{element id}/screenshot          | Take Element Screenshot    | Complete           |
