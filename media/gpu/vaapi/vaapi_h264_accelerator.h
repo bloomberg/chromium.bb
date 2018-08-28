@@ -5,23 +5,21 @@
 #ifndef MEDIA_GPU_VAAPI_VAAPI_H264_ACCELERATOR_H_
 #define MEDIA_GPU_VAAPI_VAAPI_H264_ACCELERATOR_H_
 
+#include <va/va.h>
+
 #include "base/sequence_checker.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/h264_decoder.h"
 
-// Verbatim from va/va.h, where typedef is used.
-typedef struct _VAPictureH264 VAPictureH264;
-
 namespace media {
 
-template <class T> class DecodeSurfaceHandler;
 class H264Picture;
-class VASurface;
+class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
 class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
  public:
-  VaapiH264Accelerator(DecodeSurfaceHandler<VASurface>* vaapi_dec,
+  VaapiH264Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
                        const scoped_refptr<VaapiWrapper> vaapi_wrapper);
   ~VaapiH264Accelerator() override;
 
@@ -53,7 +51,7 @@ class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
                              int num_pics);
 
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  DecodeSurfaceHandler<VASurface>* vaapi_dec_;
+  VaapiVideoDecodeAccelerator* vaapi_dec_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

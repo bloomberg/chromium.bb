@@ -915,16 +915,16 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
   return false;
 }
 
-void VaapiVideoDecodeAccelerator::SurfaceReady(
-    const scoped_refptr<VASurface>& dec_surface,
+void VaapiVideoDecodeAccelerator::VASurfaceReady(
+    const scoped_refptr<VASurface>& va_surface,
     int32_t bitstream_id,
     const gfx::Rect& visible_rect,
     const VideoColorSpace& color_space) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VaapiVideoDecodeAccelerator::SurfaceReady, weak_this_,
-                   dec_surface, bitstream_id, visible_rect, color_space));
+        base::Bind(&VaapiVideoDecodeAccelerator::VASurfaceReady, weak_this_,
+                   va_surface, bitstream_id, visible_rect, color_space));
     return;
   }
 
@@ -939,11 +939,12 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
 
   pending_output_cbs_.push(
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
-                 dec_surface, bitstream_id, visible_rect, color_space));
+                 va_surface, bitstream_id, visible_rect, color_space));
+
   TryOutputPicture();
 }
 
-scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
+scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 

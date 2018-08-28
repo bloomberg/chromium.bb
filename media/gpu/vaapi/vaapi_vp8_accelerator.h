@@ -11,14 +11,13 @@
 
 namespace media {
 
-template <class T> class DecodeSurfaceHandler;
-class VASurface;
 class VP8Picture;
+class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
 class VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
  public:
-  VaapiVP8Accelerator(DecodeSurfaceHandler<VASurface>* vaapi_dec,
+  VaapiVP8Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
                       scoped_refptr<VaapiWrapper> vaapi_wrapper);
   ~VaapiVP8Accelerator() override;
 
@@ -30,7 +29,7 @@ class VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
 
  private:
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  DecodeSurfaceHandler<VASurface>* vaapi_dec_;
+  VaapiVideoDecodeAccelerator* vaapi_dec_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

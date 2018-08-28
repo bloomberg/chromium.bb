@@ -27,7 +27,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
@@ -53,8 +52,7 @@ class VaapiPicture;
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
-    : public VideoDecodeAccelerator,
-      public DecodeSurfaceHandler<VASurface> {
+    : public VideoDecodeAccelerator {
  public:
   VaapiVideoDecodeAccelerator(
       const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -83,12 +81,23 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
-  // DecodeSurfaceHandler implementation.
-  scoped_refptr<VASurface> CreateSurface() override;
-  void SurfaceReady(const scoped_refptr<VASurface>& va_surface,
-                    int32_t bitstream_id,
-                    const gfx::Rect& visible_rect,
-                    const VideoColorSpace& color_space) override;
+  //
+  // Below methods are used by accelerator implementations.
+  //
+  // The |visible_rect| area of |va_surface| associated with |bitstream_id| is
+  // ready to be outputted once decode is finished. This can be called before
+  // decode is actually done in hardware, and this method is responsible for
+  // maintaining the ordering, i.e. the surfaces have to be outputted in the
+  // same order as VASurfaceReady is called.  On Intel, we don't have to
+  // explicitly maintain the ordering however, as the driver will maintain
+  // ordering, as well as dependencies, and will process each submitted command
+  // in order, and run each command only if its dependencies are ready.
+  void VASurfaceReady(const scoped_refptr<VASurface>& va_surface,
+                      int32_t bitstream_id,
+                      const gfx::Rect& visible_rect,
+                      const VideoColorSpace& color_space);
+  // Returns a new VASurface for decoding into, or nullptr if not available.
+  scoped_refptr<VASurface> CreateVASurface();
 
  private:
   friend class VaapiVideoDecodeAcceleratorTest;
