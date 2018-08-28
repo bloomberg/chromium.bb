@@ -2085,6 +2085,7 @@ test("ash_unittests") {
     ":ash_service",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/components/quick_launch:quick_launch_app",
+    "//testing/buildbot/filters:ash_unittests_filters",
   ]
 
   data = [
