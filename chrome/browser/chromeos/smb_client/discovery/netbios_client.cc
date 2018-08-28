@@ -16,8 +16,6 @@ namespace {
 
 constexpr int kNetBiosPort = 137;
 
-// TODO(baileyberro): Fill out chrome_policy with the enterprise policy to
-// disable NETBIOS discovery. https://crbug.com/850966
 constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
   return net::DefineNetworkTrafficAnnotation("smb_netbios_name_query", R"(
         semantics {
@@ -38,7 +36,11 @@ constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
           setting:
             "No settings control. This request will not be sent if the user "
             "does not attempt to mount a Network File Share."
-          policy_exception_justification: "Not Implemented."
+          chrome_policy: {
+            NetBiosShareDiscoveryEnabled {
+              NetBiosShareDiscoveryEnabled: false
+            }
+          }
         })");
 }
 
