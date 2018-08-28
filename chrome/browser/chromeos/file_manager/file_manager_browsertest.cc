@@ -173,17 +173,19 @@ std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDisplay, /* file_display.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("fileDisplayDownloads"),
-                      TestCase("fileDisplayDownloads").InGuestMode(),
-                      TestCase("fileDisplayDownloads").TabletMode(),
-                      TestCase("fileDisplayDrive"),
-                      TestCase("fileDisplayDrive").TabletMode(),
-                      TestCase("fileDisplayDrive").EnableDriveFs(),
-                      TestCase("fileDisplayMtp"),
-                      TestCase("fileDisplayUsb"),
-                      TestCase("fileSearch"),
-                      TestCase("fileSearchCaseInsensitive"),
-                      TestCase("fileSearchNotFound")));
+    ::testing::Values(
+        TestCase("fileDisplayDownloads"),
+        TestCase("fileDisplayDownloads").InGuestMode(),
+        TestCase("fileDisplayDownloads").TabletMode(),
+        TestCase("fileDisplayDrive"),
+        TestCase("fileDisplayDrive").TabletMode(),
+        TestCase("fileDisplayDrive").EnableDriveFs(),
+        TestCase("fileDisplayDriveOffline").Offline().EnableDriveFs(),
+        TestCase("fileDisplayMtp"),
+        TestCase("fileDisplayUsb"),
+        TestCase("fileSearch"),
+        TestCase("fileSearchCaseInsensitive"),
+        TestCase("fileSearchNotFound")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenVideoFiles, /* open_video_files.js */
