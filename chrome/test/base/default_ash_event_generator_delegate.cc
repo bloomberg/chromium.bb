@@ -4,21 +4,40 @@
 
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
 
-DefaultAshEventGeneratorDelegate*
-DefaultAshEventGeneratorDelegate::GetInstance() {
-  return base::Singleton<DefaultAshEventGeneratorDelegate>::get();
-}
+#include "ash/shell.h"
+#include "base/macros.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 
-void DefaultAshEventGeneratorDelegate::SetContext(
-    ui::test::EventGenerator* owner,
-    gfx::NativeWindow root_window,
-    gfx::NativeWindow window) {
-  root_window_ = root_window;
-}
+namespace {
 
-aura::WindowTreeHost* DefaultAshEventGeneratorDelegate::GetHostAt(
-    const gfx::Point& point) const {
-  return root_window_->GetHost();
+class DefaultAshEventGeneratorDelegate
+    : public aura::test::EventGeneratorDelegateAura {
+ public:
+  explicit DefaultAshEventGeneratorDelegate(aura::Window* root_window);
+  ~DefaultAshEventGeneratorDelegate() override = default;
+
+  // aura::test::EventGeneratorDelegateAura:
+  ui::EventTarget* GetTargetAt(const gfx::Point& location) override;
+  aura::client::ScreenPositionClient* GetScreenPositionClient(
+      const aura::Window* window) const override;
+  ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,
+                                                 ui::KeyEvent* event) override;
+
+ private:
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultAshEventGeneratorDelegate);
+};
+
+DefaultAshEventGeneratorDelegate::DefaultAshEventGeneratorDelegate(
+    aura::Window* root_window)
+    : root_window_(root_window) {}
+
+ui::EventTarget* DefaultAshEventGeneratorDelegate::GetTargetAt(
+    const gfx::Point& location) {
+  return root_window_->GetHost()->window();
 }
 
 aura::client::ScreenPositionClient*
@@ -33,13 +52,11 @@ DefaultAshEventGeneratorDelegate::DispatchKeyEventToIME(ui::EventTarget* target,
   return ui::EventDispatchDetails();
 }
 
-DefaultAshEventGeneratorDelegate::DefaultAshEventGeneratorDelegate()
-    : root_window_(nullptr) {
-  DCHECK(!ui::test::EventGenerator::default_delegate);
-  ui::test::EventGenerator::default_delegate = this;
-}
+}  // namespace
 
-DefaultAshEventGeneratorDelegate::~DefaultAshEventGeneratorDelegate() {
-  DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
-  ui::test::EventGenerator::default_delegate = nullptr;
+std::unique_ptr<ui::test::EventGeneratorDelegate>
+CreateAshEventGeneratorDelegate(ui::test::EventGenerator* owner,
+                                gfx::NativeWindow root_window,
+                                gfx::NativeWindow window) {
+  return std::make_unique<DefaultAshEventGeneratorDelegate>(root_window);
 }

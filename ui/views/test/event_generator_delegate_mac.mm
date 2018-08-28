@@ -245,9 +245,12 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                                   public ui::EventTargeter,
                                   public ui::test::EventGeneratorDelegate {
  public:
-  static EventGeneratorDelegateMac* GetInstance() {
-    return base::Singleton<EventGeneratorDelegateMac>::get();
-  }
+  EventGeneratorDelegateMac(ui::test::EventGenerator* owner,
+                            gfx::NativeWindow root_window,
+                            gfx::NativeWindow window);
+  ~EventGeneratorDelegateMac() override;
+
+  static EventGeneratorDelegateMac* instance() { return instance_; }
 
   IMP CurrentEventMethod() {
     return swizzle_current_event_->GetOriginalImplementation();
@@ -294,9 +297,6 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   }
 
   // Overridden from ui::test::EventGeneratorDelegate:
-  void SetContext(ui::test::EventGenerator* owner,
-                  gfx::NativeWindow root_window,
-                  gfx::NativeWindow window) override;
   ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
     return this;
   }
@@ -321,10 +321,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<EventGeneratorDelegateMac>;
-
-  EventGeneratorDelegateMac();
-  ~EventGeneratorDelegateMac() override;
+  static EventGeneratorDelegateMac* instance_;
 
   ui::test::EventGenerator* owner_;
   base::scoped_nsobject<NSWindow> window_;
@@ -344,9 +341,16 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
 
-EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(nullptr) {
-  DCHECK(!ui::test::EventGenerator::default_delegate);
-  ui::test::EventGenerator::default_delegate = this;
+// static
+EventGeneratorDelegateMac* EventGeneratorDelegateMac::instance_ = nullptr;
+
+EventGeneratorDelegateMac::EventGeneratorDelegateMac(
+    ui::test::EventGenerator* owner,
+    gfx::NativeWindow root_window,
+    gfx::NativeWindow window)
+    : owner_(owner) {
+  DCHECK(!instance_);
+  instance_ = this;
   SetTargetHandler(this);
   // Install a fake "edit" menu. This is normally provided by Chrome's
   // MainMenu.xib, but src/ui shouldn't depend on that.
@@ -369,11 +373,43 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(nullptr) {
                       keyEquivalent:fake_menu_item[i].key_equivalent
                             atIndex:i];
   }
+
+  // Mac doesn't use a |root_window|. Assume that if a single-argument
+  // constructor was used, it should be the actual |window|.
+  if (!window)
+    window = root_window;
+
+  swizzle_pressed_.reset();
+  swizzle_location_.reset();
+  swizzle_current_event_.reset();
+
+  // Retain the NSWindow (note it can be nil). This matches Cocoa's tendency to
+  // have autoreleased objects, or objects still in the event queue, that
+  // reference the NSWindow.
+  window_.reset([window retain]);
+
+  // Normally, edit menu items have a `nil` target. This results in -[NSMenu
+  // performKeyEquivalent:] relying on -[NSApplication targetForAction:to:from:]
+  // to find a target starting at the first responder of the key window. Since
+  // non-interactive tests have no key window, that won't work. So set (or
+  // clear) the target explicitly on all menu items.
+  [[fake_menu_ itemArray] makeObjectsPerformSelector:@selector(setTarget:)
+                                          withObject:[window firstResponder]];
+
+  if (owner_) {
+    swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSEvent class], [NSEventDonor class], @selector(pressedMouseButtons)));
+    swizzle_location_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSEvent class], [NSEventDonor class], @selector(mouseLocation)));
+    swizzle_current_event_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSApplication class], [NSApplicationDonor class],
+        @selector(currentEvent)));
+  }
 }
 
 EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
-  DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
-  ui::test::EventGenerator::default_delegate = nullptr;
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
 }
 
 std::unique_ptr<ui::EventTargetIterator>
@@ -518,46 +554,6 @@ void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
   last_scroll_timestamp_ = event->time_stamp();
 }
 
-void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
-                                           gfx::NativeWindow root_window,
-                                           gfx::NativeWindow window) {
-  // Mac doesn't use a |root_window|. Assume that if a single-argument
-  // constructor was used, it should be the actual |window|.
-  if (!window)
-    window = root_window;
-
-  swizzle_pressed_.reset();
-  swizzle_location_.reset();
-  swizzle_current_event_.reset();
-  owner_ = owner;
-
-  // Retain the NSWindow (note it can be nil). This matches Cocoa's tendency to
-  // have autoreleased objects, or objects still in the event queue, that
-  // reference the NSWindow.
-  window_.reset([window retain]);
-
-  // Normally, edit menu items have a `nil` target. This results in -[NSMenu
-  // performKeyEquivalent:] relying on -[NSApplication targetForAction:to:from:]
-  // to find a target starting at the first responder of the key window. Since
-  // non-interactive tests have no key window, that won't work. So set (or
-  // clear) the target explicitly on all menu items.
-  [[fake_menu_ itemArray] makeObjectsPerformSelector:@selector(setTarget:)
-                                          withObject:[window firstResponder]];
-
-  if (owner_) {
-    swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class],
-        [NSEventDonor class],
-        @selector(pressedMouseButtons)));
-    swizzle_location_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class], [NSEventDonor class], @selector(mouseLocation)));
-    swizzle_current_event_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSApplication class],
-        [NSApplicationDonor class],
-        @selector(currentEvent)));
-  }
-}
-
 gfx::Point EventGeneratorDelegateMac::CenterOfTarget(
     const ui::EventTarget* target) const {
   DCHECK_EQ(target, this);
@@ -573,7 +569,9 @@ gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
 }
 
 ui::test::EventGenerator* GetActiveGenerator() {
-  return EventGeneratorDelegateMac::GetInstance()->owner();
+  return EventGeneratorDelegateMac::instance()
+             ? EventGeneratorDelegateMac::instance()->owner()
+             : nullptr;
 }
 
 }  // namespace
@@ -581,10 +579,13 @@ ui::test::EventGenerator* GetActiveGenerator() {
 namespace views {
 namespace test {
 
-void InitializeMacEventGeneratorDelegate() {
-  EventGeneratorDelegateMac::GetInstance();
+std::unique_ptr<ui::test::EventGeneratorDelegate>
+CreateEventGeneratorDelegateMac(ui::test::EventGenerator* owner,
+                                gfx::NativeWindow root_window,
+                                gfx::NativeWindow window) {
+  return std::make_unique<EventGeneratorDelegateMac>(owner, root_window,
+                                                     window);
 }
-
 }  // namespace test
 }  // namespace views
 
@@ -617,7 +618,7 @@ void InitializeMacEventGeneratorDelegate() {
   // The location is the point in the root window which, for desktop widgets, is
   // the widget itself.
   gfx::Point point_in_root = generator->current_location();
-  NSWindow* window = EventGeneratorDelegateMac::GetInstance()->window();
+  NSWindow* window = EventGeneratorDelegateMac::instance()->window();
   NSPoint point_in_window = ConvertRootPointToTarget(window, point_in_root);
   return ui::ConvertPointFromWindowToScreen(window, point_in_window);
 }
@@ -631,7 +632,7 @@ void InitializeMacEventGeneratorDelegate() {
     return g_current_event;
 
   // Find the original implementation and invoke it.
-  IMP original = EventGeneratorDelegateMac::GetInstance()->CurrentEventMethod();
+  IMP original = EventGeneratorDelegateMac::instance()->CurrentEventMethod();
   return original(self, _cmd);
 }
 

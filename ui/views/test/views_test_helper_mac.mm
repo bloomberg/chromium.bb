@@ -6,12 +6,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #include "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,8 +29,6 @@ ViewsTestHelper* ViewsTestHelper::Create(
 ViewsTestHelperMac::ViewsTestHelperMac()
     : zero_duration_mode_(new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)) {
-  test::InitializeMacEventGeneratorDelegate();
-
   // Unbundled applications (those without Info.plist) default to
   // NSApplicationActivationPolicyProhibited, which prohibits the application
   // obtaining key status or activating windows without user interaction.
@@ -39,6 +39,9 @@ ViewsTestHelperMac::~ViewsTestHelperMac() {
 }
 
 void ViewsTestHelperMac::SetUp() {
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&test::CreateEventGeneratorDelegateMac));
+
   ViewsTestHelper::SetUp();
   // Assume that if the methods in the ui_controls.h test header are enabled
   // then the test runner is in a non-sharded mode, and will use "real"
@@ -62,6 +65,9 @@ void ViewsTestHelperMac::TearDown() {
   NSArray* native_windows = [NSApp windows];
   for (NSWindow* window : native_windows)
     DCHECK(!Widget::GetWidgetForNativeWindow(window)) << "Widget not closed.";
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      ui::test::EventGeneratorDelegate::FactoryFunction());
 }
 
 }  // namespace views

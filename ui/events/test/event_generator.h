@@ -40,11 +40,21 @@ class EventGeneratorDelegate {
  public:
   virtual ~EventGeneratorDelegate() {}
 
-  // Set the context of the delegate, whilst it is being used by an active
-  // EventGenerator.
-  virtual void SetContext(EventGenerator* owner,
-                          gfx::NativeWindow root_window,
-                          gfx::NativeWindow window) {}
+  // This factory function is used by EventGenerator to create a delegate if an
+  // EventGeneratorDelegate was not supplied to the constructor.
+  using FactoryFunction =
+      base::RepeatingCallback<std::unique_ptr<EventGeneratorDelegate>(
+          EventGenerator* owner,
+          gfx::NativeWindow root_window,
+          gfx::NativeWindow window)>;
+  static void SetFactoryFunction(FactoryFunction factory);
+
+  // Creates an EventGeneratorDelegate using the factory set by way of
+  // SetFactoryFunction().
+  static std::unique_ptr<EventGeneratorDelegate> Create(
+      EventGenerator* owner,
+      gfx::NativeWindow root_window,
+      gfx::NativeWindow window);
 
   // The ui::EventTarget at the given |location|.
   virtual EventTarget* GetTargetAt(const gfx::Point& location) = 0;
@@ -112,7 +122,7 @@ class EventGenerator {
   // Create an EventGenerator with EventGeneratorDelegate,
   // which uses the coordinates conversions and targeting provided by
   // |delegate|.
-  explicit EventGenerator(EventGeneratorDelegate* delegate);
+  explicit EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate);
 
   // Creates an EventGenerator with the mouse/touch location
   // at |initial_location|, which uses the |root_window|'s coordinates.
@@ -206,10 +216,12 @@ class EventGenerator {
     MoveMouseToInHost(gfx::Point(x, y));
   }
 
+#if defined(OS_CHROMEOS)
   // Generates a mouse move event at the point given in the host
   // coordinates, with a native event with |point_for_natve|.
   void MoveMouseToWithNative(const gfx::Point& point_in_host,
                              const gfx::Point& point_for_native);
+#endif
 
   // Generates events to move mouse to be the given |point| in screen
   // coordinates.
@@ -439,8 +451,8 @@ class EventGenerator {
     current_target_ = target;
   }
 
-  // Default delegate set by a platform-specific GeneratorDelegate singleton.
-  static EventGeneratorDelegate* default_delegate;
+  const EventGeneratorDelegate* delegate() const { return delegate_.get(); }
+  EventGeneratorDelegate* delegate() { return delegate_.get(); }
 
  private:
   // Set up the test context using the delegate.
@@ -462,9 +474,6 @@ class EventGenerator {
   // Offers event to pointer watchers (via delegate) if the event is a mouse or
   // touch event.
   void MaybeDispatchToPointerWatchers(const Event& event);
-
-  const EventGeneratorDelegate* delegate() const;
-  EventGeneratorDelegate* delegate();
 
   std::unique_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;

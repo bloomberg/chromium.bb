@@ -682,8 +682,6 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
             rwhva->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
-  ui::test::EventGeneratorDelegate* generator_delegate =
-      ui::test::EventGenerator::default_delegate;
   gfx::NativeView native_view = rwhva->GetNativeView();
   ui::test::EventGenerator generator(native_view->GetRootWindow());
 
@@ -694,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
   gfx::PointF point_f;
   ASSERT_TRUE(GetPointInsideTextfield(&point_f));
   gfx::Point point = gfx::ToRoundedPoint(point_f);
-  generator_delegate->ConvertPointFromTarget(native_view, &point);
+  generator.delegate()->ConvertPointFromTarget(native_view, &point);
   generator.GestureTapAt(point);
 
   selection_controller_client()->Wait();
@@ -707,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
   // Tap on the insertion handle; the quick menu should appear.
   gfx::Point handle_center = gfx::ToRoundedPoint(
       rwhva->selection_controller()->GetStartHandleRect().CenterPoint());
-  generator_delegate->ConvertPointFromTarget(native_view, &handle_center);
+  generator.delegate()->ConvertPointFromTarget(native_view, &handle_center);
   generator.GestureTapAt(handle_center);
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
