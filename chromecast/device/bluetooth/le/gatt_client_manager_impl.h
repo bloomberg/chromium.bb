@@ -13,6 +13,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
+#include "chromecast/device/bluetooth/le/ble_notification_logger.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/shlib/gatt_client.h"
 
@@ -138,6 +139,8 @@ class GattClientManagerImpl
 
   // Queue for concurrent ReadRemoteRssi requests.
   std::deque<bluetooth_v2_shlib::Addr> pending_read_remote_rssi_requests_;
+
+  BleNotificationLogger notification_logger_;
 
   base::WeakPtr<GattClientManagerImpl> weak_this_;
   std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>> weak_factory_;
