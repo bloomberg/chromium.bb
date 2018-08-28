@@ -369,6 +369,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"app-launcher-refresh", flag_descriptions::kAppLauncherRefreshName,
      flag_descriptions::kAppLauncherRefreshDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAppLauncherRefresh)},
+    {"sync-standalone-transport",
+     flag_descriptions::kSyncStandaloneTransportName,
+     flag_descriptions::kSyncStandaloneTransportDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncStandaloneTransport)},
 };
 
 // Add all switches from experimental flags to |command_line|.
