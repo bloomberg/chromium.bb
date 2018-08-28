@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/throw_uncaught_exception.h"
+#include "components/viz/service/gl/throw_uncaught_exception.h"
 
 #include "base/android/jni_android.h"
 
 #include "jni/ThrowUncaughtException_jni.h"
 
-namespace base {
-namespace android {
+namespace viz {
 
 void ThrowUncaughtException() {
-  Java_ThrowUncaughtException_post(AttachCurrentThread());
+  Java_ThrowUncaughtException_post(base::android::AttachCurrentThread());
 }
 
-}  // namespace android
-}  // namespace base
+}  // namespace viz
