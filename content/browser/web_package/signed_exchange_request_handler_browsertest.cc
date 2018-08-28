@@ -210,6 +210,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
 
   // Make the MockCertVerifier treat the certificate
   // "prime256v1-sha256.public.pem" as valid for "test.example.org".
@@ -228,12 +230,10 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "/sxg/test.example.org_test_invalid_content_type.sxg");
 
-  NavigationFailureObserver failure_observer(shell()->web_contents());
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
-  EXPECT_TRUE(failure_observer.did_fail());
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
