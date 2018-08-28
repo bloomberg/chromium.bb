@@ -197,7 +197,6 @@ crbug.com/591099 compositing/iframes/floating-self-painting-frame.html [ Failure
 crbug.com/591099 compositing/layer-creation/overlap-animation.html [ Crash ]
 crbug.com/869265 compositing/layer-creation/stacking-context-overlap-nested.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
-crbug.com/591099 css3/flexbox/line-wrapping.html [ Failure ]
 crbug.com/714962 css3/masking/clip-path-reference-box-inline.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Pass ]
