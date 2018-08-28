@@ -114,8 +114,12 @@ void NativeWidgetMac::WindowDestroying() {
 void NativeWidgetMac::WindowDestroyed() {
   DCHECK(bridge());
   bridge_host_.reset();
+  // |OnNativeWidgetDestroyed| may delete |this| if the object does not own
+  // itself.
+  bool should_delete_this =
+      (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
   delegate_->OnNativeWidgetDestroyed();
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+  if (should_delete_this)
     delete this;
 }
 
