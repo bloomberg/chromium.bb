@@ -380,27 +380,30 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
-TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
+TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsSameInstallPending) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
   pending_app_manager->Install(
       GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
-
   pending_app_manager->Install(
       GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
 
-  // The second install should fail; the app is already getting installed.
-  EXPECT_FALSE(install_succeeded());
-  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
-  ResetResults();
-
-  // The original install should still be able to succeed.
   base::RunLoop().RunUntilIdle();
   SuccessfullyLoad(GURL(kFooWebAppUrl));
 
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GetFooAppInfo(), last_app_info());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  // The second installation should succeed even though the app is installed
+  // already.
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GetFooAppInfo(), last_app_info());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());

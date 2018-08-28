@@ -56,19 +56,6 @@ PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
 void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                                         OnceInstallCallback callback) {
-  // Check that we are not already installing the same app.
-  if (current_task_and_callback_ &&
-      current_task_and_callback_->task->app_info() == app_to_install) {
-    std::move(callback).Run(app_to_install.url, std::string());
-    return;
-  }
-  for (const auto& installation : pending_tasks_and_callbacks_) {
-    if (installation->task->app_info() == app_to_install) {
-      std::move(callback).Run(app_to_install.url, std::string());
-      return;
-    }
-  }
-
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
       task_factory_.Run(profile_, std::move(app_to_install)),
       std::move(callback)));
