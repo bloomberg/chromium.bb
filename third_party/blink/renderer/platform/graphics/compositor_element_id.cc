@@ -35,7 +35,8 @@ CompositorElementId PLATFORM_EXPORT CompositorElementIdFromUniqueObjectId(
          namespace_id == CompositorElementIdNamespace::kEffectMask ||
          namespace_id == CompositorElementIdNamespace::kEffectClipPath ||
          namespace_id == CompositorElementIdNamespace::kVerticalScrollbar ||
-         namespace_id == CompositorElementIdNamespace::kHorizontalScrollbar);
+         namespace_id == CompositorElementIdNamespace::kHorizontalScrollbar ||
+         namespace_id == CompositorElementIdNamespace::kOverscrollElasticity);
   return CreateCompositorElementId(id, namespace_id);
 }
 

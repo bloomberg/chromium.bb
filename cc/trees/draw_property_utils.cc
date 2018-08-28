@@ -464,33 +464,6 @@ static inline bool LayerShouldBeSkippedInternal(
          effect_node->hidden_by_backface_visibility || !effect_node->is_drawn;
 }
 
-template <typename LayerType>
-static void UpdateElasticOverscrollInternal(
-    PropertyTrees* property_trees,
-    const LayerType* overscroll_elasticity_layer,
-    const gfx::Vector2dF& elastic_overscroll) {
-  if (!overscroll_elasticity_layer) {
-    DCHECK(elastic_overscroll.IsZero());
-    return;
-  }
-
-  TransformNode* node = property_trees->transform_tree.Node(
-      overscroll_elasticity_layer->transform_tree_index());
-  DCHECK(node);
-
-  // TODO(pdr): This is a workaround for https://crbug.com/721772 to avoid
-  // crashing when there's no transform node. This workaround should be removed.
-  if (!node)
-    return;
-
-  if (node->scroll_offset == gfx::ScrollOffset(elastic_overscroll))
-    return;
-
-  node->scroll_offset = gfx::ScrollOffset(elastic_overscroll);
-  node->needs_local_transform_update = true;
-  property_trees->transform_tree.set_needs_update(true);
-}
-
 static gfx::Rect LayerDrawableContentRect(
     const LayerImpl* layer,
     const gfx::Rect& layer_bounds_in_target_space,
@@ -1025,17 +998,23 @@ void UpdatePageScaleFactor(PropertyTrees* property_trees,
 }
 
 void UpdateElasticOverscroll(PropertyTrees* property_trees,
-                             const LayerImpl* overscroll_elasticity_layer,
+                             const ElementId overscroll_elasticity_element_id,
                              const gfx::Vector2dF& elastic_overscroll) {
-  UpdateElasticOverscrollInternal(property_trees, overscroll_elasticity_layer,
-                                  elastic_overscroll);
-}
+  if (!overscroll_elasticity_element_id) {
+    DCHECK(elastic_overscroll.IsZero());
+    return;
+  }
 
-void UpdateElasticOverscroll(PropertyTrees* property_trees,
-                             const Layer* overscroll_elasticity_layer,
-                             const gfx::Vector2dF& elastic_overscroll) {
-  UpdateElasticOverscrollInternal(property_trees, overscroll_elasticity_layer,
-                                  elastic_overscroll);
+  TransformNode* node = property_trees->transform_tree.FindNodeFromElementId(
+      overscroll_elasticity_element_id);
+  DCHECK(node);
+
+  if (node->scroll_offset == gfx::ScrollOffset(elastic_overscroll))
+    return;
+
+  node->scroll_offset = gfx::ScrollOffset(elastic_overscroll);
+  node->needs_local_transform_update = true;
+  property_trees->transform_tree.set_needs_update(true);
 }
 
 }  // namespace draw_property_utils

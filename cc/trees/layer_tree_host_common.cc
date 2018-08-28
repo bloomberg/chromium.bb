@@ -79,7 +79,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     const LayerImpl* inner_viewport_scroll_layer,
     const LayerImpl* outer_viewport_scroll_layer,
     const gfx::Vector2dF& elastic_overscroll,
-    const LayerImpl* elastic_overscroll_application_layer,
+    const ElementId elastic_overscroll_element_id,
     int max_texture_size,
     bool can_adjust_raster_scales,
     RenderSurfaceList* render_surface_list,
@@ -94,8 +94,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       inner_viewport_scroll_layer(inner_viewport_scroll_layer),
       outer_viewport_scroll_layer(outer_viewport_scroll_layer),
       elastic_overscroll(elastic_overscroll),
-      elastic_overscroll_application_layer(
-          elastic_overscroll_application_layer),
+      elastic_overscroll_element_id(elastic_overscroll_element_id),
       max_texture_size(max_texture_size),
       can_adjust_raster_scales(can_adjust_raster_scales),
       render_surface_list(render_surface_list),
@@ -117,7 +116,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               nullptr,
                               nullptr,
                               gfx::Vector2dF(),
-                              nullptr,
+                              ElementId(),
                               std::numeric_limits<int>::max() / 2,
                               false,
                               render_surface_list,
@@ -516,10 +515,10 @@ void CalculateDrawPropertiesInternal(
           inputs->root_layer, inputs->page_scale_layer,
           inputs->inner_viewport_scroll_layer,
           inputs->outer_viewport_scroll_layer,
-          inputs->elastic_overscroll_application_layer,
-          inputs->elastic_overscroll, inputs->page_scale_factor,
-          inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
-          inputs->device_transform, inputs->property_trees);
+          inputs->elastic_overscroll_element_id, inputs->elastic_overscroll,
+          inputs->page_scale_factor, inputs->device_scale_factor,
+          gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+          inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees,
           inputs->can_adjust_raster_scales);
@@ -585,7 +584,7 @@ void CalculateDrawPropertiesInternal(
           inputs->page_scale_factor, device_scale_factor_for_page_scale_node,
           device_transform_for_page_scale_node);
       draw_property_utils::UpdateElasticOverscroll(
-          inputs->property_trees, inputs->elastic_overscroll_application_layer,
+          inputs->property_trees, inputs->elastic_overscroll_element_id,
           inputs->elastic_overscroll);
       // Similarly, the device viewport and device transform are shared
       // by both trees.
@@ -635,15 +634,13 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   LayerList update_layer_list;
   PropertyTrees* property_trees =
       inputs->root_layer->layer_tree_host()->property_trees();
-  Layer* overscroll_elasticity_layer = nullptr;
   gfx::Vector2dF elastic_overscroll;
   PropertyTreeBuilder::BuildPropertyTrees(
       inputs->root_layer, inputs->page_scale_layer,
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
-      overscroll_elasticity_layer, elastic_overscroll,
-      inputs->page_scale_factor, inputs->device_scale_factor,
-      gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-      property_trees);
+      ElementId(), elastic_overscroll, inputs->page_scale_factor,
+      inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
+      inputs->device_transform, property_trees);
   draw_property_utils::UpdatePropertyTrees(
       inputs->root_layer->layer_tree_host(), property_trees);
   draw_property_utils::FindLayersThatNeedUpdates(

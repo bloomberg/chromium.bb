@@ -56,7 +56,7 @@ class PropertyTreeBuilderContext {
                              const LayerType* page_scale_layer,
                              const LayerType* inner_viewport_scroll_layer,
                              const LayerType* outer_viewport_scroll_layer,
-                             const LayerType* overscroll_elasticity_layer,
+                             const ElementId overscroll_elasticity_element_id,
                              const gfx::Vector2dF& elastic_overscroll,
                              float page_scale_factor,
                              const gfx::Transform& device_transform,
@@ -66,7 +66,7 @@ class PropertyTreeBuilderContext {
         page_scale_layer_(page_scale_layer),
         inner_viewport_scroll_layer_(inner_viewport_scroll_layer),
         outer_viewport_scroll_layer_(outer_viewport_scroll_layer),
-        overscroll_elasticity_layer_(overscroll_elasticity_layer),
+        overscroll_elasticity_element_id_(overscroll_elasticity_element_id),
         elastic_overscroll_(elastic_overscroll),
         page_scale_factor_(page_scale_factor),
         device_transform_(device_transform),
@@ -116,7 +116,7 @@ class PropertyTreeBuilderContext {
   const LayerType* page_scale_layer_;
   const LayerType* inner_viewport_scroll_layer_;
   const LayerType* outer_viewport_scroll_layer_;
-  const LayerType* overscroll_elasticity_layer_;
+  const ElementId overscroll_elasticity_element_id_;
   const gfx::Vector2dF elastic_overscroll_;
   float page_scale_factor_;
   const gfx::Transform& device_transform_;
@@ -396,7 +396,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   const bool is_root = !LayerParent(layer);
   const bool is_page_scale_layer = layer == page_scale_layer_;
   const bool is_overscroll_elasticity_layer =
-      layer == overscroll_elasticity_layer_;
+      overscroll_elasticity_element_id_ &&
+      layer->element_id() == overscroll_elasticity_element_id_;
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = PositionConstraint(layer).is_fixed_position();
   const bool is_sticky = StickyPositionConstraint(layer).is_sticky;
@@ -1333,7 +1334,8 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
           device_transform_for_page_scale_node);
     }
     draw_property_utils::UpdateElasticOverscroll(
-        &property_trees_, overscroll_elasticity_layer_, elastic_overscroll_);
+        &property_trees_, overscroll_elasticity_element_id_,
+        elastic_overscroll_);
     clip_tree_.SetViewportClip(gfx::RectF(viewport));
     float page_scale_factor_for_root =
         page_scale_is_root_layer ? page_scale_factor_ : 1.f;
@@ -1427,7 +1429,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const Layer* page_scale_layer,
     const Layer* inner_viewport_scroll_layer,
     const Layer* outer_viewport_scroll_layer,
-    const Layer* overscroll_elasticity_layer,
+    const ElementId overscroll_elasticity_element_id,
     const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
@@ -1443,7 +1445,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     UpdateSubtreeHasCopyRequestRecursive(root_layer);
   PropertyTreeBuilderContext<Layer>(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      outer_viewport_scroll_layer, overscroll_elasticity_element_id,
       elastic_overscroll, page_scale_factor, device_transform,
       root_layer->layer_tree_host()->mutator_host(), property_trees)
       .BuildPropertyTrees(device_scale_factor, viewport, color);
@@ -1464,7 +1466,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const LayerImpl* page_scale_layer,
     const LayerImpl* inner_viewport_scroll_layer,
     const LayerImpl* outer_viewport_scroll_layer,
-    const LayerImpl* overscroll_elasticity_layer,
+    const ElementId overscroll_elasticity_element_id,
     const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
@@ -1483,7 +1485,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
 
   PropertyTreeBuilderContext<LayerImpl>(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      outer_viewport_scroll_layer, overscroll_elasticity_element_id,
       elastic_overscroll, page_scale_factor, device_transform,
       root_layer->layer_tree_impl()->mutator_host(), property_trees)
       .BuildPropertyTrees(device_scale_factor, viewport, color);

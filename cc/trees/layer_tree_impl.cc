@@ -1208,7 +1208,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
-        OverscrollElasticityLayer(), max_texture_size(),
+        OverscrollElasticityElementId(), max_texture_size(),
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -1337,7 +1337,7 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
       layer_list_[0], PageScaleLayer(), InnerViewportScrollLayer(),
-      OuterViewportScrollLayer(), OverscrollElasticityLayer(),
+      OuterViewportScrollLayer(), OverscrollElasticityElementId(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),
       gfx::Rect(GetDeviceViewport().size()), host_impl_->DrawTransform(),

@@ -204,8 +204,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer->layer_tree_host()->inner_viewport_scroll_layer();
     Layer* outer_viewport_scroll_layer =
         root_layer->layer_tree_host()->outer_viewport_scroll_layer();
-    const Layer* overscroll_elasticity_layer =
-        root_layer->layer_tree_host()->overscroll_elasticity_layer();
+    const ElementId overscroll_elasticity_element_id =
+        root_layer->layer_tree_host()->overscroll_elasticity_element_id();
     gfx::Vector2dF elastic_overscroll =
         root_layer->layer_tree_host()->elastic_overscroll();
     float page_scale_factor = 1.f;
@@ -218,7 +218,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     update_layer_list_.clear();
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
-        outer_viewport_scroll_layer, overscroll_elasticity_layer,
+        outer_viewport_scroll_layer, overscroll_elasticity_element_id,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
     draw_property_utils::UpdatePropertyTrees(root_layer->layer_tree_host(),
@@ -237,8 +237,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer->layer_tree_impl()->InnerViewportScrollLayer();
     LayerImpl* outer_viewport_scroll_layer =
         root_layer->layer_tree_impl()->OuterViewportScrollLayer();
-    const LayerImpl* overscroll_elasticity_layer =
-        root_layer->layer_tree_impl()->OverscrollElasticityLayer();
+    const ElementId overscroll_elasticity_element_id =
+        root_layer->layer_tree_impl()->OverscrollElasticityElementId();
     gfx::Vector2dF elastic_overscroll =
         root_layer->layer_tree_impl()->elastic_overscroll()->Current(
             root_layer->layer_tree_impl()->IsActiveTree());
@@ -253,7 +253,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer->layer_tree_impl()->property_trees();
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
-        outer_viewport_scroll_layer, overscroll_elasticity_layer,
+        outer_viewport_scroll_layer, overscroll_elasticity_element_id,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
     draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
@@ -6548,18 +6548,20 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
 
 TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> page_scale = Layer::Create();
   scoped_refptr<Layer> scroller = Layer::Create();
   scoped_refptr<Layer> outer_clip = Layer::Create();
   scoped_refptr<Layer> outer_viewport = Layer::Create();
   scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(scroller);
+  root->AddChild(page_scale);
+  page_scale->AddChild(scroller);
   scroller->AddChild(outer_clip);
   outer_clip->AddChild(outer_viewport);
   outer_viewport->AddChild(sticky_pos);
   host()->SetRootLayer(root);
   scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.page_scale = root;
+  viewport_layers.page_scale = page_scale;
   viewport_layers.inner_viewport_container = root;
   viewport_layers.outer_viewport_container = outer_clip;
   viewport_layers.inner_viewport_scroll = scroller;

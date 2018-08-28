@@ -25,6 +25,7 @@ class TransformTree;
 class PropertyTrees;
 struct EffectNode;
 struct TransformNode;
+struct ElementId;
 
 namespace draw_property_utils {
 
@@ -96,12 +97,7 @@ void CC_EXPORT UpdatePageScaleFactor(PropertyTrees* property_trees,
 
 void CC_EXPORT
 UpdateElasticOverscroll(PropertyTrees* property_trees,
-                        const LayerImpl* overscroll_elasticity_layer,
-                        const gfx::Vector2dF& elastic_overscroll);
-
-void CC_EXPORT
-UpdateElasticOverscroll(PropertyTrees* property_trees,
-                        const Layer* overscroll_elasticity_layer,
+                        const ElementId overscroll_elasticity_element_id,
                         const gfx::Vector2dF& elastic_overscroll);
 
 }  // namespace draw_property_utils

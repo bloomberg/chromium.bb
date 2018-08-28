@@ -234,7 +234,7 @@ class CC_EXPORT LayerTreeImpl {
   void ClearCurrentlyScrollingNode();
 
   struct ViewportLayerIds {
-    int overscroll_elasticity = Layer::INVALID_ID;
+    ElementId overscroll_elasticity_element_id;
     int page_scale = Layer::INVALID_ID;
     int inner_viewport_container = Layer::INVALID_ID;
     int outer_viewport_container = Layer::INVALID_ID;
@@ -242,7 +242,8 @@ class CC_EXPORT LayerTreeImpl {
     int outer_viewport_scroll = Layer::INVALID_ID;
 
     bool operator==(const ViewportLayerIds& other) {
-      return overscroll_elasticity == other.overscroll_elasticity &&
+      return overscroll_elasticity_element_id ==
+                 other.overscroll_elasticity_element_id &&
              page_scale == other.page_scale &&
              inner_viewport_container == other.inner_viewport_container &&
              outer_viewport_container == other.outer_viewport_container &&
@@ -252,8 +253,8 @@ class CC_EXPORT LayerTreeImpl {
   };
   void SetViewportLayersFromIds(const ViewportLayerIds& viewport_layer_ids);
   void ClearViewportLayers();
-  LayerImpl* OverscrollElasticityLayer() const {
-    return LayerById(viewport_layer_ids_.overscroll_elasticity);
+  ElementId OverscrollElasticityElementId() const {
+    return viewport_layer_ids_.overscroll_elasticity_element_id;
   }
   LayerImpl* PageScaleLayer() const {
     return LayerById(viewport_layer_ids_.page_scale);

@@ -2253,6 +2253,24 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   document->View()->SetTracksPaintInvalidations(false);
 }
 
+// Ensure we create transform node for overscroll elasticity properly.
+TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  InitializeWithAndroidSettings();
+  WebView()->Resize(IntSize(400, 400));
+  NavigateTo("about:blank");
+  WebView()->UpdateAllLifecyclePhases();
+
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  auto* node = visual_viewport.GetOverscrollElasticityTransformNode();
+  CompositorElementId element_id =
+      visual_viewport.GetCompositorOverscrollElasticityElementId();
+  EXPECT_TRUE(node);
+  EXPECT_EQ(element_id, node->GetCompositorElementId());
+}
+
 // Ensure we create effect node for scrollbar properly.
 TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())

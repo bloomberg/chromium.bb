@@ -76,7 +76,14 @@ VisualViewport::VisualViewport(Page& owner)
       unique_id, CompositorElementIdNamespace::kPrimary);
   scroll_element_id_ = CompositorElementIdFromUniqueObjectId(
       unique_id, CompositorElementIdNamespace::kScroll);
+  overscroll_elasticity_element_id_ = CompositorElementIdFromUniqueObjectId(
+      unique_id, CompositorElementIdNamespace::kOverscrollElasticity);
   Reset();
+}
+
+TransformPaintPropertyNode*
+VisualViewport::GetOverscrollElasticityTransformNode() const {
+  return overscroll_elasticity_transform_node_.get();
 }
 
 TransformPaintPropertyNode* VisualViewport::GetPageScaleNode() const {
@@ -110,6 +117,21 @@ void VisualViewport::UpdatePaintPropertyNodes(
   }
 
   {
+    TransformPaintPropertyNode::State state;
+    state.compositor_element_id = GetCompositorOverscrollElasticityElementId();
+    // TODO(crbug.com/877794) Should create overscroll elasticity transform node
+    // based on settings.
+    if (!overscroll_elasticity_transform_node_) {
+      overscroll_elasticity_transform_node_ =
+          TransformPaintPropertyNode::Create(*transform_parent,
+                                             std::move(state));
+    } else {
+      overscroll_elasticity_transform_node_->Update(*transform_parent,
+                                                    std::move(state));
+    }
+  }
+
+  {
     TransformationMatrix scale_transform;
     scale_transform.Scale(Scale());
     TransformPaintPropertyNode::State state{scale_transform, FloatPoint3D()};
@@ -117,9 +139,10 @@ void VisualViewport::UpdatePaintPropertyNodes(
 
     if (!scale_transform_node_) {
       scale_transform_node_ = TransformPaintPropertyNode::Create(
-          *transform_parent, std::move(state));
+          *overscroll_elasticity_transform_node_.get(), std::move(state));
     } else {
-      scale_transform_node_->Update(*transform_parent, std::move(state));
+      scale_transform_node_->Update(
+          *overscroll_elasticity_transform_node_.get(), std::move(state));
     }
   }
 
@@ -505,7 +528,13 @@ void VisualViewport::CreateLayerTree() {
   // FIXME: The root transform layer should only be created on demand.
   root_transform_layer_ = GraphicsLayer::Create(*this);
   inner_viewport_container_layer_ = GraphicsLayer::Create(*this);
-  overscroll_elasticity_layer_ = GraphicsLayer::Create(*this);
+  // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
+  // BGPT landed.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    overscroll_elasticity_layer_ = GraphicsLayer::Create(*this);
+    overscroll_elasticity_layer_->SetElementId(
+        GetCompositorOverscrollElasticityElementId());
+  }
   page_scale_layer_ = GraphicsLayer::Create(*this);
   inner_viewport_scroll_layer_ = GraphicsLayer::Create(*this);
 
@@ -528,9 +557,17 @@ void VisualViewport::CreateLayerTree() {
   page_scale_layer_->SetElementId(GetCompositorElementId());
 
   root_transform_layer_->AddChild(inner_viewport_container_layer_.get());
-  inner_viewport_container_layer_->AddChild(overscroll_elasticity_layer_.get());
-  overscroll_elasticity_layer_->AddChild(page_scale_layer_.get());
-  page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
+  // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
+  // BGPT landed.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    inner_viewport_container_layer_->AddChild(
+        overscroll_elasticity_layer_.get());
+    overscroll_elasticity_layer_->AddChild(page_scale_layer_.get());
+    page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
+  } else {
+    inner_viewport_container_layer_->AddChild(page_scale_layer_.get());
+    page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
+  }
 
   // Ensure this class is set as the scroll layer's ScrollableArea.
   coordinator->ScrollableAreaScrollLayerDidChange(this);
@@ -657,6 +694,11 @@ CompositorElementId VisualViewport::GetCompositorElementId() const {
 
 CompositorElementId VisualViewport::GetCompositorScrollElementId() const {
   return scroll_element_id_;
+}
+
+CompositorElementId VisualViewport::GetCompositorOverscrollElasticityElementId()
+    const {
+  return overscroll_elasticity_element_id_;
 }
 
 bool VisualViewport::ScrollAnimatorEnabled() const {

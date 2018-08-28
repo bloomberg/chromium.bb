@@ -255,6 +255,7 @@ class CORE_EXPORT VisualViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   bool VisualViewportSuppliesScrollbars() const override;
 
+  TransformPaintPropertyNode* GetOverscrollElasticityTransformNode() const;
   TransformPaintPropertyNode* GetPageScaleNode() const;
   TransformPaintPropertyNode* GetScrollTranslationNode() const;
   ScrollPaintPropertyNode* GetScrollNode() const;
@@ -265,6 +266,8 @@ class CORE_EXPORT VisualViewport final
   // these nodes.
   void UpdatePaintPropertyNodes(
       PaintPropertyTreeBuilderFragmentContext& context);
+
+  CompositorElementId GetCompositorOverscrollElasticityElementId() const;
 
  private:
   explicit VisualViewport(Page&);
@@ -330,6 +333,8 @@ class CORE_EXPORT VisualViewport final
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
 
+  scoped_refptr<TransformPaintPropertyNode>
+      overscroll_elasticity_transform_node_;
   scoped_refptr<TransformPaintPropertyNode> scale_transform_node_;
   scoped_refptr<TransformPaintPropertyNode> translation_transform_node_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
@@ -361,6 +366,7 @@ class CORE_EXPORT VisualViewport final
   bool track_pinch_zoom_stats_for_page_;
   CompositorElementId element_id_;
   CompositorElementId scroll_element_id_;
+  CompositorElementId overscroll_elasticity_element_id_;
 };
 
 }  // namespace blink

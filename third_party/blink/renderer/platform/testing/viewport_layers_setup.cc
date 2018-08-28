@@ -27,8 +27,13 @@ ViewportLayersSetup::ViewportLayersSetup() {
   graphics_layer_->CcLayer()->SetScrollable(clip_layer_->CcLayer()->bounds());
   layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
   layer_tree_->layer_tree_host()->SetRootLayer(clip_layer_->CcLayer());
+
+  scroll_elasticity_layer_->SetElementId(cc::LayerIdToElementIdForTesting(
+      scroll_elasticity_layer_->CcLayer()->id()));
+
   cc::LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity = scroll_elasticity_layer_->CcLayer();
+  viewport_layers.overscroll_elasticity_element_id =
+      scroll_elasticity_layer_->GetElementId();
   viewport_layers.page_scale = page_scale_layer_->CcLayer();
   viewport_layers.inner_viewport_container = clip_layer_->CcLayer();
   viewport_layers.inner_viewport_scroll = graphics_layer_->CcLayer();

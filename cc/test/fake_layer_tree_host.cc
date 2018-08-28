@@ -82,8 +82,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
 
   if (page_scale_layer() && inner_viewport_scroll_layer()) {
     LayerTreeImpl::ViewportLayerIds ids;
-    if (overscroll_elasticity_layer())
-      ids.overscroll_elasticity = overscroll_elasticity_layer()->id();
+    ids.overscroll_elasticity_element_id = overscroll_elasticity_element_id();
     ids.page_scale = page_scale_layer()->id();
     if (inner_viewport_container_layer())
       ids.inner_viewport_container = inner_viewport_container_layer()->id();
