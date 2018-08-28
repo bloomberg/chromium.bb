@@ -663,6 +663,150 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
       alternative_service));
 }
 
+TEST_P(HttpServerPropertiesManagerTest,
+       ConfirmBrokenUntilDefaultNetworkChanges) {
+  url::SchemeHostPort spdy_server_mail;
+  AlternativeService alternative_service;
+
+  spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
+
+  http_server_props_manager_->SetHttp2AlternativeService(
+      spdy_server_mail, alternative_service, one_day_from_now_);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_
+      ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+          alternative_service);
+  EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // In addition to the pref update task, there's now a task to mark the
+  // alternative service as no longer broken.
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_->ConfirmAlternativeService(alternative_service);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  // Run the task.
+  EXPECT_TRUE(MainThreadHasPendingTask());
+  FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
+TEST_P(HttpServerPropertiesManagerTest,
+       OnDefaultNetworkChangedWithBrokenUntilDefaultNetworkChanges) {
+  url::SchemeHostPort spdy_server_mail;
+  AlternativeService alternative_service;
+
+  spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
+
+  http_server_props_manager_->SetHttp2AlternativeService(
+      spdy_server_mail, alternative_service, one_day_from_now_);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_
+      ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+          alternative_service);
+  EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // In addition to the pref update task, there's now a task to mark the
+  // alternative service as no longer broken.
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_->OnDefaultNetworkChanged();
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  // Run the task.
+  EXPECT_TRUE(MainThreadHasPendingTask());
+  FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
+TEST_P(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
+  url::SchemeHostPort spdy_server_mail;
+  AlternativeService alternative_service;
+
+  spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
+
+  http_server_props_manager_->SetHttp2AlternativeService(
+      spdy_server_mail, alternative_service, one_day_from_now_);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_->MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // In addition to the pref update task, there's now a task to mark the
+  // alternative service as no longer broken.
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  http_server_props_manager_->OnDefaultNetworkChanged();
+  EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  // Run the task.
+  EXPECT_TRUE(MainThreadHasPendingTask());
+  FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
 TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   IPAddress address;
   EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
