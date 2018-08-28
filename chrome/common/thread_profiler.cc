@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
@@ -27,10 +26,6 @@ using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
-
-// Only used by child processes.
-base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
-    g_child_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
 
 // The profiler object is stored in a SequenceLocalStorageSlot on child threads
 // to give it the same lifetime as the threads.
@@ -151,6 +146,7 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
   g_child_thread_profiler_sequence_local_storage.Get().Set(std::move(profiler));
 }
 
+// static
 void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
     service_manager::Connector* connector) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
@@ -161,7 +157,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   connector->BindInterface(content::mojom::kBrowserServiceName,
                            &browser_interface);
-  g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
+  CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));
 }
 
@@ -175,12 +171,11 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
 // collection at the initial scheduled collection time.
 //
 // When the periodic collection task executes, it creates and starts a new
-// periodic profiler and configures it to call ReceivePeriodicProfile as its
-// completion callback. ReceivePeriodicProfile is called on the profiler thread
-// and passes the profile along to its ultimate destination, then schedules a
-// task on the original thread to schedule another periodic collection. When the
-// task runs, it posts a new task to start another periodic collection at the
-// next scheduled collection time.
+// periodic profiler and configures it to call OnPeriodicCollectionCompleted as
+// its completion callback. OnPeriodicCollectionCompleted is called on the
+// profiler thread and schedules a task on the original thread to schedule
+// another periodic collection. When the task runs, it posts a new task to start
+// another periodic collection at the next scheduled collection time.
 //
 // The process in previous paragraph continues until the ThreadProfiler is
 // destroyed prior to thread exit.
@@ -196,8 +191,6 @@ ThreadProfiler::ThreadProfiler(
     return;
 
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      BindRepeating(&ThreadProfiler::ReceiveStartupProfile,
-                    GetReceiverCallback()),
       CallStackProfileParams(GetProcess(), thread,
                              CallStackProfileParams::PROCESS_STARTUP));
 
@@ -223,40 +216,10 @@ ThreadProfiler::ThreadProfiler(
     ScheduleNextPeriodicCollection();
 }
 
-CallStackProfileBuilder::CompletedCallback
-ThreadProfiler::GetReceiverCallback() {
-  // TODO(wittman): Simplify the approach to getting the profiler callback
-  // across CallStackProfileMetricsProvider and
-  // ChildCallStackProfileCollector. Ultimately both should expose functions
-  // like
-  //
-  //   void ReceiveCompletedProfile(
-  //       base::TimeTicks profile_start_time,
-  //       metrics::SampledProfile profile);
-  //
-  // and this function should bind base::TimeTicks::Now() to those functions.
-  if (GetProcess() == CallStackProfileParams::BROWSER_PROCESS) {
-    return metrics::CallStackProfileMetricsProvider::
-        GetProfilerCallbackForBrowserProcess();
-  }
-  return g_child_call_stack_profile_collector.Get()
-      .ChildCallStackProfileCollector::GetProfilerCallback();
-}
-
 // static
-void ThreadProfiler::ReceiveStartupProfile(
-    const CallStackProfileBuilder::CompletedCallback& receiver_callback,
-    metrics::SampledProfile profile) {
-  receiver_callback.Run(std::move(profile));
-}
-
-// static
-void ThreadProfiler::ReceivePeriodicProfile(
-    const CallStackProfileBuilder::CompletedCallback& receiver_callback,
+void ThreadProfiler::OnPeriodicCollectionCompleted(
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
-    base::WeakPtr<ThreadProfiler> thread_profiler,
-    metrics::SampledProfile profile) {
-  receiver_callback.Run(std::move(profile));
+    base::WeakPtr<ThreadProfiler> thread_profiler) {
   owning_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::ScheduleNextPeriodicCollection,
                                 thread_profiler));
@@ -275,10 +238,9 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      BindRepeating(&ThreadProfiler::ReceivePeriodicProfile,
-                    GetReceiverCallback(), owning_thread_task_runner_,
-                    weak_factory_.GetWeakPtr()),
-      periodic_profile_params_);
+      periodic_profile_params_,
+      base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
+                     owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
 
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,

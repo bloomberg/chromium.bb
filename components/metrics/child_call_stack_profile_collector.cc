@@ -34,13 +34,6 @@ ChildCallStackProfileCollector::ChildCallStackProfileCollector() {}
 
 ChildCallStackProfileCollector::~ChildCallStackProfileCollector() {}
 
-CallStackProfileBuilder::CompletedCallback
-ChildCallStackProfileCollector::GetProfilerCallback() {
-  return base::Bind(&ChildCallStackProfileCollector::Collect,
-                    // This class has lazy instance lifetime.
-                    base::Unretained(this), base::TimeTicks::Now());
-}
-
 void ChildCallStackProfileCollector::SetParentProfileCollector(
     metrics::mojom::CallStackProfileCollectorPtr parent_collector) {
   base::AutoLock alock(lock_);
@@ -63,14 +56,6 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
 
 void ChildCallStackProfileCollector::Collect(base::TimeTicks start_timestamp,
                                              SampledProfile profile) {
-  // Impl function is used as it needs to PostTask() to itself on a different
-  // thread - which only works with a void return value.
-  CollectImpl(start_timestamp, std::move(profile));
-}
-
-void ChildCallStackProfileCollector::CollectImpl(
-    base::TimeTicks start_timestamp,
-    SampledProfile profile) {
   base::AutoLock alock(lock_);
   if (task_runner_ &&
       // The profiler thread does not have a task runner. Attempting to
@@ -79,7 +64,7 @@ void ChildCallStackProfileCollector::CollectImpl(
        base::ThreadTaskRunnerHandle::Get() != task_runner_)) {
     // Post back to the thread that owns the the parent interface.
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ChildCallStackProfileCollector::CollectImpl,
+        FROM_HERE, base::BindOnce(&ChildCallStackProfileCollector::Collect,
                                   // This class has lazy instance lifetime.
                                   base::Unretained(this), start_timestamp,
                                   std::move(profile)));

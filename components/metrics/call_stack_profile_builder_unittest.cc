@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_params.h"
@@ -25,20 +26,42 @@ constexpr CallStackProfileParams kProfileParams = {
     CallStackProfileParams::MAIN_THREAD,
     CallStackProfileParams::PROCESS_STARTUP};
 
-// Called on the profiler thread when complete, to collect profile.
-void SaveProfile(SampledProfile* proto, SampledProfile pending_proto) {
-  *proto = std::move(pending_proto);
+class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
+ public:
+  TestingCallStackProfileBuilder(
+      const CallStackProfileParams& profile_params,
+      base::OnceClosure completed_callback = base::OnceClosure());
+
+  ~TestingCallStackProfileBuilder() override;
+
+  const SampledProfile& sampled_profile() { return sampled_profile_; }
+
+ protected:
+  // Overridden for testing.
+  void PassProfilesToMetricsProvider(SampledProfile sampled_profile) override;
+
+ private:
+  // The completed profile.
+  SampledProfile sampled_profile_;
+};
+
+TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
+    const CallStackProfileParams& profile_params,
+    base::OnceClosure completed_callback)
+    : CallStackProfileBuilder(profile_params, std::move(completed_callback)) {}
+
+TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
+
+void TestingCallStackProfileBuilder::PassProfilesToMetricsProvider(
+    SampledProfile sampled_profile) {
+  sampled_profile_ = std::move(sampled_profile);
 }
 
 }  // namespace
 
 TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
-  SampledProfile proto;
-
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   // The default milestone is 0.
   profile_builder->RecordAnnotations();
@@ -49,6 +72,8 @@ TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
   profile_builder->OnSampleCompleted(std::vector<Frame>());
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->sampled_profile();
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
@@ -69,12 +94,12 @@ TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
 }
 
 TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
-  SampledProfile proto;
+  // Set up a mock completed callback which will be run once.
+  base::MockCallback<base::OnceClosure> mock_closure;
+  EXPECT_CALL(mock_closure, Run()).Times(1);
 
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, mock_closure.Get());
 
 #if defined(OS_WIN)
   uint64_t module_md5 = 0x46C3E4166659AC02ULL;
@@ -103,6 +128,8 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   profile_builder->OnSampleCompleted(frames2);
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->sampled_profile();
 
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
@@ -145,12 +172,8 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 }
 
 TEST(CallStackProfileBuilderTest, SamplesDeduped) {
-  SampledProfile proto;
-
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
 #if defined(OS_WIN)
   base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
@@ -180,6 +203,8 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
+  const SampledProfile& proto = profile_builder->sampled_profile();
+
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
   ASSERT_TRUE(proto.has_thread());
@@ -192,12 +217,8 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
 }
 
 TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
-  SampledProfile proto;
-
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
 #if defined(OS_WIN)
   base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
@@ -227,6 +248,8 @@ TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
+  const SampledProfile& proto = profile_builder->sampled_profile();
+
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
   ASSERT_TRUE(proto.has_thread());
@@ -239,12 +262,8 @@ TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
 }
 
 TEST(CallStackProfileBuilderTest, Modules) {
-  SampledProfile proto;
-
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1;  // module1 has no information hence invalid.
@@ -265,6 +284,8 @@ TEST(CallStackProfileBuilderTest, Modules) {
 
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->sampled_profile();
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
@@ -288,12 +309,8 @@ TEST(CallStackProfileBuilderTest, Modules) {
 }
 
 TEST(CallStackProfileBuilderTest, DedupModules) {
-  SampledProfile proto;
-
-  // Set up a callback to record the CallStackProfile to local variable |proto|.
-  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
-      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
-      kProfileParams);
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   const uintptr_t module_base_address = 0x1000;
 
@@ -315,6 +332,8 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->sampled_profile();
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();

@@ -24,12 +24,6 @@ class CallStackProfileMetricsProviderTest : public testing::Test {
 
   ~CallStackProfileMetricsProviderTest() override {}
 
-  // Utility function to append a profile to the metrics provider.
-  void AppendProfile(SampledProfile proto) {
-    CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess().Run(
-        std::move(proto));
-  }
-
  private:
   // Exposes the feature from the CallStackProfileMetricsProvider.
   class TestState : public CallStackProfileMetricsProvider {
@@ -47,7 +41,8 @@ class CallStackProfileMetricsProviderTest : public testing::Test {
 TEST_F(CallStackProfileMetricsProviderTest, ProvideCurrentSessionData) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  AppendProfile(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+      base::TimeTicks::Now(), SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   ASSERT_EQ(1, uma_proto.sampled_profile().size());
@@ -57,7 +52,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProvideCurrentSessionData) {
 // when collected before CallStackProfileMetricsProvider is instantiated.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfileProvidedWhenCollectedBeforeInstantiation) {
-  AppendProfile(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+      base::TimeTicks::Now(), SampledProfile());
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   ChromeUserMetricsExtension uma_proto;
@@ -70,7 +66,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
 TEST_F(CallStackProfileMetricsProviderTest, ProfileNotProvidedWhileDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
-  AppendProfile(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+      base::TimeTicks::Now(), SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
@@ -82,10 +79,10 @@ TEST_F(CallStackProfileMetricsProviderTest,
        ProfileNotProvidedAfterChangeToDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  CallStackProfileBuilder::CompletedCallback callback =
-      CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess();
+  base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingDisabled();
-  callback.Run(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
+                                                           SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
@@ -97,26 +94,26 @@ TEST_F(CallStackProfileMetricsProviderTest,
        ProfileNotProvidedAfterChangeToDisabledThenEnabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  CallStackProfileBuilder::CompletedCallback callback =
-      CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess();
+  base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingDisabled();
   provider.OnRecordingEnabled();
-  callback.Run(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
+                                                           SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
 }
 
-// Checks that the pending profile is not provided to ProvideCurrentSessionData
+// Checks that the pending profile is provided to ProvideCurrentSessionData
 // if recording is disabled, but then enabled while profiling.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfileNotProvidedAfterChangeFromDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
-  CallStackProfileBuilder::CompletedCallback callback =
-      CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess();
+  base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingEnabled();
-  callback.Run(SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
+                                                           SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());

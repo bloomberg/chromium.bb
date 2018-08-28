@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/metrics_provider.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -22,21 +21,9 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   CallStackProfileMetricsProvider();
   ~CallStackProfileMetricsProvider() override;
 
-  // Returns a callback for use with CallStackProfileBuilder that sets up
-  // parameters for general browser process sampling. The callback should be
-  // immediately passed to the CallStackProfileBuilder, and should not be
-  // reused.
-  static CallStackProfileBuilder::CompletedCallback
-  GetProfilerCallbackForBrowserProcess();
-
   // Will be invoked on either the main thread or the profiler's thread.
   // Provides the profile to PendingProfiles to append, if the collecting state
-  // allows.
-  //
-  // Intended for use when receiving profiles over IPC. In-process
-  // StackSamplingProfiler users should instead use
-  // GetProfilerCallbackForBrowserProcess(). |profile| is not const& because it
-  // must be passed with std::move.
+  // allows. |profile| is not const& because it must be passed with std::move.
   static void ReceiveCompletedProfile(base::TimeTicks profile_start_time,
                                       SampledProfile profile);
 
