@@ -1650,8 +1650,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // Restart Chrome and check the case where PAC HTTPS path stripping is disabled.
 // Have to restart Chrome because the setting is only checked on NetworkContext
 // creation.
+// Flaky. See https://crbug.com/840127.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       PacHttpsUrlStripping) {
+                       DISABLED_PacHttpsUrlStripping) {
   ASSERT_TRUE(CreateDefaultNetworkContextParams()
                   ->dangerously_allow_pac_access_to_secure_urls);
 
