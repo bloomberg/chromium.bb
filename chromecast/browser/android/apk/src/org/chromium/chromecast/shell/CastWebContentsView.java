@@ -26,16 +26,16 @@ class CastWebContentsView {
     }
 
     public static Observer<WebContents> onLayoutFragment(
-            Context context, FrameLayout layout, int backgroundColor) {
+            Activity activity, FrameLayout layout, int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
-        WindowAndroid window = new WindowAndroid(context);
-        return onLayoutInternal(context, layout, window, backgroundColor);
+        WindowAndroid window = new WindowAndroid(activity);
+        return onLayoutInternal(activity, layout, window, backgroundColor);
     }
 
     private static Observer<WebContents> onLayoutInternal(
-            Context context, FrameLayout layout, WindowAndroid window, int backgroundColor) {
+            Activity activity, FrameLayout layout, WindowAndroid window, int backgroundColor) {
         return (WebContents webContents) -> {
-            ContentViewRenderView contentViewRenderView = new ContentViewRenderView(context) {
+            ContentViewRenderView contentViewRenderView = new ContentViewRenderView(activity) {
                 @Override
                 protected void onReadyToRender() {
                     setOverlayVideoMode(true);
@@ -47,7 +47,7 @@ class CastWebContentsView {
                     FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             layout.addView(contentViewRenderView, matchParent);
 
-            ContentView contentView = ContentView.createContentView(context, webContents);
+            ContentView contentView = ContentView.createContentView(activity, webContents);
             // TODO(derekjchow): productVersion
             webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
                     contentView, window, WebContents.createDefaultInternalsHolder());
