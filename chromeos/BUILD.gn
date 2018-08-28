@@ -16,7 +16,7 @@ declare_args() {
 }
 
 component("chromeos") {
-  configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
+  configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
   public_deps = [
     "//dbus",
   ]
@@ -654,7 +654,7 @@ static_library("test_support_without_gmock") {
 test("chromeos_unittests") {
   configs += [
     "//build/config/linux/dbus",
-    "//third_party/nss:system_nss_no_ssl_config",
+    "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
   deps = [
     ":attestation_proto",
