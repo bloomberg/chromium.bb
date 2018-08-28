@@ -206,7 +206,11 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kTreeItem, NSAccessibilityRowRole},
       {ax::mojom::Role::kVideo, NSAccessibilityGroupRole},
       {ax::mojom::Role::kWebArea, @"AXWebArea"},
-      {ax::mojom::Role::kWindow, NSAccessibilityWindowRole},
+      // Use the group role as the BrowserNativeWidgetWindow already provides
+      // a kWindow role, and having extra window roles, which are treated
+      // specially by screen readers, can break their ability to find the
+      // content window. See http://crbug.com/875843 for more information.
+      {ax::mojom::Role::kWindow, NSAccessibilityGroupRole},
   };
 
   return RoleMap(begin(roles), end(roles));

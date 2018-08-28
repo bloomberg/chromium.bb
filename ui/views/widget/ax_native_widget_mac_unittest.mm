@@ -349,9 +349,10 @@ TEST_F(AXNativeWidgetMacTest, ChildrenAttribute) {
 TEST_F(AXNativeWidgetMacTest, ParentAttribute) {
   Textfield* child = AddChildTextfield(widget()->GetContentsView()->size());
 
-  // Views with Widget parents will have a NSWindow parent.
+  // Views with Widget parents will have a NSAccessibilityGroupRole parent.
+  // See https://crbug.com/875843 for more information.
   EXPECT_NSEQ(
-      NSAccessibilityWindowRole,
+      NSAccessibilityGroupRole,
       [AXParent() accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
 
   // Views with non-Widget parents will have the role of the parent view.
@@ -367,7 +368,7 @@ TEST_F(AXNativeWidgetMacTest, ParentAttribute) {
   // Test an ignored role parent is skipped in favor of the grandparent.
   parent->set_role(ax::mojom::Role::kIgnored);
   EXPECT_NSEQ(
-      NSAccessibilityWindowRole,
+      NSAccessibilityGroupRole,
       [AXParent() accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
 }
 
