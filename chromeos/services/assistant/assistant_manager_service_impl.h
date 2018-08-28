@@ -123,6 +123,8 @@ class AssistantManagerServiceImpl
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
   void OnNotificationRemoved(const std::string& grouping_key) override;
+  // Last search source will be cleared after it is retrieved.
+  std::string GetLastSearchSource() override;
 
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
@@ -215,6 +217,8 @@ class AssistantManagerServiceImpl
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
   std::vector<uint8_t> assistant_screenshot_;
+  std::string last_search_source_;
+  base::Lock last_search_source_lock_;
 
   base::Thread background_thread_;
 
