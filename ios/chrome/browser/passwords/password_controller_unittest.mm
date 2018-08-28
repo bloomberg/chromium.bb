@@ -147,31 +147,29 @@ ACTION(InvokeEmptyConsumerWithForms) {
 @interface PasswordController (
     Testing)<CRWWebStateObserver, FormSuggestionProvider>
 
-- (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(const std::vector<PasswordForm>&))completionHandler;
+// Provides access to common helper logic for testing with mocks.
+@property(readonly) PasswordControllerHelper* helper;
 
 - (void)fillPasswordForm:(const PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler;
 
 - (void)onNoSavedCredentials;
 
-- (BOOL)getPasswordForm:(PasswordForm*)form
-         fromDictionary:(const base::DictionaryValue*)dictionary
-                pageURL:(const GURL&)pageLocation;
-
-// Provides access to common helper logic for testing with mocks.
-@property(readonly) PasswordControllerHelper* helper;
-
 @end
 
 @interface PasswordControllerHelper (Testing)
+
+// Provides access to JavaScript Manager for testing with mocks.
+@property(readonly) JsPasswordManager* jsPasswordManager;
 
 - (void)extractSubmittedPasswordForm:(const std::string&)formName
                    completionHandler:
                        (void (^)(BOOL found,
                                  const PasswordForm& form))completionHandler;
-// Provides access to JavaScript Manager for testing with mocks.
-@property(readonly) JsPasswordManager* jsPasswordManager;
+
+- (void)findPasswordFormsWithCompletionHandler:
+    (void (^)(const std::vector<PasswordForm>&))completionHandler;
+
 @end
 
 // Real FormSuggestionController is wrapped to register the addition of
@@ -387,8 +385,8 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
     LoadHtml(data.html_string);
     __block std::vector<PasswordForm> forms;
     __block BOOL block_was_called = NO;
-    [passwordController_ findPasswordFormsWithCompletionHandler:^(
-                             const std::vector<PasswordForm>& result) {
+    [passwordController_.helper findPasswordFormsWithCompletionHandler:^(
+                                    const std::vector<PasswordForm>& result) {
       block_was_called = YES;
       forms = result;
     }];

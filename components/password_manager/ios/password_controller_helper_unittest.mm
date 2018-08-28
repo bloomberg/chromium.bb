@@ -196,3 +196,119 @@ TEST_F(PasswordControllerHelperTest, GetSubmittedPasswordForm) {
         }));
   }
 }
+
+struct FindPasswordFormTestData {
+  // HTML String of the form.
+  NSString* html_string;
+  // True if expected to find the form.
+  const bool expected_form_found;
+  // Expected username element.
+  const char* const expected_username_element;
+  // Expected password element.
+  const char* const expected_password_element;
+};
+
+// Check that HTML forms are converted correctly into PasswordForms.
+TEST_F(PasswordControllerHelperTest, FindPasswordFormsInView) {
+  // clang-format off
+  const FindPasswordFormTestData test_data[] = {
+    // Normal form: a username and a password element.
+    {
+      @"<form>"
+      "<input type='text' name='user0'>"
+      "<input type='password' name='pass0'>"
+      "</form>",
+      true, "user0", "pass0"
+    },
+    // User name is captured as an email address (HTML5).
+    {
+      @"<form>"
+      "<input type='email' name='email1'>"
+      "<input type='password' name='pass1'>"
+      "</form>",
+      true, "email1", "pass1"
+    },
+    // No username element.
+    {
+      @"<form>"
+      "<input type='password' name='not_user2'>"
+      "<input type='password' name='pass2'>"
+      "</form>",
+      true, "", "not_user2"
+    },
+    // No username element before password.
+    {
+      @"<form>"
+      "<input type='password' name='pass3'>"
+      "<input type='text' name='user3'>"
+      "</form>",
+      true, "", "pass3"
+    },
+    // Disabled username element.
+    {
+      @"<form>"
+      "<input type='text' name='user4' disabled='disabled'>"
+      "<input type='password' name='pass4'>"
+      "</form>",
+      true, "user4", "pass4"
+    },
+    // Username element has autocomplete='off'.
+    {
+      @"<form>"
+      "<input type='text' name='user5' AUTOCOMPLETE='off'>"
+      "<input type='password' name='pass5'>"
+      "</form>",
+      true, "user5", "pass5"
+    },
+    // No password element.
+    {
+      @"<form>"
+      "<input type='text' name='user6'>"
+      "<input type='text' name='pass6'>"
+      "</form>",
+      false, nullptr, nullptr
+    },
+    // Password element has autocomplete='off'.
+    {
+      @"<form>"
+      "<input type='text' name='user7'>"
+      "<input type='password' name='pass7' AUTOCOMPLETE='OFF'>"
+      "</form>",
+      true, "user7", "pass7"
+    },
+    // Form element has autocomplete='off'.
+    {
+      @"<form autocomplete='off'>"
+      "<input type='text' name='user8'>"
+      "<input type='password' name='pass8'>"
+      "</form>",
+      true, "user8", "pass8"
+    },
+  };
+  // clang-format on
+
+  for (const FindPasswordFormTestData& data : test_data) {
+    SCOPED_TRACE(testing::Message() << "for html_string=" << data.html_string);
+    LoadHtml(data.html_string);
+    __block std::vector<PasswordForm> forms;
+    __block BOOL block_was_called = NO;
+    [helper_ findPasswordFormsWithCompletionHandler:^(
+                 const std::vector<PasswordForm>& result) {
+      block_was_called = YES;
+      forms = result;
+    }];
+    EXPECT_TRUE(
+        WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+          return block_was_called;
+        }));
+    if (data.expected_form_found) {
+      ASSERT_EQ(1U, forms.size());
+      EXPECT_EQ(base::ASCIIToUTF16(data.expected_username_element),
+                forms[0].username_element);
+      EXPECT_EQ(base::ASCIIToUTF16(data.expected_password_element),
+                forms[0].password_element);
+    } else {
+      ASSERT_TRUE(forms.empty());
+    }
+  }
+}
