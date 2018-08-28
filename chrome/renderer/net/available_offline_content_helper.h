@@ -14,7 +14,8 @@
 
 // Notice: this file is only included on OS_ANDROID.
 
-// Wraps calls from the renderer thread to teh AvailableOfflineContentProvider.
+// Wraps calls from the renderer thread to the AvailableOfflineContentProvider,
+// and records related UMA.
 class AvailableOfflineContentHelper {
  public:
   AvailableOfflineContentHelper();
@@ -37,10 +38,18 @@ class AvailableOfflineContentHelper {
   void Reset();
 
  private:
-  // Binds provider_ if necessary. Returns true if the provider is bound.
+  void AvailableContentReceived(
+      base::OnceCallback<void(const std::string& offline_content_json)>
+          callback,
+      std::vector<chrome::mojom::AvailableOfflineContentPtr> content);
+
+  // Binds |provider_| if necessary. Returns true if the provider is bound.
   bool BindProvider();
 
   chrome::mojom::AvailableOfflineContentProviderPtr provider_;
+  // This is the result of the last FetchAvailableContent call. It is retained
+  // only so that metrics can be recorded properly on call to LaunchItem().
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> fetched_content_;
 
   DISALLOW_COPY_AND_ASSIGN(AvailableOfflineContentHelper);
 };

@@ -9,28 +9,28 @@ namespace error_page {
 
 // Network error page events.  Used for UMA statistics.
 enum NetworkErrorPageEvent {
-  NETWORK_ERROR_PAGE_SHOWN = 0,                    // Error pages shown.
+  NETWORK_ERROR_PAGE_SHOWN = 0,  // Error pages shown.
 
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN = 1,      // Reload buttons shown.
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED = 2,    // Reload button clicked.
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR = 3,      // Reload button clicked
-                                                   // -> error.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN = 1,    // Reload buttons shown.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED = 2,  // Reload button clicked.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR = 3,    // Reload button clicked
+                                                 // -> error.
 
   // Same for the "Show saved copy" button.
   NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN = 4,
   NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED = 5,
   NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR = 6,
 
-  NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED = 7,      // More button clicked.
+  NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED = 7,  // More button clicked.
 
-  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8, // Reload from browser.
+  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8,  // Reload from browser.
 
   // Keep track of which button the user chooses when both are shown.
   NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN = 9,
   NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED = 10,
   NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED = 11,
 
-  NETWORK_ERROR_EASTER_EGG_ACTIVATED = 12,         // Easter egg activated.
+  NETWORK_ERROR_EASTER_EGG_ACTIVATED = 12,  // Easter egg activated.
 
   // For "Google cached copy" button experiment.
   NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN = 13,
@@ -39,7 +39,7 @@ enum NetworkErrorPageEvent {
   // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN = 15,
   // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED = 16,
 
-  NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED = 17,      // Diagnose button clicked.
+  NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED = 17,  // Diagnose button clicked.
 
   // For the button to show all offline pages.
   // Obsolete. No longer showing this.
@@ -53,6 +53,15 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_SHOWN = 22,
   NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED = 23,
+
+  // Values for suggested content on the net-error page:
+
+  // At least one offline content suggestion was shown.
+  NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN = 24,
+  // An offline content suggestion was clicked.
+  NETWORK_ERROR_PAGE_OFFLINE_SUGGESTION_CLICKED = 25,
+  // A link that opens the downloads page was clicked.
+  NETWORK_ERROR_PAGE_OFFLINE_DOWNLOADS_PAGE_CLICKED = 26,
 
   NETWORK_ERROR_PAGE_EVENT_MAX,
 };
