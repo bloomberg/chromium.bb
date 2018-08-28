@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebRestrictionsClient_jni.h"
 
@@ -32,7 +32,7 @@ bool RequestPermissionTask(
 
 bool CheckSupportsRequestTask(
     const base::android::JavaRef<jobject>& java_provider) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_WebRestrictionsClient_supportsRequest(env, java_provider);
 }
