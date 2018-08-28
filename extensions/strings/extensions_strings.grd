@@ -229,6 +229,9 @@
       <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH" desc="Warning displayed in pack dialog when the private key must be a valid path.">
         Input value for private key must be a valid path.
       </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_FORMAT" desc="Warning displayed in pack dialog when the private key must be a valid format.">
+        Input value for private key must be a valid format (PKCS#8-format PEM-encoded RSA key).
+      </message>
       <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
         Failed to export public key.
       </message>

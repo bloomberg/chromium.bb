@@ -118,25 +118,33 @@ std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::ReadInputKey(
   if (!base::PathExists(private_key_path)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS);
-    return NULL;
+    return nullptr;
   }
 
   std::string private_key_contents;
   if (!base::ReadFileToString(private_key_path, &private_key_contents)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ);
-    return NULL;
+    return nullptr;
   }
 
   std::string private_key_bytes;
   if (!Extension::ParsePEMKeyBytes(private_key_contents, &private_key_bytes)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID);
-    return NULL;
+    return nullptr;
   }
 
-  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
-      std::vector<uint8_t>(private_key_bytes.begin(), private_key_bytes.end()));
+  std::unique_ptr<crypto::RSAPrivateKey> private_key =
+      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
+          private_key_bytes.begin(), private_key_bytes.end()));
+  if (!private_key) {
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID_FORMAT);
+    return nullptr;
+  }
+
+  return private_key;
 }
 
 std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::GenerateKey(
@@ -146,14 +154,14 @@ std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::GenerateKey(
   if (!key_pair) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE);
-    return NULL;
+    return nullptr;
   }
 
   std::vector<uint8_t> private_key_vector;
   if (!key_pair->ExportPrivateKey(&private_key_vector)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_EXPORT);
-    return NULL;
+    return nullptr;
   }
   std::string private_key_bytes(
       reinterpret_cast<char*>(&private_key_vector.front()),
@@ -163,13 +171,13 @@ std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::GenerateKey(
   if (!Extension::ProducePEM(private_key_bytes, &private_key)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
-    return NULL;
+    return nullptr;
   }
   std::string pem_output;
   if (!Extension::FormatPEMForFileOutput(private_key, &pem_output, false)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
-    return NULL;
+    return nullptr;
   }
 
   if (!output_private_key_path.empty()) {
@@ -177,7 +185,7 @@ std::unique_ptr<crypto::RSAPrivateKey> ExtensionCreator::GenerateKey(
                               pem_output.size())) {
       error_message_ =
           l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -244,8 +252,10 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
     key_pair = ReadInputKey(private_key_path);
   else
     key_pair = GenerateKey(output_private_key_path);
-  if (!key_pair)
+  if (!key_pair) {
+    DCHECK(!error_message_.empty()) << "Set proper error message.";
     return false;
+  }
 
   // Perform some extra validation by loading the extension.
   // TODO(aa): Can this go before creating the key pair? This would mean not
