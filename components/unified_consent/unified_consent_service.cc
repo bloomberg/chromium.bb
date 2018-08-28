@@ -8,7 +8,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -278,6 +280,8 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   service_client_->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
                                      false);
   service_client_->SetServiceEnabled(Service::kSpellCheck, false);
+  contextual_search::ContextualSearchPreference::GetInstance()->SetPref(
+      pref_service_, false);
 
   if (GetMigrationState() != MigrationState::kCompleted) {
     // When the user signs out, the migration is complete.
@@ -344,6 +348,8 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   // Enable all non-personalized services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             true);
+  contextual_search::ContextualSearchPreference::GetInstance()
+      ->OnUnifiedConsentGiven(pref_service_);
   // Inform client to enable non-personalized services.
   for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
     Service service = static_cast<Service>(i);
