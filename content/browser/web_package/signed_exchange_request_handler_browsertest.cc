@@ -237,19 +237,29 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
-                       InvalidMagicString) {
+                       RedirectBrokenSignedExchanges) {
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL(
-      "/sxg/test.example.org_test_invalid_magic_string.sxg");
 
-  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
-  TitleWatcher title_watcher(shell()->web_contents(), title);
-  NavigateToURL(shell(), url);
-  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  constexpr const char* kBrokenExchanges[] = {
+      "/sxg/test.example.org_test_invalid_magic_string.sxg",
+      "/sxg/test.example.org_test_invalid_cbor_header.sxg",
+  };
+
+  for (const auto* broken_exchange : kBrokenExchanges) {
+    SCOPED_TRACE(testing::Message()
+                 << "testing broken exchange: " << broken_exchange);
+
+    GURL url = embedded_test_server()->GetURL(broken_exchange);
+
+    base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), url);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
