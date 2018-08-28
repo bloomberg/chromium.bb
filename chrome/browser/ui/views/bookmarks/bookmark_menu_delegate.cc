@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -47,10 +48,15 @@ namespace {
 const int kMaxMenuWidth = 400;
 
 SkColor TextColorForMenu(MenuItemView* menu, views::Widget* widget) {
+#if !defined(OS_MACOSX)
+  // macOS incognito currently has a light on dark bookmark bar, but
+  // dark on light menus, so using the theme color in the folders is
+  // incorrect.
   if (widget && widget->GetThemeProvider()) {
     return widget->GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_BOOKMARK_TEXT);
   }
+#endif
   return menu->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
 }
