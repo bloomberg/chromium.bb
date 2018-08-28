@@ -236,6 +236,22 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
+                       InvalidMagicString) {
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_test_invalid_magic_string.sxg");
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+}
+
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/sxg/404.msg");

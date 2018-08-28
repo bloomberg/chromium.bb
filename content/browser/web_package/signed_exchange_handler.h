@@ -93,6 +93,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
     kHeadersCallbackCalled,
   };
 
+  const GURL& GetFallbackUrl() const;
+
   void SetupBuffers(size_t size);
   void DoHeaderLoop();
   void DidReadHeader(bool completed_syncly, int result);
