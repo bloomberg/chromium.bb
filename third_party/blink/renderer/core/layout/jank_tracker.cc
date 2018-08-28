@@ -57,6 +57,23 @@ static bool SmallerThanRegionGranularity(const LayoutRect& rect,
          rect.Height().ToFloat() * granularity_scale < 0.5;
 }
 
+#ifdef TRACE_JANK_REGIONS
+static void RegionToTracedValue(const Region& region,
+                                double granularity_scale,
+                                TracedValue& value) {
+  value.BeginArray("region_rects");
+  for (const IntRect& rect : region.Rects()) {
+    value.BeginArray();
+    value.PushInteger(clampTo<int>(roundf(rect.X() / granularity_scale)));
+    value.PushInteger(clampTo<int>(roundf(rect.Y() / granularity_scale)));
+    value.PushInteger(clampTo<int>(roundf(rect.Width() / granularity_scale)));
+    value.PushInteger(clampTo<int>(roundf(rect.Height() / granularity_scale)));
+    value.EndArray();
+  }
+  value.EndArray();
+}
+#endif  // TRACE_JANK_REGIONS
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
@@ -141,13 +158,14 @@ void JankTracker::NotifyPrePaintFinished() {
     return;
 
   if (region_.IsEmpty()) {
-    if (!timer_.IsActive())
+    if (!timer_.IsActive() && !has_fired_)
       timer_.StartOneShot(kTimerDelay, FROM_HERE);
     return;
   }
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
-  viewport.Scale(RegionGranularityScale(viewport));
+  double granularity_scale = RegionGranularityScale(viewport);
+  viewport.Scale(granularity_scale);
   double viewport_area = double(viewport.Width()) * double(viewport.Height());
 
   double jank_fraction = region_.Area() / viewport_area;
@@ -156,13 +174,17 @@ void JankTracker::NotifyPrePaintFinished() {
   DVLOG(1) << "viewport " << (jank_fraction * 100)
            << "% janked, raising score to " << score_;
 
-  TRACE_EVENT_INSTANT1("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "viewportFraction", jank_fraction);
+  TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
+                       "data",
+                       PerFrameTraceData(jank_fraction, granularity_scale),
+                       "frame", ToTraceValue(&frame_view_->GetFrame()));
 
   region_ = Region();
 
-  // This cancels any previously scheduled task from the same timer.
-  timer_.StartOneShot(kTimerDelay, FROM_HERE);
+  if (!has_fired_) {
+    // This cancels any previously scheduled task from the same timer.
+    timer_.StartOneShot(kTimerDelay, FROM_HERE);
+  }
 }
 
 bool JankTracker::IsActive() {
@@ -171,33 +193,31 @@ bool JankTracker::IsActive() {
   if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
     return false;
 
-  if (has_fired_)
-    return false;
   return true;
 }
 
-std::unique_ptr<TracedValue> JankTracker::TraceData() const {
+std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
+    double jank_fraction,
+    double granularity_scale) const {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetDouble("score", score_);
-  value->SetDouble("maxDistance", max_distance_);
+  value->SetDouble("jank_fraction", jank_fraction);
+  value->SetDouble("cumulative_score", score_);
+  value->SetDouble("max_distance", max_distance_);
+
+#ifdef TRACE_JANK_REGIONS
+  // Jank regions can be included in trace event by defining TRACE_JANK_REGIONS
+  // at the top of this file. This is useful for debugging and visualizing, but
+  // might impact performance negatively.
+  RegionToTracedValue(region_, granularity_scale, *value);
+#endif
+
+  value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
 }
 
 void JankTracker::TimerFired(TimerBase* timer) {
   has_fired_ = true;
-
-  // TODO(skobes): Aggregate jank scores from iframes.
-  if (!frame_view_->GetFrame().IsMainFrame())
-    return;
-
-  DVLOG(1) << "final jank score for "
-           << frame_view_->GetFrame().DomWindow()->location()->toString()
-           << " is " << score_ << " with max move distance of "
-           << max_distance_;
-
-  TRACE_EVENT_INSTANT2("loading", "TotalLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "data", TraceData(), "frame",
-                       ToTraceValue(&frame_view_->GetFrame()));
+  // TODO: Repurpose timer for ignoring jank after user input.
 }
 
 }  // namespace blink
