@@ -137,8 +137,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestDefaultU2fRegisterOperationWithoutFlag) {
 
 TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
   AuthenticatorGetInfoResponse device_info(
-      {ProtocolVersion::kCtap, ProtocolVersion::kU2f},
-      fido_parsing_utils::Materialize(kTestDeviceAaguid));
+      {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
   AuthenticatorSupportedOptions options;
   options.SetClientPinAvailability(
       AuthenticatorSupportedOptions::ClientPinAvailability::
@@ -159,8 +158,7 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
 
 TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
   AuthenticatorGetInfoResponse device_info(
-      {ProtocolVersion::kCtap, ProtocolVersion::kU2f},
-      fido_parsing_utils::Materialize(kTestDeviceAaguid));
+      {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
   AuthenticatorSupportedOptions options;
   options.SetClientPinAvailability(
       AuthenticatorSupportedOptions::ClientPinAvailability::

@@ -574,8 +574,7 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectFormat) {
 
 TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
   AuthenticatorGetInfoResponse response(
-      {ProtocolVersion::kCtap, ProtocolVersion::kU2f},
-      fido_parsing_utils::Materialize(kTestDeviceAaguid));
+      {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
   response.SetExtensions({"uvm", "hmac-secret"});
   AuthenticatorSupportedOptions options;
   options.SetSupportsResidentKey(true);

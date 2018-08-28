@@ -6,12 +6,14 @@
 
 #include <string.h>
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/ntlm/ntlm.h"
 #include "net/ntlm/ntlm_buffer_reader.h"
 #include "net/ntlm/ntlm_buffer_writer.h"
+#include "net/ntlm/ntlm_constants.h"
 
 namespace net {
 namespace ntlm {
@@ -221,7 +223,8 @@ std::vector<uint8_t> NtlmClient::GenerateAuthenticateMessage(
     uint8_t v2_hash[kNtlmHashLen];
     GenerateNtlmHashV2(domain, username, password, v2_hash);
     v2_proof_input = GenerateProofInputV2(timestamp, client_challenge);
-    GenerateNtlmProofV2(v2_hash, server_challenge, v2_proof_input,
+    GenerateNtlmProofV2(v2_hash, server_challenge,
+                        base::make_span<kProofInputLenV2>(v2_proof_input),
                         updated_target_info, v2_proof);
     GenerateSessionBaseKeyV2(v2_hash, v2_proof, v2_session_key);
   } else {

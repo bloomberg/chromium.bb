@@ -102,6 +102,22 @@ void WontCompile() {
   span<int> span(v);
 }
 
+#elif defined(NCTEST_IMPLICIT_CONVERSION_FROM_DYNAMIC_CONST_CONTAINER_TO_STATIC_SPAN_DISALLOWED) // [r"fatal error: no viable conversion from 'const std::vector<int>' to 'span<const int, 3>'"]
+
+// A dynamic const container should not be implicitly convertible to a static span.
+void WontCompile() {
+  const std::vector<int> v = {1, 2, 3};
+  span<const int, 3> span = v;
+}
+
+#elif defined(NCTEST_IMPLICIT_CONVERSION_FROM_DYNAMIC_MUTABLE_CONTAINER_TO_STATIC_SPAN_DISALLOWED) // [r"fatal error: no viable conversion from 'std::vector<int>' to 'span<int, 3>'"]
+
+// A dynamic mutable container should not be implicitly convertible to a static span.
+void WontCompile() {
+  std::vector<int> v = {1, 2, 3};
+  span<int, 3> span = v;
+}
+
 #elif defined(NCTEST_STD_SET_CONVERSION_DISALLOWED)  // [r"fatal error: no matching constructor for initialization of 'span<int>'"]
 
 // A std::set() should not satisfy the requirements for conversion to a span.

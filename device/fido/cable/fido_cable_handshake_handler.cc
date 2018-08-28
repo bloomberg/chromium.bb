@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_values.h"
@@ -149,8 +150,8 @@ bool FidoCableHandshakeHandler::ValidateAuthenticatorHandshakeMessage(
   }
 
   cable_device_->SetEncryptionData(
-      GetEncryptionKeyAfterSuccessfulHandshake(
-          authenticator_random_nonce->second.GetBytestring()),
+      GetEncryptionKeyAfterSuccessfulHandshake(base::make_span<16>(
+          authenticator_random_nonce->second.GetBytestring())),
       nonce_);
 
   return true;

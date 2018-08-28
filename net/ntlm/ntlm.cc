@@ -6,11 +6,13 @@
 
 #include <string.h>
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_string_util.h"
 #include "net/ntlm/ntlm_buffer_writer.h"
+#include "net/ntlm/ntlm_constants.h"
 #include "third_party/boringssl/src/include/openssl/des.h"
 #include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/md4.h"
@@ -95,7 +97,9 @@ void UpdateTargetInfoAvPairs(bool is_mic_enabled,
 
     // Hash the channel bindings if they exist otherwise they remain zeros.
     if (!channel_bindings.empty()) {
-      GenerateChannelBindingHashV2(channel_bindings, channel_bindings_hash);
+      GenerateChannelBindingHashV2(
+          channel_bindings,
+          base::make_span<kChannelBindingsHashLen>(channel_bindings_hash));
     }
 
     av_pairs->emplace_back(TargetInfoAvId::kChannelBindings,
