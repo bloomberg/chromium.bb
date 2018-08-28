@@ -46,14 +46,10 @@ class InstallUtil {
   // installed.
   static base::CommandLine GetChromeUninstallCmd(bool system_install);
 
-  // Find the version of Chrome installed on the system by checking the
-  // Google Update registry key. Fills |version| with the version or a
-  // default-constructed Version if no version is found.
-  // system_install: if true, looks for version number under the HKLM root,
-  //                 otherwise looks under the HKCU.
-  static void GetChromeVersion(BrowserDistribution* dist,
-                               bool system_install,
-                               base::Version* version);
+  // Returns the version of Chrome registered with Google Update, or an invalid
+  // Version in case no such value could be found. |system_install| indicates
+  // whether HKLM (true) or HKCU (false) should be checked.
+  static base::Version GetChromeVersion(bool system_install);
 
   // Find the last critical update (version) of Chrome. Fills |version| with the
   // version or a default-constructed Version if no version is found. A critical

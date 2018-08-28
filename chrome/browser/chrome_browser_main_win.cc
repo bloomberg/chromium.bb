@@ -673,9 +673,8 @@ int ChromeBrowserMainPartsWin::HandleIconsCommands(
 
 // static
 bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::Version version;
-  InstallUtil::GetChromeVersion(dist, true, &version);
+  base::Version version =
+      InstallUtil::GetChromeVersion(true /* system_install */);
   if (version.IsValid()) {
     base::FilePath exe_path;
     base::PathService::Get(base::DIR_EXE, &exe_path);

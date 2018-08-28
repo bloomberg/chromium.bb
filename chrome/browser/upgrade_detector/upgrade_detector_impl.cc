@@ -116,9 +116,9 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
   // upgraded in the background.
   bool system_install = !InstallUtil::IsPerUserInstall();
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  InstallUtil::GetChromeVersion(dist, system_install, &installed_version);
+  installed_version = InstallUtil::GetChromeVersion(system_install);
   if (critical_update && installed_version.IsValid()) {
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     InstallUtil::GetCriticalUpdateVersion(dist, system_install,
                                           critical_update);
   }
