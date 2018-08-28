@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -31,6 +32,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -393,6 +395,26 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
     WriteTag(kMessagePortTag);
+    WriteUint32(static_cast<uint32_t>(index));
+    return true;
+  }
+  if (wrapper_type_info == &V8MojoHandle::wrapperTypeInfo &&
+      RuntimeEnabledFeatures::MojoJSEnabled()) {
+    MojoHandle* mojo_handle = wrappable->ToImpl<MojoHandle>();
+    size_t index = kNotFound;
+    if (transferables_)
+      index = transferables_->mojo_handles.Find(mojo_handle);
+    if (index == kNotFound) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A MojoHandle could not be cloned because it was not transferred.");
+      return false;
+    }
+    DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
+    serialized_script_value_->MojoHandles().push_back(
+        mojo_handle->TakeHandle());
+    index = serialized_script_value_->MojoHandles().size() - 1;
+    WriteTag(kMojoHandleTag);
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }

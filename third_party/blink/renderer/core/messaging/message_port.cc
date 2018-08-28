@@ -254,7 +254,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   return port_array;
 }
 
-MojoHandle MessagePort::EntangledHandleForTesting() const {
+::MojoHandle MessagePort::EntangledHandleForTesting() const {
   return connector_->handle().value();
 }
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -469,6 +470,18 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.message_ports.push_back(port);
+    } else if (V8MojoHandle::hasInstance(transferable_object, isolate)) {
+      MojoHandle* handle = V8MojoHandle::ToImpl(
+          v8::Local<v8::Object>::Cast(transferable_object));
+      // Check for duplicate MojoHandles.
+      if (transferables.mojo_handles.Contains(handle)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "Mojo handle at index " + String::Number(i) +
+                " is a duplicate of an earlier handle.");
+        return false;
+      }
+      transferables.mojo_handles.push_back(handle);
     } else if (transferable_object->IsArrayBuffer()) {
       DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));

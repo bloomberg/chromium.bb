@@ -39,6 +39,8 @@ namespace blink {
 enum SerializationTag {
   kMessagePortTag = 'M',  // index:int -> MessagePort. Fills the result with
                           // transferred MessagePort.
+  kMojoHandleTag = 'h',   // index:int -> MojoHandle. Fills the result with
+                          // transferred MojoHandle.
   kBlobTag = 'b',  // uuid:WebCoreString, type:WebCoreString, size:uint64_t ->
                    // Blob (ref)
   kBlobIndexTag = 'i',      // index:int32_t -> Blob (ref)
