@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_AURALINUX_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_AURALINUX_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
@@ -33,6 +35,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
                           BrowserAccessibility* node) override;
 
   AtkObject* parent_object() { return parent_object_; }
+
+ protected:
+  // AXTreeDelegate methods.
+  void OnAtomicUpdateFinished(
+      ui::AXTree* tree,
+      bool root_changed,
+      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
  private:
   AtkObject* parent_object_;

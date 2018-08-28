@@ -46,6 +46,10 @@ void BrowserAccessibilityAuraLinux::OnDataChanged() {
   node_->DataChanged();
 }
 
+void BrowserAccessibilityAuraLinux::UpdatePlatformAttributes() {
+  GetNode()->UpdateHypertext();
+}
+
 bool BrowserAccessibilityAuraLinux::IsNative() const {
   return true;
 }

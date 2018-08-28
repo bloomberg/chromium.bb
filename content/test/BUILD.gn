@@ -1793,6 +1793,13 @@ test("content_unittests") {
     sources += [ "../renderer/sandbox_mac_v2_unittest.mm" ]
   }
 
+  if (use_atk) {
+    sources += [
+      "../browser/accessibility/browser_accessibility_auralinux_unittest.cc",
+    ]
+    configs += [ "//build/config/linux/atk" ]
+  }
+
   if (is_android || is_linux || is_mac || is_win || is_fuchsia) {
     data = [
       "$root_out_dir/content_shell.pak",

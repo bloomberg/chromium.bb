@@ -269,9 +269,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   static void SanitizeStringAttribute(const std::string& input,
                                       std::string* output);
 
-  // Compute the hypertext for this node to be exposed via IA2 (and ATK
-  // in the future). This method is responsible for properly embedding
-  // children using the special embedded element character.
+  // Compute the hypertext for this node to be exposed via IA2 and ATK This
+  // method is responsible for properly embedding children using the special
+  // embedded element character.
   AXHypertext ComputeHypertext();
 
  private:
