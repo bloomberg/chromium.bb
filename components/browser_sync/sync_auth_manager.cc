@@ -124,9 +124,15 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       // error until GAIA succeeds at sending a new token, and we won't request
       // a new token unless sync reports a token failure. But to be safe, don't
       // schedule request if this happens.
-      if (request_access_token_retry_timer_.IsRunning()) {
+      if (ongoing_access_token_fetch_) {
+        // A request is already in flight; nothing further needs to be done at
+        // this point.
+        DCHECK(access_token_.empty());
+        DCHECK(!request_access_token_retry_timer_.IsRunning());
+      } else if (request_access_token_retry_timer_.IsRunning()) {
         // The timer to perform a request later is already running; nothing
         // further needs to be done at this point.
+        DCHECK(access_token_.empty());
       } else if (request_access_token_backoff_.failure_count() == 0) {
         // First time request without delay. Currently invalid token is used
         // to initialize sync engine and we'll always end up here. We don't
@@ -134,6 +140,13 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         request_access_token_backoff_.InformOfRequest(false);
         RequestAccessToken();
       } else {
+        // Drop any access token here, to maintain the invariant that only one
+        // of a token OR a pending request OR a pending retry can exist at any
+        // time.
+        if (!access_token_.empty()) {
+          access_token_.clear();
+          credentials_changed_callback_.Run();
+        }
         request_access_token_backoff_.InformOfRequest(false);
         base::TimeDelta delay =
             request_access_token_backoff_.GetTimeUntilRelease();
@@ -269,31 +282,41 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
 void SyncAuthManager::RequestAccessToken() {
   // Only one active request at a time.
   if (ongoing_access_token_fetch_) {
+    DCHECK(access_token_.empty());
+    DCHECK(!request_access_token_retry_timer_.IsRunning());
     return;
   }
-  request_access_token_retry_timer_.Stop();
+
+  // If a request is scheduled for later, abandon that now since we'll send one
+  // immediately.
+  if (request_access_token_retry_timer_.IsRunning()) {
+    request_access_token_retry_timer_.Stop();
+  }
+  // Also reset the next request time. Note that if we were called back by the
+  // timer, then it's already considered not running, so we reset this time
+  // unconditionally.
   token_status_.next_token_request_time = base::Time();
 
-  OAuth2TokenService::ScopeSet oauth2_scopes;
-  oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
+  const OAuth2TokenService::ScopeSet kOAuth2ScopeSet{
+      GaiaConstants::kChromeSyncOAuth2Scope};
 
-  // Invalidate previous token, otherwise token service will return the same
-  // token again.
+  // Invalidate any previous token, otherwise the token service will return the
+  // same token again.
   if (!access_token_.empty()) {
     identity_manager_->RemoveAccessTokenFromCache(
-        GetAuthenticatedAccountInfo().account_id, oauth2_scopes, access_token_);
+        GetAuthenticatedAccountInfo().account_id, kOAuth2ScopeSet,
+        access_token_);
 
     access_token_.clear();
     credentials_changed_callback_.Run();
   }
 
-
+  // Finally, kick off a new access token fetch.
   token_status_.token_request_time = base::Time::Now();
   token_status_.token_receive_time = base::Time();
-  token_status_.next_token_request_time = base::Time();
   ongoing_access_token_fetch_ = std::make_unique<
       identity::PrimaryAccountAccessTokenFetcher>(
-      kSyncOAuthConsumerName, identity_manager_, oauth2_scopes,
+      kSyncOAuthConsumerName, identity_manager_, kOAuth2ScopeSet,
       base::BindOnce(&SyncAuthManager::AccessTokenFetched,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
@@ -308,6 +331,9 @@ void SyncAuthManager::AccessTokenFetched(
   access_token_ = access_token_info.token;
   token_status_.last_get_token_error = error;
 
+  DCHECK_EQ(access_token_.empty(),
+            error.state() != GoogleServiceAuthError::NONE);
+
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
       token_status_.token_receive_time = base::Time::Now();
@@ -319,6 +345,9 @@ void SyncAuthManager::AccessTokenFetched(
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       // Transient error. Retry after some time.
+      // TODO(crbug.com/839834): SERVICE_ERROR is actually considered a
+      // persistent error. Should we use .IsTransientError() instead of manually
+      // listing cases here?
       request_access_token_backoff_.InformOfRequest(false);
       token_status_.next_token_request_time =
           base::Time::Now() +

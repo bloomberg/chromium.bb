@@ -119,7 +119,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // The current access token. This is mutually exclusive with
   // |ongoing_access_token_fetch_| and |request_access_token_retry_timer_|:
-  // We either have an access token OR a pending request OR a pending retry.
+  // We have at most one of a) an access token OR b) a pending request OR c) a
+  // pending retry i.e. a scheduled request.
   std::string access_token_;
 
   // Pending request for an access token. Non-null iff there is a request
