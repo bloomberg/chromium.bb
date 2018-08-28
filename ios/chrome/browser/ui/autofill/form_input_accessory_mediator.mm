@@ -166,7 +166,16 @@
 
 - (void)webStateWasHidden:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self reset];
+  // On some iPhone with newers iOS (>11.3) when a view controller is presented,
+  // i.e. "all passwords", after dismissing it the keyboard appears and the last
+  // element is focused. Different devices were not consistent with minor
+  // versions changes. On iPad it always stays dismissed. It is important to
+  // reset on iPads because the accessory will stay without the keyboard, due
+  // how the it is added, On iPhones it will be hidden and reset when other text
+  // element gets the focus. On iPad the keyboard stays dismissed.
+  if (IsIPadIdiom()) {
+    [self reset];
+  }
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -301,6 +310,7 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
                   navigationDelegate:strongSelf.formInputAccessoryHandler];
   };
 }
+
 // When any text field or text view (e.g. omnibox, settings, card unmask dialog)
 // begins editing, reset ourselves so that we don't present our custom view over
 // the keyboard.
