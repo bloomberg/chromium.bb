@@ -73,7 +73,7 @@ class ScopedEventSignaller {
 // libraries also.
 size_t TraceStackWithContext(unw_cursor_t* cursor,
                              CFIBacktraceAndroid* cfi_unwinder,
-                             tracing::StackUnwinderAndroid* unwinder,
+                             const tracing::StackUnwinderAndroid* unwinder,
                              const void** out_trace,
                              size_t max_depth) {
   size_t depth = 0;
@@ -139,7 +139,7 @@ struct HandlerParams {
 base::subtle::AtomicWord g_handler_params;
 
 // The signal handler is called on the stopped thread as an additional stack
-// frame. This relies on no alternate signalstack() being set. This function
+// frame. This relies on no alternate sigaltstack() being set. This function
 // skips the handler frame on stack and unwinds the rest of the stack frames.
 // This function should use async-safe functions only. The only call that could
 // allocate memory on heap would be the cache in cfi unwinder. We need to ensure
@@ -236,7 +236,7 @@ void StackUnwinderAndroid::Initialize() {
 }
 
 size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
-                                        size_t max_depth) {
+                                        size_t max_depth) const {
   DCHECK(is_initialized_);
   unw_cursor_t cursor;
   unw_context_t context;
@@ -252,7 +252,7 @@ size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
 
 size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
                                         const void** out_trace,
-                                        size_t max_depth) {
+                                        size_t max_depth) const {
   // Stops the thread with given tid with a signal handler. The signal handler
   // copies the stack of the thread and returns. This function tries to unwind
   // stack frames from the copied stack.
@@ -272,7 +272,7 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   struct sigaction oact;
   memset(&act, 0, sizeof(act));
   act.sa_sigaction = ThreadSignalHandler;
-  // TODO(ssid): SA_ONSTACK will not work if signalstack was set. So, unwind
+  // TODO(ssid): SA_ONSTACK will not work if sigaltstack was set. So, unwind
   // should work without this flag.
   act.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;
   sigemptyset(&act.sa_mask);

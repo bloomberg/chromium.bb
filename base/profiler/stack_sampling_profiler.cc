@@ -626,9 +626,22 @@ StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
     NativeStackSamplerTestDelegate* test_delegate)
+    : StackSamplingProfiler(thread_id,
+                            params,
+                            std::move(profile_builder),
+                            nullptr,
+                            test_delegate) {}
+
+StackSamplingProfiler::StackSamplingProfiler(
+    PlatformThreadId thread_id,
+    const SamplingParams& params,
+    std::unique_ptr<ProfileBuilder> profile_builder,
+    std::unique_ptr<NativeStackSampler> sampler,
+    NativeStackSamplerTestDelegate* test_delegate)
     : thread_id_(thread_id),
       params_(params),
       profile_builder_(std::move(profile_builder)),
+      native_sampler_(std::move(sampler)),
       // The event starts "signaled" so code knows it's safe to start thread
       // and "manual" so that it can be waited in multiple places.
       profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),
@@ -662,10 +675,10 @@ void StackSamplingProfiler::Start() {
   // already.
   DCHECK(profile_builder_);
 
-  std::unique_ptr<NativeStackSampler> native_sampler =
-      NativeStackSampler::Create(thread_id_, test_delegate_);
+  if (!native_sampler_)
+    native_sampler_ = NativeStackSampler::Create(thread_id_, test_delegate_);
 
-  if (!native_sampler)
+  if (!native_sampler_)
     return;
 
   // The IsSignaled() check below requires that the WaitableEvent be manually
@@ -683,7 +696,7 @@ void StackSamplingProfiler::Start() {
   DCHECK_EQ(kNullProfilerId, profiler_id_);
   profiler_id_ = SamplingThread::GetInstance()->Add(
       std::make_unique<SamplingThread::CollectionContext>(
-          thread_id_, params_, &profiling_inactive_, std::move(native_sampler),
+          thread_id_, params_, &profiling_inactive_, std::move(native_sampler_),
           std::move(profile_builder_)));
   DCHECK_NE(kNullProfilerId, profiler_id_);
 }
