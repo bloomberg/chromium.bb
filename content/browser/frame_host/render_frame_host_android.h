@@ -52,13 +52,7 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
   void NotifyUserActivation(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>&);
 
-  // TODO(https://crbug.com/873217): Move this and OnExecuteJavaScriptResult
-  // into a test-only RFH wrapper.
-  void ExecuteJavaScriptForTests(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>&,
-      const base::android::JavaParamRef<jstring>& jscript,
-      const base::android::JavaParamRef<jobject>& jcallback);
+  RenderFrameHostImpl* render_frame_host() const { return render_frame_host_; }
 
  private:
   RenderFrameHostImpl* const render_frame_host_;

@@ -40,15 +40,6 @@ public interface RenderFrameHost {
     void notifyUserActivation();
 
     /**
-     * Runs the given JavaScript in the RenderFrameHost.
-     *
-     * @param script A String containing the JavaScript to run.
-     * @param callback The Callback that will be called with the result of the JavaScript execution
-     *        serialized to a String using JSONStringValueSerializer.
-     */
-    void executeJavaScriptForTests(String script, Callback<String> callback);
-
-    /**
      * Returns whether we're in incognito mode.
      *
      * @return {@code true} if we're in incoginto mode.

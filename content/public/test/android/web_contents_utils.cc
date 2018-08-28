@@ -4,6 +4,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_view_host.h"
@@ -11,6 +12,7 @@
 #include "jni/WebContentsUtils_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
@@ -26,6 +28,15 @@ void JNI_WebContentsUtils_ReportAllFrameSubmissions(
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost()->GetWidget())
           ->render_frame_metadata_provider();
   provider->ReportAllFrameSubmissionsForTesting(enabled);
+}
+
+ScopedJavaLocalRef<jobject> JNI_WebContentsUtils_GetFocusedFrame(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jweb_contents) {
+  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  return static_cast<RenderFrameHostImpl*>(web_contents->GetFocusedFrame())
+      ->GetJavaRenderFrameHost();
 }
 
 }  // namespace content
