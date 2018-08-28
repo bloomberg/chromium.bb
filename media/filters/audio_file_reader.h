@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_AUDIO_FILE_READER_H_
 #define MEDIA_FILTERS_AUDIO_FILE_READER_H_
 
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -40,7 +41,7 @@ class MEDIA_EXPORT AudioFileReader {
   bool Open();
   void Close();
 
-  // After a call to Open(), attempts to decode the entire data,
+  // After a call to Open(), attempts to decode the data of |packets_to_read|,
   // updating |decodedAudioPackets| with each decoded packet in order.
   // The caller must convert these packets into one complete set of
   // decoded audio data.  The audio data will be decoded as
@@ -48,7 +49,10 @@ class MEDIA_EXPORT AudioFileReader {
   // Returns the number of sample-frames actually read which will
   // always be the total size of all the frames in
   // |decodedAudioPackets|.
-  int Read(std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets);
+  // If |packets_to_read| is std::numeric_limits<int>::max(), decodes the entire
+  // data.
+  int Read(std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets,
+           int packets_to_read = std::numeric_limits<int>::max());
 
   // These methods can be called once Open() has been called.
   int channels() const { return channels_; }

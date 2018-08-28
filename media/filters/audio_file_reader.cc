@@ -135,7 +135,8 @@ void AudioFileReader::Close() {
 }
 
 int AudioFileReader::Read(
-    std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets) {
+    std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets,
+    int packets_to_read) {
   DCHECK(glue_ && codec_context_)
       << "AudioFileReader::Read() : reader is not opened!";
 
@@ -147,7 +148,8 @@ int AudioFileReader::Read(
                           &total_frames, decoded_audio_packets);
 
   AVPacket packet;
-  while (ReadPacket(&packet)) {
+  int packets_read = 0;
+  while (packets_read++ < packets_to_read && ReadPacket(&packet)) {
     const auto status = decode_loop.DecodePacket(&packet, frame_ready_cb);
     av_packet_unref(&packet);
 
