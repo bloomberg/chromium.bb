@@ -253,8 +253,6 @@ cast_source_set("browser") {
       "extensions/api/i18n/i18n_api.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
-      "extensions/api/module/module.cc",
-      "extensions/api/module/module.h",
       "extensions/api/notifications/notifications_api.cc",
       "extensions/api/notifications/notifications_api.h",
       "extensions/api/tabs/tabs_api.cc",
