@@ -49,6 +49,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetWorkspaceChanged() override;
   void OnNativeWidgetBeginUserBoundsChange() override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -56,7 +57,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::internal::NativeWidgetDelegate:
-  void OnNativeFocus() override;
   void OnNativeBlur() override;
   void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
@@ -135,10 +135,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   // as a check as some event handlers (e.g. focus) is propogated to the window
   // before its contents is initialized. This is only set once.
   bool is_initialized_ = false;
-
-  // Whether or not the controls of the window should be shown. This is used in
-  // some event handlers (e.g. focus).
-  bool should_show_controls_ = false;
 
   // Whether or not the window has been shown before. This is used to determine
   // sizing and placement. This is different from checking whether the window

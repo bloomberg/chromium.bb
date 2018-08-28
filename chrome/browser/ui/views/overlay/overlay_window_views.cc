@@ -154,7 +154,6 @@ OverlayWindowViews::OverlayWindowViews(
   SetUpViews();
 
   is_initialized_ = true;
-  should_show_controls_ = false;
 }
 
 OverlayWindowViews::~OverlayWindowViews() = default;
@@ -458,9 +457,6 @@ void OverlayWindowViews::Close() {
 void OverlayWindowViews::Show() {
   views::Widget::Show();
 
-  // Don't show the controls until the mouse hovers over the window.
-  should_show_controls_ = false;
-
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;
 }
@@ -596,6 +592,18 @@ void OverlayWindowViews::OnNativeWidgetBeginUserBoundsChange() {
   UpdateControlsVisibility(false);
 }
 
+void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
+  // Any keystroke will make the controls visible, if not already. The Tab key
+  // needs to be handled separately.
+  // If the controls are already visible, this is a no-op.
+  if (event->type() == ui::ET_KEY_PRESSED ||
+      event->key_code() == ui::VKEY_TAB) {
+    UpdateControlsVisibility(true);
+  }
+
+  views::Widget::OnKeyEvent(event);
+}
+
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
@@ -660,18 +668,6 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
   if (sender == second_custom_controls_view_.get())
     controller_->ClickCustomControl(second_custom_controls_view_->id());
-}
-
-void OverlayWindowViews::OnNativeFocus() {
-  // Show the controls when the window takes focus. This is used for tab and
-  // touch interactions. If initialisation happens after the window takes
-  // focus, any tabbing or touch gesture will show the controls.
-  if (is_initialized_) {
-    UpdateControlsVisibility(should_show_controls_);
-    should_show_controls_ = true;
-  }
-
-  views::Widget::OnNativeFocus();
 }
 
 void OverlayWindowViews::OnNativeBlur() {
