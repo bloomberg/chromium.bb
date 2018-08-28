@@ -27,13 +27,13 @@ class TRACING_EXPORT StackUnwinderAndroid {
 
   // Unwinds stack frames for current thread and stores the program counters in
   // |out_trace|, and returns the number of frames stored.
-  size_t TraceStack(const void** out_trace, size_t max_depth);
+  size_t TraceStack(const void** out_trace, size_t max_depth) const;
 
   // Same as above function, but pauses the thread with the given |tid| and then
   // unwinds. |tid| should not be current thread's.
   size_t TraceStack(base::PlatformThreadId tid,
                     const void** out_trace,
-                    size_t max_depth);
+                    size_t max_depth) const;
 
   // Returns the end address of the memory map with given |addr|.
   uintptr_t GetEndAddressOfRegion(uintptr_t addr) const;

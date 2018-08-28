@@ -17,6 +17,7 @@
 
 namespace base {
 
+class NativeStackSampler;
 class NativeStackSamplerTestDelegate;
 
 // StackSamplingProfiler periodically stops a thread to sample its stack, for
@@ -32,8 +33,11 @@ class NativeStackSamplerTestDelegate;
 //   // To process the profiles, use a custom ProfileBuilder subclass:
 //   class SubProfileBuilder :
 //       public base::StackSamplingProfiler::ProfileBuilder{...}
+//
+//   // On Android the |sampler| is not implemented in base. So, client can pass
+//   // in |sampler| to use while profiling.
 //   base::StackSamplingProfiler profiler(base::PlatformThread::CurrentId()),
-//       params, std::make_unique<SubProfileBuilder>(...));
+//       params, std::make_unique<SubProfileBuilder>(...), <optional> sampler);
 //
 //   profiler.Start();
 //   // ... work being done on the target thread here ...
@@ -153,6 +157,15 @@ class BASE_EXPORT StackSamplingProfiler {
       std::unique_ptr<ProfileBuilder> profile_builder,
       NativeStackSamplerTestDelegate* test_delegate = nullptr);
 
+  // Same as above function, with custom |sampler| implementation. The sampler
+  // on Android is not implemented in base.
+  StackSamplingProfiler(
+      PlatformThreadId thread_id,
+      const SamplingParams& params,
+      std::unique_ptr<ProfileBuilder> profile_builder,
+      std::unique_ptr<NativeStackSampler> sampler,
+      NativeStackSamplerTestDelegate* test_delegate = nullptr);
+
   // Stops any profiling currently taking place before destroying the profiler.
   // This will block until profile_builder_'s OnProfileCompleted function has
   // executed if profiling has started but not already finished.
@@ -187,6 +200,11 @@ class BASE_EXPORT StackSamplingProfiler {
   // object will be transferred to the sampling thread when thread sampling
   // starts.
   std::unique_ptr<ProfileBuilder> profile_builder_;
+
+  // Stack sampler which stops the thread and collects stack frames. The
+  // ownership of this object will be transferred to the sampling thread when
+  // thread sampling starts.
+  std::unique_ptr<NativeStackSampler> native_sampler_;
 
   // This starts "signaled", is reset when sampling begins, and is signaled
   // when that sampling is complete and the profile_builder_'s
