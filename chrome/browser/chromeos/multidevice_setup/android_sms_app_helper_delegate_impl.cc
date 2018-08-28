@@ -43,9 +43,13 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp() {
 
 void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
     const GURL& app_url,
-    const std::string& app_id) {
-  PA_LOG(INFO) << "Messages app installed! URL: " << app_url
-               << ". Id: " << app_id;
+    const base::Optional<std::string>& app_id) {
+  if (app_id) {
+    PA_LOG(INFO) << "Messages app installed! URL: " << app_url
+                 << ". Id: " << app_id.value();
+  } else {
+    PA_LOG(INFO) << "Messages app failed to install! URL: " << app_url;
+  }
 }
 
 }  // namespace multidevice_setup

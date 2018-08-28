@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -25,9 +26,11 @@ namespace web_app {
 class PendingAppManager {
  public:
   using OnceInstallCallback =
-      base::OnceCallback<void(const GURL& app_url, const std::string&)>;
+      base::OnceCallback<void(const GURL& app_url,
+                              const base::Optional<std::string>&)>;
   using RepeatingInstallCallback =
-      base::RepeatingCallback<void(const GURL& app_url, const std::string&)>;
+      base::RepeatingCallback<void(const GURL& app_url,
+                                   const base::Optional<std::string>&)>;
 
   // How the app will be launched after installation.
   enum class LaunchContainer {

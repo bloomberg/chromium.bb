@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 class Profile;
@@ -39,13 +40,12 @@ class BookmarkAppInstallationTask {
   };
 
   struct Result {
-    Result(ResultCode code, const std::string& app_id);
+    Result(ResultCode code, base::Optional<std::string> app_id);
     Result(Result&&);
     ~Result();
 
     const ResultCode code;
-    // Empty unless |code| is ResultCode::kSuccess.
-    std::string app_id;
+    const base::Optional<std::string> app_id;
 
     DISALLOW_COPY_AND_ASSIGN(Result);
   };
