@@ -47,6 +47,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
@@ -337,6 +338,13 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // Returns the CodeCacheLoader that is used to fetch data from code caches.
+  // It is OK to return a nullptr. When a nullptr is returned, data would not
+  // be fetched from code cache.
+  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
+    return nullptr;
+  }
+
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
@@ -372,7 +380,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // A request to fetch contents associated with this URL from metadata cache.
   virtual void FetchCachedCode(
-      const WebURL&,
+      const GURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
   virtual void ClearCodeCacheEntry(const GURL&) {}
 

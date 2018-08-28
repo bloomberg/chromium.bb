@@ -39,6 +39,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/testing/code_cache_loader_mock.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -66,6 +67,9 @@ class TestingPlatformSupport : public Platform {
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
+  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+    return std::make_unique<CodeCacheLoaderMock>();
+  }
   WebData GetDataResource(const char* name) override;
   InterfaceProvider* GetInterfaceProvider() override;
   bool IsThreadedAnimationEnabled() override;

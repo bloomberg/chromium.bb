@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
+#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -54,6 +55,13 @@ class WebWorkerFetchContext {
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) = 0;
+
+  // Returns a CodeCacheLoader that fetches data from code caches. If
+  // a nullptr is returned then data would not be fetched from the code
+  // cache.
+  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
+    return nullptr;
+  };
 
   // Returns a new WebURLLoaderFactory for loading scripts in this worker
   // context. Unlike CreateURLLoaderFactory(), this may return nullptr even on
