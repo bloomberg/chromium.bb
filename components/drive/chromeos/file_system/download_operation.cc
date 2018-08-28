@@ -261,11 +261,11 @@ FileError UpdateLocalStateForDownloadFile(
 
 class DownloadOperation::DownloadParams {
  public:
-  DownloadParams(const GetFileContentInitializedCallback initialized_callback,
+  DownloadParams(GetFileContentInitializedCallback initialized_callback,
                  const google_apis::GetContentCallback get_content_callback,
                  GetFileCallback completion_callback,
                  std::unique_ptr<ResourceEntry> entry)
-      : initialized_callback_(initialized_callback),
+      : initialized_callback_(std::move(initialized_callback)),
         get_content_callback_(get_content_callback),
         completion_callback_(std::move(completion_callback)),
         entry_(std::move(entry)),
@@ -281,8 +281,9 @@ class DownloadOperation::DownloadParams {
 
   void OnCacheFileFound(const base::FilePath& cache_file_path) {
     if (!initialized_callback_.is_null()) {
-      initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
-                                std::make_unique<ResourceEntry>(*entry_));
+      std::move(initialized_callback_)
+          .Run(FILE_ERROR_OK, cache_file_path,
+               std::make_unique<ResourceEntry>(*entry_));
     }
     std::move(completion_callback_)
         .Run(FILE_ERROR_OK, cache_file_path, std::move(entry_));
@@ -295,8 +296,9 @@ class DownloadOperation::DownloadParams {
     }
 
     DCHECK(entry_);
-    initialized_callback_.Run(FILE_ERROR_OK, base::FilePath(),
-                              std::make_unique<ResourceEntry>(*entry_));
+    std::move(initialized_callback_)
+        .Run(FILE_ERROR_OK, base::FilePath(),
+             std::make_unique<ResourceEntry>(*entry_));
   }
 
   void OnError(FileError error) {
@@ -325,7 +327,7 @@ class DownloadOperation::DownloadParams {
       cancel_download_closure_.Run();
   }
 
-  const GetFileContentInitializedCallback initialized_callback_;
+  GetFileContentInitializedCallback initialized_callback_;
   const google_apis::GetContentCallback get_content_callback_;
   GetFileCallback completion_callback_;
 
@@ -358,7 +360,7 @@ DownloadOperation::~DownloadOperation() = default;
 base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
     const std::string& local_id,
     const ClientContext& context,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     GetFileCallback completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -373,7 +375,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
   base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
   std::unique_ptr<DownloadParams> download_params(new DownloadParams(
-      initialized_callback, get_content_callback,
+      std::move(initialized_callback), get_content_callback,
       std::move(completion_callback), base::WrapUnique(entry)));
   base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
@@ -392,7 +394,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
 base::Closure DownloadOperation::EnsureFileDownloadedByPath(
     const base::FilePath& file_path,
     const ClientContext& context,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     GetFileCallback completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -407,7 +409,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByPath(
   base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
   std::unique_ptr<DownloadParams> download_params(new DownloadParams(
-      initialized_callback, get_content_callback,
+      std::move(initialized_callback), get_content_callback,
       std::move(completion_callback), base::WrapUnique(entry)));
   base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(

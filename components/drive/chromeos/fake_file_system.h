@@ -90,7 +90,7 @@ class FakeFileSystem : public FileSystemInterface {
                         GetFileCallback callback) override;
   base::Closure GetFileContent(
       const base::FilePath& file_path,
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) override;
   void GetResourceEntry(const base::FilePath& file_path,
@@ -144,13 +144,13 @@ class FakeFileSystem : public FileSystemInterface {
   // 3) Otherwise start DownloadFile.
   // 4) Runs the |completion_callback| upon the download completion.
   void GetFileContentAfterGetResourceEntry(
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       FileError error,
       std::unique_ptr<ResourceEntry> entry);
   void GetFileContentAfterGetFileResource(
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       google_apis::DriveApiErrorCode gdata_error,

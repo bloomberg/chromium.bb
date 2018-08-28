@@ -92,9 +92,9 @@ typedef base::OnceCallback<void(FileError error,
 // If the file content is available in local cache, |local_file| is filled with
 // the path to the cache file. If the file content starts to be downloaded from
 // the server, |local_file| is empty.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& local_file,
-                            std::unique_ptr<ResourceEntry> entry)>
+typedef base::OnceCallback<void(FileError error,
+                                const base::FilePath& local_file,
+                                std::unique_ptr<ResourceEntry> entry)>
     GetFileContentInitializedCallback;
 
 // Used to get list of entries under a directory.
@@ -374,7 +374,7 @@ class FileSystemInterface {
   // must not be null.
   virtual base::Closure GetFileContent(
       const base::FilePath& file_path,
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) = 0;
 
