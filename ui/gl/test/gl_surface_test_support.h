@@ -17,6 +17,7 @@ class GLSurfaceTestSupport {
                                              bool fallback_to_swiftshader);
   static void InitializeOneOffWithMockBindings();
   static void InitializeOneOffWithStubBindings();
+  static void ShutdownGL();
 };
 
 }  // namespace gl
