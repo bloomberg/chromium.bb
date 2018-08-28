@@ -116,8 +116,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
   DCHECK((pic_param.profile == 0 && pic_param.bit_depth == 8) ||
          (pic_param.profile == 2 && pic_param.bit_depth == 10));
 
-  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType,
-                                    sizeof(pic_param), &pic_param))
+  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param))
     return false;
 
   VASliceParameterBufferVP9 slice_param;
@@ -149,8 +148,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
     seg_param.chroma_ac_quant_scale = seg.uv_dequant[i][1];
   }
 
-  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType,
-                                    sizeof(slice_param), &slice_param))
+  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param))
     return false;
 
   if (!vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType,

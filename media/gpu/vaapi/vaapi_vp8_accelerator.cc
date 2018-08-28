@@ -76,8 +76,7 @@ bool VaapiVP8Accelerator::SubmitDecode(
 #undef CLAMP_Q
   }
 
-  if (!vaapi_wrapper_->SubmitBuffer(
-          VAIQMatrixBufferType, sizeof(VAIQMatrixBufferVP8), &iq_matrix_buf)) {
+  if (!vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix_buf)) {
     return false;
   }
 
@@ -86,7 +85,6 @@ bool VaapiVP8Accelerator::SubmitDecode(
   ARRAY_MEMCPY_CHECKED(prob_buf.dct_coeff_probs, entr_hdr.coeff_probs);
 
   if (!vaapi_wrapper_->SubmitBuffer(VAProbabilityBufferType,
-                                    sizeof(VAProbabilityDataBufferVP8),
                                     &prob_buf)) {
     return false;
   }
@@ -189,8 +187,7 @@ bool VaapiVP8Accelerator::SubmitDecode(
   pic_param.bool_coder_ctx.value = frame_hdr->bool_dec_value;
   pic_param.bool_coder_ctx.count = frame_hdr->bool_dec_count;
 
-  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType,
-                                    sizeof(pic_param), &pic_param)) {
+  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
     return false;
   }
 
@@ -211,7 +208,6 @@ bool VaapiVP8Accelerator::SubmitDecode(
     slice_param.partition_size[i + 1] = frame_hdr->dct_partition_sizes[i];
 
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType,
-                                    sizeof(VASliceParameterBufferVP8),
                                     &slice_param)) {
     return false;
   }
