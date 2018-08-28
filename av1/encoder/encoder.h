@@ -945,7 +945,12 @@ static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
 // Returns a Sequence Header OBU stored in an aom_fixed_buf_t, or NULL upon
 // failure. When a non-NULL aom_fixed_buf_t pointer is returned by this
 // function, the memory must be freed by the caller. Both the buf member of the
-// aom_fixed_buf_t, and the aom_fixed_buf_t pointer itself must be freed.
+// aom_fixed_buf_t, and the aom_fixed_buf_t pointer itself must be freed. Memory
+// returned must be freed via call to free().
+//
+// Note: The OBU returned is in Low Overhead Bitstream Format. Specifically,
+// the obu_has_size_field bit is set, and the buffer contains the obu_size
+// field.
 aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 
 #ifdef __cplusplus
