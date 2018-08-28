@@ -145,13 +145,17 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
     set_upgrade_detected_time(tick_clock()->NowTicks());
 
     if (status.is_rollback) {
-      set_is_rollback(true);
-      NotifyOnUpgrade();
-    } else {
-      // Determine whether powerwash is required based on the channel.
+      // Powerwash will be required, determine what kind of notification to show
+      // based on the channel.
       ChannelsRequester::Begin(
           base::BindOnce(&UpgradeDetectorChromeos::OnChannelsReceived,
                          weak_factory_.GetWeakPtr()));
+    } else {
+      // Not going to an earlier version, no powerwash or rollback message is
+      // required.
+      set_is_rollback(false);
+      set_is_factory_reset_required(false);
+      NotifyOnUpgrade();
     }
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE) {
@@ -202,11 +206,17 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
 
 void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
                                                  std::string target_channel) {
-  // As current update engine status is UPDATE_STATUS_UPDATED_NEED_REBOOT
-  // and target channel is more stable than current channel, powerwash
+  bool to_more_stable_channel = UpdateEngineClient::IsTargetChannelMoreStable(
+      current_channel, target_channel);
+  // As current update engine status is UPDATE_STATUS_UPDATED_NEED_REBOOT,
+  // if target channel is more stable than current channel, powerwash
   // will be performed after reboot.
-  set_is_factory_reset_required(UpdateEngineClient::IsTargetChannelMoreStable(
-      current_channel, target_channel));
+  set_is_factory_reset_required(to_more_stable_channel);
+  // If we are doing a channel switch, we're currently showing the channel
+  // switch message instead of the rollback message (even if the channel switch
+  // was initiated by the admin).
+  // TODO(crbug.com/864672): Fix this by getting is_rollback from update engine.
+  set_is_rollback(!to_more_stable_channel);
 
   // ChromeOS shows upgrade arrow once the upgrade becomes available.
   NotifyOnUpgrade();
