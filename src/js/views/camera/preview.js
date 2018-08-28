@@ -31,6 +31,13 @@ camera.views.camera.Preview = function() {
    */
   this.video_ = document.querySelector('#preview-video');
 
+  /**
+   * Promise for the current applying focus.
+   * @type {Promise<>}
+   * @private
+   */
+  this.focus_ = null;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -73,6 +80,7 @@ camera.views.camera.Preview.prototype.setSource = function(
     var onLoadedMetadata = () => {
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
       video.play();
+      this.cancelFocus_();
       this.video_.parentElement.replaceChild(video, this.video_);
       this.video_.cleanup();
       this.video_ = video;
@@ -80,13 +88,21 @@ camera.views.camera.Preview.prototype.setSource = function(
     };
     var onResize = () => {
       if (video.videoWidth && video.videoHeight) {
+        this.cancelFocus_();
         onIntrinsicSize();
+      }
+    };
+    var onClick = (event) => {
+      if (video.videoWidth && video.videoHeight) {
+        this.applyFocus_(event.offsetX, event.offsetY);
       }
     };
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('resize', onResize);
+    video.addEventListener('click', onClick);
     video.cleanup = () => {
       video.removeEventListener('resize', onResize);
+      video.removeEventListener('click', onClick);
       video.removeAttribute('srcObject');
       video.load();
     };
@@ -138,4 +154,41 @@ camera.views.camera.Preview.prototype.toImage = function() {
       }
     }, 'image/jpeg');
   });
+};
+
+/**
+ * Applies focus at the given coordinate.
+ * @param {number} offsetX X-coordinate based on the video element.
+ * @param {number} offsetY Y-coordinate based on the video element.
+ * @private
+ */
+camera.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
+  this.cancelFocus_();
+
+  // Normalize to square space coordinates by W3C spec.
+  var x = offsetX / this.video_.width;
+  var y = offsetY / this.video_.height;
+  var constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
+  var track = this.video_.srcObject.getVideoTracks()[0];
+  var focus = track.applyConstraints(constraints).then(() => {
+    if (focus != this.focus_) {
+      throw 'Focus was cancelled.';
+    }
+    var aim = document.querySelector('#preview-focus-aim');
+    var clone = aim.cloneNode(true);
+    clone.style.left = `${x * 100}%`;
+    clone.style.top = `${y * 100}%`;
+    clone.hidden = false;
+    aim.parentElement.replaceChild(clone, aim);
+  }).catch(error => console.error(error));
+  this.focus_ = focus;
+};
+
+/**
+ * Cancels the current applying focus.
+ * @private
+ */
+camera.views.camera.Preview.prototype.cancelFocus_ = function() {
+  this.focus_ = null;
+  document.querySelector('#preview-focus-aim').hidden = true;
 };

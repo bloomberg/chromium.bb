@@ -78,6 +78,7 @@ SRC_RESOURCES= \
         src/images/camera_button_timer_off.svg \
         src/images/camera_button_timer_on.svg \
         src/images/camera_button_toggle_device.svg \
+        src/images/camera_focus_aim.svg \
         src/images/camera_mode_photo.svg \
         src/images/camera_mode_recording.svg \
         src/images/camera_shutter_photo_start.svg \
