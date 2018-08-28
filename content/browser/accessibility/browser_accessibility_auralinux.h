@@ -22,7 +22,11 @@ class BrowserAccessibilityAuraLinux : public BrowserAccessibility {
 
   ~BrowserAccessibilityAuraLinux() override;
 
-  ui::AXPlatformNodeAuraLinux* GetNode() const;
+  CONTENT_EXPORT ui::AXPlatformNodeAuraLinux* GetNode() const;
+
+  // This is used to call UpdateHypertext, when a node needs to be
+  // updated for some other reason other than via OnAtomicUpdateFinished.
+  void UpdatePlatformAttributes() override;
 
   // BrowserAccessibility methods.
   void OnDataChanged() override;

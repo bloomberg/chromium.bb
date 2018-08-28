@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_auralinux.h"
 
+#include <vector>
+
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -70,6 +72,24 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
   // Need to implement.
+}
+
+void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(
+    ui::AXTree* tree,
+    bool root_changed,
+    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
+                                                      changes);
+
+  // This is the second step in what will be a three step process mirroring that
+  // used in BrowserAccessibilityManagerWin.
+  for (const auto& change : changes) {
+    const ui::AXNode* changed_node = change.node;
+    DCHECK(changed_node);
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
+    if (obj && obj->IsNative())
+      ToBrowserAccessibilityAuraLinux(obj)->GetNode()->UpdateHypertext();
+  }
 }
 
 }  // namespace content

@@ -920,6 +920,11 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
+  // TODO(accessibility): We should only expose this for some elements, but
+  // it might be better to do this after exposing the hypertext interface
+  // as well.
+  interface_mask |= 1 << ATK_TEXT_INTERFACE;
+
   // Value Interface
   int role = GetAtkRole();
   if (role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
@@ -939,10 +944,6 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // HyperlinkImpl interface
   if (role == ATK_ROLE_LINK)
     interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
-
-  // Text interface
-  if (role == ATK_ROLE_TEXT)
-    interface_mask |= 1 << ATK_TEXT_INTERFACE;
 
   return interface_mask;
 }
@@ -1621,6 +1622,10 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
   }
 }
 
+void AXPlatformNodeAuraLinux::UpdateHypertext() {
+  hypertext_ = ComputeHypertext();
+}
+
 int AXPlatformNodeAuraLinux::GetIndexInParent() {
   if (!GetParent())
     return -1;
@@ -1804,7 +1809,10 @@ std::string AXPlatformNodeAuraLinux::GetTextForATK() {
   if (IsPlainTextField())
     return GetStringAttribute(ax::mojom::StringAttribute::kValue);
 
-  return AXPlatformNodeBase::GetText();
+  if (IsChildOfLeaf())
+    return AXPlatformNodeBase::GetText();
+
+  return base::UTF16ToUTF8(hypertext_.hypertext);
 }
 
 }  // namespace ui

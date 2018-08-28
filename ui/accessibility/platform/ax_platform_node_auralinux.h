@@ -88,7 +88,11 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   std::string GetTextForATK();
 
+  AX_EXPORT void UpdateHypertext();
+
  protected:
+  AXHypertext hypertext_;
+
   void AddAttributeToList(const char* name,
                           const char* value,
                           PlatformAttributeList* attributes) override;
