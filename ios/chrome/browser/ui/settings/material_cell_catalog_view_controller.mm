@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
@@ -67,6 +68,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPaymentsNoBackground,
   SectionIdentifierCopiedToChrome,
   SectionIdentifierPasswordDetails,
+  SectionIdentifierSettingsSearchCell,
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
@@ -103,6 +105,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypePasswordDetailsShortHidden,
   ItemTypePasswordDetailsShortVisible,
   ItemTypePasswordDetailsLong,
+  ItemTypeSettingsSearch,
   ItemTypeAutofillDynamicHeight,
   ItemTypeAutofillCVC,
   ItemTypeAutofillStatus,
@@ -362,6 +365,11 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierPasswordDetails];
   [model addItem:[self passwordDetailsLongItem]
       toSectionWithIdentifier:SectionIdentifierPasswordDetails];
+
+  // Search cells.
+  [model addSectionWithIdentifier:SectionIdentifierSettingsSearchCell];
+  [model addItem:[self settingsSearchItem]
+      toSectionWithIdentifier:SectionIdentifierSettingsSearchCell];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
@@ -854,6 +862,13 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"Lorem ipsum dolor sit amet, consectetur "
       @"adipiscing elit, sed do eiusmod tempor "
       @"incididunt ut labore et dolore magna aliqua.";
+  return item;
+}
+
+- (SettingsSearchItem*)settingsSearchItem {
+  SettingsSearchItem* item =
+      [[SettingsSearchItem alloc] initWithType:ItemTypeSettingsSearch];
+  item.placeholder = @"Search Here";
   return item;
 }
 
