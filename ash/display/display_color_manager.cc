@@ -16,7 +16,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/base/ui_base_features.h"
@@ -36,7 +36,7 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
   VLOG(1) << "Trying ICC file " << path.value()
           << " has_color_correction_matrix: "
           << (has_color_correction_matrix ? "true" : "false");
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // Reads from a file.
   qcms_profile* display_profile = qcms_profile_from_path(path.value().c_str());
   if (!display_profile) {
