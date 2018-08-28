@@ -106,6 +106,7 @@ class PasswordFormManagerForUI {
 // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
 // gone.
 class PasswordFormManagerInterface : public PasswordFormManagerForUI {
+ public:
   // Returns whether it is a new (i.e. not saved yet) credentials.
   virtual bool IsNewLogin() const = 0;
 
