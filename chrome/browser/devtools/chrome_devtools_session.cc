@@ -26,7 +26,8 @@ ChromeDevToolsSession::ChromeDevToolsSession(
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
                                                   dispatcher_.get());
   }
-  target_handler_ = std::make_unique<TargetHandler>(dispatcher_.get());
+  target_handler_ = std::make_unique<TargetHandler>(
+      dispatcher_.get(), agent_host->GetBrowserContext());
   browser_handler_ = std::make_unique<BrowserHandler>(dispatcher_.get());
 #if defined(OS_CHROMEOS)
   window_manager_protocl_handler_ =

@@ -19,7 +19,8 @@ using RemoteLocations = std::set<net::HostPortPair>;
 
 class TargetHandler : public protocol::Target::Backend {
  public:
-  explicit TargetHandler(protocol::UberDispatcher* dispatcher);
+  explicit TargetHandler(protocol::UberDispatcher* dispatcher,
+                         content::BrowserContext* context);
   ~TargetHandler() override;
 
   RemoteLocations& remote_locations() { return remote_locations_; }
@@ -38,6 +39,7 @@ class TargetHandler : public protocol::Target::Backend {
 
  private:
   RemoteLocations remote_locations_;
+  content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };
