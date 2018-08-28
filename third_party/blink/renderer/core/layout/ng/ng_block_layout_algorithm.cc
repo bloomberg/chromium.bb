@@ -1959,8 +1959,7 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
     return true;
   }
 
-  LayoutObject* layout_object = child->GetLayoutObject();
-  if (layout_object->IsFloatingOrOutOfFlowPositioned())
+  if (child->IsFloatingOrOutOfFlowPositioned())
     return false;
 
   if (child->IsBox()) {
