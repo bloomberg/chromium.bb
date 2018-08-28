@@ -112,7 +112,9 @@ class WebViewImpl : public WebView {
   Status OverrideGeolocation(const Geoposition& geoposition) override;
   Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) override;
-  Status CaptureScreenshot(std::string* screenshot) override;
+  Status CaptureScreenshot(
+      std::string* screenshot,
+      const base::DictionaryValue& params) override;
   Status SetFileInputFiles(const std::string& frame,
                            const base::DictionaryValue& element,
                            const std::vector<base::FilePath>& files) override;

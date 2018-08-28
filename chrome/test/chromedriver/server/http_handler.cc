@@ -257,6 +257,10 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/screenshot",
           WrapToCommand("Screenshot", base::Bind(&ExecuteScreenshot))),
 
+      CommandMapping(
+          kGet, "session/:sessionId/element/:id/screenshot",
+          WrapToCommand("Screenshot", base::Bind(&ExecuteElementScreenshot))),
+
       // Json wire protocol only
       // similar to /session/{session id}/window
       CommandMapping(kGet, "session/:sessionId/window_handle",

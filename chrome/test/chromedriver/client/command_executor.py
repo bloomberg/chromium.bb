@@ -35,6 +35,8 @@ class Command(object):
   GET_TITLE = (_Method.GET, '/session/:sessionId/title')
   GET_PAGE_SOURCE = (_Method.GET, '/session/:sessionId/source')
   SCREENSHOT = (_Method.GET, '/session/:sessionId/screenshot')
+  ELEMENT_SCREENSHOT = (
+      _Method.GET, '/session/:sessionId/element/:id/screenshot')
   SET_BROWSER_VISIBLE = (_Method.POST, '/session/:sessionId/visible')
   IS_BROWSER_VISIBLE = (_Method.GET, '/session/:sessionId/visible')
   FIND_ELEMENT = (_Method.POST, '/session/:sessionId/element')

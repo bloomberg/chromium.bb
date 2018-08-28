@@ -30,6 +30,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/key_converter.h"
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
@@ -1310,11 +1311,15 @@ Status ExecuteScreenshot(Session* session,
       return status;
     status = extension->CaptureScreenshot(&screenshot);
   } else {
-    status = web_view->CaptureScreenshot(&screenshot);
+    std::unique_ptr<base::DictionaryValue> screenshot_params(
+        const base::DictionaryValue&);
+  status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError()) {
     LOG(WARNING) << "screenshot failed, retrying";
-    status = web_view->CaptureScreenshot(&screenshot);
+    std::unique_ptr<base::DictionaryValue> screenshot_params(
+        new base::DictionaryValue);
+    status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())
     return status;
