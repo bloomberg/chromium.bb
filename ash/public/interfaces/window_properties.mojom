@@ -4,6 +4,10 @@
 
 module ash.mojom;
 
+// App type of the window, like browser or app. The type is an int but should
+// be one of ash::AppType (see ash/public/cpp/app_types.h).
+const string kAppType_Property = "ash:app-type";
+
 // A bool to indicate whether this window should be replaced by a black
 // rectangle in assistant screenshot for privacy purpose.
 const string kBlockedForAssistantSnapshot_Property =
