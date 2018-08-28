@@ -73,7 +73,8 @@ AppListControllerImpl::AppListControllerImpl(
   Shell::Get()->AddShellObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
 
-  if (IsHomeLauncherEnabledInTabletMode()) {
+  if (IsHomeLauncherEnabledInTabletMode() &&
+      app_list::features::IsHomeLauncherGesturesEnabled()) {
     home_launcher_gesture_handler_ =
         std::make_unique<HomeLauncherGestureHandler>();
   }
@@ -525,7 +526,8 @@ void AppListControllerImpl::OnOverviewModeEnding() {
 void AppListControllerImpl::OnTabletModeStarted() {
   // TODO(sammiequon): Find a better way to handle events that are not in tablet
   // mode than controlling the lifetime fo this object.
-  if (is_home_launcher_enabled_) {
+  if (IsHomeLauncherEnabledInTabletMode() &&
+      app_list::features::IsHomeLauncherGesturesEnabled()) {
     home_launcher_gesture_handler_ =
         std::make_unique<HomeLauncherGestureHandler>();
   }

@@ -29,19 +29,10 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
-  // Create a test window and strip it of transient relatives since this does
-  // not work with transient windows yet. Set the base transform to identity and
+  // Create a test window and set the base transform to identity and
   // the base opacity to opaque for easier testing.
-  std::unique_ptr<aura::Window> CreateNonTransientTestWindow() {
+  std::unique_ptr<aura::Window> CreateWindowForTesting() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
-    ::wm::TransientWindowManager* manager =
-        ::wm::TransientWindowManager::GetOrCreate(window.get());
-    if (manager->transient_parent()) {
-      ::wm::TransientWindowManager::GetOrCreate(manager->transient_parent())
-          ->RemoveTransientChild(window.get());
-    }
-    for (auto* window : manager->transient_children())
-      manager->RemoveTransientChild(window);
 
     window->SetTransform(gfx::Transform());
     window->layer()->SetOpacity(1.f);
@@ -70,7 +61,7 @@ TEST_F(HomeLauncherGestureHandlerTest, NeedsOneWindow) {
   GetGestureHandler()->OnPressEvent();
   EXPECT_FALSE(GetGestureHandler()->window());
 
-  auto window = CreateNonTransientTestWindow();
+  auto window = CreateWindowForTesting();
   GetGestureHandler()->OnPressEvent();
   EXPECT_TRUE(GetGestureHandler()->window());
 }
@@ -78,9 +69,9 @@ TEST_F(HomeLauncherGestureHandlerTest, NeedsOneWindow) {
 // Tests that if there are other visible windows behind the most recent one,
 // they get hidden on press event so that the home launcher is visible.
 TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
-  auto window1 = CreateNonTransientTestWindow();
-  auto window2 = CreateNonTransientTestWindow();
-  auto window3 = CreateNonTransientTestWindow();
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window3 = CreateWindowForTesting();
   ASSERT_TRUE(window1->IsVisible());
   ASSERT_TRUE(window2->IsVisible());
   ASSERT_TRUE(window3->IsVisible());
@@ -96,7 +87,7 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
 
 // Tests that the window transform and opacity changes as we scroll.
 TEST_F(HomeLauncherGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
-  auto window = CreateNonTransientTestWindow();
+  auto window = CreateWindowForTesting();
 
   GetGestureHandler()->OnPressEvent();
   ASSERT_TRUE(GetGestureHandler()->window());
@@ -122,9 +113,9 @@ TEST_F(HomeLauncherGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 // window to its original transform and opacity.
 TEST_F(HomeLauncherGestureHandlerTest, BelowHalfReleaseReturnsToOriginalState) {
   UpdateDisplay("400x400");
-  auto window1 = CreateNonTransientTestWindow();
-  auto window2 = CreateNonTransientTestWindow();
-  auto window3 = CreateNonTransientTestWindow();
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window3 = CreateWindowForTesting();
 
   ::wm::ActivateWindow(window1.get());
   GetGestureHandler()->OnPressEvent();
@@ -151,9 +142,9 @@ TEST_F(HomeLauncherGestureHandlerTest, BelowHalfReleaseReturnsToOriginalState) {
 // window under action.
 TEST_F(HomeLauncherGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
   UpdateDisplay("400x400");
-  auto window1 = CreateNonTransientTestWindow();
-  auto window2 = CreateNonTransientTestWindow();
-  auto window3 = CreateNonTransientTestWindow();
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window3 = CreateWindowForTesting();
 
   ::wm::ActivateWindow(window1.get());
   GetGestureHandler()->OnPressEvent();
@@ -168,6 +159,37 @@ TEST_F(HomeLauncherGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
   // The rest of the windows remain invisible, to show the home launcher.
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
+}
+
+// Tests on swipe up, the transient child of a window which is getting hidden
+// will have its opacity and transform altered as well.
+TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
+  UpdateDisplay("400x448");
+
+  // Create a window with a transient child.
+  auto parent = CreateWindowForTesting();
+  auto child = CreateTestWindow(gfx::Rect(100, 100, 200, 200),
+                                aura::client::WINDOW_TYPE_POPUP);
+  child->SetTransform(gfx::Transform());
+  child->layer()->SetOpacity(1.f);
+  ::wm::AddTransientChild(parent.get(), child.get());
+
+  // |parent| should be the window that is getting hidden.
+  ::wm::ActivateWindow(parent.get());
+  GetGestureHandler()->OnPressEvent();
+  ASSERT_EQ(parent.get(), GetGestureHandler()->window());
+
+  // Tests that after scrolling to the halfway point, the transient child's
+  // opacity and transform are halfway to their final values.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200));
+  EXPECT_EQ(0.5f, child->layer()->opacity());
+  EXPECT_NE(gfx::Transform(), child->transform());
+
+  // Tests that after releasing on the bottom half, the transient child reverts
+  // to its original values.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(1.0f, child->layer()->opacity());
+  EXPECT_EQ(gfx::Transform(), child->transform());
 }
 
 }  // namespace ash
