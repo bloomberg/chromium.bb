@@ -42,6 +42,7 @@ class EnrollmentScreenView;
 class EulaView;
 class ErrorScreen;
 class DiscoverScreenView;
+class FingerprintSetupScreenView;
 class GaiaView;
 class HIDDetectionView;
 class HostPairingScreenView;
@@ -112,6 +113,7 @@ class OobeUI : public content::WebUIController,
   ResetView* GetResetView();
   DemoSetupScreenView* GetDemoSetupScreenView();
   DemoPreferencesScreenView* GetDemoPreferencesScreenView();
+  FingerprintSetupScreenView* GetFingerprintSetupScreenView();
   KioskAutolaunchScreenView* GetKioskAutolaunchScreenView();
   KioskEnableScreenView* GetKioskEnableScreenView();
   TermsOfServiceScreenView* GetTermsOfServiceScreenView();

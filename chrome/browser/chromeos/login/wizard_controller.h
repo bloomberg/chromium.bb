@@ -178,6 +178,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
   void ShowSyncConsentScreen();
+  void ShowFingerprintSetupScreen();
   void ShowArcTermsOfServiceScreen();
   void ShowRecommendAppsScreen();
   void ShowAppDownloadingScreen();
@@ -223,6 +224,8 @@ class WizardController : public BaseScreenDelegate,
   void OnWrongHWIDWarningSkipped();
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
+  void OnSyncConsentFinished();
+  void OnFingerprintSetupFinished();
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
   void OnArcTermsOfServiceBack();

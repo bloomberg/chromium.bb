@@ -57,6 +57,7 @@ const char* kScreenNames[] = {
     "oobe",                          // SCREEN_SPECIAL_OOBE
     "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
     "sync-consent",                  // SCREEN_SYNC_CONSENT
+    "fingerprint-setup",             // SCREEN_FINGERPRINT_SETUP
     "demo-setup",                    // SCREEN_OOBE_DEMO_SETUP
     "demo-preferences",              // SCREEN_OOBE_DEMO_PREFERENCES
     "recommend-apps",                // SCREEN_RECOMMEND_APPS

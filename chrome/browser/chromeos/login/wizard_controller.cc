@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
@@ -50,6 +51,7 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
@@ -140,6 +142,7 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT,
     chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_SYNC_CONSENT,
+    chromeos::OobeScreen::SCREEN_FINGERPRINT_SETUP,
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
     chromeos::OobeScreen::SCREEN_RECOMMEND_APPS,
@@ -503,6 +506,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     return std::make_unique<DiscoverScreen>(this,
                                             oobe_ui->GetDiscoverScreenView());
+  } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
+    return std::make_unique<FingerprintSetupScreen>(
+        this, oobe_ui->GetFingerprintSetupScreenView());
   }
   return nullptr;
 }
@@ -654,8 +660,14 @@ void WizardController::ShowSyncConsentScreen() {
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
 #else
-  ShowArcTermsOfServiceScreen();
+  OnSyncConsentFinished();
 #endif
+}
+
+void WizardController::ShowFingerprintSetupScreen() {
+  VLOG(1) << "Showing Fingerprint Setup screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -1034,6 +1046,17 @@ void WizardController::OnTermsOfServiceDeclined() {
 
 void WizardController::OnTermsOfServiceAccepted() {
   ShowSyncConsentScreen();
+}
+
+void WizardController::OnSyncConsentFinished() {
+  if (chromeos::quick_unlock::IsFingerprintEnabled())
+    ShowFingerprintSetupScreen();
+  else
+    ShowArcTermsOfServiceScreen();
+}
+
+void WizardController::OnFingerprintSetupFinished() {
+  ShowArcTermsOfServiceScreen();
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
@@ -1422,6 +1445,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowUpdateRequiredScreen();
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     ShowDiscoverScreen();
+  } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
+    ShowFingerprintSetupScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
@@ -1568,7 +1593,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       OnOobeFlowFinished();
       break;
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
-      ShowArcTermsOfServiceScreen();
+      OnSyncConsentFinished();
       break;
     case ScreenExitCode::RECOMMEND_APPS_SKIPPED:
       OnRecommendAppsSkipped();
@@ -1593,6 +1618,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::DISCOVER_FINISHED:
       OnOobeFlowFinished();
+      break;
+    case ScreenExitCode::FINGERPRINT_SETUP_FINISHED:
+      OnFingerprintSetupFinished();
       break;
     default:
       NOTREACHED();
@@ -1776,6 +1804,7 @@ void WizardController::SkipPostLoginScreensForTesting() {
       default_controller()->current_screen()->screen_id();
   if (current_screen_id == OobeScreen::SCREEN_TERMS_OF_SERVICE ||
       current_screen_id == OobeScreen::SCREEN_SYNC_CONSENT ||
+      current_screen_id == OobeScreen::SCREEN_FINGERPRINT_SETUP ||
       current_screen_id == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE ||
       current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
       current_screen_id == OobeScreen::SCREEN_DISCOVER) {
