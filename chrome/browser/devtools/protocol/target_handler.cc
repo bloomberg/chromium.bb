@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "content/public/browser/devtools_agent_host.h"
 
-TargetHandler::TargetHandler(protocol::UberDispatcher* dispatcher) {
+TargetHandler::TargetHandler(protocol::UberDispatcher* dispatcher,
+                             content::BrowserContext* context)
+    : context_(context) {
   protocol::Target::Dispatcher::wire(dispatcher, this);
 }
 
@@ -20,7 +22,7 @@ TargetHandler::~TargetHandler() {
   ChromeDevToolsManagerDelegate* delegate =
       ChromeDevToolsManagerDelegate::GetInstance();
   if (delegate)
-    delegate->UpdateDeviceDiscovery();
+    delegate->UpdateDeviceDiscovery(context_);
 }
 
 protocol::Response TargetHandler::SetRemoteLocations(
@@ -39,7 +41,7 @@ protocol::Response TargetHandler::SetRemoteLocations(
   ChromeDevToolsManagerDelegate* delegate =
       ChromeDevToolsManagerDelegate::GetInstance();
   if (delegate)
-    delegate->UpdateDeviceDiscovery();
+    delegate->UpdateDeviceDiscovery(context_);
   return protocol::Response::OK();
 }
 
