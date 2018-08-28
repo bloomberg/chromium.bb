@@ -156,5 +156,11 @@ SequenceManagerFuzzerProcessor* ThreadPoolManager::processor() const {
   return processor_;
 }
 
+ThreadManager* ThreadPoolManager::GetThreadManagerFor(uint64_t thread_id) {
+  AutoLock lock(lock_);
+  int id = thread_id % threads_.size();
+  return threads_[id]->thread_manager();
+}
+
 }  // namespace sequence_manager
 }  // namespace base
