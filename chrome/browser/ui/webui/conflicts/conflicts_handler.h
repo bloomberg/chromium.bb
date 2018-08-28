@@ -33,6 +33,12 @@ class ConflictsHandler : public content::WebUIMessageHandler,
   enum ThirdPartyFeaturesStatus {
     // The third-party features are not available in non-Google Chrome builds.
     kNonGoogleChromeBuild,
+    // The third-party features are temporarily disabled on domain-joined
+    // machines because of a known issue with third-party blocking and the
+    // IAttachmentExecute::Save() API (https://crbug.com/870998).
+    // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
+    //                 remove this.
+    kEnterpriseManaged,
     // The ThirdPartyBlockingEnabled group policy is disabled.
     kPolicyDisabled,
     // Both the IncompatibleApplicationsWarning and the
