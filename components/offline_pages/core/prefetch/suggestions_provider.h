@@ -38,6 +38,7 @@ struct PrefetchSuggestion {
 
 // Interface implemented by the suggestions provider.
 class SuggestionsProvider {
+ public:
   using SuggestionCallback =
       base::OnceCallback<void(std::vector<PrefetchSuggestion>)>;
 
