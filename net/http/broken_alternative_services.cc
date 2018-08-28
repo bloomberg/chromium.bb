@@ -47,7 +47,27 @@ void BrokenAlternativeServices::Clear() {
   recently_broken_alternative_services_.Clear();
 }
 
+void BrokenAlternativeServices::
+    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+        const AlternativeService& alternative_service) {
+  DCHECK(!alternative_service.host.empty());
+  DCHECK_NE(kProtoUnknown, alternative_service.protocol);
+
+  // The brokenness will expire on the default network change or based on
+  // timer.
+  broken_alternative_services_on_default_network_.insert(alternative_service);
+  MarkAlternativeServiceBrokenImpl(alternative_service);
+}
+
 void BrokenAlternativeServices::MarkAlternativeServiceBroken(
+    const AlternativeService& alternative_service) {
+  // The brokenness expires based only on the timer, not on the default network
+  // change.
+  broken_alternative_services_on_default_network_.erase(alternative_service);
+  MarkAlternativeServiceBrokenImpl(alternative_service);
+}
+
+void BrokenAlternativeServices::MarkAlternativeServiceBrokenImpl(
     const AlternativeService& alternative_service) {
   // Empty host means use host of origin, callers are supposed to substitute.
   DCHECK(!alternative_service.host.empty());
@@ -122,8 +142,9 @@ void BrokenAlternativeServices::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
   DCHECK_NE(kProtoUnknown, alternative_service.protocol);
 
-  // Remove |alternative_service| from |alternative_service_list_| and
-  // |alternative_service_map_|.
+  // Remove |alternative_service| from |broken_alternative_service_list_|,
+  // |broken_alternative_service_map_| and
+  // |broken_alternative_services_on_default_network_|.
   auto map_it = broken_alternative_service_map_.find(alternative_service);
   if (map_it != broken_alternative_service_map_.end()) {
     broken_alternative_service_list_.erase(map_it->second);
@@ -133,6 +154,15 @@ void BrokenAlternativeServices::ConfirmAlternativeService(
   auto it = recently_broken_alternative_services_.Get(alternative_service);
   if (it != recently_broken_alternative_services_.end()) {
     recently_broken_alternative_services_.Erase(it);
+  }
+
+  broken_alternative_services_on_default_network_.erase(alternative_service);
+}
+
+void BrokenAlternativeServices::OnDefaultNetworkChanged() {
+  while (!broken_alternative_services_on_default_network_.empty()) {
+    ConfirmAlternativeService(
+        *broken_alternative_services_on_default_network_.begin());
   }
 }
 
