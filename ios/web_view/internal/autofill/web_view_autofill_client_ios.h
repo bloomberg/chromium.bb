@@ -31,7 +31,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
-      scoped_refptr<AutofillWebDataService> autofill_web_data_service);
+      scoped_refptr<AutofillWebDataService> autofill_web_data_service,
+      syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient implementation.
@@ -99,6 +100,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   __weak id<CWVAutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
+  syncer::SyncService* sync_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
 };
