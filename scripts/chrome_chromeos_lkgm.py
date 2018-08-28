@@ -7,12 +7,12 @@
 
 from __future__ import print_function
 
-import argparse
 import distutils.version
 import os
 
 from chromite.cbuildbot import manifest_version
 from chromite.lib import chrome_committer
+from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -100,8 +100,9 @@ def GetArgs(argv):
     Dictionary of parsed args.
   """
   committer_parser = chrome_committer.ChromeCommitter.GetParser()
-  parser = argparse.ArgumentParser(usage=__doc__,
-                                   parents=[committer_parser])
+  parser = commandline.ArgumentParser(description=__doc__,
+                                      parents=[committer_parser],
+                                      add_help=False, logging=False)
   parser.add_argument('--lkgm', required=True,
                       help="LKGM version to update to.")
   return parser.parse_args(argv)
