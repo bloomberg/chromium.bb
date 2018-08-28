@@ -390,16 +390,22 @@ void VideoDecoderShim::YUVConverter::Convert(
     };
 
     yuv_adjust = yuv_adjust_constrained;
+    // TODO(hubbe): Should default to 709
     yuv_matrix = yuv_to_rgb_rec601;
 
-    int result;
-    if (frame->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
-                                      &result)) {
-      if (result == media::COLOR_SPACE_JPEG) {
-        yuv_matrix = yuv_to_rgb_jpeg;
-        yuv_adjust = yuv_adjust_full;
-      } else if (result == media::COLOR_SPACE_HD_REC709) {
-        yuv_matrix = yuv_to_rgb_rec709;
+    SkYUVColorSpace sk_yuv_color_space;
+    if (frame->ColorSpace().ToSkYUVColorSpace(&sk_yuv_color_space)) {
+      switch (sk_yuv_color_space) {
+        case kJPEG_SkYUVColorSpace:
+          yuv_matrix = yuv_to_rgb_jpeg;
+          yuv_adjust = yuv_adjust_full;
+          break;
+        case kRec709_SkYUVColorSpace:
+          yuv_matrix = yuv_to_rgb_rec709;
+          break;
+        case kRec601_SkYUVColorSpace:
+          // Current default.
+          break;
       }
     }
 
