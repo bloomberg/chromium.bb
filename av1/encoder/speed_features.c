@@ -590,5 +590,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
 #if CONFIG_DIST_8X8
   if (sf->use_transform_domain_distortion > 0) cpi->oxcf.using_dist_8x8 = 0;
+
+  if (cpi->oxcf.using_dist_8x8) x->min_partition_size = BLOCK_8X8;
 #endif  // CONFIG_DIST_8X8
 }

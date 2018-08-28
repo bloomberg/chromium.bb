@@ -2018,7 +2018,7 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
   assert(visible_cols > 0);
 
 #if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && plane == 0 && txb_cols >= 8 && txb_rows >= 8)
+  if (x->using_dist_8x8 && plane == 0)
     return (unsigned)av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
                                   tx_bsize, txb_cols, txb_rows, visible_cols,
                                   visible_rows, x->qindex);
@@ -2036,8 +2036,7 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                                       int blk_row, int blk_col,
                                       const BLOCK_SIZE plane_bsize,
-                                      const BLOCK_SIZE tx_bsize,
-                                      int force_sse) {
+                                      const BLOCK_SIZE tx_bsize) {
   int visible_rows, visible_cols;
   const MACROBLOCKD *xd = &x->e_mbd;
   get_txb_dimensions(xd, plane, plane_bsize, blk_row, blk_col, tx_bsize, NULL,
@@ -2047,8 +2046,7 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
 #if CONFIG_DIST_8X8
   int txb_height = block_size_high[tx_bsize];
   int txb_width = block_size_wide[tx_bsize];
-  if (!force_sse && x->using_dist_8x8 && plane == 0 && txb_width >= 8 &&
-      txb_height >= 8) {
+  if (x->using_dist_8x8 && plane == 0) {
     const int src_stride = x->plane[plane].src.stride;
     const int src_idx = (blk_row * src_stride + blk_col)
                         << tx_size_wide_log2[0];
@@ -2059,8 +2057,6 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                          txb_width, txb_height, visible_cols, visible_rows,
                          x->qindex);
   }
-#else
-  (void)force_sse;
 #endif
   diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
   return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
@@ -2216,29 +2212,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
                               MAX_TX_SIZE, eob,
                               cpi->common.reduced_tx_set_used);
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
-    // Save decoded pixels for inter block in pd->pred to avoid
-    // block_8x8_rd_txfm_daala_dist() need to produce them
-    // by calling av1_inverse_transform_block() again.
-    const int pred_stride = block_size_wide[plane_bsize];
-    const int pred_idx = (blk_row * pred_stride + blk_col)
-                         << tx_size_wide_log2[0];
-    int16_t *pred = &x->pred_luma[pred_idx];
-    int i, j;
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (j = 0; j < bsh; j++)
-        for (i = 0; i < bsw; i++)
-          pred[j * pred_stride + i] =
-              CONVERT_TO_SHORTPTR(recon)[j * MAX_TX_SIZE + i];
-    } else {
-      for (j = 0; j < bsh; j++)
-        for (i = 0; i < bsw; i++)
-          pred[j * pred_stride + i] = recon[j * MAX_TX_SIZE + i];
-    }
-  }
-#endif  // CONFIG_DIST_8X8
   return 16 * pixel_dist(cpi, x, plane, src, src_stride, recon, MAX_TX_SIZE,
                          blk_row, blk_col, plane_bsize, tx_bsize);
 }
@@ -3069,7 +3043,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8) use_transform_domain_distortion = 0;
 #endif
-
   int calc_pixel_domain_distortion_final =
       cpi->sf.use_transform_domain_distortion == 1 &&
       use_transform_domain_distortion && x->rd_model != LOW_TXFM_RD &&
@@ -3082,7 +3055,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
   int64_t block_sse =
-      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize, 1);
+      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize);
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
   block_sse *= 16;
@@ -3256,21 +3229,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
 
-#if CONFIG_DIST_8X8
-  // If sub8x8 tx, 8x8 or larger partition, and luma channel,
-  // dist-8x8 disables early skip, because the distortion metrics for
-  // sub8x8 tx (MSE) and reference distortion from 8x8 or larger partition
-  // (new distortion metric) are different.
-  // Exception is: dist-8x8 is enabled but still MSE is used,
-  // i.e. "--tune=" encoder option is not used.
-  int bw = block_size_wide[plane_bsize];
-  int bh = block_size_high[plane_bsize];
-  int disable_early_skip =
-      x->using_dist_8x8 && plane == AOM_PLANE_Y && bw >= 8 && bh >= 8 &&
-      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
-      x->tune_metric != AOM_TUNE_PSNR;
-#endif  // CONFIG_DIST_8X8
-
   av1_init_rd_stats(&this_rd_stats);
 
   if (args->exit_early) return;
@@ -3314,100 +3272,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
   args->this_rd += rd;
 
-#if CONFIG_DIST_8X8
-  if (!disable_early_skip)
-#endif
-    if (args->this_rd > args->best_rd) {
-      args->exit_early = 1;
-      return;
-    }
-}
-
-#if CONFIG_DIST_8X8
-static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                    BLOCK_SIZE bsize,
-                                    struct rdcost_block_args *args) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[0];
-  const struct macroblock_plane *const p = &x->plane[0];
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-  const int src_stride = p->src.stride;
-  const int dst_stride = pd->dst.stride;
-  const uint8_t *src = &p->src.buf[0];
-  const uint8_t *dst = &pd->dst.buf[0];
-  const int16_t *pred = &x->pred_luma[0];
-  int bw = block_size_wide[bsize];
-  int bh = block_size_high[bsize];
-  int visible_w = bw;
-  int visible_h = bh;
-
-  int i, j;
-  int64_t rd, rd1, rd2;
-  int64_t sse = INT64_MAX, dist = INT64_MAX;
-  int qindex = x->qindex;
-
-  assert((bw & 0x07) == 0);
-  assert((bh & 0x07) == 0);
-
-  get_txb_dimensions(xd, 0, bsize, 0, 0, bsize, &bw, &bh, &visible_w,
-                     &visible_h);
-
-  const int diff_stride = block_size_wide[bsize];
-  const int16_t *diff = p->src_diff;
-  sse = dist_8x8_diff(x, src, src_stride, diff, diff_stride, bw, bh, visible_w,
-                      visible_h, qindex);
-  sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
-  sse *= 16;
-
-  if (!is_inter_block(mbmi)) {
-    dist = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, bsize, bw, bh,
-                        visible_w, visible_h, qindex);
-    dist *= 16;
-  } else {
-    // For inter mode, the decoded pixels are provided in x->pred_luma,
-    // while the predicted pixels are in dst.
-    uint8_t *pred8;
-    DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
-
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      pred8 = CONVERT_TO_BYTEPTR(pred16);
-    else
-      pred8 = (uint8_t *)pred16;
-
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (j = 0; j < bh; j++)
-        for (i = 0; i < bw; i++)
-          CONVERT_TO_SHORTPTR(pred8)[j * bw + i] = pred[j * bw + i];
-    } else {
-      for (j = 0; j < bh; j++)
-        for (i = 0; i < bw; i++) pred8[j * bw + i] = (uint8_t)pred[j * bw + i];
-    }
-
-    dist = av1_dist_8x8(cpi, x, src, src_stride, pred8, bw, bsize, bw, bh,
-                        visible_w, visible_h, qindex);
-    dist *= 16;
+  if (args->this_rd > args->best_rd) {
+    args->exit_early = 1;
+    return;
   }
-
-#ifdef DEBUG_DIST_8X8
-  if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8) {
-    assert(args->rd_stats.sse == sse);
-    assert(args->rd_stats.dist == dist);
-  }
-#endif  // DEBUG_DIST_8X8
-
-  args->rd_stats.sse = sse;
-  args->rd_stats.dist = dist;
-
-  rd1 = RDCOST(x->rdmult, args->rd_stats.rate, args->rd_stats.dist);
-  rd2 = RDCOST(x->rdmult, 0, args->rd_stats.sse);
-  rd = AOMMIN(rd1, rd2);
-
-  args->rd_stats.rdcost = rd;
-  args->this_rd = rd;
-
-  if (args->this_rd > args->best_rd) args->exit_early = 1;
 }
-#endif  // CONFIG_DIST_8X8
 
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
@@ -3431,15 +3300,6 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 
   av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
                                          &args);
-#if CONFIG_DIST_8X8
-  int bw = block_size_wide[bsize];
-  int bh = block_size_high[bsize];
-
-  if (x->using_dist_8x8 && !args.exit_early && plane == 0 && bw >= 8 &&
-      bh >= 8 && (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))
-    dist_8x8_sub8x8_txfm_rd(cpi, x, bsize, &args);
-#endif
-
   if (args.exit_early) {
     av1_invalid_rd_stats(rd_stats);
   } else {
@@ -3611,6 +3471,11 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16);
 
   for (n = start_tx; depth <= MAX_TX_DEPTH; depth++, n = sub_tx_size_map[n]) {
+#if CONFIG_DIST_8X8
+    if (x->using_dist_8x8) {
+      if (tx_size_wide[n] < 8 || tx_size_high[n] < 8) continue;
+    }
+#endif
     RD_STATS this_rd_stats;
     if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
     rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE);
@@ -4835,11 +4700,7 @@ static void try_tx_block_split(
   RD_STATS this_rd_stats;
   int this_cost_valid = 1;
   int64_t tmp_rd = 0;
-#if CONFIG_DIST_8X8
-  int sub8x8_eob[4] = { 0, 0, 0, 0 };
-  struct macroblock_plane *const p = &x->plane[0];
-  struct macroblockd_plane *const pd = &xd->plane[0];
-#endif
+
   split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
 
   assert(tx_size < TX_SIZES_ALL);
@@ -4857,123 +4718,22 @@ static void try_tx_block_split(
           &this_cost_valid, ftxs_mode,
           (rd_info_node != NULL) ? rd_info_node->children[blk_idx] : NULL);
 
-#if CONFIG_DIST_8X8
-      if (!x->using_dist_8x8)
-#endif
-        if (!this_cost_valid) goto LOOP_EXIT;
-#if CONFIG_DIST_8X8
-      if (x->using_dist_8x8 && tx_size == TX_8X8) {
-        sub8x8_eob[2 * (r / bsh) + (c / bsw)] = p->eobs[block];
-      }
-#endif  // CONFIG_DIST_8X8
+      if (!this_cost_valid) goto LOOP_EXIT;
+
       av1_merge_rd_stats(split_rd_stats, &this_rd_stats);
 
       tmp_rd = RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
-#if CONFIG_DIST_8X8
-      if (!x->using_dist_8x8)
-#endif
-        if (no_split_rd < tmp_rd) {
-          this_cost_valid = 0;
-          goto LOOP_EXIT;
-        }
+
+      if (no_split_rd < tmp_rd) {
+        this_cost_valid = 0;
+        goto LOOP_EXIT;
+      }
       block += sub_step;
     }
   }
 
 LOOP_EXIT : {}
 
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && this_cost_valid && tx_size == TX_8X8) {
-    const int src_stride = p->src.stride;
-    const int dst_stride = pd->dst.stride;
-
-    const uint8_t *src =
-        &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
-    const uint8_t *dst =
-        &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-
-    int64_t dist_8x8;
-    const int qindex = x->qindex;
-    const int pred_stride = block_size_wide[plane_bsize];
-    const int pred_idx = (blk_row * pred_stride + blk_col)
-                         << tx_size_wide_log2[0];
-    const int16_t *pred = &x->pred_luma[pred_idx];
-    int i, j;
-    int row, col;
-
-    uint8_t *pred8;
-    DECLARE_ALIGNED(16, uint16_t, pred8_16[8 * 8]);
-
-    dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, BLOCK_8X8,
-                            8, 8, 8, 8, qindex) *
-               16;
-
-#ifdef DEBUG_DIST_8X8
-    if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
-      assert(sum_rd_stats.sse == dist_8x8);
-#endif  // DEBUG_DIST_8X8
-
-    split_rd_stats->sse = dist_8x8;
-
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      pred8 = CONVERT_TO_BYTEPTR(pred8_16);
-    else
-      pred8 = (uint8_t *)pred8_16;
-
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (row = 0; row < 2; ++row) {
-        for (col = 0; col < 2; ++col) {
-          int idx = row * 2 + col;
-          int eob = sub8x8_eob[idx];
-
-          if (eob > 0) {
-            for (j = 0; j < 4; j++)
-              for (i = 0; i < 4; i++)
-                CONVERT_TO_SHORTPTR(pred8)
-                [(row * 4 + j) * 8 + 4 * col + i] =
-                    pred[(row * 4 + j) * pred_stride + 4 * col + i];
-          } else {
-            for (j = 0; j < 4; j++)
-              for (i = 0; i < 4; i++)
-                CONVERT_TO_SHORTPTR(pred8)
-                [(row * 4 + j) * 8 + 4 * col + i] = CONVERT_TO_SHORTPTR(
-                    dst)[(row * 4 + j) * dst_stride + 4 * col + i];
-          }
-        }
-      }
-    } else {
-      for (row = 0; row < 2; ++row) {
-        for (col = 0; col < 2; ++col) {
-          int idx = row * 2 + col;
-          int eob = sub8x8_eob[idx];
-
-          if (eob > 0) {
-            for (j = 0; j < 4; j++)
-              for (i = 0; i < 4; i++)
-                pred8[(row * 4 + j) * 8 + 4 * col + i] =
-                    (uint8_t)pred[(row * 4 + j) * pred_stride + 4 * col + i];
-          } else {
-            for (j = 0; j < 4; j++)
-              for (i = 0; i < 4; i++)
-                pred8[(row * 4 + j) * 8 + 4 * col + i] =
-                    dst[(row * 4 + j) * dst_stride + 4 * col + i];
-          }
-        }
-      }
-    }
-    dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, pred8, 8, BLOCK_8X8, 8, 8,
-                            8, 8, qindex) *
-               16;
-
-#ifdef DEBUG_DIST_8X8
-    if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
-      assert(sum_rd_stats.dist == dist_8x8);
-#endif  // DEBUG_DIST_8X8
-
-    split_rd_stats->dist = dist_8x8;
-    tmp_rd = RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
-  }
-#endif  // CONFIG_DIST_8X8
   if (this_cost_valid) *split_rd = tmp_rd;
 }
 
@@ -5006,7 +4766,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   const int try_no_split = 1;
   int try_split = tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH;
-
+#if CONFIG_DIST_8X8
+  if (x->using_dist_8x8)
+    try_split &= tx_size_wide[tx_size] >= 16 && tx_size_high[tx_size] >= 16;
+#endif
   TxCandidateInfo no_split = { INT64_MAX, 0, TX_TYPES };
 
   // TX no split
@@ -5705,7 +5468,7 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   const MACROBLOCKD *xd = &x->e_mbd;
   const int16_t dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd);
 
-  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize, 1);
+  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize);
   const int64_t mse = *dist / bw / bh;
   // Normalized quantizer takes the transform upscaling factor (8 for tx size
   // smaller than 32) into account.

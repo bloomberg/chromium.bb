@@ -2350,45 +2350,6 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
 #undef RTP_STX_TRY_ARGS
 }
 
-#if CONFIG_DIST_8X8
-static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            uint8_t *src_plane_8x8[MAX_MB_PLANE],
-                            uint8_t *dst_plane_8x8[MAX_MB_PLANE]) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
-  MACROBLOCKD *const xd = &x->e_mbd;
-  int64_t dist_8x8, dist_8x8_uv, total_dist;
-  const int src_stride = x->plane[0].src.stride;
-  int plane;
-
-  const int dst_stride = xd->plane[0].dst.stride;
-  dist_8x8 =
-      av1_dist_8x8(cpi, x, src_plane_8x8[0], src_stride, dst_plane_8x8[0],
-                   dst_stride, BLOCK_8X8, 8, 8, 8, 8, x->qindex)
-      << 4;
-
-  // Compute chroma distortion for a luma 8x8 block
-  dist_8x8_uv = 0;
-
-  if (num_planes > 1) {
-    for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-      unsigned sse;
-      const int src_stride_uv = x->plane[plane].src.stride;
-      const int dst_stride_uv = xd->plane[plane].dst.stride;
-      const int ssx = xd->plane[plane].subsampling_x;
-      const int ssy = xd->plane[plane].subsampling_y;
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(BLOCK_8X8, ssx, ssy);
-
-      cpi->fn_ptr[plane_bsize].vf(src_plane_8x8[plane], src_stride_uv,
-                                  dst_plane_8x8[plane], dst_stride_uv, &sse);
-      dist_8x8_uv += (int64_t)sse << 4;
-    }
-  }
-
-  return total_dist = dist_8x8 + dist_8x8_uv;
-}
-#endif  // CONFIG_DIST_8X8
-
 static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->partitioning = PARTITION_NONE;
   pc_tree->cb_search_range = SEARCH_FULL_PLANE;
@@ -2492,6 +2453,11 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
 
+#if CONFIG_DIST_8X8
+  if (block_size_high[bsize] <= 8 || block_size_wide[bsize] <= 8)
+    do_square_split = 0;
+#endif
+
   // PARTITION_NONE
   if (partition_none_allowed) {
     if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
@@ -2549,17 +2515,6 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   int64_t temp_best_rdcost = best_rdc.rdcost;
   pn_rdc = best_rdc;
 
-#if CONFIG_DIST_8X8
-  uint8_t *src_plane_8x8[MAX_MB_PLANE], *dst_plane_8x8[MAX_MB_PLANE];
-
-  if (x->using_dist_8x8 && bsize == BLOCK_8X8) {
-    for (int i = 0; i < MAX_MB_PLANE; i++) {
-      src_plane_8x8[i] = x->plane[i].src.buf;
-      dst_plane_8x8[i] = xd->plane[i].dst.buf;
-    }
-  }
-#endif  // CONFIG_DIST_8X8
-
   // PARTITION_SPLIT
   if (do_square_split) {
     int reached_last_index = 0;
@@ -2596,14 +2551,6 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
       }
     }
     reached_last_index = (idx == 4);
-
-#if CONFIG_DIST_8X8
-    if (x->using_dist_8x8 && reached_last_index &&
-        sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-      sum_rdc.dist = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
-      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-    }
-#endif  // CONFIG_DIST_8X8
 
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
       sum_rdc.rate += partition_cost[PARTITION_SPLIT];
@@ -2662,14 +2609,6 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
                 pc_tree, NULL);
     }
   }
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && best_rdc.rate < INT_MAX &&
-      best_rdc.dist < INT64_MAX && bsize == BLOCK_4X4 && pc_tree->index == 3) {
-    encode_sb(cpi, td, tile_data, tp, mi_row, mi_col, DRY_RUN_NORMAL, bsize,
-              pc_tree, NULL);
-  }
-#endif  // CONFIG_DIST_8X8
 
   if (bsize == cm->seq_params.sb_size) {
     assert(best_rdc.rate < INT_MAX);
@@ -3395,6 +3334,15 @@ BEGIN_PARTITION_SEARCH:
   // Partition block source pixel variance.
   unsigned int pb_source_variance = UINT_MAX;
 
+#if CONFIG_DIST_8X8
+  if (block_size_high[bsize] <= 8) partition_horz_allowed = 0;
+
+  if (block_size_wide[bsize] <= 8) partition_vert_allowed = 0;
+
+  if (block_size_high[bsize] <= 8 || block_size_wide[bsize] <= 8)
+    do_square_split = 0;
+#endif
+
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
@@ -3510,17 +3458,6 @@ BEGIN_PARTITION_SEARCH:
   // store estimated motion vector
   if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
-#if CONFIG_DIST_8X8
-  uint8_t *src_plane_8x8[MAX_MB_PLANE], *dst_plane_8x8[MAX_MB_PLANE];
-
-  if (x->using_dist_8x8 && bsize == BLOCK_8X8) {
-    for (int i = 0; i < num_planes; i++) {
-      src_plane_8x8[i] = x->plane[i].src.buf;
-      dst_plane_8x8[i] = xd->plane[i].dst.buf;
-    }
-  }
-#endif  // CONFIG_DIST_8X8
-
   // PARTITION_SPLIT
   if (do_square_split) {
     av1_init_rd_stats(&sum_rdc);
@@ -3570,21 +3507,6 @@ BEGIN_PARTITION_SEARCH:
       }
     }
     const int reached_last_index = (idx == 4);
-
-#if CONFIG_DIST_8X8
-    if (x->using_dist_8x8 && reached_last_index &&
-        sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-      const int64_t dist_8x8 =
-          dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
-#ifdef DEBUG_DIST_8X8
-      // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-      if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
-        assert(sum_rdc.dist == dist_8x8);
-#endif  // DEBUG_DIST_8X8
-      sum_rdc.dist = dist_8x8;
-      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-    }
-#endif  // CONFIG_DIST_8X8
 
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
       sum_rdc.rate += partition_cost[PARTITION_SPLIT];
@@ -3660,15 +3582,6 @@ BEGIN_PARTITION_SEARCH:
                        best_rdc.rdcost - sum_rdc.rdcost);
       horz_rd[1] = this_rdc.rdcost;
 
-#if CONFIG_DIST_8X8
-      if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
-        update_state(cpi, tile_data, td, &pc_tree->horizontal[1],
-                     mi_row + mi_step, mi_col, subsize, DRY_RUN_NORMAL);
-        encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL,
-                          mi_row + mi_step, mi_col, subsize, NULL);
-      }
-#endif  // CONFIG_DIST_8X8
-
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
       } else {
@@ -3676,20 +3589,6 @@ BEGIN_PARTITION_SEARCH:
         sum_rdc.dist += this_rdc.dist;
         sum_rdc.rdcost += this_rdc.rdcost;
       }
-#if CONFIG_DIST_8X8
-      if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
-          bsize == BLOCK_8X8) {
-        const int64_t dist_8x8 =
-            dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
-#ifdef DEBUG_DIST_8X8
-        // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
-          assert(sum_rdc.dist == dist_8x8);
-#endif  // DEBUG_DIST_8X8
-        sum_rdc.dist = dist_8x8;
-        sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-      }
-#endif  // CONFIG_DIST_8X8
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
@@ -3746,15 +3645,6 @@ BEGIN_PARTITION_SEARCH:
                        best_rdc.rdcost - sum_rdc.rdcost);
       vert_rd[1] = this_rdc.rdcost;
 
-#if CONFIG_DIST_8X8
-      if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
-        update_state(cpi, tile_data, td, &pc_tree->vertical[1], mi_row,
-                     mi_col + mi_step, subsize, DRY_RUN_NORMAL);
-        encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row,
-                          mi_col + mi_step, subsize, NULL);
-      }
-#endif  // CONFIG_DIST_8X8
-
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
       } else {
@@ -3762,21 +3652,6 @@ BEGIN_PARTITION_SEARCH:
         sum_rdc.dist += this_rdc.dist;
         sum_rdc.rdcost += this_rdc.rdcost;
       }
-#if CONFIG_DIST_8X8
-      if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
-          bsize == BLOCK_8X8) {
-        const int64_t dist_8x8 =
-            dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
-#ifdef DEBUG_DIST_8X8
-        // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 &&
-            0 /* !CONFIG_CFL */)
-          assert(sum_rdc.dist == dist_8x8);
-#endif  // DEBUG_DIST_8X8
-        sum_rdc.dist = dist_8x8;
-        sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-      }
-#endif  // CONFIG_DIST_8X8
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
@@ -3809,6 +3684,13 @@ BEGIN_PARTITION_SEARCH:
   // allowed
   int horzab_partition_allowed = ext_partition_allowed;
   int vertab_partition_allowed = ext_partition_allowed;
+
+#if CONFIG_DIST_8X8
+  if (block_size_high[bsize] <= 8 || block_size_wide[bsize] <= 8) {
+    horzab_partition_allowed = 0;
+    vertab_partition_allowed = 0;
+  }
+#endif
 
   if (cpi->sf.prune_ext_partition_types_search_level) {
     if (cpi->sf.prune_ext_partition_types_search_level == 1) {
@@ -4046,6 +3928,13 @@ BEGIN_PARTITION_SEARCH:
                          &partition_vert4_allowed);
   }
 
+#if CONFIG_DIST_8X8
+  if (block_size_high[bsize] <= 16 || block_size_wide[bsize] <= 16) {
+    partition_horz4_allowed = 0;
+    partition_vert4_allowed = 0;
+  }
+#endif
+
   // PARTITION_HORZ_4
   if (partition_horz4_allowed && has_rows &&
       (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step))) {
@@ -4157,14 +4046,6 @@ BEGIN_PARTITION_SEARCH:
                 pc_tree, NULL);
     }
   }
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && best_rdc.rate < INT_MAX &&
-      best_rdc.dist < INT64_MAX && bsize == BLOCK_4X4 && pc_tree->index == 3) {
-    encode_sb(cpi, td, tile_data, tp, mi_row, mi_col, DRY_RUN_NORMAL, bsize,
-              pc_tree, NULL);
-  }
-#endif  // CONFIG_DIST_8X8
 
   if (bsize == cm->seq_params.sb_size) {
     assert(best_rdc.rate < INT_MAX);
