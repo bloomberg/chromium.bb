@@ -453,6 +453,10 @@
       status: "experimental"
     },
     {
+      name: "FeaturePolicyReporting",
+      status: "experimental"
+    },
+    {
       name: "FeaturePolicyVibrateFeature"
     },
     {

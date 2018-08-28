@@ -50,6 +50,8 @@ void ReportingContext::CountReport(Report* report) {
 
   if (type == "deprecation") {
     feature = WebFeature::kDeprecationReport;
+  } else if (type == "feature-policy") {
+    feature = WebFeature::kFeaturePolicyReport;
   } else if (type == "intervention") {
     feature = WebFeature::kInterventionReport;
   } else {

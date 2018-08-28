@@ -1443,6 +1443,8 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 
 void LocalFrame::ReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
+  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
+    return;
   const String& feature_name = GetNameForFeature(feature);
   FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
       feature_name, "Feature policy violation", SourceLocation::Capture());

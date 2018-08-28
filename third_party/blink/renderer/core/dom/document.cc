@@ -6183,6 +6183,10 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
   InitializeFeaturePolicy(declared_policy, container_policy,
                           parent_feature_policy);
 
+  // At this point, the document will not have been installed in the frame's
+  // LocalDOMWindow, so we cannot call frame_->IsFeatureEnabled. This calls
+  // SecurityContext::IsFeatureEnabled instead, which cannot report, but we
+  // don't need reporting here in any case.
   is_vertical_scroll_enforced_ =
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !GetFeaturePolicy()->IsFeatureEnabled(

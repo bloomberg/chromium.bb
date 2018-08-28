@@ -1989,6 +1989,7 @@ enum WebFeature {
   kV8WasmThreadOpcodes = 2533,
   kCacheStorageAddAllSuccessWithDuplicate = 2534,
   kLegendDelegateFocusOrAccessKey = 2535,
+  kFeaturePolicyReport = 2536,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
