@@ -366,9 +366,7 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
   EXPECT_TRUE(chunkSeen);
 }
 
-// TODO(ricea): Re-enable this test when throwing from Transform() works
-// properly. See https://github.com/whatwg/streams/issues/946.
-TEST_F(TransformStreamTest, DISABLED_ThrowFromTransform) {
+TEST_F(TransformStreamTest, ThrowFromTransform) {
   static constexpr char kMessage[] = "errorInTransform";
   class ThrowFromTransformTransformer : public TransformStreamTransformer {
    public:
