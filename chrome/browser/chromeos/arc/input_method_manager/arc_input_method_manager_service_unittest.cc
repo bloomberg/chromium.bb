@@ -95,6 +95,10 @@ class TestInputMethodManager : public im::MockInputMethodManager {
       return true;
     }
 
+    const std::vector<std::string>& GetAllowedInputMethods() override {
+      return allowed_input_methods_;
+    }
+
     bool IsInputMethodAllowed(const std::string& ime_id) {
       return allowed_input_methods_.empty() ||
              (std::find(allowed_input_methods_.begin(),
@@ -464,7 +468,7 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   const std::string arc_ime_id =
       ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
 
-  // Start from tablet mode
+  // Start from tablet mode.
   ToggleTabletMode(true);
 
   // Activate 3 IMEs.
@@ -477,7 +481,7 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 
-  // Change to laptop mode
+  // Change to laptop mode.
   ToggleTabletMode(false);
 
   // ARC IME is not allowed in laptop mode.
@@ -492,6 +496,41 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Do the same tests again, but with |extension_ime_id| disabled.
+  imm()->state()->SetAllowedInputMethods(
+      {component_extension_ime_id, arc_ime_id},
+      false /* enable_allowed_input_methods */);
+  ToggleTabletMode(false);
+
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  ToggleTabletMode(true);
+
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Confirm that entering the same mode twice in a row is no-op.
+  ToggleTabletMode(true);
+
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  ToggleTabletMode(false);
+
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  ToggleTabletMode(false);
+
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 }
 
 }  // namespace arc
