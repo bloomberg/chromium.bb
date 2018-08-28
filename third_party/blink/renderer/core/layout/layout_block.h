@@ -357,6 +357,16 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void MarkFixedPositionObjectForLayoutIfNeeded(LayoutObject* child,
                                                 SubtreeLayoutScope&);
 
+ public:
+  bool IsLegacyInitiatedOutOfFlowLayout() const {
+    return is_legacy_initiated_out_of_flow_layout_;
+  }
+
+  void SetIsLegacyInitiatedOutOfFlowLayout(bool b) {
+    is_legacy_initiated_out_of_flow_layout_ = b;
+  }
+
+ protected:
   LayoutUnit MarginIntrinsicLogicalWidthForChild(const LayoutBox& child) const;
 
   LayoutUnit BeforeMarginInLineDirection(LineDirectionMode) const;
@@ -542,6 +552,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // be forced breaks somewhere in there that we suddenly have to pay attention
   // to, for all we know.
   unsigned pagination_state_changed_ : 1;
+
+  // LayoutNG-only: This flag is true if an NG out of flow layout was
+  // initiated by Legacy positioning code.
+  unsigned is_legacy_initiated_out_of_flow_layout_ : 1;
 
   // FIXME: This is temporary as we move code that accesses block flow
   // member variables out of LayoutBlock and into LayoutBlockFlow.
