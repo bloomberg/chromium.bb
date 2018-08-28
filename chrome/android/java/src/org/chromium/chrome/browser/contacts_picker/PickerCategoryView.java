@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -80,7 +79,11 @@ public class PickerCategoryView extends RelativeLayout
     private Button mDoneButton;
 
     // The action button in the bottom right corner.
-    private FloatingActionButton mActionButton;
+    private ImageView mActionButton;
+
+    // The accessibility labels for the two states of the action button.
+    private String mLabelSelectAll;
+    private String mLabelUndo;
 
     // The action button has two modes, Select All and Undo. This keeps track of which mode is
     // active.
@@ -115,17 +118,20 @@ public class PickerCategoryView extends RelativeLayout
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
 
+        mActionButton = (ImageView) root.findViewById(R.id.action);
+        mActionButton.setOnClickListener(this);
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
         mDoneButton = (Button) mToolbar.findViewById(R.id.done);
         mDoneButton.setOnClickListener(this);
 
+        mLabelSelectAll = resources.getString(R.string.select_all);
+        mLabelUndo = resources.getString(R.string.undo);
+        mActionButton.setContentDescription(mLabelSelectAll);
+
         mLayoutManager = new LinearLayoutManager(context);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-        mActionButton = (FloatingActionButton) root.findViewById(R.id.action);
-        mActionButton.setOnClickListener(this);
     }
 
     /**
@@ -226,9 +232,11 @@ public class PickerCategoryView extends RelativeLayout
                 mPreviousSelection = mSelectionDelegate.getSelectedItems();
                 mSelectionDelegate.setSelectedItems(mPickerAdapter.getAllContacts());
                 mActionButton.setImageResource(R.drawable.ic_undo);
+                mActionButton.setContentDescription(mLabelUndo);
             } else {
                 mSelectionDelegate.setSelectedItems(mPreviousSelection);
                 mActionButton.setImageResource(R.drawable.ic_select_all);
+                mActionButton.setContentDescription(mLabelSelectAll);
                 mPreviousSelection = null;
             }
             mSelectAllMode = !mSelectAllMode;

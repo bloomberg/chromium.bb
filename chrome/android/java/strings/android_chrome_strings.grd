@@ -200,6 +200,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SELECT" desc="Prompt for user to select something. [CHAR-LIMIT=20]">
         Select
       </message>
+      <message name="IDS_SELECT_ALL" desc="Prompt for user to select everything.">
+        Select all
+      </message>
       <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
         Add
       </message>
