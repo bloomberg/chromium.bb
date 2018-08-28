@@ -394,6 +394,8 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
 
   SimRequest display_none_frame_resource(
       "https://crossorigin.com/display_none.html", "text/html");
+  SimRequest visibility_hidden_frame_resource(
+      "https://crossorigin.com/visibility_hidden.html", "text/html");
   SimRequest tiny_frame_resource("https://crossorigin.com/tiny.html",
                                  "text/html");
   SimRequest tiny_width_frame_resource(
@@ -422,6 +424,9 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
         <iframe src='https://crossorigin.com/display_none.html'
              style='display: none;'
              onload='console.log("display none element onload");'></iframe>
+        <iframe src='https://crossorigin.com/visibility_hidden.html'
+             style='visibility:hidden;width:100px;height:100px;'
+             onload='console.log("visibility hidden element onload");'></iframe>
         <iframe src='https://crossorigin.com/tiny.html'
              style='width: 4px; height: 4px;'
              onload='console.log("tiny element onload");'></iframe>
@@ -445,6 +450,7 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
   test::RunPendingTasks();
 
   display_none_frame_resource.Complete("");
+  visibility_hidden_frame_resource.Complete("");
   tiny_frame_resource.Complete("");
   tiny_width_frame_resource.Complete("");
   tiny_height_frame_resource.Complete("");
@@ -456,6 +462,7 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("display none element onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("visibility hidden element onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("tiny element onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("tiny width element onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("tiny height element onload"));
@@ -478,7 +485,7 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 
   ExpectInitialDeferralActionHistogramSamplesIfApplicable(
-      LazyLoadFrameObserver::FrameInitialDeferralAction::kLoadedHidden, 6);
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kLoadedHidden, 7);
   histogram_tester()->ExpectTotalCount(
       "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
   histogram_tester()->ExpectTotalCount(
