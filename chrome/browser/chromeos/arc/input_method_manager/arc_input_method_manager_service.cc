@@ -440,13 +440,9 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       }
     } else {
       // Remove ARC IMEs from |allowed_method_ids_set|.
-      for (auto it = allowed_method_ids_set.begin();
-           it != allowed_method_ids_set.end();) {
-        if (chromeos::extension_ime_util::IsArcIME(*it))
-          it = allowed_method_ids_set.erase(it);
-        else
-          it++;
-      }
+      base::EraseIf(allowed_method_ids_set, [](const std::string& id) {
+        return chromeos::extension_ime_util::IsArcIME(id);
+      });
     }
     DCHECK(!allowed_method_ids_set.empty());
   }
