@@ -213,7 +213,7 @@ void ChromeBrowserStateManagerImpl::DoFinalInit(
 void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
     ios::ChromeBrowserState* browser_state) {
   ios::GaiaCookieManagerServiceFactory::GetForBrowserState(browser_state)
-      ->Init();
+      ->InitCookieListener();
   ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state);
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
