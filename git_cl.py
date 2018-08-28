@@ -2704,8 +2704,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     thus new data will be fetched from Gerrit.
     """
     options = options or []
-    issue = self.GetIssue()
-    assert issue, 'issue is required to query Gerrit'
+    assert self.GetIssue(), 'issue is required to query Gerrit'
 
     # Optimization to avoid multiple RPCs:
     if (('CURRENT_REVISION' in options or 'ALL_REVISIONS' in options) and
@@ -2713,15 +2712,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       options.append('CURRENT_COMMIT')
 
     # Normalize issue and options for consistent keys in cache.
-    issue = str(self.GetIssue())
+    cache_key = str(self.GetIssue())
     options = [o.upper() for o in options]
 
     # Check in cache first unless no_cache is True.
     if no_cache:
-      self._detail_cache.pop(issue, None)
+      self._detail_cache.pop(cache_key, None)
     else:
       options_set = frozenset(options)
-      for cached_options_set, data in self._detail_cache.get(issue, []):
+      for cached_options_set, data in self._detail_cache.get(cache_key, []):
         # Assumption: data fetched before with extra options is suitable
         # for return for a smaller set of options.
         # For example, if we cached data for
@@ -2732,13 +2731,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           return data
 
     try:
-      data = gerrit_util.GetChangeDetail(self._GetGerritHost(), issue, options)
+      data = gerrit_util.GetChangeDetail(
+          self._GetGerritHost(), self._GerritChangeIdentifier(), options)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
-        raise GerritChangeNotExists(issue, self.GetCodereviewServer())
+        raise GerritChangeNotExists(self.GetIssue(), self.GetCodereviewServer())
       raise
 
-    self._detail_cache.setdefault(issue, []).append((frozenset(options), data))
+    self._detail_cache.setdefault(cache_key, []).append(
+        (frozenset(options), data))
     return data
 
   def _GetChangeCommit(self):

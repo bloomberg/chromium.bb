@@ -1124,7 +1124,7 @@ class TestGitCl(TestCase):
     if issue:
       calls += [
         (('GetChangeDetail', 'chromium-review.googlesource.com',
-          '123456',
+          'my%2Frepo~123456',
           ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT']),
          {
            'owner': {'email': (other_cl_owner or 'owner@example.com')},
@@ -1334,8 +1334,8 @@ class TestGitCl(TestCase):
       ]
     if tbr:
       calls += [
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
-          ['LABELS']), {
+        (('GetChangeDetail', 'chromium-review.googlesource.com',
+          'my%2Frepo~123456', ['LABELS']), {
              'labels': {
                  'Code-Review': {
                      'default_value': 0,
@@ -1838,7 +1838,7 @@ class TestGitCl(TestCase):
     if actual_codereview == 'gerrit':
       self.calls += [
         (('GetChangeDetail', git_short_host + '-review.googlesource.com',
-          '123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
+          'my%2Frepo~123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
          {
            'current_revision': '7777777777',
            'revisions': {
@@ -1931,11 +1931,11 @@ class TestGitCl(TestCase):
     self.assertEqual(git_cl.main(['patch', '--gerrit', '123456', '--force']), 0)
 
   def test_patch_gerrit_guess_by_url(self):
+    self.calls += self._get_gerrit_codereview_server_calls(
+        'master', git_short_host='else', detect_server=False)
     self._patch_common(
         actual_codereview='gerrit', git_short_host='else',
         codereview_in_url=True, detect_gerrit_server=False)
-    self.calls += self._get_gerrit_codereview_server_calls(
-        'master', git_short_host='else', detect_server=False)
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
@@ -1953,11 +1953,11 @@ class TestGitCl(TestCase):
       ['patch', 'https://else-review.googlesource.com/#/c/123456/1']), 0)
 
   def test_patch_gerrit_guess_by_url_with_repo(self):
+    self.calls += self._get_gerrit_codereview_server_calls(
+        'master', git_short_host='else', detect_server=False)
     self._patch_common(
         actual_codereview='gerrit', git_short_host='else',
         codereview_in_url=True, detect_gerrit_server=False)
-    self.calls += self._get_gerrit_codereview_server_calls(
-        'master', git_short_host='else', detect_server=False)
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
@@ -2240,8 +2240,13 @@ class TestGitCl(TestCase):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
     self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/my/repo'),
         (('GetChangeDetail', 'code.review.org',
-          '123123', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
+          'my%2Frepo~123123', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          {
            'current_revision': 'sha1',
            'revisions': {'sha1': {
@@ -2500,7 +2505,12 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/depot_tools'),
+        (('GetChangeDetail', 'chromium-review.googlesource.com',
+          'depot_tools~123456',
          ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
           'project': 'depot_tools',
           'status': 'OPEN',
@@ -2608,7 +2618,12 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/depot_tools'),
+        (('GetChangeDetail', 'chromium-review.googlesource.com',
+          'depot_tools~123456',
          ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
           'project': 'depot_tools',
           'status': 'OPEN',
@@ -3024,12 +3039,16 @@ class TestGitCl(TestCase):
   def test_gerrit_change_detail_cache_simple(self):
     self._mock_gerrit_changes_for_detail_cache()
     self.calls = [
-        (('GetChangeDetail', 'host', '1', []), 'a'),
-        (('GetChangeDetail', 'host', '2', []), 'b'),
-        (('GetChangeDetail', 'host', '2', []), 'b2'),
+        (('GetChangeDetail', 'host', 'my%2Frepo~1', []), 'a'),
+        (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b'),
+        (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b2'),
     ]
     cl1 = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl1._cached_remote_url = (
+        True, 'https://chromium.googlesource.com/a/my/repo.git/')
     cl2 = git_cl.Changelist(issue=2, codereview='gerrit')
+    cl2._cached_remote_url = (
+        True, 'https://chromium.googlesource.com/ab/repo')
     self.assertEqual(cl1._GetChangeDetail(), 'a')  # Miss.
     self.assertEqual(cl1._GetChangeDetail(), 'a')
     self.assertEqual(cl2._GetChangeDetail(), 'b')  # Miss.
@@ -3040,12 +3059,14 @@ class TestGitCl(TestCase):
   def test_gerrit_change_detail_cache_options(self):
     self._mock_gerrit_changes_for_detail_cache()
     self.calls = [
-        (('GetChangeDetail', 'host', '1', ['C', 'A', 'B']), 'cab'),
-        (('GetChangeDetail', 'host', '1', ['A', 'D']), 'ad'),
-        (('GetChangeDetail', 'host', '1', ['A']), 'a'),  # no_cache=True
-        (('GetChangeDetail', 'host', '1', ['B']), 'b'),  # no longer in cache.
+        (('GetChangeDetail', 'host', 'repo~1', ['C', 'A', 'B']), 'cab'),
+        (('GetChangeDetail', 'host', 'repo~1', ['A', 'D']), 'ad'),
+        (('GetChangeDetail', 'host', 'repo~1', ['A']), 'a'),  # no_cache=True
+        # no longer in cache.
+        (('GetChangeDetail', 'host', 'repo~1', ['B']), 'b'),
     ]
     cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl._cached_remote_url = (True, 'https://chromium.googlesource.com/repo/')
     self.assertEqual(cl._GetChangeDetail(options=['C', 'A', 'B']), 'cab')
     self.assertEqual(cl._GetChangeDetail(options=['A', 'B', 'C']), 'cab')
     self.assertEqual(cl._GetChangeDetail(options=['B', 'A']), 'cab')
@@ -3069,16 +3090,18 @@ class TestGitCl(TestCase):
         'revisions': {rev: {'commit': {'message': desc}}}
       }
     self.calls = [
-        (('GetChangeDetail', 'host', '1',
+        (('GetChangeDetail', 'host', 'my%2Frepo~1',
           ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          gen_detail('rev1', 'desc1')),
-        (('GetChangeDetail', 'host', '1',
+        (('GetChangeDetail', 'host', 'my%2Frepo~1',
           ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          gen_detail('rev2', 'desc2')),
     ]
 
     self._mock_gerrit_changes_for_detail_cache()
     cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl._cached_remote_url = (
+        True, 'https://chromium.googlesource.com/a/my/repo.git/')
     self.assertEqual(cl.GetDescription(), 'desc1')
     self.assertEqual(cl.GetDescription(), 'desc1')  # cache hit.
     self.assertEqual(cl.GetDescription(force=True), 'desc2')
@@ -3264,7 +3287,8 @@ class TestGitCl(TestCase):
                                    'origin/master'),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/infra/infra'),
-      (('GetChangeDetail', 'chromium-review.googlesource.com', '1',
+      (('GetChangeDetail', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1',
         ['MESSAGES', 'DETAILED_ACCOUNTS']), {
         'owner': {'email': 'owner@example.com'},
         'messages': [
