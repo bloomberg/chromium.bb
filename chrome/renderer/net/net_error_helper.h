@@ -117,6 +117,7 @@ class NetErrorHelper
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
       bool* download_button_shown,
+      bool* offline_suggested_content_allowed,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
   void EnablePageHelperFunctions(net::Error net_error) override;

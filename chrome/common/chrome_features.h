@@ -259,6 +259,20 @@ extern const base::Feature kNativeNotifications;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNetworkPrediction;
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const char kNewNetErrorPageUIAlternateParameterName[];
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const char kNewNetErrorPageUIAlternateContentList[];
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const char kNewNetErrorPageUIAlternateContentListAutoDownload[];
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const char kNewNetErrorPageUIAlternateContentPreview[];
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[];
+#endif
+
 #if defined(OS_POSIX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif

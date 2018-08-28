@@ -494,16 +494,19 @@ base::DictionaryValue* GetStandardMenuItemsText() {
   return standard_menu_items_text;
 }
 
+// Returns true if the error is due to a disconnected network.
+bool IsOfflineError(const std::string& error_domain, int error_code) {
+  return ((error_code == net::ERR_INTERNET_DISCONNECTED &&
+           error_domain == Error::kNetErrorDomain) ||
+          (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
+           error_domain == Error::kDnsProbeErrorDomain));
+}
+
 // Gets the icon class for a given |error_domain| and |error_code|.
 const char* GetIconClassForError(const std::string& error_domain,
                                  int error_code) {
-  if ((error_code == net::ERR_INTERNET_DISCONNECTED &&
-       error_domain == Error::kNetErrorDomain) ||
-      (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
-       error_domain == Error::kDnsProbeErrorDomain))
-    return "icon-offline";
-
-  return "icon-generic";
+  return IsOfflineError(error_domain, error_code) ? "icon-offline"
+                                                  : "icon-generic";
 }
 
 // If the first suggestion is for a Google cache copy link. Promote the
@@ -871,6 +874,7 @@ void LocalizedError::GetStrings(
     bool stale_copy_in_cache,
     bool can_show_network_diagnostics_dialog,
     bool is_incognito,
+    OfflineContentOnNetErrorFeatureState offline_content_feature_state,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params,
     base::DictionaryValue* error_strings) {
@@ -1072,13 +1076,28 @@ void LocalizedError::GetStrings(
   if (!is_post && !reload_visible && !show_saved_copy_visible &&
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
-      IsSuggested(options.suggestions, SUGGEST_OFFLINE_CHECKS)) {
+      IsOfflineError(error_domain, error_code)) {
     error_strings->SetPath(
         {"downloadButton", "msg"},
         base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
     error_strings->SetPath({"downloadButton", "disabledMsg"},
                            base::Value(l10n_util::GetStringUTF16(
                                IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+  }
+
+  if (IsOfflineError(error_domain, error_code) && !is_incognito) {
+    switch (offline_content_feature_state) {
+      case OfflineContentOnNetErrorFeatureState::kDisabled:
+        break;
+      case OfflineContentOnNetErrorFeatureState::kEnabledList:
+        error_strings->SetString("suggestedOfflineContentPresentationMode",
+                                 "list");
+        break;
+      case OfflineContentOnNetErrorFeatureState::kEnabledSummary:
+        error_strings->SetString("suggestedOfflineContentPresentationMode",
+                                 "summary");
+        break;
+    }
   }
 #endif  // defined(OS_ANDROID)
 }

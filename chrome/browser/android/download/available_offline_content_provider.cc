@@ -8,9 +8,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -214,7 +214,7 @@ AvailableOfflineContentProvider::AvailableOfflineContentProvider(
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
-  if (!base::FeatureList::IsEnabled(chrome::android::kNewNetErrorPageUI)) {
+  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
     std::move(callback).Run({});
     return;
   }

@@ -7,8 +7,8 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -131,8 +131,7 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
 }
 
 TEST_F(AvailableOfflineContentTest, AllContentFilteredOut) {
-  scoped_feature_list_.InitAndEnableFeature(
-      chrome::android::kNewNetErrorPageUI);
+  scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({UselessItem(), OldOfflinePage()});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
@@ -142,8 +141,7 @@ TEST_F(AvailableOfflineContentTest, AllContentFilteredOut) {
 }
 
 TEST_F(AvailableOfflineContentTest, ThreeItems) {
-  scoped_feature_list_.InitAndEnableFeature(
-      chrome::android::kNewNetErrorPageUI);
+  scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({
       UselessItem(), VideoItem(), SuggestedOfflinePageItem(), AudioItem(),
   });
@@ -183,8 +181,7 @@ TEST_F(AvailableOfflineContentTest, ThreeItems) {
 }
 
 TEST_F(AvailableOfflineContentTest, NotEnabled) {
-  scoped_feature_list_.InitAndDisableFeature(
-      chrome::android::kNewNetErrorPageUI);
+  scoped_feature_list_.InitAndDisableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({SuggestedOfflinePageItem()});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =

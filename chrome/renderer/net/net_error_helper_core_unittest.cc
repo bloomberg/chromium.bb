@@ -240,6 +240,10 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
   int tracking_request_count() const { return tracking_request_count_; }
 
+  void set_offline_suggested_content_allowed(bool allowed) {
+    offline_suggested_content_allowed_ = allowed;
+  }
+
   const std::string& offline_content_json() const {
     return offline_content_json_;
   }
@@ -346,6 +350,7 @@ class NetErrorHelperCoreTest : public testing::Test,
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
       bool* download_button_shown,
+      bool* offline_suggested_content_allowed,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
@@ -354,6 +359,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     *show_saved_copy_button_shown = false;
     *show_cached_copy_button_shown = false;
     *download_button_shown = false;
+    *offline_suggested_content_allowed = offline_suggested_content_allowed_;
     *html = ErrorToString(error, is_failed_post);
   }
 
@@ -487,6 +493,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   GURL diagnose_error_url_;
   int download_count_;
   std::string offline_content_json_;
+  bool offline_suggested_content_allowed_ = false;
 
   int enable_page_helper_functions_count_;
 
@@ -2655,9 +2662,12 @@ class NetErrorHelperCoreAvailableOfflineContentTest
 };
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, AvailableContent) {
+  set_offline_suggested_content_allowed(true);
   fake_provider_.set_return_content(true);
+
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
+
   std::string want_json = R"([
       {
         "ID": "ID",
@@ -2683,7 +2693,19 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, AvailableContent) {
 }
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, NoAvailableContent) {
+  set_offline_suggested_content_allowed(true);
   fake_provider_.set_return_content(false);
+
+  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
+  task_environment()->RunUntilIdle();
+
+  EXPECT_EQ("", offline_content_json());
+}
+
+TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, NotAllowed) {
+  set_offline_suggested_content_allowed(false);
+  fake_provider_.set_return_content(true);
+
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
 

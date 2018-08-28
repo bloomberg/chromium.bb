@@ -66,6 +66,7 @@ class NetErrorHelperCore {
         bool* show_saved_copy_button_shown,
         bool* show_cached_copy_button_shown,
         bool* download_button_shown,
+        bool* offline_content_suggestions_allowed,
         std::string* html) const = 0;
 
     // Loads the given HTML in the frame for use as an error page.
