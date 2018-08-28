@@ -327,6 +327,7 @@ void DownloadTargetDeterminerTest::SetUp() {
   download_prefs_.reset(new DownloadPrefs(profile()));
   web_contents()->SetDelegate(&web_contents_delegate_);
   test_virtual_dir_ = test_download_dir().Append(FILE_PATH_LITERAL("virtual"));
+  download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
   SetUpFileTypePolicies();
 #if defined(OS_ANDROID)
@@ -592,14 +593,7 @@ void NotifyExtensionsOverridePath(
   callback.Run(new_path, DownloadPathReservationTracker::UNIQUIFY);
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-
-TEST_F(DownloadTargetDeterminerTest, MAYBE_Basic) {
+TEST_F(DownloadTargetDeterminerTest, Basic) {
   const DownloadTestCase kBasicTestCases[] = {
       {// Automatic Safe
        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -735,16 +729,9 @@ TEST_F(DownloadTargetDeterminerTest, DangerousUrl) {
                              arraysize(kSafeBrowsingTestCases));
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_MaybeDangerousContent DISABLED_MaybeDangerousContent
-#else
-#define MAYBE_MaybeDangerousContent MaybeDangerousContent
-#endif
-
 // The SafeBrowsing check is performed early. Make sure that a download item
 // that has been marked as MAYBE_DANGEROUS_CONTENT behaves correctly.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_MaybeDangerousContent) {
+TEST_F(DownloadTargetDeterminerTest, MaybeDangerousContent) {
   const DownloadTestCase kSafeBrowsingTestCases[] = {
       {// 0: Automatic Maybe dangerous content
        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
@@ -798,15 +785,8 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_MaybeDangerousContent) {
                              arraysize(kSafeBrowsingTestCases));
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_LastSavePath DISABLED_LastSavePath
-#else
-#define MAYBE_LastSavePath LastSavePath
-#endif
-
 // Test whether the last saved directory is used for 'Save As' downloads.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_LastSavePath) {
+TEST_F(DownloadTargetDeterminerTest, LastSavePath) {
   const DownloadTestCase kLastSavePathTestCasesPre[] = {
       {// 0: If the last save path is empty, then the default download directory
        //    should be used.
@@ -993,13 +973,6 @@ TEST_F(DownloadTargetDeterminerTest, DefaultVirtual) {
   }
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_InactiveDownload DISABLED_InactiveDownload
-#else
-#define MAYBE_InactiveDownload InactiveDownload
-#endif
-
 // Test that an inactive download will still get a virtual or local download
 // path.
 TEST_F(DownloadTargetDeterminerTest, InactiveDownload) {
@@ -1120,17 +1093,10 @@ TEST_F(DownloadTargetDeterminerTest, LocalPathFailed) {
                              arraysize(kLocalPathFailedCases));
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_VisitedReferrer DISABLED_VisitedReferrer
-#else
-#define MAYBE_VisitedReferrer VisitedReferrer
-#endif
-
 // Downloads that have a danger level of ALLOW_ON_USER_GESTURE should be marked
 // as safe depending on whether there was a user gesture associated with the
 // download and whether the referrer was visited prior to today.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_VisitedReferrer) {
+TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
   const DownloadTestCase kVisitedReferrerCases[] = {
       // http://visited.example.com/ is added to the history as a visit that
       // happened prior to today.
@@ -1322,16 +1288,9 @@ TEST_F(DownloadTargetDeterminerTest, TransitionType) {
   }
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_PromptAlways_SafeAutomatic DISABLED_PromptAlways_SafeAutomatic
-#else
-#define MAYBE_PromptAlways_SafeAutomatic PromptAlways_SafeAutomatic
-#endif
-
 // These test cases are run with "Prompt for download" user preference set to
 // true.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_PromptAlways_SafeAutomatic) {
+TEST_F(DownloadTargetDeterminerTest, PromptAlways_SafeAutomatic) {
   const DownloadTestCase kSafeAutomatic = {
       // 0: Safe Automatic - Should prompt because of "Prompt for download"
       //    preference setting.
@@ -1355,14 +1314,7 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_PromptAlways_SafeAutomatic) {
   RunTestCasesWithActiveItem(&kSafeAutomatic, 1);
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_PromptAlways_SafeSaveAs DISABLED_PromptAlways_SafeSaveAs
-#else
-#define MAYBE_PromptAlways_SafeSaveAs PromptAlways_SafeSaveAs
-#endif
-
-TEST_F(DownloadTargetDeterminerTest, MAYBE_PromptAlways_SafeSaveAs) {
+TEST_F(DownloadTargetDeterminerTest, PromptAlways_SafeSaveAs) {
   const DownloadTestCase kSafeSaveAs = {
       // 1: Safe Save As - Should prompt because of "Save as" invocation.
       SAVE_AS,
@@ -1404,14 +1356,7 @@ TEST_F(DownloadTargetDeterminerTest, PromptAlways_SafeForced) {
   RunTestCasesWithActiveItem(&kSafeForced, 1);
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_PromptAlways_AutoOpen DISABLED_PromptAlways_AutoOpen
-#else
-#define MAYBE_PromptAlways_AutoOpen PromptAlways_AutoOpen
-#endif
-
-TEST_F(DownloadTargetDeterminerTest, MAYBE_PromptAlways_AutoOpen) {
+TEST_F(DownloadTargetDeterminerTest, PromptAlways_AutoOpen) {
   const DownloadTestCase kAutoOpen = {
       // 3: Automatic - The filename extension is marked as one that we will
       //    open automatically. Shouldn't prompt.
@@ -1432,18 +1377,9 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_PromptAlways_AutoOpen) {
   RunTestCasesWithActiveItem(&kAutoOpen, 1);
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_ContinueWithoutConfirmation_SaveAs \
-  DISABLED_ContinueWithoutConfirmation_SaveAs
-#else
-#define MAYBE_ContinueWithoutConfirmation_SaveAs \
-  ContinueWithoutConfirmation_SaveAs
-#endif
-
 // If an embedder responds to a RequestConfirmation with a new path and a
 // CONTINUE_WITHOUT_CONFIRMATION, then we shouldn't consider the file as safe.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_ContinueWithoutConfirmation_SaveAs) {
+TEST_F(DownloadTargetDeterminerTest, ContinueWithoutConfirmation_SaveAs) {
   const DownloadTestCase kTestCase = {
       SAVE_AS,
       download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
@@ -1562,16 +1498,9 @@ TEST_F(DownloadTargetDeterminerTest, ManagedPath) {
                              arraysize(kManagedPathTestCases));
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_NotifyExtensionsSafe DISABLED_NotifyExtensionsSafe
-#else
-#define MAYBE_NotifyExtensionsSafe NotifyExtensionsSafe
-#endif
-
 // Test basic functionality supporting extensions that want to override download
 // filenames.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_NotifyExtensionsSafe) {
+TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsSafe) {
   const DownloadTestCase kNotifyExtensionsTestCases[] = {
       {// 0: Automatic Safe
        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -1659,16 +1588,9 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsUnsafe) {
   RunTestCasesWithActiveItem(&kHandledBySafeBrowsing, 1);
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_NotifyExtensionsConflict DISABLED_NotifyExtensionsConflict
-#else
-#define MAYBE_NotifyExtensionsConflict NotifyExtensionsConflict
-#endif
-
 // Test that conflict actions set by extensions are passed correctly into
 // ReserveVirtualPath.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_NotifyExtensionsConflict) {
+TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsConflict) {
   const DownloadTestCase kNotifyExtensionsTestCase = {
       AUTOMATIC,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -1715,16 +1637,9 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_NotifyExtensionsConflict) {
   RunTestCase(test_case, base::FilePath(), item.get());
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_NotifyExtensionsDefaultPath DISABLED_NotifyExtensionsDefaultPath
-#else
-#define MAYBE_NotifyExtensionsDefaultPath NotifyExtensionsDefaultPath
-#endif
-
 // Test that relative paths returned by extensions are always relative to the
 // default downloads path.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_NotifyExtensionsDefaultPath) {
+TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsDefaultPath) {
   const DownloadTestCase kNotifyExtensionsTestCase = {
       AUTOMATIC,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -1786,19 +1701,12 @@ TEST_F(DownloadTargetDeterminerTest, InitialVirtualPathUnsafe) {
   RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_ResumedNoPrompt DISABLED_ResumedNoPrompt
-#else
-#define MAYBE_ResumedNoPrompt ResumedNoPrompt
-#endif
-
 // Prompting behavior for resumed downloads is based on the last interrupt
 // reason. If the reason indicates that the target path may not be suitable for
 // the download (ACCESS_DENIED, NO_SPACE, etc..), then the user should be
 // prompted, and not otherwise. These test cases shouldn't result in prompting
 // since the error is set to NETWORK_FAILED.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_ResumedNoPrompt) {
+TEST_F(DownloadTargetDeterminerTest, ResumedNoPrompt) {
   // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
   // path.
   const base::FilePath::CharType* kInitialPath =
@@ -1984,15 +1892,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithPrompt) {
   }
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_IntermediateNameForResumed DISABLED_IntermediateNameForResumed
-#else
-#define MAYBE_IntermediateNameForResumed IntermediateNameForResumed
-#endif
-
 // Test intermediate filename generation for resumed downloads.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_IntermediateNameForResumed) {
+TEST_F(DownloadTargetDeterminerTest, IntermediateNameForResumed) {
   // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
   // path.
   const base::FilePath::CharType kInitialPath[] =
@@ -2106,15 +2007,8 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_IntermediateNameForResumed) {
   }
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_MIMETypeDetermination DISABLED_MIMETypeDetermination
-#else
-#define MAYBE_MIMETypeDetermination MIMETypeDetermination
-#endif
-
 // Test MIME type determination based on the target filename.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_MIMETypeDetermination) {
+TEST_F(DownloadTargetDeterminerTest, MIMETypeDetermination) {
   // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
   // path.
   const base::FilePath::CharType kInitialPath[] =
@@ -2206,16 +2100,8 @@ TEST_F(DownloadTargetDeterminerTest, MAYBE_MIMETypeDetermination) {
   }
 }
 
-// Flaky on Nexus 5x.  http://crbug.com/877026
-#if defined(OS_ANDROID)
-#define MAYBE_ResumedWithUserValidatedDownload \
-  DISABLED_ResumedWithUserValidatedDownload
-#else
-#define MAYBE_ResumedWithUserValidatedDownload ResumedWithUserValidatedDownload
-#endif
-
 // Test that a user validated download won't be treated as dangerous.
-TEST_F(DownloadTargetDeterminerTest, MAYBE_ResumedWithUserValidatedDownload) {
+TEST_F(DownloadTargetDeterminerTest, ResumedWithUserValidatedDownload) {
   const base::FilePath::CharType kInitialPath[] =
       FILE_PATH_LITERAL("some_path/bar.txt");
   const base::FilePath::CharType* kIntermediatePath =
