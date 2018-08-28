@@ -194,8 +194,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         switches::kAshDisableSmoothScreenRotation);
   }
 
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(
-      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
+      &aura::test::EventGeneratorDelegateAura::Create, nullptr));
 
   display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();

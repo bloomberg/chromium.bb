@@ -12,7 +12,7 @@ import "ui/events/mojo/event.mojom";
 interface EventInjector {
   // Takes an event and dispatches it as if it came from the native platform.
   // Responds with false on bad |display_id| or bad |event|; true once the
-  // event has completed processin.
+  // event has completed processing.
   //
   // If |event| is a LocatedEvent, then the coordinates must be in pixels, and
   // relative to the origin of the display identified by |display_id|.

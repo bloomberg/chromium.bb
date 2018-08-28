@@ -6,9 +6,12 @@
 
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/views/mus/mus_client.h"
 
 namespace {
 
@@ -58,5 +61,14 @@ std::unique_ptr<ui::test::EventGeneratorDelegate>
 CreateAshEventGeneratorDelegate(ui::test::EventGenerator* owner,
                                 gfx::NativeWindow root_window,
                                 gfx::NativeWindow window) {
+  // Do not create EventGeneratorDelegateMus if a root window is supplied.
+  // Assume that if a root is supplied the event generator should target the
+  // specified window, and there is no need to dispatch remotely.
+  if (features::IsUsingWindowService() && !root_window) {
+    DCHECK(views::MusClient::Exists());
+    return aura::test::EventGeneratorDelegateAura::Create(
+        views::MusClient::Get()->window_tree_client()->connector(), owner,
+        root_window, window);
+  }
   return std::make_unique<DefaultAshEventGeneratorDelegate>(root_window);
 }

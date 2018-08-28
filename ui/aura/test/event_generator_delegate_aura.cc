@@ -5,6 +5,10 @@
 #include "ui/aura/test/event_generator_delegate_aura.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/event_injector.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -12,6 +16,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/screen.h"
+#include "ui/events/event_sink.h"
+#include "ui/events/event_source.h"
+#include "ui/events/event_target_iterator.h"
 
 namespace aura {
 namespace test {
@@ -40,6 +48,112 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
   DISALLOW_COPY_AND_ASSIGN(DefaultEventGeneratorDelegate);
 };
 
+// EventTargeterMus serves to send events to the remote window-service by way
+// of the RemoteEventInjector interface.
+class EventTargeterMus : public ui::EventTarget,
+                         public ui::EventTargeter,
+                         public ui::EventSource,
+                         public ui::EventSink {
+ public:
+  explicit EventTargeterMus(service_manager::Connector* connector)
+      : connector_(connector) {
+    DCHECK(connector);
+  }
+  ~EventTargeterMus() override = default;
+
+  // ui::EventTargeter:
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override {
+    return this;
+  }
+  ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
+                                      ui::Event* event) override {
+    return this;
+  }
+
+  // ui::EventTarget:
+  bool CanAcceptEvent(const ui::Event& event) override { return true; }
+  ui::EventTarget* GetParentTarget() override { return nullptr; }
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override {
+    return nullptr;
+  }
+  ui::EventTargeter* GetEventTargeter() override { return this; }
+
+  // ui::EventSource:
+  ui::EventSink* GetEventSink() override { return this; }
+
+  // ui::EventSink:
+  ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
+    if (!remote_event_injector_) {
+      connector_->BindInterface(ws::mojom::kServiceName,
+                                &remote_event_injector_);
+    }
+    base::RunLoop run_loop;
+    std::unique_ptr<ui::Event> cloned_event;
+    // TODO: event conversion should not be necessary. https://crbug.com/865781
+    if (event->IsMouseEvent())
+      cloned_event = std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
+    else if (event->IsTouchEvent())
+      cloned_event = std::make_unique<ui::PointerEvent>(*event->AsTouchEvent());
+    else
+      DCHECK(!event->IsGestureEvent());
+    ui::Event* event_to_send = cloned_event ? cloned_event.get() : event;
+    remote_event_injector_->InjectEvent(
+        display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+        ui::Event::Clone(*event_to_send),
+        base::BindOnce(
+            [](base::RunLoop* run_loop, bool success) {
+              // NOTE: a failure is not necessarily fatal, or result in the test
+              // failing.
+              if (!success)
+                LOG(ERROR) << "Remote event injection failed";
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+    return ui::EventDispatchDetails();
+  }
+
+ private:
+  service_manager::Connector* connector_;
+  ws::mojom::EventInjectorPtr remote_event_injector_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventTargeterMus);
+};
+
+// EventGeneratorDelegate implementation for mus.
+class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
+ public:
+  explicit EventGeneratorDelegateMus(service_manager::Connector* connector)
+      : event_targeter_(connector) {}
+
+  ~EventGeneratorDelegateMus() override = default;
+
+  // EventGeneratorDelegateAura:
+  ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
+    return &event_targeter_;
+  }
+  client::ScreenPositionClient* GetScreenPositionClient(
+      const aura::Window* window) const override {
+    return client::GetScreenPositionClient(window->GetRootWindow());
+  }
+  ui::EventSource* GetEventSource(ui::EventTarget* target) override {
+    return target == &event_targeter_
+               ? &event_targeter_
+               : EventGeneratorDelegateAura::GetEventSource(target);
+  }
+  void DispatchEventToPointerWatchers(ui::EventTarget* target,
+                                      const ui::PointerEvent& event) override {
+    // Does nothing as events are injected into mus, which should trigger
+    // pointer events to be handled.
+  }
+
+ private:
+  EventTargeterMus event_targeter_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMus);
+};
+
 const Window* WindowFromTarget(const ui::EventTarget* event_target) {
   return static_cast<const Window*>(event_target);
 }
@@ -48,9 +162,15 @@ const Window* WindowFromTarget(const ui::EventTarget* event_target) {
 
 // static
 std::unique_ptr<ui::test::EventGeneratorDelegate>
-EventGeneratorDelegateAura::Create(ui::test::EventGenerator* owner,
+EventGeneratorDelegateAura::Create(service_manager::Connector* connector,
+                                   ui::test::EventGenerator* owner,
                                    gfx::NativeWindow root_window,
                                    gfx::NativeWindow window) {
+  // Do not create EventGeneratorDelegateMus if a root window is supplied.
+  // Assume that if a root is supplied the event generator should target the
+  // specified window, and there is no need to dispatch remotely.
+  if (connector && !root_window)
+    return std::make_unique<EventGeneratorDelegateMus>(connector);
   return std::make_unique<DefaultEventGeneratorDelegate>(root_window);
 }
 
