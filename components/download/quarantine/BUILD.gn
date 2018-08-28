@@ -13,6 +13,8 @@ static_library("quarantine") {
     "quarantine.cc",
     "quarantine.h",
     "quarantine_constants_linux.h",
+    "quarantine_features_win.cc",
+    "quarantine_features_win.h",
     "quarantine_linux.cc",
     "quarantine_mac.mm",
     "quarantine_win.cc",

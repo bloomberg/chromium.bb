@@ -11,8 +11,11 @@
 #include <wrl/client.h>
 #endif
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -22,15 +25,32 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/download/quarantine/quarantine.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace {
 
 #if defined(OS_WIN)
+// This feature controls whether the QuarantineFile() function should be used
+// to perform the AV scan instead of directly invoking the IAttachmentExecute
+// interface.
+constexpr base::Feature kMediaGalleriesQuarantineFile{
+    "MediaGalleriesQuarantineFile", base::FEATURE_DISABLED_BY_DEFAULT};
+
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
   base::AssertBlockingAllowed();
+
+  if (base::FeatureList::IsEnabled(kMediaGalleriesQuarantineFile)) {
+    download::QuarantineFileResult quarantine_result = download::QuarantineFile(
+        dest_platform_path, GURL(), GURL(), std::string());
+
+    return quarantine_result == download::QuarantineFileResult::OK
+               ? base::File::FILE_OK
+               : base::File::FILE_ERROR_SECURITY;
+  }
 
   Microsoft::WRL::ComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,
