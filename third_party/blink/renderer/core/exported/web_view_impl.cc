@@ -133,13 +133,11 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -147,13 +145,10 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -257,26 +252,6 @@ class EmptyEventListener final : public EventListener {
   EmptyEventListener() : EventListener(kCPPEventListenerType) {}
 
   void handleEvent(ExecutionContext* execution_context, Event*) override {}
-};
-
-class ColorOverlay final : public PageOverlay::Delegate {
- public:
-  explicit ColorOverlay(SkColor color) : color_(color) {}
-
- private:
-  void PaintPageOverlay(const PageOverlay& page_overlay,
-                        GraphicsContext& graphics_context,
-                        const IntSize& size) const override {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            graphics_context, page_overlay, DisplayItem::kPageOverlay))
-      return;
-    FloatRect rect(0, 0, size.Width(), size.Height());
-    DrawingRecorder recorder(graphics_context, page_overlay,
-                             DisplayItem::kPageOverlay);
-    graphics_context.FillRect(rect, color_);
-  }
-
-  SkColor color_;
 };
 
 }  // namespace
@@ -1607,8 +1582,6 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
 
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->PaintOverlay();
-  if (page_color_overlay_)
-    page_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
@@ -3057,21 +3030,7 @@ void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
 }
 
 void WebViewImpl::SetPageOverlayColor(SkColor color) {
-  if (page_color_overlay_)
-    page_color_overlay_.reset();
-
-  if (color == Color::kTransparent)
-    return;
-
-  page_color_overlay_ = PageOverlay::Create(
-      MainFrameImpl(), std::make_unique<ColorOverlay>(color));
-
-  // Run compositing update before calling updatePageOverlays.
-  MainFrameImpl()
-      ->GetFrameView()
-      ->UpdateLifecycleToCompositingCleanPlusScrolling();
-
-  UpdatePageOverlays();
+  page_->SetPageOverlayColor(color);
 }
 
 WebPageImportanceSignals* WebViewImpl::PageImportanceSignals() {
@@ -3416,8 +3375,6 @@ base::WeakPtr<CompositorMutatorImpl> WebViewImpl::EnsureCompositorMutator(
 }
 
 void WebViewImpl::UpdatePageOverlays() {
-  if (page_color_overlay_)
-    page_color_overlay_->Update();
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->LayoutOverlay();
 }

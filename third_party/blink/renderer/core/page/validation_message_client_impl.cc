@@ -33,7 +33,6 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/validation_message_overlay_delegate.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
@@ -78,16 +77,15 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       std::max(kMinimumTimeToShowValidationMessage,
                (message.length() + sub_message.length()) * kTimePerCharacter);
 
-  auto* target_frame =
-      page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
-          ? WebLocalFrameImpl::FromFrame(ToLocalFrame(page_->MainFrame()))
-          : WebLocalFrameImpl::FromFrame(anchor.GetDocument().GetFrame());
+  auto* target_frame = page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
+                           ? ToLocalFrame(page_->MainFrame())
+                           : anchor.GetDocument().GetFrame();
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
   overlay_ = PageOverlay::Create(target_frame, std::move(delegate));
-  bool success = target_frame->GetFrameView()
-                     ->UpdateLifecycleToCompositingCleanPlusScrolling();
+  bool success =
+      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   // The lifecycle update should always succeed, because this is not inside
   // of a throttling scope.
   DCHECK(success);
