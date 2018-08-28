@@ -866,5 +866,11 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
   assistant_screenshot_.clear();
 }
 
+std::string AssistantManagerServiceImpl::GetLastSearchSource() {
+  base::AutoLock lock(last_search_source_lock_);
+  auto search_source = last_search_source_;
+  last_search_source_ = std::string();
+  return search_source;
+}
 }  // namespace assistant
 }  // namespace chromeos
