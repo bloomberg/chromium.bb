@@ -306,8 +306,8 @@ class SecurityPolicyAccessTest : public testing::Test {
   }
 
   void TearDown() override {
-    SecurityPolicy::ResetOriginAccessWhitelists();
-    SecurityPolicy::ResetOriginAccessBlacklists();
+    SecurityPolicy::ClearOriginAccessAllowList();
+    SecurityPolicy::ClearOriginAccessBlockList();
   }
 
   const SecurityOrigin* https_example_origin() const {
@@ -336,103 +336,103 @@ class SecurityPolicyAccessTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SecurityPolicyAccessTest);
 };
 
-TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListed) {
-  // By default, no access should be whitelisted.
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_sub_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
+// TODO(toyoshim): Simplify origin access related tests since all we need here
+// is to check think wrapper functions to the network::cors::OriginAccessList.
+TEST_F(SecurityPolicyAccessTest, IsOriginAccessAllowed) {
+  // By default, no access should be allowed.
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(
+      https_chromium_origin(), https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     http_example_origin()));
 
   // Adding access for https://example.com should work, but should not grant
   // access to subdomains or other schemes.
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "example.com", false);
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_sub_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                    https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(
+      https_chromium_origin(), https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     http_example_origin()));
 
   // Clearing the map should revoke all special access.
-  SecurityPolicy::ResetOriginAccessWhitelists();
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_sub_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
+  SecurityPolicy::ClearOriginAccessAllowList();
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(
+      https_chromium_origin(), https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     http_example_origin()));
 
   // Adding an entry that matches subdomains should grant access to any
   // subdomains.
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "example.com", true);
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_example_origin()));
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_sub_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                    https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(
+      https_chromium_origin(), https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     http_example_origin()));
 }
 
-TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListedWildCard) {
+TEST_F(SecurityPolicyAccessTest, IsOriginAccessAllowedWildCard) {
   // An empty domain that matches subdomains results in matching every domain.
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "", true);
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_example_origin()));
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_google_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                    https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                    https_google_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     http_example_origin()));
 }
 
-TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListedWithBlacklistedEntries) {
-  // The blacklists take priority over the whitelist.
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+TEST_F(SecurityPolicyAccessTest, IsOriginAccessAllowedWithBlockListEntry) {
+  // The block list takes priority over the allow list.
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "example.com", true);
-  SecurityPolicy::AddOriginAccessBlacklistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessBlockListEntry(*https_chromium_origin(),
                                                 "https", "example.com", false);
 
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_example_origin()));
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(
+      https_chromium_origin(), https_sub_example_origin()));
 }
 
 TEST_F(SecurityPolicyAccessTest,
-       IsAccessWhiteListedWildcardWithBlacklistedEntries) {
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+       IsOriginAccessAllowedWildcardWithBlockListEntry) {
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "", true);
-  SecurityPolicy::AddOriginAccessBlacklistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessBlockListEntry(*https_chromium_origin(),
                                                 "https", "google.com", false);
 
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                  https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_google_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                    https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_google_origin()));
 }
 
-TEST_F(SecurityPolicyAccessTest,
-       RemoveAllOriginAccessWhitelistEntriesForOrigin) {
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+TEST_F(SecurityPolicyAccessTest, ClearOriginAccessAllowListForOrigin) {
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "example.com", true);
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_chromium_origin(),
                                                 "https", "google.com", true);
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_example_origin(),
+  SecurityPolicy::AddOriginAccessAllowListEntry(*https_example_origin(),
                                                 "https", "google.com", true);
 
-  SecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
-      *https_chromium_origin());
+  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*https_chromium_origin());
 
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_google_origin()));
-  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_example_origin(),
-                                                  https_google_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
+                                                     https_google_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsOriginAccessAllowed(https_example_origin(),
+                                                    https_google_origin()));
 }
 
 }  // namespace blink

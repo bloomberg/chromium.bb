@@ -78,7 +78,7 @@ void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
   // conservative.
   if (extensions::Manifest::IsComponentLocation(extension.location()) &&
       is_extension_active) {
-    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
         blink::WebString::FromUTF8(chrome::kChromeUIThemeHost), false);
   }
@@ -88,7 +88,7 @@ void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
   // changes.
   if (is_extension_active && extension.permissions_data()->HasAPIPermission(
                                  extensions::APIPermission::kManagement)) {
-    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
         blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost), false);
   }

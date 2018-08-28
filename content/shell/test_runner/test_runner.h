@@ -237,15 +237,11 @@ class TestRunner : public WebTestRunner {
   void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
   void ResetTestHelperControllers();
 
-  // Allows layout tests to manage origins' whitelisting.
-  void AddOriginAccessWhitelistEntry(const std::string& source_origin,
+  // Allows layout tests to manage origins' allow list.
+  void AddOriginAccessAllowListEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
                                      bool allow_destination_subdomains);
-  void RemoveOriginAccessWhitelistEntry(const std::string& source_origin,
-                                        const std::string& destination_protocol,
-                                        const std::string& destination_host,
-                                        bool allow_destination_subdomains);
 
   // Add |source_code| as an injected stylesheet to the active document of the
   // window of the current V8 context.

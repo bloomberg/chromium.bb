@@ -2,7 +2,7 @@
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-    testRunner.addOriginAccessWhitelistEntry(location.origin, location.protocol, '', false);
+    testRunner.addOriginAccessAllowListEntry(location.origin, location.protocol, '', false);
 }
 
 var blobUrl = URL.createObjectURL(new Blob([

@@ -26,7 +26,7 @@ crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Fail
 # https://crbug.com/771003 - Dump history from all processes in layout tests
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
-# https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
+# https://crbug.com/585188 - testRunner.addOriginAccessAllowListEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]

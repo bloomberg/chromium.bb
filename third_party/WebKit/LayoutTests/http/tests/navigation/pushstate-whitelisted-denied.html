@@ -2,8 +2,8 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 test(function () {
-    testRunner.addOriginAccessWhitelistEntry(location.origin, location.protocol, '', false);
-}, 'testRunner.addOriginAccessWhitelistEntry is required for this test');
+    testRunner.addOriginAccessAllowListEntry(location.origin, location.protocol, '', false);
+}, 'testRunner.addOriginAccessAllowListEntry is required for this test');
 
 test(function () {
     // http://username@password:localhost:8000/... should be blocked.

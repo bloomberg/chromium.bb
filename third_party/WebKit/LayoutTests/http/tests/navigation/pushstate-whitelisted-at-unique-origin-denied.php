@@ -6,8 +6,8 @@ header("Content-Security-Policy: sandbox allow-scripts");
 <script>
 var orginURL = document.URL;
 test(function () {
-    testRunner.addOriginAccessWhitelistEntry(location.origin, location.protocol, '', false);
-}, 'testRunner.addOriginAccessWhitelistEntry is required for this test');
+    testRunner.addOriginAccessAllowListEntry(location.origin, location.protocol, '', false);
+}, 'testRunner.addOriginAccessAllowListEntry is required for this test');
 
 test(function () {
     assert_throws('SecurityError', function () {

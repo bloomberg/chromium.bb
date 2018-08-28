@@ -313,7 +313,7 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (IsSameSchemeHostPort(target_origin.get()))
     return true;
 
-  if (SecurityPolicy::IsAccessWhiteListed(this, target_origin.get()))
+  if (SecurityPolicy::IsOriginAccessAllowed(this, target_origin.get()))
     return true;
 
   return false;
@@ -341,13 +341,15 @@ bool SecurityOrigin::CanDisplay(const KURL& url) const {
   if (SchemeRegistry::CanDisplayOnlyIfCanRequest(protocol))
     return CanRequest(url);
 
-  if (SchemeRegistry::ShouldTreatURLSchemeAsDisplayIsolated(protocol))
+  if (SchemeRegistry::ShouldTreatURLSchemeAsDisplayIsolated(protocol)) {
     return protocol_ == protocol ||
-           SecurityPolicy::IsAccessToURLWhiteListed(this, url);
+           SecurityPolicy::IsOriginAccessToURLAllowed(this, url);
+  }
 
-  if (SchemeRegistry::ShouldTreatURLSchemeAsLocal(protocol))
+  if (SchemeRegistry::ShouldTreatURLSchemeAsLocal(protocol)) {
     return CanLoadLocalResources() ||
-           SecurityPolicy::IsAccessToURLWhiteListed(this, url);
+           SecurityPolicy::IsOriginAccessToURLAllowed(this, url);
+  }
 
   return true;
 }
@@ -358,8 +360,9 @@ bool SecurityOrigin::IsPotentiallyTrustworthy() const {
     return is_opaque_origin_potentially_trustworthy_;
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsSecure(protocol_) || IsLocal() ||
-      IsLocalhost())
+      IsLocalhost()) {
     return true;
+  }
 
   if (SecurityPolicy::IsOriginWhiteListedTrustworthy(*this))
     return true;

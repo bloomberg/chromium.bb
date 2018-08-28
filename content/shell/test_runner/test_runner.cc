@@ -156,7 +156,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  void AddOriginAccessWhitelistEntry(const std::string& source_origin,
+  void AddOriginAccessAllowListEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
                                      bool allow_destination_subdomains);
@@ -401,8 +401,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
       .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
-      .SetMethod("addOriginAccessWhitelistEntry",
-                 &TestRunnerBindings::AddOriginAccessWhitelistEntry)
+      .SetMethod("addOriginAccessAllowListEntry",
+                 &TestRunnerBindings::AddOriginAccessAllowListEntry)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("callShouldCloseOnWebView",
                  &TestRunnerBindings::CallShouldCloseOnWebView)
@@ -841,13 +841,20 @@ void TestRunnerBindings::SetIsolatedWorldContentSecurityPolicy(
     view_runner_->SetIsolatedWorldContentSecurityPolicy(world_id, policy);
 }
 
-void TestRunnerBindings::AddOriginAccessWhitelistEntry(
+void TestRunnerBindings::AddOriginAccessAllowListEntry(
     const std::string& source_origin,
     const std::string& destination_protocol,
     const std::string& destination_host,
     bool allow_destination_subdomains) {
   if (runner_) {
-    runner_->AddOriginAccessWhitelistEntry(source_origin, destination_protocol,
+    // Non-standard schemes should be added to the scheme registeries to use
+    // for the origin access whitelisting.
+    GURL url(source_origin);
+    DCHECK(url.is_valid());
+    DCHECK(url.has_scheme());
+    DCHECK(url.has_host());
+
+    runner_->AddOriginAccessAllowListEntry(source_origin, destination_protocol,
                                            destination_host,
                                            allow_destination_subdomains);
   }
@@ -1551,7 +1558,7 @@ void TestRunner::Reset() {
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
 
-  WebSecurityPolicy::ResetOriginAccessWhitelists();
+  WebSecurityPolicy::ClearOriginAccessAllowList();
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
@@ -2081,7 +2088,7 @@ void TestRunner::ResetTestHelperControllers() {
   test_interfaces_->ResetTestHelperControllers();
 }
 
-void TestRunner::AddOriginAccessWhitelistEntry(
+void TestRunner::AddOriginAccessAllowListEntry(
     const std::string& source_origin,
     const std::string& destination_protocol,
     const std::string& destination_host,
@@ -2090,7 +2097,7 @@ void TestRunner::AddOriginAccessWhitelistEntry(
   if (!url.IsValid())
     return;
 
-  WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+  WebSecurityPolicy::AddOriginAccessAllowListEntry(
       url, WebString::FromUTF8(destination_protocol),
       WebString::FromUTF8(destination_host), allow_destination_subdomains);
 }
