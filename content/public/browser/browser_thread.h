@@ -18,7 +18,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -35,25 +34,17 @@ class BrowserThreadImpl;
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserThread
 //
-// Utility functions for threads that are known by a browser-wide
-// name.  For example, there is one IO thread for the entire browser
-// process, and various pieces of code find it useful to retrieve a
-// pointer to the IO thread's message loop.
+// Utility functions for threads that are known by a browser-wide name.  For
+// example, there is one IO thread for the entire browser process, and various
+// pieces of code find it useful to retrieve a pointer to the IO thread's
+// message loop.
 //
-// Invoke a task by thread ID:
+// See browser_task_traits.h for posting Tasks to a BrowserThread.
+// TODO(https://crbug.com/878356): Replace uses with base's post_task.h API.
 //
-//   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
-//
-// The return value is false if the task couldn't be posted because the target
-// thread doesn't exist.  If this could lead to data loss, you need to check the
-// result and restructure the code to ensure it doesn't occur.
-//
-// This class automatically handles the lifetime of different threads.
-// It's always safe to call PostTask on any thread.  If it's not yet created,
-// the task is deleted.  There are no race conditions.  If the thread that the
-// task is posted to is guaranteed to outlive the current thread, then no locks
-// are used.  You should never need to cache pointers to MessageLoops, since
-// they're not thread safe.
+// This class automatically handles the lifetime of different threads. You
+// should never need to cache pointers to MessageLoops, since they're not thread
+// safe.
 class CONTENT_EXPORT BrowserThread {
  public:
   // An enumeration of the well-known threads.
@@ -68,7 +59,7 @@ class CONTENT_EXPORT BrowserThread {
     IO,
 
     // NOTE: do not add new threads here. Instead you should just use
-    // base::Create*TaskRunnerWithTraits.
+    // base::Create*TaskRunnerWithTraits to run tasks on the TaskScheduler.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
@@ -76,6 +67,9 @@ class CONTENT_EXPORT BrowserThread {
     ID_COUNT
   };
 
+  // DEPRECATED: Please use the API described in browser_task_traits.h instead.
+  // TODO(https://crbug.com/878356): Replace uses with base::PostTaskWithTraits.
+  //
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
   // They return true iff the thread existed and the task was posted.  Note that
@@ -176,8 +170,12 @@ class CONTENT_EXPORT BrowserThread {
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
-  // Callers can hold on to a refcounted task runner beyond the lifetime
-  // of the thread.
+  // DEPRECATED: Please use the API described in browser_task_traits.h instead.
+  // TODO(https://crbug.com/878356): Replace uses with
+  // base::Create*TaskRunnerWithTraits.
+  //
+  // Callers can hold on to a refcounted task runner beyond the lifetime of the
+  // thread.
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
       ID identifier);
 

@@ -93,9 +93,12 @@ constexpr typename GetterType::ValueType GetValueFromArgListImpl(
 //     Converts an argument of type ArgType into a value returned by
 //     GetValueFromArgListImpl().
 //
+// |getter| may provide:
+//
 // ValueType GetDefaultValue():
 //     Returns the value returned by GetValueFromArgListImpl() if none of its
-//     arguments is of type ArgType.
+//     arguments is of type ArgType. If this method is not provided, compilation
+//     will fail when no argument of type ArgType is provided.
 template <class GetterType, class... ArgTypes>
 constexpr typename GetterType::ValueType GetValueFromArgList(
     GetterType getter,
@@ -115,6 +118,12 @@ struct EnumArgGetter {
   using ValueType = ArgType;
   constexpr ValueType GetValueFromArg(ArgType arg) const { return arg; }
   constexpr ValueType GetDefaultValue() const { return DefaultValue; }
+};
+
+template <typename ArgType>
+struct RequiredEnumArgGetter {
+  using ValueType = ArgType;
+  constexpr ValueType GetValueFromArg(ArgType arg) const { return arg; }
 };
 
 // Tests whether a given trait type is valid or invalid by testing whether it is
