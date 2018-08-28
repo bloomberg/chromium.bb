@@ -21,7 +21,7 @@ const TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"]';
 function selectFirstFileListItem(appId) {
   return Promise.resolve().then(function() {
     // Ensure no file list items are selected.
-    return remoteCall.waitForElementLost(appId, ['#file-list [selected]']);
+    return remoteCall.waitForElementLost(appId, '#file-list [selected]');
   }).then(function() {
     // Press DownArrow key to select an item.
     const key = ['#file-list', 'ArrowDown', 'Down', false, false, false];
@@ -29,7 +29,7 @@ function selectFirstFileListItem(appId) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Await file list item selection.
-    return remoteCall.waitForElement(appId, ['.table-row[selected]']);
+    return remoteCall.waitForElement(appId, '.table-row[selected]');
   }).then(function() {
     // Retrieve all selected items in the file list.
     return remoteCall.callRemoteTestUtil(
@@ -106,7 +106,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Wait until renaming is complete.
-    const renamingItem = ['#file-list .table-row[renaming]'];
+    const renamingItem = '#file-list .table-row[renaming]';
     return remoteCall.waitForElementLost(appId, renamingItem);
   }).then(function() {
     // Check: the test folder should be shown in the file list.
@@ -144,7 +144,7 @@ function expandRoot(appId, selector) {
 
   return new Promise(function(resolve) {
     // Wait for the subtree expand icon to appear.
-    remoteCall.waitForElement(appId, [expandIcon]).then(resolve);
+    remoteCall.waitForElement(appId, expandIcon).then(resolve);
   }).then(function() {
     // Click the expand icon to expand the subtree.
     return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [expandIcon]);
