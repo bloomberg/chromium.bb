@@ -132,7 +132,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // frame are allocated but not initialized. The caller should specify the
   // physical buffer size in |layout| parameter.
   static scoped_refptr<VideoFrame> CreateFrameWithLayout(
-      VideoFrameLayout layout,
+      const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
@@ -508,7 +508,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              base::TimeDelta timestamp);
 
   // VideoFrameLayout is initialized at caller side.
-  VideoFrame(VideoFrameLayout layout,
+  VideoFrame(const VideoFrameLayout& layout,
              StorageType storage_type,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,

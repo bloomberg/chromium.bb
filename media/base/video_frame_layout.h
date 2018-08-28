@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,6 +23,7 @@ namespace media {
 // which can be used to allocate buffer(s) hardware expected.
 // Also, it stores stride (bytes per line) per color plane to calculate each
 // color plane's size (note that a buffer may contains multiple color planes.)
+// Note that it is copyable.
 class MEDIA_EXPORT VideoFrameLayout {
  public:
   // Constructor with strides and buffers' size.
@@ -34,10 +34,11 @@ class MEDIA_EXPORT VideoFrameLayout {
                    std::vector<int32_t> strides = {0, 0, 0, 0},
                    std::vector<size_t> buffer_sizes = {0, 0, 0, 0});
 
-  // Move constructor.
-  VideoFrameLayout(VideoFrameLayout&&);
-
+  VideoFrameLayout();
   ~VideoFrameLayout();
+  VideoFrameLayout(const VideoFrameLayout&);
+  VideoFrameLayout(VideoFrameLayout&&);
+  VideoFrameLayout& operator=(const VideoFrameLayout&);
 
   VideoPixelFormat format() const { return format_; }
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -56,9 +57,6 @@ class MEDIA_EXPORT VideoFrameLayout {
     strides_ = std::move(strides);
   }
 
-  // Clones this as a explicitly copy constructor.
-  VideoFrameLayout Clone() const;
-
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 
@@ -66,14 +64,14 @@ class MEDIA_EXPORT VideoFrameLayout {
   std::string ToString() const;
 
  private:
-  const VideoPixelFormat format_;
+  VideoPixelFormat format_;
 
   // Width and height of the video frame in pixels. This must include pixel
   // data for the whole image; i.e. for YUV formats with subsampled chroma
   // planes, in the case that the visible portion of the image does not line up
   // on a sample boundary, |coded_size_| must be rounded up appropriately and
   // the pixel data provided for the odd pixels.
-  const gfx::Size coded_size_;
+  gfx::Size coded_size_;
 
   // Vector of strides for each buffer, typically greater or equal to the
   // width of the surface divided by the horizontal sampling period. Note that
@@ -83,8 +81,6 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Vector of sizes for each buffer, typically greater or equal to the area of
   // |coded_size_|.
   std::vector<size_t> buffer_sizes_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameLayout);
 };
 
 }  // namespace media

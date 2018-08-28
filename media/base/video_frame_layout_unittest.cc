@@ -48,13 +48,13 @@ TEST(VideoFrameLayout, ConstructorNoStrideBufferSize) {
   }
 }
 
-TEST(VideoFrameLayout, Clone) {
+TEST(VideoFrameLayout, CopyConstructor) {
   gfx::Size coded_size = gfx::Size(320, 180);
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
   VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, strides, buffer_sizes);
 
-  VideoFrameLayout layout_clone = layout.Clone();
+  VideoFrameLayout layout_clone(layout);
 
   EXPECT_EQ(layout_clone.format(), PIXEL_FORMAT_I420);
   EXPECT_EQ(layout_clone.coded_size(), coded_size);
@@ -65,16 +65,24 @@ TEST(VideoFrameLayout, Clone) {
     EXPECT_EQ(layout_clone.strides()[i], strides[i]);
     EXPECT_EQ(layout_clone.buffer_sizes()[i], buffer_sizes[i]);
   }
+}
 
-  // Object being cloned does not change.
-  EXPECT_EQ(layout.format(), PIXEL_FORMAT_I420);
-  EXPECT_EQ(layout.coded_size(), coded_size);
-  EXPECT_EQ(layout.num_strides(), 3u);
-  EXPECT_EQ(layout.num_buffers(), 3u);
-  EXPECT_EQ(layout.GetTotalBufferSize(), 110592u);
+TEST(VideoFrameLayout, AssignmentOperator) {
+  gfx::Size coded_size = gfx::Size(320, 180);
+  std::vector<int32_t> strides = {384, 192, 192};
+  std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, strides, buffer_sizes);
+
+  VideoFrameLayout layout_clone = layout;
+
+  EXPECT_EQ(layout_clone.format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(layout_clone.coded_size(), coded_size);
+  EXPECT_EQ(layout_clone.num_strides(), 3u);
+  EXPECT_EQ(layout_clone.num_buffers(), 3u);
+  EXPECT_EQ(layout_clone.GetTotalBufferSize(), 110592u);
   for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(layout.strides()[i], strides[i]);
-    EXPECT_EQ(layout.buffer_sizes()[i], buffer_sizes[i]);
+    EXPECT_EQ(layout_clone.strides()[i], strides[i]);
+    EXPECT_EQ(layout_clone.buffer_sizes()[i], buffer_sizes[i]);
   }
 }
 
