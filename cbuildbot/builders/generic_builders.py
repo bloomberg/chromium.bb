@@ -119,7 +119,7 @@ class Builder(object):
     try:
       parallel.RunParallelSteps(steps)
     except BaseException as ex:
-      logging.error('BaseException in _RunParallelStages %s' % ex,
+      logging.error('BaseException in _RunParallelStages %s', ex,
                     exc_info=True)
       # If a stage threw an exception, it might not have correctly reported
       # results (e.g. because it was killed before it could report the

@@ -232,6 +232,7 @@ To install the debug symbols for all available packages, run:
           package = cros_build_lib.RunCommand([equery, '-q', 'b',
                                                self.inf_cmd],
                                               capture_output=True).output
+          # pylint: disable=logging-not-lazy
           logging.info(self._MISSING_DEBUG_INFO_MSG % {
               'board': self.board,
               'inf_cmd': self.inf_cmd,

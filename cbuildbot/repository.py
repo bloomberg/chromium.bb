@@ -583,8 +583,8 @@ class RepoRepository(object):
         if constants.SYNC_RETRIES > 0:
           # Retry on clean up and repo sync commands,
           # decrement max_retry for this command
-          logging.warning('cmd %s failed, clean up repository and retry sync.'
-                          % cmd)
+          logging.warning('cmd %s failed, clean up repository and retry sync.',
+                          cmd)
           time.sleep(DEFAULT_SLEEP_TIME)
           retry_util.RetryCommand(self._CleanUpAndRunCommand,
                                   constants.SYNC_RETRIES - 1,

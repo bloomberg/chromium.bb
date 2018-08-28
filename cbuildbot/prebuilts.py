@@ -57,9 +57,9 @@ def _AddPackagesForPrebuilt(filename):
           cmd.extend(['--packages=%s/%s' % (cpv.category, cpv.package)])
     return cmd
   except IOError as e:
-    logging.warning('Problem with package file %s' % filename)
+    logging.warning('Problem with package file %s', filename)
     logging.warning('Skipping uploading of prebuilts.')
-    logging.warning('ERROR(%d): %s' % (e.errno, e.strerror))
+    logging.warning('ERROR(%d): %s', e.errno, e.strerror)
     return None
 
 

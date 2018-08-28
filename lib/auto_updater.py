@@ -1203,7 +1203,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       services_status = self.device.RunCommand(
           ['status', 'system-services'], capture_output=True,
           log_output=True).output
-      logging.debug('System services_status: %r' % services_status)
+      logging.debug('System services_status: %r', services_status)
       if services_status != 'system-services start/running\n':
         event = ('Chrome failed to reach login screen')
       else:
@@ -1434,8 +1434,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
         # occurred, wait and retry.  Use the start of the verification
         # time in case an SSH call takes a long time to return/fail.
         if start_verify_time - start_time < POST_CHECK_SETTLE_SECONDS:
-          logging.warning('Delaying for re-check of %s to update to %s (%s)' %
-                          (self.device.hostname, self.update_version, e))
+          logging.warning('Delaying for re-check of %s to update to %s (%s)',
+                          self.device.hostname, self.update_version, e)
           time.sleep(POST_CHECK_RETRY_SECONDS)
           continue
         raise
@@ -1469,7 +1469,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
              '-omaha_url=%s' % omaha_url]
       self.device.RunCommand(cmd, **self._cmd_kwargs)
       op = self.GetUpdateStatus(self.device)
-      logging.info('Post update check status: %s' % op)
+      logging.info('Post update check status: %s', op)
 
       self._CollectDevServerHostLog(ds)
       ds.Stop()

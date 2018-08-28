@@ -292,6 +292,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
             'VMTestStage succeeded, but some optional tests failed.')
     except Exception as e:
       if not isinstance(e, failures_lib.TestWarning):
+        # pylint: disable=logging-not-lazy
         logging.error(_ERROR_MSG % dict(test_name='VMTests',
                                         test_results=test_basename))
       self._ArchiveVMFiles(test_results_root)
@@ -388,6 +389,7 @@ class GCETestStage(VMTestStage):
             self._RunTest(gce_test, per_test_results_dir)
 
     except Exception:
+      # pylint: disable=logging-not-lazy
       logging.error(_ERROR_MSG % dict(test_name='GCETests',
                                       test_results=test_basename))
       raise
@@ -426,6 +428,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     try:
       self._PerformStage(work_dir, results_dir)
     except:
+      # pylint: disable=logging-not-lazy
       logging.error(_ERROR_MSG % dict(test_name='MoblabVMTest',
                                       test_results='directory'))
       raise

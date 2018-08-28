@@ -783,24 +783,24 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       # No stages found. BinhostTest stage didn't start or got skipped,
       # in both case we don't need to push commits to the temp pfq branch.
       if not stages:
-        logging.warning('no %s stage found in build %s' % (
-            stage_name, build_id))
+        logging.warning('no %s stage found in build %s',
+                        stage_name, build_id)
         return False
 
       stage_status = [s for s in stages if (
           s['name'] == stage_name and
           s['status'] == constants.BUILDER_STATUS_PASSED)]
       if stage_status:
-        logging.info('build %s passed stage %s with %s' % (
-            build_id, stage_name, stage_status))
+        logging.info('build %s passed stage %s with %s',
+                     build_id, stage_name, stage_status)
         return True
       else:
-        logging.warning('build %s stage %s result %s' % (
-            build_id, stage_name, stage_status))
+        logging.warning('build %s stage %s result %s',
+                        build_id, stage_name, stage_status)
         return False
 
-    logging.warning('Not valid build_stage_id %s or db %s or no %s found' % (
-        self._build_stage_id, db, stage_name))
+    logging.warning('Not valid build_stage_id %s or db %s or no %s found',
+                    self._build_stage_id, db, stage_name)
     return False
 
   def CheckSlaveUploadPrebuiltsTest(self, db, build_id):
@@ -843,16 +843,16 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
           s['status'] == constants.BUILDER_STATUS_PASSED)])
 
       if passed_set.issuperset(important_set):
-        logging.info('All the important slaves passed %s' % stage_name)
+        logging.info('All the important slaves passed %s', stage_name)
         return True
       else:
         remaining_set = important_set.difference(passed_set)
-        logging.warning('slave %s didn\'t pass %s' % (
-            remaining_set, stage_name))
+        logging.warning("slave %s didn't pass %s",
+                        remaining_set, stage_name)
         return False
     else:
-      logging.warning('Not valid build_stage_id %s or db %s ' % (
-          self._build_stage_id, db))
+      logging.warning('Not valid build_stage_id %s or db %s',
+                      self._build_stage_id, db)
       return False
 
   def PerformStage(self):

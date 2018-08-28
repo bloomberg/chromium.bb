@@ -282,7 +282,7 @@ class BuilderStage(object):
     elif result == results_lib.Results.SKIPPED:
       return constants.BUILDER_STATUS_SKIPPED
     else:
-      logging.info('Translating result %s to fail.' % result)
+      logging.info('Translating result %s to fail.', result)
       return constants.BUILDER_STATUS_FAILED
 
   def GetRepoRepository(self, **kwargs):
@@ -1193,7 +1193,7 @@ class ArchivingStageMixin(object):
           if c_file:
             with tempfile.NamedTemporaryFile() as f:
               logging.info('Export tags to gcloud via %s.', f.name)
-              logging.debug('Exporting: %s' % d[constants.METADATA_TAGS])
+              logging.debug('Exporting: %s', d[constants.METADATA_TAGS])
               osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
                                 atomic=True, makedirs=True)
               commands.ExportToGCloud(self._build_root, c_file, f.name,

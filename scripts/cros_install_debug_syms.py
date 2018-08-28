@@ -210,7 +210,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
     if urlparts.scheme not in ('file', ''):
       # Don't fail the build on network errors. Print a warning message and
       # continue.
-      logging.warning('Could not get package index %s' % binhost)
+      logging.warning('Could not get package index %s', binhost)
       return None
 
     binhost = urlparts.path

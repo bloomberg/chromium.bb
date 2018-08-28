@@ -106,7 +106,7 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
 
 def _RunBuildStagesWrapper(options, site_config, build_config):
   """Helper function that wraps RunBuildStages()."""
-  logging.info('cbuildbot was executed with args %s' %
+  logging.info('cbuildbot was executed with args %s',
                cros_build_lib.CmdToStr(sys.argv))
 
   chrome_rev = build_config['chrome_rev']

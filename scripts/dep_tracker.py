@@ -172,7 +172,7 @@ class DepTracker(object):
         pkg_files.append(rel_path)
         file_data = self._files[rel_path]
         if 'ebuild' in file_data:
-          logging.warning('Duplicated entry for %s: %s and %',
+          logging.warning('Duplicated entry for %s: %s and %s',
                           rel_path, file_data['ebuild'], cpf)
         file_data['ebuild'] = cpf
         pkg_size += file_data['size']

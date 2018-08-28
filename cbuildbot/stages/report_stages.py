@@ -982,8 +982,8 @@ class ReportStage(generic_stages.BuilderStage,
           arches.append(toolchain.GetArchForTarget(default[0]))
         except cros_build_lib.RunCommandError as e:
           logging.warning(
-              'Unable to retrieve arch for board %s default toolchain %s: %s' %
-              (board, default, e))
+              'Unable to retrieve arch for board %s default toolchain %s: %s',
+              board, default, e)
     tags = {
         'arches': arches,
         'status': final_status,

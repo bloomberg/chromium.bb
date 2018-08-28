@@ -252,8 +252,8 @@ class BootstrapStage(PatchChangesStage):
         parsed_args, filter_fn)
 
     if removed:
-      logging.warning("The following arguments were removed due to api: '%s'"
-                      % ' '.join(removed))
+      logging.warning("The following arguments were removed due to api: '%s'",
+                      ' '.join(removed))
     return accepted
 
   @classmethod
@@ -1446,7 +1446,7 @@ class PreCQLauncherStage(SyncStage):
       result = cros_build_lib.RunCommand(
           cmd, cwd=self._build_root, capture_output=True)
       if result and result.output:
-        logging.info('output: %s' % result.output)
+        logging.info('output: %s', result.output)
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
             result.output)
 

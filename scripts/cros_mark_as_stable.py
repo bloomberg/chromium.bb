@@ -44,7 +44,7 @@ def CleanStalePackages(srcroot, boards, package_atoms):
     package_atoms: A list of package atoms to unmerge.
   """
   if package_atoms:
-    logging.info('Cleaning up stale packages %s.' % package_atoms)
+    logging.info('Cleaning up stale packages %s.', package_atoms)
 
   # First unmerge all the packages for a board, then eclean it.
   # We need these two steps to run in order (unmerge/eclean),

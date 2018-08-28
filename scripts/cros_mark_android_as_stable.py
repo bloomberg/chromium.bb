@@ -186,7 +186,7 @@ def FindAndroidCandidates(package_dir):
   if not unstable_ebuilds:
     raise Exception('Missing 9999 ebuild for %s' % package_dir)
   if not stable_ebuilds:
-    logging.warning('Missing stable ebuild for %s' % package_dir)
+    logging.warning('Missing stable ebuild for %s', package_dir)
 
   return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 
@@ -403,7 +403,7 @@ def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
     subpaths = IsBuildIdValid(
         android_bucket_url, android_build_branch, version, targets)
     if not subpaths:
-      logging.error('Requested build %s is not valid' % version)
+      logging.error('Requested build %s is not valid', version)
   else:
     version, subpaths = GetLatestBuild(
         android_bucket_url, android_build_branch, targets)
@@ -623,7 +623,7 @@ def main(argv):
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 
   if stable_candidate:
-    logging.info('Stable candidate found %s' % stable_candidate.version)
+    logging.info('Stable candidate found %s', stable_candidate.version)
   else:
     logging.info('No stable candidate found.')
 

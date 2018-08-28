@@ -622,9 +622,9 @@ class BuilderStatusesFetcher(object):
                  if builder_status.message is not None else None)
       logging.info(
           'Builder %s BuilderStatus.status %s BuilderStatus.message %s'
-          ' BuilderStatus.dashboard_url %s ' %
-          (builder, builder_status.status, message,
-           builder_status.dashboard_url))
+          ' BuilderStatus.dashboard_url %s ',
+          builder, builder_status.status, message,
+          builder_status.dashboard_url)
     return slave_builder_status_dict
 
   def GetBuilderStatuses(self):

@@ -473,12 +473,12 @@ def SetupBuild(options):
     # Get the correct board for cros_write_firmware
     config_mk = '%s/include/autoconf.mk' % outdir
     if not os.path.exists(config_mk):
-      logging.warning('No build found for %s - dropping -i' % board)
+      logging.warning('No build found for %s - dropping -i', board)
       options.incremental = False
 
   config_mk = 'include/autoconf.mk'
   if os.path.exists(config_mk):
-    logging.warning("Warning: '%s' exists, try 'make distclean'" % config_mk)
+    logging.warning("Warning: '%s' exists, try 'make distclean'", config_mk)
 
   # For when U-Boot supports ccache
   # See http://patchwork.ozlabs.org/patch/245079/
@@ -692,12 +692,12 @@ def WriteFirmware(options):
     cros_build_lib.Die('cros_bundle_firmware failed')
 
   if not dest or not result.returncode:
-    logging.info('Image is available at %s/out/image.bin' % outdir)
+    logging.info('Image is available at %s/out/image.bin', outdir)
   else:
     if result.returncode:
       cros_build_lib.Die('Failed to write image to board')
     else:
-      logging.info('Image written to board with %s' % ' '.join(dest + servo))
+      logging.info('Image written to board with %s', ' '.join(dest + servo))
 
 
 def main(argv):

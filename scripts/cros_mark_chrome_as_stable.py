@@ -229,7 +229,7 @@ def FindChromeCandidates(package_dir):
     if path.endswith('.ebuild'):
       ebuild = ChromeEBuild(path)
       if not ebuild.chrome_version:
-        logging.warning('Poorly formatted ebuild found at %s' % path)
+        logging.warning('Poorly formatted ebuild found at %s', path)
       else:
         if '9999' in ebuild.version:
           unstable_ebuilds.append(ebuild)
@@ -240,7 +240,7 @@ def FindChromeCandidates(package_dir):
   if not unstable_ebuilds:
     raise Exception('Missing 9999 ebuild for %s' % package_dir)
   if not stable_ebuilds:
-    logging.warning('Missing stable ebuild for %s' % package_dir)
+    logging.warning('Missing stable ebuild for %s', package_dir)
 
   return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 
@@ -496,7 +496,7 @@ def main(argv):
                                               sticky_branch)
 
   if stable_candidate:
-    logging.info('Stable candidate found %s' % stable_candidate)
+    logging.info('Stable candidate found %s', stable_candidate)
   else:
     logging.info('No stable candidate found.')
 

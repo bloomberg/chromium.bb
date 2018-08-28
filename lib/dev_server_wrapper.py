@@ -786,7 +786,7 @@ You can fix this with one of the following three options:
       host_log = 'api/hostlog?ip=%s' % host
       devserver_host_log = self.GetDevServerURL(ip=ip, port=port,
                                                 sub_dir=host_log)
-      logging.debug('Host Log URL: %s' % devserver_host_log)
+      logging.debug('Host Log URL: %s', devserver_host_log)
       return devserver_host_log
     else:
       logging.error('Cannot get hostlog URL. Devserver not alive.')

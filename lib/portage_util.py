@@ -964,11 +964,11 @@ class EBuild(object):
     if (not test_dirs_changed and not unstable_ebuild_or_files_changed and
         not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
       logging.info('Skipping uprev of ebuild %s, none of the rev_subdirs have '
-                   'been modified, no files/, nor has the -9999 ebuild.' %
+                   'been modified, no files/, nor has the -9999 ebuild.',
                    self.pkgname)
       return
 
-    logging.info('Determining whether to create new ebuild %s' %
+    logging.info('Determining whether to create new ebuild %s',
                  new_stable_ebuild_path)
     if not os.path.exists(self._unstable_ebuild_path):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
@@ -1316,7 +1316,7 @@ def _FindUprevCandidates(files, allow_blacklisted=False):
     cros_build_lib.Die('Found multiple unstable ebuilds in %s' % path)
 
   if not stable_ebuilds:
-    logging.warning('Missing stable ebuild in %s' % path)
+    logging.warning('Missing stable ebuild in %s', path)
     return unstable_ebuilds[0]
 
   if len(stable_ebuilds) == 1:
@@ -1333,8 +1333,8 @@ def _FindUprevCandidates(files, allow_blacklisted=False):
   uprev_ebuild = max(stable_ebuilds, key=lambda eb: eb.current_revision)
   for ebuild in stable_ebuilds:
     if ebuild != uprev_ebuild:
-      logging.warning('Ignoring stable ebuild revision %s in %s' %
-                      (ebuild.version, path))
+      logging.warning('Ignoring stable ebuild revision %s in %s',
+                      ebuild.version, path)
   return uprev_ebuild
 
 

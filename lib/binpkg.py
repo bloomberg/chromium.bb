@@ -326,7 +326,7 @@ def GrabRemotePackageIndex(binhost_url):
     except urllib2.HTTPError as e:
       if e.code in HTTP_FORBIDDEN_CODES:
         logging.PrintBuildbotStepWarnings()
-        logging.error('Cannot GET %s: %s' % (url, str(e)))
+        logging.error('Cannot GET %s: %s', url, e)
         return None
       # Not found errors are normal if old prebuilts were cleaned out.
       if e.code in HTTP_NOT_FOUND_CODES:
@@ -338,7 +338,7 @@ def GrabRemotePackageIndex(binhost_url):
       output = gs_context.Cat(url)
     except (cros_build_lib.RunCommandError, gs.GSNoSuchKey) as e:
       logging.PrintBuildbotStepWarnings()
-      logging.error('Cannot GET %s: %s' % (url, str(e)))
+      logging.error('Cannot GET %s: %s', url, e)
       return None
     f = cStringIO.StringIO(output)
   else:

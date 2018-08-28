@@ -86,11 +86,11 @@ class Score(object):
     try:
       values = [float(x) for x in values]
     except ValueError as e:
-      logging.error('Invalid literal of score: %s' % e)
+      logging.error('Invalid literal of score: %s', e)
       self.Clear()
       return
     except TypeError:
-      logging.error('Invalid type of score: %s' % values)
+      logging.error('Invalid type of score: %s', values)
       self.Clear()
       return
 

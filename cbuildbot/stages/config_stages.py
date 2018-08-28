@@ -289,7 +289,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
         capture_output=True,
         print_cmd=True).output
     if modifications:
-      logging.info('Changed files: %s ' % modifications)
+      logging.info('Changed files: %s ', modifications)
       return True
     else:
       return False

@@ -435,7 +435,7 @@ class PrebuiltUploader(object):
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
     unmatched_pkgs = self._packages - self._found_packages
     if unmatched_pkgs:
-      logging.warning('unable to match packages: %r' % unmatched_pkgs)
+      logging.warning('unable to match packages: %r', unmatched_pkgs)
 
     # Write Packages file.
     pkg_index.header['TTL'] = _BINPKG_TTL

@@ -309,3 +309,11 @@ deprecated-modules=
 # Create a graph of internal dependencies in the given file (report RP0402 must
 # not be disabled)
 #int-import-graph=
+
+
+[LOGGING]
+
+# Apply logging string format checks to calls on these modules.
+logging-modules=
+    logging,
+    chromite.lib.cros_logging,

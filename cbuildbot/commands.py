@@ -1723,7 +1723,7 @@ def MarkAndroidAsStable(buildroot, tracking_branch, android_package,
                      combine_stdout_stderr=True, capture_output=True)
     except failures_lib.BuildScriptFailure:
       logging.error('Cannot emerge-%s =%s\nIs Android pinned to an older '
-                    'version?' % (board, android_atom))
+                    'version?', board, android_atom)
       raise AndroidIsPinnedUprevError(android_atom)
 
   return android_atom
@@ -1782,7 +1782,7 @@ def MarkChromeAsStable(buildroot,
           enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
     except cros_build_lib.RunCommandError:
       logging.error('Cannot emerge-%s =%s\nIs Chrome pinned to an older '
-                    'version?' % (board, chrome_atom))
+                    'version?', board, chrome_atom)
       raise ChromeIsPinnedUprevError(chrome_atom)
 
   return chrome_atom
@@ -2306,7 +2306,7 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
     log_cmd.append('--sign-types=%s' % ' '.join(sign_types))
 
   log_cmd.append(archive_url)
-  logging.info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
+  logging.info('Running: %s', cros_build_lib.CmdToStr(log_cmd))
 
   try:
     return pushimage.PushImage(archive_url, board, profile=profile,

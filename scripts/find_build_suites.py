@@ -76,8 +76,8 @@ def GetSuites(milo_client, waterfall, builder_name, build_number):
         if m:
           suite_ids.add(m.group(1))
         else:
-          logging.error('Unable to parse suite link for %s: %s' %
-                        (buildinfo['steps'][step]['name'], url))
+          logging.error('Unable to parse suite link for %s: %s',
+                        buildinfo['steps'][step]['name'], url)
 
   return suite_ids
 

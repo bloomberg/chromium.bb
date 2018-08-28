@@ -172,8 +172,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         if important_only or slave_config.important:
           raise
         else:
-          logging.warning('Failed to schedule %s current timestamp %s: %s'
-                          % (slave_config_name, current_ts, e))
+          logging.warning('Failed to schedule %s current timestamp %s: %s',
+                          slave_config_name, current_ts, e)
 
     if config_lib.IsMasterCQ(self._run.config) and db and scheduled_build_reqs:
       db.InsertBuildRequests(scheduled_build_reqs)

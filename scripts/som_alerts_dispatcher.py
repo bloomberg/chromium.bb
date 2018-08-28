@@ -543,7 +543,7 @@ def GenerateAlertsSummary(db, builds=None,
         logging.warn('Could not locate build %s %s', wfall, build_config)
         continue
     else:
-      logging.error('Invalid build tuple: %s' % str(build_tuple))
+      logging.error('Invalid build tuple: %s', build_tuple)
       continue
 
     statuses = [master]

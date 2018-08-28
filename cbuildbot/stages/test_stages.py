@@ -196,7 +196,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       logging.PrintBuildbotStepWarnings()
       logging.warning('missing test artifacts')
       logging.warning('Cannot run %s because UploadTestArtifacts failed. '
-                      'See UploadTestArtifacts for details.' % self.stage_name)
+                      'See UploadTestArtifacts for details.', self.stage_name)
       return False
 
     return True
