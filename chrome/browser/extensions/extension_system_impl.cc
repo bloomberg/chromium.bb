@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/ui/webui/extensions/extensions_internals_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -273,6 +274,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
+
+  // Register the source for the chrome://extensions-internals page.
+  content::URLDataSource::Add(profile_,
+                              new ExtensionsInternalsSource(profile_));
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
