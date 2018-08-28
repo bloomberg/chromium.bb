@@ -133,6 +133,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
     const char* const kFailingPdfs[] = {
         "pdf_private/accessibility_crash_1.pdf",
+        "pdf_private/cfuzz5.pdf",
         "pdf_private/js.pdf",
         "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
