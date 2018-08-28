@@ -118,7 +118,11 @@ class MockModelTypeWorker : public CommitQueue {
   void UpdateWithEncryptionKey(const std::string& ekn,
                                const UpdateResponseDataList& update);
 
-  void UpdateWithGarbageConllection(
+  void UpdateWithGarbageCollection(
+      const UpdateResponseDataList& updates,
+      const sync_pb::GarbageCollectionDirective& gcd);
+
+  void UpdateWithGarbageCollection(
       const sync_pb::GarbageCollectionDirective& gcd);
 
  private:

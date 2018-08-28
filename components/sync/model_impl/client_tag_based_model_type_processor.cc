@@ -529,9 +529,59 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   }
 }
 
+// Returns an updates list that has client tag hashes populated for every
+// update entity.
+UpdateResponseDataList PopulateClientTags(
+    const ModelType& type,
+    ModelTypeSyncBridge* bridge,
+    const UpdateResponseDataList& updates) {
+  UpdateResponseDataList updates_with_client_tags;
+  for (const UpdateResponseData& update : updates) {
+    updates_with_client_tags.push_back(update);
+    updates_with_client_tags.back().entity =
+        update.entity->UpdateClientTagHash(GenerateSyncableHash(
+            type, bridge->GetClientTag(update.entity.value())));
+  }
+  return updates_with_client_tags;
+}
+
+// Returns whether the state has a version_watermark based GC directive, which
+// tells us to clear all sync data that's stored locally.
+bool HasClearAllDirective(const sync_pb::ModelTypeState& model_type_state) {
+  return model_type_state.progress_marker()
+      .gc_directive()
+      .has_version_watermark();
+}
+
 void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (HasClearAllDirective(model_type_state) &&
+      bridge_->SupportsIncrementalUpdates()) {
+    ReportError(ModelError(FROM_HERE,
+                           "Received an update with version watermark for "
+                           "bridge that supports incremental updates"));
+
+    return;
+  } else if (!HasClearAllDirective(model_type_state) &&
+             !bridge_->SupportsIncrementalUpdates()) {
+    // We receive empty updates (without clear all directive) from the server to
+    // indicate nothing changed. We can just ignore these updates for bridges
+    // that don't support incremental updates.
+    if (!updates.empty()) {
+      ReportError(ModelError(FROM_HERE,
+                             "Received an update without version watermark for "
+                             "bridge that does not support incremental "
+                             "updates"));
+    }
+    return;
+  }
+
+  const UpdateResponseDataList* updates_to_process = &updates;
+  UpdateResponseDataList pre_processed_updates;
+
   if (type_ == AUTOFILL_WALLET_DATA) {
     // The client tag based processor requires client tags to function properly.
     // However, the wallet data type does not have any client tags. This hacky
@@ -540,93 +590,31 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     // fully use client tags, or to use a different processor.
     // TODO(crbug.com/874001): Remove this feature-specific logic when the right
     // solution for Wallet data has been decided.
-    // TODO(crbug.com/874001): Restructure this method so we don't need the
-    // OnUpdateReceivedInternal method if creating tags on the client is the way
-    // we want to move forward.
-    UpdateResponseDataList updates_with_client_tags;
-    for (UpdateResponseData update : updates) {
-      update.entity = update.entity->UpdateClientTagHash(
-          GetHashForTag(bridge_->GetClientTag(update.entity.value())));
-      updates_with_client_tags.push_back(update);
-    }
-    OnUpdateReceivedInternal(model_type_state, updates_with_client_tags);
+    pre_processed_updates = PopulateClientTags(type_, bridge_, updates);
+    updates_to_process = &pre_processed_updates;
+  }
+
+  base::Optional<ModelError> error;
+
+  // We call OnFullUpdateReceived when it's the first sync cycle, or when
+  // we get a garbage collection directive from the server telling us to clear
+  // all data by version watermark.
+  // This means that if we receive a version watermark based GC directive, we
+  // always clear all data. We do this to allow the server to replace all data
+  // on the client, without having to know exactly which entities the client
+  // has.
+  if (!model_type_state_.initial_sync_done() ||
+      HasClearAllDirective(model_type_state)) {
+    error = OnFullUpdateReceived(model_type_state, *updates_to_process);
   } else {
-    OnUpdateReceivedInternal(model_type_state, updates);
-  }
-}
-
-void ClientTagBasedModelTypeProcessor::OnUpdateReceivedInternal(
-    const sync_pb::ModelTypeState& model_type_state,
-    const UpdateResponseDataList& updates) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!model_type_state_.initial_sync_done()) {
-    OnInitialUpdateReceived(model_type_state, updates);
-    return;
+    error = OnIncrementalUpdateReceived(model_type_state, *updates_to_process);
+    ExpireEntriesIfNeeded(model_type_state.progress_marker());
   }
 
-  DCHECK(model_type_state.initial_sync_done());
-
-  std::unique_ptr<MetadataChangeList> metadata_changes =
-      bridge_->CreateMetadataChangeList();
-  EntityChangeList entity_changes;
-
-  metadata_changes->UpdateModelTypeState(model_type_state);
-  bool got_new_encryption_requirements =
-      model_type_state_.encryption_key_name() !=
-      model_type_state.encryption_key_name();
-  model_type_state_ = model_type_state;
-
-  // If new encryption requirements come from the server, the entities that are
-  // in |updates| will be recorded here so they can be ignored during the
-  // re-encryption phase at the end.
-  std::unordered_set<std::string> already_updated;
-
-  for (const UpdateResponseData& update : updates) {
-    ProcessorEntityTracker* entity = ProcessUpdate(update, &entity_changes);
-
-    if (!entity) {
-      // The update is either of the following:
-      // 1. Tombstone of entity that didn't exist locally.
-      // 2. Reflection, thus should be ignored.
-      // 3. Update without a client tag hash (including permanent nodes, which
-      // have server tags instead).
-      continue;
-    }
-    if (entity->storage_key().empty()) {
-      // Storage key of this entity is not known yet. Don't update metadata, it
-      // will be done from UpdateStorageKey.
-      continue;
-    }
-    if (entity->CanClearMetadata()) {
-      metadata_changes->ClearMetadata(entity->storage_key());
-      storage_key_to_tag_hash_.erase(entity->storage_key());
-      entities_.erase(entity->metadata().client_tag_hash());
-    } else {
-      metadata_changes->UpdateMetadata(entity->storage_key(),
-                                       entity->metadata());
-    }
-
-    if (got_new_encryption_requirements) {
-      already_updated.insert(entity->storage_key());
-    }
-  }
-
-  if (got_new_encryption_requirements) {
-    // TODO(pavely): Currently we recommit all entities. We should instead
-    // recommit only the ones whose encryption key doesn't match the one in
-    // DataTypeState. Work is tracked in http://crbug.com/727874.
-    RecommitAllForEncryption(already_updated, metadata_changes.get());
-  }
-  // Inform the bridge of the new or updated data.
-  base::Optional<ModelError> error =
-      bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
   if (error) {
     ReportError(*error);
     return;
   }
-
-  ExpireEntriesIfNeeded(model_type_state.progress_marker());
 
   // If there were trackers with empty storage keys, they should have been
   // updated by bridge as part of ApplySyncChanges.
@@ -800,17 +788,29 @@ void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
   }
 }
 
-void ClientTagBasedModelTypeProcessor::OnInitialUpdateReceived(
+base::Optional<ModelError>
+ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
-  DCHECK(entities_.empty());
-  // Ensure that initial sync was not already done and that the worker
-  // correctly marked initial sync as done for this update.
-  DCHECK(!model_type_state_.initial_sync_done());
-  DCHECK(model_type_state.initial_sync_done());
-
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
+
+  // Check that the worker correctly marked initial sync as done
+  // for this update.
+  DCHECK(model_type_state.initial_sync_done());
+
+  if (HasClearAllDirective(model_type_state)) {
+    ExpireAllEntries(metadata_changes.get());
+  } else {
+    // Ensure that this is the initial sync, and it was not already marked done.
+    DCHECK(!model_type_state_.initial_sync_done());
+  }
+
+  // Given that we either just removed all existing sync entities (in the full
+  // update case), or we just started sync for the first time, we should not
+  // have any entities here.
+  DCHECK(entities_.empty());
+
   EntityChangeList entity_data;
 
   model_type_state_ = model_type_state;
@@ -848,17 +848,70 @@ void ClientTagBasedModelTypeProcessor::OnInitialUpdateReceived(
   // Let the bridge handle associating and merging the data.
   base::Optional<ModelError> error =
       bridge_->MergeSyncData(std::move(metadata_changes), entity_data);
-  if (error) {
-    ReportError(*error);
-    return;
+  return error;
+}
+
+base::Optional<ModelError>
+ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
+    const sync_pb::ModelTypeState& model_type_state,
+    const UpdateResponseDataList& updates) {
+  DCHECK(model_type_state.initial_sync_done());
+
+  std::unique_ptr<MetadataChangeList> metadata_changes =
+      bridge_->CreateMetadataChangeList();
+  EntityChangeList entity_changes;
+
+  metadata_changes->UpdateModelTypeState(model_type_state);
+  bool got_new_encryption_requirements =
+      model_type_state_.encryption_key_name() !=
+      model_type_state.encryption_key_name();
+  model_type_state_ = model_type_state;
+
+  // If new encryption requirements come from the server, the entities that are
+  // in |updates| will be recorded here so they can be ignored during the
+  // re-encryption phase at the end.
+  std::unordered_set<std::string> already_updated;
+
+  for (const UpdateResponseData& update : updates) {
+    ProcessorEntityTracker* entity = ProcessUpdate(update, &entity_changes);
+
+    if (!entity) {
+      // The update is either of the following:
+      // 1. Tombstone of entity that didn't exist locally.
+      // 2. Reflection, thus should be ignored.
+      // 3. Update without a client tag hash (including permanent nodes, which
+      // have server tags instead).
+      continue;
+    }
+    if (entity->storage_key().empty()) {
+      // Storage key of this entity is not known yet. Don't update metadata, it
+      // will be done from UpdateStorageKey.
+      continue;
+    }
+    if (entity->CanClearMetadata()) {
+      metadata_changes->ClearMetadata(entity->storage_key());
+      storage_key_to_tag_hash_.erase(entity->storage_key());
+      entities_.erase(entity->metadata().client_tag_hash());
+    } else {
+      metadata_changes->UpdateMetadata(entity->storage_key(),
+                                       entity->metadata());
+    }
+
+    if (got_new_encryption_requirements) {
+      already_updated.insert(entity->storage_key());
+    }
   }
 
-  // If there were trackers with empty storage keys, they should have been
-  // updated by bridge as part of MergeSyncData.
-  DCHECK(AllStorageKeysPopulated());
-
-  // We may have new reasons to commit by the time this function is done.
-  NudgeForCommitIfNeeded();
+  if (got_new_encryption_requirements) {
+    // TODO(pavely): Currently we recommit all entities. We should instead
+    // recommit only the ones whose encryption key doesn't match the one in
+    // DataTypeState. Work is tracked in http://crbug.com/727874.
+    RecommitAllForEncryption(already_updated, metadata_changes.get());
+  }
+  // Inform the bridge of the new or updated data.
+  base::Optional<ModelError> error =
+      bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
+  return error;
 }
 
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
@@ -910,17 +963,12 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
   std::move(callback).Run(std::move(commit_requests));
 }
 
-std::string ClientTagBasedModelTypeProcessor::GetHashForTag(
-    const std::string& tag) {
-  return GenerateSyncableHash(type_, tag);
-}
-
 std::string ClientTagBasedModelTypeProcessor::GetClientTagHash(
     const std::string& storage_key,
     const EntityData& data) {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   return iter == storage_key_to_tag_hash_.end()
-             ? GetHashForTag(bridge_->GetClientTag(data))
+             ? GenerateSyncableHash(type_, bridge_->GetClientTag(data))
              : iter->second;
 }
 
@@ -963,7 +1011,8 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   // Verify the tag hash matches, may be relaxed in the future.
-  DCHECK_EQ(data.client_tag_hash, GetHashForTag(bridge_->GetClientTag(data)));
+  DCHECK_EQ(data.client_tag_hash,
+            GenerateSyncableHash(type_, bridge_->GetClientTag(data)));
   std::string storage_key;
   if (bridge_->SupportsGetStorageKey())
     storage_key = bridge_->GetStorageKey(data);
@@ -1002,14 +1051,6 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
   bool has_expired_changes = false;
-
-  if (new_gc_directive.has_version_watermark() &&
-      (cached_gc_directive_version_ < new_gc_directive.version_watermark())) {
-    ExpireEntriesByVersion(new_gc_directive.version_watermark(),
-                           metadata_changes.get());
-    cached_gc_directive_version_ = new_gc_directive.version_watermark();
-    has_expired_changes = true;
-  }
 
   if (new_gc_directive.has_age_watermark_in_days()) {
     DCHECK(new_gc_directive.age_watermark_in_days());
@@ -1050,16 +1091,14 @@ void ClientTagBasedModelTypeProcessor::ClearMetadataForEntries(
   }
 }
 
-void ClientTagBasedModelTypeProcessor::ExpireEntriesByVersion(
-    int64_t version_watermark,
+void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
 
   std::vector<std::string> storage_key_to_be_deleted;
   for (const auto& kv : entities_) {
     ProcessorEntityTracker* entity = kv.second.get();
-    if (!entity->IsUnsynced() &&
-        entity->metadata().server_version() < version_watermark) {
+    if (!entity->IsUnsynced()) {
       storage_key_to_be_deleted.push_back(entity->storage_key());
     }
   }
@@ -1129,7 +1168,6 @@ void ClientTagBasedModelTypeProcessor::ResetState(
   // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
   model_error_.reset();
-  cached_gc_directive_version_ = 0;
   cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 
   switch (metadata_fate) {

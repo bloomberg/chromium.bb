@@ -541,8 +541,12 @@ message GarbageCollectionDirective {
   optional Type type = 1 [default = UNKNOWN];
 
   // This field specifies the watermark for the versions which should get
-  // garbage collected.  The client should purge all sync entities with a
-  // version smaller than version_watermark locally.
+  // garbage collected.  The client should purge all sync entities when
+  // receiving any value of this.  This is a change from previous behavior,
+  // where the client would only be required to purge items older than the
+  // specified watermark.
+  // TODO(crbug.com/877951): Rename this to make clear that whenever it's set,
+  // the client will delete ALL data, regardless of its value.
   optional int64 version_watermark = 2;
 
   // This field specifies the watermark in terms of age in days.  The client

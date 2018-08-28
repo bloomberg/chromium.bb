@@ -59,6 +59,7 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  bool SupportsIncrementalUpdates() const override;
 
  private:
   struct AutofillWalletDiff {
