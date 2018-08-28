@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -48,7 +49,13 @@ HTMLFormControlElement* HTMLLegendElement::AssociatedControl() {
 
   // Find first form element inside the fieldset that is not a legend element.
   // FIXME: Should we consider tabindex?
-  return Traversal<HTMLFormControlElement>::Next(*fieldset, fieldset);
+  if (auto* control =
+          Traversal<HTMLFormControlElement>::Next(*fieldset, fieldset)) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kLegendDelegateFocusOrAccessKey);
+    return control;
+  }
+  return nullptr;
 }
 
 void HTMLLegendElement::focus(const FocusParams& params) {
