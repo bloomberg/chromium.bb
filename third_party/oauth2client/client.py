@@ -601,9 +601,10 @@ class OAuth2Credentials(Credentials):
             for refresh_attempt in range(max_refresh_attempts):
                 if resp.status not in REFRESH_STATUS_CODES:
                     break
-                logger.info('Refreshing due to a %s (attempt %s/%s)',
-                            resp.status, refresh_attempt + 1,
-                            max_refresh_attempts)
+                logger.info(
+                    'OAuth token TTL expired, auto-refreshing (attempt %s/%s)',
+                    refresh_attempt + 1,
+                    max_refresh_attempts)
                 self._refresh(request_orig)
                 self.apply(headers)
                 if body_stream_position is not None:

@@ -193,7 +193,7 @@ class AuthorizedHttp(object):
 
     resp, content = self.http.request(*args, **kwargs)
     if resp.status in REFRESH_STATUS_CODES:
-      logging.info('Refreshing due to a %s', resp.status)
+      logging.info('OAuth token TTL expired, auto-refreshing')
 
       # Token expired, force token renew
       kwargs_copy = dict(self.kwargs, force_token_renew=True)
