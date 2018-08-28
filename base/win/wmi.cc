@@ -52,8 +52,8 @@ bool CreateWmiClassMethodObject(IWbemServices* wmi_services,
                                 ComPtr<IWbemClassObject>* class_instance) {
   // We attempt to instantiate a COM object that represents a WMI object plus
   // a method rolled into one entity.
-  ScopedBstr b_class_name(class_name.data());
-  ScopedBstr b_method_name(method_name.data());
+  ScopedBstr b_class_name(class_name);
+  ScopedBstr b_method_name(method_name);
   ComPtr<IWbemClassObject> class_object;
   HRESULT hr;
   hr = wmi_services->GetObject(b_class_name, 0, nullptr,

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 namespace win {
@@ -21,19 +22,18 @@ namespace win {
 // The class interface is based on unique_ptr.
 class BASE_EXPORT ScopedBstr {
  public:
-  ScopedBstr() : bstr_(NULL) {
-  }
+  ScopedBstr() : bstr_(nullptr) {}
 
   // Constructor to create a new BSTR.
   //
   // NOTE: Do not pass a BSTR to this constructor expecting ownership to
   // be transferred - even though it compiles! ;-)
-  explicit ScopedBstr(const char16* non_bstr);
+  explicit ScopedBstr(StringPiece16 non_bstr);
   ~ScopedBstr();
 
-  // Give ScopedBstr ownership over an already allocated BSTR or NULL.
+  // Give ScopedBstr ownership over an already allocated BSTR or null.
   // If you need to allocate a new BSTR instance, use |allocate| instead.
-  void Reset(BSTR bstr = NULL);
+  void Reset(BSTR bstr = nullptr);
 
   // Releases ownership of the BSTR to the caller.
   BSTR Release();
@@ -43,11 +43,11 @@ class BASE_EXPORT ScopedBstr {
   // If you already have a BSTR and want to transfer ownership to the
   // ScopedBstr instance, call |reset| instead.
   //
-  // Returns a pointer to the new BSTR, or NULL if allocation failed.
-  BSTR Allocate(const char16* str);
+  // Returns a pointer to the new BSTR, or null if allocation failed.
+  BSTR Allocate(StringPiece16 str);
 
   // Allocates a new BSTR with the specified number of bytes.
-  // Returns a pointer to the new BSTR, or NULL if allocation failed.
+  // Returns a pointer to the new BSTR, or null if allocation failed.
   BSTR AllocateBytes(size_t bytes);
 
   // Sets the allocated length field of the already-allocated BSTR to be
@@ -68,7 +68,7 @@ class BASE_EXPORT ScopedBstr {
 
   // Retrieves the pointer address.
   // Used to receive BSTRs as out arguments (and take ownership).
-  // The function DCHECKs on the current value being NULL.
+  // The function DCHECKs on the current value being null.
   // Usage: GetBstr(bstr.Receive());
   BSTR* Receive();
 
@@ -82,14 +82,15 @@ class BASE_EXPORT ScopedBstr {
     return bstr_;
   }
 
+  // Forbid comparison of ScopedBstr types.  You should never have the same
+  // BSTR owned by two different scoped_ptrs.
+  bool operator==(const ScopedBstr& bstr2) const = delete;
+  bool operator!=(const ScopedBstr& bstr2) const = delete;
+
  protected:
   BSTR bstr_;
 
  private:
-  // Forbid comparison of ScopedBstr types.  You should never have the same
-  // BSTR owned by two different scoped_ptrs.
-  bool operator==(const ScopedBstr& bstr2) const;
-  bool operator!=(const ScopedBstr& bstr2) const;
   DISALLOW_COPY_AND_ASSIGN(ScopedBstr);
 };
 

@@ -108,8 +108,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   Microsoft::WRL::ComPtr<FolderItem> item;
   hresult = folder->ParseName(
-      base::win::ScopedBstr(shortcut.BaseName().value().c_str()),
-      item.GetAddressOf());
+      base::win::ScopedBstr(shortcut.BaseName().value()), item.GetAddressOf());
   if (FAILED(hresult) || !item) {
     error_occured_ = true;
     return false;

@@ -41,8 +41,8 @@ void AuthCodeGetter::GetAuthCode(
     on_auth_code_.Run("");
     return;
   }
-  base::win::ScopedBstr url(base::UTF8ToWide(
-      GetOauthStartUrl(GetDefaultOauthRedirectUrl())).c_str());
+  base::win::ScopedBstr url(
+      base::UTF8ToWide(GetOauthStartUrl(GetDefaultOauthRedirectUrl())));
   base::win::ScopedVariant empty_variant;
   hr = browser_->Navigate(url, empty_variant.AsInput(), empty_variant.AsInput(),
                           empty_variant.AsInput(), empty_variant.AsInput());

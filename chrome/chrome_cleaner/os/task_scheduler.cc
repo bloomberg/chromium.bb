@@ -559,7 +559,7 @@ class TaskSchedulerV2 : public TaskScheduler {
 
       // Start now.
       base::Time now(base::Time::NowFromSystemTime());
-      base::win::ScopedBstr start_boundary(GetTimestampString(now).c_str());
+      base::win::ScopedBstr start_boundary(GetTimestampString(now));
       hr = trigger->put_StartBoundary(start_boundary);
       if (FAILED(hr)) {
         PLOG(ERROR) << "Can't put 'StartBoundary' to " << start_boundary << ". "
@@ -587,7 +587,7 @@ class TaskSchedulerV2 : public TaskScheduler {
     // None of the triggers should go beyond kNumDaysBeforeExpiry.
     base::Time expiry_date(base::Time::NowFromSystemTime() +
                            base::TimeDelta::FromDays(kNumDaysBeforeExpiry));
-    base::win::ScopedBstr end_boundary(GetTimestampString(expiry_date).c_str());
+    base::win::ScopedBstr end_boundary(GetTimestampString(expiry_date));
     hr = trigger->put_EndBoundary(end_boundary);
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't put 'EndBoundary' to " << end_boundary << ". "
@@ -616,14 +616,14 @@ class TaskSchedulerV2 : public TaskScheduler {
       return false;
     }
 
-    base::win::ScopedBstr path(run_command.GetProgram().value().c_str());
+    base::win::ScopedBstr path(run_command.GetProgram().value());
     hr = exec_action->put_Path(path);
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set path of exec action. " << std::hex << hr;
       return false;
     }
 
-    base::win::ScopedBstr args(run_command.GetArgumentsString().c_str());
+    base::win::ScopedBstr args(run_command.GetArgumentsString());
     hr = exec_action->put_Arguments(args);
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set arguments of exec action. " << std::hex << hr;

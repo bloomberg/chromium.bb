@@ -534,7 +534,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
       // nice to have, a failure to do so does not affect the likelihood that
       // the update check and/or install will succeed.
       app_bundle->put_displayLanguage(
-          base::win::ScopedBstr(base::UTF8ToUTF16(locale_).c_str()));
+          base::win::ScopedBstr(base::UTF8ToUTF16(locale_)));
     }
 
     hresult = app_bundle->initialize();
