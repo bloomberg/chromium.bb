@@ -297,16 +297,17 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // client) then fetch the entry points from the embedder, rather than a DLL.
   std::vector<PepperPluginInfo> plugins;
   GetContentClient()->AddPepperPlugins(&plugins);
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].is_internal && plugins[i].path == path) {
+  for (const auto& plugin : plugins) {
+    if (plugin.is_internal && plugin.path == path) {
       // An internal plugin is being loaded, so fetch the entry points.
-      plugin_entry_points_ = plugins[i].internal_entry_points;
+      plugin_entry_points_ = plugin.internal_entry_points;
+      break;
     }
   }
 
   // If the plugin isn't internal then load it from |path|.
   base::ScopedNativeLibrary library;
-  if (plugin_entry_points_.initialize_module == nullptr) {
+  if (!plugin_entry_points_.initialize_module) {
     // Load the plugin from the specified library.
     base::NativeLibraryLoadError error;
     base::TimeDelta load_time;
