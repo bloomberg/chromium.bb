@@ -52,8 +52,8 @@ void SuspendUnmountManager::SuspendImminent(
     }
     disk_mount_manager_->UnmountPath(
         mount_path, UNMOUNT_OPTIONS_NONE,
-        base::Bind(&SuspendUnmountManager::OnUnmountComplete,
-                   weak_ptr_factory_.GetWeakPtr(), mount_path));
+        base::BindOnce(&SuspendUnmountManager::OnUnmountComplete,
+                       weak_ptr_factory_.GetWeakPtr(), mount_path));
     unmounting_paths_.insert(mount_path);
   }
 }
@@ -62,8 +62,8 @@ void SuspendUnmountManager::SuspendDone(const base::TimeDelta& sleep_duration) {
   // SuspendDone can be called before OnUnmountComplete when suspend is
   // cancelled, or it takes long time to unmount volumes.
   unmounting_paths_.clear();
-  disk_mount_manager_->EnsureMountInfoRefreshed(base::Bind(&OnRefreshCompleted),
-                                                true /* force */);
+  disk_mount_manager_->EnsureMountInfoRefreshed(
+      base::BindOnce(&OnRefreshCompleted), true /* force */);
   suspend_readiness_callback_.Reset();
 }
 

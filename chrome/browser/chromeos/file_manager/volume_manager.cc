@@ -433,8 +433,8 @@ void VolumeManager::Initialize() {
   // Subscribe to DiskMountManager.
   disk_mount_manager_->AddObserver(this);
   disk_mount_manager_->EnsureMountInfoRefreshed(
-      base::Bind(&VolumeManager::OnDiskMountManagerRefreshed,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&VolumeManager::OnDiskMountManagerRefreshed,
+                     weak_ptr_factory_.GetWeakPtr()),
       false /* force */);
 
   // Subscribe to FileSystemProviderService and register currently mounted
@@ -909,7 +909,7 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
       disk_mount_manager_->mount_points().begin()->second.mount_path;
   disk_mount_manager_->UnmountPath(
       mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
-      base::Bind(
+      base::BindOnce(
           &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -961,7 +961,7 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
         disk_mount_manager_->mount_points().begin()->second.mount_path;
     disk_mount_manager_->UnmountPath(
         mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
-        base::Bind(
+        base::BindOnce(
             &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
             weak_ptr_factory_.GetWeakPtr()));
   }

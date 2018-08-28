@@ -89,10 +89,11 @@ class CHROMEOS_EXPORT DiskMountManager {
       UnmountDeviceRecursivelyCallbackType;
 
   // A callback type for UnmountPath method.
-  typedef base::Callback<void(MountError error_code)> UnmountPathCallback;
+  typedef base::OnceCallback<void(MountError error_code)> UnmountPathCallback;
 
   // A callback type for EnsureMountInfoRefreshed method.
-  typedef base::Callback<void(bool success)> EnsureMountInfoRefreshedCallback;
+  typedef base::OnceCallback<void(bool success)>
+      EnsureMountInfoRefreshedCallback;
 
   // Implement this interface to be notified about disk/mount related events.
   class Observer {
@@ -142,7 +143,7 @@ class CHROMEOS_EXPORT DiskMountManager {
   // invokes |callback| when finished. If the information is already refreshed
   // and |force| is false, it just runs |callback| immediately.
   virtual void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback,
+      EnsureMountInfoRefreshedCallback callback,
       bool force) = 0;
 
   // Mounts a device or an archive file.
@@ -168,7 +169,7 @@ class CHROMEOS_EXPORT DiskMountManager {
   // |callback| may be empty, in which case it gets ignored.
   virtual void UnmountPath(const std::string& mount_path,
                            UnmountOptions options,
-                           const UnmountPathCallback& callback) = 0;
+                           UnmountPathCallback callback) = 0;
 
   // Remounts mounted removable devices to change the read-only mount option.
   // Devices that can be mounted only in its read-only mode will be ignored.

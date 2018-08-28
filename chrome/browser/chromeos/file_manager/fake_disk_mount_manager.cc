@@ -69,9 +69,9 @@ FakeDiskMountManager::mount_points() const {
 }
 
 void FakeDiskMountManager::EnsureMountInfoRefreshed(
-    const EnsureMountInfoRefreshedCallback& callback,
+    EnsureMountInfoRefreshedCallback callback,
     bool force) {
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void FakeDiskMountManager::MountPath(
@@ -98,7 +98,7 @@ void FakeDiskMountManager::MountPath(
 
 void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
                                        chromeos::UnmountOptions options,
-                                       const UnmountPathCallback& callback) {
+                                       UnmountPathCallback callback) {
   unmount_requests_.emplace_back(mount_path, options);
 
   MountPointMap::iterator iter = mount_points_.find(mount_path);
@@ -114,7 +114,7 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
 
   // Enqueue callback so that |FakeDiskMountManager::FinishAllUnmountRequest()|
   // can call them.
-  pending_unmount_callbacks_.push(callback);
+  pending_unmount_callbacks_.push(std::move(callback));
 }
 
 void FakeDiskMountManager::RemountAllRemovableDrives(
@@ -127,7 +127,8 @@ bool FakeDiskMountManager::FinishAllUnmountPathRequests() {
     return false;
 
   while (!pending_unmount_callbacks_.empty()) {
-    pending_unmount_callbacks_.front().Run(chromeos::MOUNT_ERROR_NONE);
+    std::move(pending_unmount_callbacks_.front())
+        .Run(chromeos::MOUNT_ERROR_NONE);
     pending_unmount_callbacks_.pop();
   }
   return true;

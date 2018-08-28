@@ -79,9 +79,11 @@ MockDiskMountManager::MockDiskMountManager() {
   ON_CALL(*this, FindDiskBySourcePath(_))
       .WillByDefault(Invoke(
           this, &MockDiskMountManager::FindDiskBySourcePathInternal));
+  // Invoke doesn't handle move-only types, so use a lambda instead.
   ON_CALL(*this, EnsureMountInfoRefreshed(_, _))
-      .WillByDefault(Invoke(
-          this, &MockDiskMountManager::EnsureMountInfoRefreshedInternal));
+      .WillByDefault([](EnsureMountInfoRefreshedCallback callback, bool force) {
+        std::move(callback).Run(true);
+      });
 }
 
 MockDiskMountManager::~MockDiskMountManager() = default;
@@ -203,12 +205,6 @@ const Disk* MockDiskMountManager::FindDiskBySourcePathInternal(
     const std::string& source_path) const {
   DiskMap::const_iterator disk_it = disks_.find(source_path);
   return disk_it == disks_.end() ? nullptr : disk_it->second.get();
-}
-
-void MockDiskMountManager::EnsureMountInfoRefreshedInternal(
-    const EnsureMountInfoRefreshedCallback& callback,
-    bool force) {
-  callback.Run(true);
 }
 
 void MockDiskMountManager::NotifyDiskChanged(DiskEvent event,

@@ -699,9 +699,9 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   // is successfully started.
 
   fake_cros_disks_client_->set_unmount_listener(
-      base::Bind(&FakeCrosDisksClient::MakeUnmountFail,
-                 base::Unretained(fake_cros_disks_client_),
-                 chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS));
+      base::BindRepeating(&FakeCrosDisksClient::MakeUnmountFail,
+                          base::Unretained(fake_cros_disks_client_),
+                          chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS));
   // Start the test.
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
@@ -1163,9 +1163,9 @@ TEST_F(DiskMountManagerTest, Rename_ConcurrentRenameCalls) {
   // is successfully started.
 
   fake_cros_disks_client_->set_unmount_listener(
-      base::Bind(&FakeCrosDisksClient::MakeUnmountFail,
-                 base::Unretained(fake_cros_disks_client_),
-                 chromeos::MOUNT_ERROR_INTERNAL));
+      base::BindRepeating(&FakeCrosDisksClient::MakeUnmountFail,
+                          base::Unretained(fake_cros_disks_client_),
+                          chromeos::MOUNT_ERROR_INTERNAL));
   // Start the test.
   DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
                                                        "MYUSB1");
@@ -1511,9 +1511,9 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
   // Fail the first unmount, but make the second succeed.
   fake_cros_disks_client_->MakeUnmountFail(
       chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS);
-  fake_cros_disks_client_->set_unmount_listener(
-      base::Bind(&SetUnmountError, base::Unretained(fake_cros_disks_client_),
-                 chromeos::MOUNT_ERROR_NONE));
+  fake_cros_disks_client_->set_unmount_listener(base::BindRepeating(
+      &SetUnmountError, base::Unretained(fake_cros_disks_client_),
+      chromeos::MOUNT_ERROR_NONE));
 
   MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
   DiskMountManager::GetInstance()->UnmountDeviceRecursively(
