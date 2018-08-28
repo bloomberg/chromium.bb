@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -135,7 +136,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
     browser_sync::ProfileSyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
-    _syncObserver.reset(new SyncObserverBridge(self, syncService));
+    if (!IsUnifiedConsentEnabled()) {
+      // When unified consent flag is enabled, the sync settings are available
+      // in the "Google Services and sync" settings.
+      _syncObserver.reset(new SyncObserverBridge(self, syncService));
+    }
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
         ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
         self));
@@ -232,11 +237,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self addAccountItem]
       toSectionWithIdentifier:SectionIdentifierAccounts];
 
-  // Sync and Google Activity section.
-  [model addSectionWithIdentifier:SectionIdentifierSync];
-  [model addItem:[self syncItem] toSectionWithIdentifier:SectionIdentifierSync];
-  [model addItem:[self googleActivityControlsItem]
-      toSectionWithIdentifier:SectionIdentifierSync];
+  if (!IsUnifiedConsentEnabled()) {
+    // Sync and Google Activity section.
+    // When unified consent flag is enabled, those settings are available in
+    // the Google Services and sync settings.
+    [model addSectionWithIdentifier:SectionIdentifierSync];
+    [model addItem:[self syncItem]
+        toSectionWithIdentifier:SectionIdentifierSync];
+    [model addItem:[self googleActivityControlsItem]
+        toSectionWithIdentifier:SectionIdentifierSync];
+  }
 
   // Sign out section.
   [model addSectionWithIdentifier:SectionIdentifierSignOut];
