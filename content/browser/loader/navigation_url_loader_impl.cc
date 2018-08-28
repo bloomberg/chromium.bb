@@ -798,7 +798,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // If we already have the default |url_loader_| we must come here after a
-    // redirect.  No interceptors wanted to intercept the redirected request, so
+    // redirect. No interceptors wanted to intercept the redirected request, so
     // let the loader just follow the redirect.
     if (url_loader_) {
       DCHECK(!redirect_info_.new_url.is_empty());
@@ -808,7 +808,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // No interceptors wanted to handle this request.
-    MakeNonInterceptedRequest();
+    uint32_t options = network::mojom::kURLLoadOptionNone;
+    scoped_refptr<network::SharedURLLoaderFactory> factory =
+        PrepareForNonInterceptedRequest(&options);
+    url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+        std::move(factory), CreateURLLoaderThrottles(), frame_tree_node_id_,
+        global_request_id_.request_id, options, resource_request_.get(),
+        this /* client */, kNavigationUrlLoaderTrafficAnnotation,
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   // This is the |fallback_callback| passed to
@@ -819,28 +826,29 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (reset_subresource_loader_params)
       subresource_loader_params_.reset();
 
-    // If we already have a |url_loader_| we must come here after a redirect.
-    // Normally we just have |url_loader_| follow the redirect, but it is using
-    // a loader factory from an interceptor that decided it doesn't want to
-    // handle the request anymore. So we need to make a new |url_loader_|.
-    if (url_loader_) {
-      // Non-NetworkService:
-      // Cancel state on ResourceDispatcherHostImpl from before the redirect so
-      // it doesn't complain about reusing the request_id. Otherwise the
-      // following sequence can happen:
-      // RDHI Start(request_id) -> Redirect -> SW interception (makes new
-      // url_loader_) -> SW fallback to network -> RDHI Start(request_id).
-      if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        DCHECK(ResourceDispatcherHostImpl::Get());
-        ResourceDispatcherHostImpl::Get()->CancelRequest(
-            global_request_id_.child_id, global_request_id_.request_id);
-      }
+    // Non-NetworkService:
+    // Cancel state on ResourceDispatcherHostImpl so it doesn't complain about
+    // reusing the request_id after redirects. Otherwise the following sequence
+    // can happen:
+    // RDHI Start(request_id) -> Redirect -> SW interception -> SW fallback to
+    // network -> RDHI Start(request_id).
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      DCHECK(ResourceDispatcherHostImpl::Get());
+      ResourceDispatcherHostImpl::Get()->CancelRequest(
+          global_request_id_.child_id, global_request_id_.request_id);
     }
 
-    MakeNonInterceptedRequest();
+    // |url_loader_| is using the factory for the interceptor that decided to
+    // fallback, so restart it with the non-interceptor factory.
+    DCHECK(url_loader_);
+    uint32_t options = network::mojom::kURLLoadOptionNone;
+    scoped_refptr<network::SharedURLLoaderFactory> factory =
+        PrepareForNonInterceptedRequest(&options);
+    url_loader_->RestartWithFactory(std::move(factory), options);
   }
 
-  void MakeNonInterceptedRequest() {
+  scoped_refptr<network::SharedURLLoaderFactory>
+  PrepareForNonInterceptedRequest(uint32_t* out_options) {
     // If NetworkService is not enabled (which means we come here because one of
     // the loader interceptors is enabled), use the default request handler
     // instead of going through the NetworkService path.
@@ -866,16 +874,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // the request.
       bool was_request_intercepted = subresource_loader_params_.has_value();
 
-      auto single_request_factory =
-          base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              default_request_handler_factory_.Run(was_request_intercepted));
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-          std::move(single_request_factory), CreateURLLoaderThrottles(),
-          frame_tree_node_id_, global_request_id_.request_id,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(),
-          this /* client */, kNavigationUrlLoaderTrafficAnnotation,
-          base::ThreadTaskRunnerHandle::Get());
-      return;
+      // TODO(falken): Determine whether GetURLLoaderOptions() can be called
+      // here like below. It looks like |default_request_handler_factory_| just
+      // calls that.
+      *out_options = network::mojom::kURLLoadOptionNone;
+      return base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+          default_request_handler_factory_.Run(was_request_intercepted));
     }
 
     // TODO(https://crbug.com/796425): We temporarily wrap raw
@@ -931,13 +935,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       }
     }
     url_chain_.push_back(resource_request_->url);
-    uint32_t options = GetURLLoaderOptions(resource_request_->resource_type ==
-                                           RESOURCE_TYPE_MAIN_FRAME);
-    url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        factory, CreateURLLoaderThrottles(), frame_tree_node_id_,
-        global_request_id_.request_id, options, resource_request_.get(), this,
-        kNavigationUrlLoaderTrafficAnnotation,
-        base::ThreadTaskRunnerHandle::Get());
+    *out_options = GetURLLoaderOptions(resource_request_->resource_type ==
+                                       RESOURCE_TYPE_MAIN_FRAME);
+    return factory;
   }
 
   void FollowRedirect(
