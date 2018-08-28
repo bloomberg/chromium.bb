@@ -124,14 +124,14 @@ bool TabletModeAppWindowDragController::ShouldFlingIntoOverview(
   // opposite snap position when preview area is shown.
   if (split_view_controller->IsCurrentScreenOrientationPrimary()) {
     if (indicator_state == IndicatorState::kPreviewAreaLeft)
-      return velocity > kFlingToOverviewThreshold;
+      return velocity > kFlingToOverviewFromSnappingAreaThreshold;
     else if (indicator_state == IndicatorState::kPreviewAreaRight)
-      return -velocity > kFlingToOverviewThreshold;
+      return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
   } else {
     if (indicator_state == IndicatorState::kPreviewAreaLeft)
-      return -velocity > kFlingToOverviewThreshold;
+      return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
     else if (indicator_state == IndicatorState::kPreviewAreaRight)
-      return velocity > kFlingToOverviewThreshold;
+      return velocity > kFlingToOverviewFromSnappingAreaThreshold;
   }
 
   const SplitViewController::State snap_state = split_view_controller->state();
@@ -144,8 +144,8 @@ bool TabletModeAppWindowDragController::ShouldFlingIntoOverview(
   if (snap_state == SplitViewController::LEFT_SNAPPED ||
       snap_state == SplitViewController::RIGHT_SNAPPED) {
     return end_position > split_view_controller->divider_position()
-               ? -velocity > kFlingToOverviewThreshold
-               : velocity > kFlingToOverviewThreshold;
+               ? -velocity > kFlingToOverviewFromSnappingAreaThreshold
+               : velocity > kFlingToOverviewFromSnappingAreaThreshold;
   }
 
   // Consider only the velocity_y if splitview is not active and preview area is

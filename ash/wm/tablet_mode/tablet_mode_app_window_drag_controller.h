@@ -21,8 +21,13 @@ class TabletModeWindowDragDelegate;
 class ASH_EXPORT TabletModeAppWindowDragController
     : public display::DisplayObserver {
  public:
-  // Threshold of the fling velocity to drop the window into overview.
-  static constexpr float kFlingToOverviewThreshold = 100.0f;
+  // Threshold of the fling velocity to drop the dragged window into overview if
+  // fling from the top of the display.
+  static constexpr float kFlingToOverviewThreshold = 2000.f;
+
+  // Threshold of the fling velocity to drop the dragged window into overview if
+  // fling inside preview area or when splitview is active.
+  static constexpr float kFlingToOverviewFromSnappingAreaThreshold = 1000.f;
 
   TabletModeAppWindowDragController();
   ~TabletModeAppWindowDragController() override;
