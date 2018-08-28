@@ -16,6 +16,7 @@
 #include "ios/public/provider/chrome/browser/external_search/external_search_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,7 +32,8 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       user_feedback_provider_(std::make_unique<UserFeedbackProvider>()),
       voice_search_provider_(std::make_unique<ChromiumVoiceSearchProvider>()),
       spotlight_provider_(std::make_unique<ChromiumSpotlightProvider>()),
-      external_search_provider_(std::make_unique<ExternalSearchProvider>()) {}
+      external_search_provider_(std::make_unique<ExternalSearchProvider>()),
+      fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
 
@@ -92,4 +94,8 @@ SpotlightProvider* ChromiumBrowserProvider::GetSpotlightProvider() const {
 ExternalSearchProvider* ChromiumBrowserProvider::GetExternalSearchProvider()
     const {
   return external_search_provider_.get();
+}
+
+FullscreenProvider* ChromiumBrowserProvider::GetFullscreenProvider() const {
+  return fullscreen_provider_.get();
 }
