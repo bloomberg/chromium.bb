@@ -30,6 +30,15 @@ Polymer({
 
   properties: {
     /**
+     * Whether add another finger is allowed.
+     * @type {boolean}
+     */
+    allowAddAnotherFinger: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * The problem message to display.
      * @private
      */
@@ -86,9 +95,7 @@ Polymer({
 
     // Note: Reset resets |step_| back to the default, so handle anything that
     // checks |step_| before resetting.
-    if (this.step_ == settings.FingerprintSetupStep.READY)
-      this.fire('add-fingerprint');
-    else
+    if (this.step_ != settings.FingerprintSetupStep.READY)
       this.browserProxy_.cancelCurrentEnroll();
 
     this.reset_();
@@ -144,6 +151,7 @@ Polymer({
               this.percentComplete_, 100 /*currPercentComplete*/,
               true /*isComplete*/);
           this.clearSensorMessageTimeout_();
+          this.fire('add-fingerprint');
         } else {
           this.setProblem_(scan.result);
           if (scan.result == settings.FingerprintResultType.SUCCESS) {
@@ -242,10 +250,12 @@ Polymer({
 
   /**
    * @param {!settings.FingerprintSetupStep} step
+   * @param {boolean} allowAddAnotherFinger
    * @private
    */
-  hideAddAnother_: function(step) {
-    return step != settings.FingerprintSetupStep.READY;
+  hideAddAnother_: function(step, allowAddAnotherFinger) {
+    return step != settings.FingerprintSetupStep.READY ||
+        !allowAddAnotherFinger;
   },
 
   /**
@@ -254,7 +264,6 @@ Polymer({
    * @private
    */
   onAddAnotherFingerprint_: function() {
-    this.fire('add-fingerprint');
     this.reset_();
     this.$.arc.reset();
     this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
