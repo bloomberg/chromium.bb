@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_H_
 #define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_H_
 
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/decorated_text.h"
 #include "ui/gfx/geometry/point.h"
@@ -97,6 +98,23 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
   virtual void OnWindowKeyStatusChanged(bool is_key,
                                         bool is_content_first_responder,
                                         bool full_keyboard_access_enabled) = 0;
+
+  // Accept or cancel the current dialog window (depending on the value of
+  // |button|), if a current dialog exists.
+  virtual void DoDialogButtonAction(ui::DialogButton button) = 0;
+
+  // Synchronously determine if the specified button exists in the current
+  // dialog (if any), along with its label, whether or not it is enabled, and
+  // whether or not it is the default button..
+  virtual void GetDialogButtonInfo(ui::DialogButton button,
+                                   bool* button_exists,
+                                   base::string16* title,
+                                   bool* is_button_enabled,
+                                   bool* is_button_default) = 0;
+
+  // Synchronously return in |buttons_exist| whether or not any buttons exist
+  // for the current dialog.
+  virtual void GetDoDialogButtonsExist(bool* buttons_exist) = 0;
 };
 
 }  // namespace views

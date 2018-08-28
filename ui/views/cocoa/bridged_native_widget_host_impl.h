@@ -146,6 +146,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnWindowKeyStatusChanged(bool is_key,
                                 bool is_content_first_responder,
                                 bool full_keyboard_access_enabled) override;
+  void DoDialogButtonAction(ui::DialogButton button) override;
+  void GetDialogButtonInfo(ui::DialogButton type,
+                           bool* button_exists,
+                           base::string16* button_label,
+                           bool* is_button_enabled,
+                           bool* is_button_default) override;
+  void GetDoDialogButtonsExist(bool* buttons_exist) override;
 
   // DialogObserver:
   void OnDialogModelChanged() override;

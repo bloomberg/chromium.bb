@@ -7,11 +7,9 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
-#include "ui/base/models/dialog_model.h"
 #import "ui/views/cocoa/bridged_content_view.h"
-#include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_client_view.h"
-#include "ui/views/window/dialog_delegate.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/bridged_native_widget_host.h"
 
 namespace {
 
@@ -29,21 +27,9 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 @implementation BridgedContentView (TouchBarAdditions)
 
 - (void)touchBarButtonAction:(id)sender {
-  if (!hostedView_)
-    return;
-
-  views::DialogDelegate* dialog =
-      hostedView_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  DCHECK(dialog);
-  views::DialogClientView* client = dialog->GetDialogClientView();
-
-  if ([sender tag] == ui::DIALOG_BUTTON_OK) {
-    client->AcceptWindow();
-    return;
-  }
-
-  DCHECK_EQ([sender tag], ui::DIALOG_BUTTON_CANCEL);
-  client->CancelWindow();
+  ui::DialogButton type = static_cast<ui::DialogButton>([sender tag]);
+  if (bridge_)
+    bridge_->host()->DoDialogButtonAction(type);
 }
 
 // NSTouchBarDelegate protocol implementation.
@@ -51,7 +37,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
       makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
     API_AVAILABLE(macos(10.12.2)) {
-  if (!hostedView_)
+  if (!bridge_)
     return nil;
 
   if ([identifier isEqualToString:kTouchBarDialogButtonsGroupId]) {
@@ -76,19 +62,22 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
   else
     return nil;
 
-  ui::DialogModel* model =
-      hostedView_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  if (!model || !(model->GetDialogButtons() & type))
+  bool buttonExists = false;
+  base::string16 buttonLabel;
+  bool isButtonEnabled = false;
+  bool isButtonDefault = false;
+  bridge_->host()->GetDialogButtonInfo(type, &buttonExists, &buttonLabel,
+                                       &isButtonEnabled, &isButtonDefault);
+  if (!buttonExists)
     return nil;
 
   base::scoped_nsobject<NSCustomTouchBarItem> item([[NSClassFromString(
       @"NSCustomTouchBarItem") alloc] initWithIdentifier:identifier]);
-  NSString* title = base::SysUTF16ToNSString(model->GetDialogButtonLabel(type));
   NSButton* button =
-      [NSButton buttonWithTitle:title
+      [NSButton buttonWithTitle:base::SysUTF16ToNSString(buttonLabel)
                          target:self
                          action:@selector(touchBarButtonAction:)];
-  if (type == model->GetDefaultDialogButton()) {
+  if (isButtonDefault) {
     // NSAlert uses a private NSButton subclass (_NSTouchBarGroupButton) with
     // more bells and whistles. It doesn't use -setBezelColor: directly, but
     // this gives an appearance matching the default _NSTouchBarGroupButton.
@@ -97,7 +86,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
                                                blue:0.843
                                               alpha:1.0]];
   }
-  [button setEnabled:model->IsDialogButtonEnabled(type)];
+  [button setEnabled:isButtonEnabled];
   [button setTag:type];
   [item setView:button];
   return item.autorelease();
@@ -106,12 +95,12 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 // NSTouchBarProvider protocol implementation (via NSResponder category).
 
 - (NSTouchBar*)makeTouchBar {
-  if (!hostedView_)
+  if (!bridge_)
     return nil;
 
-  ui::DialogModel* model =
-      hostedView_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  if (!model || !model->GetDialogButtons())
+  bool buttonsExist = false;
+  bridge_->host()->GetDoDialogButtonsExist(&buttonsExist);
+  if (!buttonsExist)
     return nil;
 
   base::scoped_nsobject<NSTouchBar> bar(
