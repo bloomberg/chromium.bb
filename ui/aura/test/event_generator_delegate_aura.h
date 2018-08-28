@@ -10,6 +10,10 @@
 
 #include <memory>
 
+namespace service_manager {
+class Connector;
+}
+
 namespace aura {
 class Window;
 
@@ -25,7 +29,11 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
   EventGeneratorDelegateAura();
   ~EventGeneratorDelegateAura() override;
 
+  // Creates a new EventGeneratorDelegateAura. |connector| is used when aura
+  // is backed by mus, and if supplied results in creating an
+  // EventGeneratorDelegateAura that sends event to the remote window service.
   static std::unique_ptr<ui::test::EventGeneratorDelegate> Create(
+      service_manager::Connector* connector,
       ui::test::EventGenerator* owner,
       gfx::NativeWindow root_window,
       gfx::NativeWindow window);
