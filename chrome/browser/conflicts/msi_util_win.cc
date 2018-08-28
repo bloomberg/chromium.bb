@@ -19,7 +19,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/install_util.h"
 
@@ -171,7 +171,7 @@ bool MsiUtil::GetMsiComponentPaths(
     const base::string16& product_guid,
     const base::string16& user_sid,
     std::vector<base::string16>* component_paths) const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 
   base::string16 msi_path;
   if (!GetMsiPath(product_guid, &msi_path))

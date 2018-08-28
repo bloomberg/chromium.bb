@@ -14,8 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 
@@ -93,7 +93,7 @@ namespace internal {
 
 void EnumerateShellExtensionPaths(
     const base::RepeatingCallback<void(const base::FilePath&)>& callback) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   int nb_shell_extensions = 0;
   ReadShellExtensions(HKEY_LOCAL_MACHINE, callback, &nb_shell_extensions);
