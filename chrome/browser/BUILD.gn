@@ -3567,6 +3567,12 @@ jumbo_split_static_library("browser") {
       "//printing",
     ]
 
+    if (is_chromeos) {
+      sources += [
+        "policy/printing_restrictions_policy_handler.cc",
+        "policy/printing_restrictions_policy_handler.h",
+      ]
+    }
     if (is_win) {
       sources += [
         "printing/pdf_to_emf_converter.cc",

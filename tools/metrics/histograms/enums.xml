@@ -14268,6 +14268,12 @@ Called by update_net_error_codes.py.-->
   <int value="471" label="ReportPolicyData"/>
   <int value="472" label="ReportMachineIDData"/>
   <int value="473" label="ReportUserIDData"/>
+  <int value="474" label="PrintingAllowedColorModes"/>
+  <int value="475" label="PrintingAllowedDuplexModes"/>
+  <int value="476" label="PrintingAllowedPageSizes"/>
+  <int value="477" label="PrintingColorDefault"/>
+  <int value="478" label="PrintingDuplexDefault"/>
+  <int value="479" label="PrintingSizeDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
