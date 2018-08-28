@@ -398,27 +398,42 @@ void ProxyingURLLoaderFactory::Clone(
 
 void ProxyingURLLoaderFactory::OnTargetFactoryError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Stop calls to CreateLoaderAndStart() when |target_factory_| is invalid.
   target_factory_.reset();
-  if (proxy_bindings_.empty()) {
-    // Deletes |this| after a roundtrip to the UI thread.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            std::move(on_disconnect_));
-  }
+  proxy_bindings_.CloseAllBindings();
+
+  MaybeDestroySelf();
 }
 
 void ProxyingURLLoaderFactory::OnProxyBindingError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (proxy_bindings_.empty() && !target_factory_.is_bound()) {
-    // Deletes |this| after a roundtrip to the UI thread.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            std::move(on_disconnect_));
-  }
+
+  if (proxy_bindings_.empty())
+    target_factory_.reset();
+
+  MaybeDestroySelf();
 }
 
 void ProxyingURLLoaderFactory::RemoveRequest(InProgressRequest* request) {
   auto it = requests_.find(request);
   DCHECK(it != requests_.end());
   requests_.erase(it);
+
+  MaybeDestroySelf();
+}
+
+void ProxyingURLLoaderFactory::MaybeDestroySelf() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Even if all URLLoaderFactory pipes connected to this object have been
+  // closed it has to stay alive until all active requests have completed.
+  if (target_factory_.is_bound() || !requests_.empty())
+    return;
+
+  // Deletes |this| after a roundtrip to the UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          std::move(on_disconnect_));
 }
 
 }  // namespace signin

@@ -58,6 +58,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   void OnTargetFactoryError();
   void OnProxyBindingError();
   void RemoveRequest(InProgressRequest* request);
+  void MaybeDestroySelf();
 
   const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter() {
     return web_contents_getter_;

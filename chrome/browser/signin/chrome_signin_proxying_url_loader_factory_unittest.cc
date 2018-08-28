@@ -91,15 +91,17 @@ class ChromeSigninProxyingURLLoaderFactoryTest : public testing::Test {
     return delegate_weak;
   }
 
+  void CloseFactoryBinding() { test_factory_binding_.Close(); }
+
   network::TestURLLoaderFactory* factory() { return &test_factory_; }
   network::SimpleURLLoader* loader() { return loader_.get(); }
   std::string* response_body() { return response_body_.get(); }
 
- private:
   void OnDownloadComplete(std::unique_ptr<std::string> body) {
     response_body_ = std::move(body);
   }
 
+ private:
   void OnDisconnect() { proxying_factory_.reset(); }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -264,6 +266,67 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
   // NOTE: TestURLLoaderFactory currently does not expose modifications to
   // request headers and so we cannot verify that the modifications have been
   // passed to the target URLLoader.
+}
+
+TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, TargetFactoryFailure) {
+  network::mojom::URLLoaderFactoryPtr factory_ptr;
+  auto factory_request = mojo::MakeRequest(&factory_ptr);
+  network::mojom::URLLoaderFactoryPtrInfo target_factory_ptr_info;
+  auto target_factory_request = mojo::MakeRequest(&target_factory_ptr_info);
+
+  // Without a target factory the proxy will process no requests.
+  auto delegate = std::make_unique<MockDelegate>();
+  EXPECT_CALL(*delegate, ProcessRequest(_, _)).Times(0);
+
+  auto proxying_factory = std::make_unique<ProxyingURLLoaderFactory>();
+  proxying_factory->StartProxying(
+      std::move(delegate), NullWebContentsGetter(), std::move(factory_request),
+      std::move(target_factory_ptr_info), base::DoNothing());
+
+  // Close |target_factory_request| instead of binding it to a URLLoaderFactory.
+  // Spin the message loop so that the connection error handler can run.
+  target_factory_request = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = GURL("https://google.com");
+  auto loader = network::SimpleURLLoader::Create(std::move(request),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      factory_ptr.get(),
+      base::BindOnce(
+          &ChromeSigninProxyingURLLoaderFactoryTest::OnDownloadComplete,
+          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(response_body());
+  EXPECT_EQ(net::ERR_FAILED, loader->NetError());
+}
+
+TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, RequestKeepAlive) {
+  // Start the request.
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = GURL("https://google.com");
+  base::WeakPtr<MockDelegate> delegate = StartRequest(std::move(request));
+  base::RunLoop().RunUntilIdle();
+
+  // Close the factory binding and spin the message loop again to allow the
+  // connection error handler to be called.
+  CloseFactoryBinding();
+  base::RunLoop().RunUntilIdle();
+
+  // The ProxyingURLLoaderFactory should not have been destroyed yet because
+  // there is still an in progress request that has not been completed.
+  EXPECT_TRUE(delegate);
+
+  // Complete the request.
+  factory()->AddResponse("https://google.com", "Hello.");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(delegate);
+  EXPECT_EQ(net::OK, loader()->NetError());
+  ASSERT_TRUE(response_body());
+  EXPECT_EQ("Hello.", *response_body());
 }
 
 }  // namespace signin
