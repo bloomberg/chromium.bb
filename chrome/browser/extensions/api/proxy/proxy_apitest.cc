@@ -396,20 +396,10 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                    pref_service);
 }
 
-// This test sets proxy to an inavalid host "does.not.exist" and then fetches
-// a page from localhost, expecting an error since host is invalid.
-// On ChromeOS, localhost is by default bypassed, so the page from localhost
-// will be fetched successfully, resulting in no error.  Hence this test
-// shouldn't run on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_ProxyEventsInvalidProxy DISABLED_ProxyEventsInvalidProxy
-#else
-#define MAYBE_ProxyEventsInvalidProxy ProxyEventsInvalidProxy
-#endif  // defined(OS_CHROMEOS)
-
-// Tests error events: invalid proxy
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, MAYBE_ProxyEventsInvalidProxy) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
+// This test sets the HTTP proxy to an unreachable host "does.not.exist" and
+// then attempts to fetch "example.test", expecting the listeners of
+// chrome.proxy.onProxyError to fire with ERR_PROXY_CONNECTION_FAILED.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEventsInvalidProxy) {
   ASSERT_TRUE(
       RunExtensionSubtest("proxy/events", "invalid_proxy.html")) << message_;
 }
