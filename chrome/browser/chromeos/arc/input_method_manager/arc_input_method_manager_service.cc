@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -272,6 +273,17 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
 
   // Refresh allowed IME list.
   SetArcIMEAllowed(TabletModeClient::Get()->tablet_mode_enabled());
+}
+
+void ArcInputMethodManagerService::OnConnectionClosed() {
+  // Remove all ARC IMEs from the list and prefs.
+  const bool opted_out = !arc::IsArcPlayStoreEnabledForProfile(profile_);
+  VLOG(1) << "Lost InputMethodManagerInstance. Reason="
+          << (opted_out ? "opt-out" : "unknown");
+  // TODO(yhanada): Handle prefs better. For example, when this method is called
+  // because of the container crash (rather then opt-out), we might not want to
+  // modify the preference at all.
+  OnImeInfoChanged({});
 }
 
 void ArcInputMethodManagerService::ImeMenuListChanged() {

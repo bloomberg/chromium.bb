@@ -16,9 +16,12 @@ ArcInputMethodManagerBridgeImpl::ArcInputMethodManagerBridgeImpl(
     ArcBridgeService* bridge_service)
     : delegate_(delegate), bridge_service_(bridge_service) {
   bridge_service_->input_method_manager()->SetHost(this);
+  bridge_service_->input_method_manager()->AddObserver(this);
 }
 
 ArcInputMethodManagerBridgeImpl::~ArcInputMethodManagerBridgeImpl() {
+  // It's okay not to call OnConnectionClosed() at all once shutdown starts.
+  bridge_service_->input_method_manager()->RemoveObserver(this);
   bridge_service_->input_method_manager()->SetHost(nullptr);
 }
 
@@ -49,6 +52,10 @@ void ArcInputMethodManagerBridgeImpl::SendSwitchImeTo(
     return;
 
   imm_instance->SwitchImeTo(ime_id, std::move(callback));
+}
+
+void ArcInputMethodManagerBridgeImpl::OnConnectionClosed() {
+  delegate_->OnConnectionClosed();
 }
 
 void ArcInputMethodManagerBridgeImpl::OnActiveImeChanged(

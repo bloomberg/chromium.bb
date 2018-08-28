@@ -51,6 +51,7 @@ class ArcInputMethodManagerService
   void OnActiveImeChanged(const std::string& ime_id) override;
   void OnImeDisabled(const std::string& ime_id) override;
   void OnImeInfoChanged(std::vector<mojom::ImeInfoPtr> ime_info_array) override;
+  void OnConnectionClosed() override;
 
   // chromeos::input_method::InputMethodManager::ImeMenuObserver overrides:
   void ImeMenuListChanged() override;
