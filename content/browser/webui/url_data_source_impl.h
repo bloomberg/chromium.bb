@@ -52,10 +52,9 @@ struct DeleteURLDataSource {
 class URLDataSourceImpl : public base::RefCountedThreadSafe<
     URLDataSourceImpl, DeleteURLDataSource> {
  public:
-  // See source_name_ below for docs on that parameter. Takes ownership of
-  // |source|.
+  // See |source_name_| below for docs on that parameter.
   URLDataSourceImpl(const std::string& source_name,
-                    URLDataSource* source);
+                    std::unique_ptr<URLDataSource> source);
 
   // Report that a request has resulted in the data |bytes|.
   // If the request can't be satisfied, pass NULL for |bytes| to indicate

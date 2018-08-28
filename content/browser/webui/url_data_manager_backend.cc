@@ -8,12 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/debug/alias.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
@@ -427,9 +424,8 @@ class ChromeProtocolHandler
 URLDataManagerBackend::URLDataManagerBackend()
     : next_request_id_(0), weak_factory_(this) {
   URLDataSource* shared_source = new SharedResourcesDataSource();
-  URLDataSourceImpl* source_impl =
-      new URLDataSourceImpl(shared_source->GetSource(), shared_source);
-  AddDataSource(source_impl);
+  AddDataSource(new URLDataSourceImpl(shared_source->GetSource(),
+                                      base::WrapUnique(shared_source)));
 }
 
 URLDataManagerBackend::~URLDataManagerBackend() = default;
@@ -599,8 +595,8 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
   // Set the headers so that requests serviced by ChromeURLDataManager return a
   // status code of 200. Without this they return a 0, which makes the status
   // indistiguishable from other error types. Instant relies on getting a 200.
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+  auto headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   if (!source_impl)
     return headers;
 

@@ -16,8 +16,8 @@
 namespace content {
 
 URLDataSourceImpl::URLDataSourceImpl(const std::string& source_name,
-                                     URLDataSource* source)
-    : source_name_(source_name), backend_(nullptr), source_(source) {}
+                                     std::unique_ptr<URLDataSource> source)
+    : source_name_(source_name), source_(std::move(source)) {}
 
 URLDataSourceImpl::~URLDataSourceImpl() {
 }

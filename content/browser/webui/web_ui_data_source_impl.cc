@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -105,7 +107,8 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
 };
 
 WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
-    : URLDataSourceImpl(source_name, new InternalDataSource(this)),
+    : URLDataSourceImpl(source_name,
+                        std::make_unique<InternalDataSource>(this)),
       source_name_(source_name),
       default_resource_(-1),
       add_csp_(true),
