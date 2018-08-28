@@ -18,15 +18,20 @@ class ArcInputMethodManagerBridge {
  public:
   virtual ~ArcInputMethodManagerBridge() = default;
 
-  // Received mojo calls are passed to this delegate.
+  // Received mojo calls and connection state changes are passed to this
+  // delegate.
   class Delegate {
    public:
     virtual ~Delegate() = default;
 
+    // Mojo calls:
     virtual void OnActiveImeChanged(const std::string& ime_id) = 0;
     virtual void OnImeDisabled(const std::string& ime_id) = 0;
     virtual void OnImeInfoChanged(
         const std::vector<mojom::ImeInfoPtr> ime_info_array) = 0;
+
+    // Mojo connection state changes:
+    virtual void OnConnectionClosed() = 0;
   };
 
   // Sends mojo calls.
