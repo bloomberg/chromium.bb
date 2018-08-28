@@ -1565,7 +1565,7 @@ CSSValue* ConsumeGridBreadth(CSSParserTokenRange& range,
   }
   return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
       range, css_parser_mode, kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 
 CSSValue* ConsumeFitContent(CSSParserTokenRange& range,
