@@ -2280,10 +2280,8 @@ void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
 }
 
 void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
-  if (ime_event_guard_ != guard) {
-    DCHECK(!ime_event_guard_->reply_to_request());
+  if (ime_event_guard_ != guard)
     return;
-  }
   ime_event_guard_ = nullptr;
 
   // While handling an ime event, text input state and selection bounds updates

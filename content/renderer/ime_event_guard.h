@@ -16,13 +16,11 @@ class ImeEventGuard {
   ~ImeEventGuard();
 
   bool show_virtual_keyboard() const { return show_virtual_keyboard_; }
-  bool reply_to_request() const { return reply_to_request_; }
   void set_show_virtual_keyboard(bool show) { show_virtual_keyboard_ = show; }
 
  private:
   RenderWidget* widget_;
   bool show_virtual_keyboard_;
-  bool reply_to_request_;
 };
 }
 
