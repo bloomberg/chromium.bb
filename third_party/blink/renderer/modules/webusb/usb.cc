@@ -81,6 +81,12 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
   if (!IsFeatureEnabled()) {
+    ExecutionContext* execution_context = ExecutionContext::From(script_state);
+    if (execution_context && execution_context->IsDocument()) {
+      ToDocument(execution_context)
+          ->GetFrame()
+          ->ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature::kUsb);
+    }
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
@@ -103,7 +109,8 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
-  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
+  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb,
+                               ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
