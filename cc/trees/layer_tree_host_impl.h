@@ -1105,9 +1105,6 @@ class CC_EXPORT LayerTreeHostImpl
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
   bool is_animating_for_snap_;
-  // The number of scroll events happened after the last report to frame
-  // metrics.
-  int scroll_events_after_reporting_ = 0;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 
