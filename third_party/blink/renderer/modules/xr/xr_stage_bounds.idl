@@ -8,5 +8,5 @@
     Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRStageBounds {
-  readonly attribute FrozenArray<XRStageBoundsPoint> geometry;
+  readonly attribute FrozenArray<DOMPointReadOnly> geometry;
 };

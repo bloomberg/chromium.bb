@@ -44,7 +44,6 @@ blink_modules_sources("xr") {
     "xr_session_event.h",
     "xr_stage_bounds.cc",
     "xr_stage_bounds.h",
-    "xr_stage_bounds_point.h",
     "xr_utils.cc",
     "xr_utils.h",
     "xr_view.cc",

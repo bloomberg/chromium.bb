@@ -10151,11 +10151,6 @@ interface XRStageBounds
     attribute @@toStringTag
     getter geometry
     method constructor
-interface XRStageBoundsPoint
-    attribute @@toStringTag
-    getter x
-    getter z
-    method constructor
 interface XRView
     attribute @@toStringTag
     getter eye

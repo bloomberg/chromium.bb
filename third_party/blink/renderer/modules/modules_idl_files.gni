@@ -444,7 +444,6 @@ modules_idl_files =
           "xr/xr_session.idl",
           "xr/xr_session_event.idl",
           "xr/xr_stage_bounds.idl",
-          "xr/xr_stage_bounds_point.idl",
           "xr/xr_view.idl",
           "xr/xr_viewport.idl",
           "xr/xr_webgl_layer.idl",
