@@ -563,14 +563,6 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
                /*triggered_by_other_operation=*/false);
 }
 
-void TabStripModel::AddTabAtToSelection(int index) {
-  DCHECK(ContainsIndex(index));
-  ui::ListSelectionModel new_model = selection_model_;
-  new_model.AddIndexToSelection(index);
-  SetSelection(std::move(new_model), TabStripModelObserver::CHANGE_REASON_NONE,
-               /*triggered_by_other_operation=*/false);
-}
-
 void TabStripModel::MoveWebContentsAt(int index,
                                       int to_position,
                                       bool select_after_move) {
