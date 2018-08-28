@@ -22,6 +22,8 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
       block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    RecordHitTestData(paint_info);
   BlockPainter(layout_svg_text_).Paint(block_info);
 
   // Paint the outlines, if any
@@ -29,6 +31,24 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
     block_info.phase = PaintPhase::kOutline;
     BlockPainter(layout_svg_text_).Paint(block_info);
   }
+}
+
+void SVGTextPainter::RecordHitTestData(const PaintInfo& paint_info) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  if (paint_info.phase != PaintPhase::kForeground)
+    return;
+
+  auto touch_action = layout_svg_text_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = LayoutRect(layout_svg_text_.VisualRectInLocalSVGCoordinates());
+  HitTestData::RecordTouchActionRect(paint_info.context, layout_svg_text_,
+                                     TouchActionRect(rect, touch_action));
 }
 
 }  // namespace blink
