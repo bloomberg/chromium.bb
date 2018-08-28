@@ -175,7 +175,12 @@ class DateOrderedListMediator {
 
     /** Called to delete a list of items specified by {@code items}. */
     public void onDeletionRequested(List<ListItem> items) {
-        onDeleteItems(getOfflineItems(items));
+        onDeleteItems(ListUtils.toOfflineItems(items));
+    }
+
+    /** Called to share a list of items specified by {@code items}. */
+    public void onShareRequested(List<ListItem> items) {
+        onShareItems(ListUtils.toOfflineItems(items));
     }
 
     /**
@@ -250,16 +255,6 @@ class DateOrderedListMediator {
                 new ThumbnailRequestGlue(mProvider, item, iconWidthPx, iconHeightPx, callback);
         mThumbnailProvider.getThumbnail(request);
         return () -> mThumbnailProvider.cancelRetrieval(request);
-    }
-
-    private List<OfflineItem> getOfflineItems(List<ListItem> items) {
-        List<OfflineItem> offlineItems = new ArrayList<>();
-        for (ListItem item : items) {
-            if (item instanceof ListItem.OfflineItemListItem) {
-                offlineItems.add(((ListItem.OfflineItemListItem) item).item);
-            }
-        }
-        return offlineItems;
     }
 
     /** Helper class to disable animations for certain list changes. */
