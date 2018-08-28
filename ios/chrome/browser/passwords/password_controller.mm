@@ -121,12 +121,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
 
-// Parses the |jsonString| which contatins the password forms found on a web
-// page to populate the |forms| vector.
-- (void)getPasswordForms:(std::vector<autofill::PasswordForm>*)forms
-           fromFormsJSON:(NSString*)jsonString
-                 pageURL:(const GURL&)pageURL;
-
 // Informs the |passwordManager_| of the password forms (if any were present)
 // that have been found on the page.
 - (void)didFinishPasswordFormExtraction:
@@ -145,13 +139,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // if successful and NO otherwise. |completionHandler| may be nil.
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:(void (^)(BOOL))completionHandler;
-
-// Uses JavaScript to find password forms. Calls |completionHandler| with the
-// extracted information used for matching and saving passwords. Calls
-// |completionHandler| with an empty vector if no password forms are found.
-// |completionHandler| cannot be nil.
-- (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler;
 
 // Finds all password forms in DOM and sends them to the password store for
 // fetching stored credentials.
@@ -332,8 +319,8 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 - (void)findAndFillPasswordForms:(NSString*)username
                         password:(NSString*)password
                completionHandler:(void (^)(BOOL))completionHandler {
-  [self findPasswordFormsWithCompletionHandler:^(
-            const std::vector<autofill::PasswordForm>& forms) {
+  [self.helper findPasswordFormsWithCompletionHandler:^(
+                   const std::vector<autofill::PasswordForm>& forms) {
     for (const auto& form : forms) {
       autofill::PasswordFormFillData formData;
       std::map<base::string16, const autofill::PasswordForm*> matches;
@@ -414,53 +401,14 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 #pragma mark - Private methods
 
-- (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler {
-  DCHECK(completionHandler);
-
-  if (!webState_)
-    return;
-
-  GURL pageURL;
-  if (!GetPageURLAndCheckTrustLevel(webState_, &pageURL)) {
-    return;
-  }
-
-  __weak PasswordController* weakSelf = self;
-  [self.helper.jsPasswordManager findPasswordFormsWithCompletionHandler:^(
-                                     NSString* jsonString) {
-    std::vector<autofill::PasswordForm> forms;
-    [weakSelf getPasswordForms:&forms fromFormsJSON:jsonString pageURL:pageURL];
-    completionHandler(forms);
-  }];
-}
-
 - (void)findPasswordFormsAndSendThemToPasswordStore {
   // Read all password forms from the page and send them to the password
   // manager.
   __weak PasswordController* weakSelf = self;
-  [self findPasswordFormsWithCompletionHandler:^(
-            const std::vector<autofill::PasswordForm>& forms) {
+  [self.helper findPasswordFormsWithCompletionHandler:^(
+                   const std::vector<autofill::PasswordForm>& forms) {
     [weakSelf didFinishPasswordFormExtraction:forms];
   }];
-}
-
-- (void)getPasswordForms:(std::vector<autofill::PasswordForm>*)forms
-           fromFormsJSON:(NSString*)JSONNSString
-                 pageURL:(const GURL&)pageURL {
-  DCHECK(forms);
-  std::vector<autofill::FormData> formsData;
-  if (!autofill::ExtractFormsData(JSONNSString, false, base::string16(),
-                                  pageURL, &formsData)) {
-    return;
-  }
-
-  for (const auto& formData : formsData) {
-    std::unique_ptr<PasswordForm> form =
-        ParseFormData(formData, password_manager::FormParsingMode::FILLING);
-    if (form)
-      forms->push_back(*form);
-  }
 }
 
 - (void)didFinishPasswordFormExtraction:

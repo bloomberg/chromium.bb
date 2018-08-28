@@ -51,12 +51,17 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 // Finds the currently submitted password form named |formName| and calls
 // |completionHandler| with the populated data structure. |found| is YES if the
-// current form was found successfully, NO otherwise. |completionHandler|
-// cannot be nil.
+// current form was found successfully, NO otherwise.
 - (void)extractSubmittedPasswordForm:(const std::string&)formName
                    completionHandler:
                        (void (^)(BOOL found,
                                  const PasswordForm& form))completionHandler;
+
+// Parses the |jsonString| which contatins the password forms found on a web
+// page to populate the |forms| vector.
+- (void)getPasswordFormsFromJSON:(NSString*)jsonString
+                         pageURL:(const GURL&)pageURL
+                           forms:(std::vector<autofill::PasswordForm>*)forms;
 
 @end
 
@@ -239,6 +244,44 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
   [self.jsPasswordManager extractForm:base::SysUTF8ToNSString(formName)
                     completionHandler:extractSubmittedFormCompletionHandler];
+}
+
+- (void)getPasswordFormsFromJSON:(NSString*)jsonString
+                         pageURL:(const GURL&)pageURL
+                           forms:(std::vector<autofill::PasswordForm>*)forms {
+  std::vector<autofill::FormData> formsData;
+  if (!autofill::ExtractFormsData(jsonString, false, base::string16(), pageURL,
+                                  &formsData)) {
+    return;
+  }
+
+  for (const auto& formData : formsData) {
+    std::unique_ptr<PasswordForm> form =
+        ParseFormData(formData, password_manager::FormParsingMode::FILLING);
+    if (form)
+      forms->push_back(*form);
+  }
+}
+
+#pragma mark - Public methods
+
+- (void)findPasswordFormsWithCompletionHandler:
+    (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler {
+  if (!_webState)
+    return;
+
+  GURL pageURL;
+  if (!GetPageURLAndCheckTrustLevel(_webState, &pageURL)) {
+    return;
+  }
+
+  __weak PasswordControllerHelper* weakSelf = self;
+  [self.jsPasswordManager findPasswordFormsWithCompletionHandler:^(
+                              NSString* jsonString) {
+    std::vector<autofill::PasswordForm> forms;
+    [weakSelf getPasswordFormsFromJSON:jsonString pageURL:pageURL forms:&forms];
+    completionHandler(forms);
+  }];
 }
 
 @end

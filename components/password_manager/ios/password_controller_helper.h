@@ -48,6 +48,12 @@ class WebState;
 // The JsPasswordManager processing password form via javascript.
 @property(nonatomic, readonly) JsPasswordManager* jsPasswordManager;
 
+// Uses JavaScript to find password forms. Calls |completionHandler| with the
+// extracted information used for matching and saving passwords. Calls
+// |completionHandler| with an empty vector if no password forms are found.
+- (void)findPasswordFormsWithCompletionHandler:
+    (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler;
+
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState
                         delegate:(nullable id<PasswordControllerHelperDelegate>)
