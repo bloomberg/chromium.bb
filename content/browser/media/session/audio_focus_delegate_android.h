@@ -18,8 +18,6 @@ enum class AudioFocusType;
 
 namespace content {
 
-enum class AudioFocusType;
-
 // AudioFocusDelegateAndroid handles the audio focus at a system level on
 // Android. It is also proxying the JNI calls.
 class AudioFocusDelegateAndroid : public AudioFocusDelegate {
