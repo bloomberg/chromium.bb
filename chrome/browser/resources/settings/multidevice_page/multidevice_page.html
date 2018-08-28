@@ -3,10 +3,12 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../controls/password_prompt_dialog.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -25,30 +27,39 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div id="multidevice-item"
-            class="settings-box two-line first"
+            class="settings-box two-line"
             on-click="handleItemClick_"
-            actionable$="[[doesClickOpenSubpage_(pageContentData)]]">
-          <div class="start">
+            actionable$="[[isHostSet]]">
+          <template is="dom-if" if="[[isHostSet]]" restamp>
+            <iron-icon icon=
+                "[[getIconName(MultiDeviceFeature.BETTER_TOGETHER_SUITE)]]">
+            </iron-icon>
+          </template>
+          <div class$=
+              "[[getMultiDeviceItemLabelBlockCssClass_(pageContentData)]]">
             <div id="multidevice-label">[[getLabelText_(pageContentData)]]</div>
             <div id="mutltideviceSubLabel" class="secondary"
                 inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
             </div>
           </div>
-          <template is="dom-if"
-              if="[[doesClickOpenSubpage_(pageContentData)]]">
+          <template is="dom-if" if="[[isHostSet]]" restamp>
             <paper-icon-button-light class="subpage-arrow">
               <button aria-label="[[getLabelText_(pageContentData)]]"
                   aria-describedby="mutltideviceSubLabel"></button>
             </paper-icon-button-light>
           </template>
           <div class="separator"></div>
-          <template is="dom-if" if="[[showButton_(pageContentData)]]" restamp>
+          <template is="dom-if"
+              if="[[shouldShowButton_(pageContentData)]]"
+              restamp>
             <paper-button class="secondary-button"
                 on-click="handleButtonClick_">
               [[getButtonText_(pageContentData)]]
             </paper-button>
           </template>
-          <template is="dom-if" if="[[showToggle_(pageContentData)]]" restamp>
+          <template is="dom-if"
+              if="[[shouldShowToggle_(pageContentData)]]"
+              restamp>
             <settings-multidevice-feature-toggle
                 feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
                 page-content-data="[[pageContentData]]">
@@ -56,7 +67,7 @@
           </template>
         </div>
       </neon-animatable>
-      <template is="dom-if" route-path="/multidevice/features">
+      <template is="dom-if" route-path="/multidevice/features" restamp>
         <settings-subpage associated-control="[[$$('#multidevice-item')]]"
             page-title="[[pageContentData.hostDeviceName]]">
             <settings-multidevice-subpage

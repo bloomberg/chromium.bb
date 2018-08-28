@@ -23,6 +23,15 @@ const MultiDeviceFeatureBehaviorImpl = {
       type: Object,
       value: settings.MultiDeviceFeature,
     },
+
+    /**
+     * Whether a host phone has been set by the user (not necessarily verified).
+     * @type {boolean}
+     */
+    isHostSet: {
+      type: Boolean,
+      computed: 'computeIsHostSet(pageContentData)',
+    },
   },
 
   /**
@@ -88,12 +97,12 @@ const MultiDeviceFeatureBehaviorImpl = {
    */
   getIconName: function(feature) {
     switch (feature) {
-      // TODO(jordynass): Insert Better Together Suite icon (i.e. phone SVG)
-      // when it is added.
+      case settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE:
+        return 'settings:multidevice-better-together-suite';
       case settings.MultiDeviceFeature.MESSAGES:
-        return 'settings:sms-connect';
+        return 'settings:multidevice-messages';
       case settings.MultiDeviceFeature.SMART_LOCK:
-        return 'settings:smart-lock';
+        return 'settings:multidevice-smart-lock';
       default:
         return '';
     }
@@ -136,6 +145,15 @@ const MultiDeviceFeatureBehaviorImpl = {
       default:
         return null;
     }
+  },
+
+  /** @private */
+  computeIsHostSet: function() {
+    return [
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+      settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED,
+    ].includes(this.pageContentData.mode);
   },
 };
 
