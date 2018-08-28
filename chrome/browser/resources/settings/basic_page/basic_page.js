@@ -95,7 +95,7 @@ Polymer({
      * section.
      * @private {boolean}
      */
-    doesAccountSupportMultiDeviceSection_: {
+    doesChromebookSupportMultiDeviceSection_: {
       type: Boolean,
       value: false,
     },

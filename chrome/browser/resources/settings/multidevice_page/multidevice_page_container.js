@@ -22,13 +22,13 @@ Polymer({
 
   properties: {
     /**
-     * Whether a phone was found on the account that is either connected to the
-     * Chromebook or has the potential to be.
+     * Whether the Chromebook is capable of enabling Better Together features.
      * @type {boolean}
      */
-    doesPotentialConnectedPhoneExist: {
+    doesChromebookSupportMultiDeviceFeatures: {
       type: Boolean,
-      computed: 'computeDoesPotentialConnectedPhoneExist(pageContentData)',
+      computed:
+          'computeDoesChromebookSupportMultiDeviceFeatures(pageContentData)',
       notify: true,
     },
   },
@@ -75,12 +75,16 @@ Polymer({
     return !newData.hostDeviceName === noHostModes.includes(newData.mode);
   },
 
+  // TODO(jordynass): Delete the check for an eligible host when the no host
+  // mode is added in accordance with the mocks.
   /**
    * @return {boolean}
    * @private
    */
-  computeDoesPotentialConnectedPhoneExist: function() {
+  computeDoesChromebookSupportMultiDeviceFeatures: function() {
     return !!this.pageContentData &&
+        this.isFeatureSupported(
+            settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE) &&
         this.pageContentData.mode !=
         settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
   },

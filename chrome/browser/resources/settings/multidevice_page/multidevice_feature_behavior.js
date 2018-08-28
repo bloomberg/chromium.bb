@@ -45,6 +45,16 @@ const MultiDeviceFeatureBehaviorImpl = {
   },
 
   /**
+   * @param {!settings.MultiDeviceFeature} feature
+   * @return {boolean}
+   */
+  isFeatureSupported: function(feature) {
+    return ![settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+             settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE,
+    ].includes(this.getFeatureState(feature));
+  },
+
+  /**
    * Whether the user is prevented from attempted to change a given feature. In
    * the UI this corresponds to a disabled toggle.
    * @param {!settings.MultiDeviceFeature} feature
@@ -58,17 +68,10 @@ const MultiDeviceFeatureBehaviorImpl = {
       return false;
     }
 
-    if ([
-          settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY,
-          settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
-          settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE,
-          settings.MultiDeviceFeatureState.UNAVAILABLE_INSUFFICIENT_SECURITY,
-          settings.MultiDeviceFeatureState.UNAVAILABLE_SUITE_DISABLED,
-        ].includes(this.getFeatureState(feature))) {
-      return false;
-    }
-
-    return true;
+    return [
+      settings.MultiDeviceFeatureState.DISABLED_BY_USER,
+      settings.MultiDeviceFeatureState.ENABLED_BY_USER
+    ].includes(this.getFeatureState(feature));
   },
 
   /**
