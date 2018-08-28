@@ -57,8 +57,8 @@
             <button aria-label="$i18n{displayTitle}"></button>
           </paper-icon-button-light>
         </div>
-        <div id="storageRow" class="settings-box" on-click="onStorageTap_"
-            actionable>
+        <div id="storageRow" hidden="[[hideStorageInfo_]]" class="settings-box"
+            on-click="onStorageTap_" actionable>
           <div class="start">$i18n{storageTitle}</div>
           <paper-icon-button-light class="subpage-arrow">
             <button aria-label="$i18n{storageTitle}"></button>

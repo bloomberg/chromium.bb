@@ -75,6 +75,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -319,6 +320,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean("showCrostini",
                           IsCrostiniUIAllowedForProfile(profile));
+
+  // TODO(crbug.com/868747): Show an explanatory message instead of hiding the
+  // storage management info.
+  html_source->AddBoolean("hideStorageInfo",
+                          chromeos::DemoSession::IsDeviceInDemoMode());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

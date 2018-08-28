@@ -54,6 +54,19 @@ Polymer({
       readOnly: true,
     },
 
+    /**
+     * Whether storage management info should be hidden.
+     * @private
+     */
+    hideStorageInfo_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('hideStorageInfo') &&
+            loadTimeData.getBoolean('hideStorageInfo');
+      },
+      readOnly: true,
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
