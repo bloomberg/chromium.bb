@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -27,7 +26,6 @@ namespace safe_browsing {
 
 constexpr int kIconSize = 20;
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
@@ -39,7 +37,6 @@ void ShowPasswordReuseModalWarningDialog(
       dialog, web_contents->GetTopLevelNativeWindow())
       ->Show();
 }
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
 PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     content::WebContents* web_contents,

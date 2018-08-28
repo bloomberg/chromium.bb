@@ -98,12 +98,6 @@ void ShowImportLockDialogViews(gfx::NativeWindow parent,
 // Shows the first run bubble.
 void ShowFirstRunBubbleViews(Browser* browser);
 
-void ShowPasswordReuseWarningDialog(
-    content::WebContents* web_contents,
-    safe_browsing::ChromePasswordProtectionService* service,
-    safe_browsing::ReusedPasswordType password_type,
-    safe_browsing::OnWarningDone done_callback);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_DIALOGS_VIEWS_MAC_H_
