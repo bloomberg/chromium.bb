@@ -33,8 +33,8 @@ const flags_ui::FeatureEntry::Choice kViewportAdjustmentExperimentChoices[] = {
      "safe-area"},
     {"Use Hybrid Implementation",
      kViewportAdjustmentExperimentCommandLineSwitch, "hybrid"},
-    {"Use Smooth Scrolling Workaround",
-     kViewportAdjustmentExperimentCommandLineSwitch, "smooth"}};
+    {"Use Smooth Scrolling", kViewportAdjustmentExperimentCommandLineSwitch,
+     "smooth"}};
 
 ViewportAdjustmentExperiment GetActiveViewportExperiment() {
   const base::CommandLine* command_line =
