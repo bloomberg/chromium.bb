@@ -486,8 +486,27 @@ body.shift-preview-left #preview-wrapper {
   position: relative;
 }
 
-body.mirror #preview-video {
+body.capturing #preview-video {
+  pointer-events: auto;
+}
+
+body.mirror #preview-video,
+body.mirror #preview-focus {
   -webkit-transform: scaleX(-1);
+}
+
+#preview-focus {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  visibility: hidden;
+}
+
+#preview-focus-aim {
+  position: absolute;
+  transform: translate(-50%, -50%);
 }
 
 body:not(.capturing) #preview-video {
@@ -510,7 +529,8 @@ body.mirror:not(.capturing) #preview-video {
   visibility: hidden;
 }
 
-body.capturing.grid #preview-grid {
+body.capturing.grid #preview-grid,
+body.capturing #preview-focus {
   visibility: visible;
 }
 
