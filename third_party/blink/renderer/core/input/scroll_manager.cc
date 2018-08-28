@@ -130,7 +130,12 @@ AutoscrollController* ScrollManager::GetAutoscrollController() const {
 
 static bool CanPropagate(const ScrollState& scroll_state,
                          const Element& element) {
-  if (!element.GetLayoutBox()->GetScrollableArea())
+  ScrollableArea* scrollable_area = element.GetLayoutBox()->GetScrollableArea();
+  if (!scrollable_area)
+    return true;
+
+  if (!scrollable_area->UserInputScrollable(kHorizontalScrollbar) &&
+      !scrollable_area->UserInputScrollable(kVerticalScrollbar))
     return true;
 
   return (scroll_state.deltaXHint() == 0 ||
