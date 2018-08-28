@@ -217,6 +217,6 @@ group("platform") {
   # (use_nss_certs).
   if (use_nss_certs) {
     public_configs = [ ":platform_config" ]
-    public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
+    public_configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
   }
 }
