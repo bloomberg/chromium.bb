@@ -16,6 +16,24 @@ const RecorderStateEnum = {
   HIDDEN: 'hidden'
 };
 
+const ActionTypeEnum = {
+  CLICK: 'click',
+  HOVER: 'hover',
+  LOAD_PAGE: 'loadPage',
+  PRESS_ENTER: 'pressEnter',
+  SELECT: 'select',
+  TYPE: 'type',
+  TYPE_PASSWORD: 'typePassword',
+  VALIDATE_FIELD: 'validateField',
+  // Autofill actions
+  AUTOFILL: 'autofill',
+  // Password manager actions
+  SAVE_PASSWORD: 'savePassword',
+  REJECT_SAVE_PASSWORD: 'rejectSavePassword',
+  UPDATE_PASSWORD: 'updatePassword',
+  REJECT_UPDATE_PASSWORD: 'rejectUpdatePassword'
+}
+
 const RecorderUiMsgEnum = {
   CREATE_UI: 'add-ui',
   DESTROY_UI: 'remove-ui',
@@ -23,7 +41,9 @@ const RecorderUiMsgEnum = {
   SHOW_UI: 'show-ui',
   ADD_ACTION: 'add-action',
   REMOVE_ACTION: 'remove-action',
-  GET_RECIPE: 'get-recipe'
+  GET_RECIPE: 'get-recipe',
+  GET_SAVED_ACTION_PARAMS: 'get-saved-action-params',
+  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params'
 };
 
 const RecorderMsgEnum = {
@@ -33,7 +53,7 @@ const RecorderMsgEnum = {
   CANCEL: 'cancel-recording',
   GET_IFRAME_NAME: 'get-iframe-name',
   ADD_ACTION: 'record-action',
-  MEMORIZE_PASSWORD_FORM: 'memorize-password-form',
+  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params'
 };
 
 const Local_Storage_Vars = {
@@ -46,7 +66,12 @@ const Indexed_DB_Vars = {
   RECIPE_DB: 'Action_Recorder_Extension_Recipe',
   VERSION: 1,
   ACTIONS: 'Actions',
+  // The 'Attributes' table stores properties of the current recipe.
   ATTRIBUTES: 'Attributes',
   NAME: 'name',
-  URL: 'url'
+  URL: 'url',
+  // The 'Saved Action Params' table stores parameters of potential Chrome
+  // actions.
+  SAVED_ACTION_PARAMS: 'Saved_Action_Params',
+  PASSWORD_MANAGER_PARAMS: 'password_manager_params',
 };
