@@ -106,6 +106,7 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
   slider_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(accessible_name_id));
   slider_->SetBorder(views::CreateEmptyBorder(kUnifiedSliderPadding));
+  slider_->SetPreferredSize(gfx::Size(0, kTrayItemSize));
   layout->SetFlexForView(slider_, 1);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
