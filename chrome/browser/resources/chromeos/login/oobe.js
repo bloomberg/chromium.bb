@@ -50,6 +50,7 @@ cr.define('cr.ui.Oobe', function() {
       login.SupervisedUserCreationScreen.register();
       login.TermsOfServiceScreen.register();
       login.SyncConsentScreen.register();
+      login.FingerprintSetupScreen.register();
       login.ArcTermsOfServiceScreen.register();
       login.RecommendAppsScreen.register();
       login.AppDownloadingScreen.register();

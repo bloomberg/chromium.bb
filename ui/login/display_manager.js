@@ -42,6 +42,7 @@
 /** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
     'ad-password-change';
 /** @const */ var SCREEN_SYNC_CONSENT = 'sync-consent';
+/** @const */ var SCREEN_FINGERPRINT_SETUP = 'fingerprint-setup';
 /** @const */ var SCREEN_RECOMMEND_APPS = 'recommend-apps';
 /** @const */ var SCREEN_APP_DOWNLOADING = 'app-downloading';
 /** @const */ var SCREEN_DISCOVER = 'discover';

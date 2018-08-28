@@ -5422,4 +5422,57 @@
   <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME" desc="Message contained in a button to continue the navigation within Chrome.">
     Stay in Chrome
   </message>
+
+  <!-- Strings for Oobe fingerprint enrollment screen -->
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE" desc="The title of the dialog that allow users to register their fingerprint.">
+    Set up your fingerprint
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LOCATION_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
+    Place your finger
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
+    Touch the sensor with your index finger. It's on the top left of your Chromebook.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
+    Lift, then touch again
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_SUCCESS_TITLE" desc="The title of the dialog that shows when fingerprint enrollment is successful.">
+    Fingerprint added
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_SUCCESS_DESCRIPTION" desc="The label that shows when fingerprint enrollment is successful.">
+    When you see this icon, use your fingerprint for identification or to approve purchases.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_SKIP" desc="In fingerprint setup screen, button label to skip the fingerrint setup.">
+    Skip
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_LATER" desc="In fingerprint setup screen, button label to skip the fingerrint setup.">
+    Do it later
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_NEXT" desc="In fingerprint setup screen, button label to proceed to the next step.">
+    Next
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_DONE" desc="Fingerprint setup is done, button label to exit the setup.">
+    Done
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_ADD_ANOTHER" desc="In fingerprint setup screen, button label to add another fingerprint.">
+    Add another
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_ADD_FINGERPRINT" desc="In fingerprint setup screen, button label to add fingerprint.">
+    Add fingerprint
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME_1" desc="The default name for first newly added fingerprint.">
+    Finger 1
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME_2" desc="The default name for second newly added fingerprint.">
+    Finger 2
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME_3" desc="The default name for third newly added fingerprint.">
+    Finger 3
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER" desc="Text in the fingerprint setup screen telling users what to move finger to capture the different parts of fingerprint.">
+    Move your index finger slightly to add the different parts of your fingerprint.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN" desc="Text in the fingerprint setup screen telling users what to scan their finger again.">
+    Try again.
+  </message>
 </grit-part>

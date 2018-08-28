@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/host_pairing_screen_handler.h"
@@ -370,6 +372,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>());
 
+  AddScreenHandler(std::make_unique<FingerprintSetupScreenHandler>());
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   ActiveDirectoryPasswordChangeScreenHandler*
@@ -509,6 +513,10 @@ DemoSetupScreenView* OobeUI::GetDemoSetupScreenView() {
 
 DemoPreferencesScreenView* OobeUI::GetDemoPreferencesScreenView() {
   return GetView<DemoPreferencesScreenHandler>();
+}
+
+FingerprintSetupScreenView* OobeUI::GetFingerprintSetupScreenView() {
+  return GetView<FingerprintSetupScreenHandler>();
 }
 
 KioskAutolaunchScreenView* OobeUI::GetKioskAutolaunchScreenView() {
