@@ -12,9 +12,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -25,6 +27,7 @@ class ScopedClosureRunner;
 
 namespace device {
 
+class BluetoothAdvertisementWinrt;
 class BluetoothDeviceWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
@@ -59,6 +62,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const AdvertisementErrorCallback& error_callback) override;
+  std::vector<BluetoothAdvertisement*> GetPendingAdvertisementsForTesting()
+      const override;
   BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 
@@ -103,6 +108,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   virtual HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementWatcher** instance) const;
+
+  virtual scoped_refptr<BluetoothAdvertisementWinrt> CreateAdvertisement()
+      const;
+
   virtual std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
       uint64_t raw_address,
       base::Optional<std::string> local_name);
@@ -136,6 +145,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementReceivedEventArgs* received);
 
+  void OnRegisterAdvertisement(BluetoothAdvertisement* advertisement,
+                               const CreateAdvertisementCallback& callback);
+
+  void OnRegisterAdvertisementError(
+      BluetoothAdvertisement* advertisement,
+      const AdvertisementErrorCallback& error_callback,
+      BluetoothAdvertisement::ErrorCode error_code);
+
   void RemoveAdvertisementReceivedHandler();
 
   bool is_initialized_ = false;
@@ -146,6 +163,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       adapter_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio_;
 
+  std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
   size_t num_discovery_sessions_ = 0;
   EventRegistrationToken advertisement_received_token_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::

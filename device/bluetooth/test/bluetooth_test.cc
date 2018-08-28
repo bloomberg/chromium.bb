@@ -171,6 +171,18 @@ void BluetoothTestBase::Callback(Call expected) {
     unexpected_success_callback_ = true;
 }
 
+void BluetoothTestBase::CreateAdvertisementCallback(
+    Call expected,
+    scoped_refptr<BluetoothAdvertisement> advertisement) {
+  ++callback_count_;
+  advertisements_.push_back(std::move(advertisement));
+
+  if (expected == Call::EXPECTED)
+    ++actual_success_callback_calls_;
+  else
+    unexpected_success_callback_ = true;
+}
+
 void BluetoothTestBase::DiscoverySessionCallback(
     Call expected,
     std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
@@ -255,6 +267,18 @@ void BluetoothTestBase::ErrorCallback(Call expected) {
     unexpected_error_callback_ = true;
 }
 
+void BluetoothTestBase::AdvertisementErrorCallback(
+    Call expected,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  ++error_callback_count_;
+  last_advertisement_error_code_ = error_code;
+
+  if (expected == Call::EXPECTED)
+    ++actual_error_callback_calls_;
+  else
+    unexpected_error_callback_ = true;
+}
+
 void BluetoothTestBase::ConnectErrorCallback(
     Call expected,
     enum BluetoothDevice::ConnectErrorCode error_code) {
@@ -327,6 +351,14 @@ base::Closure BluetoothTestBase::GetCallback(Call expected) {
                     expected);
 }
 
+BluetoothAdapter::CreateAdvertisementCallback
+BluetoothTestBase::GetCreateAdvertisementCallback(Call expected) {
+  if (expected == Call::EXPECTED)
+    ++expected_success_callback_calls_;
+  return base::Bind(&BluetoothTestBase::CreateAdvertisementCallback,
+                    weak_factory_.GetWeakPtr(), expected);
+}
+
 BluetoothAdapter::DiscoverySessionCallback
 BluetoothTestBase::GetDiscoverySessionCallback(Call expected) {
   if (expected == Call::EXPECTED)
@@ -388,6 +420,14 @@ BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback(
                     weak_factory_.GetWeakPtr(), expected);
 }
 
+BluetoothAdapter::AdvertisementErrorCallback
+BluetoothTestBase::GetAdvertisementErrorCallback(Call expected) {
+  if (expected == Call::EXPECTED)
+    ++expected_error_callback_calls_;
+  return base::Bind(&BluetoothTestBase::AdvertisementErrorCallback,
+                    weak_factory_.GetWeakPtr(), expected);
+}
+
 BluetoothDevice::ConnectErrorCallback
 BluetoothTestBase::GetConnectErrorCallback(Call expected) {
   if (expected == Call::EXPECTED)
@@ -428,6 +468,8 @@ BluetoothTestBase::GetReentrantStartNotifySessionErrorCallback(
 }
 
 void BluetoothTestBase::ResetEventCounts() {
+  last_advertisement_error_code_ =
+      BluetoothAdvertisement::INVALID_ADVERTISEMENT_ERROR_CODE;
   last_connect_error_code_ = BluetoothDevice::ERROR_UNKNOWN;
   callback_count_ = 0;
   error_callback_count_ = 0;

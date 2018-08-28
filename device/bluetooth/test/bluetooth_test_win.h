@@ -126,6 +126,13 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) override;
   void SimulatePairingPinCode(BluetoothDevice* device,
                               std::string pin_code) override;
+  void SimulateAdvertisementStarted(
+      BluetoothAdvertisement* advertisement) override;
+  void SimulateAdvertisementStopped(
+      BluetoothAdvertisement* advertisement) override;
+  void SimulateAdvertisementError(
+      BluetoothAdvertisement* advertisement,
+      BluetoothAdvertisement::ErrorCode error_code) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(
       BluetoothDevice* device,

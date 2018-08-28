@@ -19,7 +19,13 @@ class FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt
           ABI::Windows::Devices::Bluetooth::Advertisement::
               IBluetoothLEAdvertisementPublisherStatusChangedEventArgs> {
  public:
-  FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt();
+  explicit FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt(
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementPublisherStatus status);
+  FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt(
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementPublisherStatus status,
+      ABI::Windows::Devices::Bluetooth::BluetoothError error);
   ~FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt() override;
 
   // IBluetoothLEAdvertisementPublisherStatusChangedEventArgs:
@@ -30,6 +36,14 @@ class FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt
       ABI::Windows::Devices::Bluetooth::BluetoothError* value) override;
 
  private:
+  ABI::Windows::Devices::Bluetooth::Advertisement::
+      BluetoothLEAdvertisementPublisherStatus status_ =
+          ABI::Windows::Devices::Bluetooth::Advertisement::
+              BluetoothLEAdvertisementPublisherStatus_Created;
+
+  ABI::Windows::Devices::Bluetooth::BluetoothError error_ =
+      ABI::Windows::Devices::Bluetooth::BluetoothError_Success;
+
   DISALLOW_COPY_AND_ASSIGN(
       FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt);
 };

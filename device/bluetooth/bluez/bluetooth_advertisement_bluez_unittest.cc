@@ -20,39 +20,15 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertisement_service_provider.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertising_manager_client.h"
+#include "device/bluetooth/test/test_bluetooth_advertisement_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothAdvertisement;
+using device::TestBluetoothAdvertisementObserver;
 
 namespace bluez {
-
-class TestAdvertisementObserver : public BluetoothAdvertisement::Observer {
- public:
-  explicit TestAdvertisementObserver(
-      scoped_refptr<BluetoothAdvertisement> advertisement)
-      : released_(false), advertisement_(advertisement) {
-    advertisement_->AddObserver(this);
-  }
-
-  ~TestAdvertisementObserver() override {
-    advertisement_->RemoveObserver(this);
-  }
-
-  // BluetoothAdvertisement::Observer overrides:
-  void AdvertisementReleased(BluetoothAdvertisement* advertisement) override {
-    released_ = true;
-  }
-
-  bool released() { return released_; }
-
- private:
-  bool released_;
-  scoped_refptr<BluetoothAdvertisement> advertisement_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAdvertisementObserver);
-};
 
 class BluetoothAdvertisementBlueZTest : public testing::Test {
  public:
@@ -193,7 +169,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
 
-  std::unique_ptr<TestAdvertisementObserver> observer_;
+  std::unique_ptr<TestBluetoothAdvertisementObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
   scoped_refptr<BluetoothAdvertisement> advertisement_;
 };
@@ -257,7 +233,7 @@ TEST_F(BluetoothAdvertisementBlueZTest, UnregisterAfterReleasedFailed) {
   ExpectSuccess();
   EXPECT_TRUE(advertisement);
 
-  observer_.reset(new TestAdvertisementObserver(advertisement));
+  observer_.reset(new TestBluetoothAdvertisementObserver(advertisement));
   TriggerReleased(advertisement);
   EXPECT_TRUE(observer_->released());
 

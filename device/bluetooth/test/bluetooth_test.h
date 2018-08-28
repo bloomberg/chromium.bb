@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -258,6 +259,20 @@ class BluetoothTestBase : public testing::Test {
   // Sets |device|'s pairing code to |pin_code|.
   virtual void SimulatePairingPinCode(BluetoothDevice* device,
                                       std::string pin_code) {}
+
+  // Simulates a successful registration of |advertisement|.
+  virtual void SimulateAdvertisementStarted(
+      BluetoothAdvertisement* advertisement) {}
+
+  // Simulates a successful unregistration of |advertisement|.
+  virtual void SimulateAdvertisementStopped(
+      BluetoothAdvertisement* advertisement) {}
+
+  // Simulates a failure of either registering or unregistering |advertisement|
+  // with error code |error_code|.
+  virtual void SimulateAdvertisementError(
+      BluetoothAdvertisement* advertisement,
+      BluetoothAdvertisement::ErrorCode error_code) {}
 
   // Remembers |device|'s platform specific object to be used in a
   // subsequent call to methods such as SimulateGattServicesDiscovered that
@@ -518,6 +533,8 @@ class BluetoothTestBase : public testing::Test {
 
   // Callbacks that increment |callback_count_|, |error_callback_count_|:
   void Callback(Call expected);
+  void CreateAdvertisementCallback(Call expected,
+                                   scoped_refptr<BluetoothAdvertisement>);
   void DiscoverySessionCallback(Call expected,
                                 std::unique_ptr<BluetoothDiscoverySession>);
   void GattConnectionCallback(Call expected,
@@ -531,6 +548,8 @@ class BluetoothTestBase : public testing::Test {
   void StopNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
   void ReadValueCallback(Call expected, const std::vector<uint8_t>& value);
   void ErrorCallback(Call expected);
+  void AdvertisementErrorCallback(Call expected,
+                                  BluetoothAdvertisement::ErrorCode error_code);
   void ConnectErrorCallback(Call expected,
                             enum BluetoothDevice::ConnectErrorCode);
   void GattErrorCallback(Call expected,
@@ -547,6 +566,8 @@ class BluetoothTestBase : public testing::Test {
 
   // Accessors to get callbacks bound to this fixture:
   base::Closure GetCallback(Call expected);
+  BluetoothAdapter::CreateAdvertisementCallback GetCreateAdvertisementCallback(
+      Call expected);
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
       Call expected);
   BluetoothDevice::GattConnectionCallback GetGattConnectionCallback(
@@ -560,6 +581,8 @@ class BluetoothTestBase : public testing::Test {
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
+  BluetoothAdapter::AdvertisementErrorCallback GetAdvertisementErrorCallback(
+      Call expected);
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);
   base::Callback<void(BluetoothRemoteGattService::GattErrorCode)>
   GetGattErrorCallback(Call expected);
@@ -588,8 +611,11 @@ class BluetoothTestBase : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
+  std::vector<scoped_refptr<BluetoothAdvertisement>> advertisements_;
   std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
   std::vector<std::unique_ptr<BluetoothGattConnection>> gatt_connections_;
+  BluetoothAdvertisement::ErrorCode last_advertisement_error_code_ =
+      BluetoothAdvertisement::INVALID_ADVERTISEMENT_ERROR_CODE;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_code_ =
       BluetoothDevice::ERROR_UNKNOWN;
   std::vector<std::unique_ptr<BluetoothGattNotifySession>> notify_sessions_;

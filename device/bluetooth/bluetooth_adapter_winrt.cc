@@ -14,18 +14,22 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/core_winrt_util.h"
+#include "device/bluetooth/bluetooth_advertisement_winrt.h"
 #include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
@@ -57,6 +61,8 @@ using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisement;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementDataSection;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementPublisherFactory;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementReceivedEventArgs;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
@@ -527,7 +533,37 @@ void BluetoothAdapterWinrt::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const AdvertisementErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  auto advertisement = CreateAdvertisement();
+  if (!advertisement->Initialize(std::move(advertisement_data))) {
+    VLOG(2) << "Failed to Initialize Advertisement.";
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(error_callback,
+                       BluetoothAdvertisement::ERROR_STARTING_ADVERTISEMENT));
+    return;
+  }
+
+  // In order to avoid |advertisement| holding a strong reference to itself, we
+  // pass only a weak reference to the callbacks, and store a strong reference
+  // in |pending_advertisements_|. When the callbacks are run, they will remove
+  // the corresponding advertisement from the list of pending advertisements.
+  advertisement->Register(
+      base::Bind(&BluetoothAdapterWinrt::OnRegisterAdvertisement,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Unretained(advertisement.get()), callback),
+      base::Bind(&BluetoothAdapterWinrt::OnRegisterAdvertisementError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Unretained(advertisement.get()), error_callback));
+
+  pending_advertisements_.push_back(std::move(advertisement));
+}
+
+std::vector<BluetoothAdvertisement*>
+BluetoothAdapterWinrt::GetPendingAdvertisementsForTesting() const {
+  std::vector<BluetoothAdvertisement*> pending_advertisements;
+  for (const auto& pending_advertisement : pending_advertisements_)
+    pending_advertisements.push_back(pending_advertisement.get());
+  return pending_advertisements;
 }
 
 BluetoothLocalGattService* BluetoothAdapterWinrt::GetGattService(
@@ -540,7 +576,14 @@ BluetoothAdapterWinrt::BluetoothAdapterWinrt() : weak_ptr_factory_(this) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-BluetoothAdapterWinrt::~BluetoothAdapterWinrt() = default;
+BluetoothAdapterWinrt::~BluetoothAdapterWinrt() {
+  // Explicitly move |pending_advertisements_| into a local variable and clear
+  // them out. Any remaining pending advertisement will attempt to remove itself
+  // from |pending_advertisements_|, which would result in a double-free
+  // otherwise.
+  auto pending_advertisements = std::move(pending_advertisements_);
+  pending_advertisements_.clear();
+}
 
 void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -791,6 +834,11 @@ BluetoothAdapterWinrt::ActivateBluetoothAdvertisementLEWatcherInstance(
   return watcher.CopyTo(instance);
 }
 
+scoped_refptr<BluetoothAdvertisementWinrt>
+BluetoothAdapterWinrt::CreateAdvertisement() const {
+  return base::MakeRefCounted<BluetoothAdvertisementWinrt>();
+}
+
 std::unique_ptr<BluetoothDeviceWinrt> BluetoothAdapterWinrt::CreateDevice(
     uint64_t raw_address,
     base::Optional<std::string> local_name) {
@@ -984,6 +1032,25 @@ void BluetoothAdapterWinrt::OnAdvertisementReceived(
     is_new_device ? observer.DeviceAdded(this, device)
                   : observer.DeviceChanged(this, device);
   }
+}
+
+void BluetoothAdapterWinrt::OnRegisterAdvertisement(
+    BluetoothAdvertisement* advertisement,
+    const CreateAdvertisementCallback& callback) {
+  DCHECK(base::ContainsValue(pending_advertisements_, advertisement));
+  auto wrapped_advertisement = base::WrapRefCounted(advertisement);
+  base::Erase(pending_advertisements_, advertisement);
+  callback.Run(std::move(wrapped_advertisement));
+}
+
+void BluetoothAdapterWinrt::OnRegisterAdvertisementError(
+    BluetoothAdvertisement* advertisement,
+    const AdvertisementErrorCallback& error_callback,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  // Note: We are not DCHECKing that |pending_advertisements_| contains
+  // |advertisement|, as this method might be invoked during destruction.
+  base::Erase(pending_advertisements_, advertisement);
+  error_callback.Run(error_code);
 }
 
 void BluetoothAdapterWinrt::RemoveAdvertisementReceivedHandler() {

@@ -6,9 +6,11 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_BLUETOOTH_LE_ADVERTISEMENT_PUBLISHER_WINRT_H_
 
 #include <windows.devices.bluetooth.advertisement.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include "base/macros.h"
+#include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace device {
 
@@ -19,7 +21,9 @@ class FakeBluetoothLEAdvertisementPublisherWinrt
           ABI::Windows::Devices::Bluetooth::Advertisement::
               IBluetoothLEAdvertisementPublisher> {
  public:
-  FakeBluetoothLEAdvertisementPublisherWinrt();
+  explicit FakeBluetoothLEAdvertisementPublisherWinrt(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                                 IBluetoothLEAdvertisement> advertisement);
   ~FakeBluetoothLEAdvertisementPublisherWinrt() override;
 
   // IBluetoothLEAdvertisementPublisher:
@@ -41,7 +45,27 @@ class FakeBluetoothLEAdvertisementPublisherWinrt
       EventRegistrationToken* token) override;
   IFACEMETHODIMP remove_StatusChanged(EventRegistrationToken token) override;
 
+  void SimulateAdvertisementStarted();
+  void SimulateAdvertisementStopped();
+  void SimulateAdvertisementError(BluetoothAdvertisement::ErrorCode error_code);
+
  private:
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                             IBluetoothLEAdvertisement>
+      advertisement_;
+
+  ABI::Windows::Devices::Bluetooth::Advertisement::
+      BluetoothLEAdvertisementPublisherStatus status_ =
+          ABI::Windows::Devices::Bluetooth::Advertisement::
+              BluetoothLEAdvertisementPublisherStatus_Created;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementPublisher*,
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementPublisherStatusChangedEventArgs*>>
+      handler_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementPublisherWinrt);
 };
 
