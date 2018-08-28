@@ -1,6 +1,30 @@
 Contributing to Weston
 =======================
 
+Finding something to work on
+----------------------------
+
+Weston's development is [tracked on GitLab](https://gitlab.freedesktop.org/wayland/weston).
+In addition to reviewing code submissions (see below), we use the issue tracker
+to discuss both bugfixes and development of new features.
+
+The '[good for new contributors](https://gitlab.freedesktop.org/wayland/weston/issues?label_name%5B%5D=Good+for+new+contributors)'
+label is used for issues the development team thinks are a good place to begin
+working on Weston. These issues cover features or bugfixes which are small,
+self-contained, don't require much specific background knowledge, and aren't
+blocked by more complex work.
+
+If you have picked an issue you would like to work on, you may want to mention
+in the issue tracker that you would like to pick it up. You can also discuss
+it with the developers in the issue tracker, or on the
+[mailing list](https://lists.freedesktop.org/mailman/listinfo/wayland-devel).
+Many developers also use IRC through [Freenode](https://freenode.net)'s
+`#wayland` channel; however you may need to wait some time for a response on
+IRC, which requires keeping your client connected. If you cannot stay for a
+long time (potentially some hours due to timezone differences), then you
+may want to send your question to the list or issue tracker instead.
+
+
 Sending patches
 ---------------
 
