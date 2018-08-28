@@ -74,10 +74,6 @@ crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 # https://crbug.com/819800: Feature policy propagation trouble?  Test synchronization issue?
 crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
 
-# https://crbug.com/820617: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.
-crbug.com/820617 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Failure ]
-crbug.com/820617 external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
-
 # The tests below set document.domain.  Such tests are skipped, because they
 # cannot work when same-site WPT origins are isolated from each other via
 # --isolate-origins cmdline flag (which is how bots run the
