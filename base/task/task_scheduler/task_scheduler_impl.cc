@@ -269,6 +269,10 @@ void TaskSchedulerImpl::JoinForTesting() {
 #endif
 }
 
+void TaskSchedulerImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
+  task_tracker_->SetExecutionFenceEnabled(execution_fence_enabled);
+}
+
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) const {
   return environment_to_worker_pool_[GetEnvironmentIndexForTraits(traits)];

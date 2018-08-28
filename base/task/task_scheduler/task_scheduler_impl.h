@@ -71,6 +71,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   void FlushForTesting() override;
   void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
+  void SetExecutionFenceEnabled(bool execution_fence_enabled) override;
 
   // TaskExecutor:
   bool PostDelayedTaskWithTraits(const Location& from_here,

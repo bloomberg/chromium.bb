@@ -79,6 +79,21 @@ class BASE_EXPORT TaskScheduler : public TaskExecutor {
     SharedWorkerPoolEnvironment shared_worker_pool_environment;
   };
 
+  // A ScopedExecutionFence prevents any new task from being scheduled in
+  // TaskScheduler within its scope. Upon its destruction, all tasks that were
+  // preeempted are released. Note: the constructor of ScopedExecutionFence will
+  // not wait for currently running tasks (as they were posted before entering
+  // this scope and do not violate the contract; some of them could be
+  // CONTINUE_ON_SHUTDOWN and waiting for them to complete is ill-advised).
+  class BASE_EXPORT ScopedExecutionFence {
+   public:
+    ScopedExecutionFence();
+    ~ScopedExecutionFence();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedExecutionFence);
+  };
+
   // Destroying a TaskScheduler is not allowed in production; it is always
   // leaked. In tests, it should only be destroyed after JoinForTesting() has
   // returned.
@@ -201,6 +216,9 @@ class BASE_EXPORT TaskScheduler : public TaskExecutor {
   // TODO(fdoray): Remove this method. https://crbug.com/687264
   virtual int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const = 0;
+
+  // Enables/disables an execution fence that prevents tasks from running.
+  virtual void SetExecutionFenceEnabled(bool execution_fence_enabled) = 0;
 };
 
 }  // namespace base
