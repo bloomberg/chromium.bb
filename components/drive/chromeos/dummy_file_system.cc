@@ -7,10 +7,10 @@
 namespace drive {
 
 base::Closure DummyFileSystem::GetFileContent(
-      const base::FilePath& file_path,
-      const GetFileContentInitializedCallback& initialized_callback,
-      const google_apis::GetContentCallback& get_content_callback,
-      const FileOperationCallback& completion_callback) {
+    const base::FilePath& file_path,
+    GetFileContentInitializedCallback initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback) {
   return base::DoNothing();
 }
 

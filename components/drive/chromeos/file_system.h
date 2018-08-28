@@ -135,7 +135,7 @@ class FileSystem : public FileSystemInterface,
                         GetFileCallback callback) override;
   base::Closure GetFileContent(
       const base::FilePath& file_path,
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) override;
   void GetResourceEntry(const base::FilePath& file_path,

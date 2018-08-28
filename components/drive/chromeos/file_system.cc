@@ -615,7 +615,7 @@ void FileSystem::GetFileForSaving(const base::FilePath& file_path,
 
 base::Closure FileSystem::GetFileContent(
     const base::FilePath& file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -624,9 +624,7 @@ base::Closure FileSystem::GetFileContent(
   DCHECK(completion_callback);
 
   return download_operation_->EnsureFileDownloadedByPath(
-      file_path,
-      ClientContext(USER_INITIATED),
-      initialized_callback,
+      file_path, ClientContext(USER_INITIATED), std::move(initialized_callback),
       get_content_callback,
       base::Bind(&GetFileCallbackToFileOperationCallbackAdapter,
                  completion_callback));

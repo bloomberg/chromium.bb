@@ -138,7 +138,7 @@ void FakeFileSystem::IsCacheFileMarkedAsMounted(
 
 base::Closure FakeFileSystem::GetFileContent(
     const base::FilePath& file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -147,8 +147,8 @@ base::Closure FakeFileSystem::GetFileContent(
       file_path,
       base::Bind(&FakeFileSystem::GetFileContentAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 initialized_callback, get_content_callback,
-                 completion_callback));
+                 base::Passed(std::move(initialized_callback)),
+                 get_content_callback, completion_callback));
   return base::DoNothing();
 }
 
@@ -269,7 +269,7 @@ void FakeFileSystem::CalculateEvictableCacheSize(
 
 // Implementation of GetFileContent.
 void FakeFileSystem::GetFileContentAfterGetResourceEntry(
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     FileError error,
@@ -291,16 +291,14 @@ void FakeFileSystem::GetFileContentAfterGetResourceEntry(
   // Fetch google_apis::FileResource for its |download_url|.
   drive_service_->GetFileResource(
       entry->resource_id(),
-      base::Bind(
-          &FakeFileSystem::GetFileContentAfterGetFileResource,
-          weak_ptr_factory_.GetWeakPtr(),
-          initialized_callback,
-          get_content_callback,
-          completion_callback));
+      base::Bind(&FakeFileSystem::GetFileContentAfterGetFileResource,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(initialized_callback)),
+                 get_content_callback, completion_callback));
 }
 
 void FakeFileSystem::GetFileContentAfterGetFileResource(
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     google_apis::DriveApiErrorCode gdata_error,
@@ -330,12 +328,14 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
   }
   if (base::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(FILE_ERROR_OK, cache_path, std::move(entry));
+    std::move(initialized_callback)
+        .Run(FILE_ERROR_OK, cache_path, std::move(entry));
     completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  initialized_callback.Run(FILE_ERROR_OK, base::FilePath(), std::move(entry));
+  std::move(initialized_callback)
+      .Run(FILE_ERROR_OK, base::FilePath(), std::move(entry));
   drive_service_->DownloadFile(
       cache_path,
       gdata_entry->file_id(),

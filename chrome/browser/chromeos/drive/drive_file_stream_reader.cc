@@ -291,7 +291,7 @@ namespace {
 base::Closure GetFileContentOnUIThread(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -302,30 +302,26 @@ base::Closure GetFileContentOnUIThread(
     return base::Closure();
   }
 
-  return google_apis::CreateRelayCallback(
-      file_system->GetFileContent(drive_file_path,
-                                  initialized_callback,
-                                  get_content_callback,
-                                  completion_callback));
+  return google_apis::CreateRelayCallback(file_system->GetFileContent(
+      drive_file_path, std::move(initialized_callback), get_content_callback,
+      completion_callback));
 }
 
 // Helper to run FileSystemInterface::GetFileContent on UI thread.
 void GetFileContent(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
+    GetFileContentInitializedCallback initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     const base::Callback<void(const base::Closure&)>& reply_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetFileContentOnUIThread,
-                 file_system_getter,
-                 drive_file_path,
-                 google_apis::CreateRelayCallback(initialized_callback),
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetFileContentOnUIThread, file_system_getter, drive_file_path,
+                 base::Passed(google_apis::CreateRelayCallback(
+                     std::move(initialized_callback))),
                  google_apis::CreateRelayCallback(get_content_callback),
                  google_apis::CreateRelayCallback(completion_callback)),
       reply_callback);

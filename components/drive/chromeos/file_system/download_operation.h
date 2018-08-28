@@ -67,7 +67,7 @@ class DownloadOperation {
   base::Closure EnsureFileDownloadedByLocalId(
       const std::string& local_id,
       const ClientContext& context,
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       GetFileCallback completion_callback);
 
@@ -76,7 +76,7 @@ class DownloadOperation {
   base::Closure EnsureFileDownloadedByPath(
       const base::FilePath& file_path,
       const ClientContext& context,
-      const GetFileContentInitializedCallback& initialized_callback,
+      GetFileContentInitializedCallback initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       GetFileCallback completion_callback);
 
