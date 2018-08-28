@@ -19,7 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -299,7 +299,7 @@ IndexedRulesetVersion RulesetService::GetMostRecentlyIndexedVersion() const {
 IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::File unindexed_ruleset_file(
       unindexed_ruleset_info.ruleset_path,
