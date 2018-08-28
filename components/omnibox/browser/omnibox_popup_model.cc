@@ -323,7 +323,7 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
 
 bool OmniboxPopupModel::SelectedLineHasTabMatch() {
   return selected_line_ != kNoMatch &&
-         result().match_at(selected_line_).has_tab_match;
+         result().match_at(selected_line_).ShouldShowTabMatch();
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
