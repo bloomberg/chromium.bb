@@ -67,7 +67,8 @@ const char kInspectUiNameField[] = "name";
 const char kInspectUiUrlField[] = "url";
 const char kInspectUiIsAdditionalField[] = "isAdditional";
 
-void GetUiDevToolsTargets(base::ListValue& targets) {
+base::ListValue GetUiDevToolsTargets() {
+  base::ListValue targets;
   for (const auto& client_pair :
        ui_devtools::UiDevToolsServer::GetClientNamesAndUrls()) {
     auto target_data = std::make_unique<base::DictionaryValue>();
@@ -76,6 +77,7 @@ void GetUiDevToolsTargets(base::ListValue& targets) {
     target_data->SetBoolean(kInspectUiIsAdditionalField, true);
     targets.Append(std::move(target_data));
   }
+  return targets;
 }
 
 // InspectMessageHandler --------------------------------------------
@@ -105,7 +107,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleTCPDiscoveryConfigCommand(const base::ListValue* args);
   void HandleOpenNodeFrontendCommand(const base::ListValue* args);
 
-  InspectUI* inspect_ui_;
+  InspectUI* const inspect_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectMessageHandler);
 };
@@ -383,8 +385,7 @@ void InspectUI::Inspect(const std::string& source_id,
                         const std::string& target_id) {
   scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
-    Profile* profile = Profile::FromBrowserContext(
-        web_ui()->GetWebContents()->GetBrowserContext());
+    Profile* profile = Profile::FromWebUI(web_ui());
     DevToolsWindow::OpenDevToolsWindow(target, profile);
   }
 }
@@ -393,8 +394,7 @@ void InspectUI::InspectFallback(const std::string& source_id,
                                 const std::string& target_id) {
   scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
-    Profile* profile = Profile::FromBrowserContext(
-        web_ui()->GetWebContents()->GetBrowserContext());
+    Profile* profile = Profile::FromWebUI(web_ui());
     DevToolsWindow::OpenDevToolsWindowWithBundledFrontend(target, profile);
   }
 }
@@ -490,8 +490,7 @@ void InspectUI::StartListeningNotifications() {
   DevToolsTargetsUIHandler::Callback callback =
       base::Bind(&InspectUI::PopulateTargets, base::Unretained(this));
 
-  base::ListValue additional_targets;
-  GetUiDevToolsTargets(additional_targets);
+  base::ListValue additional_targets = GetUiDevToolsTargets();
   PopulateAdditionalTargets(additional_targets);
 
   AddTargetUIHandler(

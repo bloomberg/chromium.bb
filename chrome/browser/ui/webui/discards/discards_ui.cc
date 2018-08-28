@@ -77,10 +77,7 @@ double GetSiteEngagementScore(content::WebContents* contents) {
 
   auto* engagement_svc = SiteEngagementService::Get(
       Profile::FromBrowserContext(contents->GetBrowserContext()));
-  double engagement =
-      engagement_svc->GetDetails(nav_entry->GetURL()).total_score;
-
-  return engagement;
+  return engagement_svc->GetDetails(nav_entry->GetURL()).total_score;
 }
 
 class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
