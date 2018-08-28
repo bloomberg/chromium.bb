@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -118,10 +119,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
     self.collectionViewAccessibilityIdentifier = kPrivacyCollectionViewId;
-    _suggestionsEnabled = [[PrefBackedBoolean alloc]
-        initWithPrefService:_browserState->GetPrefs()
-                   prefName:prefs::kSearchSuggestEnabled];
-    [_suggestionsEnabled setObserver:self];
+    if (!IsUnifiedConsentEnabled()) {
+      // When unified consent flag is enabled, the suggestion setting is
+      // available in the "Google Services and sync" settings.
+      _suggestionsEnabled = [[PrefBackedBoolean alloc]
+          initWithPrefService:_browserState->GetPrefs()
+                     prefName:prefs::kSearchSuggestEnabled];
+      [_suggestionsEnabled setObserver:self];
+    }
 
     PrefService* prefService = _browserState->GetPrefs();
 
@@ -166,31 +171,37 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierOtherDevices];
 
-  // Web Services Section
-  [model addSectionWithIdentifier:SectionIdentifierWebServices];
-  SettingsTextItem* webServicesHeader =
-      [[SettingsTextItem alloc] initWithType:ItemTypeWebServicesHeader];
-  webServicesHeader.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL);
-  webServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
-  [model setHeader:webServicesHeader
-      forSectionWithIdentifier:SectionIdentifierWebServices];
-  _showSuggestionsItem = [self showSuggestionsSwitchItem];
-  [model addItem:_showSuggestionsItem
-      toSectionWithIdentifier:SectionIdentifierWebServices];
-
-  [model addItem:[self sendUsageDetailItem]
-      toSectionWithIdentifier:SectionIdentifierWebServices];
-
+  if (!IsUnifiedConsentEnabled() || web::IsDoNotTrackSupported()) {
+    // Add "Web services" section only if "Do not track" feature, metrics
+    // reporting feature and show suggestions feature are available.
+    // Web Services Section
+    [model addSectionWithIdentifier:SectionIdentifierWebServices];
+    SettingsTextItem* webServicesHeader =
+        [[SettingsTextItem alloc] initWithType:ItemTypeWebServicesHeader];
+    webServicesHeader.text =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL);
+    webServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:webServicesHeader
+        forSectionWithIdentifier:SectionIdentifierWebServices];
+    // Footer Section
+    [model addSectionWithIdentifier:SectionIdentifierWebServicesFooter];
+    [model addItem:[self showSuggestionsFooterItem]
+        toSectionWithIdentifier:SectionIdentifierWebServicesFooter];
+  }
+  if (!IsUnifiedConsentEnabled()) {
+    // When unified consent flag is enabled, the show suggestions feature and
+    // metrics reporting feature are available in the "Google Services and sync"
+    // settings.
+    _showSuggestionsItem = [self showSuggestionsSwitchItem];
+    [model addItem:_showSuggestionsItem
+        toSectionWithIdentifier:SectionIdentifierWebServices];
+    [model addItem:[self sendUsageDetailItem]
+        toSectionWithIdentifier:SectionIdentifierWebServices];
+  }
   if (web::IsDoNotTrackSupported()) {
     [model addItem:[self doNotTrackDetailItem]
         toSectionWithIdentifier:SectionIdentifierWebServices];
   }
-
-  // Footer Section
-  [model addSectionWithIdentifier:SectionIdentifierWebServicesFooter];
-  [model addItem:[self showSuggestionsFooterItem]
-      toSectionWithIdentifier:SectionIdentifierWebServicesFooter];
 
   // CanMakePayment Section
   [model addSectionWithIdentifier:SectionIdentifierCanMakePayment];

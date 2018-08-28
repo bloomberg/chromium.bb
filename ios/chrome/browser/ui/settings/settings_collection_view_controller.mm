@@ -454,8 +454,12 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
-  [model addItem:[self bandwidthManagementDetailItem]
-      toSectionWithIdentifier:SectionIdentifierAdvanced];
+  if (!IsUnifiedConsentEnabled()) {
+    // When unified consent flag is enabled, the bandwidth settings is available
+    // under the Google services and sync settings.
+    [model addItem:[self bandwidthManagementDetailItem]
+        toSectionWithIdentifier:SectionIdentifierAdvanced];
+  }
 
   // Info Section
   [model addSectionWithIdentifier:SectionIdentifierInfo];
