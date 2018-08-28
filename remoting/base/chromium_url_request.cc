@@ -8,42 +8,45 @@
 
 #include "base/callback_helpers.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace remoting {
 
 ChromiumUrlRequest::ChromiumUrlRequest(
-    scoped_refptr<net::URLRequestContextGetter> url_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     UrlRequest::Type type,
     const std::string& url,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  net::URLFetcher::RequestType request_type = net::URLFetcher::GET;
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : traffic_annotation_(traffic_annotation) {
+  url_loader_factory_ = url_loader_factory;
+
+  std::string request_type = "GET";
   switch (type) {
     case Type::GET:
-      request_type = net::URLFetcher::GET;
       break;
     case Type::POST:
-      request_type = net::URLFetcher::POST;
+      request_type = "POST";
       break;
   }
-  url_fetcher_ = net::URLFetcher::Create(GURL(url), request_type, this,
-                                         traffic_annotation);
-  url_fetcher_->SetRequestContext(url_context.get());
-  url_fetcher_->SetReferrer("https://chrome.google.com/remotedesktop");
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES);
+  resource_request_ = std::make_unique<network::ResourceRequest>();
+  resource_request_->url = GURL(url);
+  resource_request_->method = request_type;
+  resource_request_->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->referrer = GURL("https://chrome.google.com/remotedesktop");
 }
 
 ChromiumUrlRequest::~ChromiumUrlRequest() = default;
 
 void ChromiumUrlRequest::AddHeader(const std::string& value) {
-  url_fetcher_->AddExtraRequestHeader(value);
+  resource_request_->headers.AddHeaderFromString(value);
 }
 
 void ChromiumUrlRequest::SetPostData(const std::string& content_type,
                                      const std::string& data) {
-  url_fetcher_->SetUploadData(content_type, data);
+  post_data_content_type_ = content_type;
+  post_data_ = data;
 }
 
 void ChromiumUrlRequest::Start(const OnResultCallback& on_result_callback) {
@@ -51,19 +54,31 @@ void ChromiumUrlRequest::Start(const OnResultCallback& on_result_callback) {
   DCHECK(on_result_callback_.is_null());
 
   on_result_callback_ = on_result_callback;
-  url_fetcher_->Start();
+
+  std::string method = resource_request_->method;
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request_),
+                                                 traffic_annotation_);
+  if (method == "POST")
+    url_loader_->AttachStringForUpload(post_data_, post_data_content_type_);
+
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&ChromiumUrlRequest::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
-void ChromiumUrlRequest::OnURLFetchComplete(
-    const net::URLFetcher* url_fetcher) {
-  DCHECK_EQ(url_fetcher, url_fetcher_.get());
-
+void ChromiumUrlRequest::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   Result result;
-  result.success =
-      url_fetcher_->GetResponseCode() != net::URLFetcher::RESPONSE_CODE_INVALID;
+  result.success = !!response_body;
   if (result.success) {
-    result.status = url_fetcher_->GetResponseCode();
-    url_fetcher_->GetResponseAsString(&result.response_body);
+    result.status = -1;
+    result.response_body = std::move(*response_body);
+  }
+
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    result.status = url_loader_->ResponseInfo()->headers->response_code();
   }
 
   DCHECK(!on_result_callback_.is_null());
@@ -71,15 +86,15 @@ void ChromiumUrlRequest::OnURLFetchComplete(
 }
 
 ChromiumUrlRequestFactory::ChromiumUrlRequestFactory(
-    scoped_refptr<net::URLRequestContextGetter> url_context)
-    : url_context_(url_context) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory) {}
 ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() = default;
 
 std::unique_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  return std::make_unique<ChromiumUrlRequest>(url_context_, type, url,
+  return std::make_unique<ChromiumUrlRequest>(url_loader_factory_, type, url,
                                               traffic_annotation);
 }
 

@@ -103,15 +103,15 @@ void HttpIceConfigRequest::SendRequest() {
 void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
   DCHECK(!on_ice_config_callback_.is_null());
 
-  if (!result.success) {
-    LOG(ERROR) << "Failed to fetch " << url_;
+  if (result.status != -1 && result.status != 200) {
+    LOG(ERROR) << "Received status code " << result.status << " from " << url_
+               << ": " << result.response_body;
     base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
     return;
   }
 
-  if (result.status != 200) {
-    LOG(ERROR) << "Received status code " << result.status << " from " << url_
-               << ": " << result.response_body;
+  if (!result.success) {
+    LOG(ERROR) << "Failed to fetch " << url_;
     base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
     return;
   }

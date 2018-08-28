@@ -40,6 +40,7 @@
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/server_log_entry.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
 
@@ -170,7 +171,7 @@ void It2MeHost::ConnectOnNetworkThread(const std::string& username,
           signal_strategy_.get(),
           base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
           base::WrapUnique(new ChromiumUrlRequestFactory(
-              host_context_->url_request_context_getter())),
+              host_context_->url_loader_factory())),
           network_settings, protocol::TransportRole::SERVER);
   transport_context->set_turn_ice_config(ice_config);
 

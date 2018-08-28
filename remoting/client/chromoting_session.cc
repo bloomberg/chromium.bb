@@ -36,6 +36,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/signaling/server_log_entry.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace remoting {
@@ -501,7 +502,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
           signaling_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
-              runtime_->url_requester()),
+              runtime_->url_loader_factory()),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);

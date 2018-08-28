@@ -86,7 +86,7 @@ void ChromotingClientRuntime::Init(
   delegate_ = delegate;
   log_writer_ = std::make_unique<TelemetryLogWriter>(
       kTelemetryBaseUrl,
-      std::make_unique<ChromiumUrlRequestFactory>(url_requester()),
+      std::make_unique<ChromiumUrlRequestFactory>(url_loader_factory()),
       CreateOAuthTokenGetter());
 }
 

@@ -6,8 +6,6 @@ static_library("client") {
   sources = [
     "chromoting_client.cc",
     "chromoting_client.h",
-    "chromoting_session.cc",
-    "chromoting_session.h",
     "client_context.cc",
     "client_context.h",
     "client_telemetry_logger.cc",
@@ -55,6 +53,8 @@ static_library("client") {
     sources += [
       "chromoting_client_runtime.cc",
       "chromoting_client_runtime.h",
+      "chromoting_session.cc",
+      "chromoting_session.h",
       "dual_buffer_frame_consumer.cc",
       "dual_buffer_frame_consumer.h",
       "oauth_token_getter_proxy.cc",
@@ -63,6 +63,7 @@ static_library("client") {
     deps += [
       "//remoting/client/input",
       "//remoting/client/ui",
+      "//services/network/public/mojom",
     ]
 
     if (!is_chromeos) {
@@ -73,9 +74,7 @@ static_library("client") {
         "gesture_interpreter.h",
       ]
 
-      deps += [
-        "//remoting/client/display",
-      ]
+      deps += [ "//remoting/client/display" ]
     }
   }
   if (is_android) {
