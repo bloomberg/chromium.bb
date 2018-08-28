@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -206,10 +207,8 @@ TEST_F(TaskSchedulerTests, GetTaskNameList) {
 
   std::vector<base::string16> task_names;
   EXPECT_TRUE(task_scheduler_->GetTaskNameList(&task_names));
-  EXPECT_NE(std::find(task_names.begin(), task_names.end(), kTaskName1),
-            task_names.end());
-  EXPECT_NE(std::find(task_names.begin(), task_names.end(), kTaskName2),
-            task_names.end());
+  EXPECT_TRUE(base::ContainsValue(task_names, kTaskName1));
+  EXPECT_TRUE(base::ContainsValue(task_names, kTaskName2));
 
   EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
   EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName2));
@@ -229,8 +228,7 @@ TEST_F(TaskSchedulerTests, GetTasksIncludesHidden) {
 
   std::vector<base::string16> task_names;
   EXPECT_TRUE(task_scheduler_->GetTaskNameList(&task_names));
-  EXPECT_NE(std::find(task_names.begin(), task_names.end(), kTaskName1),
-            task_names.end());
+  EXPECT_TRUE(base::ContainsValue(task_names, kTaskName1));
 
   EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
 }
