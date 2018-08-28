@@ -12,9 +12,13 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -33,6 +37,8 @@ class BrowserThreadTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    BrowserThreadImpl::CreateTaskExecutor();
+
     ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
     ui_thread_->Start();
 
@@ -51,6 +57,7 @@ class BrowserThreadTest : public testing::Test {
 
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
+    BrowserThreadImpl::ResetTaskExecutorForTesting();
   }
 
   // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|
@@ -59,8 +66,9 @@ class BrowserThreadTest : public testing::Test {
     on_release_ = std::move(on_release);
   }
 
-  static void BasicFunction(base::OnceClosure continuation) {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  static void BasicFunction(base::OnceClosure continuation,
+                            BrowserThread::ID target) {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(target));
     std::move(continuation).Run();
   }
 
@@ -87,7 +95,7 @@ class BrowserThreadTest : public testing::Test {
   std::unique_ptr<BrowserProcessSubThread> ui_thread_;
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Must be set before Release() to verify the deletion is intentional. Will be
   // run from the next call to Release(). mutable so it can be consumed from
   // Release().
@@ -136,7 +144,17 @@ TEST_F(BrowserThreadTest, PostTask) {
   base::RunLoop run_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                     BrowserThread::IO));
+  run_loop.Run();
+}
+
+TEST_F(BrowserThreadTest, PostTaskWithTraits) {
+  base::RunLoop run_loop;
+  EXPECT_TRUE(base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO, NonNestable()},
+      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                     BrowserThread::IO)));
   run_loop.Run();
 }
 
@@ -161,15 +179,66 @@ TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   base::RunLoop run_loop;
   task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure()));
+      FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                                BrowserThread::IO));
   run_loop.Run();
 }
+
+TEST_F(BrowserThreadTest, PostTaskViaTaskRunnerWithTraits) {
+  scoped_refptr<base::TaskRunner> task_runner =
+      base::CreateTaskRunnerWithTraits({BrowserThread::IO});
+  base::RunLoop run_loop;
+  EXPECT_TRUE(task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                                BrowserThread::IO)));
+  run_loop.Run();
+}
+
+TEST_F(BrowserThreadTest, PostTaskViaSequencedTaskRunnerWithTraits) {
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::CreateSequencedTaskRunnerWithTraits({BrowserThread::IO});
+  base::RunLoop run_loop;
+  EXPECT_TRUE(task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                                BrowserThread::IO)));
+  run_loop.Run();
+}
+
+TEST_F(BrowserThreadTest, PostTaskViaSingleThreadTaskRunnerWithTraits) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+  base::RunLoop run_loop;
+  EXPECT_TRUE(task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                                BrowserThread::IO)));
+  run_loop.Run();
+}
+
+#if defined(OS_WIN)
+TEST_F(BrowserThreadTest, PostTaskViaCOMSTATaskRunnerWithTraits) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::CreateCOMSTATaskRunnerWithTraits({BrowserThread::UI});
+  base::RunLoop run_loop;
+  EXPECT_TRUE(task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
+                                BrowserThread::UI)));
+  run_loop.Run();
+}
+#endif  // defined(OS_WIN)
 
 TEST_F(BrowserThreadTest, ReleaseViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
 
+  base::RunLoop run_loop;
+  ExpectRelease(run_loop.QuitWhenIdleClosure());
+  task_runner->ReleaseSoon(FROM_HERE, this);
+  run_loop.Run();
+}
+
+TEST_F(BrowserThreadTest, ReleaseViaTaskRunnerWithTraits) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   base::RunLoop run_loop;
   ExpectRelease(run_loop.QuitWhenIdleClosure());
   task_runner->ReleaseSoon(FROM_HERE, this);
@@ -183,6 +252,16 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   ASSERT_TRUE(BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
                                               base::DoNothing(),
                                               run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
+}
+
+TEST_F(BrowserThreadTest, PostTaskAndReplyWithTraits) {
+  // Most of the heavy testing for PostTaskAndReply() is done inside the
+  // task runner test.  This just makes sure we get piped through at all.
+  base::RunLoop run_loop;
+  ASSERT_TRUE(base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
+                                               base::DoNothing(),
+                                               run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
 }
 

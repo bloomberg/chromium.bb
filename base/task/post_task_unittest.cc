@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -184,6 +185,11 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
     EXPECT_EQ(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
   }
+}
+
+TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
+  EXPECT_DCHECK_DEATH(
+      RegisterTaskExecutor(TestTaskTraitsExtension::kExtensionId, &executor_));
 }
 
 }  // namespace base

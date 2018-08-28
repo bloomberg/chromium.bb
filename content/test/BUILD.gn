@@ -725,6 +725,7 @@ test("content_browsertests") {
     "../browser/blob_storage/blob_url_browsertest.cc",
     "../browser/bookmarklet_browsertest.cc",
     "../browser/browser_side_navigation_browsertest.cc",
+    "../browser/browser_thread_browsertest.cc",
     "../browser/browsing_data/browsing_data_remover_impl_browsertest.cc",
     "../browser/browsing_data/clear_site_data_handler_browsertest.cc",
     "../browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc",
