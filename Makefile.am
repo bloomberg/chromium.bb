@@ -1619,7 +1619,7 @@ noinst_LTLIBRARIES +=				\
 surface_screenshot_la_LIBADD = libshared.la $(test_module_libadd)
 surface_screenshot_la_LDFLAGS = $(test_module_ldflags)
 surface_screenshot_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
-surface_screenshot_la_SOURCES = tests/surface-screenshot.c
+surface_screenshot_la_SOURCES = tests/surface-screenshot-test.c
 
 
 #
