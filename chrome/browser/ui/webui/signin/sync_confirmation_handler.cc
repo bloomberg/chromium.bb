@@ -96,6 +96,10 @@ void SyncConfirmationHandler::RegisterMessages() {
       "initializedWithSize",
       base::BindRepeating(&SyncConfirmationHandler::HandleInitializedWithSize,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "accountImageRequest",
+      base::BindRepeating(&SyncConfirmationHandler::HandleAccountImageRequest,
+                          base::Unretained(this)));
 }
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
@@ -113,6 +117,21 @@ void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
   did_user_explicitly_interact = true;
   CloseModalSigninWindow(LoginUIService::ABORT_SIGNIN);
+}
+
+void SyncConfirmationHandler::HandleAccountImageRequest(
+    const base::ListValue* args) {
+  std::string account_id = SigninManagerFactory::GetForProfile(profile_)
+                               ->GetAuthenticatedAccountId();
+  AccountInfo account_info =
+      AccountTrackerServiceFactory::GetForProfile(profile_)->GetAccountInfo(
+          account_id);
+
+  // Fire the "account-image-changed" listener from |SetUserImageURL()|.
+  // Note: If the account info is not available yet in the
+  // AccountTrackerService, i.e. account_info is empty, the listener will be
+  // fired again through |OnAccountUpdated()|.
+  SetUserImageURL(account_info.picture_url);
 }
 
 void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
@@ -181,6 +200,11 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   base::Value picture_url_value(picture_url_to_load);
   web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
                                          picture_url_value);
+
+  if (IsUnifiedConsentEnabled(profile_)) {
+    AllowJavascript();
+    FireWebUIListener("account-image-changed", picture_url_value);
+  }
 }
 
 void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {

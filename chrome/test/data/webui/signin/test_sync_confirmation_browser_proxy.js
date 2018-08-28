@@ -10,6 +10,7 @@ class TestSyncConfirmationBrowserProxy extends TestBrowserProxy {
       'undo',
       'goToSettings',
       'initializedWithSize',
+      'requestAccountImage',
     ]);
   }
 
@@ -31,5 +32,10 @@ class TestSyncConfirmationBrowserProxy extends TestBrowserProxy {
   /** @override */
   initializedWithSize(height) {
     this.methodCalled('initializedWithSize', height);
+  }
+
+  /** @override */
+  requestAccountImage() {
+    // Don't request image in the test browser proxy.
   }
 }
