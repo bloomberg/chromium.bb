@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/printing/common/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +19,7 @@
 namespace {
 
 printing::PrinterList EnumeratePrintersAsync() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 
@@ -30,7 +30,7 @@ printing::PrinterList EnumeratePrintersAsync() {
 
 std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
     const std::string& device_name) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 
@@ -51,7 +51,7 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
 }
 
 std::string GetDefaultPrinterAsync() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 
