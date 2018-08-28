@@ -43,9 +43,14 @@ class PendingAppManager {
   };
 
   struct AppInfo {
-    AppInfo(GURL url,
-            LaunchContainer launch_container,
-            bool create_shortcuts = true);
+    static AppInfo Create(GURL url,
+                          LaunchContainer launch_container,
+                          bool create_shortcuts = true);
+    static AppInfo CreateForDefaultApp(GURL url,
+                                       LaunchContainer launch_container,
+                                       bool create_shortcuts = true);
+
+    // Prefer static methods above.
     AppInfo(AppInfo&& other);
     ~AppInfo();
 
@@ -56,6 +61,13 @@ class PendingAppManager {
     const GURL url;
     const LaunchContainer launch_container;
     const bool create_shortcuts;
+    const bool is_default_app;
+
+   private:
+    AppInfo(GURL url,
+            LaunchContainer launch_container,
+            bool create_shortcuts,
+            bool is_default_app);
 
     DISALLOW_COPY_AND_ASSIGN(AppInfo);
   };

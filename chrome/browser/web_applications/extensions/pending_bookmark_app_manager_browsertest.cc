@@ -27,13 +27,9 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   ASSERT_TRUE(embedded_test_server()->Start());
   base::RunLoop run_loop;
   std::string app_id;
-  web_app::PendingAppManager::AppInfo app_info(
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html"),
-      web_app::PendingAppManager::LaunchContainer::kWindow);
-
   web_app::WebAppProvider::Get(browser()->profile())
       ->pending_app_manager()
-      .Install(web_app::PendingAppManager::AppInfo(
+      .Install(web_app::PendingAppManager::AppInfo::Create(
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
                    web_app::PendingAppManager::LaunchContainer::kWindow,
