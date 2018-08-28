@@ -20,7 +20,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
@@ -514,7 +514,7 @@ bool UpgradeOldDBVersions16To18(leveldb::DB* resource_map) {
 ResourceMetadataStorage::Iterator::Iterator(
     std::unique_ptr<leveldb::Iterator> it)
     : it_(std::move(it)) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(it_);
 
   // Skip the header entry.
@@ -526,11 +526,11 @@ ResourceMetadataStorage::Iterator::Iterator(
 }
 
 ResourceMetadataStorage::Iterator::~Iterator() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 }
 
 bool ResourceMetadataStorage::Iterator::IsAtEnd() const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   return !it_->Valid();
 }
 
@@ -539,13 +539,13 @@ std::string ResourceMetadataStorage::Iterator::GetID() const {
 }
 
 const ResourceEntry& ResourceMetadataStorage::Iterator::GetValue() const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!IsAtEnd());
   return entry_;
 }
 
 void ResourceMetadataStorage::Iterator::Advance() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!IsAtEnd());
 
   for (it_->Next() ; it_->Valid(); it_->Next()) {
@@ -558,14 +558,14 @@ void ResourceMetadataStorage::Iterator::Advance() {
 }
 
 bool ResourceMetadataStorage::Iterator::HasError() const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   return !it_->status().ok();
 }
 
 // static
 bool ResourceMetadataStorage::UpgradeOldDB(
     const base::FilePath& directory_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   const base::FilePath resource_map_path =
       directory_path.Append(kResourceMapDBName);
@@ -658,7 +658,7 @@ ResourceMetadataStorage::ResourceMetadataStorage(
 }
 
 bool ResourceMetadataStorage::Initialize() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   resource_map_.reset();
 
@@ -826,7 +826,7 @@ void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(
 
 FileError ResourceMetadataStorage::SetLargestChangestamp(
     int64_t largest_changestamp) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
@@ -840,7 +840,7 @@ FileError ResourceMetadataStorage::SetLargestChangestamp(
 
 FileError ResourceMetadataStorage::GetLargestChangestamp(
     int64_t* largest_changestamp) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
   if (error != FILE_ERROR_OK) {
@@ -853,7 +853,7 @@ FileError ResourceMetadataStorage::GetLargestChangestamp(
 
 FileError ResourceMetadataStorage::GetStartPageToken(
     std::string* start_page_token) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
   if (error != FILE_ERROR_OK) {
@@ -866,7 +866,7 @@ FileError ResourceMetadataStorage::GetStartPageToken(
 
 FileError ResourceMetadataStorage::SetStartPageToken(
     const std::string& start_page_token) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
@@ -879,7 +879,7 @@ FileError ResourceMetadataStorage::SetStartPageToken(
 }
 
 FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   const std::string& id = entry.local_id();
   DCHECK(!id.empty());
@@ -932,7 +932,7 @@ FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
 
 FileError ResourceMetadataStorage::GetEntry(const std::string& id,
                                             ResourceEntry* out_entry) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!id.empty());
 
   std::string serialized_entry;
@@ -947,7 +947,7 @@ FileError ResourceMetadataStorage::GetEntry(const std::string& id,
 }
 
 FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!id.empty());
 
   ResourceEntry entry;
@@ -975,7 +975,7 @@ FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
 
 std::unique_ptr<ResourceMetadataStorage::Iterator>
 ResourceMetadataStorage::GetIterator() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<leveldb::Iterator> it(
       resource_map_->NewIterator(leveldb::ReadOptions()));
@@ -985,7 +985,7 @@ ResourceMetadataStorage::GetIterator() {
 FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,
                                             const std::string& child_name,
                                             std::string* child_id) const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!parent_id.empty());
   DCHECK(!child_name.empty());
 
@@ -1000,7 +1000,7 @@ FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,
 FileError ResourceMetadataStorage::GetChildren(
     const std::string& parent_id,
     std::vector<std::string>* children) const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!parent_id.empty());
 
   // Iterate over all entries with keys starting with |parent_id|.
@@ -1018,7 +1018,7 @@ FileError ResourceMetadataStorage::GetChildren(
 FileError ResourceMetadataStorage::GetIdByResourceId(
     const std::string& resource_id,
     std::string* out_id) const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!resource_id.empty());
 
   const leveldb::Status status = resource_map_->Get(
@@ -1034,7 +1034,7 @@ ResourceMetadataStorage::RecoveredCacheInfo::RecoveredCacheInfo()
 ResourceMetadataStorage::RecoveredCacheInfo::~RecoveredCacheInfo() = default;
 
 ResourceMetadataStorage::~ResourceMetadataStorage() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 }
 
 void ResourceMetadataStorage::DestroyOnBlockingPool() {
@@ -1057,7 +1057,7 @@ std::string ResourceMetadataStorage::GetChildEntryKey(
 
 FileError ResourceMetadataStorage::PutHeader(
     const ResourceMetadataHeader& header) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::string serialized_header;
   if (!header.SerializeToString(&serialized_header)) {
@@ -1074,7 +1074,7 @@ FileError ResourceMetadataStorage::PutHeader(
 
 FileError ResourceMetadataStorage::GetHeader(
     ResourceMetadataHeader* header) const {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::string serialized_header;
   const leveldb::Status status = resource_map_->Get(
@@ -1088,7 +1088,7 @@ FileError ResourceMetadataStorage::GetHeader(
 }
 
 bool ResourceMetadataStorage::CheckValidity() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Perform read with checksums verification enabled.
   leveldb::ReadOptions options;
