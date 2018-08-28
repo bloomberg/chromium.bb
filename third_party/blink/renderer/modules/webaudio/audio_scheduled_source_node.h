@@ -91,7 +91,9 @@ class AudioScheduledSourceHandler : public AudioHandler {
   // zeroing out portions of the outputBus which are outside the range of
   // startFrame and endFrame.
   //
-  // Each frame time is relative to the context's currentSampleFrame().
+  // Each frame time is relative to the context's currentSampleFrame().  Three
+  // values are returned, in this order:
+  //
   // quantumFrameOffset    : Offset frame in this time quantum to start
   //                         rendering.
   // nonSilentFramesToProcess : Number of frames rendering non-silence (will be
@@ -100,11 +102,12 @@ class AudioScheduledSourceHandler : public AudioHandler {
   //                    and the actual starting time of the source. This is
   //                    non-zero only when transitioning from the
   //                    SCHEDULED_STATE to the PLAYING_STATE.
-  void UpdateSchedulingInfo(size_t quantum_frame_size,
-                            AudioBus* output_bus,
-                            size_t& quantum_frame_offset,
-                            size_t& non_silent_frames_to_process,
-                            double& start_frame_offset);
+  //
+  // Callers should check nonSilentFramesToProcess to decide what to
+  // do.  If it is zero, the other return values are meaningless.
+  std::tuple<size_t, size_t, double> UpdateSchedulingInfo(
+      size_t quantum_frame_size,
+      AudioBus* output_bus);
 
   // Called when we have no more sound to play or the stop() time has been
   // reached. No onEnded event is called.

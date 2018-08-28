@@ -123,8 +123,9 @@ void AudioBufferSourceHandler::Process(size_t frames_to_process) {
     size_t buffer_frames_to_process;
     double start_time_offset;
 
-    UpdateSchedulingInfo(frames_to_process, output_bus, quantum_frame_offset,
-                         buffer_frames_to_process, start_time_offset);
+    std::tie(quantum_frame_offset, buffer_frames_to_process,
+             start_time_offset) =
+        UpdateSchedulingInfo(frames_to_process, output_bus);
 
     if (!buffer_frames_to_process) {
       output_bus->Zero();
