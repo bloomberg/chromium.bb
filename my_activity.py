@@ -375,13 +375,16 @@ class MyActivity(object):
     max_age = max_age.days * 24 * 3600 + max_age.seconds
     user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
     filters = ['-age:%ss' % max_age, user_filter]
+    # TODO(cjhopman): Should abandoned changes be filtered out when
+    # merged_only is not enabled?
+    if self.options.merged_only:
+      filters.append('status:merged')
 
     issues = self.gerrit_changes_over_rest(instance, filters)
     self.show_progress()
     issues = [self.process_gerrit_issue(instance, issue)
               for issue in issues]
 
-    # TODO(cjhopman): should we filter abandoned changes?
     issues = filter(self.filter_issue, issues)
     issues = sorted(issues, key=lambda i: i['modified'], reverse=True)
 
@@ -955,6 +958,12 @@ def main():
       const=logging.ERROR,
       help='Suppress non-error messages.'
   )
+  parser.add_option(
+      '-M', '--merged-only',
+      action='store_true',
+      dest='merged_only',
+      default=False,
+      help='Shows only changes that have been merged.')
   parser.add_option(
       '-o', '--output', metavar='<file>',
       help='Where to output the results. By default prints to stdout.')
