@@ -40,6 +40,9 @@ initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
 // Stops updating |state|.
 - (void)stopUpdating;
 
+// Forces an update of |state|.
+- (void)updateState;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_UI_UPDATER_H_
