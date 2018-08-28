@@ -239,6 +239,13 @@ void OmniboxViewViews::InstallPlaceholderText() {
   }
 }
 
+bool OmniboxViewViews::SelectionAtEnd() {
+  size_t start, end;
+  GetSelectionBounds(&start, &end);
+  end = std::max(start, end);
+  return end == text().size();
+}
+
 void OmniboxViewViews::EmphasizeURLComponents() {
   if (!location_bar_view_)
     return;
@@ -1286,6 +1293,42 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         return false;
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
+
+    case ui::VKEY_RIGHT:
+      if (!(control || alt || shift)) {
+        if (SelectionAtEnd() &&
+            // Can be null in tests.
+            model()->popup_model() &&
+            model()->popup_model()->SelectedLineHasTabMatch()) {
+          if (model()->popup_model()->selected_line_state() ==
+              OmniboxPopupModel::NORMAL) {
+            model()->popup_model()->SetSelectedLineState(
+                OmniboxPopupModel::TAB_SWITCH);
+            popup_view_->ProvideButtonFocusHint(
+                model()->popup_model()->selected_line());
+          }
+          return true;
+        }
+      }
+      break;
+
+    case ui::VKEY_LEFT:
+      if (!(control || alt || shift)) {
+        size_t start, end;
+        GetSelectionBounds(&start, &end);
+        end = std::max(start, end);
+        if (end == text().size() &&
+            // Can be nil in tests.
+            model()->popup_model() &&
+            model()->popup_model()->SelectedLineHasTabMatch() &&
+            model()->popup_model()->selected_line_state() ==
+                OmniboxPopupModel::TAB_SWITCH) {
+          model()->popup_model()->SetSelectedLineState(
+              OmniboxPopupModel::NORMAL);
+          return true;
+        }
+      }
+      break;
 
     case ui::VKEY_V:
       if (control && !alt &&

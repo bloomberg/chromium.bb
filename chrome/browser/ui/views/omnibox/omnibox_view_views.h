@@ -90,6 +90,7 @@ class OmniboxViewViews : public OmniboxView,
   // provider. For example, if Google is the default search provider, this shows
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
+  bool SelectionAtEnd();
 
   // OmniboxView:
   void EmphasizeURLComponents() override;
