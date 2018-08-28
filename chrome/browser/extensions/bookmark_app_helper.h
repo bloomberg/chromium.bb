@@ -97,6 +97,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // If called, the installed extension will be considered default installed.
   void set_is_default_app() { is_default_app_ = true; }
 
+  bool is_default_app() { return is_default_app_; }
+
   // If called, desktop shortcuts will not be created.
   void set_skip_shortcut_creation() { create_shortcuts_ = false; }
 

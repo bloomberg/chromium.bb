@@ -34,7 +34,7 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp() {
   // TODO(crbug.com/874605): Consider retries and error handling here. This call
   // can easily fail.
   pending_app_manager_->Install(
-      web_app::PendingAppManager::AppInfo(
+      web_app::PendingAppManager::AppInfo::CreateForDefaultApp(
           chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
           web_app::PendingAppManager::LaunchContainer::kWindow),
       base::BindOnce(&AndroidSmsAppHelperDelegateImpl::OnAppInstalled,
