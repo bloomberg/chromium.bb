@@ -41,6 +41,8 @@ Disk::Disk(const DiskInfo& disk_info,
       on_removable_device_(disk_info.on_removable_device()),
       is_hidden_(disk_info.is_hidden()),
       is_auto_mountable_(disk_info.is_auto_mountable()),
+      // cros-disks only provides mount paths if the disk is actually mounted.
+      is_mounted_(!disk_info.mount_path().empty()),
       file_system_type_(disk_info.file_system_type()),
       base_mount_path_(base_mount_path) {}
 
@@ -183,6 +185,11 @@ Disk::Builder& Disk::Builder::SetBaseMountPath(
 
 std::unique_ptr<Disk> Disk::Builder::Build() {
   return std::move(disk_);
+}
+
+Disk::Builder& Disk::Builder::SetIsMounted(bool is_mounted) {
+  disk_->is_mounted_ = is_mounted;
+  return *this;
 }
 
 }  // namespace disks

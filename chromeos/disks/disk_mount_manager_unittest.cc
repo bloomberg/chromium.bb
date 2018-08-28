@@ -58,6 +58,7 @@ struct TestDiskInfo {
   uint64_t size_in_bytes;
   bool is_read_only;
   const char* file_system_type;
+  bool is_mounted;
 };
 
 // Holds information to create a DiskMOuntManager::MountPointInfo instance.
@@ -87,6 +88,7 @@ const TestDiskInfo kTestDisks[] = {
         1073741824,  // size in bytes
         false,       // is read only
         kFileSystemType1,
+        true,  // is_mounted
     },
     {
         kDevice2SourcePath,
@@ -105,6 +107,7 @@ const TestDiskInfo kTestDisks[] = {
         1073741824,  // size in bytes
         false,       // is read only
         kFileSystemType2,
+        false,  // is_mounted
     },
     {
         kReadOnlyDeviceSourcePath,
@@ -123,6 +126,7 @@ const TestDiskInfo kTestDisks[] = {
         1073741824,  // size in bytes
         true,        // is read only
         kFileSystemType2,
+        true,  // is_mounted
     },
 };
 
@@ -549,6 +553,7 @@ class DiskMountManagerTest : public testing::Test {
             .SetHasMedia(true)
             .SetOnRemovableDevice(true)
             .SetFileSystemType(disk.file_system_type)
+            .SetIsMounted(disk.is_mounted)
             .Build();
     EXPECT_TRUE(
         DiskMountManager::GetInstance()->AddDiskForTest(std::move(test_disk)));

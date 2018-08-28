@@ -38,6 +38,8 @@ class CHROMEOS_EXPORT Disk {
 
   // The path to the mount point of this device. Will be empty if not mounted.
   // (e.g. /media/removable/VOLUME)
+  // TODO(amistry): mount_path() being set DOES NOT means the disk is mounted.
+  // See crrev.com/f8692888d11a10b5b5f8ad6fbfdeae21aed8cbf6 for the reason.
   const std::string& mount_path() const { return mount_path_; }
 
   // The path of the device according to the udev system.
@@ -116,7 +118,9 @@ class CHROMEOS_EXPORT Disk {
 
   void clear_mount_path() { mount_path_.clear(); }
 
-  bool is_mounted() const { return !mount_path_.empty(); }
+  bool is_mounted() const { return is_mounted_; }
+
+  void set_mounted(bool mounted) { is_mounted_ = mounted; }
 
   const std::string& file_system_type() const { return file_system_type_; }
 
@@ -157,6 +161,7 @@ class CHROMEOS_EXPORT Disk {
   bool on_removable_device_ = false;
   bool is_hidden_ = false;
   bool is_auto_mountable_ = false;
+  bool is_mounted_ = false;
   std::string file_system_type_;
   std::string base_mount_path_;
 };
@@ -189,6 +194,7 @@ class CHROMEOS_EXPORT Disk::Builder {
   Builder& SetIsHidden(bool is_hidden);
   Builder& SetFileSystemType(const std::string& file_system_type);
   Builder& SetBaseMountPath(const std::string& base_mount_path);
+  Builder& SetIsMounted(bool is_mounted);
 
   std::unique_ptr<Disk> Build();
 
