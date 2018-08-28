@@ -1603,8 +1603,9 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     gl->Flush();
 
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
-        IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
+        gl, GL_TEXTURE_2D, texture_id, true, is_origin_top_left_,
+        IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
+        source_buffer);
   }
 
   // Note: This code path could work for all cases. The only reason there
@@ -5138,12 +5139,15 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     }
     NOTREACHED();
   } else {
+    bool flip_y = unpack_flip_y_;
+    if (is_origin_top_left_)
+      flip_y = !flip_y;
     WebGLRenderingContextBase* gl =
         ToWebGLRenderingContextBase(canvas->RenderingContext());
     ScopedTexture2DRestorer restorer(gl);
     if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
             ContextGL(), target, target_texture, unpack_premultiply_alpha_,
-            !unpack_flip_y_, IntPoint(xoffset, yoffset), source_sub_rectangle,
+            !flip_y, IntPoint(xoffset, yoffset), source_sub_rectangle,
             kBackBuffer)) {
       NOTREACHED();
     }
