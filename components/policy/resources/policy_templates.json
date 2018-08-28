@@ -673,6 +673,20 @@
       ],
     },
     {
+      'name': 'ChromeReportingExtension',
+      'type': 'group',
+      'caption': '''Chrome Reporting Extension''',
+      'desc': '''Configure Chrome Reporting Extension related policies.
+
+      These policies are only effective when the Chrome Reporting Extension and Cloud Management are enabled.''',
+      'policies': [
+        'ReportVersionData',
+        'ReportPolicyData',
+        'ReportMachineIDData',
+        'ReportUserIDData',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -12878,6 +12892,90 @@
       Each list item of the policy is an object with two members: "url" and "launch_container". "url" should be the URL of the web app to install and "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed. If "launch_container" is omitted, the app will launch in a window if Chrome considers it a Progressive Web App and in a tab otherwise.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
+    {
+      'id': 470,
+      'name': 'ReportVersionData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome.*:70-'],
+      'caption': '''Report OS and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Version Information''',
+      'example_value': False,
+      'default_for_enterprise_users': True,
+      'desc': '''This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> channel.
+
+      When this policy is left unset or set to True, version information is gathered.
+      When this policy is set to False, version information is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.'''
+    },
+    {
+      'id': 471,
+      'name': 'ReportPolicyData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome.*:70-'],
+      'caption': '''Report <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Policy Information''',
+      'example_value': False,
+      'default_for_enterprise_users': True,
+      'desc': '''This policy controls whether to report policy data and time of policy fetch.
+
+      When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
+      When this policy is set to False, policy data and time of policy fetch are not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.'''
+    },
+    {
+      'id': 472,
+      'name': 'ReportMachineIDData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome.*:70-'],
+      'caption': '''Report Machine Identification information''',
+      'example_value': False,
+      'default_for_enterprise_users': True,
+      'desc': '''This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
+
+      When this policy is left unset or set to True, information that can be used to identify machines is gathered.
+      When this policy is set to False, information that can be used to identify machines is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.'''
+    },
+    {
+      'id': 473,
+      'name': 'ReportUserIDData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome.*:70-'],
+      'caption': '''Report User Identification information''',
+      'example_value': False,
+      'default_for_enterprise_users': True,
+      'desc': '''This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile name, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile path and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> executable path.
+
+      When this policy is left unset or set to True, information that can be used to identify users is gathered.
+      When this policy is set to False, information that can be used to identify users is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.'''
+    },
   ],
 
   'messages': {
@@ -13019,5 +13117,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 469
+  'highest_id_currently_used': 473
 }

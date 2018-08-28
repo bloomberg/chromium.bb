@@ -14264,6 +14264,10 @@ Called by update_net_error_codes.py.-->
   <int value="467" label="NetBiosShareDiscoveryEnabled"/>
   <int value="468" label="WebAppInstallForceList"/>
   <int value="469" label="SmsMessagesAllowed"/>
+  <int value="470" label="ReportVersionData"/>
+  <int value="471" label="ReportPolicyData"/>
+  <int value="472" label="ReportMachineIDData"/>
+  <int value="473" label="ReportUserIDData"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

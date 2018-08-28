@@ -114,6 +114,10 @@
 #include "components/spellcheck/browser/pref_names.h"
 #endif
 
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -680,6 +684,21 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     metrics::prefs::kMetricsReportingEnabled,
     base::Value::Type::BOOLEAN },
 #endif
+
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+  { key::kReportVersionData,
+    extensions::enterprise_reporting::kReportVersionData,
+    base::Value::Type::BOOLEAN },
+  { key::kReportPolicyData,
+    extensions::enterprise_reporting::kReportPolicyData,
+    base::Value::Type::BOOLEAN },
+  { key::kReportMachineIDData,
+    extensions::enterprise_reporting::kReportMachineIDData,
+    base::Value::Type::BOOLEAN },
+  { key::kReportUserIDData,
+    extensions::enterprise_reporting::kReportUserIDData,
+    base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   { key::kBackgroundModeEnabled,

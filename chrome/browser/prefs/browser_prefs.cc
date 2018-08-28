@@ -152,6 +152,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
+#else
+#include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
 #endif
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -746,6 +748,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if !defined(OS_ANDROID)
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
+#endif
+
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::enterprise_reporting::RegisterProfilePrefs(registry);
 #endif
 
   RegisterProfilePrefsForMigration(registry);
