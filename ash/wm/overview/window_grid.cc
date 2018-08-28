@@ -737,6 +737,11 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
       // dragged window might have resized to a smaller size if the drag
       // happens on tab(s).
       const gfx::Rect old_bounds = dragged_window->bounds();
+      // We need to temporarily disable the dragged window's ability to merge
+      // into another window when changing the dragged window's bounds, so that
+      // the dragged window doesn't merge into another window because of its
+      // changed bounds.
+      dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
       TabletModeWindowState::UpdateWindowPosition(
           wm::GetWindowState(dragged_window));
       const gfx::Rect new_bounds = dragged_window->bounds();
@@ -750,6 +755,7 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
 
       window_selector_->AddItem(dragged_window, /*reposition=*/false,
                                 /*animate=*/false);
+      dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);
     }
     SelectedWindow()->set_selected(false);
     selection_widget_.reset();
