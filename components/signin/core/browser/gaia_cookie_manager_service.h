@@ -185,7 +185,7 @@ class GaiaCookieManagerService : public KeyedService,
                            SigninClient* signin_client);
   ~GaiaCookieManagerService() override;
 
-  void Init();
+  void InitCookieListener();
   void Shutdown() override;
 
   void AddAccountToCookie(const std::string& account_id,
@@ -274,6 +274,7 @@ class GaiaCookieManagerService : public KeyedService,
   // OnGaiaAccountsInCookieUpdated.
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       network::mojom::CookieChangeCause cause) override;
+  void OnCookieListenerConnectionError();
 
   // Overridden from UbertokenConsumer.
   void OnUbertokenSuccess(const std::string& token) override;

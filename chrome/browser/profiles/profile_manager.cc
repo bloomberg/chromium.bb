@@ -1335,7 +1335,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
       MaybeActivateDataReductionProxy(true);
 
-  GaiaCookieManagerServiceFactory::GetForProfile(profile)->Init();
+  GaiaCookieManagerServiceFactory::GetForProfile(profile)->InitCookieListener();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
           profile);

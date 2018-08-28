@@ -374,7 +374,8 @@ GaiaCookieManagerService::~GaiaCookieManagerService() {
   DCHECK(requests_.empty());
 }
 
-void GaiaCookieManagerService::Init() {
+void GaiaCookieManagerService::InitCookieListener() {
+  DCHECK(!cookie_listener_binding_);
   network::mojom::CookieManager* cookie_manager =
       signin_client_->GetCookieManager();
 
@@ -383,6 +384,10 @@ void GaiaCookieManagerService::Init() {
   if (cookie_manager) {
     network::mojom::CookieChangeListenerPtr listener_ptr;
     cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
+    cookie_listener_binding_.set_connection_error_handler(base::BindOnce(
+        &GaiaCookieManagerService::OnCookieListenerConnectionError,
+        base::Unretained(this)));
+
     cookie_manager->AddCookieChangeListener(
         GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
         std::move(listener_ptr));
@@ -655,6 +660,13 @@ void GaiaCookieManagerService::OnCookieChange(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
                    base::Unretained(this)));
   }
+}
+
+void GaiaCookieManagerService::OnCookieListenerConnectionError() {
+  // A connection error from the CookieManager likely means that the network
+  // service process has crashed. Try again to set up a listener.
+  cookie_listener_binding_.Close();
+  InitCookieListener();
 }
 
 void GaiaCookieManagerService::SignalComplete(
