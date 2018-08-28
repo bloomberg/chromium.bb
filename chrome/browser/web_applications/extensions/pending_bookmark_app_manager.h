@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
@@ -52,11 +53,13 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
                               TaskFactory task_factory);
-
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
  private:
   struct TaskAndCallback;
+
+  base::Optional<bool> IsExtensionPresentAndInstalled(
+      const std::string& extension_id);
 
   void MaybeStartNextInstallation();
 
@@ -77,6 +80,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
                    const base::string16& error_description) override;
 
   Profile* profile_;
+  web_app::ExtensionIdsMap extension_ids_map_;
 
   WebContentsFactory web_contents_factory_;
   TaskFactory task_factory_;

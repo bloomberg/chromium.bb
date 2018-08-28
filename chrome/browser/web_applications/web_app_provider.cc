@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
 namespace web_app {
@@ -38,6 +39,7 @@ WebAppProvider::~WebAppProvider() = default;
 // static
 void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  ExtensionIdsMap::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
 }
 
