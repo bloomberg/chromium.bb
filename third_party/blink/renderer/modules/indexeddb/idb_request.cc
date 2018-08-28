@@ -694,6 +694,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   if (transaction_ && ready_state_ == DONE)
     transaction_->UnregisterRequest(this);
 
+  event.SetTarget(this);
   DispatchEventResult dispatch_result =
       IDBEventDispatcher::Dispatch(event, targets);
 
