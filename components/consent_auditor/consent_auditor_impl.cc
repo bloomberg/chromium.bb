@@ -299,6 +299,24 @@ void ConsentAuditorImpl::RecordUnifiedConsent(
 void ConsentAuditorImpl::RecordAssistantActivityControlConsent(
     const std::string& account_id,
     const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {
+  // TODO(markusheintz): Turn this into a DCHECK once the fallback is not
+  // needed.
+  if (IsSeparateConsentTypeEnabled()) {
+    std::unique_ptr<sync_pb::UserConsentSpecifics> specifics =
+        std::make_unique<sync_pb::UserConsentSpecifics>();
+    specifics->set_account_id(account_id);
+    specifics->set_client_consent_time_usec(
+        clock_->Now().since_origin().InMicroseconds());
+    specifics->set_locale(app_locale_);
+    sync_pb::UserConsentTypes::AssistantActivityControlConsent*
+        assistant_consent =
+            specifics->mutable_assistant_activity_control_consent();
+    assistant_consent->CopyFrom(consent);
+
+    consent_sync_bridge_->RecordConsent(std::move(specifics));
+  } else {
+    // TODO(markusheintz): Implement the fallback.
+  }
 }
 
 void ConsentAuditorImpl::RecordLocalConsent(

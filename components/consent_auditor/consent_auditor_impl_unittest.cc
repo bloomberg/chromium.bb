@@ -23,6 +23,8 @@
 
 using ArcPlayTermsOfServiceConsent =
     sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+using AssistantActivityControlConsent =
+    sync_pb::UserConsentTypes::AssistantActivityControlConsent;
 using SyncConsent = sync_pb::UserConsentTypes::SyncConsent;
 using sync_pb::UserConsentSpecifics;
 using sync_pb::UserEventSpecifics;
@@ -497,6 +499,44 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   // there should be a delegate as well.
   EXPECT_EQ(expected_delegate_ptr.get(),
             consent_auditor()->GetControllerDelegate().get());
+}
+
+TEST_F(ConsentAuditorImplTest, RecordAssistantActivityControlConsent) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
+
+  auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
+  FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
+  base::SimpleTestClock test_clock;
+
+  SetConsentSyncBridge(std::move(wrapped_fake_bridge));
+  SetUserEventService(nullptr);
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  SetClock(&test_clock);
+  BuildConsentAuditorImpl();
+
+  AssistantActivityControlConsent assistant_consent;
+  assistant_consent.set_status(UserConsentTypes::GIVEN);
+
+  const char ui_audit_key[] = {0x67, 0x23, 0x78};
+  assistant_consent.set_ui_audit_key(std::string(ui_audit_key, 3));
+
+  consent_auditor()->RecordAssistantActivityControlConsent(kAccountId,
+                                                           assistant_consent);
+
+  std::vector<UserConsentSpecifics> consents =
+      fake_bridge->GetRecordedUserConsents();
+  ASSERT_EQ(1U, consents.size());
+  UserConsentSpecifics consent = consents[0];
+
+  EXPECT_EQ(kAccountId, consent.account_id());
+  EXPECT_EQ(kCurrentAppLocale, consent.locale());
+
+  EXPECT_EQ(true, consent.has_assistant_activity_control_consent());
+  EXPECT_EQ(UserConsentTypes::GIVEN,
+            consent.assistant_activity_control_consent().status());
+  EXPECT_EQ(std::string(ui_audit_key, 3),
+            consent.assistant_activity_control_consent().ui_audit_key());
 }
 
 }  // namespace consent_auditor
