@@ -54,6 +54,7 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
       kInsertFence,
       kRemoveFence,
       kCreateThread,
+      kCrossThreadPostDelayedTask
     };
 
     ActionForTest(uint64_t id, ActionType type, uint64_t start_time_ms);

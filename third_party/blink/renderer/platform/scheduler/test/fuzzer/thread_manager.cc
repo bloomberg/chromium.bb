@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/thread_pool_manager.h"
 
@@ -54,7 +55,8 @@ ThreadManager::ThreadManager(TimeTicks initial_time,
                                      test_task_runner_->GetMockTickClock());
 
   TaskQueue::Spec spec = TaskQueue::Spec("default_task_queue");
-  task_queues_.emplace_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
+  task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
+      manager_->CreateTaskQueue<TestTaskQueue>(spec)));
 }
 
 ThreadManager::~ThreadManager() = default;
@@ -116,6 +118,9 @@ void ThreadManager::RunAction(
     ExecuteRemoveFenceAction(action.action_id(), action.remove_fence());
   } else if (action.has_create_thread()) {
     ExecuteCreateThreadAction(action.action_id(), action.create_thread());
+  } else if (action.has_cross_thread_post()) {
+    ExecuteCrossThreadPostDelayedTaskAction(action.action_id(),
+                                            action.cross_thread_post());
   } else {
     ExecutePostDelayedTaskAction(action.action_id(),
                                  action.post_delayed_task());
@@ -145,8 +150,15 @@ void ThreadManager::ExecuteCreateTaskQueueAction(
                                   NowTicks());
 
   TaskQueue::Spec spec = TaskQueue::Spec("test_task_queue");
-  task_queues_.emplace_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
-  task_queues_.back().queue->SetQueuePriority(
+
+  TestTaskQueue* chosen_task_queue;
+  {
+    AutoLock lock(lock_);
+    task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
+        manager_->CreateTaskQueue<TestTaskQueue>(spec)));
+    chosen_task_queue = task_queues_.back()->queue.get();
+  }
+  chosen_task_queue->SetQueuePriority(
       ToTaskQueuePriority(action.initial_priority()));
 }
 
@@ -154,14 +166,36 @@ void ThreadManager::ExecutePostDelayedTaskAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::PostDelayedTaskAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kPostDelayedTask,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
-  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+  PostDelayedTask(action.task_queue_id(), action.delay_ms(), action.task());
+}
+
+void ThreadManager::ExecuteCrossThreadPostDelayedTaskAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::CrossThreadPostDelayedTaskAction&
+        action) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  processor_->LogActionForTesting(
+      &ordered_actions_, action_id,
+      ActionForTest::ActionType::kCrossThreadPostDelayedTask, NowTicks());
+
+  processor_->thread_pool_manager()
+      ->GetThreadManagerFor(action.thread_id())
+      ->PostDelayedTask(action.task_queue_id(), action.delay_ms(),
+                        action.task());
+}
+
+void ThreadManager::PostDelayedTask(
+    uint64_t task_queue_id,
+    uint32_t delay_ms,
+    const SequenceManagerTestDescription::Task& task) {
+  TestTaskQueue* chosen_task_queue =
+      GetTaskQueueFor(task_queue_id)->queue.get();
 
   std::unique_ptr<Task> pending_task = std::make_unique<Task>(this);
 
@@ -171,25 +205,26 @@ void ThreadManager::ExecutePostDelayedTaskAction(
   chosen_task_queue->PostDelayedTask(
       FROM_HERE,
       BindOnce(&Task::Execute, pending_task->weak_ptr_factory_.GetWeakPtr(),
-               action.task()),
-      TimeDelta::FromMilliseconds(action.delay_ms()));
+               task),
+      TimeDelta::FromMilliseconds(delay_ms));
 
-  pending_tasks_.push_back(std::move(pending_task));
+  {
+    AutoLock lock(lock_);
+    pending_tasks_.push_back(std::move(pending_task));
+  }
 }
 
 void ThreadManager::ExecuteSetQueuePriorityAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::SetQueuePriorityAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kSetQueuePriority,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
-  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
-
+  TestTaskQueue* chosen_task_queue =
+      GetTaskQueueFor(action.task_queue_id())->queue.get();
   chosen_task_queue->SetQueuePriority(ToTaskQueuePriority(action.priority()));
 }
 
@@ -197,57 +232,62 @@ void ThreadManager::ExecuteSetQueueEnabledAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::SetQueueEnabledAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kSetQueueEnabled,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
-  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+  TaskQueueWithVoters* chosen_task_queue =
+      GetTaskQueueFor(action.task_queue_id());
 
-  if (task_queues_[queue_index].voters.empty()) {
-    task_queues_[queue_index].voters.push_back(
-        chosen_task_queue->CreateQueueEnabledVoter());
+  if (chosen_task_queue->voters.empty()) {
+    chosen_task_queue->voters.push_back(
+        chosen_task_queue->queue.get()->CreateQueueEnabledVoter());
   }
 
-  size_t voter_index =
-      action.voter_id() % task_queues_[queue_index].voters.size();
-  task_queues_[queue_index].voters[voter_index]->SetQueueEnabled(
-      action.enabled());
+  size_t voter_index = action.voter_id() % chosen_task_queue->voters.size();
+  chosen_task_queue->voters[voter_index]->SetQueueEnabled(action.enabled());
 }
 
 void ThreadManager::ExecuteCreateQueueVoterAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::CreateQueueVoterAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kCreateQueueVoter,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
-  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
-
-  task_queues_[queue_index].voters.push_back(
-      chosen_task_queue->CreateQueueEnabledVoter());
+  TaskQueueWithVoters* chosen_task_queue =
+      GetTaskQueueFor(action.task_queue_id());
+  chosen_task_queue->voters.push_back(
+      chosen_task_queue->queue.get()->CreateQueueEnabledVoter());
 }
 
 void ThreadManager::ExecuteShutdownTaskQueueAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::ShutdownTaskQueueAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kShutdownTaskQueue,
                                   NowTicks());
 
-  // We always want to have a default task queue.
-  if (task_queues_.size() > 1) {
-    size_t queue_index = action.task_queue_id() % task_queues_.size();
-    task_queues_[queue_index].queue->ShutdownTaskQueue();
+  TestTaskQueue* chosen_task_queue = nullptr;
+  size_t queue_index;
+  {
+    AutoLock lock(lock_);
+
+    // We always want to have a default task queue.
+    if (task_queues_.size() > 1) {
+      queue_index = action.task_queue_id() % task_queues_.size();
+      chosen_task_queue = task_queues_[queue_index]->queue.get();
+    }
+  }
+
+  if (chosen_task_queue) {
+    chosen_task_queue->ShutdownTaskQueue();
+    AutoLock lock(lock_);
     task_queues_.erase(task_queues_.begin() + queue_index);
   }
 }
@@ -261,13 +301,14 @@ void ThreadManager::ExecuteCancelTaskAction(
                                   ActionForTest::ActionType::kCancelTask,
                                   NowTicks());
 
+  AutoLock lock(lock_);
   if (!pending_tasks_.empty()) {
     size_t task_index = action.task_id() % pending_tasks_.size();
     pending_tasks_[task_index]->weak_ptr_factory_.InvalidateWeakPtrs();
 
     // If it is already running, it is a parent task and will be deleted when
     // it is done.
-    if (!pending_tasks_[task_index]->is_running) {
+    if (!pending_tasks_[task_index]->is_running_) {
       pending_tasks_.erase(pending_tasks_.begin() + task_index);
     }
   }
@@ -277,20 +318,19 @@ void ThreadManager::ExecuteInsertFenceAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::InsertFenceAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kInsertFence,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  TestTaskQueue* chosen_task_queue =
+      GetTaskQueueFor(action.task_queue_id())->queue.get();
 
   if (action.position() ==
       SequenceManagerTestDescription::InsertFenceAction::NOW) {
-    task_queues_[queue_index].queue->InsertFence(
-        TaskQueue::InsertFencePosition::kNow);
+    chosen_task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   } else {
-    task_queues_[queue_index].queue->InsertFence(
+    chosen_task_queue->InsertFence(
         TaskQueue::InsertFencePosition::kBeginningOfTime);
   }
 }
@@ -299,14 +339,14 @@ void ThreadManager::ExecuteRemoveFenceAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::RemoveFenceAction& action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!task_queues_.empty());
 
   processor_->LogActionForTesting(&ordered_actions_, action_id,
                                   ActionForTest::ActionType::kRemoveFence,
                                   NowTicks());
 
-  size_t queue_index = action.task_queue_id() % task_queues_.size();
-  task_queues_[queue_index].queue->RemoveFence();
+  TestTaskQueue* chosen_task_queue =
+      GetTaskQueueFor(action.task_queue_id())->queue.get();
+  chosen_task_queue->RemoveFence();
 }
 
 void ThreadManager::ExecuteTask(
@@ -338,12 +378,19 @@ void ThreadManager::ExecuteTask(
 }
 
 void ThreadManager::DeleteTask(Task* task) {
+  AutoLock lock(lock_);
   size_t i = 0;
   while (i < pending_tasks_.size() && task != pending_tasks_[i].get()) {
     i++;
   }
   if (i < pending_tasks_.size())
     pending_tasks_.erase(pending_tasks_.begin() + i);
+}
+
+TaskQueueWithVoters* ThreadManager::GetTaskQueueFor(uint64_t task_queue_id) {
+  AutoLock lock(lock_);
+  DCHECK(!task_queues_.empty());
+  return task_queues_[task_queue_id % task_queues_.size()].get();
 }
 
 const std::vector<SequenceManagerFuzzerProcessor::TaskForTest>&
@@ -357,7 +404,7 @@ ThreadManager::ordered_actions() const {
 }
 
 ThreadManager::Task::Task(ThreadManager* thread_manager)
-    : is_running(false),
+    : is_running_(false),
       thread_manager_(thread_manager),
       weak_ptr_factory_(this) {
   DCHECK(thread_manager_);
@@ -366,7 +413,7 @@ ThreadManager::Task::Task(ThreadManager* thread_manager)
 void ThreadManager::Task::Execute(
     const SequenceManagerTestDescription::Task& task) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_manager_->thread_checker_);
-  is_running = true;
+  is_running_ = true;
   thread_manager_->ExecuteTask(task);
   thread_manager_->DeleteTask(this);
 }

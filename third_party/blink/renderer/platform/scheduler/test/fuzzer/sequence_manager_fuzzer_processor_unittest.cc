@@ -278,7 +278,7 @@ TEST(SequenceManagerFuzzerProcessorTest, SetQueueEnabled) {
 
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 
-  // All the tasks posted to the task queue w id 1 do not get executed since
+  // All the tasks posted to the task queue with id 1 do not get executed since
   // this task queue is disabled.
   EXPECT_THAT(executed_tasks, IsEmpty());
 }
@@ -522,7 +522,7 @@ TEST(SequenceManagerFuzzerProcessorTest, ShutdownTaskQueue) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Note that the task w id 4 isn't posted to the queue that was shutdown,
+  // Note that the task with id 4 isn't posted to the queue that was shutdown,
   // since that was posted to the first available queue (Check
   // sequence_manager_test_description.proto for more details).
   expected_tasks.emplace_back(4, 0, 0);
@@ -755,7 +755,7 @@ TEST(SequenceManagerFuzzerProcessorTest,
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task w id 2 is expected to run first and block the other task until it
+  // Task with id 2 is expected to run first and block the other task until it
   // done.
   expected_tasks.emplace_back(2, 0, 40);
   expected_tasks.emplace_back(1, 40, 60);
@@ -770,7 +770,7 @@ TEST(SequenceManagerFuzzerProcessorTest,
 }
 
 TEST(SequenceManagerFuzzerProcessorTest,
-     TaskDurationBlocksOtherNonNestableTaskWhenPostedFromTheWinTask) {
+     TaskDurationBlocksOtherNonNestableTaskWhenPostedFromWithinTask) {
   std::vector<TaskForTest> executed_tasks;
 
   // Posts an instant task of duration 40 ms that posts another non-nested
@@ -796,8 +796,8 @@ TEST(SequenceManagerFuzzerProcessorTest,
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task w task id 1 is expected to run for 40 ms, and block the other
-  // posted task from running until its done. Note that the task w id 2 is
+  // Task with task id 1 is expected to run for 40 ms, and block the other
+  // posted task from running until its done. Note that the task with id 2 is
   // blocked since it is non-nested, so it is not supposed to run from win
   // the posting task.
   expected_tasks.emplace_back(1, 0, 40);
@@ -865,9 +865,9 @@ TEST(SequenceManagerFuzzerProcessorTest, PostNonEmptyTask) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task w task id 1 is expected to run first, and block all other pending
+  // Task with task id 1 is expected to run first, and block all other pending
   // tasks until its done. The remaining tasks will be executed in
-  // non-decreasing order of the delay parameter w ties broken by
+  // non-decreasing order of the delay parameter with ties broken by
   // the post order.
   expected_tasks.emplace_back(1, 5, 45);
   expected_tasks.emplace_back(3, 45, 45);
@@ -950,8 +950,8 @@ TEST(SequenceManagerFuzzerProcessorTest, OrderOfSimpleUnnestedExecutedActions) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Tasks are expected to run in order of non-decreasing delay w ties broken
-  // by order of posting. Note that the task w id 3 will block the task with
+  // Tasks are expected to run in order of non-decreasing delay with ties broken
+  // by order of posting. Note that the task with id 3 will block the task with
   // id 2 from running at its scheduled time.
   expected_tasks.emplace_back(1, 10, 10);
   expected_tasks.emplace_back(3, 15, 25);
@@ -1052,7 +1052,7 @@ TEST(SequenceManagerFuzzerProcessorTest, InsertAndRemoveFence) {
   expected_tasks.emplace_back(1, 20, 20);
   expected_tasks.emplace_back(2, 30, 30);
 
-  // Task w id 3 will not execute until the fence is removed from the task
+  // Task with id 3 will not execute until the fence is removed from the task
   // queue it was posted to.
   expected_tasks.emplace_back(3, 30, 30);
 
@@ -1091,7 +1091,7 @@ TEST(SequenceManagerFuzzerProcessorTest, ThrottleTaskQueue) {
 
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 
-  // Task queue w id 1 is throttled, so posted tasks will not get executed.
+  // Task queue with id 1 is throttled, so posted tasks will not get executed.
   EXPECT_THAT(executed_tasks, IsEmpty());
 }
 
@@ -1151,7 +1151,7 @@ TEST(SequenceManagerFuzzerProcessorTest, MultipleThreadsButNotInteracting) {
         }
       })";
 
-  // Threads initialized w same list of actions.
+  // Threads initialized with same list of actions.
   std::vector<std::string> threads{thread_actions, thread_actions,
                                    thread_actions, thread_actions,
                                    thread_actions};
@@ -1168,8 +1168,8 @@ TEST(SequenceManagerFuzzerProcessorTest, MultipleThreadsButNotInteracting) {
 
   for (int i = 1; i <= 5; i++) {
     // Created thread tasks: tasks are expected to run in order of
-    // non-decreasing delay w ties broken by order of posting. Note that the
-    // task w id 3 will block the task with id 2 from running at its
+    // non-decreasing delay with ties broken by order of posting. Note that the
+    // task with id 3 will block the task with id 2 from running at its
     // scheduled time.
     expected_tasks[i].emplace_back(1, 10, 10);
     expected_tasks[i].emplace_back(3, 15, 25);
@@ -1316,6 +1316,166 @@ TEST(SequenceManagerFuzzerProcessorTest, DISABLED_PostTaskToCreateThread) {
   // initial threads are created, and as a result the logging order isn't
   // deterministic,
   EXPECT_THAT(executed_actions, UnorderedElementsAreArray(expected_actions));
+}
+
+TEST(SequenceManagerFuzzerProcessorTest,
+     CrossThreadPostingOnlyOneThreadAvaible) {
+  std::vector<std::vector<TaskForTest>> executed_tasks;
+
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(
+      R"(
+      main_thread_actions {
+        create_thread {
+          initial_thread_actions{
+            post_delayed_task {
+              delay_ms: 30
+              task {
+                task_id: 1
+                actions {
+                  cross_thread_post {
+                    thread_id : 1
+                    task {
+                      task_id: 2
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })",
+      &executed_tasks, nullptr);
+
+  std::vector<std::vector<TaskForTest>> expected_tasks(2);
+
+  expected_tasks[1].emplace_back(1, 30, 30);
+  expected_tasks[1].emplace_back(2, 30, 30);
+
+  EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
+}
+
+TEST(SequenceManagerFuzzerProcessorTest, CrossThreadPosting) {
+  std::vector<std::vector<TaskForTest>> executed_tasks;
+
+  // Thread posts a 10ms delayed task of duration 20ms to another thread.
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(
+      R"(
+      main_thread_actions {
+        create_thread {
+        }
+      }
+      main_thread_actions{
+        create_thread {
+          initial_thread_actions{
+            cross_thread_post {
+              thread_id : 0
+              delay_ms: 10
+              task {
+                duration_ms: 20
+                task_id: 1
+              }
+            }
+          }
+        }
+      })",
+      &executed_tasks, nullptr);
+
+  std::vector<std::vector<TaskForTest>> expected_tasks(3);
+
+  expected_tasks[1].emplace_back(1, 10, 30);
+
+  EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
+}
+
+TEST(SequenceManagerFuzzerProcessorTest, AdvanceThreadsClockSynchronously) {
+  std::vector<std::vector<TaskForTest>> executed_tasks;
+
+  // First created thread has a task posted with a delay of 30 ms. Second thread
+  // posts a task to be executed on the first thread after a 10 ms delay.
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(
+      R"(
+      main_thread_actions {
+        create_thread {
+          initial_thread_actions {
+            post_delayed_task {
+              delay_ms : 30
+              task {
+                task_id: 1
+              }
+            }
+          }
+        }
+      }
+      main_thread_actions {
+        create_thread {
+          initial_thread_actions{
+            cross_thread_post {
+              delay_ms: 10
+              thread_id : 0
+              task {
+                task_id: 2
+              }
+            }
+          }
+        }
+      })",
+      &executed_tasks, nullptr);
+
+  std::vector<std::vector<TaskForTest>> expected_tasks(3);
+
+  // This test checks if the clock is correctly advanced. It does so
+  // by checking if the tasks were executed at the expected times.
+  expected_tasks[1].emplace_back(2, 10, 10);
+  expected_tasks[1].emplace_back(1, 30, 30);
+
+  EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
+}
+
+TEST(SequenceManagerFuzzerProcessorTest,
+     AdvanceThreadClockByTaskDurationSynchronously) {
+  std::vector<std::vector<TaskForTest>> executed_tasks;
+
+  // A thread has instant task posted with a duration of 50ms, which posts
+  // a task with duration 20ms to be executed after 10ms on another thread.
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(
+      R"(
+      main_thread_actions {
+        create_thread {
+        }
+      }
+      main_thread_actions {
+        create_thread {
+          initial_thread_actions{
+            post_delayed_task {
+              task {
+                task_id: 1
+                duration_ms: 50
+                actions {
+                  cross_thread_post {
+                    thread_id: 0
+                    delay_ms : 10
+                    task {
+                      task_id : 2
+                      duration_ms: 20
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })",
+      &executed_tasks, nullptr);
+
+  std::vector<std::vector<TaskForTest>> expected_tasks(3);
+
+  // This test checks if the clock is correctly advanced when tasks have
+  // durations. It does so by checking if the tasks were executed at the
+  // expected times.
+  expected_tasks[1].emplace_back(2, 10, 30);
+  expected_tasks[2].emplace_back(1, 0, 50);
+
+  EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
 }
 
 }  // namespace sequence_manager

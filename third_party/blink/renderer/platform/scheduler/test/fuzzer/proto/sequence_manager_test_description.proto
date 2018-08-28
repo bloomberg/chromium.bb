@@ -21,7 +21,7 @@ message SequenceManagerTestDescription {
   }
 
   message Action {
-    // NEXT ID = 12
+    // NEXT ID = 13
 
     optional uint64 action_id = 1;
 
@@ -36,6 +36,7 @@ message SequenceManagerTestDescription {
       InsertFenceAction insert_fence = 9;
       RemoveFenceAction remove_fence = 10;
       CreateThreadAction create_thread = 11;
+      CrossThreadPostDelayedTaskAction cross_thread_post = 12;
     }
   }
 
@@ -70,6 +71,23 @@ message SequenceManagerTestDescription {
 
     // Delay parameter passed to TaskQueue::PostDelayedTask.
     optional uint32 delay_ms = 3;
+  }
+
+  message CrossThreadPostDelayedTaskAction {
+    // NEXT ID = 5
+
+    // Used to identify the |thread_id|'s created thread.
+    required uint64 thread_id = 1;
+
+    // Used to identify the |task_queue_id|'s oldest available queue in the
+    // thread identified by |thread_id| to post a task to (modulo the number of
+    // available queues).
+    optional uint64 task_queue_id = 2;
+
+    optional Task task = 3;
+
+    // Delay parameter passed to TaskQueue::PostDelayedTask.
+    optional uint32 delay_ms = 4;
   }
 
   // Describes the grammar of TaskQueue::SetQueuePriority.

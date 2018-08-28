@@ -58,6 +58,10 @@ class PLATFORM_EXPORT ThreadPoolManager {
   // the threads are not terminated until |this| gets destructed.
   void WaitForAllThreads();
 
+  // (Thread Safe) Used to return the thread manager of the |thread_id|'s entry
+  // in |threads_| (modulo the number of entries).
+  ThreadManager* GetThreadManagerFor(uint64_t thread_id);
+
   const std::vector<std::unique_ptr<SimpleThreadImpl>>& threads() const;
 
   SequenceManagerFuzzerProcessor* processor() const;
