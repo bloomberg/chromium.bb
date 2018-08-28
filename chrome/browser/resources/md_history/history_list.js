@@ -34,7 +34,10 @@ Polymer({
     },
 
     // An array of history entries in reverse chronological order.
-    historyData_: Array,
+    historyData_: {
+      type: Array,
+      observer: 'onHistoryDataChanged_',
+    },
 
     lastFocused_: Object,
 
@@ -520,5 +523,15 @@ Polymer({
         currentDate = results[i].dateRelativeDay;
       }
     }
+  },
+
+  /**
+   * Adding in order to address an issue with a flaky test. After the list is
+   * updated, the test would not see the updated elements when using Polymer 2.
+   * This has yet to be reproduced in manual testing.
+   * @private
+   */
+  onHistoryDataChanged_: function() {
+    this.$['infinite-list'].fire('iron-resize');
   },
 });
