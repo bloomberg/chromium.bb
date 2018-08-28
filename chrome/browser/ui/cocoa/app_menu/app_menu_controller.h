@@ -24,11 +24,6 @@ class RecentTabsMenuModelDelegate;
 @class AppMenuButtonViewController;
 class AppMenuModel;
 
-namespace app_menu_controller {
-// The vertical offset of the app menu bubbles from the app menu button.
-extern const CGFloat kAppMenuBubblePointOffsetY;
-}
-
 namespace AppMenuControllerInternal {
 class AcceleratorDelegate;
 class ToolbarActionsBarObserverHelper;

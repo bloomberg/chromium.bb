@@ -57,10 +57,6 @@ const int kRightPadding = 10;
 const int kMaxOverflowContainerHeight = 416;
 }
 
-namespace app_menu_controller {
-const CGFloat kAppMenuBubblePointOffsetY = 6;
-}
-
 using base::UserMetricsAction;
 
 @interface AppMenuController (Private)
