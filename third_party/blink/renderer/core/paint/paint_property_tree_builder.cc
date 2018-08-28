@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -1409,6 +1410,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.compositor_element_id = scrollable_area->GetCompositorElementId();
+
+      state.overscroll_behavior = OverscrollBehavior(
+          static_cast<OverscrollBehavior::OverscrollBehaviorType>(
+              box.StyleRef().OverscrollBehaviorX()),
+          static_cast<OverscrollBehavior::OverscrollBehaviorType>(
+              box.StyleRef().OverscrollBehaviorY()));
 
       OnUpdate(properties_->UpdateScroll(*context_.current.scroll,
                                          std::move(state)));

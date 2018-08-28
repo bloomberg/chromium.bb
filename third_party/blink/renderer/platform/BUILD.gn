@@ -1233,6 +1233,7 @@ jumbo_component("platform") {
     "probe/platform_trace_events_agent.h",
     "resolution_units.h",
     "scroll/main_thread_scrolling_reason.h",
+    "scroll/overscroll_behavior.h",
     "scroll/scroll_alignment.cc",
     "scroll/scroll_alignment.h",
     "scroll/scroll_snap_data.h",
