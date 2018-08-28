@@ -96,6 +96,12 @@ initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
   self.webState = nullptr;
 }
 
+- (void)updateState {
+  self.toolbarUI.collapsedHeight = [self.owner collapsedTopToolbarHeight];
+  self.toolbarUI.expandedHeight = [self.owner expandedTopToolbarHeight];
+  self.toolbarUI.bottomToolbarHeight = [self.owner bottomToolbarHeight];
+}
+
 #pragma mark CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
@@ -133,14 +139,6 @@ initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
                      reason:(int)reason {
   DCHECK_EQ(self.webStateList, webStateList);
   self.webState = newWebState;
-}
-
-#pragma mark Private
-
-- (void)updateState {
-  self.toolbarUI.collapsedHeight = [self.owner collapsedTopToolbarHeight];
-  self.toolbarUI.expandedHeight = [self.owner expandedTopToolbarHeight];
-  self.toolbarUI.bottomToolbarHeight = [self.owner bottomToolbarHeight];
 }
 
 @end

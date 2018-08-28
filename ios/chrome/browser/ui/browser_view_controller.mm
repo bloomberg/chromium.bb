@@ -1929,6 +1929,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self dismissPopups];
   [self reshowFindBarIfNeededWithCoordinator:coordinator];
 
+  [coordinator animateAlongsideTransition:^(
+                   id<UIViewControllerTransitionCoordinatorContext> context) {
+    // Force updates of the toolbar updater as the toolbar height might
+    // change on rotation.
+    [_toolbarUIUpdater updateState];
+  }
+                               completion:nil];
+
   if (!self.view.window.keyWindow && !base::ios::IsRunningOnIOS11OrLater()) {
     // When a UIViewController in a background window is rotated, its top layout
     // guide's length is not updated before |-viewDidLayoutSubviews| is called.
