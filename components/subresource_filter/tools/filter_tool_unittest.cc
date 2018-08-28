@@ -135,6 +135,11 @@ TEST_F(FilterToolTest, MatchRules) {
                                   "http://example.com/disallowed2.png", "image")
                 << CreateJsonLine(
                        "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
                        "http://example.com/whitelist/disallowed2.png", "image");
 
   filter_tool_->MatchRules(&batch_queries, 1);
@@ -142,8 +147,8 @@ TEST_F(FilterToolTest, MatchRules) {
   std::string result = out_stream_.str();
 
   std::string expected =
-      "2 disallowed1.png|\n"
-      "1 @@whitelist/disallowed2.png|\n"
+      "3 disallowed1.png|\n"
+      "2 @@whitelist/disallowed2.png|\n"
       "1 disallowed2.png|\n";
 
   EXPECT_EQ(expected, out_stream_.str());
