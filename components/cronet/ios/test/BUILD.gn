@@ -8,6 +8,7 @@ import("//testing/test.gni")
 test("cronet_test") {
   testonly = true
   sources = [
+    "../../run_all_unittests.cc",
     "cronet_acceptlang_test.mm",
     "cronet_http_test.mm",
     "cronet_metrics_test.mm",
@@ -18,7 +19,6 @@ test("cronet_test") {
     "cronet_quic_test.mm",
     "cronet_test_base.h",
     "cronet_test_base.mm",
-    "cronet_test_runner.mm",
     "get_stream_engine.mm",
     "start_cronet.h",
     "start_cronet.mm",
@@ -36,6 +36,8 @@ test("cronet_test") {
     "//net:test_support",
     "//third_party/icu",
   ]
+
+  defines = [ "CRONET_TESTS_IMPLEMENTATION" ]
 
   bundle_deps = [ "//components/cronet/ios:cronet_framework+bundle" ]
   configs += [ "//build/config/compiler:enable_arc" ]
