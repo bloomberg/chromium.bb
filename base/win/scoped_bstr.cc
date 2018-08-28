@@ -7,12 +7,34 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/process/memory.h"
 
 namespace base {
 namespace win {
 
+namespace {
+
+BSTR AllocBstrOrDie(StringPiece16 non_bstr) {
+  BSTR result = ::SysAllocStringLen(non_bstr.data(), non_bstr.length());
+  if (!result) {
+    base::TerminateBecauseOutOfMemory((non_bstr.length() + 1) *
+                                      sizeof(wchar_t));
+  }
+  return result;
+}
+
+BSTR AllocBstrBytesOrDie(size_t bytes) {
+  BSTR result = ::SysAllocStringByteLen(nullptr, checked_cast<UINT>(bytes));
+  if (!result)
+    base::TerminateBecauseOutOfMemory(bytes + sizeof(wchar_t));
+  return result;
+}
+
+}  // namespace
+
 ScopedBstr::ScopedBstr(StringPiece16 non_bstr)
-    : bstr_(::SysAllocStringLen(non_bstr.data(), non_bstr.length())) {}
+    : bstr_(AllocBstrOrDie(non_bstr)) {}
 
 ScopedBstr::~ScopedBstr() {
   static_assert(sizeof(ScopedBstr) == sizeof(BSTR), "ScopedBstrSize");
@@ -45,19 +67,19 @@ BSTR* ScopedBstr::Receive() {
 }
 
 BSTR ScopedBstr::Allocate(StringPiece16 str) {
-  Reset(::SysAllocStringLen(str.data(), str.length()));
+  Reset(AllocBstrOrDie(str));
   return bstr_;
 }
 
 BSTR ScopedBstr::AllocateBytes(size_t bytes) {
-  Reset(::SysAllocStringByteLen(nullptr, static_cast<UINT>(bytes)));
+  Reset(AllocBstrBytesOrDie(bytes));
   return bstr_;
 }
 
 void ScopedBstr::SetByteLen(size_t bytes) {
   DCHECK(bstr_);
   uint32_t* data = reinterpret_cast<uint32_t*>(bstr_);
-  data[-1] = static_cast<uint32_t>(bytes);
+  data[-1] = checked_cast<uint32_t>(bytes);
 }
 
 size_t ScopedBstr::Length() const {

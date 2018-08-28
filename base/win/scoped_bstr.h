@@ -43,11 +43,11 @@ class BASE_EXPORT ScopedBstr {
   // If you already have a BSTR and want to transfer ownership to the
   // ScopedBstr instance, call |reset| instead.
   //
-  // Returns a pointer to the new BSTR, or null if allocation failed.
+  // Returns a pointer to the new BSTR.
   BSTR Allocate(StringPiece16 str);
 
   // Allocates a new BSTR with the specified number of bytes.
-  // Returns a pointer to the new BSTR, or null if allocation failed.
+  // Returns a pointer to the new BSTR.
   BSTR AllocateBytes(size_t bytes);
 
   // Sets the allocated length field of the already-allocated BSTR to be
