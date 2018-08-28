@@ -62,6 +62,29 @@ AutomationManager.Color = {
   LEAF: '#78e428'    // light green
 };
 
+/**
+ * Display modes for debugging tree.
+ *
+ * @enum {string}
+ * @const
+ */
+AutomationManager.DisplayMode = {
+  ALL: 'all',
+  INTERESTING_SUBTREE: 'interestingSubtree',
+  INTERESTING_NODE: 'interestingNode'
+};
+
+/**
+ * @typedef {{role: (string|undefined),
+ *            name: (string|undefined),
+ *            isActionable: boolean,
+ *            isGroup: boolean,
+ *            isInterestingSubtree: boolean,
+ *            children: Array<SwitchAccessDebugNode>,
+ *            baseNode: chrome.automation.AutomationNode}}
+ */
+var SwitchAccessDebugNode;
+
 AutomationManager.prototype = {
   /**
    * @private
@@ -386,5 +409,118 @@ AutomationManager.prototype = {
       node = node.lastChild;
 
     return node;
+  },
+
+  /**
+   * Prints a debug version of the accessibility tree with annotations of
+   * various SwitchAccess properties.
+   *
+   * To use, got to the console for SwitchAccess and run
+   *    switchAccess.automationManager_.printDebugSwitchAccessTree()
+   *
+   * @param {AutomationManager.DisplayMode=} opt_displayMode - an optional
+   *     parameter that controls which nodes are printed. Default is
+   *     INTERESTING_NODE.
+   * @return {SwitchAccessDebugNode|undefined}
+   */
+  printDebugSwitchAccessTree: function(opt_displayMode) {
+    let displayMode =
+        opt_displayMode || AutomationManager.DisplayMode.INTERESTING_NODE;
+    let allNodes = displayMode === AutomationManager.DisplayMode.ALL;
+    let debugRoot = this.switchAccessDebugTree_(this.desktop_, allNodes);
+    if (debugRoot)
+      this.printDebugNode_(debugRoot, 0, displayMode);
+    return debugRoot;
+  },
+  /**
+   * creates a tree for debugging the SwitchAccess predicates, rooted at
+   * node, based on the Accessibility tree.
+   *
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {boolean} allNodes
+   * @return {SwitchAccessDebugNode|undefined}
+   * @private
+   */
+  switchAccessDebugTree_: function(node, allNodes) {
+    let debugNode = this.createAnnotatedDebugNode_(node, allNodes);
+    if (!debugNode)
+      return;
+
+    for (let child of node.children) {
+      let dChild = this.switchAccessDebugTree_(child, allNodes);
+      if (dChild)
+        debugNode.children.push(dChild);
+    }
+    return debugNode;
+  },
+
+  /**
+   * Creates a debug node from the given automation node, with annotations of
+   * various SwitchAccess properties.
+   *
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {boolean} allNodes
+   * @return {SwitchAccessDebugNode|undefined}
+   * @private
+   */
+  createAnnotatedDebugNode_: function(node, allNodes) {
+    if (!allNodes && !SwitchAccessPredicate.isInterestingSubtree(node))
+      return;
+
+    let debugNode = {};
+    if (node.role)
+      debugNode.role = node.role;
+    if (node.name)
+      debugNode.name = node.name;
+
+    debugNode.isActionable = SwitchAccessPredicate.isActionable(node);
+    debugNode.isGroup = SwitchAccessPredicate.isGroup(node, node);
+    debugNode.isInterestingSubtree =
+        SwitchAccessPredicate.isInterestingSubtree(node);
+
+    debugNode.children = [];
+    debugNode.baseNode = node;
+    return debugNode;
+  },
+
+  /**
+   * Prints the debug subtree rooted at |node| in pre-order.
+   *
+   * @param {SwitchAccessDebugNode} node
+   * @param {!number} indent
+   * @param {AutomationManager.DisplayMode} displayMode
+   * @private
+   */
+  printDebugNode_: function(node, indent, displayMode) {
+    if (!node)
+      return;
+
+    let result = ' '.repeat(indent);
+    if (node.role)
+      result += 'role:' + node.role + ' ';
+    if (node.name)
+      result += 'name:' + node.name + ' ';
+    result += 'isActionable? ' + node.isActionable;
+    result += ', isGroup? ' + node.isGroup;
+    result += ', isInterestingSubtree? ' + node.isInterestingSubtree;
+
+    switch (displayMode) {
+      case AutomationManager.DisplayMode.ALL:
+        console.log(result);
+        break;
+      case AutomationManager.DisplayMode.INTERESTING_SUBTREE:
+        if (node.isInterestingSubtree)
+          console.log(result);
+        break;
+      case AutomationManager.DisplayMode.INTERESTING_NODE:
+      default:
+        if (node.isActionable || node.isGroup)
+          console.log(result);
+        break;
+    }
+
+    let children = node.children || [];
+    for (let child of children)
+      this.printDebugNode_(child, indent + 2, displayMode);
   }
 };
