@@ -4,8 +4,12 @@
 
 #include "chromeos/services/assistant/utils.h"
 
+#include <utility>
+
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chromeos/assistant/internal/internal_constants.h"
@@ -13,6 +17,15 @@
 
 namespace chromeos {
 namespace assistant {
+
+// Get the root path for assistant files.
+base::FilePath GetRootPath() {
+  base::FilePath home_dir;
+  CHECK(base::PathService::Get(base::DIR_HOME, &home_dir));
+  // Ensures DIR_HOME is overridden after primary user sign-in.
+  CHECK_NE(base::GetHomeDir(), home_dir);
+  return home_dir;
+}
 
 std::string CreateLibAssistantConfig(bool disable_hotword) {
   using Value = base::Value;
@@ -34,9 +47,19 @@ std::string CreateLibAssistantConfig(bool disable_hotword) {
   discovery.SetKey("enable_mdns", Value(false));
   config.SetKey("discovery", std::move(discovery));
 
-  Value internal(Type::DICTIONARY);
-  internal.SetKey("disable_log_files", Value(true));
-  config.SetKey("internal", std::move(internal));
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // Log to 'log' sub dir in user's home dir.
+    Value logging(Type::DICTIONARY);
+    logging.SetKey(
+        "directory",
+        Value(GetRootPath().Append(FILE_PATH_LITERAL("log")).value()));
+    config.SetKey("logging", std::move(logging));
+  } else {
+    // Print logs to console if running in desktop mode.
+    Value internal(Type::DICTIONARY);
+    internal.SetKey("disable_log_files", Value(true));
+    config.SetKey("internal", std::move(internal));
+  }
 
   Value audio_input(Type::DICTIONARY);
   Value sources(Type::LIST);
