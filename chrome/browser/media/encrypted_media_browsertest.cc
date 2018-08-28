@@ -31,6 +31,7 @@
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

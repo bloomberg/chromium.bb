@@ -23,6 +23,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #if defined(OS_ANDROID)
 #include "components/cdm/renderer/android_key_systems.h"

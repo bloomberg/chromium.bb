@@ -4,6 +4,8 @@
 
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
+
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
