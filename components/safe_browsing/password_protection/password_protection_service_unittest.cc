@@ -671,8 +671,11 @@ TEST_P(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
 
 TEST_P(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
+  content::WebContents* web_contents = GetWebContents();
+  content::WebContentsTester::For(web_contents)
+      ->SetLastCommittedURL(GURL("http://safe.com/"));
   InitializeAndStartPasswordOnFocusRequest(
-      true /* match whitelist */, 10000 /* timeout in ms */, GetWebContents());
+      true /* match whitelist */, 10000 /* timeout in ms */, web_contents);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -852,7 +855,7 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url, _))
       .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
   password_protection_service_->StartRequest(
-      nullptr, target_url, GURL("http://foo.com/submit"),
+      GetWebContents(), target_url, GURL("http://foo.com/submit"),
       GURL("http://foo.com/frame"), PasswordReuseEvent::SAVED_PASSWORD, {},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
@@ -1308,6 +1311,21 @@ TEST_P(PasswordProtectionServiceTest, TestMigrateCachedVerdict) {
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   EXPECT_EQ(2U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+}
+
+TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  base::RunLoop().RunUntilIdle();
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(
