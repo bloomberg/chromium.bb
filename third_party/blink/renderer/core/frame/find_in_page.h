@@ -25,9 +25,7 @@ struct WebFloatRect;
 
 class CORE_EXPORT FindInPage final
     : public GarbageCollectedFinalized<FindInPage>,
-      public ContextLifecycleObserver,
       public mojom::blink::FindInPage {
-  USING_PRE_FINALIZER(FindInPage, Dispose);
 
  public:
   static FindInPage* Create(WebLocalFrameImpl& frame,
@@ -97,12 +95,9 @@ class CORE_EXPORT FindInPage final
 
   void Dispose();
 
-  void ContextDestroyed(ExecutionContext*) override;
-
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
-    ContextLifecycleObserver::Trace(visitor);
   }
 
  private:

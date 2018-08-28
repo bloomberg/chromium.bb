@@ -2337,6 +2337,8 @@ WebNode WebLocalFrameImpl::ContextMenuNode() const {
 void WebLocalFrameImpl::WillBeDetached() {
   if (dev_tools_agent_)
     dev_tools_agent_->WillBeDestroyed();
+  if (find_in_page_)
+    find_in_page_->Dispose();
 }
 
 void WebLocalFrameImpl::WillDetachParent() {
