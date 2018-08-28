@@ -33092,6 +33092,21 @@ Called by update_net_error_codes.py.-->
   <int value="100" label="Web search query"/>
 </enum>
 
+<enum name="NetErrorOfflineSuggestionType">
+  <int value="0" label="Prefetched Unopened Page">
+    A Prefetched article that has not yet been opened by the user.
+  </int>
+  <int value="1" label="Video">
+    A video file previously downloaded by the user.
+  </int>
+  <int value="2" label="Audio">
+    An audio file previously downloaded by the user.
+  </int>
+  <int value="3" label="Other Page">
+    An offline page previously downloaded by the user.
+  </int>
+</enum>
+
 <enum name="NetErrorPageEvents">
   <int value="0" label="Error Page Shown">
     An error page was shown. This bucket encompasses all others and works as a
@@ -33179,6 +33194,15 @@ Called by update_net_error_codes.py.-->
   <int value="23" label="Download Button Clicked">
     An error page was shown with at least a &quot;Download Page Later&quot;
     button on it and the user pressed that button.
+  </int>
+  <int value="24" label="Offline Suggestions Shown">
+    An error page was shown with at least one offline content suggestion.
+  </int>
+  <int value="25" label="Offline Suggestion Clicked">
+    The user pressed a button to open an offline content suggestion.
+  </int>
+  <int value="26" label="Downloads Page Button Clicked">
+    The user pressed a button to open the downloads page.
   </int>
 </enum>
 

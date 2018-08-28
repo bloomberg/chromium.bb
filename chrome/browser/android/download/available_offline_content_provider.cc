@@ -17,18 +17,10 @@
 #include "ui/base/l10n/time_format.h"
 
 namespace android {
+using chrome::mojom::AvailableContentType;
 using offline_items_collection::OfflineItem;
 
 namespace {
-// Ordered in order of decreasing priority.
-enum class ContentPriority {
-  kSuggestedUnopenedPage,
-  kVideo,
-  kAudio,
-  kDownloadedPage,
-  kDoNotShow
-};
-
 bool ItemHasBeenOpened(const OfflineItem& item) {
   // Typically, items are initialized with an accessed_time equal to the
   // creation_time.
@@ -36,29 +28,47 @@ bool ItemHasBeenOpened(const OfflineItem& item) {
          item.last_accessed_time > item.creation_time;
 }
 
-ContentPriority ContentTypePriority(const OfflineItem& item) {
+// Returns a value that represents the priority of the content type.
+// Smaller priority values are more important.
+int ContentTypePriority(AvailableContentType type) {
+  switch (type) {
+    case AvailableContentType::kPrefetchedUnopenedPage:
+      return 0;
+    case AvailableContentType::kVideo:
+      return 1;
+    case AvailableContentType::kAudio:
+      return 2;
+    case AvailableContentType::kOtherPage:
+      return 3;
+    case AvailableContentType::kUninteresting:
+      return 10000;
+  }
+  NOTREACHED();
+}
+
+AvailableContentType ContentType(const OfflineItem& item) {
   switch (item.filter) {
     case offline_items_collection::FILTER_PAGE:  // fallthrough
     case offline_items_collection::FILTER_DOCUMENT:
       if (item.is_suggested)
         return ItemHasBeenOpened(item)
-                   ? ContentPriority::kDoNotShow
-                   : ContentPriority::kSuggestedUnopenedPage;
-      return ContentPriority::kDownloadedPage;
+                   ? AvailableContentType::kUninteresting
+                   : AvailableContentType::kPrefetchedUnopenedPage;
+      return AvailableContentType::kOtherPage;
       break;
     case offline_items_collection::FILTER_VIDEO:
-      return ContentPriority::kVideo;
+      return AvailableContentType::kVideo;
     case offline_items_collection::FILTER_AUDIO:
-      return ContentPriority::kAudio;
+      return AvailableContentType::kAudio;
     default:
       break;
   }
-  return ContentPriority::kDoNotShow;
+  return AvailableContentType::kUninteresting;
 }
 
 bool CompareItemsByUsefulness(const OfflineItem& a, const OfflineItem& b) {
-  ContentPriority a_priority = ContentTypePriority(a);
-  ContentPriority b_priority = ContentTypePriority(b);
+  int a_priority = ContentTypePriority(ContentType(a));
+  int b_priority = ContentTypePriority(ContentType(b));
   if (a_priority != b_priority)
     return a_priority < b_priority;
   // Break a tie by creation_time: more recent first.
@@ -164,7 +174,7 @@ chrome::mojom::AvailableOfflineContentPtr CreateAvailableOfflineContent(
           ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
           base::Time::Now() - item.creation_time)),
       "",  // TODO(crbug.com/852872): Add attribution
-      std::move(thumbnail_url));
+      std::move(thumbnail_url), ContentType(item));
 }
 
 // Picks the best available offline content items, and passes them to callback.
@@ -181,7 +191,7 @@ void ListFinalize(
   selected.resize(end - selected.begin());
 
   while (!selected.empty() &&
-         ContentTypePriority(selected.back()) >= ContentPriority::kDoNotShow)
+         ContentType(selected.back()) == AvailableContentType::kUninteresting)
     selected.pop_back();
 
   std::vector<offline_items_collection::ContentId> selected_ids;

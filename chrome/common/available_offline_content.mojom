@@ -6,6 +6,19 @@ module chrome.mojom;
 
 import "url/mojom/url.mojom";
 
+// Categorizes suggested content for metrics reporting.
+// This enum is backed by a UMA histogram therefore its entries should not be
+// deleted or re-ordered and new ones should only be appended.
+enum AvailableContentType {
+  // The offline page is prefetched suggested content.
+  kPrefetchedUnopenedPage = 0,
+  kVideo = 1,
+  kAudio = 2,
+  // The offline page was downloaded in some other way.
+  kOtherPage = 3,
+  kUninteresting = 4,
+};
+
 // A single piece of content that is available offline.
 struct AvailableOfflineContent {
   // Together id and name_space define a unique ID for this item.
@@ -21,6 +34,8 @@ struct AvailableOfflineContent {
   string attribution;
   // A data URI for a thumbnail that is related to the content.
   url.mojom.Url thumbnail_data_uri;
+  // Type of this content.
+  AvailableContentType content_type;
 };
 
 // Provides access to items available while offline.
