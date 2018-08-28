@@ -262,7 +262,7 @@ Polymer({
       }.bind(this, data['title'], data['additionalInfo']);
       zippy.appendChild(learnMoreLink);
 
-      this.$['insertion-point'].appendChild(zippy);
+      this.$['consents-container'].appendChild(zippy);
     }
 
     this.settingZippyLoaded_ = true;
@@ -287,9 +287,7 @@ Polymer({
   onShow: function() {
     var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
-    this.$['overlay-close-top'].addEventListener(
-        'click', this.hideOverlay.bind(this));
-    this.$['overlay-close-bottom'].addEventListener(
+    this.$['overlay-close-button'].addEventListener(
         'click', this.hideOverlay.bind(this));
     this.valuePropView_ = this.$['value-prop-view'];
     this.locale =

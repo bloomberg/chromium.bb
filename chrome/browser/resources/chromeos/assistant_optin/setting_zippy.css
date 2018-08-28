@@ -29,6 +29,10 @@
   width: 20px;
 }
 
+.line {
+  background-color: rgb(235, 235, 235);
+}
+
 cr-expand-button {
   padding-right: 8px;
 }
@@ -38,5 +42,5 @@ cr-expand-button {
 }
 
 .indent {
-  padding-left: 36px;
+  padding: 0 0 6px 36px;
 }
