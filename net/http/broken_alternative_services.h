@@ -57,41 +57,37 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   // by how many consecutive times it's been marked broken before). After the
   // delay, it will be in the recently broken state. However, when the default
   // network changes, the service will immediately be in the working state.
-  void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+  void MarkBrokenUntilDefaultNetworkChanges(
       const AlternativeService& alternative_service);
 
   // Marks |alternative_service| as broken until an expiration delay (determined
   // by how many consecutive times it's been marked broken before). After the
   // delay, it will be in the recently broken state. When the default network
   // changes, the brokenness state of this service remains unchanged.
-  void MarkAlternativeServiceBroken(
-      const AlternativeService& alternative_service);
+  void MarkBroken(const AlternativeService& alternative_service);
 
   // Marks |alternative_service| as recently broken. Being recently broken will
   // cause WasAlternativeServiceRecentlyBroken(alternative_service) to return
-  // true until ConfirmAlternativeService(alternative_service) is called.
-  void MarkAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service);
+  // true until Confirm(alternative_service) is called.
+  void MarkRecentlyBroken(const AlternativeService& alternative_service);
 
   // Returns true if the alternative service is considered broken.
-  bool IsAlternativeServiceBroken(
-      const AlternativeService& alternative_service) const;
+  bool IsBroken(const AlternativeService& alternative_service) const;
 
   // If the alternative service is considered broken, returns true and sets
   // |brokenness_expiration| to the expiration time for that service.
   // Returns false otherwise.
-  bool IsAlternativeServiceBroken(const AlternativeService& alternative_service,
-                                  base::TimeTicks* brokenness_expiration) const;
+  bool IsBroken(const AlternativeService& alternative_service,
+                base::TimeTicks* brokenness_expiration) const;
 
-  // Returns true if MarkAlternativeServiceRecentlyBroken(alternative_service)
-  // or MarkAlternativeServiceBroken(alternative_service) has been called and
-  // ConfirmAlternativeService(alternative_service) has not been called
+  // Returns true if MarkRecentlyBroken(alternative_service)
+  // or MarkBroken(alternative_service) has been called and
+  // Confirm(alternative_service) has not been called
   // afterwards (even if brokenness of |alternative_service| has expired).
-  bool WasAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service);
+  bool WasRecentlyBroken(const AlternativeService& alternative_service);
 
   // Changes the alternative service to be considered as working.
-  void ConfirmAlternativeService(const AlternativeService& alternative_service);
+  void Confirm(const AlternativeService& alternative_service);
 
   // All alternative services which were marked as broken until the default
   // network changed will now be considered working.
@@ -129,22 +125,20 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   typedef std::unordered_map<AlternativeService,
                              BrokenAlternativeServiceList::iterator,
                              AlternativeServiceHash>
-      BrokenAlternativeServiceMap;
+      BrokenMap;
 
   // Helper method that marks |alternative_service| as broken until an
   // expiration delay (determined by how many consecutive times it's been marked
   // broken before). After the delay, it will be in the recently broken state.
-  void MarkAlternativeServiceBrokenImpl(
-      const AlternativeService& alternative_service);
+  void MarkBrokenImpl(const AlternativeService& alternative_service);
 
   // Inserts |alternative_service| and its |expiration| time into
   // |broken_alternative_service_list_| and |broken_alternative_service_map_|.
   // |it| is the position in |broken_alternative_service_list_| where it was
   // inserted.
-  bool AddToBrokenAlternativeServiceListAndMap(
-      const AlternativeService& alternative_service,
-      base::TimeTicks expiration,
-      BrokenAlternativeServiceList::iterator* it);
+  bool AddToBrokenListAndMap(const AlternativeService& alternative_service,
+                             base::TimeTicks expiration,
+                             BrokenAlternativeServiceList::iterator* it);
 
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
@@ -156,7 +150,7 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   BrokenAlternativeServiceList broken_alternative_service_list_;
   // A map from broken alt-svcs to their iterator pointing to that alt-svc's
   // position in |broken_alternative_service_list_|.
-  BrokenAlternativeServiceMap broken_alternative_service_map_;
+  BrokenMap broken_alternative_service_map_;
   // A set of broken alternative services on the current default
   // network. This will be cleared every time the default network changes.
   std::set<AlternativeService> broken_alternative_services_on_default_network_;
