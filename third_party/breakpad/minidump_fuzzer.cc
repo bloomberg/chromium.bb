@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <istream>
+#include <limits>
 #include <memory>
 #include <streambuf>
 
@@ -44,25 +45,26 @@ bool PrintMinidumpProcess(const uint8_t* data,
                           size_t size,
                           const std::vector<string>& symbol_paths) {
   // Signature and version number.
-  char header_prefix[] = {'P', 'M', 'D', 'M', 0, 0, 0xa7, 0x93};
-  size += sizeof(header_prefix);
-  std::unique_ptr<SimpleSymbolSupplier> symbol_supplier;
-  char* ptr = static_cast<char*>(malloc(size));
-  if (!ptr)
+  static const char kHeaderPrefix[] = {'P', 'M', 'D', 'M', 0, 0, 0xa7, 0x93};
+  if (size > std::numeric_limits<size_t>::max() - sizeof(kHeaderPrefix))
     return false;
 
-  memcpy(ptr, header_prefix, sizeof(header_prefix));
+  size += sizeof(kHeaderPrefix);
+  std::unique_ptr<char, base::FreeDeleter> buffer(
+      static_cast<char*>(malloc(size)));
+  if (!buffer)
+    return false;
 
-  std::unique_ptr<char, base::FreeDeleter> buffer(ptr);
-  memcpy(buffer.get() + sizeof(header_prefix), data,
-         size - sizeof(header_prefix));
+  memcpy(buffer.get(), kHeaderPrefix, sizeof(kHeaderPrefix));
+  memcpy(buffer.get() + sizeof(kHeaderPrefix), data,
+         size - sizeof(kHeaderPrefix));
 
   membuf sbuf(buffer.get(), buffer.get() + size);
   std::istream input(&sbuf);
 
-  if (!symbol_paths.empty()) {
-    symbol_supplier.reset(new SimpleSymbolSupplier(symbol_paths));
-  }
+  std::unique_ptr<SimpleSymbolSupplier> symbol_supplier;
+  if (!symbol_paths.empty())
+    symbol_supplier = std::make_unique<SimpleSymbolSupplier>(symbol_paths);
 
   BasicSourceLineResolver resolver;
   MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
