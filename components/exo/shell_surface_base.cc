@@ -331,9 +331,6 @@ class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate {
   bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     return false;
   }
-  bool RestoreAlwaysOnTop(ash::wm::WindowState* window_state) override {
-    return false;
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomWindowStateDelegate);
