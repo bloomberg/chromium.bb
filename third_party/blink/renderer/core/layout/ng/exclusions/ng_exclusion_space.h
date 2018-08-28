@@ -23,6 +23,8 @@ namespace blink {
 // The space is mutated simply by adding exclusions, and various information
 // can be queried based on the exclusions.
 class CORE_EXPORT NGExclusionSpace {
+  USING_FAST_MALLOC(NGExclusionSpace);
+
  public:
   NGExclusionSpace();
   NGExclusionSpace(const NGExclusionSpace&);
