@@ -63,6 +63,11 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // a single integer value for the height the native view should resize to.
   virtual void HandleInitializedWithSize(const base::ListValue* args);
 
+  // Handles the "accountImageRequest" message sent after the
+  // "account-image-changed" WebUIListener was added. This method calls
+  // |SetUserImageURL| with the signed-in user's picture url.
+  virtual void HandleAccountImageRequest(const base::ListValue* args);
+
   // Records the user's consent to sync. Called from |HandleConfirm| and
   // |HandleGoToSettings|, and expects two parameters to be passed through
   // these methods from the WebUI:

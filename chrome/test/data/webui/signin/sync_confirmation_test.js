@@ -9,7 +9,14 @@ cr.define('signin_sync_confirmation', function() {
     setup(function() {
       PolymerTest.clearBody();
       app = document.createElement('sync-confirmation-app');
+      var accountImageRequested = false;
+      registerMessageCallback('accountImageRequest', this, function() {
+        accountImageRequested = true;
+      });
       document.body.append(app);
+      // Check that the account image is requested when the app element is
+      // attached to the document.
+      assertTrue(accountImageRequested);
     });
 
     // Tests that no DCHECKS are thrown during initialization of the UI.

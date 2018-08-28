@@ -5,6 +5,10 @@
 Polymer({
   is: 'sync-confirmation-app',
 
+  behaviors: [
+    WebUIListenerBehavior,
+  ],
+
   properties: {
     /** @private */
     isConsentBump_: {
@@ -44,6 +48,9 @@ Polymer({
     // window opens initially, the focus level is only on document, so the key
     // event is not captured by "this".
     document.addEventListener('keydown', this.boundKeyDownHandler_);
+    this.addWebUIListener(
+        'account-image-changed', this.handleAccountImageChanged_.bind(this));
+    this.syncConfirmationBrowserProxy_.requestAccountImage();
   },
 
   /** @override */
@@ -127,6 +134,15 @@ Polymer({
   /** @private */
   onBack_: function() {
     this.showMoreOptions_ = false;
+  },
+
+  /**
+   * Called when the account image changes.
+   * @param {string} imageSrc
+   * @private
+   */
+  handleAccountImageChanged_: function(imageSrc) {
+    this.accountImageSrc_ = imageSrc;
   },
 
 });
