@@ -55,6 +55,8 @@
                              { autoIncrement: true });
         db.createObjectStore(Indexed_DB_Vars.ACTIONS,
                              { keyPath: 'action_index', autoIncrement: true });
+        db.createObjectStore(Indexed_DB_Vars.SAVED_ACTION_PARAMS,
+                             { autoIncrement: true });
         event.target.transaction.oncomplete = (event) => {
           resolve(db);
         };
@@ -84,7 +86,8 @@
     const db = await openRecipeIndexedDB();
     return await new Promise((resolve, reject) => {
       const transaction = db.transaction([Indexed_DB_Vars.ATTRIBUTES,
-                                          Indexed_DB_Vars.ACTIONS],
+                                          Indexed_DB_Vars.ACTIONS,
+                                          Indexed_DB_Vars.SAVED_ACTION_PARAMS],
                                          'readwrite');
       transaction.oncomplete = (event) => {
         resolve(event);
@@ -104,11 +107,10 @@
     });
   }
 
-  function initializeRecipe(name, url) {
+  function initializeRecipe(url) {
     return performTransactionOnRecipeIndexedDB((transaction) => {
         const attributeStore =
             transaction.objectStore(Indexed_DB_Vars.ATTRIBUTES);
-        attributeStore.put(name, Indexed_DB_Vars.NAME);
         attributeStore.put(url, Indexed_DB_Vars.URL);
       });
   }
@@ -162,7 +164,6 @@
     const db = await openRecipeIndexedDB();
     let recipe = {};
     return await new Promise((resolve, reject) => {
-      let recipe = {};
       const transaction = db.transaction([Indexed_DB_Vars.ATTRIBUTES,
                                           Indexed_DB_Vars.ACTIONS],
                                          'readonly');
@@ -173,17 +174,15 @@
         console.error('Unable to read from indexedDB.');
         throw(transaction.error);
       };
+
       const attributeStore =
-        transaction.objectStore(Indexed_DB_Vars.ATTRIBUTES);
-      const actionsStore = transaction.objectStore(Indexed_DB_Vars.ACTIONS);
-      const nameReq = attributeStore.get(Indexed_DB_Vars.NAME);
-      nameReq.onsuccess = (event) => {
-        recipe.name = nameReq.result;
-      };
+          transaction.objectStore(Indexed_DB_Vars.ATTRIBUTES);
       const urlReq = attributeStore.get(Indexed_DB_Vars.URL);
       urlReq.onsuccess = (event) => {
         recipe.startingURL = urlReq.result;
       };
+
+      const actionsStore = transaction.objectStore(Indexed_DB_Vars.ACTIONS);
       const actionsReq = actionsStore.getAll();
       actionsReq.onsuccess = (event) => {
         recipe.actions = actionsReq.result ? actionsReq.result : [];
@@ -192,6 +191,47 @@
     .finally(() => {
       db.close();
     });
+  }
+
+  async function getSavedEventParameters() {
+    const db = await openRecipeIndexedDB();
+    let params = {};
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction([Indexed_DB_Vars.SAVED_ACTION_PARAMS],
+                                         'readonly');
+      transaction.oncomplete = (event) => {
+        resolve(params);
+      };
+      transaction.onerror = (event) => {
+        console.error('Unable to read from indexedDB.');
+        throw(transaction.error);
+      };
+
+      const actionParamsStore =
+          transaction.objectStore(Indexed_DB_Vars.SAVED_ACTION_PARAMS);
+      const passwordManagerParamsReq =
+          actionParamsStore.get(Indexed_DB_Vars.PASSWORD_MANAGER_PARAMS);
+      passwordManagerParamsReq.onsuccess = (event) => {
+        if (passwordManagerParamsReq.result) {
+          params.passwordManagerParams =
+              passwordManagerParamsReq.result;
+        }
+      };
+    })
+    .finally(() => {
+      db.close();
+    });
+  }
+
+  function savePasswordEventParams(userName, password) {
+    return performTransactionOnRecipeIndexedDB((transaction) => {
+        const attributeStore =
+            transaction.objectStore(Indexed_DB_Vars.SAVED_ACTION_PARAMS);
+        attributeStore.put({
+          userName: userName,
+          password: password
+        }, Indexed_DB_Vars.PASSWORD_MANAGER_PARAMS);
+      });
   }
 
   function setBrowserActionUi(state, targetTabId) {
@@ -426,7 +466,7 @@
     // script on the actively recording tab.
     items[Local_Storage_Vars.RECORDING_TAB_ID] = tab.id;
     await setChromeLocalStorageVariables(items);
-    await initializeRecipe(tab.title, tab.url);
+    await initializeRecipe(tab.url);
   }
 
   // Clean up local storage variables used for recording.
@@ -495,6 +535,28 @@
     items[Local_Storage_Vars.RECORDING_STATE] = RecorderStateEnum.HIDDEN;
     await setChromeLocalStorageVariables(items);
     setBrowserActionUi(RecorderStateEnum.HIDDEN, tabId);
+  }
+
+  async function setPasswordEventParams(params, mainFrameIsReady) {
+    await savePasswordEventParams(params.userName, params.password);
+
+    if (!mainFrameIsReady) {
+      return true;
+    }
+
+    return await sendPasswordEventParamsToUi(params.userName, params.password);
+  }
+
+  async function sendPasswordEventParamsToUi(userName, password) {
+    const tabId = await getRecordingTabId();
+    const frameId = await getRecorderUiFrameId();
+    const response = await sendMessageToTab(
+        tabId,
+        { type: RecorderUiMsgEnum.SET_PASSWORD_MANAGER_ACTION_PARAMS,
+          userName: userName,
+          password: password },
+        { frameId: frameId });
+    return response;
   }
 
   // Reset the action recorder state to a clean slate every time the background
@@ -606,7 +668,7 @@
         addActionToRecipe({
           url: details.url,
           context: { 'isIframe': false },
-          type: 'loadPage'
+          type: ActionTypeEnum.LOAD_PAGE
         });
 
         const state = await getRecordingState();
@@ -683,6 +745,20 @@
         .then(() => getRecipe())
         .then((recipe) => sendResponse(recipe));
         return true;
+      case RecorderUiMsgEnum.GET_SAVED_ACTION_PARAMS:
+        getSavedEventParameters()
+        .then((params) => sendResponse(params));
+        return true;
+      case RecorderMsgEnum.SET_PASSWORD_MANAGER_ACTION_PARAMS:
+        setPasswordEventParams(request.params,
+           // A page content scripts sends out a 'Set Password Event
+           // Parameters' message to the background script before submitting a
+           // page form.
+           // Submitting page form triggers a reload. Therefore the main frame
+           // is ready if the message originates from an iframe, but not if the
+           // message originates from the main frame.
+                               sender.frameId != 0);
+        return false;
       default:
     }
     return false;

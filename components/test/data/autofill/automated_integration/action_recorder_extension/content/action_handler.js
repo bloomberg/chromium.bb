@@ -128,13 +128,17 @@
     }
 
     function buildClassifier(element, attributeXPathToken, attributeValue) {
-      // Skip values that has the " character. There is just no good way to
-      // wrap this character in xslt, and the best way to handle it involves
-      // doing gynmnastics with string concatenation, as in
-      // "concat('Single', "'", 'quote. Double', '"', 'quote.')]";
-      // It is easier to just skip attributes containing the '"' character.
-      // Futhermore, attributes containing the '"' character are very rare.
-      if (!attributeValue || attributeValue.indexOf('"') >= 0) {
+      if (!attributeValue ||
+          // Skip values that has the " character. There is just no good way to
+          // wrap this character in xslt, and the best way to handle it
+          // involves doing gynmnastics with string concatenation, as in
+          // "concat('Single', "'", 'quote. Double', '"', 'quote.')]";
+          // It is easier to just skip attributes containing the '"' character.
+          // Furthermore, attributes containing the '"' character are very rare.
+          attributeValue.indexOf('"') >= 0 ||
+          // Skip values that have the \ character. JavaScript does not
+          // serialize this character correctly.
+          attributeValue.indexOf('\\') >= 0) {
         return attributeXPathToken;
       }
 
@@ -241,41 +245,6 @@
     });
   }
 
-  function memorizePasswordFormInputs(passwordField) {
-    // Extract the 'form signature' value from the password's 'title'
-    // attribute.
-    const title = passwordField.getAttribute('title');
-    if (!title)
-      return;
-
-    let formSign = null;
-    const attrs = title.split('\n');
-    for (let index = 0; index < attrs.length; index++) {
-      if (attrs[index].startsWith('form signature')) {
-        formSign = attrs[index];
-      }
-    }
-    if (formSign)
-      return;
-
-    // Identify the 'user name' field and grab the field value.
-    const fields = document.querySelectorAll(`*[title*='${formSign}']`);
-    for (let index = 0; index < fields.length; index++) {
-      const field = fields[index];
-      const type = field.getAttribute('autofill-prediction');
-      if (type === 'HTML_TYPE_EMAIL') {
-        // (TODO: uwyiming@) Send the password to the UI content script. A
-        // user may then add password manager events through the Recorder
-        // Extension UI, without having to retype the password.
-        //sendRuntimeMessageToBackgroundScript({
-        //  type: RecorderMsgEnum.MEMORIZE_PASSWORD_FORM,
-        //  password: passwordField.value,
-        //  user:
-        //});
-      }
-    }
-  }
-
   function onInputChangeActionHandler(event) {
     const selector = buildXPathForElement(event.target);
     const elementReadyState = automation_helper.getElementState(event.target);
@@ -291,11 +260,11 @@
       if (document.activeElement === event.target) {
         const index = event.target.options.selectedIndex;
         console.log(`Select detected on: ${selector} with '${index}'`);
-        action.type = 'select';
+        action.type = ActionTypeEnum.SELECT;
         action.index = index;
         addActionToRecipe(action);
       } else {
-        action.type = 'validateField';
+        action.type = ActionTypeEnum.VALIDATE_FIELD;
         action.expectedValue = event.target.value;
         if (autofillPrediction) {
           action.expectedAutofillType = autofillPrediction;
@@ -322,12 +291,11 @@
       // preferred way for filling text inputs. The Automation Framework uses
       // keyboard input only when necessary. So this extension separates
       // typing password actions from other typing actions.
-      if (isPasswordInputElement(event.target)) {
-        action.type = 'typePassword';
-      } else {
-        action.type = 'type';
-      }
-
+      const isPasswordField = isPasswordInputElement(event.target);
+      action.type =
+          isPasswordField ?
+            ActionTypeEnum.TYPE_PASSWORD:
+            ActionTypeEnum.TYPE;
       action.value = event.target.value;
       addActionToRecipe(action);
     } else {
@@ -340,11 +308,11 @@
           context: frameContext,
           visibility: autofillTriggerElementInfo.visibility
         };
-        autofillAction.type = 'autofill';
+        autofillAction.type = ActionTypeEnum.AUTOFILL;
         addActionToRecipe(autofillAction);
         autofillTriggerElementInfo = null;
       }
-      action.type = 'validateField';
+      action.type = ActionTypeEnum.VALIDATE_FIELD;
       action.expectedValue = event.target.value;
       if (autofillPrediction) {
         action.expectedAutofillType = autofillPrediction;
@@ -362,7 +330,7 @@
     });
   }
 
-  function deRegisterOnInputChangeActionListener(root) {
+  function unRegisterOnInputChangeActionListener(root) {
     const inputElements = root.querySelectorAll('input, select, textarea');
     inputElements.forEach((element) => {
       if (isEditableInputElement(element)) {
@@ -398,7 +366,7 @@
           selector: selector,
           visibility: elementReadyState,
           context: frameContext,
-          type: 'click'
+          type: ActionTypeEnum.CLICK
         });
         autofillTriggerElementInfo = null;
       }
@@ -412,7 +380,7 @@
           selector: selector,
           visibility: elementReadyState,
           context: frameContext,
-          type: 'hover'
+          type: ActionTypeEnum.HOVER
         });
     }
   }
@@ -426,7 +394,7 @@
         selector: selector,
         visibility: elementReadyState,
         context: frameContext,
-        type: 'pressEnter'
+        type: ActionTypeEnum.PRESS_ENTER
       });
     }
 
@@ -440,10 +408,62 @@
     }
   }
 
+  function onPasswordFormSubmitHandler(event) {
+    const form = event.target;
+
+    // Extract the form signature value from the form.
+    const fields = form.querySelectorAll(
+        `*[form_signature][pm_parser_annotation]`);
+    let userName = null;
+    let password = null;
+    for (const field of fields) {
+      const passwordManagerAnnotation =
+          field.getAttribute('pm_parser_annotation');
+      switch (passwordManagerAnnotation) {
+        case 'password_element':
+        case 'new_password_element':
+        case 'confirmation_password_element':
+          password = field.value;
+          break;
+        case 'username_element':
+          userName = field.value;
+          break;
+        default:
+      }
+    }
+
+    if (!userName || !password) {
+      // The form is missing a user name field or a password field.
+      // The content script should not forward an incomplete password form to
+      // the recorder extension. Exit.
+      return;
+    }
+
+    sendRuntimeMessageToBackgroundScript({
+      type: RecorderMsgEnum.SET_PASSWORD_MANAGER_ACTION_PARAMS,
+      params: { userName: userName, password: password }
+    });
+  }
+
+  function registerOnPasswordFormSubmitHandler(root) {
+    const formElements = root.querySelectorAll('form');
+    formElements.forEach((form) => {
+      form.addEventListener('submit', onPasswordFormSubmitHandler, true);
+    });
+  }
+
+  function unRegisterOnPasswordFormSubmitHandler(root) {
+    const formElements = root.querySelectorAll('form');
+    formElements.forEach((form) => {
+      form.removeEventListener('submit', onPasswordFormSubmitHandler, true);
+    });
+  }
+
   function startRecording(context) {
       frameContext = context;
       // Register on change listeners on all the input elements.
       registerOnInputChangeActionListener(document);
+      registerOnPasswordFormSubmitHandler(document);
       // Register a mouse up listener on the entire document.
       //
       // The content script registers a 'Mouse Up' listener rather than a
@@ -471,6 +491,9 @@
               // way the recorder can record user interactions with new
               // elements.
               registerOnInputChangeActionListener(node);
+              // Add the on password form submission listener on any new
+              // form elements.
+              registerOnPasswordFormSubmitHandler(node);
             }
           });
         });
@@ -485,7 +508,8 @@
       mutationObserver.disconnect();
       document.removeEventListener('mousedown', onClickActionHander);
       document.removeEventListener('keyup', onKeyUpActionHandler);
-      deRegisterOnInputChangeActionListener(document);
+      unRegisterOnInputChangeActionListener(document);
+      unRegisterOnPasswordFormSubmitHandler(document);
     }
   }
 
