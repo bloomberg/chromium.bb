@@ -150,9 +150,10 @@ class SandboxedHandler {
 }  // namespace
 }  // namespace crashpad
 
-#if defined(OS_ANDROID)
-
+namespace crash_reporter {
 namespace {
+
+#if defined(OS_ANDROID)
 
 void SetJavaExceptionInfo(const char* info_string) {
   static crashpad::StringAnnotation<5 * 4096> exception_info("exception_info");
@@ -185,63 +186,13 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
   }
 }
 
-}  // namespace
-
 #endif  // OS_ANDROID
 
-namespace crash_reporter {
-namespace internal {
-
-bool SetLdLibraryPath(const base::FilePath& lib_path) {
-#if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
-  std::string library_path(lib_path.value());
-
-  static constexpr char kLibraryPathVar[] = "LD_LIBRARY_PATH";
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string old_path;
-  if (env->GetVar(kLibraryPathVar, &old_path)) {
-    library_path.push_back(':');
-    library_path.append(old_path);
-  }
-
-  if (!env->SetVar(kLibraryPathVar, library_path)) {
-    return false;
-  }
-#endif
-
-  return true;
-}
-
-bool BuildHandlerArgs(base::FilePath* handler_path,
-                      base::FilePath* database_path,
+bool BuildHandlerArgs(base::FilePath* database_path,
                       base::FilePath* metrics_path,
                       std::string* url,
                       std::map<std::string, std::string>* process_annotations,
                       std::vector<std::string>* arguments) {
-  base::FilePath exe_dir;
-#if defined(OS_ANDROID)
-  if (!base::PathService::Get(base::DIR_MODULE, &exe_dir)) {
-#else
-  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-#endif  // OS_ANDROID
-    DCHECK(false);
-    return false;
-  }
-#if defined(OS_ANDROID)
-  // There is not any normal way to package native executables in an Android
-  // APK. The Crashpad handler is packaged like a loadable module, which
-  // Android's APK installer expects to be named like a shared library, but it
-  // is in fact a standalone executable.
-  *handler_path = exe_dir.Append("libcrashpad_handler.so");
-#else
-  *handler_path = exe_dir.Append("crashpad_handler");
-#endif
-
-  static bool env_setup = SetLdLibraryPath(exe_dir);
-  if (!env_setup) {
-    return false;
-  }
-
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   crash_reporter_client->GetCrashDumpLocation(database_path);
   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
@@ -293,6 +244,128 @@ bool BuildHandlerArgs(base::FilePath* handler_path,
   return true;
 }
 
+bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
+#if defined(OS_ANDROID)
+  // There is not any normal way to package native executables in an Android
+  // APK. The Crashpad handler is packaged like a loadable module, which
+  // Android's APK installer expects to be named like a shared library, but it
+  // is in fact a standalone executable.
+  if (!base::PathService::Get(base::DIR_MODULE, exe_dir)) {
+    return false;
+  }
+  *handler_path = exe_dir->Append("libcrashpad_handler.so");
+#else
+  if (!base::PathService::Get(base::DIR_EXE, exe_dir)) {
+    return false;
+  }
+  *handler_path = exe_dir->Append("crashpad_handler");
+#endif
+  return true;
+}
+
+bool SetLdLibraryPath(const base::FilePath& lib_path) {
+#if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
+  std::string library_path(lib_path.value());
+
+  static constexpr char kLibraryPathVar[] = "LD_LIBRARY_PATH";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string old_path;
+  if (env->GetVar(kLibraryPathVar, &old_path)) {
+    library_path.push_back(':');
+    library_path.append(old_path);
+  }
+
+  if (!env->SetVar(kLibraryPathVar, library_path)) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+class HandlerStarter {
+ public:
+  static HandlerStarter* Get() {
+    static HandlerStarter* instance = new HandlerStarter();
+    return instance;
+  }
+
+  base::FilePath Initialize() {
+    base::FilePath exe_dir;
+    base::FilePath handler_path;
+    if (!GetHandlerPath(&exe_dir, &handler_path)) {
+      return base::FilePath();
+    }
+
+    if (!SetLdLibraryPath(exe_dir)) {
+      return base::FilePath();
+    }
+
+    base::FilePath database_path;
+    base::FilePath metrics_path;
+    std::string url;
+    std::map<std::string, std::string> process_annotations;
+    std::vector<std::string> arguments;
+    if (!BuildHandlerArgs(&database_path, &metrics_path, &url,
+                          &process_annotations, &arguments)) {
+      return base::FilePath();
+    }
+
+    if (crashpad::SetSanitizationInfo(&browser_sanitization_info_)) {
+      arguments.push_back(base::StringPrintf("--sanitization-information=%p",
+                                             &browser_sanitization_info_));
+    }
+
+    bool result = GetCrashpadClient().StartHandlerAtCrash(
+        handler_path, database_path, metrics_path, url, process_annotations,
+        arguments);
+    DCHECK(result);
+    return database_path;
+  }
+
+  bool StartHandlerForClient(int fd) {
+    base::FilePath exe_dir;
+    base::FilePath handler_path;
+    if (!GetHandlerPath(&exe_dir, &handler_path)) {
+      return false;
+    }
+
+    if (!SetLdLibraryPath(exe_dir)) {
+      return false;
+    }
+
+    base::FilePath database_path;
+    base::FilePath metrics_path;
+    std::string url;
+    std::map<std::string, std::string> process_annotations;
+    std::vector<std::string> arguments;
+    if (!BuildHandlerArgs(&database_path, &metrics_path, &url,
+                          &process_annotations, &arguments)) {
+      return false;
+    }
+
+    return GetCrashpadClient().StartHandlerForClient(
+        handler_path, database_path, metrics_path, url, process_annotations,
+        arguments, fd);
+  }
+
+ private:
+  HandlerStarter() = default;
+  ~HandlerStarter() = delete;
+
+  crashpad::SanitizationInformation browser_sanitization_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandlerStarter);
+};
+
+}  // namespace
+
+namespace internal {
+
+bool StartHandlerForClient(int fd) {
+  return HandlerStarter::Get()->StartHandlerForClient(fd);
+}
+
 base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool browser_process,
                                               bool embedded_handler,
@@ -309,30 +382,8 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 #endif  // OS_ANDROID
 
   if (browser_process) {
-    base::FilePath handler_path;
-    base::FilePath database_path;
-    base::FilePath metrics_path;
-    std::string url;
-    std::map<std::string, std::string> process_annotations;
-    std::vector<std::string> arguments;
-    if (!BuildHandlerArgs(&handler_path, &database_path, &metrics_path, &url,
-                          &process_annotations, &arguments)) {
-      return base::FilePath();
-    }
-
-    static base::NoDestructor<crashpad::SanitizationInformation>
-        sanitization_info;
-    if (crashpad::SetSanitizationInfo(sanitization_info.get())) {
-      arguments.push_back(base::StringPrintf("--sanitization-information=%p",
-                                             sanitization_info.get()));
-    }
-
-    bool result = GetCrashpadClient().StartHandlerAtCrash(
-        handler_path, database_path, metrics_path, url, process_annotations,
-        arguments);
-    DCHECK(result);
-
-    return database_path;
+    HandlerStarter* starter = HandlerStarter::Get();
+    return starter->Initialize();
   }
 
   crashpad::SandboxedHandler* handler = crashpad::SandboxedHandler::Get();
@@ -343,4 +394,5 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 }
 
 }  // namespace internal
+
 }  // namespace crash_reporter

@@ -38,9 +38,9 @@
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)
-#include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
-#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/linux_dumper.h"
-#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/minidump_writer.h"
+#include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"  // nogncheck
+#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/linux_dumper.h"  // nogncheck
+#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/minidump_writer.h"  // nogncheck
 #endif  // ! defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
@@ -640,21 +640,8 @@ void CrashHandlerHost::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  base::FilePath handler_path;
-  base::FilePath database_path;
-  base::FilePath metrics_path;
-  std::string url;
-  std::map<std::string, std::string> process_annotations;
-  std::vector<std::string> arguments;
-  if (!crash_reporter::internal::BuildHandlerArgs(
-          &handler_path, &database_path, &metrics_path, &url,
-          &process_annotations, &arguments)) {
-    return;
-  }
-
-  bool result = CrashpadClient::StartHandlerForClient(
-      handler_path, database_path, metrics_path, url, process_annotations,
-      arguments, handler_fd.get());
+  bool result =
+      crash_reporter::internal::StartHandlerForClient(handler_fd.get());
   DCHECK(result);
 }
 
