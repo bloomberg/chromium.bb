@@ -1074,6 +1074,15 @@
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Mac Retina Release (AMD)': {
         'browser_config': 'release',
@@ -1092,6 +1101,15 @@
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Win10 Debug (NVIDIA)': {
         'browser_config': 'debug',
@@ -1660,7 +1678,7 @@
             {
               'gpu': '1002:6821',
               'hidpi': '1',
-              'os': 'Mac-10.13.5',
+              'os': 'Mac-10.13',
               'pool': 'Chrome-GPU',
             },
           ],
@@ -1703,6 +1721,15 @@
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Mac FYI Retina Debug (NVIDIA)': {
         'os_type': 'mac',
@@ -1721,6 +1748,15 @@
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '10de:0fe9',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Mac FYI Retina Release (AMD)': {
         'os_type': 'mac',
@@ -1739,6 +1775,15 @@
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Mac FYI Retina Release (NVIDIA)': {
         'os_type': 'mac',
@@ -1757,6 +1802,15 @@
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '10de:0fe9',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Mac FYI dEQP Release AMD': {
         'os_type': 'mac',
@@ -1897,6 +1951,15 @@
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Optional Mac Retina Release (NVIDIA)': {
         'os_type': 'mac',
@@ -1915,6 +1978,15 @@
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '10de:0fe9',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'Optional Win10 Release (Intel HD 630)': {
         'os_type': 'win',
@@ -2351,6 +2423,15 @@
             }
           ],
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
@@ -3232,6 +3313,15 @@
             }
           ],
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.13.6',
+              'pool': 'Chrome-GPU',
+            },
+        ],
       },
       'WebKit Win10': {
         'test_suites': {
