@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 
+#include "base/optional.h"
 #import "base/test/ios/wait_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -74,19 +75,24 @@ class UkmUrlRecorderTest : public ChromeWebTest {
         });
   }
 
-  testing::AssertionResult RecordedUrl(ukm::SourceId source_id,
-                                       GURL url,
-                                       GURL initial_url) {
+  testing::AssertionResult RecordedUrl(
+      ukm::SourceId source_id,
+      GURL expected_url,
+      base::Optional<GURL> expected_initial_url) {
     auto* source = test_ukm_recorder_.GetSourceForSourceId(source_id);
     if (!source)
       return testing::AssertionFailure() << "No URL recorded";
-    if (source->url() != url)
+    if (source->url() != expected_url)
       return testing::AssertionFailure()
-             << "Url was " << source->url() << ", expected: " << url;
-    if (source->initial_url() != initial_url)
+             << "Url was " << source->url() << ", expected: " << expected_url;
+    base::Optional<GURL> initial_url;
+    if (source->urls().size() > 1u)
+      initial_url = source->urls().front();
+    if (expected_initial_url != initial_url) {
       return testing::AssertionFailure()
-             << "Initial Url was " << source->initial_url()
-             << ", expected: " << initial_url;
+             << "Initial Url was " << initial_url.value_or(GURL())
+             << ", expected: " << expected_initial_url.value_or(GURL());
+    }
     return testing::AssertionSuccess();
   }
 
@@ -114,7 +120,7 @@ TEST_F(UkmUrlRecorderTest, Basic) {
   GURL url = server_.GetURL("/title1.html");
   EXPECT_TRUE(LoadUrlAndWait(url));
   ukm::SourceId source_id = ukm::GetSourceIdForWebStateDocument(web_state());
-  EXPECT_TRUE(RecordedUrl(source_id, url, GURL()));
+  EXPECT_TRUE(RecordedUrl(source_id, url, base::nullopt));
 }
 
 // Tests that subframe URLs do not get recorded.
@@ -123,7 +129,7 @@ TEST_F(UkmUrlRecorderTest, IgnoreUrlInSubframe) {
   GURL subframe_url = server_.GetURL("/title1.html");
   EXPECT_TRUE(LoadUrlAndWait(main_url));
   ukm::SourceId source_id = ukm::GetSourceIdForWebStateDocument(web_state());
-  EXPECT_TRUE(RecordedUrl(source_id, main_url, GURL()));
+  EXPECT_TRUE(RecordedUrl(source_id, main_url, base::nullopt));
   EXPECT_TRUE(DidNotRecordUrl(subframe_url));
 }
 

@@ -46,7 +46,7 @@ TEST_F(AppSourceUrlRecorderTest, CheckArc) {
   auto it = sources.find(id);
   ASSERT_NE(sources.end(), it);
   EXPECT_EQ(expected_url, it->second->url());
-  EXPECT_TRUE(it->second->initial_url().is_empty());
+  EXPECT_EQ(1u, it->second->urls().size());
 }
 
 TEST_F(AppSourceUrlRecorderTest, CheckPWA) {
@@ -60,7 +60,7 @@ TEST_F(AppSourceUrlRecorderTest, CheckPWA) {
   auto it = sources.find(id);
   ASSERT_NE(sources.end(), it);
   EXPECT_EQ(url, it->second->url());
-  EXPECT_TRUE(it->second->initial_url().is_empty());
+  EXPECT_EQ(1u, it->second->urls().size());
 }
 
 }  // namespace ukm

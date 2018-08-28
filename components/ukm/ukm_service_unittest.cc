@@ -259,8 +259,8 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   service.EnableReporting();
 
   UkmSource::NavigationData navigation_data;
-  navigation_data.initial_url = GURL("https://google.com/initial");
-  navigation_data.url = GURL("https://google.com/final");
+  navigation_data.urls = {GURL("https://google.com/initial"),
+                          GURL("https://google.com/final")};
 
   ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.RecordNavigation(id, navigation_data);
@@ -450,8 +450,8 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
 
     ukm::SourceId id = GetWhitelistedSourceId(0);
     UkmSource::NavigationData navigation_data;
-    navigation_data.initial_url = GURL("https://google.com/initial");
-    navigation_data.url = GURL("https://google.com/final");
+    navigation_data.urls = {GURL("https://google.com/initial"),
+                            GURL("https://google.com/final")};
     recorder.RecordNavigation(id, navigation_data);
 
     service.Flush();

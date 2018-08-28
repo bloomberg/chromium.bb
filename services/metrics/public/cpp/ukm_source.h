@@ -30,21 +30,33 @@ class METRICS_EXPORT UkmSource {
 
   // Extra navigation data associated with a particular Source. Currently, all
   // of these members except |url| are only set for navigation id sources.
+  //
+  // Note: If adding more members to this class, make sure you update
+  // CopyWithSanitizedUrls.
   struct METRICS_EXPORT NavigationData {
+    NavigationData();
+    ~NavigationData();
+
+    NavigationData(const NavigationData& other);
+
     // Creates a copy of this struct, replacing the URL members with sanitized
     // versions. Currently, |sanitized_urls| expects a one or two element
     // vector. The last element in the vector will always be the final URL in
     // the redirect chain. For two-element vectors, the first URL is assumed to
-    // be the first URL in the redirect chain.
+    // be the first URL in the redirect chain. The URLs in |sanitized_urls| are
+    // expected to be non-empty.
     NavigationData CopyWithSanitizedUrls(
         std::vector<GURL> sanitized_urls) const;
 
-    // TODO(csharrison): Convert these URLs to vector<GURL>.
-    // The final, canonical URL for this source.
-    GURL url;
-
-    // The initial URL for this source.
-    GURL initial_url;
+    // The URLs associated with this sources navigation. Some notes:
+    // - This will always contain at least one element.
+    // - For non navigation sources, this will contain exactly one element.
+    // - For navigation sources, this will only contain at most two elements,
+    //   one for the first URL in the redirect chain and one for the final URL
+    //   that committed.
+    //   TODO(crbug.com/869123): This may end up containing all the URLs in the
+    //   redirect chain for navigation sources.
+    std::vector<GURL> urls;
 
     // The previous source id for this tab.
     SourceId previous_source_id = kInvalidSourceId;
@@ -64,8 +76,9 @@ class METRICS_EXPORT UkmSource {
 
   ukm::SourceId id() const { return id_; }
 
-  const GURL& initial_url() const { return navigation_data_.initial_url; }
-  const GURL& url() const { return navigation_data_.url; }
+  const GURL& url() const { return navigation_data_.urls.back(); }
+
+  const std::vector<GURL>& urls() const { return navigation_data_.urls; }
 
   const NavigationData& navigation_data() const { return navigation_data_; }
 
