@@ -489,21 +489,21 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   uint32_t private_footprint_total_kb = 0;
   uint32_t renderer_private_footprint_total_kb = 0;
   uint32_t shared_footprint_total_kb = 0;
-  bool record_uma = pid_scope_ == base::kNullProcessId;
+  bool emit_metrics_for_all_processes = pid_scope_ == base::kNullProcessId;
 
   base::Time now = base::Time::Now();
   for (const auto& pmd : global_dump_->process_dumps()) {
     private_footprint_total_kb += pmd.os_dump().private_footprint_kb;
     shared_footprint_total_kb += pmd.os_dump().shared_footprint_kb;
 
-    if (!record_uma && pid_scope_ != pmd.pid())
+    if (!emit_metrics_for_all_processes && pid_scope_ != pmd.pid())
       continue;
 
     switch (pmd.process_type()) {
       case memory_instrumentation::mojom::ProcessType::BROWSER: {
-        EmitBrowserMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
-                                 GetUkmRecorder(),
-                                 GetProcessUptime(now, pmd.pid()), record_uma);
+        EmitBrowserMemoryMetrics(
+            pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
+            GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
@@ -522,26 +522,26 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         }
 
         int number_of_extensions = GetNumberOfExtensions(pmd.pid());
-        EmitRendererMemoryMetrics(pmd, page_info, GetUkmRecorder(),
-                                  number_of_extensions,
-                                  GetProcessUptime(now, pmd.pid()), record_uma);
+        EmitRendererMemoryMetrics(
+            pmd, page_info, GetUkmRecorder(), number_of_extensions,
+            GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         break;
       }
       case memory_instrumentation::mojom::ProcessType::GPU: {
         EmitGpuMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
                              GetUkmRecorder(), GetProcessUptime(now, pmd.pid()),
-                             record_uma);
+                             emit_metrics_for_all_processes);
         break;
       }
       case memory_instrumentation::mojom::ProcessType::UTILITY: {
         if (pmd.pid() == content::GetProcessIdForAudioService()) {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
-              GetProcessUptime(now, pmd.pid()), record_uma);
+              GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         } else {
           EmitUtilityMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
-              GetProcessUptime(now, pmd.pid()), record_uma);
+              GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         }
         break;
       }
@@ -552,7 +552,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     }
   }
 
-  if (record_uma) {
+  if (emit_metrics_for_all_processes) {
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / 1024);
@@ -562,10 +562,11 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
                                   renderer_private_footprint_total_kb / 1024);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",
                                   shared_footprint_total_kb / 1024);
+
+    Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
+        .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
+        .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / 1024)
+        .Record(GetUkmRecorder());
   }
 
-  Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
-      .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
-      .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / 1024)
-      .Record(GetUkmRecorder());
 }
