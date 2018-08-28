@@ -164,7 +164,6 @@ void AudioContext::Trace(blink::Visitor* visitor) {
 
 ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
-  GraphAutoLocker locker(this);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
