@@ -146,11 +146,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int, kFrameImageYInsetKey, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideCaptionButtonsInTabletModeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveImpliedByFullscreen, true);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveIsActive, false);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
-                                   kImmersiveTopContainerBoundsInScreen,
-                                   nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool,
                              kIsDeferredTabDraggingTargetWindowKey,
                              false);
