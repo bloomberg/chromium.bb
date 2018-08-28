@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -87,6 +88,14 @@ void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   }
 
   StartFetchers();
+}
+
+std::unique_ptr<OAuth2TokenService::Request>
+ArcAuthContext::StartAccessTokenRequest(
+    const OAuth2TokenService::ScopeSet& scopes,
+    OAuth2TokenService::Consumer* consumer) {
+  DCHECK(token_service_->RefreshTokenIsAvailable(account_id_));
+  return token_service_->StartRequest(account_id_, scopes, consumer);
 }
 
 void ArcAuthContext::OnRefreshTokenAvailable(const std::string& account_id) {
