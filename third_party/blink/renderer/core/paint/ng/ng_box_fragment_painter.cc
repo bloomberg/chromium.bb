@@ -120,6 +120,14 @@ bool HitTestCulledInlineAncestors(HitTestResult& result,
   return false;
 }
 
+// Returns if this fragment may not be laid out by LayoutNG.
+bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
+  // Fallback to LayoutObject if this is a root of NG block layout.
+  // If this box is for this painter, LayoutNGBlockFlow will call this back.
+  // Otherwise it calls legacy painters.
+  return fragment.IsBlockFormattingContextRoot();
+}
+
 }  // anonymous namespace
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
@@ -343,19 +351,6 @@ void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
     NOTREACHED();
   }
 }
-
-namespace {
-bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
-  // Fallback to LayoutObject if this is a root of NG block layout.
-  // If this box is for this painter, LayoutNGBlockFlow will call back.
-  if (fragment.IsBlockFormattingContextRoot())
-    return true;
-
-  // TODO(kojii): Review if this is still needed.
-  LayoutObject* layout_object = fragment.GetLayoutObject();
-  return layout_object->IsLayoutReplaced();
-}
-}  // anonymous namespace
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   for (const auto& child : box_fragment_.Children()) {
