@@ -162,6 +162,10 @@ SignedExchangeHandler::~SignedExchangeHandler() = default;
 SignedExchangeHandler::SignedExchangeHandler()
     : load_flags_(net::LOAD_NORMAL), weak_factory_(this) {}
 
+const GURL& SignedExchangeHandler::GetFallbackUrl() const {
+  return prologue_fallback_url_and_after_.fallback_url();
+}
+
 void SignedExchangeHandler::SetupBuffers(size_t size) {
   header_buf_ = base::MakeRefCounted<net::IOBuffer>(size);
   header_read_buf_ =
@@ -255,11 +259,9 @@ bool SignedExchangeHandler::ParsePrologueBeforeFallbackUrl() {
               reinterpret_cast<uint8_t*>(header_buf_->data()),
               signed_exchange_prologue::BeforeFallbackUrl::kEncodedSizeInBytes),
           devtools_proxy_.get());
-  if (!prologue_before_fallback_url_.is_valid()) {
-    // TODO(crbug.com/874323): We should proceed anyway to extract fallback
-    // url for redirect.
-    return false;
-  }
+
+  // Note: We will proceed even if |!prologue_before_fallback_url_.is_valid()|
+  //       to attempt reading `fallbackUrl`.
 
   // Set up a new buffer for reading
   // |signed_exchange_prologue::FallbackUrlAndAfter|.
@@ -279,8 +281,6 @@ bool SignedExchangeHandler::ParsePrologueFallbackUrlAndAfter() {
               prologue_before_fallback_url_.ComputeFallbackUrlAndAfterLength()),
           prologue_before_fallback_url_, devtools_proxy_.get());
   if (!prologue_fallback_url_and_after_.is_valid()) {
-    // TODO(crbug.com/874323): Trigger fallback redirect if
-    // |prologue_fallback_url_and_after_.fallback_url().is_valid()|.
     return false;
   }
 
@@ -297,8 +297,6 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                "SignedExchangeHandler::ParseHeadersAndFetchCertificate");
   DCHECK_EQ(state_, State::kReadingHeaders);
 
-  const GURL& fallback_url = prologue_fallback_url_and_after_.fallback_url();
-
   base::StringPiece data(header_buf_->data(), header_read_buf_->size());
   base::StringPiece signature_header_field = data.substr(
       0, prologue_fallback_url_and_after_.signature_header_field_length());
@@ -306,8 +304,9 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
       base::as_bytes(base::make_span(data.substr(
           prologue_fallback_url_and_after_.signature_header_field_length(),
           prologue_fallback_url_and_after_.cbor_header_length())));
-  envelope_ = SignedExchangeEnvelope::Parse(
-      fallback_url, signature_header_field, cbor_header, devtools_proxy_.get());
+  envelope_ =
+      SignedExchangeEnvelope::Parse(GetFallbackUrl(), signature_header_field,
+                                    cbor_header, devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
   if (!envelope_) {
@@ -347,7 +346,7 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
         nullptr);
   }
   std::move(headers_callback_)
-      .Run(error, envelope_ ? envelope_->request_url() : GURL(), std::string(),
+      .Run(error, GetFallbackUrl(), std::string(),
            network::ResourceResponseHead(), nullptr);
   state_ = State::kHeadersCallbackCalled;
 }

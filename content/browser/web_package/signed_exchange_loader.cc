@@ -271,7 +271,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     std::unique_ptr<net::SourceStream> payload_stream) {
   if (error) {
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
-        !should_redirect_on_failure_ || request_url.is_empty()) {
+        !should_redirect_on_failure_ || !request_url.is_valid()) {
       // Let the request fail.
       // This will eventually delete |this|.
       forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
