@@ -373,7 +373,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=795030)
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['passthrough', 'opengl'], bug=794341)
-    self.Flaky('conformance2/rendering/attrib-type-match.html',
+    self.Fail('conformance2/rendering/attrib-type-match.html',
         ['passthrough', 'opengl'], bug=814905)
 
     # Passthrough command decoder / OpenGL / Windows
