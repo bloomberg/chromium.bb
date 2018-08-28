@@ -69,6 +69,9 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
 const CGFloat kButtonDefaultFontSize = 15.0;
 // Horizontal width representing UIButton's padding.
 const CGFloat kButtonHorizontalPadding = 30.0;
+// Vertical offset from the top, to center search bar and cancel button in the
+// header.
+const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 }  // namespace
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
@@ -206,6 +209,16 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if (@available(iOS 11, *)) {
     self.navigationItem.searchController = self.searchController;
     self.navigationItem.hidesSearchBarWhenScrolling = NO;
+
+    // Center search bar and cancel button vertically so it looks centered
+    // in the header when searching.
+    UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
+    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+        offset;
+    UIBarButtonItem* cancelButton = [UIBarButtonItem
+        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+    [cancelButton setTitlePositionAdjustment:offset
+                               forBarMetrics:UIBarMetricsDefault];
   } else {
     self.tableView.tableHeaderView = self.searchController.searchBar;
   }
