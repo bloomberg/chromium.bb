@@ -227,8 +227,6 @@ void HeadlessBrowserTest::FinishAsynchronousTest() {
 HeadlessAsyncDevTooledBrowserTest::HeadlessAsyncDevTooledBrowserTest()
     : browser_context_(nullptr),
       web_contents_(nullptr),
-      devtools_client_(HeadlessDevToolsClient::Create()),
-      browser_devtools_client_(HeadlessDevToolsClient::Create()),
       render_process_exited_(false) {}
 
 HeadlessAsyncDevTooledBrowserTest::~HeadlessAsyncDevTooledBrowserTest() =
@@ -252,6 +250,8 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
+  devtools_client_ = HeadlessDevToolsClient::Create();
+  browser_devtools_client_ = HeadlessDevToolsClient::Create();
   interceptor_ = std::make_unique<TestNetworkInterceptor>();
   HeadlessBrowserContext::Builder builder =
       browser()->CreateBrowserContextBuilder();

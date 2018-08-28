@@ -447,9 +447,7 @@ class HeadlessWebContentsBeginFrameControlTest
       public headless_experimental::ExperimentalObserver,
       public page::Observer {
  public:
-  HeadlessWebContentsBeginFrameControlTest()
-      : browser_devtools_client_(HeadlessDevToolsClient::Create()),
-        devtools_client_(HeadlessDevToolsClient::Create()) {}
+  HeadlessWebContentsBeginFrameControlTest() {}
 
   void SetUp() override {
     EnablePixelOutput();
@@ -463,6 +461,8 @@ class HeadlessWebContentsBeginFrameControlTest
       std::unique_ptr<headless_experimental::BeginFrameResult> result) {}
 
   void RunTest() {
+    browser_devtools_client_ = HeadlessDevToolsClient::Create();
+    devtools_client_ = HeadlessDevToolsClient::Create();
     browser_context_ = browser()->CreateBrowserContextBuilder().Build();
     browser()->SetDefaultBrowserContext(browser_context_);
     browser()->GetDevToolsTarget()->AttachClient(

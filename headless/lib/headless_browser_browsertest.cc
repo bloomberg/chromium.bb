@@ -418,7 +418,7 @@ class CrashReporterTest : public HeadlessBrowserTest,
                           public HeadlessWebContents::Observer,
                           inspector::ExperimentalObserver {
  public:
-  CrashReporterTest() : devtools_client_(HeadlessDevToolsClient::Create()) {}
+  CrashReporterTest() {}
   ~CrashReporterTest() override = default;
 
   void SetUp() override {
@@ -439,6 +439,7 @@ class CrashReporterTest : public HeadlessBrowserTest,
   // HeadlessWebContents::Observer implementation:
   void DevToolsTargetReady() override {
     EXPECT_TRUE(web_contents_->GetDevToolsTarget());
+    devtools_client_ = HeadlessDevToolsClient::Create();
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
     devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
   }

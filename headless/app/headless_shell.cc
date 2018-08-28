@@ -141,7 +141,6 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine* command_line) {
 
 HeadlessShell::HeadlessShell()
     : browser_(nullptr),
-      devtools_client_(HeadlessDevToolsClient::Create()),
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
       web_contents_(nullptr),
       browser_context_(nullptr),
@@ -155,6 +154,7 @@ HeadlessShell::~HeadlessShell() = default;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   browser_ = browser;
+  devtools_client_ = HeadlessDevToolsClient::Create();
   file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
