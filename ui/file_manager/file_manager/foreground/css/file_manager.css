@@ -1678,7 +1678,7 @@ body:not([type='saveas-file']) #filename-input-box {
 
 body[type='folder'] .file,
 body[type='upload-folder'] .file,
-body[drive] .dialog-container[connection='offline'] .dim-offline {
+.dialog-container[connection='offline'] .dim-offline {
   opacity: 0.4;
 }
 
