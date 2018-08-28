@@ -468,8 +468,7 @@ TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
 
 // Tests that the context menu of internal app  is correct.
 TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenu) {
-  for (const auto& internal_app :
-       app_list::GetInternalAppList(profile()->IsGuestSession())) {
+  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
     if (!internal_app.show_in_launcher)
       continue;
 
@@ -499,8 +498,7 @@ TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenu) {
 
 // Tests that the number of context menu options of internal app is correct.
 TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
-  for (const auto& internal_app :
-       app_list::GetInternalAppList(profile()->IsGuestSession())) {
+  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
     const std::string app_id = internal_app.app_id;
     const ash::ShelfID shelf_id(app_id);
     // Pin internal app.

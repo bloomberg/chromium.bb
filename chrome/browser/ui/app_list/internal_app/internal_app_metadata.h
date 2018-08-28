@@ -52,8 +52,9 @@ struct InternalApp {
   int searchable_string_resource_id = 0;
 };
 
-// Returns a list of Chrome OS internal apps, which are searchable in launcher.
-const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode);
+// Returns a list of Chrome OS internal apps, which are searchable in launcher
+// for |profile|.
+const std::vector<InternalApp>& GetInternalAppList(const Profile* profile);
 
 // Returns InternalApp by |app_id|.
 // Returns nullptr if |app_id| does not correspond to an internal app.
@@ -97,7 +98,7 @@ InternalAppName GetInternalAppNameByAppId(
 // If |apps_name| is not nullptr, it will be the concatenated string of these
 // internal apps' name.
 size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name,
-                                                    bool is_guest_mode);
+                                                    const Profile* profile);
 
 }  // namespace app_list
 

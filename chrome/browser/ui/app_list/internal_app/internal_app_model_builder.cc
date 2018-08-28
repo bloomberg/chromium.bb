@@ -14,8 +14,7 @@ InternalAppModelBuilder::InternalAppModelBuilder(
     : AppListModelBuilder(controller, InternalAppItem::kItemType) {}
 
 void InternalAppModelBuilder::BuildModel() {
-  for (const auto& internal_app :
-       app_list::GetInternalAppList(profile()->IsGuestSession())) {
+  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
     if (!internal_app.show_in_launcher)
       continue;
 
