@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -42,19 +44,16 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
-#endif
-
 namespace app_list {
 
 namespace {
 constexpr char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
 constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
 constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
-}  // namespace
 
-const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
+const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
+                                                       const Profile* profile) {
+  DCHECK(get_all || profile);
   static const base::NoDestructor<std::vector<InternalApp>>
       internal_app_list_static(
           {{kInternalAppIdKeyboardShortcutViewer,
@@ -78,14 +77,7 @@ const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
             /*recommendable=*/true,
             /*searchable=*/false,
             /*show_in_launcher=*/false, InternalAppName::kContinueReading,
-            /*searchable_string_resource_id=*/0},
-
-           {kInternalAppIdDiscover, IDS_INTERNAL_APP_DISCOVER,
-            IDR_DISCOVER_APP_192,
-            /*recommendable=*/false,
-            /*searchable=*/true,
-            /*show_in_launcher=*/true, InternalAppName::kDiscover,
-            /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER}});
+            /*searchable_string_resource_id=*/0}});
 
   static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
   internal_app_list->clear();
@@ -93,7 +85,8 @@ const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
                             internal_app_list_static->begin(),
                             internal_app_list_static->end());
 
-  if (!is_guest_mode) {
+  const bool add_camera_app = get_all || !profile->IsGuestSession();
+  if (add_camera_app) {
     internal_app_list->push_back(
         {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
          /*recommendable=*/true,
@@ -101,11 +94,29 @@ const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
          /*show_in_launcher=*/true, InternalAppName::kCamera,
          /*searchable_string_resource_id=*/0});
   }
+
+  const bool add_discover_app =
+      get_all || !chromeos::ProfileHelper::IsEphemeralUserProfile(profile);
+  if (add_discover_app) {
+    internal_app_list->push_back(
+        {kInternalAppIdDiscover, IDS_INTERNAL_APP_DISCOVER,
+         IDR_DISCOVER_APP_192,
+         /*recommendable=*/false,
+         /*searchable=*/true,
+         /*show_in_launcher=*/true, InternalAppName::kDiscover,
+         /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
+  }
   return *internal_app_list;
 }
 
+}  // namespace
+
+const std::vector<InternalApp>& GetInternalAppList(const Profile* profile) {
+  return GetInternalAppListImpl(false, profile);
+}
+
 const InternalApp* FindInternalApp(const std::string& app_id) {
-  for (const auto& app : GetInternalAppList(false)) {
+  for (const auto& app : GetInternalAppListImpl(true, nullptr)) {
     if (app_id == app.app_id)
       return &app;
   }
@@ -262,10 +273,10 @@ InternalAppName GetInternalAppNameByAppId(
 }
 
 size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name,
-                                                    bool is_guest_mode) {
+                                                    const Profile* profile) {
   size_t num_of_internal_apps_show_in_launcher = 0u;
   std::vector<std::string> internal_apps_name;
-  for (const auto& app : GetInternalAppList(is_guest_mode)) {
+  for (const auto& app : GetInternalAppList(profile)) {
     if (app.show_in_launcher) {
       ++num_of_internal_apps_show_in_launcher;
       if (apps_name) {

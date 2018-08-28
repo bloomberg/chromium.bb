@@ -75,7 +75,7 @@ TEST_F(InternalAppModelBuilderTest, Build) {
   std::string internal_apps_name;
   CreateBuilder(false);
   EXPECT_EQ(app_list::GetNumberOfInternalAppsShowInLauncherForTest(
-                &internal_apps_name, profile()->IsGuestSession()),
+                &internal_apps_name, profile()),
             model_updater_->ItemCount());
   EXPECT_EQ(internal_apps_name, GetModelContent(model_updater_.get()));
 }
@@ -86,7 +86,7 @@ TEST_F(InternalAppModelBuilderTest, BuildGuestMode) {
   std::string internal_apps_name;
   CreateBuilder(true);
   EXPECT_EQ(app_list::GetNumberOfInternalAppsShowInLauncherForTest(
-                &internal_apps_name, profile()->IsGuestSession()),
+                &internal_apps_name, profile()),
             model_updater_->ItemCount());
   EXPECT_EQ(internal_apps_name, GetModelContent(model_updater_.get()));
 }
