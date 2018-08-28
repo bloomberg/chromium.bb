@@ -191,6 +191,7 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
   MOCK_METHOD2(UpdateRegisteredIds,
                void(const InvalidationObjectIdSet& ids,
                     const std::string& token));
+  MOCK_METHOD0(Init, void());
 };
 
 class FCMSyncInvalidationListenerTest : public testing::Test {
