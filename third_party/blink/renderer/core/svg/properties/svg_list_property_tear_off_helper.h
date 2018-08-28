@@ -97,6 +97,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
       return;
     }
     ToDerived()->Target()->Clear();
+    ToDerived()->CommitChange();
   }
 
   ItemTearOffType* initialize(ItemTearOffType* item,
