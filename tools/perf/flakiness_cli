@@ -8,14 +8,10 @@
 import argparse
 import sys
 
-from test_results import api
-from test_results import frames
+from test_results import core
 
 
 def main():
-  if frames.pandas is None:
-    return 'ERROR: This tool requires pandas to run, try: pip install pandas'
-
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers(dest='action')
   subparsers.required = True
@@ -27,14 +23,13 @@ def main():
   args = parser.parse_args()
 
   if args.action == 'builders':
-    data = api.GetBuilders()
-    print frames.BuildersDataFrame(data)
+    print core.GetBuilders()
   elif args.action == 'results':
-    data = api.GetTestResults(args.master, args.builder, args.test_type)
-    print frames.TestResultsDataFrame(data)
+    print core.GetTestResults(args.master, args.builder, args.test_type)
   else:
     raise NotImplementedError(args.action)
 
 
 if __name__ == '__main__':
+  core.CheckDependencies()
   sys.exit(main())

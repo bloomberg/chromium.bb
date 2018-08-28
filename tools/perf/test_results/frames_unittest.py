@@ -2,7 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
+import os
+import shutil
+import tempfile
 import unittest
+
+import mock
 
 from test_results import frames
 
@@ -171,3 +177,46 @@ class TestDataFrames(unittest.TestCase):
     }
     with self.assertRaises(AssertionError):
       frames.TestResultsDataFrame(data)
+
+  def testGetWithCache(self):
+    def make_frame_1():
+      # test_2 was failing.
+      return frames.pandas.DataFrame.from_records(
+          [['test_1', 'P'], ['test_2', 'Q']], columns=('test_name', 'result'))
+
+    def make_frame_2():
+      # test_2 is now passing.
+      return frames.pandas.DataFrame.from_records(
+          [['test_1', 'P'], ['test_2', 'P']], columns=('test_name', 'result'))
+
+    def make_frame_fail():
+      self.fail('make_frame should not be called')
+
+    expected_1 = make_frame_1()
+    expected_2 = make_frame_2()
+    filename = 'example_frame.pkl'
+    one_hour = datetime.timedelta(hours=1)
+    temp_dir = tempfile.mkdtemp()
+    try:
+      with mock.patch.object(
+          frames, 'CACHE_DIR', os.path.join(temp_dir, 'cache')):
+        # Cache is empty, so the frame is created from our function.
+        df = frames.GetWithCache(filename, make_frame_1, one_hour)
+        self.assertTrue(df.equals(expected_1))
+
+        # On the second try, the frame can be retrieved from cache; the
+        # make_frame function should not be called.
+        df = frames.GetWithCache(filename, make_frame_fail, one_hour)
+        self.assertTrue(df.equals(expected_1))
+
+        # Pretend two hours have elapsed, we should now get a new data frame.
+        last_update = datetime.datetime(2018, 8, 24, 15)
+        pretend_now = datetime.datetime(2018, 8, 24, 17)
+        with mock.patch.object(datetime, 'datetime') as dt:
+          dt.utcfromtimestamp.return_value = last_update
+          dt.utcnow.return_value = pretend_now
+          df = frames.GetWithCache(filename, make_frame_2, one_hour)
+        self.assertFalse(df.equals(expected_1))
+        self.assertTrue(df.equals(expected_2))
+    finally:
+      shutil.rmtree(temp_dir)

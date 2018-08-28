@@ -4,11 +4,17 @@
 
 """Module to convert json responses from test-results into data frames."""
 
+import datetime
+import os
+
 try:
   import pandas
 except ImportError:
   pandas = None
 
+
+CACHE_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', 'data', 'test_results'))
 
 TEST_RESULTS_COLUMNS = (
     'timestamp', 'builder', 'build_number', 'commit_pos', 'test_suite',
@@ -156,3 +162,33 @@ def TestResultsDataFrame(data):
       df = pandas.DataFrame(columns=TEST_RESULTS_COLUMNS)
 
     return df
+
+
+def GetWithCache(filename, frame_maker, expires_after):
+  """Get a data frame from cache or, if necessary, create and cache it.
+
+  Args:
+    filename: The name of a file for the cached copy of the data frame,
+      it will be stored in the CACHE_DIR.
+    frame_maker: A function that takes no arguments and returns a data frame,
+      only called to create the data frame if the cached copy does not exist
+      or is too old.
+    expires_after: A datetime.timedelta object, the cached copy will not be
+      used if it was created longer that this time ago.
+  """
+  filepath = os.path.join(CACHE_DIR, filename)
+  try:
+    timestamp = os.path.getmtime(filepath)
+    last_modified = datetime.datetime.utcfromtimestamp(timestamp)
+    expired = datetime.datetime.utcnow() > last_modified + expires_after
+  except OSError:  # If the file does not exist.
+    expired = True
+
+  if expired:
+    df = frame_maker()
+    if not os.path.exists(CACHE_DIR):
+      os.makedirs(CACHE_DIR)
+    df.to_pickle(filepath)
+  else:
+    df = pandas.read_pickle(filepath)
+  return df
