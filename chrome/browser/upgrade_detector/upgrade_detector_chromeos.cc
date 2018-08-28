@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -231,6 +232,10 @@ void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
                             to_more_stable_channel
                                 ? RollbackReason::kToMoreStableChannel
                                 : RollbackReason::kEnterpriseRollback);
+  LOG(WARNING) << "Device is rolling back, will require powerwash. Reason: "
+               << to_more_stable_channel
+               << ", current_channel: " << current_channel
+               << ", target_channel: " << target_channel;
 
   // ChromeOS shows upgrade arrow once the upgrade becomes available.
   NotifyOnUpgrade();
