@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -282,7 +283,7 @@ std::string CrostiniRegistryService::Registration::ContainerName() const {
 
 std::string CrostiniRegistryService::Registration::Name() const {
   if (is_terminal_app_)
-    return kCrostiniTerminalAppName;
+    return l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_NAME);
   return LocalizedString(kAppNameKey);
 }
 

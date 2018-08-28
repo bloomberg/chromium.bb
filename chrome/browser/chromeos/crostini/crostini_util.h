@@ -93,8 +93,7 @@ void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
 
-constexpr char kCrostiniTerminalAppName[] = "Terminal";
-// We can use any arbitrary well-formed extension id for the Terminal app, this
+// We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
 constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
 

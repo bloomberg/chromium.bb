@@ -13,8 +13,10 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using crostini::CrostiniTestHelper;
 
@@ -110,6 +112,10 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
     return crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
   }
 
+  std::string TerminalAppName() {
+    return l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_NAME);
+  }
+
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<CrostiniAppModelBuilder> builder_;
@@ -129,8 +135,8 @@ TEST_F(CrostiniAppModelBuilderTest, EnableCrostini) {
       GetAppIds(model_updater_.get()),
       testing::UnorderedElementsAre(kCrostiniFolderId, kCrostiniTerminalId));
   EXPECT_THAT(GetAppNames(model_updater_.get()),
-              testing::UnorderedElementsAre(
-                  kRootFolderName, GetFullName(kCrostiniTerminalAppName)));
+              testing::UnorderedElementsAre(kRootFolderName,
+                                            GetFullName(TerminalAppName())));
   SetCrostiniUIAllowedForTesting(false);
 }
 
@@ -145,7 +151,7 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
                   RegistryService()->GetRegisteredAppIds())));
   EXPECT_THAT(GetAppNames(model_updater_.get()),
               testing::UnorderedElementsAre(
-                  kRootFolderName, GetFullName(kCrostiniTerminalAppName),
+                  kRootFolderName, GetFullName(TerminalAppName()),
                   GetFullName(kDummpyApp1Name), GetFullName(kDummpyApp2Name)));
 
   test_helper.AddApp(
@@ -155,7 +161,7 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
                   RegistryService()->GetRegisteredAppIds())));
   EXPECT_THAT(GetAppNames(model_updater_.get()),
               testing::UnorderedElementsAre(
-                  kRootFolderName, GetFullName(kCrostiniTerminalAppName),
+                  kRootFolderName, GetFullName(TerminalAppName()),
                   GetFullName(kDummpyApp1Name), GetFullName(kDummpyApp2Name),
                   GetFullName(kBananaAppName)));
 }
@@ -195,7 +201,7 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
                   RegistryService()->GetRegisteredAppIds())));
   EXPECT_THAT(GetAppNames(model_updater_.get()),
               testing::UnorderedElementsAre(
-                  kRootFolderName, GetFullName(kCrostiniTerminalAppName),
+                  kRootFolderName, GetFullName(TerminalAppName()),
                   GetFullName(kDummpyApp1Name), GetFullName(kAppNewName)));
 }
 
