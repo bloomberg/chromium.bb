@@ -251,6 +251,8 @@ viz_component("service") {
       "display_embedder/compositor_overlay_candidate_validator_android.h",
       "frame_sinks/external_begin_frame_source_android.cc",
       "frame_sinks/external_begin_frame_source_android.h",
+      "gl/throw_uncaught_exception.cc",
+      "gl/throw_uncaught_exception.h",
     ]
 
     deps += [ ":service_jni_headers" ]
@@ -432,13 +434,17 @@ if (is_android) {
       "//base:base_java",
       "//ui/android:ui_full_java",
     ]
-    java_files = [ "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java" ]
+    java_files = [
+      "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",
+      "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",
+    ]
   }
 
   generate_jni("service_jni_headers") {
-    jni_package = "components/viz/service/frame_sinks"
+    jni_package = "components/viz/service"
     sources = [
       "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",
+      "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",
     ]
   }
 }

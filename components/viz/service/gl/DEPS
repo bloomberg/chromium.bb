@@ -10,6 +10,7 @@ include_rules = [
   "+gpu/ipc/service",
   "+gpu/vulkan",
   "+ipc",
+  "+jni",
   "+media/gpu",
   "+media/mojo",
   "+mojo/public/cpp",

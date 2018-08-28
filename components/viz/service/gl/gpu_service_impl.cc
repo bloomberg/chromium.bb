@@ -61,7 +61,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/throw_uncaught_exception.h"
+#include "components/viz/service/gl/throw_uncaught_exception.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -863,8 +863,7 @@ void GpuServiceImpl::Hang() {
 void GpuServiceImpl::ThrowJavaException() {
   DCHECK(io_runner_->BelongsToCurrentThread());
 #if defined(OS_ANDROID)
-  main_runner_->PostTask(
-      FROM_HERE, base::Bind([] { base::android::ThrowUncaughtException(); }));
+  ThrowUncaughtException();
 #else
   NOTREACHED() << "Java exception not supported on this platform.";
 #endif
