@@ -259,24 +259,32 @@ void ProfileSyncService::Initialize() {
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
-    DCHECK(sync_client_->GetSyncSessionsClient());
-    sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(
-        sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-        local_device_.get(), model_type_store_factory,
-        base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
-                            sync_enabled_weak_factory_.GetWeakPtr()),
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::SESSIONS,
-            base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
-  } else {
-    sessions_sync_manager_ =
-        std::make_unique<sync_sessions::SessionsSyncManager>(
-            sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-            local_device_.get(),
-            base::BindRepeating(
-                &ProfileSyncService::NotifyForeignSessionUpdated,
-                sync_enabled_weak_factory_.GetWeakPtr()));
+  // Not all |sync_client_|s will return a sync_sessions::SyncSessionsClient.
+  sync_sessions::SyncSessionsClient* sync_sessions_client =
+      sync_client_->GetSyncSessionsClient();
+  if (sync_sessions_client) {
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+      DCHECK(sync_client_->GetSyncSessionsClient());
+      sessions_sync_manager_ =
+          std::make_unique<sync_sessions::SessionSyncBridge>(
+              sync_client_->GetSyncSessionsClient(), &sync_prefs_,
+              local_device_.get(), model_type_store_factory,
+              base::BindRepeating(
+                  &ProfileSyncService::NotifyForeignSessionUpdated,
+                  sync_enabled_weak_factory_.GetWeakPtr()),
+              std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+                  syncer::SESSIONS,
+                  base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                      channel_)));
+    } else {
+      sessions_sync_manager_ =
+          std::make_unique<sync_sessions::SessionsSyncManager>(
+              sync_client_->GetSyncSessionsClient(), &sync_prefs_,
+              local_device_.get(),
+              base::BindRepeating(
+                  &ProfileSyncService::NotifyForeignSessionUpdated,
+                  sync_enabled_weak_factory_.GetWeakPtr()));
+    }
   }
 
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
@@ -288,6 +296,22 @@ void ProfileSyncService::Initialize() {
 
   data_type_controllers_ = BuildDataTypeControllerMap(
       sync_client_->CreateDataTypeControllers(local_device_.get()));
+
+  // If |sessions_sync_manager_| is null, make sure that certain data types
+  // are not enabled. This is because these data types will call into functions
+  // defined in ProfileSyncService which uses a |sessions_sync_manager_|.
+  if (!sessions_sync_manager_) {
+    DCHECK(data_type_controllers_.find(syncer::USER_EVENTS) ==
+           data_type_controllers_.end());
+    DCHECK(data_type_controllers_.find(syncer::FAVICON_IMAGES) ==
+           data_type_controllers_.end());
+    DCHECK(data_type_controllers_.find(syncer::FAVICON_TRACKING) ==
+           data_type_controllers_.end());
+    DCHECK(data_type_controllers_.find(syncer::PROXY_TABS) ==
+           data_type_controllers_.end());
+    DCHECK(data_type_controllers_.find(syncer::SESSIONS) ==
+           data_type_controllers_.end());
+  }
 
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);
