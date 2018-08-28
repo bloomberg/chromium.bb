@@ -70,6 +70,7 @@ extern const char kChromeUIExtensionIconURL[];
 extern const char kChromeUIExtensionsFrameHost[];
 extern const char kChromeUIExtensionsFrameURL[];
 extern const char kChromeUIExtensionsHost[];
+extern const char kChromeUIExtensionsInternalsHost[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFaviconHost[];
 extern const char kChromeUIFaviconURL[];
