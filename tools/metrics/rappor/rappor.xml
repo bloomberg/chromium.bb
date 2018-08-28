@@ -1192,6 +1192,29 @@ components/rappor/rappor_parameters.h.
     hope to gather enough data before NetworkService ships.
 
     TODO(lukasza): Around Q4 2018: Remove code after we've gathered enough data.
+
+    DEPRECATED: This metric incorrectly covers more than just requests from
+    content scripts - for example it also covers requests from GuestViews
+    (initiated by a Chrome App injecting scripts into GuestView).  For now
+    GuestView is outside the scope of Site Isolation so this metric has been
+    replaced by Extensions.CrossOriginFetchFromContentScript2.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Extensions.CrossOriginFetchFromContentScript2"
+    type="UMA_RAPPOR_TYPE">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    The ID of an extension which triggers a cross-origin request from its
+    content script if such a request results in a non-empty, non-4xx response
+    that would have been blocked by CORB if the request didn't come from a
+    content script.
+
+    Note that gathering of this data is not reimplemented in the NetworkService
+    version of Cross-Origin Read Blocking feature.  This should be okay since we
+    hope to gather enough data before NetworkService ships.
+
+    TODO(lukasza): Around Q4 2018: Remove code after we've gathered enough data.
   </summary>
 </rappor-metric>
 
