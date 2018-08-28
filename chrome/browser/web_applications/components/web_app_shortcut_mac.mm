@@ -32,7 +32,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/shell_integration.h"
@@ -180,7 +180,7 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
 
 void LaunchShimOnFileThread(bool launched_after_rebuild,
                             const web_app::ShortcutInfo& shortcut_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
   if (shim_path.empty() || !base::PathExists(shim_path) ||
@@ -215,7 +215,7 @@ void UpdatePlatformShortcutsInternal(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
     return;
@@ -228,7 +228,7 @@ void UpdatePlatformShortcutsInternal(
 
 void UpdateAndLaunchShimOnFileThread(
     const web_app::ShortcutInfo& shortcut_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
@@ -339,7 +339,7 @@ void GetImageResourcesOnUIThread(
 
 void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
                                     std::unique_ptr<ResourceIDToImage> images) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
   // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
@@ -941,7 +941,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutLocations& creation_locations,
                              ShortcutCreationReason creation_reason,
                              const ShortcutInfo& shortcut_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   if (AppShimsDisabledForTest())
     return true;
 
@@ -951,7 +951,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   shortcut_creator.DeleteShortcuts();
 }
@@ -963,7 +963,7 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const std::string profile_base_name = profile_path.BaseName().value();
   std::vector<base::FilePath> bundles = GetAllAppBundlesInPath(
       profile_path.Append(chrome::kWebAppDirname), profile_base_name);
