@@ -389,6 +389,11 @@ class NET_EXPORT HttpServerProperties {
   virtual void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) = 0;
 
+  // Marks |alternative_service| as broken until the default network changes.
+  // |alternative_service.host| must not be empty.
+  virtual void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      const AlternativeService& alternative_service) = 0;
+
   // Marks |alternative_service| as recently broken.
   // |alternative_service.host| must not be empty.
   virtual void MarkAlternativeServiceRecentlyBroken(
@@ -408,6 +413,13 @@ class NET_EXPORT HttpServerProperties {
   // |alternative_service.host| must not be empty.
   virtual void ConfirmAlternativeService(
       const AlternativeService& alternative_service) = 0;
+
+  // Called when the default network changes.
+  // Clears all the alternative services that were marked broken until the
+  // default network changed.
+  // Returns true if there is any broken alternative service affected by the
+  // default network change.
+  virtual bool OnDefaultNetworkChanged() = 0;
 
   // Returns all alternative service mappings.
   // Returned alternative services may have empty hostnames.

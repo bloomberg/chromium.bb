@@ -256,6 +256,17 @@ void HttpServerPropertiesManager::MarkAlternativeServiceBroken(
   ScheduleUpdatePrefs(MARK_ALTERNATIVE_SERVICE_BROKEN);
 }
 
+void HttpServerPropertiesManager::
+    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+        const AlternativeService& alternative_service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  http_server_properties_impl_
+      ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+          alternative_service);
+  ScheduleUpdatePrefs(
+      MARK_ALTERNATIVE_SERVICE_BROKEN_UNTIL_DEFAULT_NETWORK_CHANGES);
+}
+
 void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -290,6 +301,14 @@ void HttpServerPropertiesManager::ConfirmAlternativeService(
   // IsAlternativeServiceBroken. If that value changes, then call persist.
   if (old_value != new_value)
     ScheduleUpdatePrefs(CONFIRM_ALTERNATIVE_SERVICE);
+}
+
+bool HttpServerPropertiesManager::OnDefaultNetworkChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool changed = http_server_properties_impl_->OnDefaultNetworkChanged();
+  if (changed)
+    ScheduleUpdatePrefs(ON_DEFAULT_NETWORK_CHANGED);
+  return changed;
 }
 
 const AlternativeServiceMap&

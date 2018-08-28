@@ -481,6 +481,13 @@ void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
   broken_alternative_services_.MarkBroken(alternative_service);
 }
 
+void HttpServerPropertiesImpl::
+    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+        const AlternativeService& alternative_service) {
+  broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+}
+
 void HttpServerPropertiesImpl::MarkAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
   broken_alternative_services_.MarkRecentlyBroken(alternative_service);
@@ -499,6 +506,10 @@ bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
 void HttpServerPropertiesImpl::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
   broken_alternative_services_.Confirm(alternative_service);
+}
+
+bool HttpServerPropertiesImpl::OnDefaultNetworkChanged() {
+  return broken_alternative_services_.OnDefaultNetworkChanged();
 }
 
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()

@@ -115,6 +115,8 @@ class NET_EXPORT HttpServerPropertiesImpl
                                   alternative_service_info_vector) override;
   void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
+  void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      const AlternativeService& alternative_service) override;
   void MarkAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) override;
   bool IsAlternativeServiceBroken(
@@ -123,6 +125,7 @@ class NET_EXPORT HttpServerPropertiesImpl
       const AlternativeService& alternative_service) override;
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
+  bool OnDefaultNetworkChanged() override;
   const AlternativeServiceMap& alternative_service_map() const override;
   std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
       const override;

@@ -157,10 +157,12 @@ void BrokenAlternativeServices::Confirm(
   broken_alternative_services_on_default_network_.erase(alternative_service);
 }
 
-void BrokenAlternativeServices::OnDefaultNetworkChanged() {
+bool BrokenAlternativeServices::OnDefaultNetworkChanged() {
+  bool changed = !broken_alternative_services_on_default_network_.empty();
   while (!broken_alternative_services_on_default_network_.empty()) {
     Confirm(*broken_alternative_services_on_default_network_.begin());
   }
+  return changed;
 }
 
 void BrokenAlternativeServices::SetBrokenAndRecentlyBrokenAlternativeServices(

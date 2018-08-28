@@ -89,9 +89,11 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   // Changes the alternative service to be considered as working.
   void Confirm(const AlternativeService& alternative_service);
 
-  // All alternative services which were marked as broken until the default
-  // network changed will now be considered working.
-  void OnDefaultNetworkChanged();
+  // Clears all alternative services which were marked as broken until the
+  // default network changed, those services will now be considered working.
+  // Returns true if there was any broken alternative service affected by this
+  // network change.
+  bool OnDefaultNetworkChanged();
 
   // Sets broken and recently broken alternative services.
   // |broken_alternative_service_list|, |recently_broken_alternative_services|

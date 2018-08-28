@@ -112,6 +112,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
                                   alternative_service_info_vector) override;
   void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
+  void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      const AlternativeService& alternative_service) override;
   void MarkAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) override;
   bool IsAlternativeServiceBroken(
@@ -120,6 +122,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       const AlternativeService& alternative_service) override;
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
+  bool OnDefaultNetworkChanged() override;
   const AlternativeServiceMap& alternative_service_map() const override;
   std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
       const override;
@@ -166,7 +169,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
     DETECTED_CORRUPTED_PREFS = 12,
     SET_QUIC_SERVER_INFO = 13,
     CLEAR_SERVER_NETWORK_STATS = 14,
-    NUM_LOCATIONS = 15,
+    MARK_ALTERNATIVE_SERVICE_BROKEN_UNTIL_DEFAULT_NETWORK_CHANGES = 15,
+    ON_DEFAULT_NETWORK_CHANGED = 16,
+    NUM_LOCATIONS = 17,
   };
 
   // --------------------
