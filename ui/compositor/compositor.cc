@@ -167,8 +167,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
-  settings.gpu_rasterization_forced = features::IsUiGpuRasterizationEnabled();
-
   settings.use_rgba_4444 =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 
@@ -215,6 +213,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(animation_timeline_.get());
 
+  host_->SetHasGpuRasterizationTrigger(features::IsUiGpuRasterizationEnabled());
   host_->SetRootLayer(root_web_layer_);
   host_->SetVisible(true);
 
