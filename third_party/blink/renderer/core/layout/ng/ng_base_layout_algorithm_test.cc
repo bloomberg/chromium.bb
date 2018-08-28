@@ -86,7 +86,7 @@ scoped_refptr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
 
   return NGConstraintSpaceBuilder(
              writing_mode,
-             /* icb_size */ size.ConvertToPhysical(writing_mode))
+             /* icb_size */ NGPhysicalSize(LayoutUnit(800), LayoutUnit(600)))
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetTextDirection(direction)
