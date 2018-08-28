@@ -9,7 +9,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -131,6 +133,10 @@ class UnifiedConsentServiceTest : public testing::Test {
     syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
     pref_service_.registry()->RegisterBooleanPref(kSpellCheckDummyEnabled,
                                                   false);
+#if defined(OS_ANDROID)
+    pref_service_.registry()->RegisterStringPref(
+        contextual_search::GetPrefName(), "");
+#endif  // defined(OS_ANDROID)
   }
 
   void TearDown() override {
@@ -215,6 +221,9 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
   pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(contextual_search::IsEnabled(pref_service_));
+#endif  // defined(OS_ANDROID)
 
   // Disable unified consent does not disable any of the non-personalized
   // features.
@@ -485,6 +494,9 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_EQ(
       service_client_->GetServiceState(Service::kSafeBrowsingExtendedReporting),
       ServiceState::kDisabled);
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(contextual_search::IsEnabled(pref_service_));
+#endif  // defined(OS_ANDROID)
 
   // Consent is not revoked for the following services.
   EXPECT_EQ(service_client_->GetServiceState(Service::kAlternateErrorPages),
