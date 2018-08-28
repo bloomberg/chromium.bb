@@ -7328,6 +7328,7 @@ interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
     method createPolicy
+    method getPolicyNames
 interface TrustedURL
     static method create
     static method unsafelyCreate
@@ -10375,6 +10376,7 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
+    getter TrustedTypes
     getter applicationCache
     getter caches
     getter clientInformation
@@ -10526,7 +10528,6 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
-    getter trustedTypes
     getter visualViewport
     getter webgpu
     getter webkitStorageInfo
