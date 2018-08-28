@@ -86,13 +86,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     return nullptr;
   }
   bool HasPendingQueries() const override { return false; }
-  void ProcessPendingQueries(bool did_finish) override { NOTREACHED(); }
+  void ProcessPendingQueries(bool did_finish) override {}
   bool HasMoreIdleWork() const override { return false; }
   void PerformIdleWork() override { NOTREACHED(); }
-  bool HasPollingWork() const override {
-    NOTREACHED();
-    return false;
-  }
+  bool HasPollingWork() const override { return false; }
   void PerformPollingWork() override { NOTREACHED(); }
   TextureBase* GetTextureBase(uint32_t client_id) override {
     NOTREACHED();
@@ -344,6 +341,7 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 
 error::Error WebGPUDecoderImpl::HandleDummy(uint32_t immediate_data_size,
                                             const volatile void* cmd_data) {
+  DLOG(ERROR) << "WebGPUDecoderImpl::HandleDummy";
   return error::kNoError;
 }
 
