@@ -2247,7 +2247,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         av1_get_block_hash_value(
             what, what_stride, block_width, &hash_value1, &hash_value2,
-            x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
+            x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, x);
 
         const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
         // for intra, at lest one matching can be found, itself.

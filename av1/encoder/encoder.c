@@ -501,6 +501,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->td.mb.wsrc_buf);
   cpi->td.mb.wsrc_buf = NULL;
 
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++) {
+      aom_free(cpi->td.mb.hash_value_buffer[i][j]);
+      cpi->td.mb.hash_value_buffer[i][j] = NULL;
+    }
   aom_free(cpi->td.mb.mask_buf);
   cpi->td.mb.mask_buf = NULL;
 
@@ -2584,6 +2589,15 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                   (int32_t *)aom_memalign(
                       16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.wsrc_buf)));
 
+  for (int x = 0; x < 2; x++)
+    for (int y = 0; y < 2; y++)
+      CHECK_MEM_ERROR(
+          cm, cpi->td.mb.hash_value_buffer[x][y],
+          (uint32_t *)aom_malloc(AOM_BUFFER_SIZE_FOR_BLOCK_HASH *
+                                 sizeof(*cpi->td.mb.hash_value_buffer[0][0])));
+
+  cpi->td.mb.g_crc_initialized = 0;
+
   CHECK_MEM_ERROR(cm, cpi->td.mb.mask_buf,
                   (int32_t *)aom_memalign(
                       16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.mask_buf)));
@@ -2912,6 +2926,11 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
       aom_free(thread_data->td->wsrc_buf);
+      for (int x = 0; x < 2; x++)
+        for (int y = 0; y < 2; y++) {
+          aom_free(thread_data->td->hash_value_buffer[x][y]);
+          thread_data->td->hash_value_buffer[x][y] = NULL;
+        }
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
       av1_free_pc_tree(thread_data->td, num_planes);
@@ -3746,7 +3765,8 @@ static void set_restoration_unit_size(int width, int height, int sx, int sy,
   rst[2].restoration_unit_size = rst[1].restoration_unit_size;
 }
 
-static void init_ref_frame_bufs(AV1_COMMON *cm) {
+static void init_ref_frame_bufs(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
   int i;
   BufferPool *const pool = cm->buffer_pool;
   cm->new_fb_idx = INVALID_IDX;
@@ -3756,7 +3776,7 @@ static void init_ref_frame_bufs(AV1_COMMON *cm) {
   }
   if (cm->seq_params.force_screen_content_tools) {
     for (i = 0; i < FRAME_BUFFERS; ++i) {
-      av1_hash_table_init(&pool->frame_bufs[i].hash_table);
+      av1_hash_table_init(&pool->frame_bufs[i].hash_table, &cpi->td.mb);
     }
   }
 }
@@ -3774,7 +3794,7 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
     seq_params->use_highbitdepth = use_highbitdepth;
 
     alloc_raw_frame_buffers(cpi);
-    init_ref_frame_bufs(cm);
+    init_ref_frame_bufs(cpi);
     alloc_util_frame_buffers(cpi);
 
     init_motion_estimation(cpi);  // TODO(agrange) This can be removed.
@@ -5674,7 +5694,7 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
       av1_get_block_hash_value(
           cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
           block_size, &hash_value_1, &hash_value_2,
-          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH));
+          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
       // Hashing does not work for highbitdepth currently.
       // TODO(Roger): Make it work for highbitdepth.
       if (av1_use_hash_me(&cpi->common)) {
