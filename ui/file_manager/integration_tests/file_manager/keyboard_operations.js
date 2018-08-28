@@ -207,7 +207,7 @@ function renameFile(appId, oldName, newName) {
  * @return {Promise} Promise to be fulfilled on success.
  */
 function testRenameFolder(path, treeItem) {
-  let windowId;
+  let appId;
 
   const textInput = '#file-list .table-row[renaming] input.rename';
 
@@ -216,58 +216,58 @@ function testRenameFolder(path, treeItem) {
         null, path, resolve, [ENTRIES.photos], [ENTRIES.photos]);
   }).then(function(results) {
     // Expand the directory tree |treeItem|.
-    windowId = results.windowId;
-    return expandRoot(windowId, treeItem);
+    appId = results.windowId;
+    return expandRoot(appId, treeItem);
   }).then(function() {
     // Check: the photos folder should be shown in the directory tree.
-    return waitForDirectoryTreeItem(windowId, 'photos');
+    return waitForDirectoryTreeItem(appId, 'photos');
   }).then(function() {
     // Focus the file-list.
-    return remoteCall.callRemoteTestUtil('focus', windowId, ['#file-list']);
+    return remoteCall.callRemoteTestUtil('focus', appId, ['#file-list']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Press ArrowDown to select the photos folder.
     const select = ['#file-list', 'ArrowDown', 'Down', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, select);
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, select);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Await file list item selection.
     const selectedItem = '#file-list .table-row[selected]';
-    return remoteCall.waitForElement(windowId, selectedItem);
+    return remoteCall.waitForElement(appId, selectedItem);
   }).then(function() {
     // Press Ctrl+Enter to rename the photos folder.
     const key = ['#file-list', 'Enter', 'Enter', true, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Check: the renaming text input should be shown in the file list.
-    return remoteCall.waitForElement(windowId, textInput);
+    return remoteCall.waitForElement(appId, textInput);
   }).then(function() {
     // Type the new folder name.
     return remoteCall.callRemoteTestUtil(
-        'inputText', windowId, [textInput, 'bbq photos']);
+        'inputText', appId, [textInput, 'bbq photos']);
   }).then(function() {
     // Send Enter to the list to attempt to enter the directory.
     const key = ['#list-container', 'Enter', 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Send Enter to the text input to complete renaming.
     const key = [textInput, 'Enter', 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Wait until renaming is complete.
     const renamingItem = '#file-list .table-row[renaming]';
-    return remoteCall.waitForElementLost(windowId, renamingItem);
+    return remoteCall.waitForElementLost(appId, renamingItem);
   }).then(function() {
     // Check: the renamed folder should be shown in the file list.
     const expectedRows = [['bbq photos', '--', 'Folder', '']];
     return remoteCall.waitForFiles(
-        windowId, expectedRows, {ignoreLastModifiedTime: true});
+        appId, expectedRows, {ignoreLastModifiedTime: true});
   }).then(function() {
     // Check: the renamed folder should be shown in the directory tree.
-    return waitForDirectoryTreeItem(windowId, 'bbq photos');
+    return waitForDirectoryTreeItem(appId, 'bbq photos');
   });
 }
 
