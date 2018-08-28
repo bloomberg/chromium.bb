@@ -642,7 +642,7 @@ class PictureInPictureLazyBackgroundPageApiTest
 // Tests that the lazy background page stays alive while a video is playing in
 // Picture-in-Picture mode.
 IN_PROC_BROWSER_TEST_F(PictureInPictureLazyBackgroundPageApiTest,
-                       PictureInPictureInBackgroundPage) {
+                       DISABLED_PictureInPictureInBackgroundPage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtensionAndWait("browser_action_picture_in_picture"));
 
