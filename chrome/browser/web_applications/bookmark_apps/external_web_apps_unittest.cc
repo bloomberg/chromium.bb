@@ -49,7 +49,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   for (const char* url : urls) {
     EXPECT_TRUE(base::ContainsValue(
         app_infos,
-        web_app::PendingAppManager::AppInfo::CreateForDefaultApp(
+        web_app::PendingAppManager::AppInfo(
             GURL(url), web_app::PendingAppManager::LaunchContainer::kWindow)));
   }
 }
