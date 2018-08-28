@@ -17,6 +17,7 @@ namespace app_list {
 namespace features {
 
 // Please keep these features sorted.
+// TODO(newcomer|weidongg): Sort these features.
 
 // Enables the answer card in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAnswerCard;
@@ -36,6 +37,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 // always shown right on top of the wallpaper. Home button will minimize all
 // windows instead of toggling the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncher;
+
+// Enables using gestures to show or hide the home launcher.
+// TODO(crbug.com/872319): Remove this after the feature is launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncherGestures;
 
 // Enables the Settings shortcut search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
@@ -69,6 +74,7 @@ bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherEnabled();
+bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
 bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
