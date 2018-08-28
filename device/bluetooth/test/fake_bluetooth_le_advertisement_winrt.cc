@@ -126,6 +126,9 @@ std::vector<ComPtr<IBluetoothLEAdvertisementDataSection>> ToDataSections(
 
 }  // namespace
 
+FakeBluetoothLEAdvertisementWinrt::FakeBluetoothLEAdvertisementWinrt() =
+    default;
+
 FakeBluetoothLEAdvertisementWinrt::FakeBluetoothLEAdvertisementWinrt(
     base::Optional<std::string> local_name,
     base::Optional<uint8_t> flags,

@@ -527,6 +527,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const AdvertisementErrorCallback& error_callback) = 0;
 #endif
 
+  // Returns the list of pending advertisements that are not registered yet.
+  virtual std::vector<BluetoothAdvertisement*>
+  GetPendingAdvertisementsForTesting() const;
+
   // Returns the local GATT services associated with this adapter with the
   // given identifier. Returns NULL if the service doesn't exist.
   virtual BluetoothLocalGattService* GetGattService(

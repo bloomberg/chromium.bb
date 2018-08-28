@@ -15,8 +15,15 @@ using ABI::Windows::Devices::Bluetooth::BluetoothError;
 }  // namespace
 
 FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::
-    FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt() =
-        default;
+    FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt(
+        BluetoothLEAdvertisementPublisherStatus status)
+    : status_(status) {}
+
+FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::
+    FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt(
+        BluetoothLEAdvertisementPublisherStatus status,
+        BluetoothError error)
+    : status_(status), error_(error) {}
 
 FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::
     ~FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt() =
@@ -25,13 +32,15 @@ FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::
 HRESULT
 FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::get_Status(
     BluetoothLEAdvertisementPublisherStatus* value) {
-  return E_NOTIMPL;
+  *value = status_;
+  return S_OK;
 }
 
 HRESULT
 FakeBluetoothLEAdvertisementPublisherStatusChangedEventArgsWinrt::get_Error(
     BluetoothError* value) {
-  return E_NOTIMPL;
+  *value = error_;
+  return S_OK;
 }
 
 }  // namespace device

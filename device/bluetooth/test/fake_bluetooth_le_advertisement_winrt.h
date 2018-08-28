@@ -26,6 +26,7 @@ class FakeBluetoothLEAdvertisementWinrt
           ABI::Windows::Devices::Bluetooth::Advertisement::
               IBluetoothLEAdvertisement> {
  public:
+  FakeBluetoothLEAdvertisementWinrt();
   FakeBluetoothLEAdvertisementWinrt(
       base::Optional<std::string> local_name,
       base::Optional<uint8_t> flags,

@@ -197,6 +197,11 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
   return pairing_delegates_.front().first;
 }
 
+std::vector<BluetoothAdvertisement*>
+BluetoothAdapter::GetPendingAdvertisementsForTesting() const {
+  return {};
+}
+
 void BluetoothAdapter::NotifyAdapterPoweredChanged(bool powered) {
   for (auto& observer : observers_)
     observer.AdapterPoweredChanged(this, powered);

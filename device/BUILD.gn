@@ -62,6 +62,8 @@ test("device_unittests") {
     "bluetooth/test/mock_bluetooth_central_manager_mac.mm",
     "bluetooth/test/test_bluetooth_adapter_observer.cc",
     "bluetooth/test/test_bluetooth_adapter_observer.h",
+    "bluetooth/test/test_bluetooth_advertisement_observer.cc",
+    "bluetooth/test/test_bluetooth_advertisement_observer.h",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "bluetooth/test/test_pairing_delegate.cc",

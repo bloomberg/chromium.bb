@@ -28,6 +28,7 @@
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
+#include "device/bluetooth/bluetooth_advertisement_winrt.h"
 #include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
@@ -37,8 +38,11 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_publisher_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_manufacturer_data_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 #include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
@@ -70,6 +74,12 @@ namespace device {
 namespace {
 
 using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisement;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementPublisherFactory;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEManufacturerDataFactory;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementWatcher;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
@@ -79,6 +89,31 @@ using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::Make;
+
+class TestBluetoothAdvertisementWinrt : public BluetoothAdvertisementWinrt {
+ public:
+  TestBluetoothAdvertisementWinrt() = default;
+
+ protected:
+  ~TestBluetoothAdvertisementWinrt() override = default;
+
+  HRESULT
+  GetBluetoothLEAdvertisementPublisherActivationFactory(
+      IBluetoothLEAdvertisementPublisherFactory** factory) const override {
+    return Make<FakeBluetoothLEAdvertisementPublisherFactoryWinrt>().CopyTo(
+        factory);
+  }
+
+  HRESULT ActivateBluetoothLEAdvertisementInstance(
+      IBluetoothLEAdvertisement** instance) const override {
+    return Make<FakeBluetoothLEAdvertisementWinrt>().CopyTo(instance);
+  }
+
+  HRESULT GetBluetoothLEManufacturerDataFactory(
+      IBluetoothLEManufacturerDataFactory** factory) const override {
+    return Make<FakeBluetoothLEManufacturerDataFactory>().CopyTo(factory);
+  }
+};
 
 class TestBluetoothDeviceWinrt : public BluetoothDeviceWinrt {
  public:
@@ -139,6 +174,11 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
   HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       IBluetoothLEAdvertisementWatcher** instance) const override {
     return watcher_.CopyTo(instance);
+  }
+
+  scoped_refptr<BluetoothAdvertisementWinrt> CreateAdvertisement()
+      const override {
+    return base::MakeRefCounted<TestBluetoothAdvertisementWinrt>();
   }
 
   std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
@@ -700,6 +740,31 @@ void BluetoothTestWinrt::SimulatePairingPinCode(BluetoothDevice* device,
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
   ble_device->SimulatePairingPinCode(std::move(pin_code));
+}
+
+void BluetoothTestWinrt::SimulateAdvertisementStarted(
+    BluetoothAdvertisement* advertisement) {
+  static_cast<FakeBluetoothLEAdvertisementPublisherWinrt*>(
+      static_cast<BluetoothAdvertisementWinrt*>(advertisement)
+          ->GetPublisherForTesting())
+      ->SimulateAdvertisementStarted();
+}
+
+void BluetoothTestWinrt::SimulateAdvertisementStopped(
+    BluetoothAdvertisement* advertisement) {
+  static_cast<FakeBluetoothLEAdvertisementPublisherWinrt*>(
+      static_cast<BluetoothAdvertisementWinrt*>(advertisement)
+          ->GetPublisherForTesting())
+      ->SimulateAdvertisementStopped();
+}
+
+void BluetoothTestWinrt::SimulateAdvertisementError(
+    BluetoothAdvertisement* advertisement,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  static_cast<FakeBluetoothLEAdvertisementPublisherWinrt*>(
+      static_cast<BluetoothAdvertisementWinrt*>(advertisement)
+          ->GetPublisherForTesting())
+      ->SimulateAdvertisementError(error_code);
 }
 
 void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
