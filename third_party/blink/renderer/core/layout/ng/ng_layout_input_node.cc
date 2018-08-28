@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -94,6 +95,11 @@ bool NGLayoutInputNode::IsListItem() const {
 
 bool NGLayoutInputNode::IsListMarker() const {
   return IsBlock() && box_->IsLayoutNGListMarker();
+}
+
+bool NGLayoutInputNode::ListMarkerOccupiesWholeLine() const {
+  DCHECK(IsListMarker());
+  return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
 }
 
 bool NGLayoutInputNode::IsAnonymousBlock() const {

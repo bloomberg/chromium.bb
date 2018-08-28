@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -496,9 +495,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     } else if (child.IsFloating()) {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
-    } else if (child.IsListMarker() &&
-               !ToLayoutNGListMarker(child.GetLayoutBox())
-                    ->NeedsOccupyWholeLine()) {
+    } else if (child.IsListMarker() && !child.ListMarkerOccupiesWholeLine()) {
       container_builder_.SetUnpositionedListMarker(
           NGUnpositionedListMarker(ToNGBlockNode(child)));
     } else {
@@ -895,10 +892,10 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   // pretend that computed margins are 0 here, as they have already been
   // excluded from the layout opportunity rectangle.
   NGBoxStrut auto_margins;
-  if (child.IsListMarker() &&
-      ToLayoutNGListMarker(child.GetLayoutBox())->NeedsOccupyWholeLine()) {
-    // Deal with marker's margin. It happens only when marker
-    // NeedsOccupyWholeLine().
+  if (child.IsListMarker()) {
+    // Deal with marker's margin. It happens only when marker needs to occupy
+    // the whole line.
+    DCHECK(child.ListMarkerOccupiesWholeLine());
     auto_margins.inline_start = NGUnpositionedListMarker(ToNGBlockNode(child))
                                     .InlineOffset(fragment.InlineSize());
     auto_margins.inline_end = opportunity.rect.InlineSize() -

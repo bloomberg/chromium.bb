@@ -65,6 +65,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldBeConsideredAsReplaced() const;
   bool IsListItem() const;
   bool IsListMarker() const;
+  bool ListMarkerOccupiesWholeLine() const;
   bool IsAnonymousBlock() const;
 
   // If the node is a quirky container for margin collapsing, see:
