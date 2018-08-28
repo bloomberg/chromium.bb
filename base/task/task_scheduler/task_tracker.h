@@ -6,6 +6,7 @@
 #define BASE_TASK_TASK_SCHEDULER_TASK_TRACKER_H_
 
 #include <functional>
+#include <limits>
 #include <memory>
 #include <queue>
 
@@ -16,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_scheduler/can_schedule_sequence_observer.h"
@@ -191,6 +193,13 @@ class BASE_EXPORT TaskTracker {
     return tracked_ref_factory_.GetTrackedRef();
   }
 
+  // Enables/disables an execution fence. When the fence is released,
+  // reschedules the sequences that were preempted by the fence.
+  void SetExecutionFenceEnabled(bool execution_fence_enabled);
+
+  // Returns the number of preempted sequences of a given priority.
+  int GetPreemptedSequenceCountForTesting(TaskPriority priority);
+
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
   // |task|. |task| is always deleted in the environment where it runs or would
@@ -213,29 +222,62 @@ class BASE_EXPORT TaskTracker {
 
  private:
   class State;
-  struct PreemptedBackgroundSequence;
+  struct PreemptedSequence;
+
+  struct PreemptionState {
+    PreemptionState();
+    ~PreemptionState();
+
+    // A priority queue of sequences that are waiting to be scheduled. Use
+    // std::greater so that the sequence which contains the task that has been
+    // posted the earliest is on top of the priority queue.
+    std::priority_queue<PreemptedSequence,
+                        std::vector<PreemptedSequence>,
+                        std::greater<PreemptedSequence>>
+        preempted_sequences;
+
+    // Maximum number of sequences that can that be scheduled concurrently.
+    int max_scheduled_sequences = std::numeric_limits<int>::max();
+
+    // Caches the |max_scheduled_sequences| before enabling the execution fence.
+    int max_scheduled_sequences_before_fence = 0;
+
+    // Number of currently scheduled sequences.
+    int current_scheduled_sequences = 0;
+
+    // Synchronizes accesses to other members.
+    // |max_scheduled_sequences| and |max_scheduled_sequences_before_fence| are
+    // only written from the main sequence within the scope of |lock|. Reads can
+    // happen on the main sequence without holding |lock|, or on any other
+    // sequence while holding |lock|.
+    SchedulerLock lock;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PreemptionState);
+  };
 
   void PerformShutdown();
 
-  // Updates the maximum number of background sequences that can be scheduled
-  // concurrently to |max_num_scheduled_background_sequences|. Then, schedules
-  // as many preempted background sequences as allowed by the new value.
-  void SetMaxNumScheduledBackgroundSequences(
-      int max_num_scheduled_background_sequences);
+  // Sets the maximum number of sequences of priority |priority| that can be
+  // scheduled concurrently to |max_scheduled_sequences|.
+  void SetMaxNumScheduledSequences(int max_scheduled_sequences,
+                                   TaskPriority priority);
 
-  // Pops the next sequence in |preempted_background_sequences_| and increments
-  // |num_scheduled_background_sequences_|. Must only be called in the scope of
-  // |background_lock_|, with |preempted_background_sequences_| non-empty. The
-  // caller must forward the returned sequence to the associated
-  // CanScheduleSequenceObserver as soon as |background_lock_| is released.
-  PreemptedBackgroundSequence
-  GetPreemptedBackgroundSequenceToScheduleLockRequired();
+  // Pops the next sequence in
+  // |preemption_state_[priority].preempted_sequences| and increments
+  // |preemption_state_[priority].current_scheduled_sequences|. Must only be
+  // called in the scope of |preemption_state_[priority].lock|, with
+  // |preemption_state_[priority].preempted_sequences| non-empty. The caller
+  // must forward the returned sequence to the associated
+  // CanScheduleSequenceObserver as soon as |preemption_state_[priority].lock|
+  // is released.
+  PreemptedSequence GetPreemptedSequenceToScheduleLockRequired(
+      TaskPriority priority);
 
   // Schedules |sequence_to_schedule.sequence| using
   // |sequence_to_schedule.observer|. Does not verify that the sequence is
   // allowed to be scheduled.
-  void SchedulePreemptedBackgroundSequence(
-      PreemptedBackgroundSequence sequence_to_schedule);
+  void SchedulePreemptedSequence(PreemptedSequence sequence_to_schedule);
 
   // Called before WillPostTask() informs the tracing system that a task has
   // been posted. Updates |num_tasks_blocking_shutdown_| if necessary and
@@ -274,9 +316,10 @@ class BASE_EXPORT TaskTracker {
   //    - the next preempeted sequence (if any) is scheduled.
   //  - In all cases: adjusts the number of scheduled background sequences
   //    accordingly.
-  scoped_refptr<Sequence> ManageBackgroundSequencesAfterRunningTask(
+  scoped_refptr<Sequence> ManageSequencesAfterRunningTask(
       scoped_refptr<Sequence> just_ran_sequence,
-      CanScheduleSequenceObserver* observer);
+      CanScheduleSequenceObserver* observer,
+      TaskPriority task_priority);
 
   // Calls |flush_callback_for_testing_| if one is available in a lock-safe
   // manner.
@@ -317,26 +360,6 @@ class BASE_EXPORT TaskTracker {
   // completes.
   std::unique_ptr<WaitableEvent> shutdown_event_;
 
-  // Synchronizes accesses to |preempted_background_sequences_|,
-  // |max_num_scheduled_background_sequences_| and
-  // |num_scheduled_background_sequences_|.
-  SchedulerLock background_lock_;
-
-  // A priority queue of sequences that are waiting to be scheduled. Use
-  // std::greater so that the sequence which contains the task that has been
-  // posted the earliest is on top of the priority queue.
-  std::priority_queue<PreemptedBackgroundSequence,
-                      std::vector<PreemptedBackgroundSequence>,
-                      std::greater<PreemptedBackgroundSequence>>
-      preempted_background_sequences_;
-
-  // Maximum number of background sequences that can that be scheduled
-  // concurrently.
-  int max_num_scheduled_background_sequences_;
-
-  // Number of currently scheduled background sequences.
-  int num_scheduled_background_sequences_ = 0;
-
   // TaskScheduler.TaskLatencyMicroseconds.* and
   // TaskScheduler.HeartbeatLatencyMicroseconds.* histograms. The first index is
   // a TaskPriority. The second index is 0 for non-blocking tasks, 1 for
@@ -348,8 +371,21 @@ class BASE_EXPORT TaskTracker {
   HistogramBase* const task_latency_histograms_[kNumTaskPriorities][2];
   HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities][2];
 
+  PreemptionState preemption_state_[kNumTaskPriorities];
+
+#if DCHECK_IS_ON()
+  // Indicates whether to prevent tasks running.
+  bool execution_fence_enabled_ = false;
+#endif
+
   // Number of BLOCK_SHUTDOWN tasks posted during shutdown.
   HistogramBase::Sample num_block_shutdown_tasks_posted_during_shutdown_ = 0;
+
+  // Enforces that |max_scheduled_sequences| and
+  // |max_scheduled_sequences_before_fence| in PreemptedState are only written
+  // on the main sequence (determined by the first call to
+  // SetMaxNumScheduledSequences or SetExecutionFenceEnabled).
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Ensures all state (e.g. dangling cleaned up workers) is coalesced before
   // destroying the TaskTracker (e.g. in test environments).

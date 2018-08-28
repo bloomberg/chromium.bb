@@ -1048,21 +1048,16 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   EXPECT_EQ(sequence, tracker_.RunAndPopNextTask(sequence, nullptr));
 }
 
-// Verify that WillScheduleSequence() returns nullptr when it receives a
-// background sequence and the maximum number of background sequences that can
-// be scheduled concurrently is reached. Verify that an observer is notified
-// when a background sequence can be scheduled (i.e. when one of the previously
-// scheduled background sequences has run).
-TEST_F(TaskSchedulerTaskTrackerTest,
-       WillScheduleBackgroundSequenceWithMaxBackgroundSequences) {
-  constexpr int kMaxNumScheduledBackgroundSequences = 2;
-  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+namespace {
 
-  // Simulate posting |kMaxNumScheduledBackgroundSequences| background tasks
+void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
+    int max_num_scheduled_background_sequences,
+    TaskTracker& tracker) {
+  // Simulate posting |max_num_scheduled_background_sequences| background tasks
   // and scheduling the associated sequences. This should succeed.
   std::vector<scoped_refptr<Sequence>> scheduled_sequences;
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
     Task task(FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
               TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(&task));
@@ -1081,7 +1076,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
       std::unique_ptr<testing::StrictMock<MockCanScheduleSequenceObserver>>>
       extra_observers;
   std::vector<scoped_refptr<Sequence>> extra_sequences;
-  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
     extra_tasks_did_run.push_back(std::make_unique<bool>());
     Task extra_task(
         FROM_HERE,
@@ -1102,7 +1097,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // Run the sequences scheduled at the beginning of the test. Expect an
   // observer from |extra_observer| to be notified every time a task finishes to
   // run.
-  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
     EXPECT_CALL(*extra_observers[i].get(),
                 MockOnCanScheduleSequence(extra_sequences[i].get()));
     EXPECT_FALSE(tracker.RunAndPopNextTask(scheduled_sequences[i],
@@ -1111,12 +1106,39 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   }
 
   // Run the extra sequences.
-  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
     EXPECT_FALSE(*extra_tasks_did_run[i]);
     EXPECT_FALSE(tracker.RunAndPopNextTask(extra_sequences[i],
                                            &never_notified_observer));
     EXPECT_TRUE(*extra_tasks_did_run[i]);
   }
+}
+
+}  // namespace
+
+// Verify that WillScheduleSequence() returns nullptr when it receives a
+// background sequence and the maximum number of background sequences that can
+// be scheduled concurrently is reached. Verify that an observer is notified
+// when a background sequence can be scheduled (i.e. when one of the previously
+// scheduled background sequences has run).
+TEST_F(TaskSchedulerTaskTrackerTest,
+       WillScheduleBackgroundSequenceWithMaxBackgroundSequences) {
+  constexpr int kMaxNumScheduledBackgroundSequences = 2;
+  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+  TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
+      kMaxNumScheduledBackgroundSequences, tracker);
+}
+
+// Verify that providing a cap for the number of BEST_EFFORT tasks to the
+// constructor of TaskTracker is compatible with using an execution fence.
+TEST_F(TaskSchedulerTaskTrackerTest,
+       WillScheduleBackgroundSequenceWithMaxBackgroundSequencesAndFence) {
+  constexpr int kMaxNumScheduledBackgroundSequences = 2;
+  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+  tracker.SetExecutionFenceEnabled(true);
+  tracker.SetExecutionFenceEnabled(false);
+  TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
+      kMaxNumScheduledBackgroundSequences, tracker);
 }
 
 namespace {
@@ -1128,6 +1150,98 @@ void SetBool(bool* arg) {
 }
 
 }  // namespace
+
+// Verify that enabling the ScopedExecutionFence will prevent
+// WillScheduleSequence() returning sequence.
+TEST_F(TaskSchedulerTaskTrackerTest,
+       WillScheduleSequenceWithScopedExecutionFence) {
+  Task task_a(FROM_HERE, DoNothing(), TaskTraits(), TimeDelta());
+  EXPECT_TRUE(tracker_.WillPostTask(&task_a));
+  scoped_refptr<Sequence> sequence_a =
+      test::CreateSequenceWithTask(std::move(task_a));
+  testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
+  EXPECT_EQ(sequence_a, tracker_.WillScheduleSequence(
+                            sequence_a, &never_notified_observer));
+
+  // Verify that WillScheduleSequence() returns nullptr for foreground sequence
+  // when the ScopedExecutionFence is enabled.
+  tracker_.SetExecutionFenceEnabled(true);
+  bool task_b_1_did_run = false;
+  Task task_b_1(FROM_HERE, BindOnce(&SetBool, Unretained(&task_b_1_did_run)),
+                TaskTraits(), TimeDelta());
+  EXPECT_TRUE(tracker_.WillPostTask(&task_b_1));
+  scoped_refptr<Sequence> sequence_b =
+      test::CreateSequenceWithTask(std::move(task_b_1));
+  testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_1;
+  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::BEST_EFFORT));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b, &observer_b_1));
+  EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::USER_VISIBLE));
+
+  bool task_b_2_did_run = false;
+  Task task_b_2(FROM_HERE, BindOnce(&SetBool, Unretained(&task_b_2_did_run)),
+                TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
+  EXPECT_TRUE(tracker_.WillPostTask(&task_b_2));
+  sequence_b->PushTask(std::move(task_b_2));
+  testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_2;
+  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(sequence_b, &observer_b_2));
+  // The TaskPriority of a sequence is the highest priority of among its tasks.
+  EXPECT_EQ(2, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::USER_VISIBLE));
+
+  // Verify that WillScheduleSequence() returns nullptr for best-effort sequence
+  // when the ScopedExecutionFence is enabled.
+  bool task_c_did_run = false;
+  Task task_c(FROM_HERE, BindOnce(&SetBool, Unretained(&task_c_did_run)),
+              TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
+  EXPECT_TRUE(tracker_.WillPostTask(&task_c));
+  scoped_refptr<Sequence> sequence_c =
+      test::CreateSequenceWithTask(std::move(task_c));
+  testing::StrictMock<MockCanScheduleSequenceObserver> observer_c;
+  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(sequence_c, &observer_c));
+  EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::BEST_EFFORT));
+
+  // Verifies that the sequences preempted when the fence is on are rescheduled
+  // right after the fence is released.
+  EXPECT_CALL(observer_b_1, MockOnCanScheduleSequence(sequence_b.get()));
+  EXPECT_CALL(observer_b_2, MockOnCanScheduleSequence(sequence_b.get()));
+  EXPECT_CALL(observer_c, MockOnCanScheduleSequence(sequence_c.get()));
+  tracker_.SetExecutionFenceEnabled(false);
+  testing::Mock::VerifyAndClear(&observer_b_1);
+  testing::Mock::VerifyAndClear(&observer_b_2);
+  testing::Mock::VerifyAndClear(&observer_c);
+  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::USER_VISIBLE));
+  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
+                   TaskPriority::BEST_EFFORT));
+
+  // Runs the sequences and verifies the tasks are done.
+  EXPECT_FALSE(
+      tracker_.RunAndPopNextTask(sequence_a, &never_notified_observer));
+
+  EXPECT_FALSE(task_b_1_did_run);
+  EXPECT_EQ(sequence_b, tracker_.RunAndPopNextTask(sequence_b, &observer_b_1));
+  EXPECT_TRUE(task_b_1_did_run);
+
+  EXPECT_FALSE(task_b_2_did_run);
+  EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence_b, &observer_b_2));
+  EXPECT_TRUE(task_b_2_did_run);
+
+  EXPECT_FALSE(task_c_did_run);
+  EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence_c, &observer_c));
+  EXPECT_TRUE(task_c_did_run);
+
+  // Verify that WillScheduleSequence() returns the sequence when the
+  // ScopedExecutionFence isn't enabled.
+  Task task_d(FROM_HERE, DoNothing(), TaskTraits(), TimeDelta());
+  EXPECT_TRUE(tracker_.WillPostTask(&task_d));
+  scoped_refptr<Sequence> sequence_d =
+      test::CreateSequenceWithTask(std::move(task_d));
+  EXPECT_EQ(sequence_d, tracker_.WillScheduleSequence(
+                            sequence_d, &never_notified_observer));
+}
 
 // Verify that RunAndPopNextTask() doesn't reschedule the background sequence it
 // was assigned if there is a preempted background sequence with an earlier
