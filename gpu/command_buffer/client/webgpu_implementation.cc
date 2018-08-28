@@ -14,5 +14,12 @@ namespace webgpu {
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/webgpu_implementation_impl_autogen.h"
 
+void WebGPUImplementation::Dummy() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgDummy()");
+  helper_->Dummy();
+  helper_->Flush();
+}
+
 }  // namespace webgpu
 }  // namespace gpu

@@ -27,10 +27,12 @@ _NAMED_TYPE_INFO = {
 # Must match function names specified in "webgpu_cmd_buffer_functions.txt".
 #
 # Options are documented in build_gles2_cmd_buffer.py/build_raster_cmd_buffer.py
+# (Note: some options (like decoder_func and unit_test) currently have no
+# effect, because WriteServiceImplementation and WriteServiceUnitTests are not
+# used below.)
 _FUNCTION_INFO = {
-  'NoOp': {
-    'decoder_func': 'DoNoOp',
-    'unit_test': False,
+  'Dummy': {
+    'impl_func': False,
   },
 }
 
@@ -76,6 +78,8 @@ def main(argv):
     "gpu/command_buffer/client/webgpu_implementation_unittest_autogen.h")
   gen.WriteCmdHelperHeader(
      "gpu/command_buffer/client/webgpu_cmd_helper_autogen.h")
+  # Note: No gen.WriteServiceImplementation
+  # Note: No gen.WriteServiceUnitTests
   gen.WriteServiceUtilsHeader(
     "gpu/command_buffer/service/webgpu_cmd_validation_autogen.h")
   gen.WriteServiceUtilsImplementation(
