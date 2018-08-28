@@ -348,8 +348,8 @@ void FindRequestManager::SetActiveMatchOrdinal(RenderFrameHostImpl* rfh,
     // match is in, which should be in the |rfh|'s associated WebContents.
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
-    web_contents->GetFocusedWebContents()->SetFocusedFrame(
-        rfh->frame_tree_node(), rfh->GetSiteInstance());
+    web_contents->SetFocusedFrame(rfh->frame_tree_node(),
+                                  rfh->GetSiteInstance());
   }
   if (rfh == active_frame_) {
     active_match_ordinal_ +=
