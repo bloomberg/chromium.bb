@@ -57,6 +57,11 @@ base::Time GetVerificationTime() {
   return base::Time::Now();
 }
 
+bool IsSupportedSignedExchangeVersion(
+    const base::Optional<SignedExchangeVersion>& version) {
+  return version == SignedExchangeVersion::kB2;
+}
+
 using VerifyCallback = base::OnceCallback<void(int32_t,
                                                const net::CertVerifyResult&,
                                                const net::ct::CTVerifyResult&)>;
@@ -133,12 +138,7 @@ SignedExchangeHandler::SignedExchangeHandler(
 
   if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version_) ||
-      version_ != SignedExchangeVersion::kB2) {
-    // TODO(https://crbug.com/874323): Extract and redirect to the fallback URL.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
-                                  weak_factory_.GetWeakPtr(),
-                                  net::ERR_INVALID_SIGNED_EXCHANGE));
+      !IsSupportedSignedExchangeVersion(version_)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         base::StringPrintf("Unsupported version of the content type. Currentry "
@@ -146,7 +146,7 @@ SignedExchangeHandler::SignedExchangeHandler(
                            "\"application/signed-exchange;v=b2\". But the "
                            "response content type was \"%s\"",
                            content_type.c_str()));
-    return;
+    // Proceed to extract and redirect to the fallback URL.
   }
 
   // Triggering the read (asynchronously) for the prologue bytes.
@@ -283,6 +283,11 @@ bool SignedExchangeHandler::ParsePrologueFallbackUrlAndAfter() {
   if (!prologue_fallback_url_and_after_.is_valid()) {
     return false;
   }
+
+  // If the signed exchange version from content-type is unsupported, abort
+  // parsing and redirect to the fallback URL.
+  if (!IsSupportedSignedExchangeVersion(version_))
+    return false;
 
   // Set up a new buffer for reading the Signature header field and CBOR-encoded
   // headers.

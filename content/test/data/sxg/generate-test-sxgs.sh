@@ -52,6 +52,9 @@ gen-signedexchange \
   -o test.example.org_test.sxg \
   -miRecordSize 100
 
+# Generate the signed exchange for the invalid content-type test case.
+cp test.example.org_test.sxg test.example.org_test_invalid_content_type.sxg
+
 # Generate the signed exchange file with invalid magic string
 xxd -p test.example.org_test.sxg |
   sed '1s/^737867312d623200/737867312d787800/' |
