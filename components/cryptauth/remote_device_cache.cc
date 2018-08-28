@@ -41,13 +41,8 @@ void RemoteDeviceCache::SetRemoteDevices(
     const RemoteDeviceList& remote_devices) {
   for (const auto& remote_device : remote_devices) {
     if (base::ContainsKey(remote_device_map_, remote_device.GetDeviceId())) {
-      // Skip if the incoming remote device object contains
-      // a stale timestamp.
-      if (remote_device.last_update_time_millis <=
-          remote_device_map_[remote_device.GetDeviceId()]
-              ->last_update_time_millis) {
-        continue;
-      }
+      // TODO(khorimoto): Do not overwrite device metadata if the new device
+      // contains a stale timestamp; see https://crbug.com/856746.
 
       // Keep the same shared_ptr object, and simply
       // update the RemoteDevice it references. This transparently updates
