@@ -370,7 +370,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
 }
 
 void NGBoxFragmentPainter::PaintFloatingChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& children,
+    const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const PaintInfo& paint_info) {
   for (const auto& child : children) {
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
@@ -570,7 +570,7 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& line_boxes,
+    const Vector<std::unique_ptr<NGPaintFragment>>& line_boxes,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
@@ -613,7 +613,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 }
 
 void NGBoxFragmentPainter::PaintInlineChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& inline_children,
+    const Vector<std::unique_ptr<NGPaintFragment>>& inline_children,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   for (const auto& child : inline_children) {
@@ -628,7 +628,7 @@ void NGBoxFragmentPainter::PaintInlineChildren(
 }
 
 void NGBoxFragmentPainter::PaintInlineChildrenOutlines(
-    const Vector<scoped_refptr<NGPaintFragment>>& line_boxes,
+    const Vector<std::unique_ptr<NGPaintFragment>>& line_boxes,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   // TODO(layout-dev): Implement.
@@ -1055,12 +1055,12 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
 
 bool NGBoxFragmentPainter::HitTestChildren(
     HitTestResult& result,
-    const Vector<scoped_refptr<NGPaintFragment>>& children,
+    const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
-    const scoped_refptr<NGPaintFragment>& child = *iter;
+    const std::unique_ptr<NGPaintFragment>& child = *iter;
     if (child->HasSelfPaintingLayer())
       continue;
 

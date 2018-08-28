@@ -84,7 +84,7 @@ class LayoutNGMixin : public Base {
  private:
   void AddScrollingOverflowFromChildren();
   void SetPaintFragment(NGPaintFragment* last_paint_fragment,
-                        scoped_refptr<NGPaintFragment>);
+                        std::unique_ptr<NGPaintFragment>);
 
  protected:
   void AddOutlineRects(
@@ -100,7 +100,7 @@ class LayoutNGMixin : public Base {
 
   scoped_refptr<NGLayoutResult> cached_result_;
   scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
-  scoped_refptr<NGPaintFragment> paint_fragment_;
+  std::unique_ptr<NGPaintFragment> paint_fragment_;
 
   friend class NGBaseLayoutAlgorithmTest;
 };

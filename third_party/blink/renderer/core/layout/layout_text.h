@@ -77,7 +77,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // doesn't re-transform the string.
   LayoutText(Node*, scoped_refptr<StringImpl>);
 
+#if DCHECK_IS_ON()
   ~LayoutText() override;
+#endif
 
   static LayoutText* CreateEmptyAnonymous(Document&,
                                           scoped_refptr<ComputedStyle>);
@@ -432,7 +434,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     InlineTextBoxList text_boxes_;
     // The first fragment of text boxes associated with this object.
     // Valid only when IsInLayoutNGInlineFormattingContext().
-    scoped_refptr<NGPaintFragment> first_paint_fragment_;
+    NGPaintFragment* first_paint_fragment_;
   };
 };
 
@@ -442,7 +444,7 @@ inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
 }
 
 inline NGPaintFragment* LayoutText::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_.get()
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
                                                : nullptr;
 }
 

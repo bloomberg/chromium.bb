@@ -75,14 +75,14 @@ LayoutInline::LayoutInline(Element* element)
   SetChildrenInline(true);
 }
 
-LayoutInline::~LayoutInline() {
 #if DCHECK_IS_ON()
+LayoutInline::~LayoutInline() {
   if (IsInLayoutNGInlineFormattingContext())
     DCHECK(!first_paint_fragment_);
   else
     line_boxes_.AssertIsEmpty();
-#endif
 }
+#endif
 
 LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   LayoutInline* layout_inline = new LayoutInline(nullptr);

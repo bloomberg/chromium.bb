@@ -143,14 +143,14 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     GetFrameView()->IncrementVisuallyNonEmptyCharacterCount(text_.length());
 }
 
-LayoutText::~LayoutText() {
 #if DCHECK_IS_ON()
+LayoutText::~LayoutText() {
   if (IsInLayoutNGInlineFormattingContext())
     DCHECK(!first_paint_fragment_);
   else
     text_boxes_.AssertIsEmpty();
-#endif
 }
+#endif
 
 LayoutText* LayoutText::CreateEmptyAnonymous(
     Document& doc,
@@ -251,15 +251,9 @@ void LayoutText::DeleteTextBoxes() {
     MutableTextBoxes().DeleteLineBoxes();
 }
 
-void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
+void LayoutText::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext());
-  // TODO(layout-dev): Because We should call |WillDestroy()| once for
-  // associated fragments, when you reuse fragments, you should construct
-  // NGAbstractInlineTextBox for them.
-  for (NGPaintFragment* fragment = first_paint_fragment_.get(); fragment;
-       fragment = fragment->Next())
-    NGAbstractInlineTextBox::WillDestroy(fragment);
-  first_paint_fragment_ = first_fragment;
+  first_paint_fragment_ = fragment;
 }
 
 void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
