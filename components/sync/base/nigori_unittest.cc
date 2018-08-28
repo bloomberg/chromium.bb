@@ -12,7 +12,9 @@ namespace {
 
 TEST(SyncNigoriTest, Permute) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string permuted;
   EXPECT_TRUE(nigori.Permute(Nigori::Password, "test name", &permuted));
@@ -25,13 +27,17 @@ TEST(SyncNigoriTest, Permute) {
 
 TEST(SyncNigoriTest, PermuteIsConstant) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori1.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                               "example.com", "username", "password"));
 
   std::string permuted1;
   EXPECT_TRUE(nigori1.Permute(Nigori::Password, "name", &permuted1));
 
   Nigori nigori2;
-  EXPECT_TRUE(nigori2.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori2.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                               "example.com", "username", "password"));
 
   std::string permuted2;
   EXPECT_TRUE(nigori2.Permute(Nigori::Password, "name", &permuted2));
@@ -42,7 +48,9 @@ TEST(SyncNigoriTest, PermuteIsConstant) {
 
 TEST(SyncNigoriTest, EncryptDifferentIv) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string plaintext("value");
 
@@ -57,7 +65,9 @@ TEST(SyncNigoriTest, EncryptDifferentIv) {
 
 TEST(SyncNigoriTest, Decrypt) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string encrypted =
       "e7+JyS6ibj6F5qqvpseukNRTZ+oBpu5iuv2VYjOfrH1dNiFLNf7Ov0"
@@ -72,7 +82,9 @@ TEST(SyncNigoriTest, Decrypt) {
 
 TEST(SyncNigoriTest, EncryptDecrypt) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string plaintext("value");
 
@@ -87,7 +99,9 @@ TEST(SyncNigoriTest, EncryptDecrypt) {
 
 TEST(SyncNigoriTest, CorruptedIv) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string plaintext("test");
 
@@ -105,7 +119,9 @@ TEST(SyncNigoriTest, CorruptedIv) {
 
 TEST(SyncNigoriTest, CorruptedCiphertext) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string plaintext("test");
 
@@ -124,7 +140,9 @@ TEST(SyncNigoriTest, CorruptedCiphertext) {
 
 TEST(SyncNigoriTest, ExportImport) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori1.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                               "example.com", "username", "password"));
 
   std::string user_key;
   std::string encryption_key;
@@ -154,7 +172,9 @@ TEST(SyncNigoriTest, ExportImport) {
 
 TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                              "example.com", "username", "password"));
 
   std::string user_key;
   std::string encryption_key;
@@ -166,7 +186,9 @@ TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
 
 TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
+  EXPECT_TRUE(
+      nigori1.InitByDerivation(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+                               "example.com", "username", "password"));
 
   std::string user_key;
   std::string encryption_key;

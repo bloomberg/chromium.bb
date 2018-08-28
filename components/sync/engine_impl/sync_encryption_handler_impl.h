@@ -185,16 +185,19 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // is not already set.
   // Triggers OnPassphraseAccepted on success, OnPassphraseRequired if a custom
   // passphrase already existed.
-  void SetCustomPassphrase(const std::string& passphrase,
+  void SetCustomPassphrase(KeyDerivationMethod key_derivation_method,
+                           const std::string& passphrase,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
   // Decrypt the encryption keybag using a user provided passphrase.
   // Should only be called if the current passphrase is a frozen implicit
   // passphrase or a custom passphrase.
   // Triggers OnPassphraseAccepted on success, OnPassphraseRequired on failure.
-  void DecryptPendingKeysWithExplicitPassphrase(const std::string& passphrase,
-                                                WriteTransaction* trans,
-                                                WriteNode* nigori_node);
+  void DecryptPendingKeysWithExplicitPassphrase(
+      KeyDerivationMethod key_derivation_method,
+      const std::string& passphrase,
+      WriteTransaction* trans,
+      WriteNode* nigori_node);
 
   // The final step of SetEncryptionPassphrase and SetDecryptionPassphrase that
   // notifies observers of the result of the set passphrase operation, updates
@@ -209,6 +212,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // |trans| and |nigori_node|: used to access data in the cryptographer.
   void FinishSetPassphrase(bool success,
                            const std::string& bootstrap_token,
+                           KeyDerivationMethod key_derivation_method,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
 

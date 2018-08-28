@@ -158,9 +158,13 @@ Nigori::Nigori() {}
 
 Nigori::~Nigori() {}
 
-bool Nigori::InitByDerivation(const std::string& hostname,
+bool Nigori::InitByDerivation(KeyDerivationMethod method,
+                              const std::string& hostname,
                               const std::string& username,
                               const std::string& password) {
+  // Currently, PBKDF2 is the only supported method.
+  DCHECK_EQ(method, KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
+
   return keys_.InitByDerivationUsingPbkdf2(hostname, username, password);
 }
 
