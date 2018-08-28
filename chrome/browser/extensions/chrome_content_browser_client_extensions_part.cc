@@ -831,6 +831,12 @@ void ChromeContentBrowserClientExtensionsPart::
     return;
   content::BrowserContext* browser_context = process_host->GetBrowserContext();
 
+  // Until there is Site Isolation in GuestViews, CORB cannot offer protection
+  // against compromised renderers.  Therefore, let's ignore GuestViews when
+  // gathering the list of extensions that issue CORB-eligible requests.
+  if (process_host->IsForGuestsOnly())
+    return;
+
   // Assert that |initiator_origin| corresponds to an extension and extract the
   // |extension_id|.
   DCHECK_EQ(kExtensionScheme, initiator_origin.scheme());
@@ -850,7 +856,7 @@ void ChromeContentBrowserClientExtensionsPart::
   UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Allowed.ContentScript",
                             resource_type, content::RESOURCE_TYPE_LAST_TYPE);
   rappor::SampleString(rappor::GetDefaultService(),
-                       "Extensions.CrossOriginFetchFromContentScript",
+                       "Extensions.CrossOriginFetchFromContentScript2",
                        rappor::UMA_RAPPOR_TYPE, extension_id);
 }
 
