@@ -326,6 +326,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
   [self.delegate unifiedConsentViewControllerViewDidAppear:self];
 }
 

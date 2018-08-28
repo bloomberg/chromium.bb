@@ -76,8 +76,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // The "Sync Everything" section is expected to be visible.
 // The personalized section and the non-personalized section are expected to be
 // expanded.
-// TODO(crbug.com/878119): Reenable this test.
-- (void)DISABLED_testOpeningServicesWhileSignedIn {
+- (void)testOpeningServicesWhileSignedIn {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
@@ -93,8 +92,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // The "Sync Everything" section is expected to be visible.
 // The personalized section and the non-personalized section are expected to be
 // collapsed.
-// TODO(crbug.com/878119): Reenable this test.
-- (void)DISABLED_testOpeningServicesWhileSignedInAndConsentGiven {
+- (void)testOpeningServicesWhileSignedInAndConsentGiven {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
@@ -123,8 +121,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 }
 
 // Tests to expand/collapse the non-personalized section.
-// TODO(crbug.com/878119): Reenable this test.
-- (void)DISABLED_testToggleNonPersonalizedServices {
+- (void)testToggleNonPersonalizedServices {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
@@ -155,8 +152,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Tests the "Manage synced data" cell closes the settings, and opens the web
 // page, while the user is signed in without user consent.
-// TODO(crbug.com/878119): Reenable this test.
-- (void)DISABLED_testOpenManageSyncedDataWebPageWhileSignedIn {
+- (void)testOpenManageSyncedDataWebPageWhileSignedIn {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];

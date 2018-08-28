@@ -61,9 +61,6 @@ using chrome_test_util::SettingsDoneButton;
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
   if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kIdentityPickerViewIdentifier)]
-        performAction:grey_tap()];
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(
                                      grey_accessibilityID(identity.userEmail),
