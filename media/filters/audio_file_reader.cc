@@ -251,6 +251,10 @@ bool AudioFileReader::OnNewFrame(
       DVLOG(2) << "Shrinking AAC frame from " << frames_read << " to "
                << new_frames_read << " based on packet duration.";
       frames_read = new_frames_read;
+
+      // The above process may delete the entire packet.
+      if (!frames_read)
+        return true;
     }
   }
 
