@@ -491,8 +491,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   }
 
   scoped_refptr<VideoFrame> wrapping_frame(
-      new VideoFrame(frame->layout().Clone(), frame->storage_type(),
-                     visible_rect, natural_size, frame->timestamp()));
+      new VideoFrame(frame->layout(), frame->storage_type(), visible_rect,
+                     natural_size, frame->timestamp()));
 
   // Copy all metadata to the wrapped frame.
   wrapping_frame->metadata()->MergeMetadataFrom(frame->metadata());
@@ -1024,12 +1024,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
   }
 }
 
-VideoFrame::VideoFrame(VideoFrameLayout layout,
+VideoFrame::VideoFrame(const VideoFrameLayout& layout,
                        StorageType storage_type,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
                        base::TimeDelta timestamp)
-    : layout_(std::move(layout)),
+    : layout_(layout),
       storage_type_(storage_type),
       visible_rect_(Intersection(visible_rect, gfx::Rect(layout.coded_size()))),
       natural_size_(natural_size),
@@ -1122,7 +1122,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameInternal(
 }
 
 scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
-    VideoFrameLayout layout,
+    const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
@@ -1136,8 +1136,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
     return nullptr;
   }
 
-  scoped_refptr<VideoFrame> frame(new VideoFrame(
-      std::move(layout), storage, visible_rect, natural_size, timestamp));
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(layout, storage, visible_rect, natural_size, timestamp));
   frame->AllocateMemory(zero_initialize_memory);
   return frame;
 }
