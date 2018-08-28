@@ -533,6 +533,9 @@
     {
       name: "HeapIncrementalMarkingStress"
     },
+    {
+      name: "HeapUnifiedGarbageCollection",
+    },
     // https://crbug.com/766694 for testing disabling the feature.
     {
       name: "HTMLImports",
