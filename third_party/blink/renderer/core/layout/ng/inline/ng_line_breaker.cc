@@ -408,7 +408,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
 
   // Use kStartShouldBeSafe if at the beginning of a line.
   unsigned options = ShapingLineBreaker::kDefaultOptions;
-  if (offset_ != line_info_->StartOffset())
+  if (item_result->start_offset != line_info_->StartOffset())
     options |= ShapingLineBreaker::kDontReshapeStart;
 
   // Use kNoResultIfOverflow if 'break-word' and we're trying to break normally
