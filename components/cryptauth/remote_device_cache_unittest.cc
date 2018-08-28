@@ -87,9 +87,11 @@ TEST_F(RemoteDeviceCacheTest,
   EXPECT_EQ(remote_device.name, remote_device_ref.name());
 }
 
+// Currently disabled; will be re-enabled when https://crbug.com/856746 is
+// fixed.
 TEST_F(
     RemoteDeviceCacheTest,
-    TestSetRemoteDevices_RemoteDeviceCacheDoesNotUpdateWithStaleRemoteDevice) {
+    DISABLED_TestSetRemoteDevices_RemoteDeviceCacheDoesNotUpdateWithStaleRemoteDevice) {
   // Store the device with a last update time of 1000.
   cryptauth::RemoteDevice remote_device =
       cryptauth::CreateRemoteDeviceForTest();

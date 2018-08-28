@@ -113,6 +113,13 @@ bool HostVerifierImpl::IsHostVerified() {
   if (!current_host)
     return false;
 
+  // If a host exists on the back-end but there is a pending request to remove
+  // that host, the device pending removal is no longer considered verified.
+  if (host_backend_delegate_->HasPendingHostRequest() &&
+      !host_backend_delegate_->GetPendingHostRequest()) {
+    return false;
+  }
+
   // If one or more potential host sofware features is enabled, the host is
   // considered verified.
   for (const auto& software_feature : kPotentialHostFeatures) {

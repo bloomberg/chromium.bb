@@ -134,6 +134,10 @@ class MultiDeviceSetupHostVerifierImplTest : public testing::Test {
       mock_timer_->Fire();
   }
 
+  FakeHostBackendDelegate* fake_host_backend_delegate() {
+    return fake_host_backend_delegate_.get();
+  }
+
  private:
   cryptauth::RemoteDeviceRef test_device_;
 
@@ -310,6 +314,22 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
       kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
       kFirstRetryDeltaMs /* expected_retry_delta_value */);
+}
+
+TEST_F(MultiDeviceSetupHostVerifierImplTest,
+       StartWithVerifiedHost_PendingRemoval) {
+  CreateVerifier(HostState::kHostVerified);
+  VerifyState(true /* expected_is_verified */,
+              0u /* expected_num_verified_events */,
+              0 /* expected_retry_timestamp_value */,
+              0 /* expected_retry_delta_value */);
+
+  fake_host_backend_delegate()->AttemptToSetMultiDeviceHostOnBackend(
+      base::nullopt /* host_device */);
+  VerifyState(false /* expected_is_verified */,
+              0u /* expected_num_verified_events */,
+              0 /* expected_retry_timestamp_value */,
+              0 /* expected_retry_delta_value */);
 }
 
 }  // namespace multidevice_setup
