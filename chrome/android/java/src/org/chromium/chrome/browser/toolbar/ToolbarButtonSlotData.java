@@ -67,7 +67,7 @@ class ToolbarButtonSlotData {
             mLightTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
             mDarkTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
 
-            mDrawable = drawable;
+            mDrawable = drawable != null ? DrawableCompat.wrap(drawable) : null;
             mLightAccessibilityString = lightAccessibilityString;
             mDarkAccessibilityString = darkAccessibilityString;
             mOnClickListener = onClickListener;
