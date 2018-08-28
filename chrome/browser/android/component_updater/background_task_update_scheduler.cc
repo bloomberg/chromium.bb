@@ -72,11 +72,13 @@ void BackgroundTaskUpdateScheduler::OnStartTaskDelayed() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!user_task_) {
     LOG(WARNING) << "No components registered to update";
-    Java_UpdateScheduler_finishTask(env, j_update_scheduler_);
+    Java_UpdateScheduler_finishTask(env, j_update_scheduler_,
+                                    /*reschedule=*/false);
     return;
   }
   user_task_.Run(base::BindOnce(&Java_UpdateScheduler_finishTask,
-                                base::Unretained(env), j_update_scheduler_));
+                                base::Unretained(env), j_update_scheduler_,
+                                /*reschedule=*/true));
 }
 
 }  // namespace component_updater
