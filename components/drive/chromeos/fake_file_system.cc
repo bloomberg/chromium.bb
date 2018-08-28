@@ -59,7 +59,7 @@ void FakeFileSystem::TransferFileFromLocalToRemote(
 void FakeFileSystem::OpenFile(const base::FilePath& file_path,
                               OpenMode open_mode,
                               const std::string& mime_type,
-                              const OpenFileCallback& callback) {
+                              OpenFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
