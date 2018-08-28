@@ -9,11 +9,45 @@ suite('Multidevice', function() {
   // deferred to the suiteSetup function.
   let HOST_SET_MODES;
 
-  function setPageContentData(newMode) {
-    multideviceSubpage.pageContentData = {
-      mode: newMode,
-      hostDeviceName: 'Pixel XL',
-    };
+  /**
+   * Observably sets mode. Everything else remains unchanged.
+   * @param{settings.MultiDeviceSettingsMode} newMode
+   */
+  function setMode(newMode) {
+    multideviceSubpage.pageContentData =
+        Object.assign({}, multideviceSubpage.pageContentData, {
+          mode: newMode,
+        });
+    Polymer.dom.flush();
+  }
+
+  /**
+   * Observably resets feature states so that each feature is supported if and
+   * only if it is in the provided array. Everything else remains unchanged.
+   * @param{Array<settings.MultiDeviceFeature>} supportedFeatures
+   */
+  function setSupportedFeatures(supportedFeatures) {
+    multideviceSubpage.pageContentData =
+        Object.assign({}, multideviceSubpage.pageContentData, {
+          betterTogetherState:
+              supportedFeatures.includes(
+                  settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          instantTetheringState:
+              supportedFeatures.includes(
+                  settings.MultiDeviceFeature.INSTANT_TETHERING) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          messagesState:
+              supportedFeatures.includes(settings.MultiDeviceFeature.MESSAGES) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          smartLockState: supportedFeatures.includes(
+                              settings.MultiDeviceFeature.SMART_LOCK) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+        });
     Polymer.dom.flush();
   }
 
@@ -27,12 +61,9 @@ suite('Multidevice', function() {
 
   setup(function() {
     multideviceSubpage = document.createElement('settings-multidevice-subpage');
-
-    setPageContentData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    multideviceSubpage.prefs = {
-      multidevice: {sms_connect_enabled: {value: true}},
-      multidevice_setup: {suite_enabled: {value: true}},
-    };
+    multideviceSubpage.pageContentData = {hostDeviceName: 'Pixel XL'};
+    setMode(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    setSupportedFeatures(Object.values(settings.MultiDeviceFeature));
 
     document.body.appendChild(multideviceSubpage);
     Polymer.dom.flush();
@@ -44,29 +75,55 @@ suite('Multidevice', function() {
 
   test('individual features appear only if host is verified', function() {
     for (const mode of HOST_SET_MODES) {
-      setPageContentData(mode);
+      setMode(mode);
       assertEquals(
-          !!multideviceSubpage.$$('settings-multidevice-feature-item'),
+          !!multideviceSubpage.$$('#smartLockItem'),
           mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
       assertEquals(
-          !!multideviceSubpage.$$('settings-multidevice-tether-item'),
+          !!multideviceSubpage.$$('#instantTetheringItem'),
+          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+          !!multideviceSubpage.$$('#messagesItem'),
           mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
     }
   });
 
+  test(
+      'individual features are attached only if they are supported',
+      function() {
+        assertTrue(!!multideviceSubpage.$$('#smartLockItem'));
+        assertTrue(!!multideviceSubpage.$$('#instantTetheringItem'));
+        assertTrue(!!multideviceSubpage.$$('#messagesItem'));
+
+        setSupportedFeatures([
+          settings.MultiDeviceFeature.SMART_LOCK,
+          settings.MultiDeviceFeature.MESSAGES,
+        ]);
+        assertTrue(!!multideviceSubpage.$$('#smartLockItem'));
+        assertFalse(!!multideviceSubpage.$$('#instantTetheringItem'));
+        assertTrue(!!multideviceSubpage.$$('#messagesItem'));
+
+        setSupportedFeatures([settings.MultiDeviceFeature.INSTANT_TETHERING]);
+        assertFalse(!!multideviceSubpage.$$('#smartLockItem'));
+        assertTrue(!!multideviceSubpage.$$('#instantTetheringItem'));
+        assertFalse(!!multideviceSubpage.$$('#messagesItem'));
+
+        setSupportedFeatures([]);
+        assertFalse(!!multideviceSubpage.$$('#smartLockItem'));
+        assertFalse(!!multideviceSubpage.$$('#instantTetheringItem'));
+        assertFalse(!!multideviceSubpage.$$('#messagesItem'));
+      });
+
   test('clicking EasyUnlock item routes to screen lock page', function() {
-    multideviceSubpage.$$('#smart-lock-item').$.card.click();
+    multideviceSubpage.$$('#smartLockItem').$.card.click();
     assertEquals(settings.getCurrentRoute(), settings.routes.LOCK_SCREEN);
   });
 
   test('AndroidMessages item shows button when not set up', function() {
-    const messagesItem = multideviceSubpage.$$('#android-messages-item');
-
     multideviceSubpage.androidMessagesRequiresSetup_ = true;
     Polymer.dom.flush();
 
-    const controllerSelector =
-        '#android-messages-item > [slot=feature-controller]';
+    const controllerSelector = '#messagesItem > [slot=feature-controller]';
     assertTrue(!!multideviceSubpage.$$(controllerSelector));
     assertTrue(
         multideviceSubpage.$$(controllerSelector).tagName.includes('BUTTON'));
