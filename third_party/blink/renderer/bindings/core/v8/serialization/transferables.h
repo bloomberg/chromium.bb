@@ -15,11 +15,13 @@ class DOMArrayBufferBase;
 class ImageBitmap;
 class OffscreenCanvas;
 class MessagePort;
+class MojoHandle;
 
 using ArrayBufferArray = HeapVector<Member<DOMArrayBufferBase>>;
 using ImageBitmapArray = HeapVector<Member<ImageBitmap>>;
 using OffscreenCanvasArray = HeapVector<Member<OffscreenCanvas>>;
 using MessagePortArray = HeapVector<Member<MessagePort>>;
+using MojoHandleArray = HeapVector<Member<blink::MojoHandle>>;
 
 class CORE_EXPORT Transferables final {
   STACK_ALLOCATED();
@@ -32,6 +34,7 @@ class CORE_EXPORT Transferables final {
   ImageBitmapArray image_bitmaps;
   OffscreenCanvasArray offscreen_canvases;
   MessagePortArray message_ports;
+  MojoHandleArray mojo_handles;
 };
 
 // Along with extending |Transferables| to hold a new kind of transferable

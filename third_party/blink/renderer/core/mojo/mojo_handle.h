@@ -27,11 +27,11 @@ class MojoWriteDataResult;
 class ScriptState;
 class V8MojoWatchCallback;
 
-class MojoHandle final : public ScriptWrappable {
+class CORE_EXPORT MojoHandle final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CORE_EXPORT static MojoHandle* Create(mojo::ScopedHandle);
+  static MojoHandle* Create(mojo::ScopedHandle);
 
   mojo::ScopedHandle TakeHandle();
 

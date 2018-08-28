@@ -127,7 +127,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool IsNeutered() const { return !connector_ || !connector_->is_valid(); }
 
   // For testing only: allows inspection of the entangled channel.
-  MojoHandle EntangledHandleForTesting() const;
+  ::MojoHandle EntangledHandleForTesting() const;
 
   void Trace(blink::Visitor*) override;
 

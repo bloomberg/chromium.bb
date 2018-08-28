@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
@@ -479,6 +480,15 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           index >= transferred_message_ports_->size())
         return nullptr;
       return (*transferred_message_ports_)[index].Get();
+    }
+    case kMojoHandleTag: {
+      uint32_t index = 0;
+      if (!RuntimeEnabledFeatures::MojoJSEnabled() || !ReadUint32(&index) ||
+          index >= serialized_script_value_->MojoHandles().size()) {
+        return nullptr;
+      }
+      return MojoHandle::Create(
+          std::move(serialized_script_value_->MojoHandles()[index]));
     }
     case kOffscreenCanvasTransferTag: {
       uint32_t width = 0, height = 0, canvas_id = 0, client_id = 0, sink_id = 0;
