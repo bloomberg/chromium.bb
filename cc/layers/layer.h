@@ -177,6 +177,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Set and get the behaviour to be applied for compositor-thread scrolling of
   // this layer beyond the beginning or end of the layer's content.
+  // TODO(bokan): With blink-gen-property-trees this is stored on the
+  // ScrollNode and can be removed here.
   void SetOverscrollBehavior(const OverscrollBehavior& behavior);
   OverscrollBehavior overscroll_behavior() const {
     return inputs_.overscroll_behavior;

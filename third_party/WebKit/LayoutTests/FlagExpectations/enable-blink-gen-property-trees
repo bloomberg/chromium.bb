@@ -180,7 +180,6 @@ Bug(none) fast/scrolling [ Pass ]
 Bug(none) fast/events [ Pass ]
 Bug(none) virtual/scroll_customization/ [ Pass ]
 crbug.com/836913 virtual/threaded/fast/scrolling/overlay-scrollbars.html [ Failure ]
-crbug.com/866051 virtual/threaded/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
 crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 
 # These visual viewport tests should pass.

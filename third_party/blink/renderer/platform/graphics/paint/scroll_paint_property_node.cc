@@ -6,6 +6,23 @@
 
 namespace blink {
 
+namespace {
+
+WTF::String ToString(OverscrollBehavior::OverscrollBehaviorType value) {
+  switch (value) {
+    case OverscrollBehavior::kOverscrollBehaviorTypeNone:
+      return "none";
+    case OverscrollBehavior::kOverscrollBehaviorTypeAuto:
+      return "auto";
+    case OverscrollBehavior::kOverscrollBehaviorTypeContain:
+      return "contain";
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
+
 const ScrollPaintPropertyNode& ScrollPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(
       ScrollPaintPropertyNode, root,
@@ -44,6 +61,17 @@ std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
     json->SetString("compositorElementId",
                     state_.compositor_element_id.ToString().c_str());
   }
+  if (state_.overscroll_behavior.x !=
+      OverscrollBehavior::kOverscrollBehaviorTypeAuto) {
+    json->SetString("overscroll-behavior-x",
+                    blink::ToString(state_.overscroll_behavior.x));
+  }
+  if (state_.overscroll_behavior.y !=
+      OverscrollBehavior::kOverscrollBehaviorTypeAuto) {
+    json->SetString("overscroll-behavior-y",
+                    blink::ToString(state_.overscroll_behavior.y));
+  }
+
   return json;
 }
 

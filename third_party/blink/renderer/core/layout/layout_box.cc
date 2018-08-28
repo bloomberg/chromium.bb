@@ -342,6 +342,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
           Layer()->SetNeedsCompositingInputsUpdate();
       }
     }
+
+    if (old_style->OverscrollBehaviorX() != new_style.OverscrollBehaviorX() ||
+        old_style->OverscrollBehaviorY() != new_style.OverscrollBehaviorY()) {
+      SetNeedsPaintPropertyUpdate();
+    }
   }
 
   if (diff.TransformChanged()) {
