@@ -60,8 +60,10 @@
   // If no selected identity has been set, the identity chooser dialog needs
   // to be opened when the view will appear. This test has to be done before
   // to start the mediator since it will select a default one on start.
+  // When the unified consent isn't interactable, the identity chooser cannot be
+  // displayed. So it shouldn't be opened when the view appears.
   self.shouldOpenIdentityChooserDialogWhenAppearing =
-      !self.unifiedConsentMediator.selectedIdentity;
+      !self.unifiedConsentMediator.selectedIdentity && self.interactable;
   [self.unifiedConsentMediator start];
 }
 
