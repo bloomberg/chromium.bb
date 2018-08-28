@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -65,7 +66,7 @@ class ContextualSearchPreferenceHelper {
                 && wasUndecided();
     }
 
-    // Updates our preference metadata storage based on what our native member knows.
+    /** Updates our preference metadata storage based on what our native member knows. */
     void onPreferenceChangedInternal() {
         updatePreviousPreferenceStorage(nativeGetPreferenceMetadata(mNativePointer));
     }
@@ -105,6 +106,18 @@ class ContextualSearchPreferenceHelper {
         assert setting != ContextualSearchPreviousPreferenceMetadata.UNKNOWN;
         ChromePreferenceManager.getInstance().writeInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF, setting);
+    }
+
+    /**
+     * Applies previous metadata as would be recorded by native Unified Consent integration, for use
+     * by tests only.
+     * @param metadata The metadata expressing the previous user's enabled-state.
+     */
+    @VisibleForTesting
+    void applyUnifiedConsentGivenMetadata(
+            @ContextualSearchPreviousPreferenceMetadata int metadata) {
+        ChromePreferenceManager.getInstance().writeInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF, metadata);
     }
 
     private native long nativeInit();
