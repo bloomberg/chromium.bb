@@ -332,7 +332,9 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
 
   const SerializedState* state = static_cast<const SerializedState*>(data);
   if (!state->options.capacity_num_bytes || !state->options.element_num_bytes ||
-      state->options.capacity_num_bytes < state->options.element_num_bytes) {
+      state->options.capacity_num_bytes < state->options.element_num_bytes ||
+      state->write_offset >= state->options.capacity_num_bytes ||
+      state->available_capacity > state->options.capacity_num_bytes) {
     return nullptr;
   }
 
@@ -368,6 +370,10 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
     if (!dispatcher->InitializeNoLock())
       return nullptr;
+    if (state->options.capacity_num_bytes >
+        dispatcher->ring_buffer_mapping_.mapped_size()) {
+      return nullptr;
+    }
     dispatcher->UpdateSignalsStateNoLock();
   }
 
