@@ -3176,6 +3176,12 @@ extern const char kEnableChromeOsAccountManagerName[] =
 extern const char kEnableChromeOsAccountManagerDescription[] =
     "Enables the Chrome OS Account Manager";
 
+extern const char kEnableContinueReadingName[] = "Enable continue reading";
+extern const char kEnableContinueReadingDescription[] =
+    "Enable continue reading feature in Launcher, which allows users to "
+    "seamlessly continue reading a web page when they switch devices from "
+    "phones or tablets to Chromebooks.";
+
 const char kEnableDragAppsInTabletModeName[] =
     "Enable dragging apps in tablet mode";
 const char kEnableDragAppsInTabletModeDescription[] =
@@ -3217,6 +3223,11 @@ const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
 
+extern const char kEnableHomeLauncherGesturesName[] =
+    "Enable home launcher gestures";
+extern const char kEnableHomeLauncherGesturesDescription[] =
+    "Enables using gestures to hide or show the home launcher.";
+
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
@@ -3229,6 +3240,12 @@ const char kEnableNewStyleLauncherDescription[] =
 const char kEnableNewWallpaperPickerName[] = "Enable new wallpaper picker";
 const char kEnableNewWallpaperPickerDescription[] =
     "Enable the redesigned wallpaper picker with new wallpaper collections.";
+
+const char kEnableOobeRecommendAppsScreenName[] =
+    "Enable OOBE Recommend Apps Screen";
+const char kEnableOobeRecommendAppsScreenDescription[] =
+    "Enable the Recommend Apps Screen in OOBE which allows user to install apps"
+    "from other devices";
 
 const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
 const char kEnablePerUserTimezoneDescription[] =
@@ -3265,6 +3282,12 @@ const char kEnableVirtualKeyboardMdUiDescription[] =
 const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
 const char kEnableVirtualKeyboardUkmDescription[] =
     "Enables UKM for virtual keyboard";
+
+extern const char kEnableZeroStateSuggestionsName[] =
+    "Enable Zero State Suggetions";
+extern const char kEnableZeroStateSuggestionsDescription[] =
+    "Enable Zero State Suggestions feature in Launcher, which will show "
+    "suggetions when launcher search box is active with an empty query";
 
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
@@ -3511,24 +3534,6 @@ const char kWakeOnPacketsDescription[] =
 const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
 const char kZipArchiverUnpackerDescription[] =
     "Enable or disable the ability to unpack archives in incognito mode";
-
-extern const char kEnableContinueReadingName[] = "Enable continue reading";
-extern const char kEnableContinueReadingDescription[] =
-    "Enable continue reading feature in Launcher, which allows users to "
-    "seamlessly continue reading a web page when they switch devices from "
-    "phones or tablets to Chromebooks.";
-
-extern const char kEnableZeroStateSuggestionsName[] =
-    "Enable Zero State Suggetions";
-extern const char kEnableZeroStateSuggestionsDescription[] =
-    "Enable Zero State Suggestions feature in Launcher, which will show "
-    "suggetions when launcher search box is active with an empty query";
-
-const char kEnableOobeRecommendAppsScreenName[] =
-    "Enable OOBE Recommend Apps Screen";
-const char kEnableOobeRecommendAppsScreenDescription[] =
-    "Enable the Recommend Apps Screen in OOBE which allows user to install apps"
-    "from other devices";
 
 #endif  // defined(OS_CHROMEOS)
 
