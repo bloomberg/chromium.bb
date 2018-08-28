@@ -499,6 +499,13 @@ void URLLoader::FollowRedirect(
     return;
   }
 
+  if (!deferred_redirect_) {
+    NOTREACHED();
+    return;
+  }
+
+  deferred_redirect_ = false;
+
   if (to_be_removed_request_headers.has_value()) {
     for (const std::string& key : to_be_removed_request_headers.value())
       url_request_->RemoveRequestHeaderByName(key);
@@ -563,6 +570,9 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
                                    bool* defer_redirect) {
   DCHECK(url_request == url_request_.get());
   DCHECK(url_request->status().is_success());
+
+  DCHECK(!deferred_redirect_);
+  deferred_redirect_ = true;
 
   // Send the redirect response to the client, allowing them to inspect it and
   // optionally follow the redirect.

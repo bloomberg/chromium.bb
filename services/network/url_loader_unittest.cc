@@ -24,6 +24,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -2420,6 +2421,37 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
 
   // The request body should be blocked by CORB.
   ASSERT_EQ(std::string(), body);
+}
+
+// Make sure the client can't call FollowRedirect if there's no pending
+// redirect.
+TEST_F(URLLoaderTest, FollowRedirectTwice) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+  request.headers.SetHeader("Header1", "Value1");
+  request.headers.SetHeader("Header2", "Value2");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilRedirectReceived();
+
+  url_loader->FollowRedirect(base::nullopt, base::nullopt);
+  EXPECT_DCHECK_DEATH(url_loader->FollowRedirect(base::nullopt, base::nullopt));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
 }
 
 }  // namespace network
