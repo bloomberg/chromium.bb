@@ -37,7 +37,9 @@ class CORE_EXPORT JankTracker {
 
  private:
   void TimerFired(TimerBase*);
-  std::unique_ptr<TracedValue> TraceData() const;
+  std::unique_ptr<TracedValue> PerFrameTraceData(
+      double jank_fraction,
+      double granularity_scale) const;
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
