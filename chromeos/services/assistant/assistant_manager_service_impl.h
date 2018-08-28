@@ -139,6 +139,8 @@ class AssistantManagerServiceImpl
 
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
+  void OnTimerSoundingStarted() override;
+  void OnTimerSoundingFinished() override;
 
  private:
   void StartAssistantInternal(const std::string& access_token,

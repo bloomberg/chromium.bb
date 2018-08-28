@@ -9,9 +9,11 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/util/webkit_version.h"
@@ -23,10 +25,12 @@
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using ActionModule = assistant_client::ActionModule;
@@ -36,12 +40,18 @@ namespace api = ::assistant::api;
 
 namespace chromeos {
 namespace assistant {
+namespace {
 
 constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
+constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
+constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
+constexpr base::Feature kAssistantTimerNotificationFeature{
+    "ChromeOSAssistantTimerNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr float kDefaultVolumeStep = 0.1f;
+}  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
@@ -681,6 +691,38 @@ void AssistantManagerServiceImpl::HandleUpdateSettingsResponse(
 
 void AssistantManagerServiceImpl::OnStartFinished() {
   RegisterFallbackMediaHandler();
+}
+
+void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
+  // TODO(llin): Migrate to use the AlarmManager API to better support multiple
+  // timers when the API is available.
+  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
+    return;
+
+  const std::string notification_title =
+      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
+  const std::string notification_content =
+      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_CONTENT);
+  const std::string stop_timer_query =
+      l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_TIMER_QUERY);
+
+  action::Notification notification(
+      /*title=*/notification_title,
+      /*text=*/notification_content,
+      /*action_url=*/kQueryDeeplinkPrefix + stop_timer_query,
+      /*notification_id=*/{},
+      /*consistency_token=*/{},
+      /*opaque_token=*/{},
+      /*grouping_key=*/kTimerFireNotificationGroupId,
+      /*obfuscated_gaia_id=*/{});
+  OnShowNotification(notification);
+}
+
+void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
+  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
+    return;
+
+  OnNotificationRemoved(kTimerFireNotificationGroupId);
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(

@@ -156,6 +156,7 @@ def main():
                    'renderer_resources.grd'),
       os.path.join(device_base_dir, 'bluetooth', 'bluetooth_strings.grd'),
       os.path.join(device_base_dir, 'fido', 'fido_strings.grd'),
+      os.path.join(src_dir, 'chromeos', 'chromeos_strings.grd'),
       os.path.join(src_dir, 'extensions', 'strings', 'extensions_strings.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
       os.path.join(src_dir, 'ui', 'webui', 'resources', 'webui_resources.grd'),
