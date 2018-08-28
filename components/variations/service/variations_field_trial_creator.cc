@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/platform_field_trials.h"
@@ -35,6 +36,7 @@
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace variations {
 namespace {
@@ -151,6 +153,15 @@ void ExitWithMessage(const std::string& message) {
   exit(1);
 }
 
+// Returns the current application locale (e.g. "en-US").
+std::string GetApplicationLocale(PrefService* local_state) {
+  if (!local_state->HasPrefPath(language::prefs::kApplicationLocale))
+    return std::string();
+  std::string locale =
+      local_state->GetString(language::prefs::kApplicationLocale);
+  return l10n_util::GetApplicationLocale(locale);
+}
+
 }  // namespace
 
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
@@ -245,7 +256,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
     const base::Version& version) {
   std::unique_ptr<ClientFilterableState> state =
       std::make_unique<ClientFilterableState>();
-  state->locale = client_->GetApplicationLocale();
+  state->locale = GetApplicationLocale(local_state());
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
   state->channel = GetChannelForVariations(client_->GetChannel());
