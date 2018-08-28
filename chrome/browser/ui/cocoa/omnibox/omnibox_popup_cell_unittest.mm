@@ -79,7 +79,8 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
   root->GetAsDictionary(&dictionary);
   ASSERT_NE(dictionary, nullptr);
   AutocompleteMatch match;
-  match.answer = SuggestionAnswer::ParseAnswer(dictionary);
+  match.answer =
+      SuggestionAnswer::ParseAnswer(dictionary, base::ASCIIToUTF16("-1"));
   EXPECT_TRUE(match.answer);
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                         image:nil
@@ -135,7 +136,8 @@ TEST_F(OmniboxPopupCellTest, DefinitionAnswerStyle) {
   root->GetAsDictionary(&dictionary);
   ASSERT_NE(dictionary, nullptr);
   AutocompleteMatch match;
-  match.answer = SuggestionAnswer::ParseAnswer(dictionary);
+  match.answer =
+      SuggestionAnswer::ParseAnswer(dictionary, base::ASCIIToUTF16("-1"));
   EXPECT_TRUE(match.answer);
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                         image:nil

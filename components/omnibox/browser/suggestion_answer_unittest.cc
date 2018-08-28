@@ -23,7 +23,9 @@ std::unique_ptr<SuggestionAnswer> ParseAnswer(const std::string& answer_json) {
   if (!value || !value->GetAsDictionary(&dict))
     return nullptr;
 
-  return SuggestionAnswer::ParseAnswer(dict);
+  // ParseAnswer previously did not change the default answer type of -1, so
+  // here we keep the same behavior by explicitly supplying default value.
+  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"));
 }
 
 }  // namespace
