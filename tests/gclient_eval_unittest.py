@@ -325,6 +325,26 @@ class VarTest(unittest.TestCase):
         '}',
     ]))
 
+  def test_gets_and_sets_var_non_string(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": True,',
+        '}',
+    ]))
+
+    result = gclient_eval.GetVar(local_scope, 'foo')
+    self.assertEqual(result, True)
+
+    gclient_eval.SetVar(local_scope, 'foo', 'False')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '  "foo": False,',
+        '}',
+    ]))
+
+
   def test_add_preserves_formatting(self):
     before = [
         '# Copyright stuff',

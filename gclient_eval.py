@@ -602,7 +602,9 @@ def RenderDEPSFile(gclient_dict):
 
 def _UpdateAstString(tokens, node, value):
   position = node.lineno, node.col_offset
-  quote_char = tokens[position][1][0]
+  quote_char = ''
+  if isinstance(node, ast.Str):
+    quote_char = tokens[position][1][0]
   tokens[position][1] = quote_char + value + quote_char
   node.s = value
 
