@@ -138,7 +138,7 @@ ClickHandlingState* InputTypeView::WillDispatchClick() {
   return nullptr;
 }
 
-void InputTypeView::DidDispatchClick(Event*, const ClickHandlingState&) {}
+void InputTypeView::DidDispatchClick(Event&, const ClickHandlingState&) {}
 
 void InputTypeView::UpdateView() {}
 

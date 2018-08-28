@@ -81,7 +81,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void HandleClickEvent(MouseEvent&);
   virtual void HandleMouseDownEvent(MouseEvent&);
   virtual ClickHandlingState* WillDispatchClick();
-  virtual void DidDispatchClick(Event*, const ClickHandlingState&);
+  virtual void DidDispatchClick(Event&, const ClickHandlingState&);
   virtual void HandleKeydownEvent(KeyboardEvent&);
   virtual void HandleKeypressEvent(KeyboardEvent&);
   virtual void HandleKeyupEvent(KeyboardEvent&);

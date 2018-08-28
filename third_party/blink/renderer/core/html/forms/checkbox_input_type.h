@@ -47,7 +47,7 @@ class CheckboxInputType final : public BaseCheckableInputType {
   String ValueMissingText() const override;
   void HandleKeyupEvent(KeyboardEvent&) override;
   ClickHandlingState* WillDispatchClick() override;
-  void DidDispatchClick(Event*, const ClickHandlingState&) override;
+  void DidDispatchClick(Event&, const ClickHandlingState&) override;
   bool ShouldAppearIndeterminate() const override;
 };
 

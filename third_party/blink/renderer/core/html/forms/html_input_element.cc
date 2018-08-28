@@ -1246,7 +1246,7 @@ EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
 }
 
 void HTMLInputElement::PostDispatchEventHandler(
-    Event* event,
+    Event& event,
     EventDispatchHandlingState* state) {
   if (!state)
     return;

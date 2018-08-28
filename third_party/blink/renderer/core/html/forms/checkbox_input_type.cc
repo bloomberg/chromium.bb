@@ -79,9 +79,9 @@ ClickHandlingState* CheckboxInputType::WillDispatchClick() {
   return state;
 }
 
-void CheckboxInputType::DidDispatchClick(Event* event,
+void CheckboxInputType::DidDispatchClick(Event& event,
                                          const ClickHandlingState& state) {
-  if (event->defaultPrevented() || event->DefaultHandled()) {
+  if (event.defaultPrevented() || event.DefaultHandled()) {
     GetElement().setIndeterminate(state.indeterminate);
     GetElement().setChecked(state.checked);
   } else {
@@ -89,7 +89,7 @@ void CheckboxInputType::DidDispatchClick(Event* event,
   }
   is_in_click_handler_ = false;
   // The work we did in willDispatchClick was default handling.
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 bool CheckboxInputType::ShouldAppearIndeterminate() const {

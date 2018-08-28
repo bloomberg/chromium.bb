@@ -774,7 +774,7 @@ class CORE_EXPORT Node : public EventTarget {
   virtual EventDispatchHandlingState* PreDispatchEventHandler(Event&) {
     return nullptr;
   }
-  virtual void PostDispatchEventHandler(Event*, EventDispatchHandlingState*) {}
+  virtual void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) {}
 
   void DispatchScopedEvent(Event&);
 

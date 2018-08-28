@@ -293,7 +293,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
     // This may dispatch an event, and node_ and event_ might be altered.
     if (activation_target) {
       activation_target->PostDispatchEventHandler(
-          event_.Get(), pre_dispatch_event_handler_result);
+          *event_, pre_dispatch_event_handler_result);
     }
     // TODO(tkent): Is it safe to kick DefaultEventHandler() with such altered
     // event_?
