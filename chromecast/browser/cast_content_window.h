@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/graphics/gestures/cast_gesture_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 
@@ -129,7 +130,11 @@ class CastContentWindow {
     // True if this app should turn on the screen.
     bool turn_on_screen = true;
 
-    CreateParams();
+    // Gesture priority for when the window is visible.
+    CastGestureHandler::Priority gesture_priority =
+        CastGestureHandler::Priority::NONE;
+
+    CreateParams() = default;
   };
 
   // Creates the platform specific CastContentWindow. |delegate| should outlive

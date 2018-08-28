@@ -141,7 +141,5 @@ base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
   return ConvertUTF8ToJavaString(env, delegate_->GetId());
 }
 
-CastContentWindow::CreateParams::CreateParams() {}
-
 }  // namespace shell
 }  // namespace chromecast

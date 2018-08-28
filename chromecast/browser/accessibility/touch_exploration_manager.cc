@@ -11,7 +11,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
-#include "chromecast/graphics/cast_gesture_handler.h"
+#include "chromecast/graphics/gestures/cast_gesture_handler.h"
 #include "extensions/browser/event_router.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/aura/client/aura_constants.h"

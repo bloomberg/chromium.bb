@@ -24,6 +24,10 @@ void CastSystemGestureDispatcher::RemoveGestureHandler(
   gesture_handlers_.erase(handler);
 }
 
+CastGestureHandler::Priority CastSystemGestureDispatcher::GetPriority() {
+  return Priority::MAX;
+}
+
 bool CastSystemGestureDispatcher::CanHandleSwipe(
     CastSideSwipeOrigin swipe_origin) {
   for (auto* gesture_handler : gesture_handlers_) {
@@ -34,32 +38,23 @@ bool CastSystemGestureDispatcher::CanHandleSwipe(
   return false;
 }
 
-void CastSystemGestureDispatcher::HandleSideSwipeBegin(
+void CastSystemGestureDispatcher::HandleSideSwipe(
+    CastSideSwipeEvent event,
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
+  CastGestureHandler* best_handler = nullptr;
+  Priority highest_priority = Priority::NONE;
+  // Iterate through all handlers. Pick the handler with the highest priority
+  // that is capable of handling the swipe event and is not Priority::NONE.
   for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeBegin(swipe_origin, touch_location);
+    if (gesture_handler->CanHandleSwipe(swipe_origin) &&
+        gesture_handler->GetPriority() > highest_priority) {
+      best_handler = gesture_handler;
+      highest_priority = gesture_handler->GetPriority();
     }
   }
-}
-void CastSystemGestureDispatcher::HandleSideSwipeContinue(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeContinue(swipe_origin, touch_location);
-    }
-  }
-}
-void CastSystemGestureDispatcher::HandleSideSwipeEnd(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeEnd(swipe_origin, touch_location);
-    }
-  }
+  if (best_handler)
+    best_handler->HandleSideSwipe(event, swipe_origin, touch_location);
 }
 
 void CastSystemGestureDispatcher::HandleTapDownGesture(

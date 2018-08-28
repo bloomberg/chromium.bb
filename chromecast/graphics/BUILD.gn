@@ -8,9 +8,9 @@ import("//testing/test.gni")
 
 cast_source_set("graphics") {
   sources = [
-    "cast_gesture_handler.cc",
-    "cast_gesture_handler.h",
     "cast_window_manager.h",
+    "gestures/cast_gesture_handler.cc",
+    "gestures/cast_gesture_handler.h",
   ]
 
   deps = [
@@ -116,6 +116,7 @@ if (use_aura && !is_cast_audio_only) {
       "cast_focus_client_aura_test.cc",
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",
+      "gestures/cast_system_gesture_dispatcher_test.cc",
       "gestures/multiple_tap_detector_test.cc",
       "gestures/side_swipe_detector_test.cc",
       "run_all_unittests.cc",

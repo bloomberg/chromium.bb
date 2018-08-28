@@ -73,11 +73,14 @@ TEST_F(CastGestureDispatcherTest, VerifySimpleBackSuccess) {
   EXPECT_CALL(delegate_, ConsumeGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kOngoingBackGesturePoint1);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT,
-                                 kValidBackGestureEndPoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kOngoingBackGesturePoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT,
+                              kValidBackGestureEndPoint);
 }
 
 // Verify that if the finger is not lifted, that's not a back gesture.
@@ -93,11 +96,13 @@ TEST_F(CastGestureDispatcherTest, VerifyNoDispatchOnNoLift) {
   EXPECT_CALL(delegate_,
               GestureProgress(Eq(GestureType::GO_BACK), Eq(kPastTheEndPoint1)));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kValidBackGestureEndPoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kPastTheEndPoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kValidBackGestureEndPoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT, kPastTheEndPoint1);
 }
 
 // Verify that multiple 'continue' events still only lead to one back
@@ -115,12 +120,15 @@ TEST_F(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
   EXPECT_CALL(delegate_, ConsumeGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kValidBackGestureEndPoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kPastTheEndPoint1);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT, kPastTheEndPoint2);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kValidBackGestureEndPoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT, kPastTheEndPoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT, kPastTheEndPoint2);
 }
 
 // Verify that if the delegate says it doesn't handle back that we won't try to
@@ -132,10 +140,13 @@ TEST_F(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(false));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kValidBackGestureEndPoint);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT, kPastTheEndPoint2);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kValidBackGestureEndPoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT, kPastTheEndPoint2);
 }
 
 // Verify that a not-left gesture doesn't lead to a swipe.
@@ -144,9 +155,11 @@ TEST_F(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
       .WillRepeatedly(Return(false));
 
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::TOP);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::TOP, kTopSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::TOP,
-                                      kOngoingTopGesturePoint2);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::TOP, kTopSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::TOP,
+                              kOngoingTopGesturePoint2);
 }
 
 // Verify that if the gesture doesn't go far enough horizontally that we will
@@ -162,11 +175,14 @@ TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
   EXPECT_CALL(delegate_, CancelGesture(Eq(GestureType::GO_BACK),
                                        Eq(kOngoingBackGesturePoint2)));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kOngoingBackGesturePoint1);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT,
-                                 kOngoingBackGesturePoint2);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kOngoingBackGesturePoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT,
+                              kOngoingBackGesturePoint2);
 }
 
 // Verify that if the gesture ends before going far enough, that's also not a
@@ -182,11 +198,14 @@ TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
   EXPECT_CALL(delegate_, CancelGesture(Eq(GestureType::GO_BACK),
                                        Eq(kOngoingBackGesturePoint2)));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                      kOngoingBackGesturePoint1);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT,
-                                 kOngoingBackGesturePoint2);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::LEFT, kLeftSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::LEFT,
+                              kOngoingBackGesturePoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT,
+                              kOngoingBackGesturePoint2);
 }
 
 // Verify simple top-down drag.
@@ -201,11 +220,13 @@ TEST_F(CastGestureDispatcherTest, VerifySimpleTopSuccess) {
   EXPECT_CALL(delegate_, ConsumeGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(true));
   dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::TOP);
-  dispatcher_.HandleSideSwipeBegin(CastSideSwipeOrigin::TOP, kTopSidePoint);
-  dispatcher_.HandleSideSwipeContinue(CastSideSwipeOrigin::TOP,
-                                      kOngoingTopGesturePoint1);
-  dispatcher_.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT,
-                                 kTopGestureEndPoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::TOP, kTopSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::TOP,
+                              kOngoingTopGesturePoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT, kTopGestureEndPoint);
 }
 }  // namespace shell
 }  // namespace chromecast

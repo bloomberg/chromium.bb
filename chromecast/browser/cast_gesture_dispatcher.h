@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "chromecast/graphics/cast_gesture_handler.h"
+#include "chromecast/graphics/gestures/cast_gesture_handler.h"
 
 namespace chromecast {
 
@@ -21,21 +21,23 @@ class CastGestureDispatcher : public CastGestureHandler {
   explicit CastGestureDispatcher(CastContentWindow::Delegate* delegate);
 
   // CastGestureHandler implementation:
+  Priority GetPriority() override;
   bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override;
-  void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                            const gfx::Point& touch_location) override;
-  void HandleSideSwipeContinue(CastSideSwipeOrigin swipe_origin,
-                               const gfx::Point& touch_location) override;
-  void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                          const gfx::Point& touch_location) override;
+  void HandleSideSwipe(CastSideSwipeEvent event,
+                       CastSideSwipeOrigin swipe_origin,
+                       const gfx::Point& touch_location) override;
   void HandleTapDownGesture(const gfx::Point& touch_location) override;
   void HandleTapGesture(const gfx::Point& touch_location) override;
+
+  void SetPriority(Priority priority);
 
  private:
   friend class CastGestureDispatcherTest;
   CastGestureDispatcher(CastContentWindow::Delegate* delegate,
                         bool enable_top_drag_gesture);
   GestureType GestureForSwipeOrigin(CastSideSwipeOrigin swipe_origin);
+
+  Priority priority_;
 
   const bool enable_top_drag_gesture_;
 
