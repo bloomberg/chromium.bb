@@ -155,6 +155,9 @@ const int styleCount = 2;
             forControlEvents:UIControlEventTouchUpInside];
   } else {
     [tabGridButton addTarget:self.dispatcher
+                      action:@selector(prepareTabSwitcher)
+            forControlEvents:UIControlEventTouchDown];
+    [tabGridButton addTarget:self.dispatcher
                       action:@selector(displayTabSwitcher)
             forControlEvents:UIControlEventTouchUpInside];
   }
@@ -194,6 +197,9 @@ const int styleCount = 2;
                         action:@selector(navigateToMemexTabSwitcher)
               forControlEvents:UIControlEventTouchUpInside];
   } else {
+    [stackViewButton addTarget:self.dispatcher
+                        action:@selector(prepareTabSwitcher)
+              forControlEvents:UIControlEventTouchDown];
     [stackViewButton addTarget:self.dispatcher
                         action:@selector(displayTabSwitcher)
               forControlEvents:UIControlEventTouchUpInside];

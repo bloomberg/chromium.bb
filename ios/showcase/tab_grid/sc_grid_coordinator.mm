@@ -57,6 +57,8 @@
                     animated:(BOOL)animated {
 }
 
+#pragma mark - GridImageDataSource
+
 - (void)snapshotForIdentifier:(NSString*)identifier
                    completion:(void (^)(UIImage*))completion {
   completion([UIImage imageNamed:@"Sample-screenshot-portrait"]);
@@ -65,6 +67,14 @@
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion {
   completion(nil);
+}
+
+- (void)preloadSnapshotsForVisibleGridSize:(int)gridSize {
+  // No-op here.
+}
+
+- (void)clearPreloadedSnapshots {
+  // No-op here.
 }
 
 @end

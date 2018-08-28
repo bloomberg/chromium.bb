@@ -407,6 +407,7 @@ const CGFloat kScrollFadeDistance = 30;
     [self.dispatcher showTabHistoryPopupForForwardHistory];
   } else if (gesture.view == self.view.tabSwitchStripButton) {
     // TODO(crbug.com/799601): Delete this once its not needed.
+    // (This is only used when the Memex experiment is enabled).
     [self.dispatcher displayTabSwitcher];
   }
 }

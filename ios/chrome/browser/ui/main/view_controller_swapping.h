@@ -13,7 +13,7 @@
 
 // ViewControllerSwapping defines a set of methods that allow an object to
 // display TabSwitchers and view controllers that display tabs.
-@protocol ViewControllerSwapping
+@protocol ViewControllerSwapping<NSObject>
 
 // The view controller, if any, that is active.
 @property(nonatomic, readonly, strong) UIViewController* activeViewController;
@@ -33,6 +33,11 @@
 // after the view controller is visible.
 - (void)showTabViewController:(UIViewController*)viewController
                    completion:(ProceduralBlock)completion;
+
+@optional
+
+// Perform any initial setup required for the appearance of |tabSwitcher|.
+- (void)prepareToShowTabSwitcher:(id<TabSwitcher>)tabSwitcher;
 
 @end
 

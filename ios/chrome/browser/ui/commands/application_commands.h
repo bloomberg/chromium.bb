@@ -69,6 +69,9 @@
 // Closes the History UI.
 - (void)closeSettingsUI;
 
+// Prepare to show the TabSwitcher UI.
+- (void)prepareTabSwitcher;
+
 // Shows the TabSwitcher UI.
 - (void)displayTabSwitcher;
 

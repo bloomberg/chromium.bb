@@ -1150,6 +1150,9 @@ UIColor* BackgroundColor() {
                         forState:UIControlStateHighlighted];
   }
   [_tabSwitcherButton addTarget:self.dispatcher
+                         action:@selector(prepareTabSwitcher)
+               forControlEvents:UIControlEventTouchDown];
+  [_tabSwitcherButton addTarget:self.dispatcher
                          action:@selector(displayTabSwitcher)
                forControlEvents:UIControlEventTouchUpInside];
   [_tabSwitcherButton addTarget:self

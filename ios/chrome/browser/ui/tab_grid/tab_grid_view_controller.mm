@@ -182,6 +182,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.initialFrame = self.view.frame;
   // Modify Remote Tabs Insets when page appears and during rotation.
   [self setInsetForRemoteTabs];
+  // Let image sources know the initial appearance is done.
+  [self.regularTabsImageDataSource clearPreloadedSnapshots];
+  [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -224,6 +227,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
   return UIStatusBarStyleLightContent;
+}
+
+- (void)didReceiveMemoryWarning {
+  [self.regularTabsImageDataSource clearPreloadedSnapshots];
+  [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -337,7 +345,26 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return self.floatingButton;
 }
 
-#pragma mark - Public
+#pragma mark - Public Methods
+
+- (void)prepareForAppearance {
+  int gridSize = [self approximateVisibleGridCount];
+  switch (self.activePage) {
+    case TabGridPageIncognitoTabs:
+      [self.incognitoTabsImageDataSource
+          preloadSnapshotsForVisibleGridSize:gridSize];
+      break;
+    case TabGridPageRegularTabs:
+      [self.regularTabsImageDataSource
+          preloadSnapshotsForVisibleGridSize:gridSize];
+      break;
+    case TabGridPageRemoteTabs:
+      // Nothing to do.
+      break;
+  }
+}
+
+#pragma mark - Public Properties
 
 - (id<GridConsumer>)regularTabsConsumer {
   return self.regularTabsViewController;
@@ -1058,6 +1085,21 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       (self.currentPage == TabGridPageIncognitoTabs &&
        !self.incognitoTabsViewController.gridEmpty);
   [self.dispatcher setIncognitoContentVisible:incognitoContentVisible];
+}
+
+// Returns the approximate number of grid cells that will be visible on this
+// device.
+- (int)approximateVisibleGridCount {
+  if (IsRegularXRegularSizeClass(self)) {
+    // A 12" iPad Pro can show 30 cells in the tab grid.
+    return 30;
+  }
+  if (IsCompactWidth(self)) {
+    // A portrait phone shows up to four rows of two cells.
+    return 8;
+  }
+  // A landscape phone shows up to three rows of four cells.
+  return 12;
 }
 
 #pragma mark - GridViewControllerDelegate
