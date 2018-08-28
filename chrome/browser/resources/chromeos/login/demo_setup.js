@@ -36,8 +36,8 @@ Polymer({
 
   /**
    * Called when demo mode setup finished.
-   * @param {string} isSuccess Whether demo setup finished successfully.
-   * @param {boolean} message Error message to be displayed to the user if setup
+   * @param {boolean} isSuccess Whether demo setup finished successfully.
+   * @param {string} message Error message to be displayed to the user if setup
    *  finished with an error.
    */
   onSetupFinished: function(isSuccess, message) {
