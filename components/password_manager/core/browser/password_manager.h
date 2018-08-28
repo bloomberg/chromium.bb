@@ -161,16 +161,21 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // TODO(crbug.com/639786): Replace using this by quering the factory for
   // mocked PasswordFormManagers.
   const std::vector<std::unique_ptr<PasswordFormManager>>&
-  pending_login_managers() {
+  pending_login_managers() const {
     return pending_login_managers_;
   }
 
-  const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers() {
+  const PasswordFormManager* provisional_save_manager() const {
+    return provisional_save_manager_.get();
+  }
+
+  const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers()
+      const {
     return form_managers_;
   }
 
-  const PasswordFormManager* provisional_save_manager() {
-    return provisional_save_manager_.get();
+  PasswordFormManagerInterface* GetSubmittedManagerForTest() const {
+    return GetSubmittedManager();
   }
 #endif
 
@@ -237,6 +242,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // Passes |submitted_form| to NewPasswordManager that manages it for using it
   // after detecting submission success for saving. |driver| is needed to
   // determine the match.
+  // If the function is called multiple times, only the form from the last call
+  // is considered to be submitted. Multiple calls is possible because there can
+  // be multiple submitted forms on a page or our heuristics might have
+  // incorrectly found submissions.
   void ProcessSubmittedForm(const autofill::FormData& submitted_form,
                             const PasswordManagerDriver* driver);
 
@@ -244,6 +253,19 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // nullptr if no match exists.
   PasswordFormManager* GetMatchingPendingManager(
       const autofill::PasswordForm& form);
+
+  // Returns the form manager that corresponds to the submitted form. It might
+  // be nullptr if there is no submitted form.
+  // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
+  // gone.
+  PasswordFormManagerInterface* GetSubmittedManager() const;
+
+ private:
+  // Returns the form manager that corresponds to the submitted form. It also
+  // sets |submitted_form_manager_| to nullptr.
+  // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
+  // gone.
+  std::unique_ptr<PasswordFormManagerForUI> MoveOwnedSubmittedManager();
 
   // Records provisional save failure using current |client_| and
   // |main_frame_url_|.
@@ -276,8 +298,31 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // time a user submits a login form and gets to the next page.
   std::unique_ptr<PasswordFormManager> provisional_save_manager_;
 
+  // NewPasswordFormManager transition schemes:
+  // 1. HTML submission with navigation afterwads.
+  // form "seen"
+  //      |
+  // form_managers -- submit --> (is_submitted = true) -- navigation --
+  //
+  //                                                          __ Prompt.
+  // owned_submitted_form_manager --> (successful submission) __ Automatic save.
+  //
+  // 2.Other submssions detection types (XHR, frame detached, in-page
+  // navigation etc) without navigation.
+  // form "seen"
+  //      |
+  // form_managers -- successful submission (success is detected in the Render)
+  //                            ____ Prompt.
+  //  --> (is_submitted = true) ---- Automatic save.
+
   // Contains one NewPasswordFormManager per each form on the page.
+  // When a form is "seen" on a page, a NewPasswordFormManager is created
+  // and stored in this collection until user navigates away from page.
   std::vector<std::unique_ptr<NewPasswordFormManager>> form_managers_;
+
+  // Corresponds to the submitted form, after navigion away before submission
+  // success detection is finished.
+  std::unique_ptr<NewPasswordFormManager> owned_submitted_form_manager_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;
@@ -300,6 +345,8 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // relevant for HTML forms, the visible one is for HTTP auth.
   NavigationEntryToCheck entry_to_check_ =
       NavigationEntryToCheck::LAST_COMMITTED;
+
+  const bool is_new_form_parsing_for_saving_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

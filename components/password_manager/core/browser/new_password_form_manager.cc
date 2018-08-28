@@ -129,6 +129,17 @@ bool NewPasswordFormManager::DoesManage(
   return observed_form_.unique_renderer_id == form.unique_renderer_id;
 }
 
+bool NewPasswordFormManager::IsEqualToSubmittedForm(
+    const autofill::FormData& form) const {
+  if (!is_submitted_)
+    return false;
+  if (form.action == submitted_form_.action)
+    return true;
+  // TODO(https://crbug.com/831123): Implement other checks from a function
+  // IsPasswordFormReappeared from password_manager.cc.
+  return false;
+}
+
 FormFetcher* NewPasswordFormManager::GetFormFetcher() {
   return form_fetcher_;
 }

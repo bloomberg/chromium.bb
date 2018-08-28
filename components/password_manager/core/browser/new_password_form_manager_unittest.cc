@@ -541,4 +541,33 @@ TEST_F(NewPasswordFormManagerTest, NoCrashOnNonPasswordForm) {
   form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_);
 }
 
+TEST_F(NewPasswordFormManagerTest, IsEqualToSubmittedForm) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({}, 0u);
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form.fields[kPasswordFieldIndex].value =
+      saved_match_.password_value;
+
+  // No submitted form yet.
+  EXPECT_FALSE(form_manager.IsEqualToSubmittedForm(submitted_form));
+
+  ASSERT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+
+  observed_form_.unique_renderer_id += 10;
+  observed_form_.fields.clear();
+
+  EXPECT_TRUE(form_manager.IsEqualToSubmittedForm(observed_form_));
+
+  observed_form_.action = GURL("https://example.com");
+  EXPECT_FALSE(form_manager.IsEqualToSubmittedForm(observed_form_));
+}
+
 }  // namespace  password_manager

@@ -58,6 +58,11 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   bool DoesManage(const autofill::FormData& form,
                   const PasswordManagerDriver* driver) const;
 
+  // Check that |submitted_form_| is equal to |form| from the user point of
+  // view. It is used for detecting that a form is reappeared after navigation
+  // for success detection.
+  bool IsEqualToSubmittedForm(const autofill::FormData& form) const;
+
   // If |submitted_form| is managed by *this (i.e. DoesManage returns true for
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
