@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -113,14 +114,11 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   void* values[] = {wrappable, const_cast<WrapperTypeInfo*>(wrapper_type_info)};
   wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                              values);
-  auto* per_isolate_data = V8PerIsolateData::From(isolate);
-  // We notify ScriptWrappableVisitor about the new wrapper association,
-  // so the visitor can make sure to trace the association (in case it is
-  // currently tracing).  Because of some optimizations, V8 will not
-  // necessarily detect wrappers created during its incremental marking.
-  per_isolate_data->GetScriptWrappableMarkingVisitor()->RegisterV8Reference(
-      std::make_pair(const_cast<WrapperTypeInfo*>(wrapper_type_info),
-                     wrappable));
+  // The following write barrier is necessary as V8 might not see the newly
+  // created object during garbage collection, e.g., when the object is black
+  // allocated.
+  ScriptWrappableMarkingVisitor::WriteBarrier(isolate, wrapper_type_info,
+                                              wrappable);
 }
 
 inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,

@@ -157,9 +157,7 @@ void ScriptWrappableMarkingVisitor::PerformLazyCleanup(TimeTicks deadline) {
 
 void ScriptWrappableMarkingVisitor::RegisterV8Reference(
     const std::pair<void*, void*>& internal_fields) {
-  if (!tracing_in_progress_) {
-    return;
-  }
+  DCHECK(tracing_in_progress_);
 
   WrapperTypeInfo* wrapper_type_info =
       reinterpret_cast<WrapperTypeInfo*>(internal_fields.first);
@@ -174,8 +172,6 @@ void ScriptWrappableMarkingVisitor::RegisterV8References(
     const std::vector<std::pair<void*, void*>>&
         internal_fields_of_potential_wrappers) {
   CHECK(ThreadState::Current());
-  // TODO(hlopko): Visit the vector in the V8 instead of passing it over if
-  // there is no performance impact
   for (auto& pair : internal_fields_of_potential_wrappers) {
     RegisterV8Reference(pair);
   }
@@ -237,6 +233,19 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
 
   // Conservatively assume that the source object key is marked.
   visitor->Trace(wrapper_map, key);
+}
+
+void ScriptWrappableMarkingVisitor::WriteBarrier(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    void* object) {
+  if (!ThreadState::IsAnyWrapperTracing())
+    return;
+  ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
+  if (!visitor->WrapperTracingInProgress())
+    return;
+
+  wrapper_type_info->TraceWithWrappers(visitor, object);
 }
 
 void ScriptWrappableMarkingVisitor::Visit(

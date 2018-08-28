@@ -24,6 +24,7 @@ class ScriptWrappable;
 class ScriptWrappableVisitor;
 template <typename T>
 class TraceWrapperV8Reference;
+struct WrapperTypeInfo;
 
 // ScriptWrappableVisitor is used to trace through Blink's heap to find all
 // reachable wrappers. V8 calls this visitor during its garbage collection,
@@ -55,6 +56,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // alive in the current GC cycle.
   template <typename T>
   inline static void WriteBarrier(const T* dst_object);
+
+  static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
 
   static void WriteBarrier(v8::Isolate*,
                            const TraceWrapperV8Reference<v8::Value>&);
