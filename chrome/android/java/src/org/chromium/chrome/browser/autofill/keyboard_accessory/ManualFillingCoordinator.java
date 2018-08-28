@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Nullable;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
@@ -23,12 +24,13 @@ public class ManualFillingCoordinator {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
 
     /**
-     * Creates a the manual filling controller.
+     * Initializes the manual filling component. Calls to this class are NoOps until
+     * {@link #initialize(WindowAndroid, ViewStub, ViewStub)} is called.
      * @param windowAndroid The window needed to listen to the keyboard and to connect to activity.
      * @param keyboardAccessoryStub The view stub for keyboard accessory bar.
      * @param accessorySheetStub The view stub for the keyboard accessory bottom sheet.
      */
-    public ManualFillingCoordinator(WindowAndroid windowAndroid, ViewStub keyboardAccessoryStub,
+    public void initialize(WindowAndroid windowAndroid, ViewStub keyboardAccessoryStub,
             ViewStub accessorySheetStub) {
         KeyboardAccessoryCoordinator keyboardAccessory =
                 new KeyboardAccessoryCoordinator(keyboardAccessoryStub, mMediator);
@@ -59,6 +61,10 @@ public class ManualFillingCoordinator {
         mMediator.dismiss();
     }
 
+    /**
+     * Notifies the component that a popup window exists so it can be dismissed if necessary.
+     * @param popup A {@link DropdownPopupWindow} that might be dismissed later.
+     */
     public void notifyPopupAvailable(DropdownPopupWindow popup) {
         mMediator.notifyPopupOpened(popup);
     }
@@ -101,7 +107,7 @@ public class ManualFillingCoordinator {
      * the keyboard accessory (e.g. by providing suggestions or actions).
      * @return The coordinator of the Keyboard accessory component.
      */
-    public KeyboardAccessoryCoordinator getKeyboardAccessory() {
+    public @Nullable KeyboardAccessoryCoordinator getKeyboardAccessory() {
         return mMediator.getKeyboardAccessory();
     }
 

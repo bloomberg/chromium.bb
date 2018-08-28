@@ -86,7 +86,7 @@ public class ManualFillingControllerTest {
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
-    private ManualFillingCoordinator mController;
+    private ManualFillingCoordinator mController = new ManualFillingCoordinator();
 
     @Before
     public void setUp() {
@@ -100,7 +100,7 @@ public class ManualFillingControllerTest {
         when(mMockActivity.getResources()).thenReturn(mMockResources);
         when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
-        mController = new ManualFillingCoordinator(mMockWindow, mMockViewStub, mMockViewStub);
+        mController.initialize(mMockWindow, mMockViewStub, mMockViewStub);
     }
 
     @Test
