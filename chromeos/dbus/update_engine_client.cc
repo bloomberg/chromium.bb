@@ -7,12 +7,14 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -503,11 +505,14 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     status.new_version = new_version;
     // TODO(hunyadym, https://crbug.com/864672): Add a new DBus call to
     // determine this based on the Omaha response, and not version comparison.
-    status.is_rollback = version_loader::IsRollback(
-        version_loader::GetVersion(version_loader::VERSION_SHORT),
-        status.new_version);
-    if (status.is_rollback)
-      VLOG(1) << "New image is a rollback.";
+    std::string current_version =
+        version_loader::GetVersion(version_loader::VERSION_SHORT);
+    status.is_rollback =
+        version_loader::IsRollback(current_version, status.new_version);
+    if (status.is_rollback) {
+      LOG(WARNING) << "New image is a rollback from " << current_version
+                   << " to " << new_version << ".";
+    }
 
     status.new_size = new_size;
 
