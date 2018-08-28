@@ -64,6 +64,7 @@ class DocumentProvider : public AutocompleteProvider {
                            CheckFeaturePrerequisiteDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteServerBackoff);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, IsInputLikelyURL);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsWithBackoff);
@@ -81,6 +82,10 @@ class DocumentProvider : public AutocompleteProvider {
       bool is_incognito,
       bool is_authenticated,
       const TemplateURLService* template_url_service);
+
+  // Determines if the input is a URL, or is the start of the user entering one.
+  // We avoid queries for these cases for quality and scaling reasons.
+  static bool IsInputLikelyURL(const AutocompleteInput& input);
 
   // Called when loading is complete.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,

@@ -13,6 +13,7 @@
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -183,6 +184,33 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
   EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
       fake_prefs, is_incognito, is_authenticated, template_url_service));
   provider_->backoff_for_session_ = false;
+}
+
+TEST_F(DocumentProviderTest, IsInputLikelyURL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+
+  auto IsInputLikelyURL_Wrapper = [](const std::string& input_ascii) {
+    const AutocompleteInput autocomplete_input(
+        base::ASCIIToUTF16(input_ascii), metrics::OmniboxEventProto::OTHER,
+        TestSchemeClassifier());
+    return DocumentProvider::IsInputLikelyURL(autocomplete_input);
+  };
+
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("htt"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("http"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("https"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("https://"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("http://web.site"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("https://web.site"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("https://web.site"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("w"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("www."));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("www.web.site"));
+  EXPECT_TRUE(IsInputLikelyURL_Wrapper("chrome://extensions"));
+  EXPECT_FALSE(IsInputLikelyURL_Wrapper("https certificate"));
+  EXPECT_FALSE(IsInputLikelyURL_Wrapper("www website hosting"));
+  EXPECT_FALSE(IsInputLikelyURL_Wrapper("text query"));
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
