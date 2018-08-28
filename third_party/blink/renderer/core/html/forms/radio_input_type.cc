@@ -198,9 +198,9 @@ ClickHandlingState* RadioInputType::WillDispatchClick() {
   return state;
 }
 
-void RadioInputType::DidDispatchClick(Event* event,
+void RadioInputType::DidDispatchClick(Event& event,
                                       const ClickHandlingState& state) {
-  if (event->defaultPrevented() || event->DefaultHandled()) {
+  if (event.defaultPrevented() || event.DefaultHandled()) {
     // Restore the original selected radio button if possible.
     // Make sure it is still a radio button and only do the restoration if it
     // still belongs to our group.
@@ -216,7 +216,7 @@ void RadioInputType::DidDispatchClick(Event* event,
   }
   is_in_click_handler_ = false;
   // The work we did in willDispatchClick was default handling.
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 bool RadioInputType::ShouldAppearIndeterminate() const {

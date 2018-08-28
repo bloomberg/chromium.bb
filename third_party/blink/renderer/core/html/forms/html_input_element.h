@@ -362,7 +362,7 @@ class CORE_EXPORT HTMLInputElement
   bool SupportsAutofocus() const final;
 
   EventDispatchHandlingState* PreDispatchEventHandler(Event&) final;
-  void PostDispatchEventHandler(Event*, EventDispatchHandlingState*) final;
+  void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) final;
 
   bool IsURLAttribute(const Attribute&) const final;
   bool HasLegalLinkAttribute(const QualifiedName&) const final;

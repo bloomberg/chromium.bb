@@ -53,7 +53,7 @@ class RadioInputType final : public BaseCheckableInputType {
   bool IsKeyboardFocusable() const override;
   bool ShouldSendChangeEventAfterCheckedChanged() override;
   ClickHandlingState* WillDispatchClick() override;
-  void DidDispatchClick(Event*, const ClickHandlingState&) override;
+  void DidDispatchClick(Event&, const ClickHandlingState&) override;
   bool ShouldAppearIndeterminate() const override;
 
   HTMLInputElement* FindNextFocusableRadioButtonInGroup(HTMLInputElement*,
