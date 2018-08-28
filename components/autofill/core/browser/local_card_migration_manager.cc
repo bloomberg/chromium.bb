@@ -18,6 +18,8 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace autofill {
@@ -77,9 +79,9 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
 
   // Payments server determines which version of the legal message to show based
   // on the existence of this experiment flag.
-  if (IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
+  if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
-        kAutofillUpstreamUpdatePromptExplanation.name);
+        features::kAutofillUpstreamUpdatePromptExplanation.name);
   }
 
   // Don't send pan_first_six, as potentially migrating multiple local cards at
@@ -115,8 +117,8 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   // Confirm that the user is signed in, syncing, and the proper experiment
   // flags are enabled.
   bool migration_experiment_enabled =
-      GetLocalCardMigrationExperimentalFlag() !=
-      LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+      features::GetLocalCardMigrationExperimentalFlag() !=
+      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
   bool credit_card_upload_enabled = ::autofill::IsCreditCardUploadEnabled(
       client_->GetPrefs(), client_->GetSyncService(),
       client_->GetIdentityManager()->GetPrimaryAccountInfo().email);

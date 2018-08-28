@@ -28,12 +28,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
@@ -803,7 +803,7 @@ base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
     return base::string16();
 
   return l10n_util::GetStringFUTF16(
-      IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()
+      features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()
           ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2
           : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR,
       month, year);

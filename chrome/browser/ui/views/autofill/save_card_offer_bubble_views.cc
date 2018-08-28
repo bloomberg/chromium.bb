@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -187,7 +188,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
 
     // Prepare the prefilled cardholder name.
     base::string16 prefilled_name;
-    if (!IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled()) {
+    if (!features::
+            IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled()) {
       prefilled_name =
           base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
     }

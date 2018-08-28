@@ -26,7 +26,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_candidates.h"
@@ -417,7 +416,8 @@ void FormStructure::DetermineHeuristicTypes() {
         1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
   }
 
-  if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillRationalizeFieldTypePredictions))
     RationalizeFieldTypePredictions();
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
@@ -576,7 +576,8 @@ void FormStructure::ProcessQueryResponse(
             features::kAutofillRationalizeRepeatedServerPredictions))
       form->RationalizeRepeatedFields(form_interactions_ukm_logger);
 
-    if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillRationalizeFieldTypePredictions))
       form->RationalizeFieldTypePredictions();
 
     form->IdentifySections(false);

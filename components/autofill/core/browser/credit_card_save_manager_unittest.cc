@@ -137,17 +137,18 @@ class CreditCardSaveManagerTest : public testing::Test {
   }
 
   void EnableAutofillUpstreamSendPanFirstSixExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillUpstreamSendPanFirstSix);
   }
 
   void EnableAutofillUpstreamUpdatePromptExplanationExperiment() {
     scoped_feature_list_.InitAndEnableFeature(
-        kAutofillUpstreamUpdatePromptExplanation);
+        features::kAutofillUpstreamUpdatePromptExplanation);
   }
 
   void DisableAutofillUpstreamUpdatePromptExplanationExperiment() {
     scoped_feature_list_.InitAndDisableFeature(
-        kAutofillUpstreamUpdatePromptExplanation);
+        features::kAutofillUpstreamUpdatePromptExplanation);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -475,9 +476,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Verify that one profile was saved, and it was included in the upload
   // details request to payments.
@@ -540,9 +541,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Verify that even though the full address profile was saved, only the
   // country was included in the upload details request to payments.
@@ -609,9 +610,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FirstAndLastName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -695,9 +696,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LastAndFirstName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -1883,7 +1884,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_RequestCardholderNameIfNameMissingAndNoPaymentsCustomer) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -1928,7 +1929,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_RequestCardholderNameIfNameConflictingAndNoPaymentsCustomer) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -1973,7 +1974,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_DoNotRequestCardholderNameIfNameExistsAndNoPaymentsCustomer) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2016,7 +2017,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_DoNotRequestCardholderNameIfNameMissingAndPaymentsCustomer) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2066,7 +2067,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_DoNotRequestCardholderNameIfNameConflictingAndPaymentsCustomer) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2116,7 +2117,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_DoNotRequestCardholderNameIfNameMissingAndNoPaymentsCustomerExpOff) {
   scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2161,7 +2162,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_DoNotRequestCardholderNameIfNameConflictingAndNoPaymentsCustomerExpOff) {
   scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2208,7 +2209,7 @@ TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_ShouldRequestCardholderName_ResetBetweenConsecutiveSaves) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -2258,7 +2259,7 @@ TEST_F(
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestCardholderNameIfTestingExperimentOn) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamAlwaysRequestCardholderName);
+      features::kAutofillUpstreamAlwaysRequestCardholderName);
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -3421,9 +3422,9 @@ TEST_F(
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -3493,10 +3494,10 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
   EXPECT_EQ(payments_client_->pan_first_six_in_upload_details(), "444433");
   // Confirm that the "send pan first six" experiment flag and enabled
   // UpdatePromptExplanation experiment flag state was sent in the request.
-  EXPECT_THAT(
-      payments_client_->active_experiments_in_request(),
-      UnorderedElementsAre(kAutofillUpstreamSendPanFirstSix.name,
-                           kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_THAT(payments_client_->active_experiments_in_request(),
+              UnorderedElementsAre(
+                  features::kAutofillUpstreamSendPanFirstSix.name,
+                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadOfLocalCard) {

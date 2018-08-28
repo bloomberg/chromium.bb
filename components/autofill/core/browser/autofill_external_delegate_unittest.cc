@@ -869,10 +869,10 @@ TEST_F(AutofillExternalDelegateUnitTest, IncludeFooterSeparatorForOldUIOnly) {
 
     if (enabled) {
       scoped_feature_list.InitAndEnableFeature(
-          autofill::kAutofillExpandedPopupViews);
+          features::kAutofillExpandedPopupViews);
     } else {
       scoped_feature_list.InitAndDisableFeature(
-          autofill::kAutofillExpandedPopupViews);
+          features::kAutofillExpandedPopupViews);
     }
 
     IssueOnQuery(kQueryId);

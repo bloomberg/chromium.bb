@@ -27,68 +27,21 @@
 
 namespace autofill {
 
-const base::Feature kAutofillAlwaysFillAddresses{
-    "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillCreateDataForTest{
-    "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardAssist{
-    "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillScanCardholderName{
-    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardAblationExperiment{
-    "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardLocalCardMigration{
-    "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
-const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
-    "without-settings-page";
-const base::Feature kAutofillDeleteDisusedAddresses{
-    "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillDeleteDisusedCreditCards{
-    "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillExpandedPopupViews{
     "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillPreferServerNamePredictions{
-    "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillRationalizeFieldTypePredictions{
-    "AutofillRationalizeFieldTypePredictions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
-    "AutofillSaveCardDialogUnlabeledExpirationDate",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSuggestInvalidProfileData{
-    "AutofillSuggestInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSuppressDisusedAddresses{
-    "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSuppressDisusedCreditCards{
-    "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillScanCardholderName{
+    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
-    "AutofillUpstreamAlwaysRequestCardholderName",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamBlankCardholderNameField{
-    "AutofillUpstreamBlankCardholderNameField",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamEditableCardholderName{
-    "AutofillUpstreamEditableCardholderName",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamSendPanFirstSix{
-    "AutofillUpstreamSendPanFirstSix", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUpstreamUpdatePromptExplanation{
     "AutofillUpstreamUpdatePromptExplanation",
     base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillVoteUsingInvalidProfileData{
-    "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
-
-#if defined(OS_MACOSX)
-const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
 const base::Feature kAutofillDropdownLayoutExperiment{
@@ -97,60 +50,6 @@ const char kAutofillDropdownLayoutParameterName[] = "variant";
 const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
 const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
 #endif  // !defined(OS_ANDROID)
-
-bool IsInAutofillSuggestionsDisabledExperiment() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillEnabled");
-  return group_name == "Disabled";
-}
-
-bool IsAutofillCreditCardAssistEnabled() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
-#endif
-}
-
-LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
-  if (!base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration))
-    return LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillCreditCardLocalCardMigration,
-      kAutofillCreditCardLocalCardMigrationParameterName);
-
-  if (param ==
-      kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
-    return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
-  }
-  return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
-}
-
-bool OfferStoreUnmaskedCards() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The checkbox can be forced on with a flag, but by default we don't store
-  // on Linux due to lack of system keychain integration. See crbug.com/162735
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOfferStoreUnmaskedWalletCards);
-#else
-  // Query the field trial before checking command line flags to ensure UMA
-  // reports the correct group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("OfferStoreUnmaskedWalletCards");
-
-  // The checkbox can be forced on or off with flags.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOfferStoreUnmaskedWalletCards))
-    return true;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOfferStoreUnmaskedWalletCards))
-    return false;
-
-  // Otherwise use the field trial to show the checkbox or not.
-  return group_name != "Disabled";
-#endif
-}
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
@@ -188,60 +87,45 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // If the "allow all email domains" flag is off, restrict credit card upload
   // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
   // domains.
-  if (!base::FeatureList::IsEnabled(kAutofillUpstreamAllowAllEmailDomains) &&
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillUpstreamAllowAllEmailDomains) &&
       !(domain == "googlemail.com" || domain == "gmail.com" ||
         domain == "google.com" || domain == "chromium.org")) {
     return false;
   }
 
-  return base::FeatureList::IsEnabled(kAutofillUpstream);
+  return base::FeatureList::IsEnabled(features::kAutofillUpstream);
 }
 
-bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      kAutofillUpstreamAlwaysRequestCardholderName);
+bool IsInAutofillSuggestionsDisabledExperiment() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillEnabled");
+  return group_name == "Disabled";
 }
 
-bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      kAutofillUpstreamBlankCardholderNameField);
-}
-
-bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
-}
-
-bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamSendPanFirstSix);
-}
-
-bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamUpdatePromptExplanation);
-}
-
-#if defined(OS_MACOSX)
-bool IsMacViewsAutofillPopupExperimentEnabled() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!::features::IsViewsBrowserCocoa())
-    return true;
-#endif
-
-  return base::FeatureList::IsEnabled(kMacViewsAutofillPopup);
-}
-#endif  // defined(OS_MACOSX)
-
-bool ShouldUseNativeViews() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return base::FeatureList::IsEnabled(kAutofillExpandedPopupViews) ||
-         base::FeatureList::IsEnabled(::features::kExperimentalUi);
+bool OfferStoreUnmaskedCards() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The checkbox can be forced on with a flag, but by default we don't store
+  // on Linux due to lack of system keychain integration. See crbug.com/162735
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOfferStoreUnmaskedWalletCards);
 #else
-  return false;
-#endif
-}
+  // Query the field trial before checking command line flags to ensure UMA
+  // reports the correct group.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("OfferStoreUnmaskedWalletCards");
 
-bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {
-  return base::FeatureList::IsEnabled(
-      kAutofillSaveCardDialogUnlabeledExpirationDate);
+  // The checkbox can be forced on or off with flags.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOfferStoreUnmaskedWalletCards))
+    return true;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOfferStoreUnmaskedWalletCards))
+    return false;
+
+  // Otherwise use the field trial to show the checkbox or not.
+  return group_name != "Disabled";
+#endif
 }
 
 #if !defined(OS_ANDROID)

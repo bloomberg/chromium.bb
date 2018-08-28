@@ -81,7 +81,8 @@ class PaymentsClientTest : public testing::Test {
   void TearDown() override { client_.reset(); }
 
   void EnableAutofillUpstreamSendPanFirstSixExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillUpstreamSendPanFirstSix);
   }
 
   void EnableAutofillSendExperimentIdsInPaymentsRPCs() {

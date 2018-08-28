@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
@@ -37,6 +36,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/strings/grit/components_strings.h"
@@ -297,8 +297,8 @@ void AutofillProfile::GetMatchingTypes(
   }
   for (auto type : matching_types_in_this_profile) {
     if (GetValidityState(type) == INVALID) {
-      bool vote_using_invalid_data =
-          base::FeatureList::IsEnabled(kAutofillVoteUsingInvalidProfileData);
+      bool vote_using_invalid_data = base::FeatureList::IsEnabled(
+          features::kAutofillVoteUsingInvalidProfileData);
       UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForMetrics",
                             vote_using_invalid_data);
       if (!vote_using_invalid_data)

@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
 #include "chrome/browser/ui/views_mode_controller.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -344,7 +344,7 @@ void AutofillPopupViewViews::CreateChildViews() {
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
 #if defined(OS_MACOSX)
-  if (!autofill::IsMacViewsAutofillPopupExperimentEnabled())
+  if (!features::IsMacViewsAutofillPopupExperimentEnabled())
     return CreateCocoa(controller);
 
   // It's possible for the container_view to not be in a window. In that case,
@@ -365,7 +365,7 @@ AutofillPopupView* AutofillPopupView::Create(
     return nullptr;
 #endif
 
-  if (autofill::ShouldUseNativeViews())
+  if (features::ShouldUseNativeViews())
     return new AutofillPopupViewNativeViews(controller, observing_widget);
 
   return new AutofillPopupViewViews(controller, observing_widget);

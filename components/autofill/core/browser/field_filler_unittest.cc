@@ -19,7 +19,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/address_normalizer_impl.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -27,6 +26,7 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/null_storage.h"
@@ -335,7 +335,7 @@ TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
 TEST_F(AutofillFieldFillerTest,
        FillFormField_AutocompleteOffRespected_AddressField) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+  feature_list.InitAndDisableFeature(features::kAutofillAlwaysFillAddresses);
 
   AutofillField field;
   field.should_autocomplete = false;

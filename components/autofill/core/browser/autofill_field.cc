@@ -10,9 +10,9 @@
 
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -114,7 +114,8 @@ AutofillType AutofillField::ComputedType() const {
     // it might be better to fix this server-side.
     // See http://crbug.com/429236 for background.
     bool believe_server;
-    if (base::FeatureList::IsEnabled(kAutofillPreferServerNamePredictions)) {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillPreferServerNamePredictions)) {
       believe_server = true;
     } else {
       believe_server = !(server_type_ == NAME_FULL &&

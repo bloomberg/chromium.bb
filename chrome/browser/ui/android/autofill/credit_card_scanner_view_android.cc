@@ -12,9 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "jni/CreditCardScannerBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -71,7 +71,7 @@ void CreditCardScannerViewAndroid::ScanCompleted(
   base::string16 name =
       base::android::ConvertJavaStringToUTF16(env, card_holder_name);
   DCHECK(name.empty() ||
-         base::FeatureList::IsEnabled(kAutofillScanCardholderName));
+         base::FeatureList::IsEnabled(features::kAutofillScanCardholderName));
   card.SetRawInfo(CREDIT_CARD_NAME_FULL, name);
 
   delegate_->ScanCompleted(card);

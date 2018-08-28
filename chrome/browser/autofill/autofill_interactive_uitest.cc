@@ -45,7 +45,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -234,8 +233,8 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   explicit AutofillInteractiveTestBase(bool popup_views_enabled)
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         popup_views_enabled_(popup_views_enabled) {
-    scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
-                                              popup_views_enabled_);
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillExpandedPopupViews, popup_views_enabled_);
   }
 
   ~AutofillInteractiveTestBase() override {}
