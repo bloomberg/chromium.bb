@@ -63,22 +63,21 @@ class CC_EXPORT LayerTreeHostCommon {
 
   struct CC_EXPORT CalcDrawPropsImplInputs {
    public:
-    CalcDrawPropsImplInputs(
-        LayerImpl* root_layer,
-        const gfx::Size& device_viewport_size,
-        const gfx::Transform& device_transform,
-        float device_scale_factor,
-        float page_scale_factor,
-        const LayerImpl* page_scale_layer,
-        const LayerImpl* inner_viewport_scroll_layer,
-        const LayerImpl* outer_viewport_scroll_layer,
-        const gfx::Vector2dF& elastic_overscroll,
-        const LayerImpl* elastic_overscroll_application_layer,
-        int max_texture_size,
-        bool can_adjust_raster_scales,
-        RenderSurfaceList* render_surface_list,
-        PropertyTrees* property_trees,
-        TransformNode* page_scale_transform_node);
+    CalcDrawPropsImplInputs(LayerImpl* root_layer,
+                            const gfx::Size& device_viewport_size,
+                            const gfx::Transform& device_transform,
+                            float device_scale_factor,
+                            float page_scale_factor,
+                            const LayerImpl* page_scale_layer,
+                            const LayerImpl* inner_viewport_scroll_layer,
+                            const LayerImpl* outer_viewport_scroll_layer,
+                            const gfx::Vector2dF& elastic_overscroll,
+                            const ElementId elastic_overscroll_element_id,
+                            int max_texture_size,
+                            bool can_adjust_raster_scales,
+                            RenderSurfaceList* render_surface_list,
+                            PropertyTrees* property_trees,
+                            TransformNode* page_scale_transform_node);
 
     LayerImpl* root_layer;
     gfx::Size device_viewport_size;
@@ -89,7 +88,7 @@ class CC_EXPORT LayerTreeHostCommon {
     const LayerImpl* inner_viewport_scroll_layer;
     const LayerImpl* outer_viewport_scroll_layer;
     gfx::Vector2dF elastic_overscroll;
-    const LayerImpl* elastic_overscroll_application_layer;
+    const ElementId elastic_overscroll_element_id;
     int max_texture_size;
     bool can_adjust_raster_scales;
     RenderSurfaceList* render_surface_list;

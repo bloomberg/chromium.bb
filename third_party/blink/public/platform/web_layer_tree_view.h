@@ -166,7 +166,7 @@ class WebLayerTreeView {
   virtual void SetDeferCommits(bool defer_commits) {}
 
   struct ViewportLayers {
-    scoped_refptr<cc::Layer> overscroll_elasticity;
+    cc::ElementId overscroll_elasticity_element_id;
     scoped_refptr<cc::Layer> page_scale;
     scoped_refptr<cc::Layer> inner_viewport_container;
     scoped_refptr<cc::Layer> outer_viewport_container;

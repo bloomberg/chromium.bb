@@ -259,7 +259,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   struct CC_EXPORT ViewportLayers {
     ViewportLayers();
     ~ViewportLayers();
-    scoped_refptr<Layer> overscroll_elasticity;
+    ElementId overscroll_elasticity_element_id;
     scoped_refptr<Layer> page_scale;
     scoped_refptr<Layer> inner_viewport_container;
     scoped_refptr<Layer> outer_viewport_container;
@@ -267,8 +267,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     scoped_refptr<Layer> outer_viewport_scroll;
   };
   void RegisterViewportLayers(const ViewportLayers& viewport_layers);
-  Layer* overscroll_elasticity_layer() const {
-    return viewport_layers_.overscroll_elasticity.get();
+  ElementId overscroll_elasticity_element_id() const {
+    return viewport_layers_.overscroll_elasticity_element_id;
   }
   Layer* page_scale_layer() const { return viewport_layers_.page_scale.get(); }
   Layer* inner_viewport_container_layer() const {

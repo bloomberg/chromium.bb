@@ -328,7 +328,8 @@ void LayerTreeView::SetNeedsBeginFrame() {
 
 void LayerTreeView::RegisterViewportLayers(const ViewportLayers& layers) {
   cc::LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity = layers.overscroll_elasticity;
+  viewport_layers.overscroll_elasticity_element_id =
+      layers.overscroll_elasticity_element_id;
   viewport_layers.page_scale = layers.page_scale;
   viewport_layers.inner_viewport_container = layers.inner_viewport_container;
   viewport_layers.outer_viewport_container = layers.outer_viewport_container;

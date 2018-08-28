@@ -253,3 +253,6 @@ Bug(none) fast/dom/scroll-reveal-left-overflow.html [ Failure ]
 Bug(none) fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
 Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
+
+# Scroll snap data missing.
+crbug.com/853945 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]

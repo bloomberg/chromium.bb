@@ -5356,6 +5356,8 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
     inner_viewport_container_layer->SetBounds(gfx::Size(10, 10));
     scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
+    overscroll_elasticity_layer->SetElementId(
+        LayerIdToElementIdForTesting(overscroll_elasticity_layer->id()));
     scoped_refptr<Layer> page_scale_layer = Layer::Create();
     scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
     inner_viewport_scroll_layer->SetScrollable(
@@ -5374,7 +5376,8 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
 
     layer_tree_host()->SetRootLayer(root_layer_);
     LayerTreeHost::ViewportLayers viewport_layers;
-    viewport_layers.overscroll_elasticity = overscroll_elasticity_layer;
+    viewport_layers.overscroll_elasticity_element_id =
+        overscroll_elasticity_layer->element_id();
     viewport_layers.page_scale = page_scale_layer;
     viewport_layers.inner_viewport_container = inner_viewport_container_layer;
     viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;

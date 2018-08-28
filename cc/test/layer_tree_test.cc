@@ -146,6 +146,8 @@ void CreateVirtualViewportLayers(Layer* root_layer,
       LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
   outer_scroll_layer->SetElementId(
       LayerIdToElementIdForTesting(outer_scroll_layer->id()));
+  overscroll_elasticity_layer->SetElementId(
+      LayerIdToElementIdForTesting(overscroll_elasticity_layer->id()));
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
   inner_viewport_scroll_layer->SetScrollable(inner_bounds);
@@ -156,7 +158,8 @@ void CreateVirtualViewportLayers(Layer* root_layer,
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity = overscroll_elasticity_layer;
+  viewport_layers.overscroll_elasticity_element_id =
+      overscroll_elasticity_layer->element_id();
   viewport_layers.page_scale = page_scale_layer;
   viewport_layers.inner_viewport_container = inner_viewport_container_layer;
   viewport_layers.outer_viewport_container = outer_viewport_container_layer;

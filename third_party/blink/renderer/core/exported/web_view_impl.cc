@@ -3129,8 +3129,8 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
   WebLayerTreeView::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity =
-      visual_viewport.OverscrollElasticityLayer()->CcLayer();
+  viewport_layers.overscroll_elasticity_element_id =
+      visual_viewport.GetCompositorOverscrollElasticityElementId();
   viewport_layers.page_scale = visual_viewport.PageScaleLayer()->CcLayer();
   viewport_layers.inner_viewport_container =
       visual_viewport.ContainerLayer()->CcLayer();

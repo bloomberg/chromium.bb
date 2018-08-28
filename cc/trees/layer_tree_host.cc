@@ -749,7 +749,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer(),
-        outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
+        outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,
         gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
     TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
@@ -1030,9 +1030,11 @@ void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   DCHECK(IsUsingLayerLists() || !layers.page_scale ||
          layers.inner_viewport_scroll->parent() == layers.page_scale);
   DCHECK(IsUsingLayerLists() || !layers.page_scale ||
-         layers.page_scale->parent() == layers.overscroll_elasticity ||
+         layers.page_scale->parent()->element_id() ==
+             layers.overscroll_elasticity_element_id ||
          layers.page_scale->parent() == layers.inner_viewport_container);
-  viewport_layers_.overscroll_elasticity = layers.overscroll_elasticity;
+  viewport_layers_.overscroll_elasticity_element_id =
+      layers.overscroll_elasticity_element_id;
   viewport_layers_.page_scale = layers.page_scale;
   viewport_layers_.inner_viewport_container = layers.inner_viewport_container;
   viewport_layers_.outer_viewport_container = layers.outer_viewport_container;
@@ -1409,8 +1411,10 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   if (viewport_layers_.inner_viewport_scroll) {
     LayerTreeImpl::ViewportLayerIds ids;
-    if (viewport_layers_.overscroll_elasticity)
-      ids.overscroll_elasticity = viewport_layers_.overscroll_elasticity->id();
+    if (viewport_layers_.overscroll_elasticity_element_id) {
+      ids.overscroll_elasticity_element_id =
+          viewport_layers_.overscroll_elasticity_element_id;
+    }
     ids.page_scale = viewport_layers_.page_scale->id();
     if (viewport_layers_.inner_viewport_container)
       ids.inner_viewport_container =
@@ -1515,7 +1519,7 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
   gfx::Transform identity_transform;
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer(), page_scale_layer(), inner_viewport_scroll_layer(),
-      outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
+      outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
       elastic_overscroll(), page_scale_factor(), device_scale_factor(),
       gfx::Rect(device_viewport_size()), identity_transform, property_trees());
 }
