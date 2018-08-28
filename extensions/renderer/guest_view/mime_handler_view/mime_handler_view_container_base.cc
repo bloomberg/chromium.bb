@@ -269,11 +269,15 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
     if (transferrable_url_loader_.is_null())
       return;
 
+    auto* extension_frame_helper =
+        ExtensionFrameHelper::Get(GetEmbedderRenderFrame());
+    if (!extension_frame_helper)
+      return;
+
     GetGuestView()->CreateEmbeddedMimeHandlerViewGuest(
         GetEmbedderRenderFrame()->GetRoutingID(),
-        ExtensionFrameHelper::Get(GetEmbedderRenderFrame())->tab_id(),
-        original_url_, GetInstanceId(), GetElementSize(),
-        std::move(transferrable_url_loader_));
+        extension_frame_helper->tab_id(), original_url_, GetInstanceId(),
+        GetElementSize(), std::move(transferrable_url_loader_));
     guest_created_ = true;
     return;
   }
