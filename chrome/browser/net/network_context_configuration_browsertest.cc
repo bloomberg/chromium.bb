@@ -810,6 +810,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
 // Check if the URL loaded in PRE_DiskCache is still in the cache, across a
 // browser restart.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
+  // Crashing the network service may corrupt the disk cache, so skip this phase
+  // in tests that crash the network service.
+  if (GetParam().network_service_state == NetworkServiceState::kRestarted)
+    return;
+
   // Load URL from the above test body to disk.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
