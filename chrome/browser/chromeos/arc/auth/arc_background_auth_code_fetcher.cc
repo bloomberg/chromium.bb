@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_constants.h"
@@ -76,14 +75,9 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(
     return;
   }
 
-  // Get token service and account ID to fetch auth tokens.
-  ProfileOAuth2TokenService* const token_service = context_.token_service();
-  DCHECK(token_service->RefreshTokenIsAvailable(context_.account_id()));
-
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_ =
-      token_service->StartRequest(context_.account_id(), scopes, this);
+  login_token_request_ = context_.StartAccessTokenRequest(scopes, this);
 }
 
 void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
