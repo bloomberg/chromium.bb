@@ -140,6 +140,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     DCHECK(sk_surface_);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
+    if (vulkan_surface_)
+      vulkan_surface_->Destroy();
     gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if defined(OS_ANDROID)
     accelerated_widget =
@@ -148,21 +150,17 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 #else
     accelerated_widget = surface_handle_;
 #endif
-    if (!vulkan_surface_) {
-      auto vulkan_surface = gpu_service_->vulkan_context_provider()
-                                ->GetVulkanImplementation()
-                                ->CreateViewSurface(accelerated_widget);
-      if (!vulkan_surface)
-        LOG(FATAL) << "Failed to create vulkan surface.";
-      if (!vulkan_surface->Initialize(
-              gpu_service_->vulkan_context_provider()->GetDeviceQueue(),
-              gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
-        LOG(FATAL) << "Failed to initialize vulkan surface.";
-      }
-      vulkan_surface_ = std::move(vulkan_surface);
+    vulkan_surface_ = gpu_service_->vulkan_context_provider()
+                          ->GetVulkanImplementation()
+                          ->CreateViewSurface(accelerated_widget);
+    if (!vulkan_surface_)
+      LOG(FATAL) << "Failed to create vulkan surface.";
+    if (!vulkan_surface_->Initialize(
+            gpu_service_->vulkan_context_provider()->GetDeviceQueue(),
+            gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
+      LOG(FATAL) << "Failed to initialize vulkan surface.";
     }
-    vulkan_surface_->SetSize(size);
-    CreateSkSurfaceForVulkan();
+    CreateSkSurfaceForVulkan(size);
 #else
     NOTREACHED();
 #endif
@@ -215,7 +213,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     params.swap_response.swap_end = base::TimeTicks::Now();
     DidSwapBuffersComplete(params);
 
-    CreateSkSurfaceForVulkan();
+    CreateSkSurfaceForVulkan(
+        gfx::Size(sk_surface_->width(), sk_surface_->height()));
 #else
     NOTREACHED();
 #endif
@@ -521,7 +520,8 @@ void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
   pending_swap_completed_params_.emplace_back(swap_id, pixel_size);
 }
 
-void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
+void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan(
+    const gfx::Size& size) {
 #if BUILDFLAG(ENABLE_VULKAN)
   SkSurfaceProps surface_props =
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
@@ -534,8 +534,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
   vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
   vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
   vk_image_info.fLevelCount = 1;
-  GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                      vulkan_surface_->size().height(), 0, 0,
+  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
                                       vk_image_info);
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, kTopLeft_GrSurfaceOrigin,
