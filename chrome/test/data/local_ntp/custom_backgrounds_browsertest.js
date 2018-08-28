@@ -237,10 +237,8 @@ test.customBackgrounds.testImageDoneClick = function() {
 
 
 // TODO(crbug.com/857256): add tests for:
-//  * Background actually being set.
 //  * Image attributions.
 //  * Image upload flow.
-//  * Reset to default.
 //  * Online/offline.
 
 
