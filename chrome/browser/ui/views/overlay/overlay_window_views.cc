@@ -643,6 +643,8 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     TogglePlayPause();
     event->SetHandled();
   }
+
+  views::Widget::OnGestureEvent(event);
 }
 
 void OverlayWindowViews::ButtonPressed(views::Button* sender,
