@@ -281,7 +281,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     // UpdateSourceURL().
     if (!IsWhitelistedSourceId(kv.first)) {
       // UkmSource should not keep initial_url for non-navigation source IDs.
-      DCHECK(kv.second->initial_url().is_empty());
+      DCHECK_EQ(1u, kv.second->urls().size());
       if (!url_whitelist.count(kv.second->url().spec())) {
         RecordDroppedSource(DroppedDataReason::NOT_MATCHED);
         unmatched_sources++;
@@ -423,24 +423,17 @@ void UkmRecorderImpl::RecordNavigation(
     SourceId source_id,
     const UkmSource::NavigationData& unsanitized_navigation_data) {
   DCHECK(GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID);
-  // TODO(csharrison): This is a bit messy because it tries not to change
-  // existing behavior from previous code, where if |final_url| should not be
-  // recorded, the entry assumes |initial_url| is the final url. This should be
-  // changed so that the Source isn't even recorded at all if the final URL
-  // should not be recorded.
+  // TODO(csharrison): Consider changing this behavior so the Source isn't event
+  // recorded at all if the final URL in |unsanitized_navigation_data| should
+  // not be recorded.
   std::vector<GURL> urls;
-  GURL sanitized_initial_url =
-      SanitizeURL(unsanitized_navigation_data.initial_url);
-  GURL sanitized_final_url = SanitizeURL(unsanitized_navigation_data.url);
-  if (!sanitized_initial_url.is_empty() &&
-      ShouldRecordUrl(source_id, sanitized_initial_url)) {
-    urls.push_back(sanitized_initial_url);
-  }
-  if (ShouldRecordUrl(source_id, sanitized_final_url)) {
-    urls.push_back(sanitized_final_url);
+  for (const GURL& url : unsanitized_navigation_data.urls) {
+    const GURL sanitized_url = SanitizeURL(url);
+    if (ShouldRecordUrl(source_id, sanitized_url))
+      urls.push_back(std::move(sanitized_url));
   }
 
-  // Neither URLs passed the ShouldRecordUrl check, so do not create a new
+  // None of the URLs passed the ShouldRecordUrl check, so do not create a new
   // Source for them.
   if (urls.empty())
     return;

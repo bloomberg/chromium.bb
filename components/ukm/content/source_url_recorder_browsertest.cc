@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest, Basic) {
       GetSourceForNavigationId(observer.navigation_id());
   EXPECT_NE(nullptr, source);
   EXPECT_EQ(url, source->url());
-  EXPECT_TRUE(source->initial_url().is_empty());
+  EXPECT_EQ(1u, source->urls().size());
 
   EXPECT_EQ(url, GetAssociatedURLForWebContentsDocument());
 

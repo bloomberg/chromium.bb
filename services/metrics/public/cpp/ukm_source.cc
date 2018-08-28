@@ -4,8 +4,11 @@
 
 #include "services/metrics/public/cpp/ukm_source.h"
 
+#include <utility>
+
 #include "base/atomicops.h"
 #include "base/hash.h"
+#include "base/logging.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
 
 namespace ukm {
@@ -39,19 +42,21 @@ void UkmSource::SetCustomTabVisible(bool visible) {
   g_custom_tab_state = visible ? kCustomTabTrue : kCustomTabFalse;
 }
 
+UkmSource::NavigationData::NavigationData() = default;
+UkmSource::NavigationData::~NavigationData() = default;
+
+UkmSource::NavigationData::NavigationData(const NavigationData& other) =
+    default;
+
 UkmSource::NavigationData UkmSource::NavigationData::CopyWithSanitizedUrls(
     std::vector<GURL> sanitized_urls) const {
   DCHECK_LE(sanitized_urls.size(), 2u);
   DCHECK(!sanitized_urls.empty());
+  DCHECK(!sanitized_urls.back().is_empty());
+  DCHECK(!sanitized_urls.front().is_empty());
 
   NavigationData sanitized_navigation_data;
-
-  // TODO(csharrison): Migrate this class to internally keep a vector<GURL>
-  // rather than two separate members.
-  sanitized_navigation_data.url = sanitized_urls.back();
-  if (sanitized_urls.size() == 2u)
-    sanitized_navigation_data.initial_url = sanitized_urls.front();
-
+  sanitized_navigation_data.urls = std::move(sanitized_urls);
   sanitized_navigation_data.previous_source_id = previous_source_id;
   sanitized_navigation_data.opener_source_id = opener_source_id;
   sanitized_navigation_data.tab_id = tab_id;
@@ -62,7 +67,7 @@ UkmSource::UkmSource(ukm::SourceId id, const GURL& url)
     : id_(id),
       custom_tab_state_(g_custom_tab_state),
       creation_time_(base::TimeTicks::Now()) {
-  navigation_data_.url = url;
+  navigation_data_.urls = {url};
   DCHECK(!url.is_empty());
 }
 
@@ -72,16 +77,18 @@ UkmSource::UkmSource(ukm::SourceId id, const NavigationData& navigation_data)
       custom_tab_state_(g_custom_tab_state),
       creation_time_(base::TimeTicks::Now()) {
   DCHECK(GetSourceIdType(id_) == SourceIdType::NAVIGATION_ID);
-  DCHECK(!navigation_data.url.is_empty());
+  DCHECK(!navigation_data.urls.empty());
+  DCHECK(!navigation_data.urls.back().is_empty());
 }
 
 UkmSource::~UkmSource() = default;
 
 void UkmSource::UpdateUrl(const GURL& new_url) {
   DCHECK(!new_url.is_empty());
+  DCHECK_EQ(1u, navigation_data_.urls.size());
   if (url() == new_url)
     return;
-  navigation_data_.url = new_url;
+  navigation_data_.urls = {new_url};
 }
 
 void UkmSource::PopulateProto(Source* proto_source) const {
@@ -91,9 +98,10 @@ void UkmSource::PopulateProto(Source* proto_source) const {
 
   proto_source->set_id(id_);
   proto_source->set_url(GetShortenedURL(url()));
-  if (!initial_url().is_empty()) {
+  if (urls().size() > 1u) {
     DCHECK_EQ(SourceIdType::NAVIGATION_ID, GetSourceIdType(id_));
-    proto_source->set_initial_url(GetShortenedURL(initial_url()));
+    const GURL& initial_url = urls().front();
+    proto_source->set_initial_url(GetShortenedURL(initial_url));
   }
 
   if (custom_tab_state_ != kCustomTabUnset)
