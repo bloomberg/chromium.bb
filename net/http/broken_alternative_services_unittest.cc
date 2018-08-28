@@ -15,6 +15,9 @@ namespace net {
 
 namespace {
 
+// Initial delay for broken alternative services.
+const uint64_t kBrokenAlternativeProtocolDelaySecs = 300;
+
 class BrokenAlternativeServicesTest
     : public BrokenAlternativeServices::Delegate,
       public ::testing::Test {
@@ -83,6 +86,63 @@ TEST_F(BrokenAlternativeServicesTest, MarkBroken) {
   EXPECT_EQ(0u, expired_alt_svcs_.size());
 }
 
+TEST_F(BrokenAlternativeServicesTest, MarkBrokenUntilDefaultNetworkChanges) {
+  const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
+  const AlternativeService alternative_service2(kProtoHTTP2, "foo", 1234);
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service1);
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service2);
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+
+  broken_services_.ConfirmAlternativeService(alternative_service1);
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+
+  broken_services_.ConfirmAlternativeService(alternative_service2);
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+
+  EXPECT_EQ(0u, expired_alt_svcs_.size());
+}
+
 TEST_F(BrokenAlternativeServicesTest, MarkRecentlyBroken) {
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
 
@@ -104,6 +164,153 @@ TEST_F(BrokenAlternativeServicesTest, MarkRecentlyBroken) {
       alternative_service));
 }
 
+TEST_F(BrokenAlternativeServicesTest, OnDefaultNetworkChanged) {
+  AlternativeService alternative_service1(kProtoQUIC, "foo", 443);
+  AlternativeService alternative_service2(kProtoQUIC, "bar", 443);
+  AlternativeService alternative_service3(kProtoQUIC, "baz", 443);
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service3));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service3));
+
+  // Mark |alternative_service1| as broken until default network changes.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service1);
+  // |alternative_service1| should be considered as currently broken and
+  // recently broken.
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service3));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service3));
+  // |broken_services_| should have posted task to expire the brokenness of
+  // |alternative_service1|.
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Advance time until one second before |alternative_service1|'s brokenness
+  // expires.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5) -
+                                   base::TimeDelta::FromSeconds(1));
+  // |alternative_service1| should still be considered as currently broken and
+  // recently broken.
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+
+  // Advance another second and |alternative_service1|'s brokenness expires.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+
+  // Mark |alternative_service2| as broken until default network changes.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service2);
+  // |alternative_service2| should be considered as currently broken and
+  // recently broken.
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service3));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service3));
+
+  // Mark |alternative_service3| as broken.
+  broken_services_.MarkAlternativeServiceBroken(alternative_service3);
+  // |alternative_service2| should be considered as currently broken and
+  // recently broken.
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service3));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service3));
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+
+  // Deliver the message that a default network has changed.
+  broken_services_.OnDefaultNetworkChanged();
+  // Recently broken until default network change alternative service is moved
+  // to working state.
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service1));
+  // Currently broken until default network change alternative service is moved
+  // to working state.
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service2));
+  // Broken alternative service is not affected by the default network change.
+  EXPECT_TRUE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service3));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service3));
+}
+
+TEST_F(BrokenAlternativeServicesTest,
+       ExpireBrokenAlternativeServiceOnDefaultNetwork) {
+  AlternativeService alternative_service(kProtoQUIC, "foo", 443);
+
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+
+  // |broken_services_| should have posted task to expire the brokenness of
+  // |alternative_service|.
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Advance time until one time quantum before |alternative_service1|'s
+  // brokenness expires.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5) -
+                                   base::TimeDelta::FromSeconds(1));
+
+  // Ensure |alternative_service| is still marked broken.
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_EQ(0u, expired_alt_svcs_.size());
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Advance time by one time quantum.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Ensure |alternative_service| brokenness has expired but is still
+  // considered recently broken.
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_EQ(1u, expired_alt_svcs_.size());
+  EXPECT_EQ(alternative_service, expired_alt_svcs_[0]);
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
 TEST_F(BrokenAlternativeServicesTest, ExpireBrokenAlternateProtocolMappings) {
   AlternativeService alternative_service(kProtoQUIC, "foo", 443);
 
@@ -116,7 +323,7 @@ TEST_F(BrokenAlternativeServicesTest, ExpireBrokenAlternateProtocolMappings) {
   // Advance time until one time quantum before |alternative_service1|'s
   // brokenness expires
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
 
   // Ensure |alternative_service| is still marked broken.
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
@@ -124,7 +331,7 @@ TEST_F(BrokenAlternativeServicesTest, ExpireBrokenAlternateProtocolMappings) {
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
 
   // Advance time by one time quantum.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Ensure |alternative_service| brokenness has expired but is still
   // considered recently broken
@@ -177,6 +384,194 @@ TEST_F(BrokenAlternativeServicesTest, IsAlternativeServiceBroken) {
       alternative_service, &brokenness_expiration));
 }
 
+// This test verifies that exponential backoff is applied to the expiration of
+// broken alternative service regardless of which MarkBroken method was used.
+// In particular, the alternative service's brokenness state is as follows:
+// - marked broken on the default network;
+// - brokenness expires after one delay;
+// - marked broken;
+// - (signal received that default network changes);
+// - brokenness expires after two intervals.
+TEST_F(BrokenAlternativeServicesTest, BrokenAfterBrokenOnDefaultNetwork) {
+  AlternativeService alternative_service(kProtoQUIC, "foo", 443);
+
+  // Mark the alternative service broken on the default network.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  // Expire the brokenness after the initial delay.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Mark the alternative service broken.
+  broken_services_.MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Verify that the expiration delay has been doubled.
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs * 2) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Receive the message that the default network changes.
+  broken_services_.OnDefaultNetworkChanged();
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Advance one more second so that the second expiration delay is reached.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
+// This test verifies that exponentail backoff is applied to the expiration of
+// broken alternative service regardless of which MarkBroken method was used.
+// In particular, the alternative service's brokenness state is as follows:
+// - marked broken;
+// - brokenness expires after one delay;
+// - marked broken on the default network;
+// - broknenss expires after two intervals;
+// - (signal received that default network changes);
+TEST_F(BrokenAlternativeServicesTest, BrokenOnDefaultNetworkAfterBroken) {
+  AlternativeService alternative_service(kProtoQUIC, "foo", 443);
+
+  // Mark the alternative service broken.
+  broken_services_.MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Mark the alternative service broken on the default network.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+  // Verify the expiration delay has been doubled.
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs * 2) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Receive the message that the default network changes. The alternative
+  // servicve is moved to working state.
+  broken_services_.OnDefaultNetworkChanged();
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
+// This test verifies that exponentail backoff is applied to expire alternative
+// service that's marked broken until the default network changes. When default
+// network changes, the exponential backoff is cleared.
+TEST_F(BrokenAlternativeServicesTest,
+       BrokenUntilDefaultNetworkChangeWithExponentialBackoff) {
+  AlternativeService alternative_service(kProtoQUIC, "foo", 443);
+
+  // Mark the alternative service broken on the default network.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs),
+            test_task_runner_->NextPendingTaskDelay());
+  // Expire the brokenness for the 1st time.
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Mark the alternative service broken on the default network.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs * 2),
+      test_task_runner_->NextPendingTaskDelay());
+
+  // Expire the brokenness for the 2nd time.
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs * 2) -
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Receive the message that the default network changes. The alternative
+  // servicve is moved to working state.
+  broken_services_.OnDefaultNetworkChanged();
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Mark the alternative service broken on the default network.
+  // Exponential delay is cleared.
+  broken_services_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs),
+            test_task_runner_->NextPendingTaskDelay());
+}
+
 TEST_F(BrokenAlternativeServicesTest, ExponentialBackoff) {
   // Tests the exponential backoff of the computed expiration delay when an
   // alt svc is marked broken. After being marked broken 10 times, the max
@@ -187,81 +582,81 @@ TEST_F(BrokenAlternativeServicesTest, ExponentialBackoff) {
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(10) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(20) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(40) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(80) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(160) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(320) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(640) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1280) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2560) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 
@@ -269,9 +664,9 @@ TEST_F(BrokenAlternativeServicesTest, ExponentialBackoff) {
   // this point forward should not increase further.
   broken_services_.MarkAlternativeServiceBroken(alternative_service);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2560) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service));
 }
@@ -325,7 +720,7 @@ TEST_F(BrokenAlternativeServicesTest, RemoveExpiredBrokenAltSvc) {
   // Advance time until one time quantum before |alternative_service2|'s
   // brokenness expires.
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
@@ -335,7 +730,7 @@ TEST_F(BrokenAlternativeServicesTest, RemoveExpiredBrokenAltSvc) {
 
   // Advance time by one time quantum. |alternative_service2| should no longer
   // be broken.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
@@ -348,7 +743,7 @@ TEST_F(BrokenAlternativeServicesTest, RemoveExpiredBrokenAltSvc) {
   // brokenness expires
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(40) -
                                    base::TimeDelta::FromMinutes(5) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
@@ -359,7 +754,7 @@ TEST_F(BrokenAlternativeServicesTest, RemoveExpiredBrokenAltSvc) {
 
   // Advance time by one time quantum.  |alternative_service1| should no longer
   // be broken.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
@@ -400,12 +795,11 @@ TEST_F(BrokenAlternativeServicesTest, SetBrokenAlternativeServices) {
       alternative_service2));
 
   // Make sure |alternative_service1| expires after the delay in |broken_list|.
-  test_task_runner_->FastForwardBy(delay1 -
-                                   base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(delay1 - base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
 
@@ -415,13 +809,13 @@ TEST_F(BrokenAlternativeServicesTest, SetBrokenAlternativeServices) {
   broken_services_.MarkAlternativeServiceBroken(alternative_service1);
 
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(10) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service2));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -429,13 +823,13 @@ TEST_F(BrokenAlternativeServicesTest, SetBrokenAlternativeServices) {
 
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(20) -
                                    base::TimeDelta::FromMinutes(10) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service2));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_FALSE(
@@ -482,7 +876,7 @@ TEST_F(BrokenAlternativeServicesTest,
 
   // Make sure |alternative_service3|'s brokenness expires in 1 minute.
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -490,7 +884,7 @@ TEST_F(BrokenAlternativeServicesTest,
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service3));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -500,7 +894,7 @@ TEST_F(BrokenAlternativeServicesTest,
 
   // Make sure |alternative_service1|'s brokenness expires in 2 more minutes.
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -508,7 +902,7 @@ TEST_F(BrokenAlternativeServicesTest,
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service3));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -518,7 +912,7 @@ TEST_F(BrokenAlternativeServicesTest,
 
   // Make sure |alternative_service2|'s brokenness expires in 2 more minutes.
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2) -
-                                   base::TimeDelta::FromInternalValue(1));
+                                   base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_TRUE(
@@ -526,7 +920,7 @@ TEST_F(BrokenAlternativeServicesTest,
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service3));
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       broken_services_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_FALSE(
