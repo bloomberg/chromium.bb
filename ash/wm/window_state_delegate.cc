@@ -15,9 +15,5 @@ bool WindowStateDelegate::ToggleFullscreen(WindowState* window_state) {
   return false;
 }
 
-bool WindowStateDelegate::RestoreAlwaysOnTop(WindowState* window_state) {
-  return false;
-}
-
 }  // namespace wm
 }  // namespace ash
