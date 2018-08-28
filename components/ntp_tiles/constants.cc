@@ -24,21 +24,8 @@ const base::Feature kSiteExplorationUiFeature{
 const base::Feature kUsePopularSitesSuggestions{
     "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNtpIcons{"NewTabPageIcons",
-                              base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kNtpCustomLinks{"NewTabPageCustomLinks",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsMDIconsEnabled() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return base::FeatureList::IsEnabled(kNtpIcons) ||
-         base::FeatureList::IsEnabled(kNtpCustomLinks) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
-#else
-  return false;
-#endif
-}
 
 bool IsCustomLinksEnabled() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

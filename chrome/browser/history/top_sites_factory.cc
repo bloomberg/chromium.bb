@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -31,7 +32,6 @@
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/ntp_tiles/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,7 +81,7 @@ void InitializePrepopulatedPageList(
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id),
-        ntp_tiles::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
+        features::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
         page.thumbnail_id, page.color));
   }
 #endif

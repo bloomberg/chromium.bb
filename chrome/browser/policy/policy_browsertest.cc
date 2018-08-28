@@ -138,7 +138,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/ntp_tiles/constants.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -4140,7 +4139,7 @@ class PolicyWebStoreIconTest : public PolicyTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
     // Force to enable the new tab page material design flag
-    scoped_feature_list.InitAndEnableFeature(ntp_tiles::kNtpIcons);
+    scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
   }
 
  private:
@@ -4189,7 +4188,7 @@ IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconTest, NTPWebStoreIconShown) {
 
   // Force to enable the new tab page material design flag
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(ntp_tiles::kNtpIcons);
+  scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
 
   // Open new tab page and look for the web store icons.
   content::WebContents* active_tab =
@@ -4223,7 +4222,7 @@ class PolicyWebStoreIconHiddenTest : public PolicyTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
     // Force to enable the new tab page material design flag
-    scoped_feature_list.InitAndEnableFeature(ntp_tiles::kNtpIcons);
+    scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
   }
 
  private:

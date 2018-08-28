@@ -9,23 +9,24 @@
 
 namespace features {
 
-// All features in alphabetical order. The features should be documented
-// alongside the definition of their values in the .cc file.
+// The features should be documented alongside the definition of their values in
+// the .cc file.
 
 extern const base::Feature kNtpBackgrounds;
+extern const base::Feature kNtpIcons;
 extern const base::Feature kNtpUIMd;
-
-// Returns whether the Material Design UI is enabled on the New Tab Page.
-bool IsMDUIEnabled();
-
-// Returns whether the Material Design UI for Most Visited is enabled.
-bool IsMDIconsEnabled();
 
 // Returns whether New Tab Page custom links are enabled.
 bool IsCustomLinksEnabled();
 
 // Returns whether New Tab Page Background Selection is enabled.
 bool IsCustomBackgroundsEnabled();
+
+// Returns whether the Material Design UI for Most Visited is enabled.
+bool IsMDIconsEnabled();
+
+// Returns whether the Material Design UI is enabled on the New Tab Page.
+bool IsMDUIEnabled();
 
 }  // namespace features
 
