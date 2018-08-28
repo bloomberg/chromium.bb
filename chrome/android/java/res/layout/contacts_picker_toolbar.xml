@@ -20,12 +20,21 @@
 
         <!-- The ContentDescription for this View gets set in Java -->
         <ImageView
+            android:id="@+id/action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingEnd="10dp"
+            android:src="@drawable/ic_select_all"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
             android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:background="@drawable/ic_search"
-            tools:ignore="ContentDescription" />
+            android:contentDescription="@string/search" />
 
         <Button
             android:id="@+id/done"
