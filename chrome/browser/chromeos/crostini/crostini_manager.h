@@ -118,7 +118,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // The type of the callback for CrostiniManager::GetContainerAppIcons.
   using GetContainerAppIconsCallback =
       base::OnceCallback<void(ConciergeClientResult result,
-                              std::vector<Icon>& icons)>;
+                              const std::vector<Icon>& icons)>;
   // The type of the callback for CrostiniManager::InstallLinuxPackage.
   // |failure_reason| is returned from the container upon failure
   // (INSTALL_LINUX_PACKAGE_FAILED), and not necessarily localized.
@@ -149,7 +149,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   };
 
   // Checks if the cros-termina component is installed.
-  bool IsCrosTerminaInstalled();
+  bool IsCrosTerminaInstalled() const;
 
   // Generate the URL for Crostini terminal application.
   static GURL GenerateVshInCroshUrl(

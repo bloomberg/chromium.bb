@@ -4,8 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
-#include <map>
-#include <string>
+#include <utility>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/metrics/histogram_macros.h"
@@ -56,14 +55,20 @@ constexpr char kAppLastLaunchTimeKey[] = "last_launch_time";
 constexpr char kCrostiniAppsInstalledHistogram[] =
     "Crostini.AppsInstalledAtLogin";
 
-// A hard-coded mapping from WMClass to app names.
-// This is used to deal with the Linux apps that don't specify the correct
-// WMClass in their desktop files so that their aura windows can be identified
-// with their respective app IDs.
-const std::map<std::string, std::string> wmclass_to_name = {
-    {"Octave-gui", "GNU Octave"},
-    {"MuseScore2", "MuseScore 2"},
-    {"XnViewMP", "XnView Multi Platform"}};
+const std::string* GetAppNameForWMClass(base::StringPiece wmclass) {
+  // A hard-coded mapping from WMClass to app names.
+  // This is used to deal with the Linux apps that don't specify the correct
+  // WMClass in their desktop files so that their aura windows can be identified
+  // with their respective app IDs.
+  static const std::map<std::string, std::string> kWMClassToNname = {
+      {"Octave-gui", "GNU Octave"},
+      {"MuseScore2", "MuseScore 2"},
+      {"XnViewMP", "XnView Multi Platform"}};
+  const auto it = kWMClassToNname.find(wmclass.as_string());
+  if (it == kWMClassToNname.end())
+    return nullptr;
+  return &it->second;
+}
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -137,8 +142,8 @@ enum class FindAppIdResult { NoMatch, UniqueMatch, NonUniqueMatch };
 // Looks for an app where prefs_key is set to search_value. Returns the apps id
 // if there was only one app matching, otherwise returns an empty string.
 FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
-                          const base::StringPiece& prefs_key,
-                          const base::StringPiece& search_value,
+                          base::StringPiece prefs_key,
+                          base::StringPiece search_value,
                           std::string* result,
                           bool require_startup_notify = false,
                           bool need_display = false,
@@ -391,8 +396,9 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
   if (!base::StartsWith(*window_app_id, kCrostiniWindowAppIdPrefix,
                         base::CompareCase::SENSITIVE)) {
     if (FindAppId(apps, kAppDesktopFileIdKey, *window_app_id, &app_id) ==
-        FindAppIdResult::UniqueMatch)
+        FindAppIdResult::UniqueMatch) {
       return app_id;
+    }
     return kCrostiniAppIdPrefix + *window_app_id;
   }
 
@@ -414,21 +420,24 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     return kCrostiniAppIdPrefix + *window_app_id;
 
   if (FindAppId(apps, kAppDesktopFileIdKey, key, &app_id) ==
-      FindAppIdResult::UniqueMatch)
+      FindAppIdResult::UniqueMatch) {
     return app_id;
+  }
 
   if (FindAppId(apps, kAppNameKey, key, &app_id,
                 false /* require_startup_notification */,
                 true /* need_display */,
-                true /* ignore_space */) == FindAppIdResult::UniqueMatch)
+                true /* ignore_space */) == FindAppIdResult::UniqueMatch) {
     return app_id;
+  }
 
-  auto it = wmclass_to_name.find(key.as_string());
-  if (it != wmclass_to_name.end() &&
-      FindAppId(apps, kAppNameKey, it->second, &app_id,
+  const std::string* app_name = GetAppNameForWMClass(key);
+  if (app_name &&
+      FindAppId(apps, kAppNameKey, *app_name, &app_id,
                 false /* require_startup_notification */,
-                true /* need_display */) == FindAppIdResult::UniqueMatch)
+                true /* need_display */) == FindAppIdResult::UniqueMatch) {
     return app_id;
+  }
 
   return kCrostiniAppIdPrefix + *window_app_id;
 }
@@ -436,8 +445,9 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
 bool CrostiniRegistryService::IsCrostiniShelfAppId(
     const std::string& shelf_app_id) {
   if (base::StartsWith(shelf_app_id, kCrostiniAppIdPrefix,
-                       base::CompareCase::SENSITIVE))
+                       base::CompareCase::SENSITIVE)) {
     return true;
+  }
   if (shelf_app_id == kCrostiniTerminalId)
     return true;
   // TODO(timloh): We need to handle desktop files that have been removed.
@@ -788,10 +798,11 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }
 
-void CrostiniRegistryService::OnContainerAppIcon(const std::string& app_id,
-                                                 ui::ScaleFactor scale_factor,
-                                                 ConciergeClientResult result,
-                                                 std::vector<Icon>& icons) {
+void CrostiniRegistryService::OnContainerAppIcon(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor,
+    ConciergeClientResult result,
+    const std::vector<Icon>& icons) {
   if (result != ConciergeClientResult::SUCCESS) {
     // Add this to the list of retryable icon requests so we redo this when
     // we get feedback from the container that it's available.

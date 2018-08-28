@@ -507,7 +507,7 @@ CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
 
 CrostiniManager::~CrostiniManager() {}
 
-bool CrostiniManager::IsCrosTerminaInstalled() {
+bool CrostiniManager::IsCrosTerminaInstalled() const {
   return is_cros_termina_registered_;
 }
 
