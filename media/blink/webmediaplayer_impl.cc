@@ -184,6 +184,7 @@ EncryptionSchemeUMA DetermineEncryptionSchemeUMAValue(
   return EncryptionSchemeUMA::kCenc;
 }
 
+#if BUILDFLAG(ENABLE_FFMPEG)
 // Returns true if |url| represents (or is likely to) a local file.
 bool IsLocalFile(const GURL& url) {
   return url.SchemeIsFile() || url.SchemeIsFileSystem() ||
@@ -191,6 +192,7 @@ bool IsLocalFile(const GURL& url) {
          url.SchemeIs(url::kContentIDScheme) ||
          url.SchemeIs("chrome-extension");
 }
+#endif
 
 }  // namespace
 
