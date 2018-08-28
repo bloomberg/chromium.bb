@@ -2867,6 +2867,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     (id<UIViewControllerTransitionCoordinator>)coordinator {
   if (![_findBarController isFindInPageShown])
     return;
+  // FindBar uses AutoLayout for compact mode. Only reshow find bar for iPad.
+  if (ShouldShowCompactToolbar())
+    return;
 
   // Record focused state.
   BOOL isFocusedBeforeReshow = [_findBarController isFocused];

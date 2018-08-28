@@ -209,6 +209,9 @@ bool IsCompactHeight(id<UITraitEnvironment> environment);
 // vertical and regular horizontal size class.
 bool IsRegularXRegularSizeClass();
 
+// Whether toolbar should be shown in compact mode.
+bool ShouldShowCompactToolbar();
+
 // Whether the |environment| has a regular vertical and regular horizontal
 // size class. the main application window's rootViewController
 bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment);

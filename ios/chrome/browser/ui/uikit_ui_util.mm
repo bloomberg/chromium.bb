@@ -565,6 +565,13 @@ bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment) {
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
+bool ShouldShowCompactToolbar() {
+  if (IsUIRefreshPhase1Enabled()) {
+    return !IsRegularXRegularSizeClass();
+  }
+  return !IsIPadIdiom();
+}
+
 bool IsSplitToolbarMode() {
   return IsCompactWidth() && !IsCompactHeight();
 }
