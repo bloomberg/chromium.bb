@@ -182,7 +182,7 @@ void FakeFileSystem::ReadDirectory(
 
 void FakeFileSystem::Search(const std::string& search_query,
                             const GURL& next_link,
-                            const SearchCallback& callback) {
+                            SearchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -190,12 +190,12 @@ void FakeFileSystem::SearchMetadata(const std::string& query,
                                     int options,
                                     int at_most_num_matches,
                                     MetadataSearchOrder order,
-                                    const SearchMetadataCallback& callback) {
+                                    SearchMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void FakeFileSystem::SearchByHashes(const std::set<std::string>& hashes,
-                                    const SearchByHashesCallback& callback) {
+                                    SearchByHashesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

@@ -84,14 +84,14 @@ class FileSystem : public FileSystemInterface,
   void CheckForUpdates() override;
   void Search(const std::string& search_query,
               const GURL& next_link,
-              const SearchCallback& callback) override;
+              SearchCallback callback) override;
   void SearchMetadata(const std::string& query,
                       int options,
                       int at_most_num_matches,
                       MetadataSearchOrder order,
-                      const SearchMetadataCallback& callback) override;
+                      SearchMetadataCallback callback) override;
   void SearchByHashes(const std::set<std::string>& hashes,
-                      const SearchByHashesCallback& callback) override;
+                      SearchByHashesCallback callback) override;
   void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,

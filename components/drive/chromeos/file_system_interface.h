@@ -103,7 +103,7 @@ typedef base::OnceCallback<void(std::unique_ptr<ResourceEntryVector> entries)>
 
 // Used to get drive content search results.
 // If |error| is not FILE_ERROR_OK, |result_paths| is empty.
-typedef base::Callback<void(
+typedef base::OnceCallback<void(
     FileError error,
     const GURL& next_link,
     std::unique_ptr<std::vector<SearchResultInfo>> result_paths)>
@@ -111,13 +111,13 @@ typedef base::Callback<void(
 
 // Callback for SearchMetadata(). On success, |error| is FILE_ERROR_OK, and
 // |result| contains the search result.
-typedef base::Callback<void(FileError error,
-                            std::unique_ptr<MetadataSearchResultVector> result)>
+typedef base::OnceCallback<
+    void(FileError error, std::unique_ptr<MetadataSearchResultVector> result)>
     SearchMetadataCallback;
 
 // Callback for SearchByHashesCallback. On success, vector contains hash and
 // corresponding files. The vector can include multiple entries for one hash.
-typedef base::Callback<void(FileError, const std::vector<HashAndFilePath>&)>
+typedef base::OnceCallback<void(FileError, const std::vector<HashAndFilePath>&)>
     SearchByHashesCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
@@ -404,7 +404,7 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void Search(const std::string& search_query,
                       const GURL& next_link,
-                      const SearchCallback& callback) = 0;
+                      SearchCallback callback) = 0;
 
   // Searches the local resource metadata, and returns the entries
   // |at_most_num_matches| that contain |query| in their base names. Search is
@@ -417,14 +417,14 @@ class FileSystemInterface {
                               int options,
                               int at_most_num_matches,
                               MetadataSearchOrder order,
-                              const SearchMetadataCallback& callback) = 0;
+                              SearchMetadataCallback callback) = 0;
 
   // Searches the local resource metadata, and returns the entries that have the
   // given |hashes|. The list of resource entries are passed to |callback|. The
   // item of the list can be null if the corresponding file is not found.
   // |callback| must not be null.
   virtual void SearchByHashes(const std::set<std::string>& hashes,
-                              const SearchByHashesCallback& callback) = 0;
+                              SearchByHashesCallback callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
