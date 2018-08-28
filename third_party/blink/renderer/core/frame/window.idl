@@ -220,7 +220,7 @@
 
     //TrustedTypes API
     //http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory trustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory TrustedTypes;
 };
 
 Window implements GlobalEventHandlers;

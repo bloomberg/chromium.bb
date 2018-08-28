@@ -28,8 +28,12 @@ TrustedTypePolicy* TrustedTypePolicy::Create(
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
                                            const String& input,
                                            ExceptionState& exception_state) {
-  if (!policy_options_.createHTML())
+  if (!policy_options_.createHTML()) {
+    exception_state.ThrowTypeError(
+        "Policy " + name_ +
+        "'s TrustedTypePolicyOptions did not specify a 'createHTML' member.");
     return nullptr;
+  }
   v8::TryCatch try_catch(script_state->GetIsolate());
   String html;
   if (!policy_options_.createHTML()->Invoke(nullptr, input).To(&html)) {
@@ -44,8 +48,12 @@ TrustedScript* TrustedTypePolicy::createScript(
     ScriptState* script_state,
     const String& input,
     ExceptionState& exception_state) {
-  if (!policy_options_.createScript())
+  if (!policy_options_.createScript()) {
+    exception_state.ThrowTypeError(
+        "Policy " + name_ +
+        "'s TrustedTypePolicyOptions did not specify a 'createScript' member.");
     return nullptr;
+  }
   v8::TryCatch try_catch(script_state->GetIsolate());
   String script;
   if (!policy_options_.createScript()->Invoke(nullptr, input).To(&script)) {
@@ -60,8 +68,12 @@ TrustedScriptURL* TrustedTypePolicy::createScriptURL(
     ScriptState* script_state,
     const String& input,
     ExceptionState& exception_state) {
-  if (!policy_options_.createScriptURL())
+  if (!policy_options_.createScriptURL()) {
+    exception_state.ThrowTypeError("Policy " + name_ +
+                                   "'s TrustedTypePolicyOptions did not "
+                                   "specify a 'createScriptURL' member.");
     return nullptr;
+  }
   v8::TryCatch try_catch(script_state->GetIsolate());
   String script_url;
   if (!policy_options_.createScriptURL()
@@ -77,8 +89,12 @@ TrustedScriptURL* TrustedTypePolicy::createScriptURL(
 TrustedURL* TrustedTypePolicy::createURL(ScriptState* script_state,
                                          const String& input,
                                          ExceptionState& exception_state) {
-  if (!policy_options_.createURL())
+  if (!policy_options_.createURL()) {
+    exception_state.ThrowTypeError(
+        "Policy " + name_ +
+        "'s TrustedTypePolicyOptions did not specify a 'createURL' member.");
     return nullptr;
+  }
   v8::TryCatch try_catch(script_state->GetIsolate());
   String url;
   if (!policy_options_.createURL()->Invoke(nullptr, input).To(&url)) {
