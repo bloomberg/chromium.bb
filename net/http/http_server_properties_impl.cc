@@ -478,31 +478,27 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
 
 void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkAlternativeServiceBroken(
-      alternative_service);
+  broken_alternative_services_.MarkBroken(alternative_service);
 }
 
 void HttpServerPropertiesImpl::MarkAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkAlternativeServiceRecentlyBroken(
-      alternative_service);
+  broken_alternative_services_.MarkRecentlyBroken(alternative_service);
 }
 
 bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
     const AlternativeService& alternative_service) const {
-  return broken_alternative_services_.IsAlternativeServiceBroken(
-      alternative_service);
+  return broken_alternative_services_.IsBroken(alternative_service);
 }
 
 bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
-  return broken_alternative_services_.WasAlternativeServiceRecentlyBroken(
-      alternative_service);
+  return broken_alternative_services_.WasRecentlyBroken(alternative_service);
 }
 
 void HttpServerPropertiesImpl::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
-  broken_alternative_services_.ConfirmAlternativeService(alternative_service);
+  broken_alternative_services_.Confirm(alternative_service);
 }
 
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()
@@ -529,8 +525,8 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
         alternative_service.host = server.host();
       }
       base::TimeTicks brokenness_expiration_ticks;
-      if (broken_alternative_services_.IsAlternativeServiceBroken(
-              alternative_service, &brokenness_expiration_ticks)) {
+      if (broken_alternative_services_.IsBroken(alternative_service,
+                                                &brokenness_expiration_ticks)) {
         // Convert |brokenness_expiration| from TimeTicks to Time
         base::Time brokenness_expiration =
             now + (brokenness_expiration_ticks - now_ticks);

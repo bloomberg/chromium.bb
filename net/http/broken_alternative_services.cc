@@ -47,27 +47,26 @@ void BrokenAlternativeServices::Clear() {
   recently_broken_alternative_services_.Clear();
 }
 
-void BrokenAlternativeServices::
-    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-        const AlternativeService& alternative_service) {
+void BrokenAlternativeServices::MarkBrokenUntilDefaultNetworkChanges(
+    const AlternativeService& alternative_service) {
   DCHECK(!alternative_service.host.empty());
   DCHECK_NE(kProtoUnknown, alternative_service.protocol);
 
   // The brokenness will expire on the default network change or based on
   // timer.
   broken_alternative_services_on_default_network_.insert(alternative_service);
-  MarkAlternativeServiceBrokenImpl(alternative_service);
+  MarkBrokenImpl(alternative_service);
 }
 
-void BrokenAlternativeServices::MarkAlternativeServiceBroken(
+void BrokenAlternativeServices::MarkBroken(
     const AlternativeService& alternative_service) {
   // The brokenness expires based only on the timer, not on the default network
   // change.
   broken_alternative_services_on_default_network_.erase(alternative_service);
-  MarkAlternativeServiceBrokenImpl(alternative_service);
+  MarkBrokenImpl(alternative_service);
 }
 
-void BrokenAlternativeServices::MarkAlternativeServiceBrokenImpl(
+void BrokenAlternativeServices::MarkBrokenImpl(
     const AlternativeService& alternative_service) {
   // Empty host means use host of origin, callers are supposed to substitute.
   DCHECK(!alternative_service.host.empty());
@@ -85,8 +84,7 @@ void BrokenAlternativeServices::MarkAlternativeServiceBrokenImpl(
       ComputeBrokenAlternativeServiceExpirationDelay(broken_count);
   // Return if alternative service is already in expiration queue.
   BrokenAlternativeServiceList::iterator list_it;
-  if (!AddToBrokenAlternativeServiceListAndMap(alternative_service, expiration,
-                                               &list_it)) {
+  if (!AddToBrokenListAndMap(alternative_service, expiration, &list_it)) {
     return;
   }
 
@@ -97,7 +95,7 @@ void BrokenAlternativeServices::MarkAlternativeServiceBrokenImpl(
   }
 }
 
-void BrokenAlternativeServices::MarkAlternativeServiceRecentlyBroken(
+void BrokenAlternativeServices::MarkRecentlyBroken(
     const AlternativeService& alternative_service) {
   DCHECK_NE(kProtoUnknown, alternative_service.protocol);
   if (recently_broken_alternative_services_.Get(alternative_service) ==
@@ -106,7 +104,7 @@ void BrokenAlternativeServices::MarkAlternativeServiceRecentlyBroken(
   }
 }
 
-bool BrokenAlternativeServices::IsAlternativeServiceBroken(
+bool BrokenAlternativeServices::IsBroken(
     const AlternativeService& alternative_service) const {
   // Empty host means use host of origin, callers are supposed to substitute.
   DCHECK(!alternative_service.host.empty());
@@ -114,7 +112,7 @@ bool BrokenAlternativeServices::IsAlternativeServiceBroken(
          broken_alternative_service_map_.end();
 }
 
-bool BrokenAlternativeServices::IsAlternativeServiceBroken(
+bool BrokenAlternativeServices::IsBroken(
     const AlternativeService& alternative_service,
     base::TimeTicks* brokenness_expiration) const {
   DCHECK(brokenness_expiration != nullptr);
@@ -129,7 +127,7 @@ bool BrokenAlternativeServices::IsAlternativeServiceBroken(
   return true;
 }
 
-bool BrokenAlternativeServices::WasAlternativeServiceRecentlyBroken(
+bool BrokenAlternativeServices::WasRecentlyBroken(
     const AlternativeService& alternative_service) {
   DCHECK(!alternative_service.host.empty());
   return recently_broken_alternative_services_.Get(alternative_service) !=
@@ -138,7 +136,7 @@ bool BrokenAlternativeServices::WasAlternativeServiceRecentlyBroken(
              broken_alternative_service_map_.end();
 }
 
-void BrokenAlternativeServices::ConfirmAlternativeService(
+void BrokenAlternativeServices::Confirm(
     const AlternativeService& alternative_service) {
   DCHECK_NE(kProtoUnknown, alternative_service.protocol);
 
@@ -161,8 +159,7 @@ void BrokenAlternativeServices::ConfirmAlternativeService(
 
 void BrokenAlternativeServices::OnDefaultNetworkChanged() {
   while (!broken_alternative_services_on_default_network_.empty()) {
-    ConfirmAlternativeService(
-        *broken_alternative_services_on_default_network_.begin());
+    Confirm(*broken_alternative_services_on_default_network_.begin());
   }
 }
 
@@ -260,7 +257,7 @@ BrokenAlternativeServices::recently_broken_alternative_services() const {
   return recently_broken_alternative_services_;
 }
 
-bool BrokenAlternativeServices::AddToBrokenAlternativeServiceListAndMap(
+bool BrokenAlternativeServices::AddToBrokenListAndMap(
     const AlternativeService& alternative_service,
     base::TimeTicks expiration,
     BrokenAlternativeServiceList::iterator* it) {

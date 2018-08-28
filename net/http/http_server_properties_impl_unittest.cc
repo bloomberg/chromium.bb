@@ -42,7 +42,7 @@ class HttpServerPropertiesImplPeer {
       const AlternativeService& alternative_service,
       base::TimeTicks when) {
     BrokenAlternativeServiceList::iterator unused_it;
-    impl->broken_alternative_services_.AddToBrokenAlternativeServiceListAndMap(
+    impl->broken_alternative_services_.AddToBrokenListAndMap(
         alternative_service, when, &unused_it);
     auto it =
         impl->broken_alternative_services_.recently_broken_alternative_services_
