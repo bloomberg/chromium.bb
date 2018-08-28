@@ -29,15 +29,9 @@ extern const base::Feature kSiteExplorationUiFeature;
 // If this feature is enabled, we enable popular sites in the suggestions UI.
 extern const base::Feature kUsePopularSitesSuggestions;
 
-// Feature that enables the GM2 design for Most Visited. Desktop only.
-extern const base::Feature kNtpIcons;
-
 // Feature that enables custom links and replaces Most Visited. Implicitly
-// enables |kNtpIcons|. Desktop only.
+// enables |features::kNtpIcons|. Desktop only.
 extern const base::Feature kNtpCustomLinks;
-
-// Returns whether the GM2 design for Most Visited is enabled.
-bool IsMDIconsEnabled();
 
 // Returns whether the custom links is enabled.
 bool IsCustomLinksEnabled();
