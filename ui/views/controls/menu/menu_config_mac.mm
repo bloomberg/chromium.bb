@@ -45,6 +45,7 @@ void MenuConfig::Init() {
   arrow_key_selection_wraps = false;
   use_mnemonics = false;
   show_context_menu_accelerators = false;
+  all_menus_use_prefix_selection = true;
   InitMaterialMenuConfig(this);
 }
 

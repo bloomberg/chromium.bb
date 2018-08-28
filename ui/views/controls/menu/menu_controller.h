@@ -580,6 +580,12 @@ class VIEWS_EXPORT MenuController
   // Updates the current |hot_button_| and its hot tracked state.
   void SetHotTrackedButton(Button* hot_button);
 
+  // Returns whether typing a new character will continue the existing prefix
+  // selection. If this returns false, typing a new character will start a new
+  // prefix selection, and some characters (such as Space) will be treated as
+  // commands instead of parts of the prefix.
+  bool ShouldContinuePrefixSelection() const;
+
   // The active instance.
   static MenuController* active_instance_;
 

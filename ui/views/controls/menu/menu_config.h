@@ -197,6 +197,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Whether to show accelerators in context menus.
   bool show_context_menu_accelerators;
 
+  // Whether all types of menus use prefix selection for items.
+  bool all_menus_use_prefix_selection;
+
  private:
   // Configures a MenuConfig as appropriate for the current platform.
   void Init();

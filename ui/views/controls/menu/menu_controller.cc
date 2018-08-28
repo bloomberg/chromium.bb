@@ -1384,6 +1384,15 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 #if defined(OS_MACOSX)
     case ui::VKEY_SPACE:
 #endif
+      // An odd special case: if a prefix selection is in flight, space should
+      // add to that selection rather than activating the menu. This is
+      // important for allowing the user to select between items that have the
+      // same first word.
+      if (key_code == ui::VKEY_SPACE &&
+          MenuConfig::instance().all_menus_use_prefix_selection &&
+          ShouldContinuePrefixSelection()) {
+        break;
+      }
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           if (key_code == ui::VKEY_F4 &&
@@ -2533,7 +2542,7 @@ void MenuController::SelectByChar(base::char16 character) {
     return;
   }
 
-  if (is_combobox_) {
+  if (is_combobox_ || MenuConfig::instance().all_menus_use_prefix_selection) {
     item->GetSubmenu()->GetPrefixSelector()->InsertText(char_array);
   } else {
     // If no mnemonics found, look at first character of titles.
@@ -2869,6 +2878,13 @@ void MenuController::SetHotTrackedButton(Button* hot_button) {
     hot_button->SetHotTracked(true);
     hot_button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
+}
+
+bool MenuController::ShouldContinuePrefixSelection() const {
+  MenuItemView* item = pending_state_.item;
+  if (!item->SubmenuIsShowing())
+    item = item->GetParentMenuItem();
+  return item->GetSubmenu()->GetPrefixSelector()->ShouldContinueSelection();
 }
 
 bool MenuController::CanProcessInputEvents() const {
