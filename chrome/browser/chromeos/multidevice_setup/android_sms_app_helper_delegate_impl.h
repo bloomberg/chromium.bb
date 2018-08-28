@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "url/gurl.h"
 
@@ -31,7 +32,8 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
 
   explicit AndroidSmsAppHelperDelegateImpl(
       web_app::PendingAppManager* pending_app_manager);
-  void OnAppInstalled(const GURL& app_url, const std::string& app_id);
+  void OnAppInstalled(const GURL& app_url,
+                      const base::Optional<std::string>& app_id);
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;

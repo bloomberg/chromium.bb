@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -65,7 +66,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   void OnWebContentsLoadTimedOut();
 
-  void CurrentInstallationFinished(const std::string& app_id);
+  void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
 
   // WebContentsObserver
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,

@@ -51,7 +51,7 @@ void BookmarkAppShortcutInstallationTask::OnGetWebApplicationInfo(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_app_info) {
     std::move(result_callback)
-        .Run(Result(ResultCode::kGetWebApplicationInfoFailed, std::string()));
+        .Run(Result(ResultCode::kGetWebApplicationInfoFailed, base::nullopt));
     return;
   }
 
@@ -87,9 +87,12 @@ void BookmarkAppShortcutInstallationTask::OnGetIcons(
 void BookmarkAppShortcutInstallationTask::OnInstalled(
     ResultCallback result_callback,
     const std::string& app_id) {
-  ResultCode code =
-      app_id.empty() ? ResultCode::kInstallationFailed : ResultCode::kSuccess;
-  std::move(result_callback).Run(Result(code, app_id));
+  if (app_id.empty()) {
+    std::move(result_callback)
+        .Run(Result(ResultCode::kInstallationFailed, base::nullopt));
+    return;
+  }
+  std::move(result_callback).Run(Result(ResultCode::kSuccess, app_id));
 }
 
 }  // namespace extensions

@@ -157,7 +157,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 
   bool app_installed() {
     bool app_installed = app_installation_result_->code == ResultCode::kSuccess;
-    EXPECT_NE(app_installed, app_installation_result_->app_id.empty());
+    EXPECT_EQ(app_installed, app_installation_result_->app_id.has_value());
     return app_installed;
   }
 

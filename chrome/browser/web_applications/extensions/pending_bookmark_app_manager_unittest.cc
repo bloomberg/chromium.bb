@@ -148,9 +148,10 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
                                   false /* succeeds */);
   }
 
-  void InstallCallback(const GURL& url, const std::string& app_id) {
+  void InstallCallback(const GURL& url,
+                       const base::Optional<std::string>& app_id) {
     install_callback_url_ = url;
-    install_succeeded_ = !app_id.empty();
+    install_succeeded_ = app_id.has_value();
   }
 
  protected:
@@ -355,7 +356,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
   pending_app_manager->Install(
       GetFooAppInfo(),
       base::BindLambdaForTesting(
-          [&](const GURL& provided_url, const std::string& app_id) {
+          [&](const GURL& provided_url,
+              const base::Optional<std::string>& app_id) {
             InstallCallback(provided_url, app_id);
             pending_app_manager->Install(
                 GetBarAppInfo(),

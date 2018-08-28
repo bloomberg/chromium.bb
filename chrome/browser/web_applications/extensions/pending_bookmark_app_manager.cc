@@ -133,11 +133,11 @@ void PendingBookmarkAppManager::OnInstalled(
 void PendingBookmarkAppManager::OnWebContentsLoadTimedOut() {
   web_contents_->Stop();
   Observe(nullptr);
-  CurrentInstallationFinished(std::string());
+  CurrentInstallationFinished(base::nullopt);
 }
 
 void PendingBookmarkAppManager::CurrentInstallationFinished(
-    const std::string& app_id) {
+    const base::Optional<std::string>& app_id) {
   // Post a task to avoid reentrancy issues e.g. adding a WebContentsObserver
   // while a previous observer call is being executed. Post a task before
   // running the callback in case the callback tries to install another
@@ -162,7 +162,7 @@ void PendingBookmarkAppManager::DidFinishLoad(
   }
 
   if (validated_url != current_task_and_callback_->task->app_info().url) {
-    CurrentInstallationFinished(std::string());
+    CurrentInstallationFinished(base::nullopt);
     return;
   }
 
@@ -187,7 +187,7 @@ void PendingBookmarkAppManager::DidFailLoad(
   }
 
   Observe(nullptr);
-  CurrentInstallationFinished(std::string());
+  CurrentInstallationFinished(base::nullopt);
 }
 
 }  // namespace extensions

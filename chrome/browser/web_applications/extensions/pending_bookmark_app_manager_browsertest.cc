@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,8 +41,8 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
                                                    // shortcuts in tests.
                base::BindLambdaForTesting(
                    [&run_loop, &app_id](const GURL& provided_url,
-                                        const std::string& id) {
-                     app_id = id;
+                                        const base::Optional<std::string>& id) {
+                     app_id = id.value();
                      run_loop.QuitClosure().Run();
                    }));
   run_loop.Run();
