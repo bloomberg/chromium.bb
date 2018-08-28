@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -852,6 +853,59 @@ void Page::ClearAutoplayFlags() {
 
 int32_t Page::AutoplayFlags() const {
   return autoplay_flags_;
+}
+
+namespace {
+
+class ColorOverlay final : public PageOverlay::Delegate {
+ public:
+  explicit ColorOverlay(SkColor color) : color_(color) {}
+
+ private:
+  void PaintPageOverlay(const PageOverlay& page_overlay,
+                        GraphicsContext& graphics_context,
+                        const IntSize& size) const override {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(
+            graphics_context, page_overlay, DisplayItem::kPageOverlay))
+      return;
+    FloatRect rect(0, 0, size.Width(), size.Height());
+    DrawingRecorder recorder(graphics_context, page_overlay,
+                             DisplayItem::kPageOverlay);
+    graphics_context.FillRect(rect, color_);
+  }
+
+  SkColor color_;
+};
+
+}  // namespace
+
+void Page::SetPageOverlayColor(SkColor color) {
+  if (page_color_overlay_)
+    page_color_overlay_.reset();
+
+  if (color == Color::kTransparent)
+    return;
+
+  if (!MainFrame() || !MainFrame()->IsLocalFrame())
+    return;
+  auto* local_frame = ToLocalFrame(MainFrame());
+  page_color_overlay_ =
+      PageOverlay::Create(local_frame, std::make_unique<ColorOverlay>(color));
+
+  // Update compositing which will create graphics layers so the page color
+  // update below will be able to attach to the root graphics layer.
+  local_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  page_color_overlay_->Update();
+}
+
+void Page::UpdatePageColorOverlay() {
+  if (page_color_overlay_)
+    page_color_overlay_->Update();
+}
+
+void Page::PaintPageColorOverlay() {
+  if (page_color_overlay_)
+    page_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}

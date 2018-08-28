@@ -47,14 +47,14 @@
 namespace blink {
 
 std::unique_ptr<PageOverlay> PageOverlay::Create(
-    WebLocalFrameImpl* frame_impl,
+    LocalFrame* local_frame,
     std::unique_ptr<PageOverlay::Delegate> delegate) {
-  return base::WrapUnique(new PageOverlay(frame_impl, std::move(delegate)));
+  return base::WrapUnique(new PageOverlay(local_frame, std::move(delegate)));
 }
 
-PageOverlay::PageOverlay(WebLocalFrameImpl* frame_impl,
+PageOverlay::PageOverlay(LocalFrame* local_frame,
                          std::unique_ptr<PageOverlay::Delegate> delegate)
-    : frame_impl_(frame_impl), delegate_(std::move(delegate)) {}
+    : frame_(local_frame), delegate_(std::move(delegate)) {}
 
 PageOverlay::~PageOverlay() {
   if (!layer_)
@@ -64,18 +64,19 @@ PageOverlay::~PageOverlay() {
 }
 
 void PageOverlay::Update() {
-  if (!frame_impl_->LocalRootFrameWidget()->IsAcceleratedCompositingActive())
+  if (!frame_)
     return;
 
-  LocalFrame* frame = frame_impl_->GetFrame();
-  if (!frame)
+  auto* local_root_frame_widget =
+      WebLocalFrameImpl::FromFrame(frame_)->LocalRootFrameWidget();
+  if (!local_root_frame_widget->IsAcceleratedCompositingActive())
     return;
 
   if (!layer_) {
     GraphicsLayer* parent_layer =
-        frame->IsMainFrame()
-            ? frame->GetPage()->GetVisualViewport().ContainerLayer()
-            : frame_impl_->LocalRootFrameWidget()->RootGraphicsLayer();
+        frame_->IsMainFrame()
+            ? frame_->GetPage()->GetVisualViewport().ContainerLayer()
+            : local_root_frame_widget->RootGraphicsLayer();
     if (!parent_layer)
       return;
 
@@ -93,7 +94,7 @@ void PageOverlay::Update() {
                           IntPoint());
   }
 
-  IntSize size = frame->GetPage()->GetVisualViewport().Size();
+  IntSize size = frame_->GetPage()->GetVisualViewport().Size();
   if (size != layer_->Size())
     layer_->SetSize(size);
 
@@ -120,7 +121,7 @@ void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,
 }
 
 String PageOverlay::DebugName(const GraphicsLayer*) const {
-  return "WebViewImpl Page Overlay Content Layer";
+  return "Page Overlay Content Layer";
 }
 
 }  // namespace blink

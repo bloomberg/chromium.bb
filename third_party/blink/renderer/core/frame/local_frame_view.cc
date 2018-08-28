@@ -2516,6 +2516,7 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   });
 
   frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
+  frame_->GetPage()->UpdatePageColorOverlay();
 
   if (target_state == DocumentLifecycle::kPaintClean) {
     ForAllNonThrottledLocalFrameViews(
@@ -2860,6 +2861,7 @@ void LocalFrameView::PaintTree() {
   frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
 
   frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
+  frame_->GetPage()->PaintPageColorOverlay();
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to

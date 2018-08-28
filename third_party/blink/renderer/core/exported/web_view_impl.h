@@ -77,7 +77,6 @@ class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class PageOverlay;
 class PageScaleConstraintsSet;
 class PaintLayerCompositor;
 class UserGestureToken;
@@ -623,7 +622,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   scoped_refptr<WebPagePopupImpl> last_hidden_page_popup_;
 
   Persistent<DevToolsEmulator> dev_tools_emulator_;
-  std::unique_ptr<PageOverlay> page_color_overlay_;
 
   // Whether the user can press tab to focus links.
   bool tabs_to_links_;

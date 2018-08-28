@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
+#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
@@ -313,6 +314,12 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   int32_t AutoplayFlags() const;
 
+  void SetPageOverlayColor(SkColor);
+
+  void UpdatePageColorOverlay();
+
+  void PaintPageColorOverlay();
+
  private:
   friend class ScopedPagePauser;
 
@@ -363,6 +370,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<PluginData> plugin_data_;
 
   Member<ValidationMessageClient> validation_message_client_;
+
+  std::unique_ptr<PageOverlay> page_color_overlay_;
 
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
