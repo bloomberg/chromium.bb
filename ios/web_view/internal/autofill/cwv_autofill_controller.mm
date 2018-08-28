@@ -17,6 +17,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -29,6 +30,7 @@
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
+#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
@@ -102,7 +104,9 @@
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewWebDataServiceWrapperFactory::
             GetAutofillWebDataForBrowserState(
-                browserState, ServiceAccessType::EXPLICIT_ACCESS)));
+                browserState, ServiceAccessType::EXPLICIT_ACCESS),
+        ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
+            browserState)));
     autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
         _webState, _autofillClient.get(), self,
         ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),

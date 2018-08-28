@@ -23,13 +23,15 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
-    scoped_refptr<AutofillWebDataService> autofill_web_data_service)
+    scoped_refptr<AutofillWebDataService> autofill_web_data_service,
+    syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(identity_manager),
-      autofill_web_data_service_(autofill_web_data_service) {}
+      autofill_web_data_service_(autofill_web_data_service),
+      sync_service_(sync_service) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
   HideAutofillPopup();
@@ -43,9 +45,8 @@ PrefService* WebViewAutofillClientIOS::GetPrefs() {
   return pref_service_;
 }
 
-// TODO(crbug.com/535784): Implement this when adding credit card upload.
 syncer::SyncService* WebViewAutofillClientIOS::GetSyncService() {
-  return nullptr;
+  return sync_service_;
 }
 
 identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
@@ -187,7 +188,7 @@ void WebViewAutofillClientIOS::ExecuteCommand(int id) {
 }
 
 bool WebViewAutofillClientIOS::IsAutofillSupported() {
-  return true;
+  return autofill::prefs::IsAutofillEnabled(GetPrefs());
 }
 
 bool WebViewAutofillClientIOS::AreServerCardsSupported() {
