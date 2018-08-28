@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -92,7 +91,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // go between the values and menu items. Skip this when using the Native Views
   // implementation, which has its own logic for distinguishing footer rows.
   // TODO(crbug.com/831603): Remove this when the relevant feature is on 100%.
-  if (!suggestions.empty() && !autofill::ShouldUseNativeViews()) {
+  if (!suggestions.empty() && !features::ShouldUseNativeViews()) {
     suggestions.push_back(Suggestion());
     suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
   }

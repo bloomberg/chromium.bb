@@ -1206,8 +1206,8 @@ void PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
 void PersonalDataManager::MaybeRemoveInvalidSuggestions(
     const AutofillType& type,
     std::vector<AutofillProfile*>* profiles) {
-  const bool suggest_invalid =
-      base::FeatureList::IsEnabled(kAutofillSuggestInvalidProfileData);
+  const bool suggest_invalid = base::FeatureList::IsEnabled(
+      features::kAutofillSuggestInvalidProfileData);
 
   for (size_t i = 0; i < profiles->size(); ++i) {
     bool is_invalid = (*profiles)[i]->GetValidityState(
@@ -1246,7 +1246,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // When suggesting with no prefix to match, consider suppressing disused
   // address suggestions as well as those based on invalid profile data.
   if (field_contents_canon.empty()) {
-    if (base::FeatureList::IsEnabled(kAutofillSuppressDisusedAddresses)) {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillSuppressDisusedAddresses)) {
       const base::Time min_last_used =
           AutofillClock::Now() - kDisusedProfileTimeDelta;
       RemoveProfilesNotUsedSinceTimestamp(min_last_used, &profiles);
@@ -1405,7 +1406,8 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
   // If enabled, suppress disused address profiles when triggered from an empty
   // field.
   if (field_contents.empty() &&
-      base::FeatureList::IsEnabled(kAutofillSuppressDisusedCreditCards)) {
+      base::FeatureList::IsEnabled(
+          features::kAutofillSuppressDisusedCreditCards)) {
     const base::Time min_last_used =
         AutofillClock::Now() - kDisusedCreditCardTimeDelta;
     RemoveExpiredCreditCardsNotUsedSinceTimestamp(AutofillClock::Now(),
@@ -2470,7 +2472,7 @@ void PersonalDataManager::MaybeCreateTestAddresses() {
     return;
 
   has_created_test_addresses_ = true;
-  if (!base::FeatureList::IsEnabled(kAutofillCreateDataForTest))
+  if (!base::FeatureList::IsEnabled(features::kAutofillCreateDataForTest))
     return;
 
   AddProfile(CreateBasicTestAddress(app_locale_));
@@ -2483,7 +2485,7 @@ void PersonalDataManager::MaybeCreateTestCreditCards() {
     return;
 
   has_created_test_credit_cards_ = true;
-  if (!base::FeatureList::IsEnabled(kAutofillCreateDataForTest))
+  if (!base::FeatureList::IsEnabled(features::kAutofillCreateDataForTest))
     return;
 
   AddCreditCard(CreateBasicTestCreditCard(app_locale_));
@@ -2500,7 +2502,8 @@ bool PersonalDataManager::IsCreditCardDeletable(CreditCard* card) {
 }
 
 bool PersonalDataManager::DeleteDisusedCreditCards() {
-  if (!base::FeatureList::IsEnabled(kAutofillDeleteDisusedCreditCards)) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillDeleteDisusedCreditCards)) {
     return false;
   }
 
@@ -2562,7 +2565,8 @@ bool PersonalDataManager::IsAddressDeletable(
 }
 
 bool PersonalDataManager::DeleteDisusedAddresses() {
-  if (!base::FeatureList::IsEnabled(kAutofillDeleteDisusedAddresses)) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillDeleteDisusedAddresses)) {
     DVLOG(1) << "Deletion is disabled";
     return false;
   }

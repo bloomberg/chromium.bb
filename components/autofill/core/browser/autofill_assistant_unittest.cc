@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -22,6 +21,7 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -66,7 +66,8 @@ class AutofillAssistantTest : public testing::Test {
         autofill_assistant_(&autofill_manager_) {}
 
   void EnableAutofillCreditCardAssist() {
-    scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardAssist);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillCreditCardAssist);
   }
 
   // Returns a valid credit card form.

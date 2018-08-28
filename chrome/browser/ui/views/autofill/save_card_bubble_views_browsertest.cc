@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotRequestCardholderNameInHappyPath) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_SubmittingFormWithMissingNamesRequestsCardholderNameIfExpOn) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_SaveButtonIsDisabledIfNoCardholderNameAndCardholderNameRequested) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_EnteringCardholderNameAndClickingSaveClosesBubbleIfCardholderNameRequested) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_RequestedCardholderNameTextfieldIsNotPrefilledWithFocusNameIfMissing) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -555,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_CardholderNameRequested_SubmittingPrefilledValueLogsUneditedMetric) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_CardholderNameRequested_SubmittingChangedValueLogsEditedMetric) {
   // Enable the EditableCardholderName experiment.
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamEditableCardholderName);
+      features::kAutofillUpstreamEditableCardholderName);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -631,8 +631,8 @@ IN_PROC_BROWSER_TEST_F(
   // Enable the EditableCardholderName and BlankCardholderNameField experiments.
   scoped_feature_list_.InitWithFeatures(
       // Enabled
-      {kAutofillUpstreamEditableCardholderName,
-       kAutofillUpstreamBlankCardholderNameField},
+      {features::kAutofillUpstreamEditableCardholderName,
+       features::kAutofillUpstreamBlankCardholderNameField},
       // Disabled
       {});
 

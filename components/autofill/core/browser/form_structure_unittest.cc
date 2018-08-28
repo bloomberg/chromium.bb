@@ -4226,7 +4226,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4241,7 +4241,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4288,7 +4288,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4302,7 +4302,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4361,7 +4361,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4380,7 +4380,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
@@ -4438,7 +4438,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
@@ -4454,7 +4454,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
     FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());

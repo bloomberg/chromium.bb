@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
@@ -348,7 +347,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     // Payments will decide if the provided data is enough to offer upload save.
     request_dict.SetInteger("detected_values", detected_values_);
 
-    if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
+    if (features::IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
         !pan_first_six_.empty())
       request_dict.SetString("pan_first6", pan_first_six_);
 

@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -213,7 +212,7 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
           IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
     }
     return l10n_util::GetStringUTF16(
-        IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
+        features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
             ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3
             : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
   }

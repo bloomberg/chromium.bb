@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -40,6 +39,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -99,12 +99,12 @@ class LocalCardMigrationManagerTest : public testing::Test {
 
   void EnableAutofillCreditCardLocalCardMigrationExperiment() {
     scoped_feature_list_.InitAndEnableFeature(
-        kAutofillCreditCardLocalCardMigration);
+        features::kAutofillCreditCardLocalCardMigration);
   }
 
   void DisableAutofillCreditCardLocalCardMigrationExperiment() {
     scoped_feature_list_.InitAndDisableFeature(
-        kAutofillCreditCardLocalCardMigration);
+        features::kAutofillCreditCardLocalCardMigration);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {

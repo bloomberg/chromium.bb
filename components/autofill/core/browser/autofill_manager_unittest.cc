@@ -29,7 +29,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -512,7 +511,7 @@ class AutofillManagerTest : public testing::Test {
 
   void DisableCreditCardAutofill() {
     scoped_feature_list_.InitAndEnableFeature(
-        kAutofillCreditCardAblationExperiment);
+        features::kAutofillCreditCardAblationExperiment);
   }
 
   // Wrappers around the TestAutofillExternalDelegate::GetSuggestions call that
@@ -745,7 +744,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_UnrecognizedAttribute) {
 TEST_F(AutofillManagerTest,
        GetProfileSuggestions_MinFieldsEnforced_NoAutocomplete) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForHeuristics);
+  features.InitAndEnableFeature(
+      features::kAutofillEnforceMinRequiredFieldsForHeuristics);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -777,7 +777,8 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        GetProfileSuggestions_MinFieldsEnforced_WithOneAutocomplete) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForHeuristics);
+  features.InitAndEnableFeature(
+      features::kAutofillEnforceMinRequiredFieldsForHeuristics);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -883,7 +884,8 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        GetProfileSuggestions_SmallFormWithTwoAutocomplete) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForHeuristics);
+  features.InitAndEnableFeature(
+      features::kAutofillEnforceMinRequiredFieldsForHeuristics);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -2082,7 +2084,7 @@ TEST_F(AutofillManagerTest, FillAddressForm_UnrecognizedAttribute) {
 // is disabled.
 TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOffRespected) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+  feature_list.InitAndDisableFeature(features::kAutofillAlwaysFillAddresses);
 
   FormData address_form;
   address_form.name = ASCIIToUTF16("MyForm");
@@ -2935,7 +2937,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_ComponentizedNumbers) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -2963,7 +2965,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_ComponentizedNumbers) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms_copy);
     int page_id = 1;
@@ -3022,7 +3024,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3046,7 +3048,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms_copy);
     int page_id = 1;
@@ -3115,7 +3117,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3144,7 +3146,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms_copy);
     int page_id = 1;
@@ -3213,7 +3215,7 @@ TEST_F(AutofillManagerTest,
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3238,7 +3240,7 @@ TEST_F(AutofillManagerTest,
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms_copy);
     int page_id = 1;
@@ -3299,7 +3301,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3324,7 +3326,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3381,7 +3383,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FocusOnSecondPhoneNumber) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3408,7 +3410,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FocusOnSecondPhoneNumber) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3468,7 +3470,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3492,7 +3494,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3632,7 +3634,7 @@ TEST_F(AutofillManagerTest,
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -3684,7 +3686,7 @@ TEST_F(AutofillManagerTest,
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
-        autofill::kAutofillRationalizeFieldTypePredictions);
+        autofill::features::kAutofillRationalizeFieldTypePredictions);
 
     FormsSeen(forms);
     int page_id = 1;
@@ -4579,9 +4581,9 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   // Enable/Disable ignoring invalid profile data for the scope of this test.
   base::test::ScopedFeatureList sfl;
   if (vote_using_invalid_profile_data) {
-    sfl.InitAndEnableFeature(kAutofillVoteUsingInvalidProfileData);
+    sfl.InitAndEnableFeature(features::kAutofillVoteUsingInvalidProfileData);
   } else {
-    sfl.InitAndDisableFeature(kAutofillVoteUsingInvalidProfileData);
+    sfl.InitAndDisableFeature(features::kAutofillVoteUsingInvalidProfileData);
   }
 
   // Set up the test profiles.
@@ -5708,14 +5710,16 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   // With min required fields enabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndEnableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
   // With min required fields disabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndDisableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
@@ -5726,14 +5730,16 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   // With min required fields enabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndEnableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
   // With min required fields disabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndDisableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
@@ -5743,14 +5749,16 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   // With min required fields enabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndEnableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
   // With min required fields disabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndDisableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
@@ -5781,14 +5789,16 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   // With min required fields enabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndEnableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
   // With min required fields disabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
+    features.InitAndDisableFeature(
+        features::kAutofillEnforceMinRequiredFieldsForUpload);
     EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
@@ -5842,7 +5852,7 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        DisplaySuggestions_AutocompleteOffRespected_AddressField) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+  feature_list.InitAndDisableFeature(features::kAutofillAlwaysFillAddresses);
 
   // Set up an address form.
   FormData mixed_form;
@@ -6244,7 +6254,8 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions) {
 
 TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffNotRespected) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kAutofillAlwaysFillAddresses);
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillAlwaysFillAddresses);
 
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -6271,7 +6282,8 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffRespected) {
     return;
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillAlwaysFillAddresses);
 
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -6324,7 +6336,7 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_NonSecureContext) {
 TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      kAutofillCreditCardAblationExperiment);
+      features::kAutofillCreditCardAblationExperiment);
 
   // Set up our form data.
   FormData form;

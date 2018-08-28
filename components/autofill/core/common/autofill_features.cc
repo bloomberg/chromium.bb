@@ -4,6 +4,20 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_switches.h"
+#include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
+
 namespace autofill {
 namespace features {
 
@@ -12,10 +26,31 @@ namespace features {
 const base::Feature kAutofillAddressNormalizer{
     "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillAlwaysFillAddresses{
+    "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls the use of GET (instead of POST) to fetch cacheable autofill query
 // responses.
 const base::Feature kAutofillCacheQueryResponses{
     "AutofillCacheQueryResponses", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillCreateDataForTest{
+    "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillCreditCardAblationExperiment{
+    "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillCreditCardAssist{
+    "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillCreditCardLocalCardMigration{
+    "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillDeleteDisusedAddresses{
+    "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillDeleteDisusedCreditCards{
+    "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the credit card downstream keyboard accessory shows
 // the Google Pay logo animation on iOS.
@@ -32,28 +67,15 @@ const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
 const base::Feature kAutofillEnableAccountWalletStorage{
     "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillEnableCompanyName{
+    "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether the server credit cards are offered to be filled and
 // uploaded to Google Pay if the sync service is in auth error.
 const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{
     "AutofillDontOfferServerCardsOnAuthError",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Autofill should fill fields previously filled by the
-// website.
-const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether autofill suggestions are filtered by field values previously
-// filled by website.
-const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{
-    "AutofillShowAllSuggestionsOnPrefilledForms",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether Autofill should rationalize repeated server type
-// predictions.
-const base::Feature kAutofillRationalizeRepeatedServerPredictions{
-    "kAutofillRationalizeRepeatedServerPredictions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
@@ -73,9 +95,30 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillExpandedPopupViews{
+    "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the manual fill fallback will be present.
 const base::Feature kAutofillManualFallback{"AutofillManualFallback",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillPreferServerNamePredictions{
+    "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether Autofill should fill fields previously filled by the
+// website.
+const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillRationalizeFieldTypePredictions{
+    "AutofillRationalizeFieldTypePredictions",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether Autofill should rationalize repeated server type
+// predictions.
+const base::Feature kAutofillRationalizeRepeatedServerPredictions{
+    "kAutofillRationalizeRepeatedServerPredictions",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Full Server credit cards should be reset when the sync
 // service is in an auth error state.
@@ -90,10 +133,17 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
     "AutofillRestrictUnownedFieldsToFormlessCheckout",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
+    "AutofillSaveCardDialogUnlabeledExpirationDate",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // When enabled, a sign in promo will show up right after the user
 // saves a card locally. This also introduces a "Manage Cards" bubble.
 const base::Feature kAutofillSaveCardSignInAfterLocalSave{
     "AutofillSaveCardSignInAfterLocalSave", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillScanCardholderName{
+    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether experiment ids should be sent through
 // Google Payments RPCs or not.
@@ -117,6 +167,12 @@ const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
 const base::Feature kAutofillServerCommunication{
     "kAutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether autofill suggestions are filtered by field values previously
+// filled by website.
+const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{
+    "AutofillShowAllSuggestionsOnPrefilledForms",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether we show warnings in the Dev console for misused autocomplete
 // types.
 const base::Feature kAutofillShowAutocompleteConsoleWarnings{
@@ -133,6 +189,29 @@ const base::Feature kAutofillShowTypePredictions{
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillSuggestInvalidProfileData{
+    "AutofillSuggestInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillSuppressDisusedAddresses{
+    "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillSuppressDisusedCreditCards{
+    "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstream{"AutofillUpstream",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamAllowAllEmailDomains{
+    "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
+    "AutofillUpstreamAlwaysRequestCardholderName",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamBlankCardholderNameField{
+    "AutofillUpstreamBlankCardholderNameField",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether ELO cards should be uploaded to Google Payments.
 const base::Feature kAutofillUpstreamDisallowElo{
     "AutofillUpstreamDisallowElo", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -140,6 +219,17 @@ const base::Feature kAutofillUpstreamDisallowElo{
 // Controls whether JCB cards should be uploaded to Google Payments.
 const base::Feature kAutofillUpstreamDisallowJcb{
     "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamEditableCardholderName{
+    "AutofillUpstreamEditableCardholderName",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamSendPanFirstSix{
+    "AutofillUpstreamSendPanFirstSix", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUpstreamUpdatePromptExplanation{
+    "AutofillUpstreamUpdatePromptExplanation",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the credit card upload bubble shows the Google Pay logo and
 // a shorter "Save card?" header message on mobile.
@@ -152,6 +242,9 @@ const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
 const base::Feature kAutofillUsePaymentsCustomerData{
     "AutofillUsePaymentsCustomerData", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillVoteUsingInvalidProfileData{
+    "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether password generation is offered automatically on fields
 // percieved as eligible for generation.
 const base::Feature kAutomaticPasswordGeneration = {
@@ -161,8 +254,87 @@ const base::Feature kAutomaticPasswordGeneration = {
 const base::Feature kSingleClickAutofill{"SingleClickAutofill",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAutofillEnableCompanyName{
-    "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
+const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
+
+const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
+    "without-settings-page";
+
+const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
+
+#if defined(OS_MACOSX)
+const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
+bool IsAutofillCreditCardAssistEnabled() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
+#endif
+}
+
+LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
+  if (!base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration))
+    return LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      kAutofillCreditCardLocalCardMigration,
+      kAutofillCreditCardLocalCardMigrationParameterName);
+
+  if (param ==
+      kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
+    return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
+  }
+  return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
+}
+
+bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillUpstreamAlwaysRequestCardholderName);
+}
+
+bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillUpstreamBlankCardholderNameField);
+}
+
+bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
+}
+
+bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillUpstreamSendPanFirstSix);
+}
+
+bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillUpstreamUpdatePromptExplanation);
+}
+
+#if defined(OS_MACOSX)
+bool IsMacViewsAutofillPopupExperimentEnabled() {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!::features::IsViewsBrowserCocoa())
+    return true;
+#endif
+
+  return base::FeatureList::IsEnabled(kMacViewsAutofillPopup);
+}
+#endif  // defined(OS_MACOSX)
+
+bool ShouldUseNativeViews() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  return base::FeatureList::IsEnabled(kAutofillExpandedPopupViews) ||
+         base::FeatureList::IsEnabled(::features::kExperimentalUi);
+#else
+  return false;
+#endif
+}
+
+bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {
+  return base::FeatureList::IsEnabled(
+      kAutofillSaveCardDialogUnlabeledExpirationDate);
+}
 
 }  // namespace features
 }  // namespace autofill

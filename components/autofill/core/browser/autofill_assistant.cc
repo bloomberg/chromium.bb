@@ -6,11 +6,11 @@
 
 #include "base/containers/adapters.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -28,7 +28,7 @@ void AutofillAssistant::Reset() {
 bool AutofillAssistant::CanShowCreditCardAssist() {
   const auto& form_structures = autofill_manager_->form_structures();
   if (form_structures.empty() || credit_card_form_data_ != nullptr ||
-      !IsAutofillCreditCardAssistEnabled() ||
+      !features::IsAutofillCreditCardAssistEnabled() ||
       // Context of the page is not secure or target URL is valid but not
       // secure.
       !(autofill_manager_->client()->IsContextSecure() &&

@@ -151,13 +151,13 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 
   // Add active experiments to the request payload.
-  if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled()) {
+  if (features::IsAutofillUpstreamSendPanFirstSixExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
-        kAutofillUpstreamSendPanFirstSix.name);
+        features::kAutofillUpstreamSendPanFirstSix.name);
   }
-  if (IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
+  if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
-        kAutofillUpstreamUpdatePromptExplanation.name);
+        features::kAutofillUpstreamUpdatePromptExplanation.name);
   }
 
   int detected_values = GetDetectedValues();
@@ -477,8 +477,9 @@ int CreditCardSaveManager::GetDetectedValues() const {
   if ((!(detected_values & DetectedValue::CARDHOLDER_NAME) &&
        !(detected_values & DetectedValue::ADDRESS_NAME) &&
        !(detected_values & DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT) &&
-       IsAutofillUpstreamEditableCardholderNameExperimentEnabled()) ||
-      IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled()) {
+       features::IsAutofillUpstreamEditableCardholderNameExperimentEnabled()) ||
+      features::
+          IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled()) {
     detected_values |= DetectedValue::USER_PROVIDED_NAME;
   }
 

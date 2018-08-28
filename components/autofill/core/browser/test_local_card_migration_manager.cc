@@ -4,9 +4,9 @@
 
 #include "components/autofill/core/browser/test_local_card_migration_manager.h"
 
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -26,8 +26,8 @@ TestLocalCardMigrationManager::~TestLocalCardMigrationManager() {}
 
 bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   bool migration_experiment_enabled =
-      GetLocalCardMigrationExperimentalFlag() !=
-      LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+      features::GetLocalCardMigrationExperimentalFlag() !=
+      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
   bool has_google_payments_account =
       (static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
            prefs::kAutofillBillingCustomerNumber)) != 0);

@@ -1263,8 +1263,8 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
 
 const FeatureEntry::FeatureParam
     kAutofillCreditCardLocalCardMigrationWithoutSettingsPage[] = {
-        {autofill::kAutofillCreditCardLocalCardMigrationParameterName,
-         autofill::
+        {autofill::features::kAutofillCreditCardLocalCardMigrationParameterName,
+         autofill::features::
              kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage}};
 
 const FeatureEntry::FeatureVariation
@@ -2177,7 +2177,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardAssist)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAssist)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"disable-captive-portal-bypass-proxy",
@@ -2552,7 +2552,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillUpstream)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstream)},
 #endif  // TOOLKIT_VIEWS || OS_ANDROID
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
@@ -3070,13 +3070,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardAblationExperimentDisplayName,
      flag_descriptions::kEnableAutofillCreditCardAblationExperimentDescription,
      kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardAblationExperiment)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillCreditCardAblationExperiment)},
     {"enable-autofill-credit-card-local-card-migration",
      flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationName,
      flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationDescription,
      kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::kAutofillCreditCardLocalCardMigration,
+         autofill::features::kAutofillCreditCardLocalCardMigration,
          kAutofillCreditCardLocalCardMigrationVariations,
          "AutofillLocalCardMigration")},
     {"enable-autofill-credit-card-upload-editable-cardholder-name",
@@ -3085,7 +3086,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameDescription,
      kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamEditableCardholderName)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamEditableCardholderName)},
     {"enable-autofill-credit-card-upload-google-pay-on-android-branding",
      flag_descriptions::
          kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName,
@@ -3098,14 +3100,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadSendPanFirstSixName,
      flag_descriptions::
          kEnableAutofillCreditCardUploadSendPanFirstSixDescription,
-     kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamSendPanFirstSix)},
+     kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstreamSendPanFirstSix)},
     {"enable-autofill-credit-card-upload-update-prompt-explanation",
      flag_descriptions::
          kEnableAutofillCreditCardUploadUpdatePromptExplanationName,
      flag_descriptions::
          kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription,
      kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamUpdatePromptExplanation)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamUpdatePromptExplanation)},
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription, kOsAll,
@@ -3117,7 +3121,7 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(
-         autofill::kAutofillSaveCardDialogUnlabeledExpirationDate)},
+         autofill::features::kAutofillSaveCardDialogUnlabeledExpirationDate)},
     {"enable-autofill-save-card-sign-in-after-local-save",
      flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveName,
      flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveDescription,
@@ -3923,7 +3927,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_MACOSX)
     {"mac-views-autofill-popup", flag_descriptions::kMacViewsAutofillPopupName,
      flag_descriptions::kMacViewsAutofillPopupDescription, kOsMac,
-     FEATURE_VALUE_TYPE(autofill::kMacViewsAutofillPopup)},
+     FEATURE_VALUE_TYPE(autofill::features::kMacViewsAutofillPopup)},
 #endif  // OS_MACOSX
 
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,

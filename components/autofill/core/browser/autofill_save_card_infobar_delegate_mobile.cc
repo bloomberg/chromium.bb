@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -96,7 +95,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
   if (!IsGooglePayBrandingEnabled())
     return base::string16();
 
-  return IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
+  return features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
              ? l10n_util::GetStringUTF16(
                    IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3)
              : l10n_util::GetStringUTF16(

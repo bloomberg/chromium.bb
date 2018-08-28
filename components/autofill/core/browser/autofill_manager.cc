@@ -39,7 +39,6 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
@@ -212,7 +211,7 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
 
   bool is_scannable_name_on_card_field =
       autofill_field->Type().GetStorableType() == CREDIT_CARD_NAME_FULL &&
-      base::FeatureList::IsEnabled(kAutofillScanCardholderName);
+      base::FeatureList::IsEnabled(features::kAutofillScanCardholderName);
 
   if (!is_card_number_field && !is_scannable_name_on_card_field)
     return false;
@@ -1245,7 +1244,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
   FormData result = form;
 
-  if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions)) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillRationalizeFieldTypePredictions)) {
     form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
   }
 
@@ -1943,7 +1943,8 @@ void AutofillManager::GetAvailableSuggestions(
                                  &context->is_all_server_suggestions);
 
     // Logic for disabling/ablating credit card autofill.
-    if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillCreditCardAblationExperiment) &&
         !suggestions->empty()) {
       context->suppress_reason = SuppressReason::kCreditCardsAblation;
       suggestions->clear();
@@ -1953,7 +1954,7 @@ void AutofillManager::GetAvailableSuggestions(
     // On desktop, don't return non credit card related suggestions for forms or
     // fields that have the "autocomplete" attribute set to off, only if the
     // feature to always fill addresses is off.
-    if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
+    if (!base::FeatureList::IsEnabled(features::kAutofillAlwaysFillAddresses) &&
         IsDesktopPlatform() && !field.should_autocomplete) {
       context->suppress_reason = SuppressReason::kAutocompleteOff;
       return;
