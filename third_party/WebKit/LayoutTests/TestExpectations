@@ -4952,10 +4952,6 @@ crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
 crbug.com/869726 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 
-crbug.com/871578 [ Mac ] external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
-crbug.com/871578 [ Mac ] virtual/outofblink-cors/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
-crbug.com/871578 [ Mac ] virtual/outofblink-cors-ns/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
-
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac Linux ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
