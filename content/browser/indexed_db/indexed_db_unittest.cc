@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
+using blink::IndexedDBDatabaseMetadata;
 using url::Origin;
 
 namespace content {

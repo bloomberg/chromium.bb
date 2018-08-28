@@ -12,11 +12,13 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/common/indexed_db/indexed_db_key_range.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using base::ASCIIToUTF16;
 using blink::IndexedDBIndexKeys;
+using blink::IndexedDBIndexMetadata;
 using blink::IndexedDBKey;
+using blink::IndexedDBObjectStoreMetadata;
 
 namespace content {
 

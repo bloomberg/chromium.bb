@@ -33,6 +33,7 @@
 #include "url/origin.h"
 
 using base::ASCIIToUTF16;
+using blink::IndexedDBDatabaseMetadata;
 using url::Origin;
 
 namespace content {
@@ -720,7 +721,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
 
   void OnUpgradeNeeded(int64_t old_version,
                        std::unique_ptr<IndexedDBConnection> connection,
-                       const content::IndexedDBDatabaseMetadata& metadata,
+                       const IndexedDBDatabaseMetadata& metadata,
                        const IndexedDBDataLossInfo& data_loss_info) override {
     connection_ = std::move(connection);
   }
@@ -854,7 +855,7 @@ class DataLossCallbacks final : public MockIndexedDBCallbacks {
   }
   void OnUpgradeNeeded(int64_t old_version,
                        std::unique_ptr<IndexedDBConnection> connection,
-                       const content::IndexedDBDatabaseMetadata& metadata,
+                       const IndexedDBDatabaseMetadata& metadata,
                        const IndexedDBDataLossInfo& data_loss) final {
     connection_ = std::move(connection);
     data_loss_ = data_loss.status;

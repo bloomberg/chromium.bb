@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_METADATA_H_
-#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_METADATA_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_METADATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_METADATA_H_
 
 #include <stdint.h>
 
@@ -11,12 +11,12 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
-namespace content {
+namespace blink {
 
-struct CONTENT_EXPORT IndexedDBIndexMetadata {
+struct BLINK_COMMON_EXPORT IndexedDBIndexMetadata {
   static const int64_t kInvalidId = -1;
 
   IndexedDBIndexMetadata();
@@ -39,7 +39,7 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
   bool multi_entry;
 };
 
-struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
+struct BLINK_COMMON_EXPORT IndexedDBObjectStoreMetadata {
   static const int64_t kInvalidId = -1;
   static const int64_t kMinimumIndexId = 30;
 
@@ -66,7 +66,7 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   std::map<int64_t, IndexedDBIndexMetadata> indexes;
 };
 
-struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
+struct BLINK_COMMON_EXPORT IndexedDBDatabaseMetadata {
   // TODO(jsbell): These can probably be collapsed into 0.
   enum { NO_VERSION = -1, DEFAULT_VERSION = 0 };
 
@@ -90,6 +90,6 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   std::map<int64_t, IndexedDBObjectStoreMetadata> object_stores;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_METADATA_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_METADATA_H_

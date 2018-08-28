@@ -6,7 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/leveldatabase/env_chromium.h"
+
+using blink::IndexedDBDatabaseMetadata;
 
 namespace content {
 

@@ -14,19 +14,21 @@
 #include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+
+namespace blink {
+struct IndexedDBObjectStoreMetadata;
+}
 
 namespace content {
 
 class IndexedDBTransaction;
-struct IndexedDBObjectStoreMetadata;
 
 class IndexWriter {
  public:
-  explicit IndexWriter(const IndexedDBIndexMetadata& index_metadata);
+  explicit IndexWriter(const blink::IndexedDBIndexMetadata& index_metadata);
 
-  IndexWriter(const IndexedDBIndexMetadata& index_metadata,
+  IndexWriter(const blink::IndexedDBIndexMetadata& index_metadata,
               const blink::IndexedDBIndexKeys& index_keys);
 
   bool VerifyIndexKeys(IndexedDBBackingStore* store,
@@ -56,7 +58,7 @@ class IndexWriter {
                         const blink::IndexedDBKey& primary_key,
                         bool* allowed) const WARN_UNUSED_RESULT;
 
-  const IndexedDBIndexMetadata index_metadata_;
+  const blink::IndexedDBIndexMetadata index_metadata_;
   blink::IndexedDBIndexKeys index_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexWriter);
@@ -65,7 +67,7 @@ class IndexWriter {
 bool MakeIndexWriters(IndexedDBTransaction* transaction,
                       IndexedDBBackingStore* store,
                       int64_t database_id,
-                      const IndexedDBObjectStoreMetadata& metadata,
+                      const blink::IndexedDBObjectStoreMetadata& metadata,
                       const blink::IndexedDBKey& primary_key,
                       bool key_was_generated,
                       const std::vector<blink::IndexedDBIndexKeys>& index_keys,

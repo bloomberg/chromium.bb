@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -24,7 +23,7 @@ namespace content {
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
-  explicit WebIDBFactoryImpl(indexed_db::mojom::FactoryPtrInfo factory_info);
+  explicit WebIDBFactoryImpl(blink::mojom::IDBFactoryPtrInfo factory_info);
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
@@ -47,13 +46,12 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
-  indexed_db::mojom::CallbacksAssociatedPtrInfo GetCallbacksProxy(
+  blink::mojom::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
-  GetDatabaseCallbacksProxy(
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
       std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
-  indexed_db::mojom::FactoryPtr factory_;
+  blink::mojom::IDBFactoryPtr factory_;
 };
 
 }  // namespace content

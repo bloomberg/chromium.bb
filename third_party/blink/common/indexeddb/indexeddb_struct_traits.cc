@@ -7,6 +7,8 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 namespace mojo {
 
@@ -79,6 +81,54 @@ bool EnumTraits<IDBDataLoss, blink::WebIDBDataLoss>::FromMojom(
       return true;
   }
   return false;
+}
+
+// static
+bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
+                  blink::IndexedDBDatabaseMetadata>::
+    Read(blink::mojom::IDBDatabaseMetadataDataView data,
+         blink::IndexedDBDatabaseMetadata* out) {
+  out->id = data.id();
+  if (!data.ReadName(&out->name))
+    return false;
+  out->version = data.version();
+  out->max_object_store_id = data.max_object_store_id();
+  ArrayDataView<blink::mojom::IDBObjectStoreMetadataDataView> object_stores;
+  data.GetObjectStoresDataView(&object_stores);
+  for (size_t i = 0; i < object_stores.size(); ++i) {
+    blink::mojom::IDBObjectStoreMetadataDataView object_store;
+    object_stores.GetDataView(i, &object_store);
+    DCHECK(!base::ContainsKey(out->object_stores, object_store.id()));
+    if (!StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
+                      blink::IndexedDBObjectStoreMetadata>::
+            Read(object_store, &out->object_stores[object_store.id()]))
+      return false;
+  }
+  return true;
+}
+
+// static
+bool StructTraits<
+    blink::mojom::IDBIndexKeysDataView,
+    blink::IndexedDBIndexKeys>::Read(blink::mojom::IDBIndexKeysDataView data,
+                                     blink::IndexedDBIndexKeys* out) {
+  out->first = data.index_id();
+  return data.ReadIndexKeys(&out->second);
+}
+
+// static
+bool StructTraits<blink::mojom::IDBIndexMetadataDataView,
+                  blink::IndexedDBIndexMetadata>::
+    Read(blink::mojom::IDBIndexMetadataDataView data,
+         blink::IndexedDBIndexMetadata* out) {
+  out->id = data.id();
+  if (!data.ReadName(&out->name))
+    return false;
+  if (!data.ReadKeyPath(&out->key_path))
+    return false;
+  out->unique = data.unique();
+  out->multi_entry = data.multi_entry();
+  return true;
 }
 
 // static
@@ -223,6 +273,47 @@ bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath>::
 }
 
 // static
+bool StructTraits<blink::mojom::IDBKeyRangeDataView, blink::IndexedDBKeyRange>::
+    Read(blink::mojom::IDBKeyRangeDataView data,
+         blink::IndexedDBKeyRange* out) {
+  blink::IndexedDBKey lower;
+  blink::IndexedDBKey upper;
+  if (!data.ReadLower(&lower) || !data.ReadUpper(&upper))
+    return false;
+
+  *out = blink::IndexedDBKeyRange(lower, upper, data.lower_open(),
+                                  data.upper_open());
+  return true;
+}
+
+// static
+bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
+                  blink::IndexedDBObjectStoreMetadata>::
+    Read(blink::mojom::IDBObjectStoreMetadataDataView data,
+         blink::IndexedDBObjectStoreMetadata* out) {
+  out->id = data.id();
+  if (!data.ReadName(&out->name))
+    return false;
+  if (!data.ReadKeyPath(&out->key_path))
+    return false;
+  out->auto_increment = data.auto_increment();
+  out->max_index_id = data.max_index_id();
+  ArrayDataView<blink::mojom::IDBIndexMetadataDataView> indexes;
+  data.GetIndexesDataView(&indexes);
+  for (size_t i = 0; i < indexes.size(); ++i) {
+    blink::mojom::IDBIndexMetadataDataView index;
+    indexes.GetDataView(i, &index);
+    DCHECK(!base::ContainsKey(out->indexes, index.id()));
+    if (!StructTraits<
+            blink::mojom::IDBIndexMetadataDataView,
+            blink::IndexedDBIndexMetadata>::Read(index,
+                                                 &out->indexes[index.id()]))
+      return false;
+  }
+  return true;
+}
+
+// static
 IDBOperationType
 EnumTraits<IDBOperationType, blink::WebIDBOperationType>::ToMojom(
     blink::WebIDBOperationType input) {
@@ -259,6 +350,104 @@ bool EnumTraits<IDBOperationType, blink::WebIDBOperationType>::FromMojom(
       return true;
     case IDBOperationType::Clear:
       *output = blink::kWebIDBClear;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBPutMode
+EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode>::ToMojom(
+    blink::WebIDBPutMode input) {
+  switch (input) {
+    case blink::kWebIDBPutModeAddOrUpdate:
+      return blink::mojom::IDBPutMode::AddOrUpdate;
+    case blink::kWebIDBPutModeAddOnly:
+      return blink::mojom::IDBPutMode::AddOnly;
+    case blink::kWebIDBPutModeCursorUpdate:
+      return blink::mojom::IDBPutMode::CursorUpdate;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBPutMode::AddOrUpdate;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode>::FromMojom(
+    blink::mojom::IDBPutMode input,
+    blink::WebIDBPutMode* output) {
+  switch (input) {
+    case blink::mojom::IDBPutMode::AddOrUpdate:
+      *output = blink::kWebIDBPutModeAddOrUpdate;
+      return true;
+    case blink::mojom::IDBPutMode::AddOnly:
+      *output = blink::kWebIDBPutModeAddOnly;
+      return true;
+    case blink::mojom::IDBPutMode::CursorUpdate:
+      *output = blink::kWebIDBPutModeCursorUpdate;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBTaskType
+EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType>::ToMojom(
+    blink::WebIDBTaskType input) {
+  switch (input) {
+    case blink::kWebIDBTaskTypeNormal:
+      return blink::mojom::IDBTaskType::Normal;
+    case blink::kWebIDBTaskTypePreemptive:
+      return blink::mojom::IDBTaskType::Preemptive;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBTaskType::Normal;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType>::FromMojom(
+    blink::mojom::IDBTaskType input,
+    blink::WebIDBTaskType* output) {
+  switch (input) {
+    case blink::mojom::IDBTaskType::Normal:
+      *output = blink::kWebIDBTaskTypeNormal;
+      return true;
+    case blink::mojom::IDBTaskType::Preemptive:
+      *output = blink::kWebIDBTaskTypePreemptive;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBTransactionMode EnumTraits<
+    blink::mojom::IDBTransactionMode,
+    blink::WebIDBTransactionMode>::ToMojom(blink::WebIDBTransactionMode input) {
+  switch (input) {
+    case blink::kWebIDBTransactionModeReadOnly:
+      return blink::mojom::IDBTransactionMode::ReadOnly;
+    case blink::kWebIDBTransactionModeReadWrite:
+      return blink::mojom::IDBTransactionMode::ReadWrite;
+    case blink::kWebIDBTransactionModeVersionChange:
+      return blink::mojom::IDBTransactionMode::VersionChange;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBTransactionMode::ReadOnly;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBTransactionMode,
+                blink::WebIDBTransactionMode>::
+    FromMojom(blink::mojom::IDBTransactionMode input,
+              blink::WebIDBTransactionMode* output) {
+  switch (input) {
+    case blink::mojom::IDBTransactionMode::ReadOnly:
+      *output = blink::kWebIDBTransactionModeReadOnly;
+      return true;
+    case blink::mojom::IDBTransactionMode::ReadWrite:
+      *output = blink::kWebIDBTransactionModeReadWrite;
+      return true;
+    case blink::mojom::IDBTransactionMode::VersionChange:
+      *output = blink::kWebIDBTransactionModeVersionChange;
       return true;
   }
   return false;

@@ -20,7 +20,6 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -38,17 +37,18 @@
 
 using blink::mojom::IDBValue;
 using blink::mojom::IDBValuePtr;
+using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
-using indexed_db::mojom::Callbacks;
-using indexed_db::mojom::CallbacksAssociatedPtrInfo;
-using indexed_db::mojom::DatabaseAssociatedPtr;
-using indexed_db::mojom::DatabaseAssociatedPtrInfo;
-using indexed_db::mojom::DatabaseAssociatedRequest;
-using indexed_db::mojom::DatabaseCallbacks;
-using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
-using indexed_db::mojom::Factory;
-using indexed_db::mojom::FactoryPtr;
+using blink::mojom::IDBCallbacks;
+using blink::mojom::IDBCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseAssociatedPtr;
+using blink::mojom::IDBDatabaseAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseAssociatedRequest;
+using blink::mojom::IDBDatabaseCallbacks;
+using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBFactory;
+using blink::mojom::IDBFactoryPtr;
 using mojo::StrongAssociatedBindingPtr;
 using testing::_;
 using testing::StrictMock;
@@ -104,7 +104,7 @@ struct TestDatabaseConnection {
             new StrictMock<MockMojoIndexedDBDatabaseCallbacks>()){};
   ~TestDatabaseConnection() {}
 
-  void Open(Factory* factory) {
+  void Open(IDBFactory* factory) {
     factory->Open(open_callbacks->CreateInterfacePtrAndBind(),
                   connection_callbacks->CreateInterfacePtrAndBind(), origin,
                   db_name, version, upgrade_txn_id);
@@ -115,7 +115,7 @@ struct TestDatabaseConnection {
   int64_t version;
   int64_t upgrade_txn_id;
 
-  DatabaseAssociatedPtr database;
+  IDBDatabaseAssociatedPtr database;
 
   std::unique_ptr<MockMojoIndexedDBCallbacks> open_callbacks;
   std::unique_ptr<MockMojoIndexedDBDatabaseCallbacks> connection_callbacks;
@@ -125,8 +125,8 @@ struct TestDatabaseConnection {
 };
 
 void StatusCallback(const base::Closure& callback,
-                    ::indexed_db::mojom::Status* status_out,
-                    ::indexed_db::mojom::Status status) {
+                    blink::mojom::IDBStatus* status_out,
+                    blink::mojom::IDBStatus status) {
   *status_out = status;
   callback.Run();
 }
@@ -198,7 +198,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   scoped_refptr<IndexedDBContextImpl> context_impl_;
   std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
       host_;
-  FactoryPtr idb_mojo_factory_;
+  IDBFactoryPtr idb_mojo_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcherHostTest);
 };
@@ -211,7 +211,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseConnectionBeforeUpgrade) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   base::RunLoop loop;
   EXPECT_CALL(
       *connection.open_callbacks,
@@ -242,7 +242,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseAfterUpgrade) {
                                     kDBVersion, kTransactionId);
 
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -297,7 +297,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
   TestDatabaseConnection connection1(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion, kTransactionId);
-  DatabaseAssociatedPtrInfo database_info1;
+  IDBDatabaseAssociatedPtrInfo database_info1;
   {
     base::RunLoop loop;
     IndexedDBDatabaseMetadata metadata;
@@ -317,7 +317,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
   connection1.database.Bind(std::move(database_info1));
 
   // Open connection 2, but expect that we won't be called back.
-  DatabaseAssociatedPtrInfo database_info2;
+  IDBDatabaseAssociatedPtrInfo database_info2;
   IndexedDBDatabaseMetadata metadata2;
   TestDatabaseConnection connection2(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
@@ -371,7 +371,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
                                     kDBVersion, kTransactionId);
 
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -423,11 +423,11 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
                                            base::UTF8ToUTF16(kObjectStoreName),
                                            blink::IndexedDBKeyPath(), false);
     // Call Put with an invalid blob.
-    std::vector<::blink::mojom::IDBBlobInfoPtr> blobs;
+    std::vector<blink::mojom::IDBBlobInfoPtr> blobs;
     blink::mojom::BlobPtrInfo blob;
     // Ignore the result of MakeRequest, to end up with an invalid blob.
     mojo::MakeRequest(&blob);
-    blobs.push_back(::blink::mojom::IDBBlobInfo::New(
+    blobs.push_back(blink::mojom::IDBBlobInfo::New(
         std::move(blob), "fakeUUID", base::string16(), 100, nullptr));
     connection.database->Put(kTransactionId, kObjectStoreId,
                              IDBValue::New("hello", std::move(blobs)),
@@ -449,7 +449,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -472,8 +472,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -496,7 +495,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
@@ -510,7 +509,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -533,8 +532,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -564,7 +562,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
@@ -576,7 +574,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -599,8 +597,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -627,7 +624,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 TEST_F(IndexedDBDispatcherHostTest,
@@ -640,7 +637,7 @@ TEST_F(IndexedDBDispatcherHostTest,
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -663,8 +660,7 @@ TEST_F(IndexedDBDispatcherHostTest,
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -690,7 +686,7 @@ TEST_F(IndexedDBDispatcherHostTest,
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
@@ -704,7 +700,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -727,8 +723,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -758,7 +753,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
@@ -770,7 +765,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
-  DatabaseAssociatedPtrInfo database_info;
+  IDBDatabaseAssociatedPtrInfo database_info;
   {
     base::RunLoop loop;
     EXPECT_CALL(
@@ -793,8 +788,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
 
   connection.database.Bind(std::move(database_info));
 
-  ::indexed_db::mojom::Status callback_result =
-      ::indexed_db::mojom::Status::IOError;
+  blink::mojom::IDBStatus callback_result = blink::mojom::IDBStatus::IOError;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -821,7 +815,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
 
     loop.Run();
   }
-  EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+  EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
 }
 
 // Flaky: crbug.com/772067
@@ -845,7 +839,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion1, kTransactionId1);
   IndexedDBDatabaseMetadata metadata1;
-  DatabaseAssociatedPtrInfo database_info1;
+  IDBDatabaseAssociatedPtrInfo database_info1;
   EXPECT_EQ(0, observer.notify_list_changed_count);
   {
     base::RunLoop loop;
@@ -900,7 +894,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion2, kTransactionId2);
   IndexedDBDatabaseMetadata metadata2;
-  DatabaseAssociatedPtrInfo database_info2;
+  IDBDatabaseAssociatedPtrInfo database_info2;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -950,7 +944,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion3, kTransactionId3);
   IndexedDBDatabaseMetadata metadata3;
-  DatabaseAssociatedPtrInfo database_info3;
+  IDBDatabaseAssociatedPtrInfo database_info3;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
@@ -1012,7 +1006,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion1, kTransactionId1);
   IndexedDBDatabaseMetadata metadata1;
-  DatabaseAssociatedPtrInfo database_info1;
+  IDBDatabaseAssociatedPtrInfo database_info1;
   EXPECT_EQ(0, observer.notify_list_changed_count);
   EXPECT_EQ(0, observer.notify_content_changed_count);
   {
@@ -1062,8 +1056,8 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
                                             blink::IndexedDBKeyPath(), false);
     connection1.database->Put(
         kTransactionId1, kObjectStoreId,
-        ::blink::mojom::IDBValue::New(
-            "value", std::vector<::blink::mojom::IDBBlobInfoPtr>()),
+        blink::mojom::IDBValue::New(
+            "value", std::vector<blink::mojom::IDBBlobInfoPtr>()),
         IndexedDBKey(base::UTF8ToUTF16("key")), blink::kWebIDBPutModeAddOnly,
         std::vector<IndexedDBIndexKeys>(),
         put_callbacks->CreateInterfacePtrAndBind());
@@ -1079,7 +1073,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion2, kTransactionId2);
   IndexedDBDatabaseMetadata metadata2;
-  DatabaseAssociatedPtrInfo database_info2;
+  IDBDatabaseAssociatedPtrInfo database_info2;
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;

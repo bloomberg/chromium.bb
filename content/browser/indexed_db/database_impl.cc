@@ -24,7 +24,12 @@
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
+using blink::IndexedDBKeyRange;
 using std::swap;
+
+namespace blink {
+class IndexedDBKeyRange;
+}
 
 namespace content {
 class IndexedDBDatabaseError;
@@ -80,7 +85,7 @@ class DatabaseImpl::IDBSequenceHelper {
               scoped_refptr<IndexedDBCallbacks> callbacks);
   void Put(int64_t transaction_id,
            int64_t object_store_id,
-           ::blink::mojom::IDBValuePtr value,
+           blink::mojom::IDBValuePtr value,
            std::vector<IndexedDBBlobInfo> blob_info,
            const IndexedDBKey& key,
            blink::WebIDBPutMode mode,
@@ -239,7 +244,7 @@ void DatabaseImpl::Get(
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
     bool key_only,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -257,7 +262,7 @@ void DatabaseImpl::GetAll(
     const IndexedDBKeyRange& key_range,
     bool key_only,
     int64_t max_count,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -271,11 +276,11 @@ void DatabaseImpl::GetAll(
 void DatabaseImpl::Put(
     int64_t transaction_id,
     int64_t object_store_id,
-    ::blink::mojom::IDBValuePtr value,
+    blink::mojom::IDBValuePtr value,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -286,7 +291,7 @@ void DatabaseImpl::Put(
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
   std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
-    ::blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
+    blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
 
     std::unique_ptr<storage::BlobDataHandle> handle =
         dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
@@ -372,7 +377,7 @@ void DatabaseImpl::OpenCursor(
     blink::WebIDBCursorDirection direction,
     bool key_only,
     blink::WebIDBTaskType task_type,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -388,7 +393,7 @@ void DatabaseImpl::Count(
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -403,7 +408,7 @@ void DatabaseImpl::DeleteRange(
     int64_t transaction_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -417,7 +422,7 @@ void DatabaseImpl::DeleteRange(
 void DatabaseImpl::Clear(
     int64_t transaction_id,
     int64_t object_store_id,
-    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
@@ -656,7 +661,7 @@ void DatabaseImpl::IDBSequenceHelper::GetAll(
 void DatabaseImpl::IDBSequenceHelper::Put(
     int64_t transaction_id,
     int64_t object_store_id,
-    ::blink::mojom::IDBValuePtr mojo_value,
+    blink::mojom::IDBValuePtr mojo_value,
     std::vector<IndexedDBBlobInfo> blob_info,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,

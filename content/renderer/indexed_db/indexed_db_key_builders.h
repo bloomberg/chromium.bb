@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 
 namespace blink {
 
+class IndexedDBKeyRange;
 class WebIDBKeyPath;
 class WebIDBKeyRange;
 
@@ -39,10 +39,10 @@ class CONTENT_EXPORT WebIDBKeyBuilder {
 
 class CONTENT_EXPORT IndexedDBKeyRangeBuilder {
  public:
-  static IndexedDBKeyRange Build(const blink::WebIDBKeyRange& key_range);
+  static blink::IndexedDBKeyRange Build(const blink::WebIDBKeyRange& key_range);
 
   // Builds a point range (containing a single key).
-  static IndexedDBKeyRange Build(blink::WebIDBKeyView key);
+  static blink::IndexedDBKeyRange Build(blink::WebIDBKeyView key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyRangeBuilder);
@@ -50,7 +50,7 @@ class CONTENT_EXPORT IndexedDBKeyRangeBuilder {
 
 class CONTENT_EXPORT WebIDBKeyRangeBuilder {
  public:
-  static blink::WebIDBKeyRange Build(const content::IndexedDBKeyRange& key);
+  static blink::WebIDBKeyRange Build(const blink::IndexedDBKeyRange& key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIDBKeyRangeBuilder);

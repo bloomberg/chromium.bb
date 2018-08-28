@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -26,7 +25,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
  public:
   IndexedDBDatabaseCallbacks(
       scoped_refptr<IndexedDBContextImpl> context,
-      ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo callbacks_info);
+      blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info);
 
   virtual void OnForcedClose();
   virtual void OnVersionChange(int64_t old_version, int64_t new_version);
@@ -34,8 +33,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnAbort(const IndexedDBTransaction& transaction,
                        const IndexedDBDatabaseError& error);
   virtual void OnComplete(const IndexedDBTransaction& transaction);
-  virtual void OnDatabaseChange(
-      ::indexed_db::mojom::ObserverChangesPtr changes);
+  virtual void OnDatabaseChange(blink::mojom::IDBObserverChangesPtr changes);
 
  protected:
   virtual ~IndexedDBDatabaseCallbacks();

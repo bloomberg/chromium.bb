@@ -32,19 +32,24 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
-#include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/common/content_switches.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "url/origin.h"
 
 using base::ASCIIToUTF16;
 using base::Int64ToString16;
+using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
+using blink::IndexedDBIndexMetadata;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
+using blink::IndexedDBKeyRange;
+using blink::IndexedDBObjectStoreMetadata;
 using blink::kWebIDBKeyTypeNumber;
 using leveldb::Status;
 
@@ -819,7 +824,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
           !observer->IsRecordingObjectStore(object_store_id))
         continue;
       if (!recorded) {
-        auto observation = ::indexed_db::mojom::Observation::New();
+        auto observation = blink::mojom::IDBObservation::New();
         observation->object_store_id = object_store_id;
         observation->type = type;
         if (type != blink::kWebIDBClear)
@@ -827,14 +832,14 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
         transaction->AddObservation(connection->id(), std::move(observation));
         recorded = true;
       }
-      ::indexed_db::mojom::ObserverChangesPtr& changes =
+      blink::mojom::IDBObserverChangesPtr& changes =
           *transaction->GetPendingChangesForConnection(connection->id());
 
       changes->observation_index_map[observer->id()].push_back(
           changes->observations.size() - 1);
       if (observer->include_transaction() &&
           !base::ContainsKey(changes->transaction_map, observer->id())) {
-        auto mojo_transaction = ::blink::mojom::IDBObserverTransaction::New();
+        auto mojo_transaction = blink::mojom::IDBObserverTransaction::New();
         mojo_transaction->id = connection->NewObserverTransactionId();
         mojo_transaction->scope.insert(mojo_transaction->scope.end(),
                                        observer->object_store_ids().begin(),
@@ -854,14 +859,14 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
 }
 
 void IndexedDBDatabase::SendObservations(
-    std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr> changes_map) {
+    std::map<int32_t, blink::mojom::IDBObserverChangesPtr> changes_map) {
   for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
     if (it == changes_map.end())
       continue;
 
     // Start all of the transactions.
-    ::indexed_db::mojom::ObserverChangesPtr& changes = it->second;
+    blink::mojom::IDBObserverChangesPtr& changes = it->second;
     for (const auto& transaction_pair : changes->transaction_map) {
       std::set<int64_t> scope(transaction_pair.second->scope.begin(),
                               transaction_pair.second->scope.end());

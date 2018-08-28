@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -31,7 +30,7 @@ class IndexedDBCallbacksImpl;
 
 class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(indexed_db::mojom::DatabaseAssociatedPtrInfo database);
+  WebIDBDatabaseImpl(blink::mojom::IDBDatabaseAssociatedPtrInfo database);
   ~WebIDBDatabaseImpl() override;
 
   // blink::WebIDBDatabase
@@ -134,7 +133,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   void Commit(long long transaction_id) override;
 
  private:
-  indexed_db::mojom::CallbacksAssociatedPtrInfo GetCallbacksProxy(
+  blink::mojom::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
@@ -147,7 +146,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   size_t max_put_value_size_ = kMaxIDBMessageSizeInBytes;
 
   std::set<int32_t> observer_ids_;
-  indexed_db::mojom::DatabaseAssociatedPtr database_;
+  blink::mojom::IDBDatabaseAssociatedPtr database_;
 };
 
 }  // namespace content

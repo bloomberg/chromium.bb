@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
+using blink::IndexedDBDatabaseMetadata;
 using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
@@ -23,13 +24,13 @@ using blink::WebIDBMetadata;
 using blink::WebIDBValue;
 using blink::WebString;
 using blink::WebVector;
-using indexed_db::mojom::DatabaseAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseAssociatedPtrInfo;
 
 namespace content {
 
 namespace {
 
-void ConvertIndexMetadata(const content::IndexedDBIndexMetadata& metadata,
+void ConvertIndexMetadata(const blink::IndexedDBIndexMetadata& metadata,
                           WebIDBMetadata::Index* output) {
   output->id = metadata.id;
   output->name = WebString::FromUTF16(metadata.name);
@@ -39,7 +40,7 @@ void ConvertIndexMetadata(const content::IndexedDBIndexMetadata& metadata,
 }
 
 void ConvertObjectStoreMetadata(
-    const content::IndexedDBObjectStoreMetadata& metadata,
+    const blink::IndexedDBObjectStoreMetadata& metadata,
     WebIDBMetadata::ObjectStore* output) {
   output->id = metadata.id;
   output->name = WebString::FromUTF16(metadata.name);
@@ -52,7 +53,7 @@ void ConvertObjectStoreMetadata(
     ConvertIndexMetadata(iter.second, &output->indexes[i++]);
 }
 
-void ConvertDatabaseMetadata(const content::IndexedDBDatabaseMetadata& metadata,
+void ConvertDatabaseMetadata(const IndexedDBDatabaseMetadata& metadata,
                              WebIDBMetadata* output) {
   output->id = metadata.id;
   output->name = WebString::FromUTF16(metadata.name);
@@ -65,7 +66,7 @@ void ConvertDatabaseMetadata(const content::IndexedDBDatabaseMetadata& metadata,
     ConvertObjectStoreMetadata(iter.second, &output->object_stores[i++]);
 }
 
-WebIDBValue ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value) {
+WebIDBValue ConvertReturnValue(const blink::mojom::IDBReturnValuePtr& value) {
   if (!value)
     return WebIDBValue(WebData(), WebVector<WebBlobInfo>());
 
@@ -138,11 +139,11 @@ void IndexedDBCallbacksImpl::Blocked(int64_t existing_version) {
 }
 
 void IndexedDBCallbacksImpl::UpgradeNeeded(
-    DatabaseAssociatedPtrInfo database_info,
+    IDBDatabaseAssociatedPtrInfo database_info,
     int64_t old_version,
     blink::WebIDBDataLoss data_loss,
     const std::string& data_loss_message,
-    const content::IndexedDBDatabaseMetadata& metadata) {
+    const IndexedDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = new WebIDBDatabaseImpl(std::move(database_info));
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
@@ -152,8 +153,8 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
 }
 
 void IndexedDBCallbacksImpl::SuccessDatabase(
-    DatabaseAssociatedPtrInfo database_info,
-    const content::IndexedDBDatabaseMetadata& metadata) {
+    IDBDatabaseAssociatedPtrInfo database_info,
+    const IndexedDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = nullptr;
   if (database_info.is_valid()) {
     database = new WebIDBDatabaseImpl(std::move(database_info));
@@ -166,7 +167,7 @@ void IndexedDBCallbacksImpl::SuccessDatabase(
 }
 
 void IndexedDBCallbacksImpl::SuccessCursor(
-    indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
+    blink::mojom::IDBCursorAssociatedPtrInfo cursor_info,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     blink::mojom::IDBValuePtr value) {
@@ -179,7 +180,7 @@ void IndexedDBCallbacksImpl::SuccessCursor(
 }
 
 void IndexedDBCallbacksImpl::SuccessValue(
-    indexed_db::mojom::ReturnValuePtr value) {
+    blink::mojom::IDBReturnValuePtr value) {
   callbacks_->OnSuccess(ConvertReturnValue(value));
   callbacks_.reset();
 }
@@ -211,10 +212,10 @@ void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
 }
 
 void IndexedDBCallbacksImpl::SuccessArray(
-    std::vector<indexed_db::mojom::ReturnValuePtr> values) {
+    std::vector<blink::mojom::IDBReturnValuePtr> values) {
   WebVector<WebIDBValue> web_values;
   web_values.reserve(values.size());
-  for (const indexed_db::mojom::ReturnValuePtr& value : values)
+  for (const blink::mojom::IDBReturnValuePtr& value : values)
     web_values.emplace_back(ConvertReturnValue(value));
   callbacks_->OnSuccess(std::move(web_values));
   callbacks_.reset();

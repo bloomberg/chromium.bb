@@ -9,9 +9,9 @@ namespace content {
 MockMojoIndexedDBCallbacks::MockMojoIndexedDBCallbacks() : binding_(this) {}
 MockMojoIndexedDBCallbacks::~MockMojoIndexedDBCallbacks() {}
 
-::indexed_db::mojom::CallbacksAssociatedPtrInfo
+blink::mojom::IDBCallbacksAssociatedPtrInfo
 MockMojoIndexedDBCallbacks::CreateInterfacePtrAndBind() {
-  ::indexed_db::mojom::CallbacksAssociatedPtrInfo ptr_info;
+  blink::mojom::IDBCallbacksAssociatedPtrInfo ptr_info;
   binding_.Bind(::mojo::MakeRequest(&ptr_info));
   return ptr_info;
 }

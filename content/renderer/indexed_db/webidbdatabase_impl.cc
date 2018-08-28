@@ -40,8 +40,8 @@ using blink::WebIDBKeyRange;
 using blink::WebIDBKeyView;
 using blink::WebString;
 using blink::WebVector;
-using indexed_db::mojom::CallbacksAssociatedPtrInfo;
-using indexed_db::mojom::DatabaseAssociatedPtrInfo;
+using blink::mojom::IDBCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseAssociatedPtrInfo;
 
 namespace content {
 
@@ -65,7 +65,8 @@ std::vector<IndexedDBIndexKeys> ConvertWebIndexKeys(
 
 }  // namespace
 
-WebIDBDatabaseImpl::WebIDBDatabaseImpl(DatabaseAssociatedPtrInfo database_info)
+WebIDBDatabaseImpl::WebIDBDatabaseImpl(
+    IDBDatabaseAssociatedPtrInfo database_info)
     : database_(std::move(database_info)) {}
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
@@ -351,9 +352,9 @@ void WebIDBDatabaseImpl::Commit(long long transaction_id) {
   database_->Commit(transaction_id);
 }
 
-CallbacksAssociatedPtrInfo WebIDBDatabaseImpl::GetCallbacksProxy(
+IDBCallbacksAssociatedPtrInfo WebIDBDatabaseImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  CallbacksAssociatedPtrInfo ptr_info;
+  IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;

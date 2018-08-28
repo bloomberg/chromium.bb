@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
@@ -20,6 +21,7 @@
 
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
+using blink::IndexedDBKeyRange;
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
 using blink::WebIDBKeyView;

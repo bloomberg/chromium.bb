@@ -30,6 +30,68 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
+                 blink::IndexedDBDatabaseMetadata> {
+  static int64_t id(const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.id;
+  }
+  static base::string16 name(const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.name;
+  }
+  static int64_t version(const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.version;
+  }
+  static int64_t max_object_store_id(
+      const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.max_object_store_id;
+  }
+  static MapValuesArrayView<int64_t, blink::IndexedDBObjectStoreMetadata>
+  object_stores(const blink::IndexedDBDatabaseMetadata& metadata) {
+    return MapValuesToArray(metadata.object_stores);
+  }
+  static bool Read(blink::mojom::IDBDatabaseMetadataDataView data,
+                   blink::IndexedDBDatabaseMetadata* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::IDBIndexKeysDataView,
+                                        blink::IndexedDBIndexKeys> {
+  static int64_t index_id(const blink::IndexedDBIndexKeys& index_keys) {
+    return index_keys.first;
+  }
+  static const std::vector<blink::IndexedDBKey>& index_keys(
+      const blink::IndexedDBIndexKeys& index_keys) {
+    return index_keys.second;
+  }
+  static bool Read(blink::mojom::IDBIndexKeysDataView data,
+                   blink::IndexedDBIndexKeys* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::IDBIndexMetadataDataView,
+                                        blink::IndexedDBIndexMetadata> {
+  static int64_t id(const blink::IndexedDBIndexMetadata& metadata) {
+    return metadata.id;
+  }
+  static base::string16 name(const blink::IndexedDBIndexMetadata& metadata) {
+    return metadata.name;
+  }
+  static const blink::IndexedDBKeyPath& key_path(
+      const blink::IndexedDBIndexMetadata& metadata) {
+    return metadata.key_path;
+  }
+  static bool unique(const blink::IndexedDBIndexMetadata& metadata) {
+    return metadata.unique;
+  }
+  static bool multi_entry(const blink::IndexedDBIndexMetadata& metadata) {
+    return metadata.multi_entry;
+  }
+  static bool Read(blink::mojom::IDBIndexMetadataDataView data,
+                   blink::IndexedDBIndexMetadata* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey> {
   static blink::mojom::IDBKeyDataPtr data(const blink::IndexedDBKey& key);
   static bool Read(blink::mojom::IDBKeyDataView data, blink::IndexedDBKey* out);
@@ -46,11 +108,88 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::IDBKeyRangeDataView, blink::IndexedDBKeyRange> {
+  static const blink::IndexedDBKey& lower(
+      const blink::IndexedDBKeyRange& key_range) {
+    return key_range.lower();
+  }
+  static const blink::IndexedDBKey& upper(
+      const blink::IndexedDBKeyRange& key_range) {
+    return key_range.upper();
+  }
+  static bool lower_open(const blink::IndexedDBKeyRange& key_range) {
+    return key_range.lower_open();
+  }
+  static bool upper_open(const blink::IndexedDBKeyRange& key_range) {
+    return key_range.upper_open();
+  }
+  static bool Read(blink::mojom::IDBKeyRangeDataView data,
+                   blink::IndexedDBKeyRange* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
+                 blink::IndexedDBObjectStoreMetadata> {
+  static int64_t id(const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return metadata.id;
+  }
+  static base::string16 name(
+      const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return metadata.name;
+  }
+  static const blink::IndexedDBKeyPath& key_path(
+      const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return metadata.key_path;
+  }
+  static bool auto_increment(
+      const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return metadata.auto_increment;
+  }
+  static int64_t max_index_id(
+      const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return metadata.max_index_id;
+  }
+  static MapValuesArrayView<int64_t, blink::IndexedDBIndexMetadata> indexes(
+      const blink::IndexedDBObjectStoreMetadata& metadata) {
+    return MapValuesToArray(metadata.indexes);
+  }
+  static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
+                   blink::IndexedDBObjectStoreMetadata* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     EnumTraits<blink::mojom::IDBOperationType, blink::WebIDBOperationType> {
   static blink::mojom::IDBOperationType ToMojom(
       blink::WebIDBOperationType input);
   static bool FromMojom(blink::mojom::IDBOperationType input,
                         blink::WebIDBOperationType* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode> {
+  static blink::mojom::IDBPutMode ToMojom(blink::WebIDBPutMode input);
+  static bool FromMojom(blink::mojom::IDBPutMode input,
+                        blink::WebIDBPutMode* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType> {
+  static blink::mojom::IDBTaskType ToMojom(blink::WebIDBTaskType input);
+  static bool FromMojom(blink::mojom::IDBTaskType input,
+                        blink::WebIDBTaskType* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBTransactionMode, blink::WebIDBTransactionMode> {
+  static blink::mojom::IDBTransactionMode ToMojom(
+      blink::WebIDBTransactionMode input);
+  static bool FromMojom(blink::mojom::IDBTransactionMode input,
+                        blink::WebIDBTransactionMode* output);
 };
 
 }  // namespace mojo

@@ -12,16 +12,19 @@
 #include "base/time/tick_clock.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
-
-using blink::IndexedDBKey;
 
 namespace content {
 namespace {
 
 using StopReason = IndexedDBPreCloseTaskQueue::StopReason;
+using blink::IndexedDBDatabaseMetadata;
+using blink::IndexedDBIndexMetadata;
+using blink::IndexedDBKey;
+using blink::IndexedDBObjectStoreMetadata;
 
 }  // namespace
 

@@ -8,9 +8,13 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using blink::IndexedDBKey;
-
 namespace content {
+namespace {
+
+using blink::IndexedDBKey;
+using blink::IndexedDBKeyRange;
+
+}  // namespace
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(nullptr /* indexed_db_factory */,

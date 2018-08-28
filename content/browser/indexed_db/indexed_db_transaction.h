@@ -23,7 +23,6 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
-#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -96,9 +95,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   // Adds observation for the connection.
   void AddObservation(int32_t connection_id,
-                      ::indexed_db::mojom::ObservationPtr observation);
+                      blink::mojom::IDBObservationPtr observation);
 
-  ::indexed_db::mojom::ObserverChangesPtr* GetPendingChangesForConnection(
+  blink::mojom::IDBObserverChangesPtr* GetPendingChangesForConnection(
       int32_t connection_id);
 
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
@@ -196,7 +195,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   // Observers in pending queue do not listen to changes until activated.
   std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;
-  std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr>
+  std::map<int32_t, blink::mojom::IDBObserverChangesPtr>
       connection_changes_map_;
 
   // Metrics for quota.
