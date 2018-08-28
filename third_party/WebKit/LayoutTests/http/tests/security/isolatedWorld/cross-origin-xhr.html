@@ -26,8 +26,10 @@ var tests = [
     },
     function() {
         debug('XHR from isolated world with security origin that is whitelisted for XHR target');
-        testRunner.setIsolatedWorldSecurityOrigin(2, 'chrome-extension://123');
-        testRunner.addOriginAccessWhitelistEntry('chrome-extension://123', 'http', 'localhost', false);
+        // The scheme used for whitelisting should be recognized by the GURL.
+        // GURL manages it via scheme registries interfaces in //url/url_util.
+        testRunner.setIsolatedWorldSecurityOrigin(2, 'chrome://123');
+        testRunner.addOriginAccessAllowListEntry('chrome://123', 'http', 'localhost', false);
         runTestInWorld(2, 'xhr');
     },
     function() {

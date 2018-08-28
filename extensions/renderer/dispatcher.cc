@@ -1134,7 +1134,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 
   // Update the origin access map so that any content scripts injected are no
   // longer allowlisted for extra origins.
-  WebSecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
+  WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(
       Extension::GetBaseURLFromExtensionId(id));
 
   // We don't do anything with existing platform-app stylesheets. They will
@@ -1231,7 +1231,7 @@ void Dispatcher::UpdateActiveExtensions() {
 
 void Dispatcher::InitOriginPermissions(const Extension* extension) {
   const GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
-  WebSecurityPolicy::AddOriginAccessBlacklistEntry(
+  WebSecurityPolicy::AddOriginAccessBlockListEntry(
       extension->url(), WebString::FromUTF8(webstore_launch_url.scheme()),
       WebString::FromUTF8(webstore_launch_url.host()), true);
 
@@ -1255,8 +1255,7 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   };
 
   // Remove all old patterns associated with this extension.
-  WebSecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
-      extension.url());
+  WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(extension.url());
 
   delegate_->AddOriginAccessPermissions(extension,
                                         IsExtensionActive(extension.id()));
@@ -1268,7 +1267,7 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
     const char* scheme = kSchemes[i];
     for (const auto& pattern : patterns) {
       if (pattern.MatchesScheme(scheme)) {
-        WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+        WebSecurityPolicy::AddOriginAccessAllowListEntry(
             extension.url(), WebString::FromUTF8(scheme),
             WebString::FromUTF8(pattern.host()), pattern.match_subdomains());
       }

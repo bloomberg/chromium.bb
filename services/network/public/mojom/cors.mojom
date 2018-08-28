@@ -4,6 +4,8 @@
 
 module network.mojom;
 
+// TODO(crbug.com/875759): Rename to Cors* rather than CORS*.
+
 // A policy to decide if CORS-preflight fetch should be performed.
 enum CORSPreflightPolicy {
   kConsiderPreflight,

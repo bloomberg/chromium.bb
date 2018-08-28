@@ -64,21 +64,17 @@ class WebSecurityPolicy {
   BLINK_EXPORT static void RegisterURLSchemeAsFirstPartyWhenTopLevel(
       const WebString&);
 
-  // Support for whitelisting access to origins beyond the same-origin policy.
-  BLINK_EXPORT static void AddOriginAccessWhitelistEntry(
+  // Support for managing allow/block access lists to origins beyond the
+  // same-origin policy. The block list takes priority over the allow list.
+  BLINK_EXPORT static void AddOriginAccessAllowListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool allow_destination_subdomains);
-  BLINK_EXPORT static void RemoveAllOriginAccessWhitelistEntriesForOrigin(
+  BLINK_EXPORT static void ClearOriginAccessAllowListForOrigin(
       const WebURL& source_origin);
-  BLINK_EXPORT static void ResetOriginAccessWhitelists();
-
-  // Support for restricting the whitelists, in order to allow for broad
-  // whitelist access (e.g., "chromium.org") while protecting a subset of hosts
-  // (e.g., "secure.chromium.org"). If an origin is in both the whitelist and
-  // the blacklist, it is disallowed access.
-  BLINK_EXPORT static void AddOriginAccessBlacklistEntry(
+  BLINK_EXPORT static void ClearOriginAccessAllowList();
+  BLINK_EXPORT static void AddOriginAccessBlockListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,

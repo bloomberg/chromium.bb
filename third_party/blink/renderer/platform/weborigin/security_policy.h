@@ -65,24 +65,24 @@ class PLATFORM_EXPORT SecurityPolicy {
                                    const KURL&,
                                    const String& referrer);
 
-  static void AddOriginAccessWhitelistEntry(const SecurityOrigin& source_origin,
+  static void AddOriginAccessAllowListEntry(const SecurityOrigin& source_origin,
                                             const String& destination_protocol,
                                             const String& destination_domain,
                                             bool allow_destination_subdomains);
-  static void RemoveAllOriginAccessWhitelistEntriesForOrigin(
+  static void ClearOriginAccessAllowListForOrigin(
       const SecurityOrigin& source_origin);
-  static void ResetOriginAccessWhitelists();
+  static void ClearOriginAccessAllowList();
 
-  static void AddOriginAccessBlacklistEntry(const SecurityOrigin& source_origin,
+  static void AddOriginAccessBlockListEntry(const SecurityOrigin& source_origin,
                                             const String& destination_protocol,
                                             const String& destination_domain,
                                             bool allow_destination_subdomains);
-  static void ResetOriginAccessBlacklists();
+  static void ClearOriginAccessBlockList();
 
-  static bool IsAccessWhiteListed(const SecurityOrigin* active_origin,
-                                  const SecurityOrigin* target_origin);
-  static bool IsAccessToURLWhiteListed(const SecurityOrigin* active_origin,
-                                       const KURL&);
+  static bool IsOriginAccessAllowed(const SecurityOrigin* active_origin,
+                                    const SecurityOrigin* target_origin);
+  static bool IsOriginAccessToURLAllowed(const SecurityOrigin* active_origin,
+                                         const KURL&);
 
   static void AddOriginTrustworthyWhiteList(const String&);
   static bool IsOriginWhiteListedTrustworthy(const SecurityOrigin&);

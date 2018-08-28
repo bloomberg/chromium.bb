@@ -274,7 +274,7 @@ TEST_F(SecurityOriginTest, CanRequestWithWhitelistedAccess) {
 
   EXPECT_FALSE(origin->CanRequest(url));
   // Adding the url to the access whitelist should allow the request.
-  SecurityPolicy::AddOriginAccessWhitelistEntry(*origin, "https", "example.com",
+  SecurityPolicy::AddOriginAccessAllowListEntry(*origin, "https", "example.com",
                                                 false);
   EXPECT_TRUE(origin->CanRequest(url));
 }
