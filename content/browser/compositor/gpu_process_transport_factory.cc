@@ -586,10 +586,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       begin_frame_source = synthetic_begin_frame_source.get();
   }
 
-#if defined(OS_WIN)
-  gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
-      compositor->widget());
-#endif
   if (data->synthetic_begin_frame_source) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->synthetic_begin_frame_source.get());

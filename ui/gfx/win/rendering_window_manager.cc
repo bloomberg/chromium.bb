@@ -4,8 +4,8 @@
 
 #include "ui/gfx/win/rendering_window_manager.h"
 
-#include "base/callback.h"
-#include "base/memory/singleton.h"
+#include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 
@@ -13,19 +13,13 @@ namespace gfx {
 
 // static
 RenderingWindowManager* RenderingWindowManager::GetInstance() {
-  return base::Singleton<RenderingWindowManager>::get();
+  static base::NoDestructor<RenderingWindowManager> instance;
+  return instance.get();
 }
 
 void RenderingWindowManager::RegisterParent(HWND parent) {
   base::AutoLock lock(lock_);
-
-  info_.emplace(parent, EmeddingInfo());
-}
-
-void SetParentAndMoveToBottom(HWND child, HWND parent) {
-  ::SetParent(child, parent);
-  // Move D3D window behind Chrome's window to avoid losing some messages.
-  ::SetWindowPos(child, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+  registered_hwnds_.emplace(parent, nullptr);
 }
 
 bool RenderingWindowManager::RegisterChild(HWND parent, HWND child) {
@@ -34,63 +28,41 @@ bool RenderingWindowManager::RegisterChild(HWND parent, HWND child) {
 
   base::AutoLock lock(lock_);
 
-  auto it = info_.find(parent);
-  if (it == info_.end())
+  // If |parent| wasn't registered or there is already a child window registered
+  // for |parent| don't do anything.
+  auto it = registered_hwnds_.find(parent);
+  if (it == registered_hwnds_.end() || it->second)
     return false;
 
-  EmeddingInfo& info = it->second;
-  if (info.child)
-    return false;
+  it->second = child;
 
-  info.child = child;
-
-  // DoSetParentOnChild() was already called for |parent|. Call ::SetParent()
-  // now but from a worker thread instead of the IO thread. The ::SetParent()
-  // call could block the IO thread waiting on the UI thread and deadlock.
-  if (info.call_set_parent) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(&SetParentAndMoveToBottom, child, parent));
-  }
+  // Call ::SetParent() from a worker thread instead of the IO thread. The
+  // ::SetParent() call could block the IO thread waiting on the UI thread and
+  // deadlock.
+  auto callback = base::BindOnce(
+      [](HWND parent, HWND child) {
+        ::SetParent(child, parent);
+        // Move D3D window behind Chrome's window to avoid losing some messages.
+        ::SetWindowPos(child, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      },
+      parent, child);
+  base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::USER_BLOCKING},
+                           std::move(callback));
 
   return true;
 }
 
-void RenderingWindowManager::DoSetParentOnChild(HWND parent) {
-  HWND child;
-  {
-    base::AutoLock lock(lock_);
-
-    auto it = info_.find(parent);
-    if (it == info_.end())
-      return;
-
-    EmeddingInfo& info = it->second;
-
-    DCHECK(!info.call_set_parent);
-    info.call_set_parent = true;
-
-    // Call SetParentAndMoveToBottom() once RegisterChild() is called.
-    if (!info.child)
-      return;
-
-    child = info.child;
-  }
-
-  SetParentAndMoveToBottom(child, parent);
-}
-
 void RenderingWindowManager::UnregisterParent(HWND parent) {
   base::AutoLock lock(lock_);
-  info_.erase(parent);
+  registered_hwnds_.erase(parent);
 }
 
 bool RenderingWindowManager::HasValidChildWindow(HWND parent) {
   base::AutoLock lock(lock_);
-  auto it = info_.find(parent);
-  if (it == info_.end())
+  auto it = registered_hwnds_.find(parent);
+  if (it == registered_hwnds_.end())
     return false;
-  return !!it->second.child && ::IsWindow(it->second.child);
+  return !!it->second && ::IsWindow(it->second);
 }
 
 RenderingWindowManager::RenderingWindowManager() {}

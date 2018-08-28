@@ -13,7 +13,7 @@
 
 namespace base {
 template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
 }
 
 namespace gfx {
@@ -25,27 +25,23 @@ class GFX_EXPORT RenderingWindowManager {
   static RenderingWindowManager* GetInstance();
 
   void RegisterParent(HWND parent);
-  bool RegisterChild(HWND parent, HWND child_window);
-  void DoSetParentOnChild(HWND parent);
+  // Regiters |child| as child window for |parent| with ::SetParent() so the GPU
+  // process can draw into |child|. RegisterParent() must have already been
+  // called for |parent| otherwise this will fail. RegisterChild() also cannot
+  // already have been called for |parent| otherwise this will fail.
+  bool RegisterChild(HWND parent, HWND child);
   void UnregisterParent(HWND parent);
   bool HasValidChildWindow(HWND parent);
 
  private:
-  friend struct base::DefaultSingletonTraits<RenderingWindowManager>;
-
-  struct EmeddingInfo {
-    // The child window.
-    HWND child = nullptr;
-
-    // SetParent() should be called for child window.
-    bool call_set_parent = false;
-  };
+  friend class base::NoDestructor<RenderingWindowManager>;
 
   RenderingWindowManager();
   ~RenderingWindowManager();
 
   base::Lock lock_;
-  base::flat_map<HWND, EmeddingInfo> info_;
+  // Map from registered parent HWND to child HWND.
+  base::flat_map<HWND, HWND> registered_hwnds_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingWindowManager);
 };
