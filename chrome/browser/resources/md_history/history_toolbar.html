@@ -34,6 +34,10 @@
         --selection-overlay-max-width: var(--card-max-width);
         --cr-toolbar-field-margin: var(--side-bar-width);
       }
+
+      cr-toolbar-selection-overlay[show] {
+        opacity: 1;
+      }
     </style>
     <cr-toolbar id="main-toolbar"
         has-overlay$="[[itemsSelected_]]"
