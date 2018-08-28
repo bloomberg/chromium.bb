@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 // This is a helper utility for base::Bind()ing callbacks to a given
 // TaskRunner. The typical use is when |a| (of class |A|) wants to hand a
@@ -113,13 +113,13 @@ inline base::OnceCallback<void(Args...)> BindToLoop(
 template <typename... Args>
 inline base::RepeatingCallback<void(Args...)> BindToCurrentLoop(
     base::RepeatingCallback<void(Args...)> cb) {
-  return BindToLoop(base::ThreadTaskRunnerHandle::Get(), std::move(cb));
+  return BindToLoop(base::SequencedTaskRunnerHandle::Get(), std::move(cb));
 }
 
 template <typename... Args>
 inline base::OnceCallback<void(Args...)> BindToCurrentLoop(
     base::OnceCallback<void(Args...)> cb) {
-  return BindToLoop(base::ThreadTaskRunnerHandle::Get(), std::move(cb));
+  return BindToLoop(base::SequencedTaskRunnerHandle::Get(), std::move(cb));
 }
 
 }  // namespace media

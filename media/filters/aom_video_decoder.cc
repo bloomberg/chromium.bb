@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
@@ -242,7 +243,7 @@ void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 void AomVideoDecoder::Reset(const base::Closure& reset_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = DecoderState::kNormal;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
 }
 
 void AomVideoDecoder::CloseDecoder() {
