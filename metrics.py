@@ -31,7 +31,7 @@ DEFAULT_COUNTDOWN = 10
 
 INVALID_CONFIG_WARNING = (
     'WARNING: Your metrics.cfg file was invalid or nonexistent. A new one will '
-    'been created.'
+    'be created.'
 )
 PERMISSION_DENIED_WARNING = (
     'Could not write the metrics collection config:\n\t%s\n'
