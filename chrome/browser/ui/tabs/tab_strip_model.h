@@ -199,10 +199,6 @@ class TabStripModel {
   // action.
   void ActivateTabAt(int index, bool user_gesture);
 
-  // Adds tab at |index| to the currently selected tabs, without changing the
-  // active tab index.
-  void AddTabAtToSelection(int index);
-
   // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
   // WebContents inline and sends a Moved notification instead.

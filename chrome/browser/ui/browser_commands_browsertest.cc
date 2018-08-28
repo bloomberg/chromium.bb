@@ -36,8 +36,8 @@ class ReloadObserver : public content::WebContentsObserver {
   int load_count_ = 0;
 };
 
-// Verify that all of selected tabs can be refreshed after executing
-// RELOAD command. https://crbug.com/862102
+// Verify that all of selected tabs are refreshed after executing a reload
+// command. https://crbug.com/862102
 IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, ReloadSelectedTabs) {
   constexpr char kUrl[] = "chrome://version/";
   constexpr int kTabCount = 3;
@@ -53,9 +53,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, ReloadSelectedTabs) {
   for (ReloadObserver& watcher : watcher_vec)
     EXPECT_EQ(0, watcher.load_count());
 
-  // Select three tabs and trigger a reload command on all of them.
-  for (int i = 0; i < kTabCount; i++)
-    browser()->tab_strip_model()->AddTabAtToSelection(i + 1);
+  // Add two tabs to the selection (the last one created remains selected) and
+  // trigger a reload command on all of them.
+  for (int i = 0; i < kTabCount - 1; i++)
+    browser()->tab_strip_model()->ToggleSelectionAt(i + 1);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
 
   int load_sum = 0;
