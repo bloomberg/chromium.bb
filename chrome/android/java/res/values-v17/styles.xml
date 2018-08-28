@@ -225,13 +225,13 @@
     <style name="HorizontalDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/divider_height</item>
-        <item name="android:background">@color/google_grey_300</item>
+        <item name="android:background">?android:attr/listDivider</item>
         <item name="android:importantForAccessibility">no</item>
     </style>
     <style name="VerticalDivider">
         <item name="android:layout_width">@dimen/divider_height</item>
         <item name="android:layout_height">match_parent</item>
-        <item name="android:background">@color/google_grey_300</item>
+        <item name="android:background">?android:attr/listDivider</item>
         <item name="android:importantForAccessibility">no</item>
     </style>
 
