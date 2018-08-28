@@ -64,6 +64,38 @@ testcase.fileDisplayDrive = function() {
 };
 
 /**
+ * Tests files display in offline Google Drive.
+ */
+testcase.fileDisplayDriveOffline = function() {
+  var appId;
+
+  const driveFiles = [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos];
+
+  StepsRunner.run([
+    // Open Files app on Drive with the given test files.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], driveFiles);
+    },
+    // Retrieve all file list entries that are rendered 'offline'.
+    function(result) {
+      appId = result.windowId;
+      const renderedOffline = ['#file-list .table-row.file.dim-offline'];
+      remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, renderedOffline, this.next);
+    },
+    // Check: hello.txt file only should be rendered 'offline'.
+    function(elements) {
+      chrome.test.assertEq(1, elements.length);
+      chrome.test.assertEq(0, elements[0].text.indexOf('hello.txt'));
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
  * Tests files display in an MTP volume.
  */
 testcase.fileDisplayMtp = function() {
