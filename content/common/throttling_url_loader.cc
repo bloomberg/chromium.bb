@@ -235,6 +235,18 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   StartNow();
 }
 
+void ThrottlingURLLoader::RestartWithFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
+    uint32_t url_loader_options) {
+  DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
+  DCHECK(!loader_completed_);
+  url_loader_.reset();
+  client_binding_.Close();
+  start_info_->url_loader_factory = std::move(factory);
+  start_info_->options = url_loader_options;
+  StartNow();
+}
+
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
   if (!url_loader_) {
