@@ -136,7 +136,7 @@ OverlayWindowViews::OverlayWindowViews(
     : controller_(controller),
       window_background_view_(new views::View()),
       video_view_(new views::View()),
-      controls_background_view_(new views::View()),
+      controls_scrim_view_(new views::View()),
       controls_parent_view_(new views::View()),
       close_controls_view_(new views::CloseImageButton(this)),
       play_pause_controls_view_(new views::ToggleImageButton(this)) {
@@ -224,13 +224,11 @@ void OverlayWindowViews::SetUpViews() {
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
 
-  // views::View that slightly darkens the video so the media controls appear
-  // more prominently. This is especially important in cases with a very light
-  // background. --------------------------------------------------------------
-  controls_background_view_->SetSize(GetBounds().size());
-  controls_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  GetControlsBackgroundLayer()->SetColor(gfx::kGoogleGrey900);
-  GetControlsBackgroundLayer()->SetOpacity(0.43f);
+  // views::View that holds the scrim, which appears with the controls. -------
+  controls_scrim_view_->SetSize(GetBounds().size());
+  controls_scrim_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  GetControlsScrimLayer()->SetColor(gfx::kGoogleGrey900);
+  GetControlsScrimLayer()->SetOpacity(0.43f);
 
   // views::View that toggles play/pause. -------------------------------------
   play_pause_controls_view_->SetImageAlignment(
@@ -268,7 +266,7 @@ void OverlayWindowViews::SetUpViews() {
   controls_parent_view_->set_owned_by_client();
 
   // Add as child views to this widget. ---------------------------------------
-  GetContentsView()->AddChildView(controls_background_view_.get());
+  GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
 
@@ -306,17 +304,17 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
 }
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
-  GetControlsBackgroundLayer()->SetVisible(is_visible);
+  GetControlsScrimLayer()->SetVisible(is_visible);
   GetCloseControlsLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
-  // Adding an extra pixel to width/height makes sure controls background cover
-  // entirely window when platform has fractional scale applied.
+  // Adding an extra pixel to width/height makes sure the scrim covers the
+  // entire window when the platform has fractional scaling applied.
   gfx::Rect larger_window_bounds = GetBounds();
   larger_window_bounds.Inset(-1, -1);
-  controls_background_view_->SetBoundsRect(
+  controls_scrim_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), larger_window_bounds.size()));
 
   close_controls_view_->SetPosition(GetBounds().size());
@@ -536,8 +534,8 @@ ui::Layer* OverlayWindowViews::GetVideoLayer() {
   return video_view_->layer();
 }
 
-ui::Layer* OverlayWindowViews::GetControlsBackgroundLayer() {
-  return controls_background_view_->layer();
+ui::Layer* OverlayWindowViews::GetControlsScrimLayer() {
+  return controls_scrim_view_->layer();
 }
 
 ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
@@ -639,7 +637,7 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   // layers are expected to have the same visibility.
   // TODO(apacible): This placeholder logic should be updated with touchscreen
   // specific investigation. https://crbug/854373
-  if (!GetControlsBackgroundLayer()->visible()) {
+  if (!GetControlsScrimLayer()->visible()) {
     UpdateControlsVisibility(true);
     return;
   }

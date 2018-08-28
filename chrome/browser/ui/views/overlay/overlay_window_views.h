@@ -119,7 +119,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetFirstCustomControlsBounds();
   void SetSecondCustomControlsBounds();
 
-  ui::Layer* GetControlsBackgroundLayer();
+  ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetCloseControlsLayer();
   ui::Layer* GetControlsParentLayer();
 
@@ -164,10 +164,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Views to be shown.
   std::unique_ptr<views::View> window_background_view_;
   std::unique_ptr<views::View> video_view_;
-  // |controls_background_view_| will dim the screen when the mouse hovers over.
-  // |controls_parent_view_| will hold all controls and manage them except for
-  // |close_controls_view_|
-  std::unique_ptr<views::View> controls_background_view_;
+  std::unique_ptr<views::View> controls_scrim_view_;
+  // |controls_parent_view_| is the parent view of all control views except
+  // the close view.
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
