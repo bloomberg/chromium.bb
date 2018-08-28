@@ -1,0 +1,103 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://welcome/email/nux_email_proxy.html">
+
+<dom-module id="email-chooser">
+  <template>
+    <style include="paper-button-style">
+      :host {
+        display: initial;
+        white-space: nowrap;
+      }
+
+      .option {
+        align-items: center;
+        border-radius: 6px;
+        border: 1px solid lightgrey;
+        box-sizing: border-box;
+        display: inline-flex;
+        flex-direction: column;
+        height: 100px;
+        justify-content: center;
+        margin: 10px;
+        position: relative;
+        vertical-align: bottom;
+        width: 100px;
+      }
+
+      .option .email-name {
+        flex-grow: 0;
+        text-align: center;
+        white-space: normal;
+      }
+
+      .option .email-icon {
+        margin: 0;
+        margin-bottom: 6px;
+         /* TODO(scottchen): Replace below with logo once available. */
+        background: red;
+        height: 20px;
+        width: 20px;
+      }
+
+      .option iron-icon {
+        --iron-icon-fill-color: white;
+        background: lightgrey;
+        border-radius: 50%;
+        display: none;
+        height: 12px;
+        margin: 0;
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        width: 12px;
+      }
+
+      .option:hover iron-icon[icon="cr:check"],
+      .option[active] iron-icon[icon="cr:check"] {
+        display: block;
+      }
+
+      .option[active] {
+        border: 1px solid var(--google-blue-600);
+      }
+
+      .option[active] iron-icon[icon="cr:check"] {
+        background: var(--google-blue-600);
+      }
+
+      paper-button {
+        font-size: 14px;
+      }
+
+      .button-bar {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+
+    <template is="dom-repeat" items="[[emailList]]">
+      <div active$="[[getSelected_(item, selectedEmailProvider_)]]"
+          on-click="onEmailClick_" class="option" tabindex="0">
+        <div class$="[[item.icon]] email-icon"></div>
+        <div class="email-name">[[item.name]]</div>
+        <iron-icon icon="cr:check"></iron-icon>
+      </div>
+    </template>
+
+    <div class="button-bar">
+      <paper-button on-click="onNoThanksClicked_">
+        TODO_NO_THANKS
+      </paper-button>
+      <paper-button class="action-button" on-click="onGetStartedClicked_">
+        TODO_GET_STARTED
+      </paper-button>
+    </div>
+  </template>
+  <script src="email_chooser.js"></script>
+</dom-module>
