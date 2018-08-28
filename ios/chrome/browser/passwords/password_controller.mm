@@ -121,7 +121,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
 
-// Informs the |passwordManager_| of the password forms (if any were present)
+// Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
 - (void)didFinishPasswordFormExtraction:
     (const std::vector<autofill::PasswordForm>&)forms;
@@ -203,34 +203,34 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 }  // namespace
 
 @implementation PasswordController {
-  std::unique_ptr<PasswordManager> passwordManager_;
-  std::unique_ptr<PasswordManagerClient> passwordManagerClient_;
-  std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
-  std::unique_ptr<CredentialManager> credentialManager_;
+  std::unique_ptr<PasswordManager> _passwordManager;
+  std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
+  std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
+  std::unique_ptr<CredentialManager> _credentialManager;
 
-  AccountSelectFillData fillData_;
+  AccountSelectFillData _fillData;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
-  web::WebState* webState_;
+  web::WebState* _webState;
 
   // Bridge to observe WebState from Objective-C.
-  std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   // Timer for hiding "Signing in as ..." notification.
-  base::OneShotTimer notifyAutoSigninTimer_;
+  base::OneShotTimer _notifyAutoSigninTimer;
 
   // True indicates that a request for credentials has been sent to the password
   // store.
-  BOOL sentRequestToStore_;
+  BOOL _sentRequestToStore;
 
   // The completion to inform FormSuggestionController that suggestions are
   // available for a given form and field.
-  PasswordSuggestionsAvailableCompletion suggestionsAvailableCompletion_;
+  PasswordSuggestionsAvailableCompletion _suggestionsAvailableCompletion;
 
   // User credential waiting to be displayed in autosign-in snackbar, once tab
   // becomes active.
-  std::unique_ptr<autofill::PasswordForm> pendingAutoSigninPasswordForm_;
+  std::unique_ptr<autofill::PasswordForm> _pendingAutoSigninPasswordForm;
 }
 
 @synthesize baseViewController = _baseViewController;
@@ -241,7 +241,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 @synthesize notifyAutoSigninViewController = _notifyAutoSigninViewController;
 
-@synthesize helper = helper_;
+@synthesize helper = _helper;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   self = [self initWithWebState:webState
@@ -255,43 +255,43 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   self = [super init];
   if (self) {
     DCHECK(webState);
-    webState_ = webState;
-    webStateObserverBridge_ =
+    _webState = webState;
+    _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
-    webState_->AddObserver(webStateObserverBridge_.get());
-    helper_ = [[PasswordControllerHelper alloc] initWithWebState:webState
+    _webState->AddObserver(_webStateObserverBridge.get());
+    _helper = [[PasswordControllerHelper alloc] initWithWebState:webState
                                                         delegate:self];
     if (passwordManagerClient)
-      passwordManagerClient_ = std::move(passwordManagerClient);
+      _passwordManagerClient = std::move(passwordManagerClient);
     else
-      passwordManagerClient_.reset(new IOSChromePasswordManagerClient(self));
-    passwordManager_.reset(new PasswordManager(passwordManagerClient_.get()));
-    passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
+      _passwordManagerClient.reset(new IOSChromePasswordManagerClient(self));
+    _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
+    _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
 
-    sentRequestToStore_ = NO;
+    _sentRequestToStore = NO;
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
-      credentialManager_ = std::make_unique<CredentialManager>(
-          passwordManagerClient_.get(), webState_);
+      _credentialManager = std::make_unique<CredentialManager>(
+          _passwordManagerClient.get(), _webState);
     }
   }
   return self;
 }
 
 - (void)dealloc {
-  if (webState_) {
-    webState_->RemoveObserver(webStateObserverBridge_.get());
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
   }
 }
 
 - (ios::ChromeBrowserState*)browserState {
-  return webState_ ? ios::ChromeBrowserState::FromBrowserState(
-                         webState_->GetBrowserState())
+  return _webState ? ios::ChromeBrowserState::FromBrowserState(
+                         _webState->GetBrowserState())
                    : nullptr;
 }
 
 - (const GURL&)lastCommittedURL {
-  return webState_ ? webState_->GetLastCommittedURL() : GURL::EmptyGURL();
+  return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
 }
 
 #pragma mark -
@@ -302,15 +302,15 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 }
 
 - (PasswordManagerClient*)passwordManagerClient {
-  return passwordManagerClient_.get();
+  return _passwordManagerClient.get();
 }
 
 - (PasswordManagerDriver*)passwordManagerDriver {
-  return passwordManagerDriver_.get();
+  return _passwordManagerDriver.get();
 }
 
 - (PasswordManager*)passwordManager {
-  return passwordManager_.get();
+  return _passwordManager.get();
 }
 
 #pragma mark -
@@ -344,25 +344,25 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 // If Tab was shown, and there is a pending PasswordForm, display autosign-in
 // notification.
 - (void)webStateWasShown:(web::WebState*)webState {
-  DCHECK_EQ(webState_, webState);
-  if (pendingAutoSigninPasswordForm_) {
-    [self showAutosigninNotification:std::move(pendingAutoSigninPasswordForm_)];
-    pendingAutoSigninPasswordForm_.reset();
+  DCHECK_EQ(_webState, webState);
+  if (_pendingAutoSigninPasswordForm) {
+    [self showAutosigninNotification:std::move(_pendingAutoSigninPasswordForm)];
+    _pendingAutoSigninPasswordForm.reset();
   }
 }
 
 // If Tab was hidden, hide auto sign-in notification.
 - (void)webStateWasHidden:(web::WebState*)webState {
-  DCHECK_EQ(webState_, webState);
+  DCHECK_EQ(_webState, webState);
   [self hideAutosigninNotification];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  DCHECK_EQ(webState_, webState);
+  DCHECK_EQ(_webState, webState);
   // Clear per-page state.
-  fillData_.Reset();
-  sentRequestToStore_ = NO;
-  suggestionsAvailableCompletion_ = nil;
+  _fillData.Reset();
+  _sentRequestToStore = NO;
+  _suggestionsAvailableCompletion = nil;
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -387,16 +387,16 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
-  DCHECK_EQ(webState_, webState);
-  if (webState_) {
-    webState_->RemoveObserver(webStateObserverBridge_.get());
-    webStateObserverBridge_.reset();
-    webState_ = nullptr;
+  DCHECK_EQ(_webState, webState);
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
   }
-  passwordManagerDriver_.reset();
-  passwordManager_.reset();
-  passwordManagerClient_.reset();
-  credentialManager_.reset();
+  _passwordManagerDriver.reset();
+  _passwordManager.reset();
+  _passwordManagerClient.reset();
+  _credentialManager.reset();
 }
 
 #pragma mark - Private methods
@@ -420,12 +420,12 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   if (!forms.empty()) {
     // Notify web_state about password forms, so that this can be taken into
     // account for the security state.
-    if (webState_ && !web::IsOriginSecure(webState_->GetLastCommittedURL())) {
-      InsecureInputTabHelper::GetOrCreateForWebState(webState_)
+    if (_webState && !web::IsOriginSecure(_webState->GetLastCommittedURL())) {
+      InsecureInputTabHelper::GetOrCreateForWebState(_webState)
           ->DidShowPasswordFieldInInsecureContext();
     }
 
-    sentRequestToStore_ = YES;
+    _sentRequestToStore = YES;
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
@@ -467,12 +467,12 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   }
 
   bool should_send_request_to_store =
-      !sentRequestToStore_ && [type isEqual:@"focus"];
+      !_sentRequestToStore && [type isEqual:@"focus"];
   bool is_password_field = [fieldType isEqual:@"password"];
 
   if (should_send_request_to_store) {
     // Save the completion and go look for suggestions.
-    suggestionsAvailableCompletion_ =
+    _suggestionsAvailableCompletion =
         [^(const AccountSelectFillData* fill_data) {
           if (is_password_field) {
             // Always display "Show all" on the password field.
@@ -490,7 +490,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   }
 
   completion(is_password_field ||
-             fillData_.IsSuggestionsAvailable(
+             _fillData.IsSuggestionsAvailable(
                  base::SysNSStringToUTF16(formName),
                  base::SysNSStringToUTF16(fieldIdentifier), false));
 }
@@ -504,7 +504,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
-  completion(BuildSuggestions(fillData_, formName, fieldIdentifier, fieldType),
+  completion(BuildSuggestions(_fillData, formName, fieldIdentifier, fieldType),
              self);
 }
 
@@ -524,7 +524,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   base::string16 value = base::SysNSStringToUTF16(suggestion.value);
   DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
   value.erase(value.length() - kSuggestionSuffix.length);
-  std::unique_ptr<FillData> fillData = fillData_.GetFillData(value);
+  std::unique_ptr<FillData> fillData = _fillData.GetFillData(value);
 
   if (!fillData)
     completion();
@@ -563,13 +563,13 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 // TODO(crbug.com/435048): Animate appearance.
 - (void)showAutosigninNotification:
     (std::unique_ptr<autofill::PasswordForm>)formSignedIn {
-  if (!webState_)
+  if (!_webState)
     return;
 
   // If a notification is already being displayed, hides the old one, then shows
   // the new one.
   if (self.notifyAutoSigninViewController) {
-    notifyAutoSigninTimer_.Stop();
+    _notifyAutoSigninTimer.Stop();
     [self hideAutosigninNotification];
   }
 
@@ -578,21 +578,21 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
       [NotifyUserAutoSigninViewController alloc]
       initWithUsername:base::SysUTF16ToNSString(formSignedIn->username_value)
                iconURL:formSignedIn->icon_url
-      URLLoaderFactory:webState_->GetBrowserState()
+      URLLoaderFactory:_webState->GetBrowserState()
                            ->GetSharedURLLoaderFactory()];
-  TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(webState_);
+  TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(_webState);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:tabIdHelper->tab_id()]) {
     // The notification was not shown. Store the password form in
-    // |pendingAutoSigninPasswordForm_| to show the notification later.
-    pendingAutoSigninPasswordForm_ = std::move(formSignedIn);
+    // |_pendingAutoSigninPasswordForm| to show the notification later.
+    _pendingAutoSigninPasswordForm = std::move(formSignedIn);
     self.notifyAutoSigninViewController = nil;
     return;
   }
 
   // Hides notification after 3 seconds.
   __weak PasswordController* weakSelf = self;
-  notifyAutoSigninTimer_.Start(
+  _notifyAutoSigninTimer.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kNotifyAutoSigninDuration),
       base::BindRepeating(^{
         [weakSelf hideAutosigninNotification];
@@ -625,11 +625,11 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler {
-  fillData_.Add(formData);
+  _fillData.Add(formData);
 
-  if (suggestionsAvailableCompletion_) {
-    suggestionsAvailableCompletion_(&fillData_);
-    suggestionsAvailableCompletion_ = nil;
+  if (_suggestionsAvailableCompletion) {
+    _suggestionsAvailableCompletion(&_fillData);
+    _suggestionsAvailableCompletion = nil;
   }
 
   // Don't fill immediately if waiting for the user to type a username.
@@ -646,9 +646,9 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 }
 
 - (void)onNoSavedCredentials {
-  if (suggestionsAvailableCompletion_)
-    suggestionsAvailableCompletion_(nullptr);
-  suggestionsAvailableCompletion_ = nil;
+  if (_suggestionsAvailableCompletion)
+    _suggestionsAvailableCompletion(nullptr);
+  _suggestionsAvailableCompletion = nil;
 }
 
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
@@ -684,7 +684,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
                infoBarType:(PasswordInfoBarType)type {
-  if (!webState_)
+  if (!_webState)
     return;
 
   bool isSmartLockBrandingEnabled = false;
@@ -695,7 +695,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
         password_bubble_experiment::IsSmartLockUser(sync_service);
   }
   infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webState_);
+      InfoBarManagerImpl::FromWebState(_webState);
 
   switch (type) {
     case PasswordInfoBarType::SAVE:
