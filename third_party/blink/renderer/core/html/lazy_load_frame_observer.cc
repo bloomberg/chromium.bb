@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -36,7 +38,8 @@ namespace {
 // could break their functionality, so these heuristics are used to recognize
 // likely hidden frames and immediately load them so that they can function
 // properly.
-bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect) {
+bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect,
+                           const Element& element) {
   // Tiny frames that are 4x4 or smaller are likely not intended to be seen by
   // the user. Note that this condition includes frames marked as
   // "display:none", since those frames would have dimensions of 0x0.
@@ -47,6 +50,17 @@ bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect) {
   // likely never intended to be visible to the user.
   if (bounding_client_rect.right() < 0.0 || bounding_client_rect.bottom() < 0.0)
     return true;
+
+  const ComputedStyle* style = element.GetComputedStyle();
+  if (style) {
+    switch (style->Visibility()) {
+      case EVisibility::kHidden:
+      case EVisibility::kCollapse:
+        return true;
+      case EVisibility::kVisible:
+        break;
+    }
+  }
 
   return false;
 }
@@ -129,7 +143,8 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
   if (entries.back()->isIntersecting()) {
     RecordInitialDeferralAction(
         FrameInitialDeferralAction::kLoadedNearOrInViewport);
-  } else if (IsFrameProbablyHidden(*entries.back()->boundingClientRect())) {
+  } else if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(),
+                                   *element_)) {
     RecordInitialDeferralAction(FrameInitialDeferralAction::kLoadedHidden);
   } else {
     RecordInitialDeferralAction(FrameInitialDeferralAction::kDeferred);
@@ -192,7 +207,7 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());
 
-  if (IsFrameProbablyHidden(*entries.back()->boundingClientRect())) {
+  if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(), *element_)) {
     visibility_metrics_observer_->disconnect();
     visibility_metrics_observer_.Clear();
     return;
