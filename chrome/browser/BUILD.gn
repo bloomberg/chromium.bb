@@ -4448,7 +4448,7 @@ jumbo_split_static_library("browser") {
       "android/feed/feed_scheduler_bridge.cc",
       "android/feed/feed_scheduler_bridge.h",
     ]
-    deps += [ "//components/feed/core:feed_core" ]
+    deps += [ "//components/feed/content:feed_content" ]
   }
 }
 

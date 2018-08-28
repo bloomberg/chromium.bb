@@ -74,7 +74,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/domain_reliability/service.h"
-#include "components/feed/core/feed_host_service.h"
+#include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"

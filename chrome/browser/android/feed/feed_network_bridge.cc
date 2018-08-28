@@ -16,7 +16,7 @@
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/feed/core/feed_host_service.h"
+#include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "jni/FeedNetworkBridge_jni.h"
 
