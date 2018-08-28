@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -62,7 +61,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         static auto* crash_key = base::debug::AllocateCrashKeyString(
             "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
       }
       suppress_manipulation_events_ =
@@ -89,7 +87,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         static auto* crash_key = base::debug::AllocateCrashKeyString(
             "scrollupdate-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
       }
       if (IsYAxisActionDisallowed(scrolling_touch_action_.value())) {
@@ -144,7 +141,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         static auto* crash_key = base::debug::AllocateCrashKeyString(
             "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
       }
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
@@ -181,13 +177,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (gesture_event->is_source_touch_event_set_non_blocking)
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
-      if (!scrolling_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "tapdown-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
-        gesture_sequence_.clear();
-      }
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
