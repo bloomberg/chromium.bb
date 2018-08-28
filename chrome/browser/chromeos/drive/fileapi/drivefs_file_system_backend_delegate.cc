@@ -12,8 +12,10 @@
 
 namespace drive {
 
-DriveFsFileSystemBackendDelegate::DriveFsFileSystemBackendDelegate()
-    : async_file_util_(std::make_unique<internal::DriveFsAsyncFileUtil>()) {}
+DriveFsFileSystemBackendDelegate::DriveFsFileSystemBackendDelegate(
+    Profile* profile)
+    : async_file_util_(
+          std::make_unique<internal::DriveFsAsyncFileUtil>(profile)) {}
 
 DriveFsFileSystemBackendDelegate::~DriveFsFileSystemBackendDelegate() = default;
 

@@ -370,12 +370,12 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     case storage::kFileSystemTypeDrive:
     case storage::kFileSystemTypeProvided:
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
+    case storage::kFileSystemTypeDriveFs:
       return true;
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
-    case storage::kFileSystemTypeDriveFs:
       return false;
     default:
       NOTREACHED();

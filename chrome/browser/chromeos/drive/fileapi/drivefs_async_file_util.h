@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_DRIVEFS_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_DRIVEFS_ASYNC_FILE_UTIL_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
+
+class Profile;
 
 namespace drive {
 namespace internal {
@@ -15,10 +20,23 @@ namespace internal {
 // forwards to a AsyncFileUtil for native files by default.
 class DriveFsAsyncFileUtil : public storage::AsyncFileUtilAdapter {
  public:
-  DriveFsAsyncFileUtil();
+  explicit DriveFsAsyncFileUtil(Profile* profile);
   ~DriveFsAsyncFileUtil() override;
 
+  // AsyncFileUtil overrides:
+  void CopyFileLocal(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& src_url,
+      const storage::FileSystemURL& dest_url,
+      CopyOrMoveOption option,
+      CopyFileProgressCallback progress_callback,
+      StatusCallback callback) override;
+
  private:
+  Profile* const profile_;
+
+  base::WeakPtrFactory<DriveFsAsyncFileUtil> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DriveFsAsyncFileUtil);
 };
 
