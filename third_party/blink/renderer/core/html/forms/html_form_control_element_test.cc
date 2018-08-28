@@ -118,7 +118,7 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   SetHtmlInnerHTML("<body><input required id=input></body>");
   ValidationMessageClient* validation_message_client =
       new MockFormValidationMessageClient();
-  GetPage().SetValidationMessageClient(validation_message_client);
+  GetPage().SetValidationMessageClientForTesting(validation_message_client);
   Page::OrdinaryPages().insert(&GetPage());
 
   HTMLInputElement* input = ToHTMLInputElement(GetElementById("input"));
@@ -137,7 +137,8 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
   auto* const optgroup = GetDocument().CreateRawElement(HTMLNames::optgroupTag);
   auto* validation_client = new MockFormValidationMessageClient();
-  GetDocument().GetPage()->SetValidationMessageClient(validation_client);
+  GetDocument().GetPage()->SetValidationMessageClientForTesting(
+      validation_client);
 
   select->setCustomValidity("foobar");
   select->reportValidity();

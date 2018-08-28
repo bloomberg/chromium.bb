@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_CLIENT_IMPL_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -39,22 +39,21 @@ namespace blink {
 class LocalFrameView;
 class PageOverlay;
 class ValidationMessageOverlayDelegate;
-class WebViewImpl;
 
-class CORE_EXPORT ValidationMessageClientImpl final
+class ValidationMessageClientImpl final
     : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
       public ValidationMessageClient,
       private PopupOpeningObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* Create(WebViewImpl&);
+  static ValidationMessageClientImpl* Create(Page&);
   ~ValidationMessageClientImpl() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  ValidationMessageClientImpl(WebViewImpl&);
+  ValidationMessageClientImpl(Page&);
   void CheckAnchorStatus(TimerBase*);
   LocalFrameView* CurrentView();
   void HideValidationMessageImmediately(const Element& anchor);
@@ -75,7 +74,7 @@ class CORE_EXPORT ValidationMessageClientImpl final
   // PopupOpeningObserver function
   void WillOpenPopup() override;
 
-  WebViewImpl& web_view_;
+  Member<Page> page_;
   Member<const Element> current_anchor_;
   String message_;
   TimeTicks finish_time_;

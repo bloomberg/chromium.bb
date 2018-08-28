@@ -812,7 +812,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   MockDocumentValidationMessageClient* mock_client =
       new MockDocumentValidationMessageClient();
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  GetPage().SetValidationMessageClient(mock_client);
+  GetPage().SetValidationMessageClientForTesting(mock_client);
   // ImplicitOpen()-CancelParsing() makes Document.loadEventFinished()
   // true. It's necessary to kick unload process.
   GetDocument().ImplicitOpen(kForceSynchronousParsing);
@@ -839,7 +839,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   // Unload handler tried to show a validation message, but it should fail.
   EXPECT_FALSE(mock_client->show_validation_message_was_called);
 
-  GetPage().SetValidationMessageClient(original_client);
+  GetPage().SetValidationMessageClientForTesting(original_client);
 }
 
 TEST_F(DocumentTest, SandboxDisablesAppCache) {

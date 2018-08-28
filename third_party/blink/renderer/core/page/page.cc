@@ -65,7 +65,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
-#include "third_party/blink/renderer/core/page/validation_message_client.h"
+#include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -171,6 +171,8 @@ Page::Page(PageClients& page_clients)
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
       link_highlights_(LinkHighlights::Create(*this)),
       plugin_data_(nullptr),
+      // TODO(pdr): Initialize |validation_message_client_| lazily.
+      validation_message_client_(ValidationMessageClientImpl::Create(*this)),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
       paused_(false),
@@ -357,7 +359,8 @@ static void RestoreSVGImageAnimations() {
   }
 }
 
-void Page::SetValidationMessageClient(ValidationMessageClient* client) {
+void Page::SetValidationMessageClientForTesting(
+    ValidationMessageClient* client) {
   validation_message_client_ = client;
 }
 

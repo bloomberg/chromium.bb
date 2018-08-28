@@ -96,6 +96,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
@@ -2514,6 +2515,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
+  frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
+
   if (target_state == DocumentLifecycle::kPaintClean) {
     ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& frame_view) { frame_view.NotifyResizeObservers(); });
@@ -2855,6 +2858,8 @@ void LocalFrameView::PaintTree() {
   // invalidation so it must be after paint. This adds/removes link highlight
   // layers so it must be before |CollectDrawableLayersForLayerListRecursively|.
   frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
+
+  frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to

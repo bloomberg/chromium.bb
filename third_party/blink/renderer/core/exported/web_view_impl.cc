@@ -137,7 +137,6 @@
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
-#include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -367,7 +366,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   page_ =
       Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr);
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
-  page_->SetValidationMessageClient(ValidationMessageClientImpl::Create(*this));
   SetVisibilityState(visibility_state, true);
 
   InitializeLayerTreeView();
@@ -382,10 +380,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
 WebViewImpl::~WebViewImpl() {
   DCHECK(!page_);
-}
-
-ValidationMessageClient* WebViewImpl::GetValidationMessageClient() const {
-  return page_ ? &page_->GetValidationMessageClient() : nullptr;
 }
 
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
@@ -1591,8 +1585,6 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::Animate(*page_, last_frame_time);
-  if (auto* client = GetValidationMessageClient())
-    client->LayoutOverlay();
 }
 
 void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
@@ -1613,8 +1605,6 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   if (requested_update == LifecycleUpdate::kPrePaint)
     return;
 
-  if (auto* client = GetValidationMessageClient())
-    client->PaintOverlay();
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->PaintOverlay();
   if (page_color_overlay_)
@@ -3428,8 +3418,6 @@ base::WeakPtr<CompositorMutatorImpl> WebViewImpl::EnsureCompositorMutator(
 void WebViewImpl::UpdatePageOverlays() {
   if (page_color_overlay_)
     page_color_overlay_->Update();
-  if (auto* client = GetValidationMessageClient())
-    client->LayoutOverlay();
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->LayoutOverlay();
 }
