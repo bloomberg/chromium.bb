@@ -2832,7 +2832,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     remote_url = self._changelist.GetRemoteUrl()
     if remote_url.endswith('.git'):
       remote_url = remote_url[:-len('.git')]
+    remote_url = remote_url.rstrip('/')
+
     fetch_info = revision_info['fetch']['http']
+    fetch_info['url'] = fetch_info['url'].rstrip('/')
 
     if remote_url != fetch_info['url']:
       DieWithError('Trying to patch a change from %s but this repo appears '
