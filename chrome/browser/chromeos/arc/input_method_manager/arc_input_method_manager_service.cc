@@ -264,9 +264,8 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   // TODO(crbug.com/845079): We should keep the order of the IMEs as same as in
   // chrome://settings
   for (const auto& input_method_id : enabled_input_method_ids) {
-    if (!base::ContainsValue(active_ime_list, input_method_id)) {
+    if (!base::ContainsValue(active_ime_list, input_method_id))
       active_ime_list.push_back(input_method_id);
-    }
   }
   profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
                                   base::JoinString(active_ime_list, ","));
@@ -383,15 +382,11 @@ void ArcInputMethodManagerService::RemoveArcIMEFromPrefs() {
 
 void ArcInputMethodManagerService::RemoveArcIMEFromPref(const char* pref_name) {
   const std::string ime_ids = profile_->GetPrefs()->GetString(pref_name);
-  std::vector<std::string> ime_id_list = base::SplitString(
+  std::vector<base::StringPiece> ime_id_list = base::SplitStringPiece(
       ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  auto iter = std::remove_if(
-      ime_id_list.begin(), ime_id_list.end(), [](const std::string& id) {
-        return chromeos::extension_ime_util::IsArcIME(id);
-      });
-  ime_id_list.erase(iter, ime_id_list.end());
-
+  base::EraseIf(ime_id_list, [](base::StringPiece id) {
+    return chromeos::extension_ime_util::IsArcIME(id.as_string());
+  });
   profile_->GetPrefs()->SetString(pref_name,
                                   base::JoinString(ime_id_list, ","));
 }
