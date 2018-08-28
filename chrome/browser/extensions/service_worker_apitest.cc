@@ -156,12 +156,16 @@ class ServiceWorkerTest : public ExtensionApiTest,
   // may be empty) is written to it.
   const Extension* StartTestFromBackgroundPage(const char* script_name,
                                                std::string* error_or_null) {
+    ExtensionTestMessageListener ready_listener("ready", false);
     const Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("service_worker/background"));
     CHECK(extension);
+    CHECK(ready_listener.WaitUntilSatisfied());
+
     ExtensionHost* background_host =
         process_manager()->GetBackgroundHostForExtension(extension->id());
     CHECK(background_host);
+
     std::string error;
     CHECK(content::ExecuteScriptAndExtractString(
         background_host->host_contents(),

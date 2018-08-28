@@ -51,3 +51,5 @@ test.waitForMessage = function(endpoint) {
 chrome.runtime.onMessage.addListener(function(msg, _, sendResponse) {
   sendResponse({label: 'onMessage/original BG.'});
 });
+
+chrome.test.sendMessage('ready');
