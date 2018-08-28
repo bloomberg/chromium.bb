@@ -115,4 +115,9 @@ public class DateOrderedListCoordinator {
     public void onDeletionRequested(List<ListItem> items) {
         mMediator.onDeletionRequested(items);
     }
+
+    /** Called to share a list of items specified by {@code items}. */
+    public void onShareRequested(List<ListItem> items) {
+        mMediator.onShareRequested(items);
+    }
 }

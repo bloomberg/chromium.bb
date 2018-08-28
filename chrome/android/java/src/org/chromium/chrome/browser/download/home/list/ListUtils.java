@@ -11,11 +11,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
 public class ListUtils {
@@ -37,7 +40,16 @@ public class ListUtils {
         int SEPARATOR_SECTION = 9;
     }
 
-    private ListUtils() {}
+    /** Converts a given list of {@link ListItem}s to a list of {@link OfflineItem}s. */
+    public static List<OfflineItem> toOfflineItems(List<ListItem> items) {
+        List<OfflineItem> offlineItems = new ArrayList<>();
+        for (ListItem item : items) {
+            if (item instanceof ListItem.OfflineItemListItem) {
+                offlineItems.add(((ListItem.OfflineItemListItem) item).item);
+            }
+        }
+        return offlineItems;
+    }
 
     /**
      * Analyzes a {@link ListItem} and finds the most appropriate {@link ViewType} based on the
