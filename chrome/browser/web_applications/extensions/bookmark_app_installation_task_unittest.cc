@@ -300,8 +300,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(),
-      web_app::PendingAppManager::AppInfo(
-          app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
+      web_app::PendingAppManager::AppInfo::Create(
+          app_url, web_app::PendingAppManager::LaunchContainer::kDefault));
 
   SetTestingFactories(task.get(), app_url);
 
@@ -318,6 +318,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
   content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(app_installed());
+  EXPECT_TRUE(test_helper().create_shortcuts());
+  EXPECT_FALSE(test_helper().forced_launch_type().has_value());
+  EXPECT_FALSE(test_helper().is_default_app());
 }
 
 TEST_F(BookmarkAppInstallationTaskTest,
@@ -326,7 +329,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(),
-      web_app::PendingAppManager::AppInfo(
+      web_app::PendingAppManager::AppInfo::Create(
           app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
 
   SetTestingFactories(task.get(), app_url);
@@ -350,7 +353,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoShortcuts) {
   const GURL app_url(kWebAppUrl);
 
-  web_app::PendingAppManager::AppInfo app_info(
+  auto app_info = web_app::PendingAppManager::AppInfo::Create(
       app_url, web_app::PendingAppManager::LaunchContainer::kWindow,
       false /* create_shortcuts */);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
@@ -375,7 +378,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   const GURL app_url(kWebAppUrl);
 
-  web_app::PendingAppManager::AppInfo app_info(
+  auto app_info = web_app::PendingAppManager::AppInfo::Create(
       app_url, web_app::PendingAppManager::LaunchContainer::kWindow);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
@@ -397,7 +400,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   const GURL app_url(kWebAppUrl);
 
-  web_app::PendingAppManager::AppInfo app_info(
+  auto app_info = web_app::PendingAppManager::AppInfo::Create(
       app_url, web_app::PendingAppManager::LaunchContainer::kTab);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
@@ -416,10 +419,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 }
 
 TEST_F(BookmarkAppInstallationTaskTest,
-       WebAppOrShortcutFromContents_NoForcedContainer) {
+       WebAppOrShortcutFromContents_DefaultApp) {
   const GURL app_url(kWebAppUrl);
 
-  web_app::PendingAppManager::AppInfo app_info(
+  auto app_info = web_app::PendingAppManager::AppInfo::CreateForDefaultApp(
       app_url, web_app::PendingAppManager::LaunchContainer::kDefault);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
@@ -434,7 +437,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
   test_helper().CompleteInstallation();
 
   EXPECT_TRUE(app_installed());
-  EXPECT_FALSE(test_helper().forced_launch_type().has_value());
+  EXPECT_TRUE(test_helper().is_default_app());
 }
 
 }  // namespace extensions
