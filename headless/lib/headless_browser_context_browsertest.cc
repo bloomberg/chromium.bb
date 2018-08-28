@@ -45,9 +45,7 @@ class HeadlessBrowserContextIsolationTest
     : public HeadlessAsyncDevTooledBrowserTest {
  public:
   HeadlessBrowserContextIsolationTest()
-      : browser_context_(nullptr),
-        web_contents2_(nullptr),
-        devtools_client2_(HeadlessDevToolsClient::Create()) {
+      : browser_context_(nullptr), web_contents2_(nullptr) {
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 
@@ -60,6 +58,7 @@ class HeadlessBrowserContextIsolationTest
       return;
     }
 
+    devtools_client2_ = HeadlessDevToolsClient::Create();
     web_contents2_->GetDevToolsTarget()->AttachClient(devtools_client2_.get());
     HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady();
   }
