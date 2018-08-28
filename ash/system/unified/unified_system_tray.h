@@ -88,6 +88,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void ClickedOutsideBubble() override;
   void UpdateAfterShelfAlignmentChange() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
@@ -122,6 +125,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
   tray::TimeTrayItemView* const time_view_;
+
+  ui::Layer* ink_drop_layer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };
