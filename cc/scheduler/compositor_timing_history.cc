@@ -346,10 +346,7 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.PrepareTilesDuration", duration);
   }
 
-  void AddActivateDuration(base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.ActivateDuration",
-                                        duration);
-  }
+  void AddActivateDuration(base::TimeDelta duration) override {}
 
   void AddDrawDuration(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.DrawDuration",
