@@ -120,9 +120,6 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   if (!app_info_.create_shortcuts)
     helper_->set_skip_shortcut_creation();
 
-  if (app_info_.is_default_app)
-    helper_->set_is_default_app();
-
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(&result_callback)));
