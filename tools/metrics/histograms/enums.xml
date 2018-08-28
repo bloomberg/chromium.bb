@@ -48433,6 +48433,11 @@ Full version information for the fingerprint enum values:
   <int value="3" label="AUTO_UPDATES_ONLY"/>
 </enum>
 
+<enum name="UpgradeDetectorRollbackReason">
+  <int value="0" label="Channel switch to more stable channel"/>
+  <int value="1" label="Admin-initiated enterprise rollback"/>
+</enum>
+
 <enum name="UpgradeNotificationStage">
   <int value="0" label="None"/>
   <int value="1" label="Low"/>

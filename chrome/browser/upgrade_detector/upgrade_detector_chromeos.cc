@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/time/default_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -32,6 +33,14 @@ constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(4);
 // annoyance level's threshold. The elevated level always hits half-way to the
 // high level.
 constexpr double kElevatedScaleFactor = 0.5;
+
+// The reason of the rollback used in the UpgradeDetector.RollbackReason
+// histogram.
+enum class RollbackReason {
+  kToMoreStableChannel = 0,
+  kEnterpriseRollback = 1,
+  kMaxValue = kEnterpriseRollback,
+};
 
 class ChannelsRequester {
  public:
@@ -217,6 +226,11 @@ void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
   // was initiated by the admin).
   // TODO(crbug.com/864672): Fix this by getting is_rollback from update engine.
   set_is_rollback(!to_more_stable_channel);
+
+  UMA_HISTOGRAM_ENUMERATION("UpgradeDetector.RollbackReason",
+                            to_more_stable_channel
+                                ? RollbackReason::kToMoreStableChannel
+                                : RollbackReason::kEnterpriseRollback);
 
   // ChromeOS shows upgrade arrow once the upgrade becomes available.
   NotifyOnUpgrade();
