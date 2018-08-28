@@ -5,7 +5,6 @@
 
 <org.chromium.chrome.browser.ntp.snippets.SectionHeaderView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/snippets_article_header_height"
@@ -22,11 +21,10 @@
         android:textAlignment="viewStart"
         android:textAppearance="@style/BlackCaption" />
 
-    <org.chromium.chrome.browser.widget.TintedImageView
-        android:id="@+id/header_icon"
+    <TextView
+        android:id="@+id/header_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:visibility="gone"
-        app:chrometint="@color/dark_mode_tint" />
+        android:textAppearance="@style/BlueLink3" />
+
 </org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

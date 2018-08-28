@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.widget.TextView;
@@ -36,9 +37,16 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
                 ? (SectionHeaderView) itemView
                 : null;
 
-        int wideLateralMargin = recyclerView.getResources().getDimensionPixelSize(
-                R.dimen.ntp_wide_card_lateral_margins);
-        mMarginResizer = new MarginResizer(itemView, config, 0, wideLateralMargin);
+        Resources resources = recyclerView.getResources();
+        int defaultLateralMargin =
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+                ? resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin)
+                : 0;
+        int wideLateralMargin =
+                resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
+        mMarginResizer =
+                new MarginResizer(itemView, config, defaultLateralMargin, wideLateralMargin);
 
         mTitleView = itemView.findViewById(R.id.header_title);
     }
@@ -64,8 +72,8 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
      * Triggers an update to the icon drawable. Intended to be used as
      * {@link NewTabPageViewHolder.PartialBindCallback}
      */
-    static void updateIconDrawable(NewTabPageViewHolder holder) {
+    static void updateVisuals(NewTabPageViewHolder holder) {
         SectionHeaderView view = ((SectionHeaderViewHolder) holder).mSectionHeaderView;
-        if (view != null) view.updateIconDrawable();
+        if (view != null) view.updateVisuals();
     }
 }

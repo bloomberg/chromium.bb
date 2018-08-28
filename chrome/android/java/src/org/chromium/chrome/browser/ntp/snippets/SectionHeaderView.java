@@ -8,7 +8,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,7 +19,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
  */
 public class SectionHeaderView extends LinearLayout implements View.OnClickListener {
     private TextView mTitleView;
-    private ImageView mIconView;
+    private TextView mStatusView;
     private @Nullable SectionHeader mHeader;
 
     public SectionHeaderView(Context context, @Nullable AttributeSet attrs) {
@@ -32,7 +31,7 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         super.onFinishInflate();
 
         mTitleView = findViewById(org.chromium.chrome.R.id.header_title);
-        mIconView = findViewById(org.chromium.chrome.R.id.header_icon);
+        mStatusView = findViewById(org.chromium.chrome.R.id.header_status);
     }
 
     @Override
@@ -49,18 +48,17 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         if (mHeader == null) return;
 
         mTitleView.setText(header.getHeaderText());
-        mIconView.setVisibility(header.isExpandable() ? View.VISIBLE : View.GONE);
-        updateIconDrawable();
+        mStatusView.setVisibility(header.isExpandable() ? View.VISIBLE : View.GONE);
+        updateVisuals();
         setOnClickListener(header.isExpandable() ? this : null);
     }
 
-    /** Update the image resource for the icon view based on whether the header is expanded. */
-    public void updateIconDrawable() {
+    /** Update the header view based on whether the header is expanded. */
+    public void updateVisuals() {
         if (mHeader == null || !mHeader.isExpandable()) return;
-        mIconView.setImageResource(mHeader.isExpanded() ? R.drawable.ic_expand_less_black_24dp
-                                                        : R.drawable.ic_expand_more_black_24dp);
-        mIconView.setContentDescription(mIconView.getResources().getString(mHeader.isExpanded()
-                        ? R.string.accessibility_collapse_section_header
-                        : R.string.accessibility_expand_section_header));
+
+        mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+        setBackgroundResource(
+                mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
     }
 }

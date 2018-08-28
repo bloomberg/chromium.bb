@@ -221,9 +221,11 @@ public class FeedNewTabPage extends NewTabPage {
 
         // TODO(huayinz): Add MarginResizer for sign-in promo under issue 860051 or 860043,
         // depending on which one lands first.
-        int wideMargin = mSectionHeaderView.getResources().getDimensionPixelSize(
-                R.dimen.ntp_wide_card_lateral_margins);
-        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, 0, wideMargin);
+        Resources resources = mSectionHeaderView.getResources();
+        int defaultMargin =
+                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
+        int wideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
+        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, defaultMargin, wideMargin);
 
         mMediator = new FeedNewTabPageMediator(this,
                 new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout, mStream.getView()));

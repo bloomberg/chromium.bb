@@ -121,7 +121,7 @@ class FeedNewTabPageMediator
                 Pref.NTP_ARTICLES_LIST_VISIBLE, mSectionHeader.isExpanded());
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
-        mCoordinator.getSectionHeaderView().updateIconDrawable();
+        mCoordinator.getSectionHeaderView().updateVisuals();
     }
 
     /** Whether a new thumbnail should be captured. */

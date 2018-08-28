@@ -70,7 +70,7 @@ public class SectionHeader extends OptionalLeaf {
      */
     public void toggleHeader() {
         mIsExpanded = !mIsExpanded;
-        notifyItemChanged(0, SectionHeaderViewHolder::updateIconDrawable);
+        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
         mToggleCallback.run();
     }
 
