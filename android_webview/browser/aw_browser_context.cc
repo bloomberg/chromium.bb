@@ -30,6 +30,7 @@
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -43,6 +44,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
 using content::BrowserThread;
@@ -71,6 +73,13 @@ const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
+}
+
+base::FilePath GetPrefStorePath() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path);
+  path = path.Append(FILE_PATH_LITERAL("pref_store"));
+  return path;
 }
 
 AwBrowserContext* g_browser_context = NULL;
@@ -219,8 +228,7 @@ AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
 
 // Create user pref service
 void AwBrowserContext::InitUserPrefService() {
-  user_prefs::PrefRegistrySyncable* pref_registry =
-      new user_prefs::PrefRegistrySyncable();
+  auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
   // We only use the autocomplete feature of Autofill, which is controlled via
   // the manager_delegate. We don't use the rest of Autofill, which is why it is
   // hardcoded as disabled here.
@@ -230,18 +238,32 @@ void AwBrowserContext::InitUserPrefService() {
                                      false);
   pref_registry->RegisterBooleanPref(
       autofill::prefs::kAutofillCreditCardEnabled, false);
-  policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);
+  policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
 
   pref_registry->RegisterStringPref(prefs::kWebRestrictionsAuthority,
                                     std::string());
 
-  AwURLRequestContextGetter::RegisterPrefs(pref_registry);
-  metrics::MetricsService::RegisterPrefs(pref_registry);
-  safe_browsing::RegisterProfilePrefs(pref_registry);
+  android_webview::AwURLRequestContextGetter::RegisterPrefs(
+      pref_registry.get());
+  metrics::MetricsService::RegisterPrefs(pref_registry.get());
+  safe_browsing::RegisterProfilePrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;
+
+  // These prefs go in the JsonPrefStore, and will persist across runs. Other
+  // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
+  std::set<std::string> persistent_prefs;
+  // TODO(crbug/866722): Add kMetricsLowEntropySource to persistent_prefs to
+  // support persistent variations experiments.
+
+  // SegregatedPrefStore may be validated with a MAC (message authentication
+  // code). On Android, the store is protected by app sandboxing, so validation
+  // is unnnecessary. Thus validation_delegate is null.
   pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
+      base::MakeRefCounted<SegregatedPrefStore>(
+          base::MakeRefCounted<InMemoryPrefStore>(),
+          base::MakeRefCounted<JsonPrefStore>(GetPrefStorePath()),
+          persistent_prefs, /*validation_delegate=*/nullptr));
   pref_service_factory.set_managed_prefs(
       base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
           browser_policy_connector_.get(),
