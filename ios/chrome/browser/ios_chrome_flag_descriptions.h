@@ -35,6 +35,11 @@ extern const char
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
+// Title and description for the flag to control if Chrome Sync can start up in
+// standalone transport mode.
+extern const char kSyncStandaloneTransportName[];
+extern const char kSyncStandaloneTransportDescription[];
+
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];
