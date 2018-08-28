@@ -25,6 +25,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -462,8 +466,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnablePageLifecycle(true);
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
+  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI) &&
+      base::android::BuildInfo::GetInstance()->is_at_least_p()) {
+    // Display Cutout is limited to Android P+.
     WebRuntimeFeatures::EnableDisplayCutoutAPI(true);
+  }
 #endif
 
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
