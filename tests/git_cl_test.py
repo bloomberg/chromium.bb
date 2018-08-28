@@ -2130,7 +2130,12 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
-        ((['SetReview', 'chromium-review.googlesource.com', 123,
+        ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/infra/infra.git'),
+        ((['SetReview', 'chromium-review.googlesource.com',
+           'infra%2Finfra~123',
            {'Commit-Queue': vote}, notify],), ''),
     ]
 
@@ -3218,7 +3223,8 @@ class TestGitCl(TestCase):
                                    'origin/master'),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/infra/infra'),
-      (('SetReview', 'chromium-review.googlesource.com', 10, 'msg', None),
+      (('SetReview', 'chromium-review.googlesource.com', 'infra%2Finfra~10',
+        'msg', None),
        None),
     ]
     self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '10',
@@ -3328,7 +3334,8 @@ class TestGitCl(TestCase):
           },
         ]
       }),
-      (('GetChangeComments', 'chromium-review.googlesource.com', 1), {
+      (('GetChangeComments', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1'), {
         '/COMMIT_MSG': [
           {
             'author': {'email': u'reviewer@example.com'},

@@ -2604,28 +2604,31 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return data['revisions'][current_rev]['commit']['message']
 
   def UpdateDescriptionRemote(self, description, force=False):
-    if gerrit_util.HasPendingChangeEdit(self._GetGerritHost(), self.GetIssue()):
+    if gerrit_util.HasPendingChangeEdit(
+        self._GetGerritHost(), self._GerritChangeIdentifier()):
       if not force:
         confirm_or_exit(
             'The description cannot be modified while the issue has a pending '
             'unpublished edit. Either publish the edit in the Gerrit web UI '
             'or delete it.\n\n', action='delete the unpublished edit')
 
-      gerrit_util.DeletePendingChangeEdit(self._GetGerritHost(),
-                                          self.GetIssue())
-    gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
-                                 description, notify='NONE')
+      gerrit_util.DeletePendingChangeEdit(
+        self._GetGerritHost(), self._GerritChangeIdentifier())
+    gerrit_util.SetCommitMessage(
+        self._GetGerritHost(), self._GerritChangeIdentifier(),
+        description, notify='NONE')
 
   def AddComment(self, message, publish=None):
-    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
-                          msg=message, ready=publish)
+    gerrit_util.SetReview(
+        self._GetGerritHost(), self._GerritChangeIdentifier(),
+        msg=message, ready=publish)
 
   def GetCommentsSummary(self, readable=True):
     # DETAILED_ACCOUNTS is to get emails in accounts.
     messages = self._GetChangeDetail(
         options=['MESSAGES', 'DETAILED_ACCOUNTS']).get('messages', [])
     file_comments = gerrit_util.GetChangeComments(
-        self._GetGerritHost(), self.GetIssue())
+        self._GetGerritHost(), self._GerritChangeIdentifier())
 
     # Build dictionary of file comments for easy access and sorting later.
     # {author+date: {path: {patchset: {line: url+message}}}}
@@ -2691,11 +2694,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return summary
 
   def CloseIssue(self):
-    gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
+    gerrit_util.AbandonChange(
+        self._GetGerritHost(), self._GerritChangeIdentifier(), msg='')
 
   def SubmitIssue(self, wait_for_merge=True):
-    gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
-                             wait_for_merge=wait_for_merge)
+    gerrit_util.SubmitChange(
+        self._GetGerritHost(), self._GerritChangeIdentifier(),
+        wait_for_merge=wait_for_merge)
 
   def _GetChangeDetail(self, options=None, no_cache=False):
     """Returns details of associated Gerrit change and caching results.
@@ -3279,8 +3284,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     }
     labels = {'Commit-Queue': vote_map[new_state]}
     notify = False if new_state == _CQState.DRY_RUN else None
-    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
-                          labels=labels, notify=notify)
+    gerrit_util.SetReview(
+        self._GetGerritHost(), self._GerritChangeIdentifier(),
+        labels=labels, notify=notify)
 
   def CannotTriggerTryJobReason(self):
     try:
