@@ -1836,6 +1836,14 @@
         'shards': 10,
       },
     },
+
+    'single_process_mash_fyi_ash_unittests': {
+      'test': 'ash_unittests',
+      'args': [
+        '--enable-features=SingleProcessMash',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.fyi.ash_unittests.filter',
+      ],
+    },
   },
 
   # These can be folded into linux_chromeos_specific_gtests once we stop moving
