@@ -233,35 +233,31 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
   if (!IsBlockLayoutComplete(constraint_space, *layout_result))
     return;
 
-  // TODO(kojii): Even when we paint fragments, there seem to be some data we
-  // need to copy to LayoutBox. Review if we can minimize the copy.
-  LayoutBlockFlow* block_flow =
-      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
-  if (block_flow) {
-    block_flow->SetCachedLayoutResult(constraint_space, break_token,
-                                      layout_result);
-    if (layout_result->Status() == NGLayoutResult::kSuccess &&
-        !constraint_space.IsIntermediateLayout())
-      block_flow->SetPaintFragment(break_token, nullptr);
-  }
-
   DCHECK(layout_result->PhysicalFragment());
 
-  NGLayoutInputNode first_child = FirstChild();
-  if (block_flow && first_child && first_child.IsInline()) {
-    NGBoxStrut scrollbars = GetScrollbarSizes();
-    CopyFragmentDataToLayoutBoxForInlineChildren(
-        ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
-        layout_result->PhysicalFragment()->Size().width -
-            scrollbars.block_start,
-        Style().IsFlippedBlocksWritingMode());
+  if (box_->IsLayoutNGMixin()) {
+    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
+    block_flow->SetCachedLayoutResult(constraint_space, break_token,
+                                      layout_result);
 
-    block_flow->SetPaintFragment(break_token,
-                                 layout_result->PhysicalFragment());
+    NGLayoutInputNode first_child = FirstChild();
+    if (first_child && first_child.IsInline()) {
+      NGBoxStrut scrollbars = GetScrollbarSizes();
+      CopyFragmentDataToLayoutBoxForInlineChildren(
+          ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
+          layout_result->PhysicalFragment()->Size().width -
+              scrollbars.block_start,
+          Style().IsFlippedBlocksWritingMode());
+
+      block_flow->SetPaintFragment(break_token,
+                                   layout_result->PhysicalFragment());
+    } else {
+      // We still need to clear paint fragments in case it had inline children,
+      // and thus had NGPaintFragment.
+      block_flow->SetPaintFragment(break_token, nullptr);
+    }
   }
 
-  // TODO(kojii): Even when we paint fragments, there seem to be some data we
-  // need to copy to LayoutBox. Review if we can minimize the copy.
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
 }
 
