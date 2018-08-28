@@ -775,6 +775,7 @@ source_set("common") {
     "//net",
     "//net:extras",
     "//printing",
+    "//services/preferences/tracked:tracked",
     "//services/service_manager/public/cpp",
     "//services/viz/public/interfaces",
     "//skia",

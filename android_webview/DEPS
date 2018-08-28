@@ -27,6 +27,7 @@ include_rules = [
   "+media/media_buildflags.h",
   "+net",
   "+services/network/public/cpp",
+  "+services/preferences/tracked",
   "+services/service_manager/public",
   "+services/viz/public/interfaces",
   "+skia",
