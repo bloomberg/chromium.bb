@@ -105,7 +105,7 @@ static_library("metrics") {
   ]
 
   public_deps = [
-    ":call_stack_profile",
+    ":child_call_stacks",
     "//third_party/metrics_proto",
   ]
 
@@ -267,6 +267,7 @@ source_set("call_stack_profile") {
   ]
 
   deps = [
+    ":metrics",
     "//base:base",
     "//third_party/metrics_proto",
   ]
@@ -278,9 +279,9 @@ source_set("call_stacks") {
     "call_stack_profile_collector.h",
   ]
   deps = [
+    ":call_stack_profile",
     ":metrics",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-    "//third_party/metrics_proto",
   ]
 }
 
@@ -290,7 +291,6 @@ source_set("child_call_stacks") {
     "child_call_stack_profile_collector.h",
   ]
   deps = [
-    ":call_stack_profile",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
     "//services/service_manager/public/cpp",
     "//third_party/metrics_proto",
@@ -388,7 +388,6 @@ source_set("unit_tests") {
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//testing/gtest",
-    "//third_party/metrics_proto",
     "//third_party/zlib/google:compression_utils",
     "//ui/gfx/geometry",
   ]

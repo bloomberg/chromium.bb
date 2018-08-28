@@ -55,12 +55,12 @@ ProfileState& ProfileState::operator=(ProfileState&&) = default;
 
 // PendingProfiles ------------------------------------------------------------
 
-// Singleton class responsible for retaining profiles received via the callback
-// created by GetProfilerCallback(). These are then sent to UMA on the
-// invocation of CallStackProfileMetricsProvider::ProvideCurrentSessionData().
-// We need to store the profiles outside of a CallStackProfileMetricsProvider
-// instance since callers may start profiling before the
-// CallStackProfileMetricsProvider is created.
+// Singleton class responsible for retaining profiles received from
+// CallStackProfileBuilder. These are then sent to UMA on the invocation of
+// CallStackProfileMetricsProvider::ProvideCurrentSessionData(). We need to
+// store the profiles outside of a CallStackProfileMetricsProvider instance
+// since callers may start profiling before the CallStackProfileMetricsProvider
+// is created.
 //
 // Member functions on this class may be called on any thread.
 class PendingProfiles {
@@ -100,6 +100,10 @@ class PendingProfiles {
   // disabled at any point since a profile was started.
   base::TimeTicks last_collection_disable_time_;
 
+  // The last time collection was enabled. Used to determine if collection was
+  // enabled at any point since a profile was started.
+  base::TimeTicks last_collection_enable_time_;
+
   // The set of completed profiles that should be reported.
   std::vector<ProfileState> profiles_;
 
@@ -126,6 +130,8 @@ void PendingProfiles::SetCollectionEnabled(bool enabled) {
   if (!collection_enabled_) {
     profiles_.clear();
     last_collection_disable_time_ = base::TimeTicks::Now();
+  } else {
+    last_collection_enable_time_ = base::TimeTicks::Now();
   }
 }
 
@@ -137,11 +143,23 @@ bool PendingProfiles::IsCollectionEnabled() const {
 void PendingProfiles::CollectProfilesIfCollectionEnabled(ProfileState profile) {
   base::AutoLock scoped_lock(lock_);
 
-  // Only collect if collection is not disabled and hasn't been disabled
-  // since the start of collection for this profile.
-  if (!collection_enabled_ ||
-      (!last_collection_disable_time_.is_null() &&
-       last_collection_disable_time_ >= profile.start_timestamp)) {
+  // Scenario 1: stop collection if it is disabled.
+  if (!collection_enabled_)
+    return;
+
+  // Scenario 2: stop collection if it is disabled after the start of collection
+  // for this profile.
+  if (!last_collection_disable_time_.is_null() &&
+      last_collection_disable_time_ >= profile.start_timestamp) {
+    return;
+  }
+
+  // Scenario 3: stop collection if it is disabled before the start of
+  // collection and re-enabled after the start. Note that this is different from
+  // scenario 1 where re-enabling never happens.
+  if (!last_collection_disable_time_.is_null() &&
+      !last_collection_enable_time_.is_null() &&
+      last_collection_enable_time_ >= profile.start_timestamp) {
     return;
   }
 
@@ -154,6 +172,7 @@ void PendingProfiles::ResetToDefaultStateForTesting() {
 
   collection_enabled_ = true;
   last_collection_disable_time_ = base::TimeTicks();
+  last_collection_enable_time_ = base::TimeTicks();
   profiles_.clear();
 }
 
@@ -163,9 +182,6 @@ void PendingProfiles::ResetToDefaultStateForTesting() {
 // determined by the initial recording state provided to
 // CallStackProfileMetricsProvider.
 PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
-
-// Invoked on an arbitrary thread. Ignores the provided profile.
-void IgnoreCompletedProfile(SampledProfile /*profile*/) {}
 
 }  // namespace
 
@@ -177,20 +193,6 @@ const base::Feature CallStackProfileMetricsProvider::kEnableReporting = {
 CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
-
-// static
-CallStackProfileBuilder::CompletedCallback
-CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess() {
-  // Ignore the profile if the collection is disabled. If the collection state
-  // changes while collecting, this will be detected by the callback and
-  // profile will be ignored at that point.
-  if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
-    return base::BindRepeating(&IgnoreCompletedProfile);
-
-  return base::BindRepeating(
-      &CallStackProfileMetricsProvider::ReceiveCompletedProfile,
-      base::TimeTicks::Now());
-}
 
 // static
 void CallStackProfileMetricsProvider::ReceiveCompletedProfile(

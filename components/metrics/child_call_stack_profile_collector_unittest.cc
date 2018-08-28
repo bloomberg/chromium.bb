@@ -42,7 +42,7 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
       : receiver_impl_(new Receiver(MakeRequest(&receiver_))) {}
 
   void CollectEmptyProfile() {
-    child_collector_.GetProfilerCallback().Run(SampledProfile());
+    child_collector_.Collect(base::TimeTicks::Now(), SampledProfile());
   }
 
   const std::vector<ChildCallStackProfileCollector::ProfileState>& profiles()

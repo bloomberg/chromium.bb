@@ -9,14 +9,20 @@
 
 #include "base/atomicops.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
 #include "components/metrics/call_stack_profile_encoding.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 
 namespace metrics {
 
 namespace {
+
+// Only used by child processes.
+base::LazyInstance<ChildCallStackProfileCollector>::Leaky
+    g_child_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
 
 // Identifies an unknown module.
 const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
@@ -144,9 +150,12 @@ CallStackProfileBuilder::Sample::Sample(const std::vector<Frame>& frames)
     : frames(frames) {}
 
 CallStackProfileBuilder::CallStackProfileBuilder(
-    const CompletedCallback& callback,
-    const CallStackProfileParams& profile_params)
-    : callback_(callback), profile_params_(profile_params) {}
+    const CallStackProfileParams& profile_params,
+    base::OnceClosure completed_callback)
+    : profile_params_(profile_params),
+      profile_start_time_(base::TimeTicks::Now()) {
+  completed_callback_ = std::move(completed_callback);
+}
 
 CallStackProfileBuilder::~CallStackProfileBuilder() = default;
 
@@ -207,6 +216,18 @@ void CallStackProfileBuilder::OnSampleCompleted(
   sample_ = Sample();
 }
 
+// Build a SampledProfile in the protocol buffer message format from the
+// collected sampling data. The message is then passed to
+// CallStackProfileMetricsProvider or ChildCallStackProfileCollector.
+
+// A SampledProfile message (third_party/metrics_proto/sampled_profile.proto)
+// contains a CallStackProfile message
+// (third_party/metrics_proto/call_stack_profile.proto) and associated profile
+// parameters (process/thread/trigger event). A CallStackProfile message
+// contains a set of Sample messages and ModuleIdentifier messages, and other
+// sampling information. One Sample corresponds to a single recorded stack, and
+// the ModuleIdentifiers record those modules associated with the recorded stack
+// frames.
 void CallStackProfileBuilder::OnProfileCompleted(
     base::TimeDelta profile_duration,
     base::TimeDelta sampling_period) {
@@ -238,7 +259,23 @@ void CallStackProfileBuilder::OnProfileCompleted(
   sampled_profile.set_trigger_event(
       ToSampledProfileTriggerEvent(profile_params_.trigger));
 
-  callback_.Run(std::move(sampled_profile));
+  PassProfilesToMetricsProvider(std::move(sampled_profile));
+
+  // Run the completed callback if there is one.
+  if (!completed_callback_.is_null())
+    std::move(completed_callback_).Run();
+}
+
+void CallStackProfileBuilder::PassProfilesToMetricsProvider(
+    SampledProfile sampled_profile) {
+  if (profile_params_.process == CallStackProfileParams::BROWSER_PROCESS) {
+    CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+        profile_start_time_, std::move(sampled_profile));
+  } else {
+    g_child_call_stack_profile_collector.Get()
+        .ChildCallStackProfileCollector::Collect(profile_start_time_,
+                                                 std::move(sampled_profile));
+  }
 }
 
 // static
@@ -248,6 +285,13 @@ void CallStackProfileBuilder::SetProcessMilestone(int milestone) {
   DCHECK_EQ(0, base::subtle::NoBarrier_Load(&g_process_milestones) &
                    (1 << milestone));
   ChangeAtomicFlags(&g_process_milestones, 1 << milestone, 0);
+}
+
+// static
+void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
+    metrics::mojom::CallStackProfileCollectorPtr browser_interface) {
+  g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
+      std::move(browser_interface));
 }
 
 // These operators permit types to be compared and used in a map of Samples.

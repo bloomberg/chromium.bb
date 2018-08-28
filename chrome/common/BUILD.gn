@@ -291,7 +291,7 @@ static_library("common") {
   ]
 
   deps = [
-    "//components/metrics:child_call_stacks",
+    "//components/metrics:call_stack_profile",
   ]
 
   if (enable_plugins) {

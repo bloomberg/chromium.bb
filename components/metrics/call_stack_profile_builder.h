@@ -11,39 +11,18 @@
 #include "base/callback.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/sampling_heap_profiler/module_cache.h"
+#include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/metrics/child_call_stack_profile_collector.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 
-// CallStackProfileBuilder builds a SampledProfile in the protocol buffer
-// message format from the collected sampling data. The message is then passed
-// to the completed callback.
-
-// A SampledProfile message (third_party/metrics_proto/sampled_profile.proto)
-// contains a CallStackProfile message
-// (third_party/metrics_proto/call_stack_profile.proto) and associated profile
-// parameters (process/thread/trigger event). A CallStackProfile message
-// contains a set of Sample messages and ModuleIdentifier messages, and other
-// sampling information. One Sample corresponds to a single recorded stack, and
-// the ModuleIdentifiers record those modules associated with the recorded stack
-// frames.
+// An instance of the class is meant to be passed to base::StackSamplingProfiler
+// to collect profiles. The profiles collected are uploaded via the metrics log.
 class CallStackProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
-  // The callback type used to collect a SampledProfile protocol buffer message.
-  // The passed SampledProfile is move-only. Other threads, including the UI
-  // thread, may block on callback completion so this should run as quickly as
-  // possible.
-  //
-  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
-  // constructs, rather than on the thread used to construct the profiler, and
-  // thus the callback must be callable on any thread. For threads with message
-  // loops that create CallStackProfileBuilders, posting a task to the message
-  // loop with the moved (i.e. std::move) profile is the thread-safe callback
-  // implementation.
-  using CompletedCallback = base::RepeatingCallback<void(SampledProfile)>;
-
   // Frame represents an individual sampled stack frame with module information.
   struct Frame {
     Frame(uintptr_t instruction_pointer, size_t module_index);
@@ -97,8 +76,16 @@ class CallStackProfileBuilder
     MILESTONES_MAX_VALUE
   };
 
-  CallStackProfileBuilder(const CompletedCallback& callback,
-                          const CallStackProfileParams& profile_params);
+  // |completed_callback| is made when sampling a profile completes. Other
+  // threads, including the UI thread, may block on callback completion so this
+  // should run as quickly as possible.
+  //
+  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
+  // constructs, rather than on the thread used to construct the profiler, and
+  // thus the callback must be callable on any thread.
+  CallStackProfileBuilder(
+      const CallStackProfileParams& profile_params,
+      base::OnceClosure completed_callback = base::OnceClosure());
 
   ~CallStackProfileBuilder() override;
 
@@ -116,6 +103,15 @@ class CallStackProfileBuilder
   // |process_milestones|. The actual meanings of these bits are defined
   // (globally) by the caller(s).
   static void SetProcessMilestone(int milestone);
+
+  // Sets the CallStackProfileCollector interface from |browser_interface|.
+  // This function must be called within child processes.
+  static void SetParentProfileCollectorForChildProcess(
+      metrics::mojom::CallStackProfileCollectorPtr browser_interface);
+
+ protected:
+  // Test seam.
+  virtual void PassProfilesToMetricsProvider(SampledProfile sampled_profile);
 
  private:
   // The collected stack samples in proto buffer message format.
@@ -137,10 +133,13 @@ class CallStackProfileBuilder
   uint32_t milestones_ = 0;
 
   // Callback made when sampling a profile completes.
-  const CompletedCallback callback_;
+  base::OnceClosure completed_callback_;
 
   // The parameters associated with the sampled profile.
   const CallStackProfileParams profile_params_;
+
+  // The start time of a profile collection.
+  const base::TimeTicks profile_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };
