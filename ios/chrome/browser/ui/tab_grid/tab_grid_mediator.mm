@@ -103,6 +103,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
 // The number of tabs closed when close all tabs is called.
 @property(nonatomic, assign) int closedTabsCount;
+// Short-term cache for grid thumbnails.
+@property(nonatomic, strong)
+    NSMutableDictionary<NSString*, UIImage*>* appearanceCache;
 @end
 
 @implementation TabGridMediator {
@@ -124,6 +127,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @synthesize consumer = _consumer;
 @synthesize closedSessionWindow = _closedSessionWindow;
 @synthesize closedTabsCount = _closedTabsCount;
+@synthesize appearanceCache = _appearanceCache;
 
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
   if (self = [super init]) {
@@ -138,6 +142,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     _scopedWebStateObserver =
         std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
             _webStateObserverBridge.get());
+    _appearanceCache = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -327,6 +332,10 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)snapshotForIdentifier:(NSString*)identifier
                    completion:(void (^)(UIImage*))completion {
+  if (self.appearanceCache[identifier]) {
+    completion(self.appearanceCache[identifier]);
+    return;
+  }
   web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (webState) {
     SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
@@ -365,6 +374,24 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     if (!favicon.IsEmpty())
       completion(favicon.ToUIImage());
   }
+}
+
+- (void)preloadSnapshotsForVisibleGridSize:(int)gridSize {
+  int startIndex = std::max(self.webStateList->active_index() - gridSize, 0);
+  int endIndex = std::min(self.webStateList->active_index() + gridSize,
+                          self.webStateList->count() - 1);
+  for (int i = startIndex; i <= endIndex; i++) {
+    web::WebState* web_state = self.webStateList->GetWebStateAt(i);
+    NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
+    auto cacheImage = ^(UIImage* image) {
+      self.appearanceCache[identifier] = image;
+    };
+    [self snapshotForIdentifier:identifier completion:cacheImage];
+  }
+}
+
+- (void)clearPreloadedSnapshots {
+  [self.appearanceCache removeAllObjects];
 }
 
 #pragma mark - Private

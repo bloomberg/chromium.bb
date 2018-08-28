@@ -18,6 +18,14 @@
 // |identifier|. |completion| is called with the image if it exists.
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion;
+
+// Asks the receiver to pre-fetch all of the snapshots for tabs that are likely
+// to be visible, given that |gridSize| tabs can be displayed at once.
+- (void)preloadSnapshotsForVisibleGridSize:(int)gridSize;
+
+// Tells the receiver to dispose of any pre-loaded snapshots it may have cached.
+- (void)clearPreloadedSnapshots;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_IMAGE_DATA_SOURCE_H_

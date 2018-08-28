@@ -55,6 +55,11 @@
 @property(nonatomic, strong)
     RecentTabsTableViewController* remoteTabsViewController;
 
+// Tells the receiver to prepare for its appearance by pre-requesting any
+// resources it needs from data sources. This should be called before any
+// transitions are triggered.
+- (void)prepareForAppearance;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_

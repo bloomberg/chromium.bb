@@ -1473,6 +1473,18 @@ enum class ShowTabSwitcherSnapshotResult {
   [self closeSettingsAnimated:YES completion:NULL];
 }
 
+- (void)prepareTabSwitcher {
+  if (GetTabSwitcherMode() != TabSwitcherMode::GRID)
+    return;
+  if ([self.viewControllerSwapper
+          respondsToSelector:(@selector(prepareToShowTabSwitcher:))]) {
+    [self.viewControllerSwapper prepareToShowTabSwitcher:_tabSwitcher];
+  } else {
+    NOTREACHED() << "Grid view controller swapper doesn't implement "
+                 << "-prepareToShowTabSwitcher: as expected.";
+  }
+}
+
 - (void)displayTabSwitcher {
   DCHECK(!_tabSwitcherIsActive);
   if (!_isProcessingVoiceSearchCommand) {

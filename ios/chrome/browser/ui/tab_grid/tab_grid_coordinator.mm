@@ -273,6 +273,16 @@
   return self.mainViewController;
 }
 
+- (void)prepareToShowTabSwitcher:(id<TabSwitcher>)tabSwitcher {
+  DCHECK(tabSwitcher);
+  DCHECK_EQ([tabSwitcher viewController], self.mainViewController);
+  // No-op if the BVC isn't being presented.
+  if (!self.bvcContainer)
+    return;
+  [base::mac::ObjCCast<TabGridViewController>(self.mainViewController)
+      prepareForAppearance];
+}
+
 - (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion {
   DCHECK(tabSwitcher);
