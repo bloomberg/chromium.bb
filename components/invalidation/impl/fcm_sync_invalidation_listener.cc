@@ -75,7 +75,7 @@ void FCMSyncInvalidationListener::Start(
   delegate_ = delegate;
   per_user_topic_registration_manager_ =
       std::move(per_user_topic_registration_manager);
-
+  per_user_topic_registration_manager_->Init();
   invalidation_client_ = std::move(create_invalidation_client_callback)
                              .Run(network_channel_.get(), &logger_, this);
   invalidation_client_->Start();

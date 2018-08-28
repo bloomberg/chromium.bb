@@ -54,6 +54,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   virtual void UpdateRegisteredIds(const InvalidationObjectIdSet& ids,
                                    const std::string& token);
 
+  virtual void Init();
+
   InvalidationObjectIdSet GetRegisteredIds() const;
 
  private:
@@ -64,8 +66,11 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Tries to register |id|. No retry in case of failure.
   void StartRegistrationRequest(const invalidation::InvalidationObjectId& id);
 
-  // Unregisters the given object ID.
-  void UnregisterId(const invalidation::InvalidationObjectId& id);
+  void RegistrationFinishedForId(
+      invalidation::InvalidationObjectId id,
+      const Status& code,
+      const std::string& private_topic_name,
+      PerUserTopicRegistrationRequest::RequestType type);
 
   void RequestAccessToken();
 
@@ -78,6 +83,12 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
            std::unique_ptr<RegistrationEntry>,
            InvalidationObjectIdLessThan>
       registration_statuses_;
+
+  // For registered ids it maps the id value to the topic value.
+  std::map<invalidation::InvalidationObjectId,
+           std::string,
+           InvalidationObjectIdLessThan>
+      registered_ids_;
 
   // Token derrived from GCM IID.
   std::string token_;

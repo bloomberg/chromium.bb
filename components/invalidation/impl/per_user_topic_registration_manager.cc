@@ -39,6 +39,12 @@ const char kProjectId[] = "8181035976";
 const char kFCMOAuthScope[] =
     "https://www.googleapis.com/auth/firebase.messaging";
 
+using SubscriptionFinishedCallback =
+    base::OnceCallback<void(invalidation::InvalidationObjectId id,
+                            const Status& code,
+                            const std::string& private_topic_name,
+                            PerUserTopicRegistrationRequest::RequestType type)>;
+
 static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
@@ -74,9 +80,9 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
 }
 
 struct PerUserTopicRegistrationManager::RegistrationEntry {
-  enum RegistrationState { REGISTERED, UNREGISTERED };
   RegistrationEntry(const invalidation::InvalidationObjectId& id,
-                    PrefService* pref);
+                    SubscriptionFinishedCallback completion_callback,
+                    PerUserTopicRegistrationRequest::RequestType type);
   ~RegistrationEntry();
 
   void RegistrationFinished(const Status& code,
@@ -86,16 +92,8 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 
   // The object for which this is the status.
   const invalidation::InvalidationObjectId id;
-
-  // Whether this data type should be registered.  Set to false if
-  // we get a non-transient registration failure.
-  bool enabled;
-  // The current registration state.
-  RegistrationState state;
-
-  std::string private_topic_name;
-
-  PrefService* pref;
+  SubscriptionFinishedCallback completion_callback;
+  PerUserTopicRegistrationRequest::RequestType type;
 
   std::unique_ptr<PerUserTopicRegistrationRequest> request;
 
@@ -104,35 +102,16 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 
 PerUserTopicRegistrationManager::RegistrationEntry::RegistrationEntry(
     const invalidation::InvalidationObjectId& id,
-    PrefService* pref)
-    : id(id),
-      enabled(true),
-      state(RegistrationEntry::UNREGISTERED),
-      pref(pref) {
-  const base::DictionaryValue* registered_for_invalidation =
-      pref->GetDictionary(kTypeRegisteredForInvalidation);
-  if (registered_for_invalidation) {
-    auto* value =
-        registered_for_invalidation->FindKey(SerializeInvalidationObjectId(id));
-    if (value) {
-      value->GetAsString(&private_topic_name);
-      state = RegistrationEntry::REGISTERED;
-    }
-  }
-}
+    SubscriptionFinishedCallback completion_callback,
+    PerUserTopicRegistrationRequest::RequestType type)
+    : id(id), completion_callback(std::move(completion_callback)), type(type) {}
 
 PerUserTopicRegistrationManager::RegistrationEntry::~RegistrationEntry() {}
 
 void PerUserTopicRegistrationManager::RegistrationEntry::RegistrationFinished(
     const Status& code,
     const std::string& topic_name) {
-  if (code.IsSuccess()) {
-    private_topic_name = topic_name;
-    state = RegistrationEntry::REGISTERED;
-    DictionaryPrefUpdate update(pref, kTypeRegisteredForInvalidation);
-    base::DictionaryValue* pref_data = update.Get();
-    pref_data->SetString(SerializeInvalidationObjectId(id), private_topic_name);
-  }
+  std::move(completion_callback).Run(id, code, topic_name, type);
 }
 
 PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
@@ -148,6 +127,35 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
 
 PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
 
+void PerUserTopicRegistrationManager::Init() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const base::Value* pref_data =
+      local_state_->Get(kTypeRegisteredForInvalidation);
+  std::vector<std::string> keys_to_remove;
+  // Load registered ids from prefs.
+  for (const auto& it : pref_data->DictItems()) {
+    std::string serialized_object_id = it.first;
+    invalidation::InvalidationObjectId object_id;
+    if (DeserializeInvalidationObjectId(serialized_object_id, &object_id)) {
+      std::string private_topic_name;
+      if (it.second.GetAsString(&private_topic_name) &&
+          !private_topic_name.empty()) {
+        registered_ids_[object_id] = private_topic_name;
+        continue;
+      }
+    }
+    // Remove saved pref.
+    keys_to_remove.push_back(serialized_object_id);
+  }
+
+  // Delete prefs, which weren't decoded successfully.
+  DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+  base::DictionaryValue* pref_update = update.Get();
+  for (const std::string& key : keys_to_remove) {
+    pref_update->RemoveKey(key);
+  }
+}
+
 void PerUserTopicRegistrationManager::UpdateRegisteredIds(
     const InvalidationObjectIdSet& ids,
     const std::string& instance_id_token) {
@@ -155,10 +163,33 @@ void PerUserTopicRegistrationManager::UpdateRegisteredIds(
   token_ = instance_id_token;
   // TODO(melandory): On change of token registrations
   // should be re-requested.
-  for (const invalidation::InvalidationObjectId& objectId : ids) {
-    if (!base::ContainsKey(registration_statuses_, objectId)) {
-      registration_statuses_[objectId] =
-          std::make_unique<RegistrationEntry>(objectId, local_state_);
+  for (const auto& id : ids) {
+    // If id isn't registered, schedule the registration.
+    if (registered_ids_.find(id) == registered_ids_.end()) {
+      registration_statuses_[id] = std::make_unique<RegistrationEntry>(
+          id,
+          base::BindOnce(
+              &PerUserTopicRegistrationManager::RegistrationFinishedForId,
+              base::Unretained(this)),
+          PerUserTopicRegistrationRequest::SUBSCRIBE);
+    }
+  }
+
+  // There is registered id, which need to be unregistered.
+  // Schedule unregistration and immediately remove from
+  // |registered_ids_|
+  for (auto it = registered_ids_.begin(); it != registered_ids_.end();) {
+    auto id = it->first;
+    if (ids.find(id) == ids.end()) {
+      registration_statuses_[id] = std::make_unique<RegistrationEntry>(
+          id,
+          base::BindOnce(
+              &PerUserTopicRegistrationManager::RegistrationFinishedForId,
+              base::Unretained(this)),
+          PerUserTopicRegistrationRequest::UNSUBSCRIBE);
+      it = registered_ids_.erase(it);
+    } else {
+      ++it;
     }
   }
   RequestAccessToken();
@@ -166,9 +197,7 @@ void PerUserTopicRegistrationManager::UpdateRegisteredIds(
 
 void PerUserTopicRegistrationManager::DoRegistrationUpdate() {
   for (const auto& registration_status : registration_statuses_) {
-    if (registration_status.second->state == RegistrationEntry::UNREGISTERED) {
-      StartRegistrationRequest(registration_status.first);
-    }
+    StartRegistrationRequest(registration_status.first);
   }
 }
 
@@ -189,9 +218,8 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
                             .SetAuthenticationHeader(base::StringPrintf(
                                 "Bearer %s", access_token_.c_str()))
                             .SetProjectId(kProjectId)
-                            .SetType(PerUserTopicRegistrationRequest::SUBSCRIBE)
+                            .SetType(it->second->type)
                             .Build();
-
   it->second->request->Start(
       base::BindOnce(&PerUserTopicRegistrationManager::RegistrationEntry::
                          RegistrationFinished,
@@ -199,14 +227,41 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
       parse_json_, url_loader_factory_);
 }
 
+void PerUserTopicRegistrationManager::RegistrationFinishedForId(
+    invalidation::InvalidationObjectId id,
+    const Status& code,
+    const std::string& private_topic_name,
+    PerUserTopicRegistrationRequest::RequestType type) {
+  if (code.IsSuccess()) {
+    auto it = registration_statuses_.find(id);
+    registration_statuses_.erase(it);
+    DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+    std::string serialized_object_id = SerializeInvalidationObjectId(id);
+    switch (type) {
+      case PerUserTopicRegistrationRequest::SUBSCRIBE: {
+        auto serialized_object_id = SerializeInvalidationObjectId(id);
+        update->SetKey(serialized_object_id, base::Value(private_topic_name));
+        registered_ids_[id] = private_topic_name;
+        break;
+      }
+      case PerUserTopicRegistrationRequest::UNSUBSCRIBE: {
+        update->RemoveKey(serialized_object_id);
+        break;
+      }
+    }
+
+    local_state_->CommitPendingWrite();
+  }
+  // TODO(melandory): reschedule subscription or unsubscription attempt
+  // in case of failure.
+}
+
 InvalidationObjectIdSet PerUserTopicRegistrationManager::GetRegisteredIds()
     const {
   InvalidationObjectIdSet ids;
-  for (const auto& status_pair : registration_statuses_) {
-    if (status_pair.second->state == RegistrationEntry::REGISTERED) {
-      ids.insert(status_pair.first);
-    }
-  }
+  for (const auto& id : registered_ids_)
+    ids.insert(id.first);
+
   return ids;
 }
 
