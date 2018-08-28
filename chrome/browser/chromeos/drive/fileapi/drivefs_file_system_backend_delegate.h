@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
+class Profile;
+
 namespace storage {
 class AsyncFileUtil;
 class FileSystemContext;
@@ -28,7 +30,7 @@ namespace drive {
 class DriveFsFileSystemBackendDelegate
     : public chromeos::FileSystemBackendDelegate {
  public:
-  DriveFsFileSystemBackendDelegate();
+  explicit DriveFsFileSystemBackendDelegate(Profile* profile);
   ~DriveFsFileSystemBackendDelegate() override;
 
   // FileSystemBackend::Delegate overrides.
