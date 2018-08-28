@@ -135,8 +135,8 @@ public class ClearBrowsingDataPreferencesBasicTest {
     }
 
     /**
-     * Tests that for users who are signed in but don't have sync activated, only information about
-     * your "google account" which will stay signed in and "other activity" is shown.
+     * Tests that for users who are signed in but don't have sync activated,
+     * only information about "other activity" is shown in the history summary.
      */
     @Test
     @SmallTest
@@ -154,12 +154,9 @@ public class ClearBrowsingDataPreferencesBasicTest {
                         (ClearBrowsingDataPreferencesBasic) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                String cookiesSummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_COOKIES);
                 String historySummary =
                         getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_HISTORY);
 
-                assertThat(cookiesSummary, containsString(GOOGLE_ACCOUNT));
                 assertThat(historySummary, containsString(OTHER_ACTIVITY));
                 assertThat(historySummary, not(containsString(SIGNED_IN_DEVICES)));
             }
@@ -167,8 +164,8 @@ public class ClearBrowsingDataPreferencesBasicTest {
     }
 
     /**
-     * Tests that users who are signed in, and have sync enabled see information about their
-     * "google account", "other activity" and history on "signed in devices".
+     * Tests that users who are signed in, and have sync enabled see information
+     * about their "other activity" and history on "signed in devices".
      */
     @Test
     @SmallTest
@@ -186,12 +183,9 @@ public class ClearBrowsingDataPreferencesBasicTest {
                         (ClearBrowsingDataPreferencesBasic) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                String cookiesSummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_COOKIES);
                 String historySummary =
                         getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_HISTORY);
 
-                assertThat(cookiesSummary, containsString(GOOGLE_ACCOUNT));
                 assertThat(historySummary, containsString(OTHER_ACTIVITY));
                 assertThat(historySummary, containsString(SIGNED_IN_DEVICES));
             }

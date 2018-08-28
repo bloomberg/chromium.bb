@@ -100,6 +100,8 @@ class MediaLicensesCounterAndroid : public MediaLicensesCounter {
   explicit MediaLicensesCounterAndroid(Profile* profile);
   ~MediaLicensesCounterAndroid() override;
 
+  const char* GetPrefName() const override;
+
  private:
   // BrowsingDataCounter implementation.
   void Count() final;
@@ -115,6 +117,14 @@ MediaLicensesCounterAndroid::~MediaLicensesCounterAndroid() = default;
 void MediaLicensesCounterAndroid::Count() {
   ReportResult(std::make_unique<MediaLicenseResult>(
       this, cdm::MediaDrmStorageImpl::GetAllOrigins(profile_->GetPrefs())));
+}
+
+const char* MediaLicensesCounterAndroid::GetPrefName() const {
+  // On the basic tab Media Licenses are cleared via the cookies checkbox.
+  // On the advanced tab, Media Licenses is its own checkbox.
+  return GetTab() == browsing_data::ClearBrowsingDataTab::BASIC
+             ? browsing_data::prefs::kDeleteCookiesBasic
+             : browsing_data::prefs::kDeleteMediaLicenses;
 }
 
 #endif  // defined(OS_ANDROID)

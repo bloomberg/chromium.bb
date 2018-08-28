@@ -745,11 +745,11 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
         Cookies and site data
       </message>
+      <message name="IDS_CLEAR_COOKIES_MEDIA_LICENSES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies, media licenses and site data in the basic Clear Browsing Data dialog">
+        Cookies, media licenses and site data
+      </message>
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites.">
         Signs you out of most sites.
-      </message>
-      <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SIGNED_IN_SUMMARY_BASIC" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites but you Google sign in will stay.">
-        Signs you out of most sites. You won't be signed out of your Google Account.
       </message>
       <message name="IDS_CLEAR_BROWSING_HISTORY_SUMMARY" desc="A text for the basic tab explaining browsing history.">
         Clears history and autocompletions in the address bar.
