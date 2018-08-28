@@ -1453,6 +1453,7 @@
           "-v",
           "--browser=release",
           "--upload-results",
+          "--run-ref-build",
           "--test-shard-map-filename=mac_1012_low_end_26_shard_map.json",
           "--assert-gpu-compositing"
         ],
@@ -1630,6 +1631,7 @@
           "-v",
           "--browser=release",
           "--upload-results",
+          "--run-ref-build",
           "--test-shard-map-filename=mac_1013_high_end_26_shard_map.json",
           "--assert-gpu-compositing"
         ],
