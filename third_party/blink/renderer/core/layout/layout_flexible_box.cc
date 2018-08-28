@@ -1303,16 +1303,12 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
   return LayoutUnit();
 }
 
-void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(
-    LayoutBox& child,
-    LayoutUnit child_preferred_size) {
+void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
   // child_preferred_size includes scrollbar width.
-  if (HasOrthogonalFlow(child)) {
-    child.SetOverrideLogicalHeight(child_preferred_size +
-                                   child.BorderAndPaddingLogicalHeight());
+  if (HasOrthogonalFlow(*item.box)) {
+    item.box->SetOverrideLogicalHeight(item.FlexedBorderBoxSize());
   } else {
-    child.SetOverrideLogicalWidth(child_preferred_size +
-                                  child.BorderAndPaddingLogicalWidth());
+    item.box->SetOverrideLogicalWidth(item.FlexedBorderBoxSize());
   }
 }
 
@@ -1480,8 +1476,7 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
 
     child->SetShouldCheckForPaintInvalidation();
 
-    SetOverrideMainAxisContentSizeForChild(*child,
-                                           flex_item.flexed_content_size);
+    SetOverrideMainAxisContentSizeForChild(flex_item);
     // The flexed content size and the override size include the scrollbar
     // width, so we need to compare to the size including the scrollbar.
     if (flex_item.flexed_content_size !=
