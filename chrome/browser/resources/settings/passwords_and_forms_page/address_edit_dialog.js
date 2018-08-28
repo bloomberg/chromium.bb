@@ -92,9 +92,23 @@ Polymer({
     // Default to the last country used if no country code is provided.
     const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo.getAddressFormat(countryCode).then(format => {
-      this.addressWrapper_ = format.components.map(
-          component => component.row.map(
-              c => new settings.address.AddressComponentUI(this.address, c)));
+      let filteredComponent =
+          format.components.map(component => component.row.filter(c => {
+            return (
+                loadTimeData.getBoolean('EnableCompanyName') ||
+                c.field !== chrome.autofillPrivate.AddressField.COMPANY_NAME);
+          }));
+      this.addressWrapper_ =
+          filteredComponent
+              .filter(component => {
+                return (component && component.length > 0);
+              })
+              .map(component => {
+                return component.map(c => {
+                  return new settings.address.AddressComponentUI(
+                      this.address, c);
+                });
+              });
 
       // Flush dom before resize and savability updates.
       Polymer.dom.flush();

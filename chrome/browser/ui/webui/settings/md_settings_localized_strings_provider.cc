@@ -29,6 +29,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -1484,6 +1485,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddBoolean("EnableCompanyName",
+                          base::FeatureList::IsEnabled(
+                              autofill::features::kAutofillEnableCompanyName));
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
