@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/get_more_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/third_party_screen_handler.h"
@@ -108,7 +110,12 @@ void AssistantOptInDialog::Show(
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
   DCHECK(!is_active);
   AssistantOptInDialog* dialog = new AssistantOptInDialog(std::move(callback));
-  dialog->ShowSystemDialog(true);
+
+  int container_id = dialog->GetDialogModalType() == ui::MODAL_TYPE_NONE
+                         ? ash::kShellWindowId_DefaultContainer
+                         : ash::kShellWindowId_LockSystemModalContainer;
+  chrome::ShowWebDialogInContainer(
+      container_id, ProfileManager::GetActiveUserProfile(), dialog, true);
 }
 
 // static

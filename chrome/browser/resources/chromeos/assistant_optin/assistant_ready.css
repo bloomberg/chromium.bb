@@ -6,9 +6,13 @@
   display: block;
   height: 186px;
   margin: auto;
-  padding: 110px 0 0 72px;
+  padding: 110px 0 0 35px;
 }
 
 #button-text {
   padding: 0 10px 0 10px;
+}
+
+.content {
+  padding-right: 8px;
 }
