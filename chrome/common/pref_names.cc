@@ -1587,6 +1587,9 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // will be launched.
 const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 
+// Dictionary that maps web app URLs to Chrome extension IDs.
+const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
+
 // Dictionary that maps Geolocation network provider server URLs to
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";

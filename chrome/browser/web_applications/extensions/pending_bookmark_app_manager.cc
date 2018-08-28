@@ -12,8 +12,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
@@ -48,6 +51,7 @@ struct PendingBookmarkAppManager::TaskAndCallback {
 
 PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
     : profile_(profile),
+      extension_ids_map_(profile->GetPrefs()),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
       timer_(std::make_unique<base::OneShotTimer>()) {}
@@ -66,6 +70,14 @@ void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+// TODO(nigeltao/ortuno): clarify whether the apps_to_install is relative or
+// absolute: in C++ terminology, an analogy is += versus = operators. Should we
+// install these apps *in addition to* what's already installed, or should we
+// make the list of installed apps is identical to the argument? If the former,
+// we also need a way to tell the PendingBookmarkAppManager to uninstall apps.
+// If the latter, we also need to pass the install source (a Manifest::Location
+// or something similar), so that "the list of policy-installed apps" doesn't
+// interfere with "the list of default-installed apps".
 void PendingBookmarkAppManager::InstallApps(
     std::vector<AppInfo> apps_to_install,
     const RepeatingInstallCallback& callback) {
@@ -92,29 +104,66 @@ void PendingBookmarkAppManager::SetTimerForTesting(
   timer_ = std::move(timer);
 }
 
+// Returns (as the base::Optional part) whether or not there is already a known
+// extension for the given ID. The bool inside the base::Optional is, when
+// known, whether the extension is installed (true) or uninstalled (false).
+base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
+    const std::string& extension_id) {
+  if (ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_id, ExtensionRegistry::EVERYTHING) != nullptr) {
+    return base::Optional<bool>(true);
+  }
+  if (ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(
+          extension_id)) {
+    return base::Optional<bool>(false);
+  }
+
+  return base::nullopt;
+}
+
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {
   if (current_task_and_callback_)
     return;
 
-  if (pending_tasks_and_callbacks_.empty()) {
-    web_contents_.reset();
+  while (!pending_tasks_and_callbacks_.empty()) {
+    std::unique_ptr<TaskAndCallback> front =
+        std::move(pending_tasks_and_callbacks_.front());
+    pending_tasks_and_callbacks_.pop_front();
+
+    base::Optional<std::string> extension_id =
+        extension_ids_map_.Lookup(front->task->app_info().url);
+
+    if (extension_id) {
+      base::Optional<bool> opt =
+          IsExtensionPresentAndInstalled(extension_id.value());
+      if (opt.has_value()) {
+        // TODO(crbug.com/878262): Handle the case where the app is already
+        // installed but from a different source.
+        std::move(front->callback)
+            .Run(front->task->app_info().url,
+                 opt.value() ? extension_id : base::nullopt);
+        continue;
+      }
+    }
+
+    current_task_and_callback_ = std::move(front);
+
+    CreateWebContentsIfNecessary();
+    Observe(web_contents_.get());
+
+    content::NavigationController::LoadURLParams load_params(
+        current_task_and_callback_->task->app_info().url);
+    load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+    web_contents_->GetController().LoadURLWithParams(load_params);
+    timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
+        base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  current_task_and_callback_ = std::move(pending_tasks_and_callbacks_.front());
-  pending_tasks_and_callbacks_.pop_front();
-
-  CreateWebContentsIfNecessary();
-  Observe(web_contents_.get());
-
-  content::NavigationController::LoadURLParams load_params(
-      current_task_and_callback_->task->app_info().url);
-  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  web_contents_->GetController().LoadURLWithParams(load_params);
-  timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
-      base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
-                     weak_ptr_factory_.GetWeakPtr()));
+  web_contents_.reset();
 }
 
 void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
@@ -146,6 +195,12 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
       FROM_HERE,
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  // An empty app_id means that the installation failed.
+  if (app_id) {
+    extension_ids_map_.Insert(current_task_and_callback_->task->app_info().url,
+                              app_id.value());
+  }
 
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_task_and_callback_);

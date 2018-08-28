@@ -560,6 +560,8 @@ extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kWebAppInstallForceList[];
 
+extern const char kWebAppsExtensionIDs[];
+
 extern const char kGeolocationAccessToken[];
 
 extern const char kDefaultAudioCaptureDevice[];
