@@ -57,17 +57,6 @@ class FormSaver {
   // password.
   virtual void RemovePresavedPassword() = 0;
 
-  // Removes all credentials from |best_matches| which are for the same GAIA
-  // account as |pending|, but with a different (i.e., outdated) password. The
-  // credentials are removed both from the store and from |best_matches|. If
-  // one of the removed credentials is the pointee of |*preferred_match|,
-  // |*preferred_match| is nulled. Do not call this if |pending| is not a GAIA
-  // account.
-  virtual void WipeOutdatedCopies(
-      const autofill::PasswordForm& pending,
-      std::map<base::string16, const autofill::PasswordForm*>* best_matches,
-      const autofill::PasswordForm** preferred_match) = 0;
-
   // Creates a new FormSaver with the same state as |*this|.
   virtual std::unique_ptr<FormSaver> Clone() = 0;
 

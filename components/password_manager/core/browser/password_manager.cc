@@ -972,7 +972,6 @@ void PasswordManager::OnLoginSuccessful() {
   // NewPasswordFormManager.
   if (!client_->GetStoreResultFilter()->ShouldSave(
           *provisional_save_manager_->submitted_form())) {
-    provisional_save_manager_->WipeStoreCopyIfOutdated();
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL,
         provisional_save_manager_->GetOrigin(), logger.get());

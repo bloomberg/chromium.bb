@@ -51,19 +51,6 @@ PasswordForm CreatePending(StringPiece username, StringPiece password) {
   return form;
 }
 
-// Creates a dummy pending (for saving) GAIA form with |username| and
-// |password| values as specified.
-PasswordForm CreatePendingGAIA(StringPiece username, StringPiece password) {
-  PasswordForm form;
-  form.origin = GURL("https://accounts.google.com");
-  form.signon_realm = form.origin.spec();
-  form.action = form.origin;
-  form.username_value = ASCIIToUTF16(username);
-  form.password_value = ASCIIToUTF16(password);
-  form.preferred = true;
-  return form;
-}
-
 }  // namespace
 
 class FormSaverImplTest : public testing::Test {
@@ -516,84 +503,6 @@ TEST_F(FormSaverImplTest, RemovePresavedPassword_AndPresaveAgain) {
   form_saver_.PresaveGeneratedPassword(generated);
   EXPECT_EQ(ASCIIToUTF16("newgen"), saved.username_value);
   EXPECT_EQ(ASCIIToUTF16("newgenpwd"), saved.password_value);
-}
-
-// Check that wiping updates the preferred match.
-TEST_F(FormSaverImplTest, WipeOutdatedCopies_Preferred) {
-  PasswordForm pending = CreatePendingGAIA("nameofuser", "wordToP4a55");
-
-  std::map<base::string16, const PasswordForm*> best_matches;
-  PasswordForm other = pending;
-  other.password_value = ASCIIToUTF16("oldpwd");
-  best_matches[other.username_value] = &other;
-
-  const PasswordForm* preferred = best_matches[other.username_value];
-
-  EXPECT_CALL(*mock_store_, RemoveLogin(other));
-  form_saver_.WipeOutdatedCopies(pending, &best_matches, &preferred);
-  EXPECT_FALSE(preferred);
-}
-
-// Check that wiping does not crash if the preferred match is null.
-TEST_F(FormSaverImplTest, WipeOutdatedCopies_NullPreferred) {
-  PasswordForm pending = CreatePendingGAIA("nameofuser", "wordToP4a55");
-
-  std::map<base::string16, const PasswordForm*> best_matches;
-  PasswordForm other = pending;
-  other.password_value = ASCIIToUTF16("oldpwd");
-  best_matches[other.username_value] = &other;
-
-  const PasswordForm* preferred = nullptr;
-
-  EXPECT_CALL(*mock_store_, RemoveLogin(other));
-  form_saver_.WipeOutdatedCopies(pending, &best_matches, &preferred);
-}
-
-// Check that equivalent names of GAIA accounts are recognised.
-TEST_F(FormSaverImplTest, WipeOutdatedCopies_EquivalentNames) {
-  PasswordForm pending = CreatePendingGAIA("nameofuser", "wordToP4a55");
-
-  std::map<base::string16, const PasswordForm*> best_matches;
-  PasswordForm old = pending;
-  old.password_value = ASCIIToUTF16("oldpwd");
-  best_matches[old.username_value] = &old;
-  // For GAIA authentication, the first two other usernames are equivalent to
-  // |pending| but the third is not.
-  PasswordForm eq1 = old;
-  eq1.username_value = ASCIIToUTF16("nameofuser@gmail.com");
-  best_matches[eq1.username_value] = &eq1;
-  PasswordForm eq2 = old;
-  eq2.username_value = ASCIIToUTF16("name.of.user");
-  best_matches[eq2.username_value] = &eq2;
-  PasswordForm non_eq = old;
-  non_eq.username_value = ASCIIToUTF16("other.user");
-  best_matches[non_eq.username_value] = &non_eq;
-
-  const PasswordForm* preferred = nullptr;
-
-  EXPECT_CALL(*mock_store_, RemoveLogin(old));
-  EXPECT_CALL(*mock_store_, RemoveLogin(eq1));
-  EXPECT_CALL(*mock_store_, RemoveLogin(eq2));
-  form_saver_.WipeOutdatedCopies(pending, &best_matches, &preferred);
-}
-
-// Check that not outdated copies of the pending GAIA credential are not wiped.
-TEST_F(FormSaverImplTest, WipeOutdatedCopies_NotOutdated) {
-  PasswordForm pending = CreatePendingGAIA("nameofuser", "wordToP4a55");
-
-  std::map<base::string16, const PasswordForm*> best_matches;
-  best_matches[pending.username_value] = &pending;
-  PasswordForm eq1 = pending;
-  eq1.username_value = ASCIIToUTF16("nameofuser@gmail.com");
-  best_matches[eq1.username_value] = &eq1;
-  PasswordForm eq2 = pending;
-  eq2.username_value = ASCIIToUTF16("name.of.user");
-  best_matches[eq2.username_value] = &eq2;
-
-  const PasswordForm* preferred = nullptr;
-
-  EXPECT_CALL(*mock_store_, RemoveLogin(_)).Times(0);
-  form_saver_.WipeOutdatedCopies(pending, &best_matches, &preferred);
 }
 
 // Check that presaving a password once in original and then once in clone
