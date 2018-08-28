@@ -29,8 +29,7 @@ class VulkanSwapChain {
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VkSurfaceKHR surface,
                   const VkSurfaceCapabilitiesKHR& surface_caps,
-                  const VkSurfaceFormatKHR& surface_format,
-                  std::unique_ptr<VulkanSwapChain> old_swap_chain);
+                  const VkSurfaceFormatKHR& surface_format);
   void Destroy();
 
   gfx::SwapResult SwapBuffers();
@@ -61,8 +60,7 @@ class VulkanSwapChain {
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
                            const VkSurfaceCapabilitiesKHR& surface_caps,
-                           const VkSurfaceFormatKHR& surface_format,
-                           std::unique_ptr<VulkanSwapChain> old_swap_chain);
+                           const VkSurfaceFormatKHR& surface_format);
   void DestroySwapChain();
 
   bool InitializeSwapImages(const VkSurfaceCapabilitiesKHR& surface_caps,

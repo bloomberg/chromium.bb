@@ -20,16 +20,13 @@ VulkanSwapChain::~VulkanSwapChain() {
   DCHECK_EQ(static_cast<VkSemaphore>(VK_NULL_HANDLE), next_present_semaphore_);
 }
 
-bool VulkanSwapChain::Initialize(
-    VulkanDeviceQueue* device_queue,
-    VkSurfaceKHR surface,
-    const VkSurfaceCapabilitiesKHR& surface_caps,
-    const VkSurfaceFormatKHR& surface_format,
-    std::unique_ptr<VulkanSwapChain> old_swap_chain) {
+bool VulkanSwapChain::Initialize(VulkanDeviceQueue* device_queue,
+                                 VkSurfaceKHR surface,
+                                 const VkSurfaceCapabilitiesKHR& surface_caps,
+                                 const VkSurfaceFormatKHR& surface_format) {
   DCHECK(device_queue);
   device_queue_ = device_queue;
-  return InitializeSwapChain(surface, surface_caps, surface_format,
-                             std::move(old_swap_chain)) &&
+  return InitializeSwapChain(surface, surface_caps, surface_format) &&
          InitializeSwapImages(surface_caps, surface_format);
 }
 
@@ -88,8 +85,7 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
 bool VulkanSwapChain::InitializeSwapChain(
     VkSurfaceKHR surface,
     const VkSurfaceCapabilitiesKHR& surface_caps,
-    const VkSurfaceFormatKHR& surface_format,
-    std::unique_ptr<VulkanSwapChain> old_swap_chain) {
+    const VkSurfaceFormatKHR& surface_format) {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
@@ -108,8 +104,7 @@ bool VulkanSwapChain::InitializeSwapChain(
   swap_chain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   swap_chain_create_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
   swap_chain_create_info.clipped = true;
-  swap_chain_create_info.oldSwapchain =
-      old_swap_chain ? old_swap_chain->swap_chain_ : nullptr;
+  swap_chain_create_info.oldSwapchain = swap_chain_;
 
   VkSwapchainKHR new_swap_chain = VK_NULL_HANDLE;
   result = vkCreateSwapchainKHR(device, &swap_chain_create_info, nullptr,
@@ -119,13 +114,7 @@ bool VulkanSwapChain::InitializeSwapChain(
     return false;
   }
 
-  if (old_swap_chain) {
-    result = vkQueueWaitIdle(device_queue_->GetVulkanQueue());
-    DLOG_IF(ERROR, VK_SUCCESS != result)
-        << "vkQueueWaitIdle failed: " << result;
-    old_swap_chain->Destroy();
-    old_swap_chain = nullptr;
-  }
+  Destroy();
 
   swap_chain_ = new_swap_chain;
   size_ = gfx::Size(swap_chain_create_info.imageExtent.width,
