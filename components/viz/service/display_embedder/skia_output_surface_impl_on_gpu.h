@@ -154,7 +154,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // Generage the next swap ID and push it to our pending swap ID queues.
   void OnSwapBuffers();
 
-  void CreateSkSurfaceForVulkan(const gfx::Size& size);
+  void CreateSkSurfaceForVulkan();
 
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;

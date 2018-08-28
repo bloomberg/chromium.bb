@@ -106,10 +106,32 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       return false;
     }
   }
+  // Delay creating SwapChain to when the surface size is specified by Resize().
+  return true;
+}
 
+void VulkanSurface::Destroy() {
+  swap_chain_->Destroy();
+  vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
+  surface_ = VK_NULL_HANDLE;
+}
+
+gfx::SwapResult VulkanSurface::SwapBuffers() {
+  return swap_chain_->SwapBuffers();
+}
+
+VulkanSwapChain* VulkanSurface::GetSwapChain() {
+  return swap_chain_.get();
+}
+
+void VulkanSurface::Finish() {
+  vkQueueWaitIdle(device_queue_->GetVulkanQueue());
+}
+
+bool VulkanSurface::SetSize(const gfx::Size& size) {
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
-  result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+  VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
       device_queue_->GetVulkanPhysicalDevice(), surface_, &surface_caps);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
@@ -117,37 +139,49 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
     return false;
   }
 
-  // These are actual surfaces so the current extent should be defined.
-  DCHECK_NE(UINT_MAX, surface_caps.currentExtent.width);
-  DCHECK_NE(UINT_MAX, surface_caps.currentExtent.height);
-  size_ = gfx::Size(surface_caps.currentExtent.width,
-                    surface_caps.currentExtent.height);
+  // If width and height of the surface are 0xFFFFFFFF, it means the surface
+  // size will be determined by the extent of a swapchain targeting the surface.
+  // In that case, we will use the |size| which is the window size for the
+  // swapchain. Otherwise, we just use the current surface size for the
+  // swapchian.
+  if (surface_caps.currentExtent.width ==
+          std::numeric_limits<uint32_t>::max() ||
+      surface_caps.currentExtent.height ==
+          std::numeric_limits<uint32_t>::max()) {
+    DCHECK_EQ(surface_caps.currentExtent.width,
+              std::numeric_limits<uint32_t>::max());
+    DCHECK_EQ(surface_caps.currentExtent.height,
+              std::numeric_limits<uint32_t>::max());
+    surface_caps.currentExtent.width = size.width();
+    surface_caps.currentExtent.height = size.height();
+  }
 
+  DCHECK_GE(surface_caps.currentExtent.width,
+            surface_caps.minImageExtent.width);
+  DCHECK_GE(surface_caps.currentExtent.height,
+            surface_caps.minImageExtent.height);
+  DCHECK_LE(surface_caps.currentExtent.width,
+            surface_caps.maxImageExtent.width);
+  DCHECK_LE(surface_caps.currentExtent.height,
+            surface_caps.maxImageExtent.height);
+  DCHECK_GT(surface_caps.currentExtent.width, 0u);
+  DCHECK_GT(surface_caps.currentExtent.height, 0u);
+
+  gfx::Size new_size(surface_caps.currentExtent.width,
+                     surface_caps.currentExtent.height);
+  if (size_ == new_size)
+    return true;
+
+  size_ = new_size;
+  auto swap_chain = std::make_unique<VulkanSwapChain>();
   // Create Swapchain.
-  if (!swap_chain_.Initialize(device_queue_, surface_, surface_caps,
-                              surface_format_)) {
+  if (!swap_chain->Initialize(device_queue_, surface_, surface_caps,
+                              surface_format_, std::move(swap_chain_))) {
     return false;
   }
 
+  swap_chain_ = std::move(swap_chain);
   return true;
-}
-
-void VulkanSurface::Destroy() {
-  swap_chain_.Destroy();
-  vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
-  surface_ = VK_NULL_HANDLE;
-}
-
-gfx::SwapResult VulkanSurface::SwapBuffers() {
-  return swap_chain_.SwapBuffers();
-}
-
-VulkanSwapChain* VulkanSurface::GetSwapChain() {
-  return &swap_chain_;
-}
-
-void VulkanSurface::Finish() {
-  vkQueueWaitIdle(device_queue_->GetVulkanQueue());
 }
 
 }  // namespace gpu

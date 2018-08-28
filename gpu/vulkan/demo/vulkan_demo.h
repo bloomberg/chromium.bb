@@ -59,7 +59,6 @@ class VulkanDemo : public ui::PlatformWindowDelegate {
   void Draw(SkCanvas* canvas, float fraction);
   void RenderFrame();
 
-  gfx::Size size_ = gfx::Size(800, 600);
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider_;
   gfx::AcceleratedWidget accelerated_widget_ = gfx::kNullAcceleratedWidget;
