@@ -101,12 +101,12 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   const auto& apps_to_install = pending_app_manager->installed_apps();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.emplace_back(
+  expected_apps_to_install.push_back(PendingAppManager::AppInfo::Create(
       GURL(kUrl1), PendingAppManager::LaunchContainer::kWindow,
-      false /* create_shortcuts */);
-  expected_apps_to_install.emplace_back(
+      false /* create_shortcuts */));
+  expected_apps_to_install.push_back(PendingAppManager::AppInfo::Create(
       GURL(kUrl2), PendingAppManager::LaunchContainer::kTab,
-      false /* create_shortcuts */);
+      false /* create_shortcuts */));
 
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }
@@ -133,9 +133,9 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
   const auto& apps_to_install = pending_app_manager->installed_apps();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.emplace_back(
+  expected_apps_to_install.push_back(PendingAppManager::AppInfo::Create(
       GURL(kUrl1), PendingAppManager::LaunchContainer::kDefault,
-      false /* create_shortcuts */);
+      false /* create_shortcuts */));
 
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }

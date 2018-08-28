@@ -33,18 +33,18 @@ const char kQuxWebAppUrl[] = "https://qux.example";
 const char kWrongUrl[] = "https://foobar.example";
 
 web_app::PendingAppManager::AppInfo GetFooAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  return web_app::PendingAppManager::AppInfo::Create(
       GURL(kFooWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab);
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  return web_app::PendingAppManager::AppInfo::Create(
       GURL(kBarWebAppUrl),
       web_app::PendingAppManager::LaunchContainer::kWindow);
 }
 
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  return web_app::PendingAppManager::AppInfo::Create(
       GURL(kQuxWebAppUrl),
       web_app::PendingAppManager::LaunchContainer::kWindow);
 }
