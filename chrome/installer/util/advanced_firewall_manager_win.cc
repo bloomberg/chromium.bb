@@ -108,8 +108,7 @@ void AdvancedFirewallManager::DeleteRule(
   // Rename rule to unique name and delete by unique name. We can't just delete
   // rule by name. Multiple rules with the same name and different app are
   // possible.
-  base::win::ScopedBstr unique_name(
-      base::UTF8ToUTF16(base::GenerateGUID()).c_str());
+  base::win::ScopedBstr unique_name(base::UTF8ToUTF16(base::GenerateGUID()));
   rule->put_Name(unique_name);
   firewall_rules_->Remove(unique_name);
 }
@@ -135,16 +134,15 @@ Microsoft::WRL::ComPtr<INetFwRule> AdvancedFirewallManager::CreateUDPRule(
     return Microsoft::WRL::ComPtr<INetFwRule>();
   }
 
-  udp_rule->put_Name(base::win::ScopedBstr(rule_name.c_str()));
-  udp_rule->put_Description(base::win::ScopedBstr(description.c_str()));
-  udp_rule->put_ApplicationName(
-      base::win::ScopedBstr(app_path_.value().c_str()));
+  udp_rule->put_Name(base::win::ScopedBstr(rule_name));
+  udp_rule->put_Description(base::win::ScopedBstr(description));
+  udp_rule->put_ApplicationName(base::win::ScopedBstr(app_path_.value()));
   udp_rule->put_Protocol(NET_FW_IP_PROTOCOL_UDP);
   udp_rule->put_Direction(NET_FW_RULE_DIR_IN);
   udp_rule->put_Enabled(VARIANT_TRUE);
   udp_rule->put_LocalPorts(
-      base::win::ScopedBstr(base::StringPrintf(L"%u", port).c_str()));
-  udp_rule->put_Grouping(base::win::ScopedBstr(app_name_.c_str()));
+      base::win::ScopedBstr(base::StringPrintf(L"%u", port)));
+  udp_rule->put_Grouping(base::win::ScopedBstr(app_name_));
   udp_rule->put_Profiles(NET_FW_PROFILE2_ALL);
   udp_rule->put_Action(NET_FW_ACTION_ALLOW);
 

@@ -306,7 +306,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   Microsoft::WRL::ComPtr<IRdpDesktopSessionEventHandler> event_handler(
       new EventHandler(weak_factory_.GetWeakPtr()));
   terminal_id_ = base::GenerateGUID();
-  base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
+  base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_));
   result = rdp_desktop_session_->Connect(host_size.width(), host_size.height(),
                                          kDefaultRdpDpi, kDefaultRdpDpi,
                                          terminal_id, server_port,
