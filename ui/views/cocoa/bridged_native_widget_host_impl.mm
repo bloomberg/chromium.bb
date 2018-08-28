@@ -7,6 +7,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/base/models/dialog_model.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -15,6 +16,7 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -474,6 +476,43 @@ void BridgedNativeWidgetHostImpl::OnWindowKeyStatusChanged(
       widget->GetFocusManager()->StoreFocusedView(true);
     }
   }
+}
+
+void BridgedNativeWidgetHostImpl::DoDialogButtonAction(
+    ui::DialogButton button) {
+  views::DialogDelegate* dialog =
+      root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
+  DCHECK(dialog);
+  views::DialogClientView* client = dialog->GetDialogClientView();
+  if (button == ui::DIALOG_BUTTON_OK) {
+    client->AcceptWindow();
+  } else {
+    DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+    client->CancelWindow();
+  }
+}
+
+void BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
+    ui::DialogButton button,
+    bool* button_exists,
+    base::string16* button_label,
+    bool* is_button_enabled,
+    bool* is_button_default) {
+  *button_exists = false;
+  ui::DialogModel* model =
+      root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
+  if (!model || !(model->GetDialogButtons() & button))
+    return;
+  *button_exists = true;
+  *button_label = model->GetDialogButtonLabel(button);
+  *is_button_enabled = model->IsDialogButtonEnabled(button);
+  *is_button_default = button == model->GetDefaultDialogButton();
+}
+
+void BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
+  ui::DialogModel* model =
+      root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
+  *buttons_exist = model && model->GetDialogButtons();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
