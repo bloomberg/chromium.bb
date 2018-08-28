@@ -31,6 +31,8 @@
     # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
     'v8_context_snapshot.bin',
 
+    'browser_tests.isolated',
+
     'chrome_100_percent.pak',
     'chrome_200_percent.pak',
     'components_tests_resources.pak',
