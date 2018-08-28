@@ -131,4 +131,16 @@
   <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT" desc="A message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some protected content from at least one specific web site">
      You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
   </message>
+  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites.">
+    Signs you out of most sites.
+  </message>
+  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites but your Google sign in will stay.">
+    Signs you out of most sites. You won't be signed out of your Google Account.
+  </message>
+  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_MEDIA_LICENSES" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites. Clearing media licenses will result in the user being unable to play some protected content from at least one specific web site.">
+    Signs you out of most sites. You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
+  </message>
+  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION_AND_MEDIA_LICENSES" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites but your Google sign in will stay. Clearing media licenses will result in the user being unable to play some protected content from at least one specific web site.">
+    Signs you out of most sites. You won't be signed out of your Google Account. You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
+  </message>
 </grit-part>

@@ -273,6 +273,21 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
+     * Determine the array of data types to be deleted.
+     * @param options The set of selected DialogOptions.
+     * @return int[] An array of data types that should be deleted
+     */
+    protected int[] getDataTypesFromOptions(EnumSet<DialogOption> options) {
+        int[] dataTypes = new int[options.size()];
+        int i = 0;
+        for (DialogOption option : options) {
+            dataTypes[i] = option.getDataType();
+            ++i;
+        }
+        return dataTypes;
+    }
+
+    /**
      * Notifies subclasses that browsing data is about to be cleared.
      */
     protected void onClearBrowsingData() {}
@@ -290,12 +305,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         RecordHistogram.recordMediumTimesHistogram("History.ClearBrowsingData.TimeSpentInDialog",
                 SystemClock.elapsedRealtime() - mDialogOpened, TimeUnit.MILLISECONDS);
 
-        int[] dataTypes = new int[options.size()];
-        int i = 0;
-        for (DialogOption option : options) {
-            dataTypes[i] = option.getDataType();
-            ++i;
-        }
+        int[] dataTypes = getDataTypesFromOptions(options);
 
         Object spinnerSelection =
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();

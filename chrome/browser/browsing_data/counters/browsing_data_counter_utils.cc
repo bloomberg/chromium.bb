@@ -97,8 +97,30 @@ base::string16 GetChromeCounterTextFromResult(
                      : IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
   }
   if (pref_name == browsing_data::prefs::kDeleteCookiesBasic) {
-    // The basic tab doesn't show cookie counter results.
+#if defined(OS_ANDROID)
+    // On Android the basic tab includes Media Licenses. |result| is the
+    // BrowsingDataCounter returned after counting the number of Media Licenses.
+    // It includes the name of one origin that contains Media Licenses, so if
+    // there are Media Licenses, include that origin as part of the message
+    // displayed to the user. The message is also different depending on
+    // whether the user is signed in or not.
+    const auto* media_license_result =
+        static_cast<const MediaLicensesCounter::MediaLicenseResult*>(result);
+    const bool signed_in = ShouldShowCookieException(profile);
+    if (media_license_result->Value() > 0) {
+      return l10n_util::GetStringFUTF16(
+          signed_in
+              ? IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION_AND_MEDIA_LICENSES
+              : IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_MEDIA_LICENSES,
+          base::UTF8ToUTF16(media_license_result->GetOneOrigin()));
+    }
+    return l10n_util::GetStringUTF16(
+        signed_in ? IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION
+                  : IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC);
+#else
+    // On other platforms, the basic tab doesn't show cookie counter results.
     NOTREACHED();
+#endif
   }
   if (pref_name == browsing_data::prefs::kDeleteCookies) {
     // Site data counter.

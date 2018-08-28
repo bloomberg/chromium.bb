@@ -73,8 +73,13 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
     return std::make_unique<SiteDataCounter>(profile);
   }
   if (pref_name == browsing_data::prefs::kDeleteCookiesBasic) {
-    // The cookies option on the basic tab doesn't use a counter.
+// The cookies option on the basic tab doesn't use a counter.
+// However, on Android it does include Media Licenses.
+#if defined(OS_ANDROID)
+    return MediaLicensesCounter::Create(profile);
+#else
     return nullptr;
+#endif
   }
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
