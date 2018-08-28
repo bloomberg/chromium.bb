@@ -1517,19 +1517,19 @@ This file contains the strings for ash.
         Come back at <ph name="COME_BACK_TIME">$1<ex>7:30 AM</ex></ph>.
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        The device admin may monitor the following:
+        The admin of this device has the ability to:
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_1" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         Access your browsing activity
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_2" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Manipulate settings that specify whether websites can use features such as geolocation, microphone, camera, etc.
+        Choose whether websites can use location services or the device’s microphone, camera, or other features
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_3" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Manage your apps, extensions, and themes
+        Manage apps, extensions, and themes
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Manipulate privacy-related settings
+        Adjust privacy settings
       </message>
 
       <!-- Multi-profiles intro dialog -->
