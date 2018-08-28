@@ -144,7 +144,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/download/new_net_error_page_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -1234,17 +1233,17 @@ const FeatureEntry::FeatureVariation kGamepadPollingRateVariations[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentList = {
-    chrome::android::new_net_error_ui::kUIAlternateParameterName,
-    chrome::android::new_net_error_ui::kUIAlternateContentList};
+    features::kNewNetErrorPageUIAlternateParameterName,
+    features::kNewNetErrorPageUIAlternateContentList};
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentListAutoDL = {
-    chrome::android::new_net_error_ui::kUIAlternateParameterName,
-    chrome::android::new_net_error_ui::kUIAlternateContentListAutoDownload};
+    features::kNewNetErrorPageUIAlternateParameterName,
+    features::kNewNetErrorPageUIAlternateContentListAutoDownload};
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreview = {
-    chrome::android::new_net_error_ui::kUIAlternateParameterName,
-    chrome::android::new_net_error_ui::kUIAlternateContentPreview};
+    features::kNewNetErrorPageUIAlternateParameterName,
+    features::kNewNetErrorPageUIAlternateContentPreview};
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreviewAutoDL = {
-    chrome::android::new_net_error_ui::kUIAlternateParameterName,
-    chrome::android::new_net_error_ui::kUIAlternateContentPreviewAutoDownload};
+    features::kNewNetErrorPageUIAlternateParameterName,
+    features::kNewNetErrorPageUIAlternateContentPreviewAutoDownload};
 
 const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
     {"Content List", &kNewNetErrorPageUIContentList, 1, nullptr},
@@ -3699,7 +3698,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kNewNetErrorPageUI,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kNewNetErrorPageUI,
                                     kNewNetErrorPageUIVariations,
                                     "NewNetErrorPageUI")},
 #endif  // defined(OS_ANDROID)

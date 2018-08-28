@@ -47,6 +47,8 @@ NSString* GetErrorPage(NSError* error, bool is_post, bool is_off_the_record) {
       GURL(base::SysNSStringToUTF16(url_spec)), is_post,
       /*stale_copy_in_cache=*/false,
       /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
+      error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::
+          kDisabled,
       GetApplicationContext()->GetApplicationLocale(),
       /*params=*/nullptr, &error_strings);
 

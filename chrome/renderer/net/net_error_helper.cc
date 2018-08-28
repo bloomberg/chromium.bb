@@ -12,11 +12,13 @@
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
@@ -88,6 +90,26 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
     return NetErrorHelperCore::MAIN_FRAME;
   return NetErrorHelperCore::SUB_FRAME;
 }
+
+#if defined(OS_ANDROID)
+LocalizedError::OfflineContentOnNetErrorFeatureState
+GetOfflineContentOnNetErrorFeatureState() {
+  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI))
+    return LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled;
+  const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
+      features::kNewNetErrorPageUI,
+      features::kNewNetErrorPageUIAlternateParameterName);
+  if (alternate_ui_name == features::kNewNetErrorPageUIAlternateContentList) {
+    return LocalizedError::OfflineContentOnNetErrorFeatureState::kEnabledList;
+  }
+  return LocalizedError::OfflineContentOnNetErrorFeatureState::kEnabledSummary;
+}
+#else   // OS_ANDROID
+LocalizedError::OfflineContentOnNetErrorFeatureState
+GetOfflineContentOnNetErrorFeatureState() {
+  return LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled;
+}
+#endif  // OS_ANDROID
 
 const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
   static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
@@ -328,6 +350,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool* show_saved_copy_button_shown,
     bool* show_cached_copy_button_shown,
     bool* download_button_shown,
+    bool* offline_suggested_content_allowed,
     std::string* error_html) const {
   error_html->clear();
 
@@ -342,6 +365,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error.reason(), error.domain(), error.url(), is_failed_post,
         error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
         ChromeRenderThreadObserver::is_incognito_process(),
+        GetOfflineContentOnNetErrorFeatureState(),
         RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
@@ -350,6 +374,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error_strings.Get("cacheButton", nullptr);
     *download_button_shown =
         error_strings.Get("downloadButton", nullptr);
+    *offline_suggested_content_allowed =
+        error_strings.Get("suggestedOfflineContentPresentationMode", nullptr);
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -386,6 +412,7 @@ void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
+      GetOfflineContentOnNetErrorFeatureState(),
       RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
       &error_strings);
 

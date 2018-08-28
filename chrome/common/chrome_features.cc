@@ -391,6 +391,21 @@ const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
+#if defined(OS_ANDROID)
+// Changes the net error page UI by adding suggested offline content or
+// enabling automatic fetching of the page when online again.
+const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
+
+const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
+const char kNewNetErrorPageUIAlternateContentListAutoDownload[] =
+    "content_list_auto_download";
+const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
+const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[] =
+    "content_preview_auto_download";
+#endif  // OS_ANDROID
+
 const base::Feature kNetworkPrediction{"NetworkPrediction",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
