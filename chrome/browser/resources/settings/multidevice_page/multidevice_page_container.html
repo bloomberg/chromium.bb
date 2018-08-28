@@ -9,7 +9,9 @@
 
 <dom-module id="settings-multidevice-page-container">
   <template>
-    <template is="dom-if" if="[[doesPotentialConnectedPhoneExist]]" restamp>
+    <template is="dom-if"
+        if="[[doesChromebookSupportMultiDeviceFeatures]]"
+        restamp>
       <settings-multidevice-page page-content-data="[[pageContentData]]">
       </settings-multidevice-page>
     </template>
