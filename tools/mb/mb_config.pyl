@@ -223,6 +223,7 @@
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
       'linux-annotator-rel': 'release_bot',
+      'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on',
       'linux-chromium-tests-staging-builder': 'release_bot',
@@ -1200,6 +1201,10 @@
       'debug_bot',
     ],
 
+    'debug_bot_enable_blink_animation_use_time_delta': [
+      'debug_bot', 'enable_blink_animation_use_time_delta',
+    ],
+
     'debug_bot_enable_blink_heap_incremental_marking': [
       'debug_bot', 'enable_blink_heap_incremental_marking',
     ],
@@ -1838,6 +1843,10 @@
 
     'edge': {
       'gn_args': 'sanitizer_coverage_flags="trace-pc-guard"',
+    },
+
+    'enable_blink_animation_use_time_delta': {
+      'gn_args': 'blink_animation_use_time_delta=true',
     },
 
     'enable_blink_heap_incremental_marking': {

@@ -2551,6 +2551,15 @@
           'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },
+      'linux-blink-animation-use-time-delta': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+        },
+      },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
