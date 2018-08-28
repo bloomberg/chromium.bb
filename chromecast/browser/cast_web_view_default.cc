@@ -51,17 +51,6 @@ std::unique_ptr<content::WebContents> CreateWebContents(
   return content::WebContents::Create(create_params);
 }
 
-shell::CastContentWindow::CreateParams CreateWindowParams(
-    const CastWebView::CreateParams& params) {
-  shell::CastContentWindow::CreateParams window_params;
-  window_params.delegate = params.delegate;
-  window_params.enable_touch_input = params.enable_touch_input;
-  window_params.is_headless = params.is_headless;
-  window_params.is_remote_control_mode = params.is_remote_control_mode;
-  window_params.turn_on_screen = params.turn_on_screen;
-  return window_params;
-}
-
 }  // namespace
 
 CastWebViewDefault::CastWebViewDefault(
@@ -79,7 +68,7 @@ CastWebViewDefault::CastWebViewDefault(
       allow_media_access_(params.allow_media_access),
       enabled_for_dev_(params.enabled_for_dev),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
-      window_(shell::CastContentWindow::Create(CreateWindowParams(params))),
+      window_(shell::CastContentWindow::Create(params.window_params)),
       did_start_navigation_(false) {
   DCHECK(delegate_);
   DCHECK(web_contents_manager_);

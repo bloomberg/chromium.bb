@@ -75,6 +75,9 @@ class CastWebView {
     // The delegate for the CastWebView. Must be non-null.
     Delegate* delegate = nullptr;
 
+    // Parameters for creating the content window for this CastWebView.
+    shell::CastContentWindow::CreateParams window_params;
+
     // Identifies the activity that is hosted by this CastWebView.
     std::string activity_id = "";
 
@@ -84,12 +87,6 @@ class CastWebView {
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
 
-    // True if this CastWebView is for a headless build.
-    bool is_headless = false;
-
-    // Enable touch input for this CastWebView intance.
-    bool enable_touch_input = false;
-
     // Enable development mode for this CastWebView. Whitelists certain
     // functionality for the WebContents, like remote debugging and debugging
     // interfaces.
@@ -98,14 +95,8 @@ class CastWebView {
     // Enable/Force 720p resolution for this CastWebView instance.
     bool force_720p_resolution = false;
 
-    // True if this CastWebView is for running a remote control app.
-    bool is_remote_control_mode = false;
-
     // Whether this CastWebView should be managed by web ui window manager.
     bool managed = true;
-
-    // True if this app should turn on the screen.
-    bool turn_on_screen = true;
 
     CreateParams();
   };

@@ -15,21 +15,6 @@
 
 namespace chromecast {
 
-namespace {
-
-shell::CastContentWindow::CreateParams CreateWindowParams(
-    const CastWebView::CreateParams& params) {
-  shell::CastContentWindow::CreateParams window_params;
-  window_params.delegate = params.delegate;
-  window_params.enable_touch_input = params.enable_touch_input;
-  window_params.is_headless = params.is_headless;
-  window_params.is_remote_control_mode = params.is_remote_control_mode;
-  window_params.turn_on_screen = params.turn_on_screen;
-  return window_params;
-}
-
-}  // namespace
-
 CastWebViewExtension::CastWebViewExtension(
     const CreateParams& params,
     content::BrowserContext* browser_context,
@@ -37,7 +22,7 @@ CastWebViewExtension::CastWebViewExtension(
     const extensions::Extension* extension,
     const GURL& initial_url)
     : delegate_(params.delegate),
-      window_(shell::CastContentWindow::Create(CreateWindowParams(params))),
+      window_(shell::CastContentWindow::Create(params.window_params)),
       extension_host_(std::make_unique<CastExtensionHost>(
           browser_context,
           params.delegate,

@@ -75,6 +75,7 @@ CastContentWindowAura::CastContentWindowAura(
     const CastContentWindow::CreateParams& params)
     : delegate_(params.delegate),
       gesture_dispatcher_(std::make_unique<CastGestureDispatcher>(delegate_)),
+      gesture_priority_(params.gesture_priority),
       is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),
       has_screen_access_(false) {
@@ -83,7 +84,10 @@ CastContentWindowAura::CastContentWindowAura(
 
 CastContentWindowAura::~CastContentWindowAura() {
   if (window_manager_) {
-    window_manager_->RemoveGestureHandler(this);
+    window_manager_->RemoveGestureHandler(gesture_dispatcher_.get());
+  }
+  if (window_) {
+    window_->RemoveObserver(this);
   }
 }
 
@@ -96,9 +100,12 @@ void CastContentWindowAura::CreateWindowForWebContents(
   window_manager_ = window_manager;
   DCHECK(window_manager_);
   window_ = web_contents->GetNativeView();
+  if (!window_->HasObserver(this)) {
+    window_->AddObserver(this);
+  }
   window_manager_->SetWindowId(window_, z_order);
   window_manager_->AddWindow(window_);
-  window_manager_->AddGestureHandler(this);
+  window_manager_->AddGestureHandler(gesture_dispatcher_.get());
 
   touch_blocker_ = std::make_unique<TouchBlocker>(window_, !is_touch_enabled_);
 
@@ -139,38 +146,18 @@ void CastContentWindowAura::NotifyVisibilityChange(
 
 void CastContentWindowAura::RequestMoveOut(){};
 
-bool CastContentWindowAura::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
-  return gesture_dispatcher_->CanHandleSwipe(swipe_origin);
+void CastContentWindowAura::OnWindowVisibilityChanged(aura::Window* window,
+                                                      bool visible) {
+  if (visible) {
+    gesture_dispatcher_->SetPriority(gesture_priority_);
+  } else {
+    gesture_dispatcher_->SetPriority(CastGestureHandler::Priority::NONE);
+  }
 }
 
-void CastContentWindowAura::HandleSideSwipeBegin(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleSideSwipeBegin(swipe_origin, touch_location);
+void CastContentWindowAura::OnWindowDestroyed(aura::Window* window) {
+  window_ = nullptr;
 }
-
-void CastContentWindowAura::HandleSideSwipeContinue(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleSideSwipeContinue(swipe_origin, touch_location);
-}
-
-void CastContentWindowAura::HandleSideSwipeEnd(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleSideSwipeEnd(swipe_origin, touch_location);
-}
-
-void CastContentWindowAura::HandleTapDownGesture(
-    const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleTapDownGesture(touch_location);
-}
-
-void CastContentWindowAura::HandleTapGesture(const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleTapGesture(touch_location);
-}
-
-CastContentWindow::CreateParams::CreateParams() {}
 
 }  // namespace shell
 }  // namespace chromecast

@@ -6,7 +6,7 @@
 #define CHROMECAST_GRAPHICS_GESTURES_SIDE_SWIPE_DETECTOR_H_
 
 #include "base/timer/elapsed_timer.h"
-#include "chromecast/graphics/cast_gesture_handler.h"
+#include "chromecast/graphics/gestures/cast_gesture_handler.h"
 #include "ui/events/event_rewriter.h"
 
 namespace aura {

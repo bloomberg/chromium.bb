@@ -10,6 +10,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
@@ -58,20 +59,18 @@ class TestEventGeneratorDelegate
   DISALLOW_COPY_AND_ASSIGN(TestEventGeneratorDelegate);
 };
 
-class MockSideSwipeGestureHandler : public CastGestureHandler {
+class MockCastGestureHandler : public CastGestureHandler {
  public:
-  ~MockSideSwipeGestureHandler() override = default;
+  ~MockCastGestureHandler() override = default;
 
-  MOCK_METHOD1(CanHandleSwipe, bool(CastSideSwipeOrigin swipe_origin));
-  MOCK_METHOD2(HandleSideSwipeBegin,
-               void(CastSideSwipeOrigin swipe_origin,
+  MOCK_METHOD0(GetPriority, Priority());
+  MOCK_METHOD1(CanHandleSwipe, bool(CastSideSwipeOrigin origin));
+  MOCK_METHOD3(HandleSideSwipe,
+               void(CastSideSwipeEvent event,
+                    CastSideSwipeOrigin swipe_origin,
                     const gfx::Point& touch_location));
-  MOCK_METHOD2(HandleSideSwipeEnd,
-               void(CastSideSwipeOrigin swipe_origin,
-                    const gfx::Point& touch_location));
-  MOCK_METHOD2(HandleSideSwipeContinue,
-               void(CastSideSwipeOrigin swipe_origin,
-                    const gfx::Point& touch_location));
+  MOCK_METHOD1(HandleTapDownGesture, void(const gfx::Point& touch_location));
+  MOCK_METHOD1(HandleTapGesture, void(const gfx::Point& touch_location));
 };
 
 // Event sink to check for events that get through (or don't get through) after
@@ -101,7 +100,7 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
     aura::client::SetScreenPositionClient(root_window(),
                                           screen_position_client_.get());
 
-    gesture_handler_ = std::make_unique<MockSideSwipeGestureHandler>();
+    gesture_handler_ = std::make_unique<MockCastGestureHandler>();
     side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
         gesture_handler_.get(), root_window());
     test_event_handler_ = std::make_unique<TestEventHandler>();
@@ -160,9 +159,7 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
     return *event_generator_.get();
   }
 
-  MockSideSwipeGestureHandler& test_gesture_handler() {
-    return *gesture_handler_;
-  }
+  MockCastGestureHandler& mock_gesture_handler() { return *gesture_handler_; }
 
   base::TestMockTimeTaskRunner* mock_task_runner() const {
     return mock_task_runner_.get();
@@ -181,16 +178,14 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
 
   std::unique_ptr<SideSwipeDetector> side_swipe_detector_;
   std::unique_ptr<TestEventHandler> test_event_handler_;
-  std::unique_ptr<MockSideSwipeGestureHandler> gesture_handler_;
+  std::unique_ptr<MockCastGestureHandler> gesture_handler_;
 };
 
 // Test that initialization works and initial state is clean.
 TEST_F(SideSwipeDetectorTest, Initialization) {
-  EXPECT_CALL(test_gesture_handler(), CanHandleSwipe(_))
+  EXPECT_CALL(mock_gesture_handler(), CanHandleSwipe(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeBegin(_, _)).Times(0);
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeContinue(_, _)).Times(0);
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeContinue(_, _)).Times(0);
+  EXPECT_CALL(mock_gesture_handler(), HandleSideSwipe(_, _, _)).Times(0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
@@ -204,11 +199,9 @@ TEST_F(SideSwipeDetectorTest, SwipeWithNoSystemGesture) {
                                   drag_point - gfx::Vector2d(0, kSwipeDistance),
                                   kTimeDelay, kNumSteps);
 
-  EXPECT_CALL(test_gesture_handler(), CanHandleSwipe(_))
+  EXPECT_CALL(mock_gesture_handler(), CanHandleSwipe(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeBegin(_, _)).Times(0);
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeContinue(_, _)).Times(0);
-  EXPECT_CALL(test_gesture_handler(), HandleSideSwipeContinue(_, _)).Times(0);
+  EXPECT_CALL(mock_gesture_handler(), HandleSideSwipe(_, _, _)).Times(0);
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(0, test_event_handler().NumTouchEventsReceived());
 }
@@ -217,17 +210,20 @@ TEST_F(SideSwipeDetectorTest, SwipeFromLeft) {
   gfx::Point drag_point(0, root_window()->bounds().height() / 2);
   auto end_point = drag_point + gfx::Vector2d(kSwipeDistance, 0);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::LEFT)))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::LEFT), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::LEFT), drag_point))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::LEFT), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::LEFT), _))
       .Times(kNumSteps);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::LEFT), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::LEFT), end_point))
       .Times(1);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -243,17 +239,20 @@ TEST_F(SideSwipeDetectorTest, SwipeFromRight) {
                         root_window()->bounds().height() / 2);
   auto end_point = drag_point - gfx::Vector2d(kSwipeDistance, 0);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::RIGHT)))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::RIGHT), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::RIGHT), drag_point))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::RIGHT), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::RIGHT), _))
       .Times(kNumSteps);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::RIGHT), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::RIGHT), end_point))
       .Times(1);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -268,17 +267,20 @@ TEST_F(SideSwipeDetectorTest, SwipeFromTop) {
   gfx::Point drag_point(root_window()->bounds().width() / 2, 0);
   auto end_point = drag_point + gfx::Vector2d(0, kSwipeDistance);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::TOP)))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::TOP), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::TOP), drag_point))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::TOP), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::TOP), _))
       .Times(kNumSteps);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::TOP), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::TOP), end_point))
       .Times(1);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -294,17 +296,20 @@ TEST_F(SideSwipeDetectorTest, SwipeFromBottom) {
                         root_window()->bounds().height());
   auto end_point = drag_point - gfx::Vector2d(0, kSwipeDistance);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::BOTTOM)))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::BOTTOM), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::BOTTOM), _))
       .Times(kNumSteps);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::BOTTOM), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::BOTTOM), end_point))
       .Times(1);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -320,17 +325,20 @@ TEST_F(SideSwipeDetectorTest, SwipeUnhandledIgnored) {
                         root_window()->bounds().height());
   auto end_point = drag_point - gfx::Vector2d(0, kSwipeDistance);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::BOTTOM)))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
       .Times(0);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::BOTTOM), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::BOTTOM), _))
       .Times(0);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::BOTTOM), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::BOTTOM), end_point))
       .Times(0);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -347,17 +355,20 @@ TEST_F(SideSwipeDetectorTest, IgnoreSecondFinger) {
                         root_window()->bounds().height());
   auto end_point = drag_point - gfx::Vector2d(0, kSwipeDistance);
 
-  EXPECT_CALL(test_gesture_handler(),
+  EXPECT_CALL(mock_gesture_handler(),
               CanHandleSwipe(Eq(CastSideSwipeOrigin::BOTTOM)))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeBegin(Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              Eq(CastSideSwipeOrigin::BOTTOM), drag_point))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeContinue(Eq(CastSideSwipeOrigin::BOTTOM), _))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              Eq(CastSideSwipeOrigin::BOTTOM), _))
       .Times(1);
-  EXPECT_CALL(test_gesture_handler(),
-              HandleSideSwipeEnd(Eq(CastSideSwipeOrigin::BOTTOM), end_point))
+  EXPECT_CALL(mock_gesture_handler(),
+              HandleSideSwipe(CastSideSwipeEvent::END,
+                              Eq(CastSideSwipeOrigin::BOTTOM), end_point))
       .Times(0);
 
   // Start a drag but don't complete.

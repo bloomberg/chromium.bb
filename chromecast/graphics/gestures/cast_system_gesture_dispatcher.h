@@ -6,7 +6,7 @@
 #define CHROMECAST_GRAPHICS_GESTURES_CAST_SYSTEM_GESTURE_DISPATCHER_H_
 
 #include "base/containers/flat_set.h"
-#include "chromecast/graphics/cast_gesture_handler.h"
+#include "chromecast/graphics/gestures/cast_gesture_handler.h"
 
 namespace chromecast {
 
@@ -26,13 +26,11 @@ class CastSystemGestureDispatcher : public CastGestureHandler {
 
   // Implementation of CastGestureHandler methods which fan out to our gesture
   // handlers.
+  Priority GetPriority() override;
   bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override;
-  void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                            const gfx::Point& touch_location) override;
-  void HandleSideSwipeContinue(CastSideSwipeOrigin swipe_origin,
-                               const gfx::Point& touch_location) override;
-  void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                          const gfx::Point& touch_location) override;
+  void HandleSideSwipe(CastSideSwipeEvent event,
+                       CastSideSwipeOrigin swipe_origin,
+                       const gfx::Point& touch_location) override;
   void HandleTapDownGesture(const gfx::Point& touch_location) override;
   void HandleTapGesture(const gfx::Point& touch_location) override;
 

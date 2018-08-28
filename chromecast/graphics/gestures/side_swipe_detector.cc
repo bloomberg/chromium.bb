@@ -139,7 +139,8 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     current_pointer_id_ = touch_event->pointer_details().id;
 
     // Let the subscribers know about the gesture begin.
-    gesture_handler_->HandleSideSwipeBegin(side_swipe_origin, touch_location);
+    gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                                      side_swipe_origin, touch_location);
 
     VLOG(1) << "side swipe gesture begin @ " << touch_location.ToString();
     current_swipe_time_ = base::ElapsedTimer();
@@ -176,7 +177,8 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     VLOG(1) << "gesture release; time since press: "
             << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
             << touch_location.ToString();
-    gesture_handler_->HandleSideSwipeEnd(current_swipe_, touch_location);
+    gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::END, current_swipe_,
+                                      touch_location);
     current_swipe_ = CastSideSwipeOrigin::NONE;
     current_pointer_id_ = ui::PointerDetails::kUnknownPointerId;
 
@@ -197,7 +199,8 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
   }
 
   // The system gesture is ongoing...
-  gesture_handler_->HandleSideSwipeContinue(current_swipe_, touch_location);
+  gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                                    current_swipe_, touch_location);
   VLOG(1) << "gesture continue; time since press: "
           << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
           << touch_location.ToString();
