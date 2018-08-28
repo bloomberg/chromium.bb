@@ -59,23 +59,39 @@
         if="[[shouldShowIndividualFeatures_(pageContentData)]]"
         restamp>
       <div id="feature-items-container">
-        <settings-multidevice-feature-item id="smart-lock-item"
-            feature="[[MultiDeviceFeature.SMART_LOCK]]"
-            page-content-data="[[pageContentData]]"
-            subpage-route="[[routes.LOCK_SCREEN]]">
-        </settings-multidevice-feature-item>
-        <settings-multidevice-tether-item>
-        </settings-multidevice-tether-item>
-        <settings-multidevice-feature-item id="android-messages-item"
-            feature="[[MultiDeviceFeature.MESSAGES]]"
-            page-content-data="[[pageContentData]]">
-          <template is="dom-if" if="[[androidMessagesRequiresSetup_]]" restamp>
-            <paper-button on-click="handleAndroidMessagesButtonClick_"
-                slot="feature-controller">
-              $i18n{multideviceSetupButton}
-            </paper-button>
-          </template>
-        </settings-multidevice-feature-item>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.SMART_LOCK, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="smartLockItem"
+              feature="[[MultiDeviceFeature.SMART_LOCK]]"
+              page-content-data="[[pageContentData]]"
+              subpage-route="[[routes.LOCK_SCREEN]]">
+          </settings-multidevice-feature-item>
+        </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.INSTANT_TETHERING, pageContentData)]]"
+            restamp>
+          <settings-multidevice-tether-item id="instantTetheringItem">
+          </settings-multidevice-tether-item>
+        </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.MESSAGES, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="messagesItem"
+              feature="[[MultiDeviceFeature.MESSAGES]]"
+              page-content-data="[[pageContentData]]">
+            <template is="dom-if" if="[[androidMessagesRequiresSetup_]]"
+                restamp>
+              <paper-button on-click="handleAndroidMessagesButtonClick_"
+                  slot="feature-controller">
+                $i18n{multideviceSetupButton}
+              </paper-button>
+            </template>
+          </settings-multidevice-feature-item>
+        </template>
       </div>
     </template>
     <div id="forget-device-container">
