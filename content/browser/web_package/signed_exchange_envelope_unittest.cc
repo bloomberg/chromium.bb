@@ -159,6 +159,22 @@ TEST(SignedExchangeEnvelopeTest, HttpURLShouldFail) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeEnvelopeTest, RedirectStatusShouldFail) {
+  auto header = GenerateHeaderAndParse(GURL("https://test.example.org/test/"),
+                                       kSignatureString, {{kMethodKey, "GET"}},
+                                       {{kStatusKey, "302"}});
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, Status300ShouldSucceed) {
+  auto header = GenerateHeaderAndParse(
+      GURL("https://test.example.org/test/"), kSignatureString,
+      {{kMethodKey, "GET"}},
+      {{kStatusKey, "300"}});  // 300 is not a redirect status.
+  ASSERT_TRUE(header.has_value());
+  EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(300u));
+}
+
 TEST(SignedExchangeEnvelopeTest, StatefulRequestHeader) {
   auto header = GenerateHeaderAndParse(
       GURL("https://test.example.org/test/"), kSignatureString,

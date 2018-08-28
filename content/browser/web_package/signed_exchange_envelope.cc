@@ -15,6 +15,7 @@
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "url/origin.h"
 
@@ -177,6 +178,20 @@ bool ParseResponseMap(const cbor::CBORValue& value,
   if (!base::StringToInt(response_code_str, &response_code)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse status code to integer.");
+    return false;
+  }
+  // https://wicg.github.io/webpackage/loading.html#parsing-b1
+  // Step 26. If parsedExchange’s response's status is a redirect status or the
+  //          signed exchange version of parsedExchange’s response is not
+  //          undefined, return a failure. [spec text]
+  // TODO(crbug.com/803774): Reject if inner response is a signed exchange.
+  if (net::HttpResponseHeaders::IsRedirectResponseCode(response_code)) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Exchange's response status must not be a redirect status. "
+            "status: %d",
+            response_code));
     return false;
   }
   out->set_response_code(static_cast<net::HttpStatusCode>(response_code));
