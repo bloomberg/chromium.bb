@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_views_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -117,37 +116,6 @@ class ExtensionPopupTestManager {
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManager);
 };
 
-class ExtensionPopupTestManagerCocoa : public ExtensionPopupTestManager {
- public:
-  ExtensionPopupTestManagerCocoa() = default;
-  ~ExtensionPopupTestManagerCocoa() override = default;
-
-  void DisableAnimations() override {
-    [ExtensionPopupController setAnimationsEnabledForTesting:NO];
-  }
-
-  gfx::Size GetPopupSize(BrowserActionTestUtil* test_util) override {
-    NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
-    return gfx::Size(NSSizeToCGSize(bounds.size));
-  }
-
-  void HidePopup(BrowserActionTestUtil* test_util) override {
-    ExtensionPopupController* controller = [ExtensionPopupController popup];
-    [controller close];
-  }
-
-  gfx::Size GetMinPopupSize() override {
-    return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));
-  }
-
-  gfx::Size GetMaxPopupSize() override {
-    return gfx::Size(NSSizeToCGSize([ExtensionPopupController maxPopupSize]));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManagerCocoa);
-};
-
 class ExtensionPopupTestManagerViews : public ExtensionPopupTestManager {
  public:
   ExtensionPopupTestManagerViews() = default;
@@ -181,9 +149,6 @@ class ExtensionPopupTestManagerViews : public ExtensionPopupTestManager {
 };
 
 std::unique_ptr<ExtensionPopupTestManager> GetExtensionPopupTestManager() {
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    return std::make_unique<ExtensionPopupTestManagerCocoa>();
-  }
   return std::make_unique<ExtensionPopupTestManagerViews>();
 }
 

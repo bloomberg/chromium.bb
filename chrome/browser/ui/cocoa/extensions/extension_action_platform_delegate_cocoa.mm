@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_views_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -87,15 +86,6 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     bool grant_tab_permissions,
     ExtensionActionViewController::PopupShowAction show_action) {
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    BOOL devMode =
-        show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
-    [ExtensionPopupController host:std::move(host)
-                         inBrowser:controller_->browser()
-                        anchoredAt:GetPopupPoint()
-                           devMode:devMode];
-    return;
-  }
 
   ExtensionPopup::ShowAction popupShowAction =
       show_action == ExtensionActionViewController::SHOW_POPUP
