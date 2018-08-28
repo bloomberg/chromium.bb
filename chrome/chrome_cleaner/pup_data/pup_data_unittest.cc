@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
@@ -596,12 +597,9 @@ TEST_F(PUPDataTest, GetUwSIds) {
   PUPData::InitializePUPData({});
   const std::vector<UwSId>* pup_ids = PUPData::GetUwSIds();
   EXPECT_EQ(pup_ids->size(), 2UL);
-  EXPECT_TRUE(std::find(pup_ids->begin(), pup_ids->end(), k24ID) !=
-              pup_ids->end());
-  EXPECT_TRUE(std::find(pup_ids->begin(), pup_ids->end(), k42ID) !=
-              pup_ids->end());
-  EXPECT_TRUE(std::find(pup_ids->begin(), pup_ids->end(), k12ID) ==
-              pup_ids->end());
+  EXPECT_TRUE(base::ContainsValue(*pup_ids, k24ID));
+  EXPECT_TRUE(base::ContainsValue(*pup_ids, k42ID));
+  EXPECT_FALSE(base::ContainsValue(*pup_ids, k12ID));
 }
 
 TEST_F(PUPDataTest, GetFilesDetectedInServices) {

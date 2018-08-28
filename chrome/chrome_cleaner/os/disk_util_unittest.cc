@@ -390,8 +390,7 @@ TEST(DiskUtilTests, CollectMatchingPathsNoWildcards) {
   base::FilePath no_wildcard_path(sub_dir.GetPath());
   CollectMatchingPaths(no_wildcard_path, &matches);
   EXPECT_EQ(1UL, matches.size());
-  EXPECT_NE(matches.end(),
-            std::find(matches.begin(), matches.end(), sub_dir.GetPath()));
+  EXPECT_TRUE(base::ContainsValue(matches, sub_dir.GetPath()));
 }
 
 TEST(DiskUtilTests, CollectExecutableMatchingPaths) {
