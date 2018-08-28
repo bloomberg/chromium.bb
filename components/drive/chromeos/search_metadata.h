@@ -43,7 +43,7 @@ void SearchMetadata(
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     MetadataSearchOrder order,
-    const SearchMetadataCallback& callback);
+    SearchMetadataCallback callback);
 
 // Returns true if |entry| is eligible for the search |options| and should be
 // tested for the match with the query.  If

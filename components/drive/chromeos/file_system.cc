@@ -264,12 +264,12 @@ bool CheckHashes(const std::set<std::string>& hashes,
 // Runs |callback| with |error| and the list of HashAndFilePath obtained from
 // |original_result|.
 void RunSearchByHashesCallback(
-    const SearchByHashesCallback& callback,
+    SearchByHashesCallback callback,
     FileError error,
     std::unique_ptr<MetadataSearchResultVector> original_result) {
   std::vector<HashAndFilePath> result;
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, result);
+    std::move(callback).Run(error, result);
     return;
   }
   for (const auto& search_result : *original_result) {
@@ -278,7 +278,7 @@ void RunSearchByHashesCallback(
     hash_and_path.path = search_result.path;
     result.push_back(hash_and_path);
   }
-  callback.Run(FILE_ERROR_OK, result);
+  std::move(callback).Run(FILE_ERROR_OK, result);
 }
 
 }  // namespace
@@ -791,34 +791,34 @@ void FileSystem::OnGetResourceEntryForGetShareUrl(
 
 void FileSystem::Search(const std::string& search_query,
                         const GURL& next_link,
-                        const SearchCallback& callback) {
+                        SearchCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
-  search_operation_->Search(search_query, next_link, callback);
+  search_operation_->Search(search_query, next_link, std::move(callback));
 }
 
 void FileSystem::SearchMetadata(const std::string& query,
                                 int options,
                                 int at_most_num_matches,
                                 MetadataSearchOrder order,
-                                const SearchMetadataCallback& callback) {
+                                SearchMetadataCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   drive::internal::SearchMetadata(
       blocking_task_runner_, resource_metadata_, query,
       base::Bind(&drive::internal::MatchesType, options), at_most_num_matches,
-      order, callback);
+      order, std::move(callback));
 }
 
 void FileSystem::SearchByHashes(const std::set<std::string>& hashes,
-                                const SearchByHashesCallback& callback) {
+                                SearchByHashesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   drive::internal::SearchMetadata(
       blocking_task_runner_, resource_metadata_,
       /* any file name */ "", base::Bind(&CheckHashes, hashes),
       std::numeric_limits<size_t>::max(),
       drive::MetadataSearchOrder::LAST_ACCESSED,
-      base::Bind(&RunSearchByHashesCallback, callback));
+      base::BindOnce(&RunSearchByHashesCallback, std::move(callback)));
 }
 
 void FileSystem::OnFileChangedByOperation(const FileChange& changed_files) {
