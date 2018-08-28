@@ -148,7 +148,7 @@ Polymer({
         loadTimeData.getBoolean('androidAppsVisible');
     this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
-    this.showMultidevice_ = this.showAndroidApps_ &&
+    this.showMultidevice_ =
         loadTimeData.valueExists('enableMultideviceSettings') &&
         loadTimeData.getBoolean('enableMultideviceSettings');
     this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
