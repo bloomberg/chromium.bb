@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,6 @@ class PrefService;
 namespace base {
 class Clock;
 class Time;
-class Value;
 }  // namespace base
 
 namespace vm_tools {
@@ -186,7 +186,7 @@ class CrostiniRegistryService : public KeyedService {
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
                           ConciergeClientResult result,
-                          std::vector<Icon>& icons);
+                          const std::vector<Icon>& icons);
   // Callback for our internal call for saving out icon data.
   void OnIconInstalled(const std::string& app_id,
                        ui::ScaleFactor scale_factor,
