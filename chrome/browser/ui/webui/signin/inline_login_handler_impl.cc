@@ -782,9 +782,8 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
     RedirectToNtpOrAppsPage(contents, access_point);
   } else if (auto_close) {
     bool show_account_management = ShouldShowAccountManagement(
-        current_url,
-        AccountConsistencyModeManager::IsMirrorEnabledForProfile(
-            Profile::FromBrowserContext(contents->GetBrowserContext())));
+        current_url, AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+                         Profile::FromWebUI(web_ui())));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&InlineLoginHandlerImpl::CloseTab,

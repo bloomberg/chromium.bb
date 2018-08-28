@@ -101,8 +101,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
       return;
     }
 
-    Profile* profile = Profile::FromBrowserContext(
-        web_ui()->GetWebContents()->GetBrowserContext());
+    Profile* profile = Profile::FromWebUI(web_ui());
     DCHECK(profile);
     system::SetTimezoneFromUI(profile, timezone_id);
   }

@@ -227,12 +227,12 @@ DownloadsListTracker::CreateDownloadItemValue(
     // language. This won't work if the extension was uninstalled, so the name
     // might be the wrong language.
     bool include_disabled = true;
+    auto* profile = Profile::FromBrowserContext(
+        content::DownloadItemUtils::GetBrowserContext(download_item));
+    auto* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
     const extensions::Extension* extension =
-        extensions::ExtensionSystem::Get(
-            Profile::FromBrowserContext(
-                content::DownloadItemUtils::GetBrowserContext(download_item)))
-            ->extension_service()
-            ->GetExtensionById(by_ext->id(), include_disabled);
+        service->GetExtensionById(by_ext->id(), include_disabled);
     if (extension)
       by_ext_name = extension->name();
   }

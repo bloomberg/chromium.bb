@@ -105,17 +105,15 @@ base::string16 GetFormattedHostName(const std::string host_name) {
 }  // namespace
 
 ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
-  base::DictionaryValue load_time_data;
-  password_type_ = GetPasswordType(web_ui->GetWebContents());
-  PopulateStrings(web_ui->GetWebContents(), &load_time_data);
+    : ui::MojoWebUIController(web_ui),
+      password_type_(GetPasswordType(web_ui->GetWebContents())) {
   std::unique_ptr<content::WebUIDataSource> html_source(
       content::WebUIDataSource::Create(chrome::kChromeUIResetPasswordHost));
   html_source->AddResourcePath("reset_password.js", IDR_RESET_PASSWORD_JS);
   html_source->AddResourcePath("reset_password.mojom.js",
                                IDR_RESET_PASSWORD_MOJO_JS);
   html_source->SetDefaultResource(IDR_RESET_PASSWORD_HTML);
-  html_source->AddLocalizedStrings(load_time_data);
+  html_source->AddLocalizedStrings(PopulateStrings());
   html_source->UseGzip();
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
@@ -133,12 +131,10 @@ void ResetPasswordUI::BindResetPasswordHandler(
       web_ui()->GetWebContents(), password_type_, std::move(request));
 }
 
-void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
-                                      base::DictionaryValue* load_time_data) {
+base::DictionaryValue ResetPasswordUI::PopulateStrings() const {
   std::string org_name =
       safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          GetPasswordProtectionService(Profile::FromWebUI(web_ui()))
               ->GetOrganizationName(password_type_);
   bool known_password_type =
       password_type_ !=
@@ -173,12 +169,13 @@ void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
                                   : StringType::GENERIC_WITH_ORG_NAME);
   }
 
-  load_time_data->SetString(
-      "title", l10n_util::GetStringUTF16(IDS_RESET_PASSWORD_TITLE));
-  load_time_data->SetString("heading",
-                            l10n_util::GetStringUTF16(heading_string_id));
-  load_time_data->SetString("primaryParagraph", explanation_paragraph_string);
-  load_time_data->SetString(
-      "primaryButtonText",
-      l10n_util::GetStringUTF16(IDS_RESET_PASSWORD_BUTTON));
+  base::DictionaryValue load_time_data;
+  load_time_data.SetString("title",
+                           l10n_util::GetStringUTF16(IDS_RESET_PASSWORD_TITLE));
+  load_time_data.SetString("heading",
+                           l10n_util::GetStringUTF16(heading_string_id));
+  load_time_data.SetString("primaryParagraph", explanation_paragraph_string);
+  load_time_data.SetString("primaryButtonText", l10n_util::GetStringUTF16(
+                                                    IDS_RESET_PASSWORD_BUTTON));
+  return load_time_data;
 }

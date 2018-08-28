@@ -14,10 +14,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace content {
-class WebContents;
-}
-
 // The WebUI for chrome://reset-password/.
 class ResetPasswordUI : public ui::MojoWebUIController {
  public:
@@ -27,11 +23,10 @@ class ResetPasswordUI : public ui::MojoWebUIController {
  private:
   void BindResetPasswordHandler(mojom::ResetPasswordHandlerRequest request);
 
-  void PopulateStrings(content::WebContents* web_content,
-                       base::DictionaryValue* load_time_data);
+  base::DictionaryValue PopulateStrings() const;
 
   std::unique_ptr<mojom::ResetPasswordHandler> ui_handler_;
-  safe_browsing::ReusedPasswordType password_type_;
+  const safe_browsing::ReusedPasswordType password_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetPasswordUI);
 };
