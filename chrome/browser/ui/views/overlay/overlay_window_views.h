@@ -48,6 +48,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetWorkspaceChanged() override;
+  void OnNativeWidgetBeginUserBoundsChange() override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
