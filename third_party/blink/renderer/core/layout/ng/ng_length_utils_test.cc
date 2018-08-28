@@ -89,7 +89,7 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
     body->SetPreferredLogicalWidthsDirty();
     NGBlockNode node(body);
     return ::blink::ComputeInlineSizeForFragment(*constraint_space, node,
-                                                 &sizes);
+                                                 base::nullopt, &sizes);
   }
 
   scoped_refptr<ComputedStyle> style_;
