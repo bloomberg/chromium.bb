@@ -34,6 +34,7 @@ static_library("android_sms") {
     "//base",
     "//chrome/browser/chromeos:chromeos",
     "//chromeos:chromeos",
+    "//chromeos/components/proximity_auth/logging",
     "//components/keyed_service/content:content",
     "//components/keyed_service/core:core",
     "//components/session_manager/core:core",
@@ -59,6 +60,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "connection_establisher_impl_unittest.cc",
     "connection_manager_unittest.cc",
   ]
 

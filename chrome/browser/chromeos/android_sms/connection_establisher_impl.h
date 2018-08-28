@@ -26,10 +26,14 @@ class ConnectionEstablisherImpl : public ConnectionEstablisher {
       content::ServiceWorkerContext* service_worker_context) override;
 
  private:
-  void SendStartStreamingMessage(
+  FRIEND_TEST_ALL_PREFIXES(ConnectionEstablisherImplTest, EstablishConnection);
+
+  void SendStartStreamingMessageIfNotConnected(
       content::ServiceWorkerContext* service_worker_context);
+
   void OnMessageDispatchResult(bool status);
 
+  static const char kStartStreamingMessage[];
   bool is_connected_ = false;
   DISALLOW_COPY_AND_ASSIGN(ConnectionEstablisherImpl);
 };

@@ -83,7 +83,8 @@ void FakeServiceWorkerContext::StartServiceWorkerAndDispatchLongRunningMessage(
     const GURL& pattern,
     blink::TransferableMessage message,
     ResultCallback result_callback) {
-  NOTREACHED();
+  start_service_worker_and_dispatch_long_running_message_calls_.push_back(
+      std::make_tuple(pattern, std::move(message), std::move(result_callback)));
 }
 
 void FakeServiceWorkerContext::StopAllServiceWorkersForOrigin(
