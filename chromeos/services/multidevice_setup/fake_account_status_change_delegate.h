@@ -34,7 +34,8 @@ class FakeAccountStatusChangeDelegate
 
   // mojom::AccountStatusChangeDelegate:
   void OnPotentialHostExistsForNewUser() override;
-  void OnConnectedHostSwitchedForExistingUser() override;
+  void OnConnectedHostSwitchedForExistingUser(
+      const std::string& new_host_device_name) override;
   void OnNewChromebookAddedForExistingUser() override;
 
  private:

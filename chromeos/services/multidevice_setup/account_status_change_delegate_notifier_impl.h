@@ -81,7 +81,8 @@ class AccountStatusChangeDelegateNotifierImpl
   void CheckForNewUserPotentialHostExistsEvent(
       const cryptauth::RemoteDeviceRefList&);
   void CheckForExistingUserHostSwitchedEvent(
-      base::Optional<std::string> host_public_key_before_sync);
+      const base::Optional<std::string>& host_public_key_before_sync,
+      const std::string& new_host_device_name);
   void CheckForExistingUserChromebookAddedEvent(
       bool local_device_was_enabled_client_before_sync);
 

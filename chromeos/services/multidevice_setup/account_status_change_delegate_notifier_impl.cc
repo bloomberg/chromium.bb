@@ -27,14 +27,14 @@ namespace {
 const int64_t kTimestampNotSet = 0;
 const char kNoHost[] = "";
 
-base::Optional<std::string> GetHostPublicKey(
+base::Optional<std::pair<std::string, std::string>> GetHostPublicKeyAndName(
     const cryptauth::RemoteDeviceRefList& device_ref_list) {
   for (const auto& device_ref : device_ref_list) {
     if (device_ref.GetSoftwareFeatureState(
             cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST) ==
         cryptauth::SoftwareFeatureState::kEnabled) {
       DCHECK(!device_ref.public_key().empty());
-      return device_ref.public_key();
+      return std::make_pair(device_ref.public_key(), device_ref.name());
     }
   }
   return base::nullopt;
@@ -164,10 +164,16 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents() {
   // Track and update host info.
   base::Optional<std::string> host_public_key_before_sync =
       host_public_key_from_most_recent_sync_;
-  host_public_key_from_most_recent_sync_ = GetHostPublicKey(device_ref_list);
-  if (host_public_key_from_most_recent_sync_)
+
+  base::Optional<std::pair<std::string, std::string>> public_key_and_name =
+      GetHostPublicKeyAndName(device_ref_list);
+  if (public_key_and_name) {
+    host_public_key_from_most_recent_sync_ = public_key_and_name->first;
     pref_service_->SetString(kHostPublicKeyFromMostRecentSyncPrefName,
                              *host_public_key_from_most_recent_sync_);
+  } else {
+    host_public_key_from_most_recent_sync_.reset();
+  }
 
   // Track and update local client info.
   bool local_device_was_enabled_client_before_sync =
@@ -178,7 +184,10 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents() {
       cryptauth::SoftwareFeatureState::kEnabled;
 
   CheckForNewUserPotentialHostExistsEvent(device_ref_list);
-  CheckForExistingUserHostSwitchedEvent(host_public_key_before_sync);
+  if (public_key_and_name) {
+    CheckForExistingUserHostSwitchedEvent(host_public_key_before_sync,
+                                          public_key_and_name->second);
+  }
   CheckForExistingUserChromebookAddedEvent(
       local_device_was_enabled_client_before_sync);
 }
@@ -213,7 +222,8 @@ void AccountStatusChangeDelegateNotifierImpl::
 
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserHostSwitchedEvent(
-        base::Optional<std::string> host_public_key_before_sync) {
+        const base::Optional<std::string>& host_public_key_before_sync,
+        const std::string& new_host_device_name) {
   // If the local device is not an enabled client, the account's new host is not
   // yet the local device's new host.
   if (!local_device_is_enabled_client_)
@@ -227,7 +237,7 @@ void AccountStatusChangeDelegateNotifierImpl::
   if (host_public_key_before_sync == host_public_key_from_most_recent_sync_)
     return;
 
-  delegate()->OnConnectedHostSwitchedForExistingUser();
+  delegate()->OnConnectedHostSwitchedForExistingUser(new_host_device_name);
   pref_service_->SetInt64(kExistingUserHostSwitchedPrefName,
                           clock_->Now().ToJavaTime());
 }
