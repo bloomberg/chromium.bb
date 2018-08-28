@@ -27,7 +27,7 @@ namespace contextual_search {
 
 // Returns the name of the Contextual Search preference, used to check if the
 // feature is enabled.
-const char* GetPrefName(const PrefService& prefs);
+const char* GetPrefName();
 
 // Returns whether Contextual Search is enabled.
 bool IsEnabled(const PrefService& prefs);
