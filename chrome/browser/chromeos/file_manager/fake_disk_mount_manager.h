@@ -76,9 +76,8 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   const chromeos::disks::Disk* FindDiskBySourcePath(
       const std::string& source_path) const override;
   const MountPointMap& mount_points() const override;
-  void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback,
-      bool force) override;
+  void EnsureMountInfoRefreshed(EnsureMountInfoRefreshedCallback callback,
+                                bool force) override;
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
@@ -90,7 +89,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   // |FinishAllUnmountRequest()| is called.
   void UnmountPath(const std::string& mount_path,
                    chromeos::UnmountOptions options,
-                   const UnmountPathCallback& callback) override;
+                   UnmountPathCallback callback) override;
   void RemountAllRemovableDrives(
       chromeos::MountAccessMode access_mode) override;
   void FormatMountedDevice(const std::string& mount_path) override;

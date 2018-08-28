@@ -109,12 +109,13 @@ class DiskMountManagerImpl : public DiskMountManager,
   // DiskMountManager override.
   void UnmountPath(const std::string& mount_path,
                    UnmountOptions options,
-                   const UnmountPathCallback& callback) override {
+                   UnmountPathCallback callback) override {
     UnmountChildMounts(mount_path);
     cros_disks_client_->Unmount(
         mount_path, options,
         base::BindOnce(&DiskMountManagerImpl::OnUnmountPath,
-                       weak_ptr_factory_.GetWeakPtr(), callback, mount_path));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       mount_path));
   }
 
   void RemountAllRemovableDrives(MountAccessMode mode) override {
@@ -155,11 +156,9 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    UnmountPath(disk->second->mount_path(),
-                UNMOUNT_OPTIONS_NONE,
-                base::Bind(&DiskMountManagerImpl::OnUnmountPathForFormat,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           device_path));
+    UnmountPath(disk->second->mount_path(), UNMOUNT_OPTIONS_NONE,
+                base::BindOnce(&DiskMountManagerImpl::OnUnmountPathForFormat,
+                               weak_ptr_factory_.GetWeakPtr(), device_path));
   }
 
   void RenameMountedDevice(const std::string& mount_path,
@@ -185,10 +184,10 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    UnmountPath(
-        iter->second->mount_path(), UNMOUNT_OPTIONS_NONE,
-        base::Bind(&DiskMountManagerImpl::OnUnmountPathForRename,
-                   weak_ptr_factory_.GetWeakPtr(), device_path, volume_name));
+    UnmountPath(iter->second->mount_path(), UNMOUNT_OPTIONS_NONE,
+                base::BindOnce(&DiskMountManagerImpl::OnUnmountPathForRename,
+                               weak_ptr_factory_.GetWeakPtr(), device_path,
+                               volume_name));
   }
 
   // DiskMountManager override.
@@ -239,15 +238,14 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // DiskMountManager override.
-  void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback,
-      bool force) override {
+  void EnsureMountInfoRefreshed(EnsureMountInfoRefreshedCallback callback,
+                                bool force) override {
     if (!force && already_refreshed_) {
-      callback.Run(true);
+      std::move(callback).Run(true);
       return;
     }
 
-    refresh_callbacks_.push_back(callback);
+    refresh_callbacks_.push_back(std::move(callback));
     if (refresh_callbacks_.size() == 1) {
       // If there's no in-flight refreshing task, start it.
       cros_disks_client_->EnumerateDevices(
@@ -453,7 +451,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // Callback for UnmountPath.
-  void OnUnmountPath(const UnmountPathCallback& callback,
+  void OnUnmountPath(UnmountPathCallback callback,
                      const std::string& mount_path,
                      MountError error_code) {
     MountPointMap::iterator mount_points_it = mount_points_.find(mount_path);
@@ -461,7 +459,7 @@ class DiskMountManagerImpl : public DiskMountManager,
       // The path was unmounted, but not as a result of this unmount request,
       // so return error.
       if (!callback.is_null())
-        callback.Run(MOUNT_ERROR_INTERNAL);
+        std::move(callback).Run(MOUNT_ERROR_INTERNAL);
       return;
     }
 
@@ -484,7 +482,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     }
 
     if (!callback.is_null())
-      callback.Run(error_code);
+      std::move(callback).Run(error_code);
   }
 
   void OnUnmountPathForFormat(const std::string& device_path,
@@ -687,7 +685,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   void RefreshCompleted(bool success) {
     already_refreshed_ = true;
     for (size_t i = 0; i < refresh_callbacks_.size(); ++i)
-      refresh_callbacks_[i].Run(success);
+      std::move(refresh_callbacks_[i]).Run(success);
     refresh_callbacks_.clear();
   }
 

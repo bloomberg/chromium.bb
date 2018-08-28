@@ -35,7 +35,7 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_CONST_METHOD0(mount_points,
                      const DiskMountManager::MountPointMap&(void));
   MOCK_METHOD2(EnsureMountInfoRefreshed,
-               void(const EnsureMountInfoRefreshedCallback&, bool));
+               void(EnsureMountInfoRefreshedCallback, bool));
   MOCK_METHOD6(MountPath,
                void(const std::string&,
                     const std::string&,
@@ -43,9 +43,10 @@ class MockDiskMountManager : public DiskMountManager {
                     const std::vector<std::string>&,
                     MountType,
                     MountAccessMode));
-  MOCK_METHOD3(UnmountPath, void(const std::string&,
-                                 UnmountOptions,
-                                 const DiskMountManager::UnmountPathCallback&));
+  MOCK_METHOD3(UnmountPath,
+               void(const std::string&,
+                    UnmountOptions,
+                    DiskMountManager::UnmountPathCallback));
   MOCK_METHOD1(RemountAllRemovableDrives, void(MountAccessMode));
   MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
   MOCK_METHOD2(RenameMountedDevice,
@@ -104,11 +105,6 @@ class MockDiskMountManager : public DiskMountManager {
   // Returns Disk object associated with the |source_path| or NULL on failure.
   const Disk* FindDiskBySourcePathInternal(
       const std::string& source_path) const;
-
-  // Is used to implement EnsureMountInfoRefreshed.
-  void EnsureMountInfoRefreshedInternal(
-      const EnsureMountInfoRefreshedCallback& callback,
-      bool force);
 
   // Notifies observers about device status update.
   void NotifyDeviceChanged(DeviceEvent event,

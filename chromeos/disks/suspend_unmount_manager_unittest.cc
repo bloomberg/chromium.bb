@@ -25,10 +25,11 @@ const char kFileSystemType[] = "exfat";
 
 class FakeDiskMountManager : public MockDiskMountManager {
  public:
-  void NotifyUnmountDeviceComplete(MountError error) const {
-    for (const UnmountPathCallback& callback : callbacks_) {
-      callback.Run(error);
+  void NotifyUnmountDeviceComplete(MountError error) {
+    for (size_t i = 0; i < callbacks_.size(); i++) {
+      std::move(callbacks_[i]).Run(error);
     }
+    callbacks_.clear();
   }
 
   const std::vector<std::string>& unmounting_mount_paths() const {
@@ -38,9 +39,9 @@ class FakeDiskMountManager : public MockDiskMountManager {
  private:
   void UnmountPath(const std::string& mount_path,
                    UnmountOptions options,
-                   const UnmountPathCallback& callback) override {
+                   UnmountPathCallback callback) override {
     unmounting_mount_paths_.push_back(mount_path);
-    callbacks_.push_back(callback);
+    callbacks_.push_back(std::move(callback));
   }
   std::vector<std::string> unmounting_mount_paths_;
   std::vector<UnmountPathCallback> callbacks_;

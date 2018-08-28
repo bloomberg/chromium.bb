@@ -309,7 +309,7 @@ void StorageMonitorCros::EjectDevice(
   }
 
   manager->UnmountPath(mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
-                       base::Bind(NotifyUnmountResult, callback));
+                       base::BindOnce(NotifyUnmountResult, callback));
 }
 
 device::mojom::MtpManager*
