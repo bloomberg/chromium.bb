@@ -42,11 +42,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
  public:
   static const char kViewClassName[];
 
-  class SlideObserver {
-   public:
-    virtual void OnSlideChanged(const std::string& notification_id) = 0;
-  };
-
   enum class Mode {
     // Normal mode.
     NORMAL = 0,
@@ -122,8 +117,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnSlideChanged() override;
   void OnSlideOut() override;
 
-  void AddSlideObserver(SlideObserver* observer);
-
   Mode GetMode() const;
 
   // Gets the current horizontal scroll offset of the view by slide gesture.
@@ -173,7 +166,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   std::unique_ptr<views::Painter> focus_painter_;
 
   SlideOutController slide_out_controller_;
-  std::vector<SlideObserver*> slide_observers_;
 
   // True if |this| is embedded in another view. Equivalent to |!top_level| in
   // MessageViewFactory parlance.

@@ -16,14 +16,12 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 using message_center::MessageView;
-using message_center::SlidableMessageView;
 using message_center::Notification;
 
 namespace ash {
@@ -70,7 +68,7 @@ void MessageListView::Layout() {
   }
 }
 
-void MessageListView::AddNotificationAt(MessageView* message_view, int index) {
+void MessageListView::AddNotificationAt(MessageView* view, int index) {
   // |index| refers to a position in a subset of valid children. |real_index|
   // in a list includes the invalid children, so we compute the real index by
   // walking the list until |index| number of valid children are encountered,
@@ -86,26 +84,24 @@ void MessageListView::AddNotificationAt(MessageView* message_view, int index) {
   }
 
   if (real_index == 0)
-    ExpandSpecifiedNotificationAndCollapseOthers(message_view);
+    ExpandSpecifiedNotificationAndCollapseOthers(view);
 
-  SlidableMessageView* container = new SlidableMessageView(message_view);
-  AddChildViewAt(container, real_index);
+  AddChildViewAt(view, real_index);
   if (GetContentsBounds().IsEmpty())
     return;
 
-  adding_views_.insert(container);
+  adding_views_.insert(view);
   DoUpdateIfPossible();
 }
 
-void MessageListView::RemoveNotification(MessageView* message_view) {
-  views::View* container = message_view->parent();
-  DCHECK_EQ(container->parent(), this);
+void MessageListView::RemoveNotification(MessageView* view) {
+  DCHECK_EQ(view->parent(), this);
 
   // TODO(yhananda): We should consider consolidating clearing_all_views_,
   // deleting_views_ and deleted_when_done_.
-  if (base::ContainsValue(clearing_all_views_, container) ||
-      deleting_views_.find(container) != deleting_views_.end() ||
-      deleted_when_done_.find(container) != deleted_when_done_.end()) {
+  if (base::ContainsValue(clearing_all_views_, view) ||
+      deleting_views_.find(view) != deleting_views_.end() ||
+      deleted_when_done_.find(view) != deleted_when_done_.end()) {
     // Let's skip deleting the view if it's already scheduled for deleting.
     // Even if we check clearing_all_views_ here, we actualy have no idea
     // whether the view is due to be removed or not because it could be in its
@@ -116,70 +112,63 @@ void MessageListView::RemoveNotification(MessageView* message_view) {
   }
 
   if (GetContentsBounds().IsEmpty()) {
-    delete container;
+    delete view;
   } else {
-    if (adding_views_.find(container) != adding_views_.end())
-      adding_views_.erase(container);
-    if (animator_.IsAnimating(container))
-      animator_.StopAnimatingView(container);
+    if (adding_views_.find(view) != adding_views_.end())
+      adding_views_.erase(view);
+    if (animator_.IsAnimating(view))
+      animator_.StopAnimatingView(view);
 
-    if (container->layer()) {
-      deleting_views_.insert(container);
+    if (view->layer()) {
+      deleting_views_.insert(view);
     } else {
-      delete container;
+      delete view;
     }
     DoUpdateIfPossible();
   }
 
-  int index = GetIndexOf(container);
+  int index = GetIndexOf(view);
   if (index == 0)
     ExpandTopNotificationAndCollapseOthers();
 }
 
-void MessageListView::UpdateNotification(MessageView* message_view,
+void MessageListView::UpdateNotification(MessageView* view,
                                          const Notification& notification) {
-  views::View* container = message_view->parent();
   // Skip updating the notification being cleared.
-  if (base::ContainsValue(clearing_all_views_, container))
+  if (base::ContainsValue(clearing_all_views_, view))
     return;
 
-  int index = GetIndexOf(container);
+  int index = GetIndexOf(view);
   DCHECK_LE(0, index);  // GetIndexOf is negative if not a child.
 
   if (index == 0)
-    ExpandSpecifiedNotificationAndCollapseOthers(message_view);
+    ExpandSpecifiedNotificationAndCollapseOthers(view);
 
-  animator_.StopAnimatingView(container);
-  if (deleting_views_.find(container) != deleting_views_.end())
-    deleting_views_.erase(container);
-  if (deleted_when_done_.find(container) != deleted_when_done_.end())
-    deleted_when_done_.erase(container);
-  message_view->UpdateWithNotification(notification);
+  animator_.StopAnimatingView(view);
+  if (deleting_views_.find(view) != deleting_views_.end())
+    deleting_views_.erase(view);
+  if (deleted_when_done_.find(view) != deleted_when_done_.end())
+    deleted_when_done_.erase(view);
+  view->UpdateWithNotification(notification);
   DoUpdateIfPossible();
 }
 
 std::pair<int, MessageView*> MessageListView::GetNotificationById(
     const std::string& id) {
   for (int i = child_count() - 1; i >= 0; --i) {
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* container =
-        static_cast<SlidableMessageView*>(child_at(i));
-    if (container->notification_id() == id && IsValidChild(container))
-      return std::make_pair(i, container->GetMessageView());
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (view->notification_id() == id && IsValidChild(view))
+      return std::make_pair(i, view);
   }
   return std::make_pair(-1, nullptr);
 }
 
 MessageView* MessageListView::GetNotificationAt(int index) {
   for (int i = child_count() - 1; i >= 0; --i) {
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* container =
-        static_cast<SlidableMessageView*>(child_at(i));
-    if (IsValidChild(container)) {
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (IsValidChild(view)) {
       if (index == 0)
-        return container->GetMessageView();
+        return view;
       index--;
     }
   }
@@ -189,9 +178,8 @@ MessageView* MessageListView::GetNotificationAt(int index) {
 size_t MessageListView::GetNotificationCount() const {
   int count = 0;
   for (int i = child_count() - 1; i >= 0; --i) {
-    const SlidableMessageView* container =
-        static_cast<const SlidableMessageView*>(child_at(i));
-    if (IsValidChild(container))
+    const MessageView* view = static_cast<const MessageView*>(child_at(i));
+    if (IsValidChild(view))
       count++;
   }
   return count;
@@ -299,10 +287,8 @@ void MessageListView::ResetRepositionSession() {
 void MessageListView::ClearAllClosableNotifications(
     const gfx::Rect& visible_scroll_rect) {
   for (int i = 0; i < child_count(); ++i) {
-    // Safe cast since all views in MessageListView are SlidableMessageViews.
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* child = static_cast<SlidableMessageView*>(child_at(i));
+    // Safe cast since all views in MessageListView are MessageViews.
+    MessageView* child = static_cast<MessageView*>(child_at(i));
     if (!child->visible())
       continue;
     if (gfx::IntersectRects(child->bounds(), visible_scroll_rect).IsEmpty())
@@ -494,41 +480,34 @@ void MessageListView::ExpandSpecifiedNotificationAndCollapseOthers(
   }
 
   for (int i = 0; i < child_count(); ++i) {
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* container =
-        static_cast<SlidableMessageView*>(child_at(i));
+    MessageView* view = static_cast<MessageView*>(child_at(i));
     // Target view is already processed above.
-    if (target_view == container->GetMessageView())
+    if (target_view == view)
       continue;
     // Skip if the view is invalid.
-    if (!IsValidChild(container))
+    if (!IsValidChild(view))
       continue;
     // We don't touch if the view has been manually expanded or collapsed.
-    if (container->IsManuallyExpandedOrCollapsed())
+    if (view->IsManuallyExpandedOrCollapsed())
       continue;
 
     // Otherwise, collapse the notification.
-    container->SetExpanded(false);
+    view->SetExpanded(false);
   }
 }
 
 void MessageListView::ExpandTopNotificationAndCollapseOthers() {
-  SlidableMessageView* top_notification = nullptr;
+  MessageView* top_notification = nullptr;
   for (int i = 0; i < child_count(); ++i) {
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* container =
-        static_cast<SlidableMessageView*>(child_at(i));
-    if (!IsValidChild(container))
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (!IsValidChild(view))
       continue;
-    top_notification = container;
+    top_notification = view;
     break;
   }
 
   if (top_notification != nullptr)
-    ExpandSpecifiedNotificationAndCollapseOthers(
-        top_notification->GetMessageView());
+    ExpandSpecifiedNotificationAndCollapseOthers(top_notification);
 }
 
 std::vector<int> MessageListView::ComputeRepositionOffsets(
@@ -687,21 +666,6 @@ void MessageListView::AnimateClearingOneNotification() {
                    weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             kAnimateClearingNextNotificationDelayMS));
-  }
-}
-
-void MessageListView::OnSlideChanged(const std::string& notification_id) {
-  for (int i = 0; i < child_count(); ++i) {
-    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
-              child_at(i)->GetClassName());
-    SlidableMessageView* container =
-        static_cast<SlidableMessageView*>(child_at(i));
-    MessageView* message = container->GetMessageView();
-    if (message->notification_id() == notification_id)
-      continue;
-    if (!IsValidChild(container))
-      continue;
-    container->CloseSwipeControl();
   }
 }
 

@@ -498,11 +498,11 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
 TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   // Make sure that notification 2 is placed above notification 1.
-  EXPECT_LT(GetNotificationView(kNotificationId2)->GetBoundsInScreen().y(),
-            GetNotificationView(kNotificationId1)->GetBoundsInScreen().y());
+  EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
+            GetNotificationView(kNotificationId1)->bounds().y());
 
   GetMessageListView()->SetRepositionTarget(
-      GetNotificationView(kNotificationId1)->GetBoundsInScreen());
+      GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
@@ -528,11 +528,11 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
 TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   // Make sure that notification 2 is placed above notification 1.
-  EXPECT_LT(GetNotificationView(kNotificationId2)->GetBoundsInScreen().y(),
-            GetNotificationView(kNotificationId1)->GetBoundsInScreen().y());
+  EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
+            GetNotificationView(kNotificationId1)->bounds().y());
 
   GetMessageListView()->SetRepositionTarget(
-      GetNotificationView(kNotificationId1)->GetBoundsInScreen());
+      GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
@@ -571,14 +571,14 @@ TEST_F(MessageCenterViewTest, SizeAfterRemove) {
 
 TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
   // Make sure that the notification 2 is placed above the notification 1.
-  EXPECT_LT(GetNotificationView(kNotificationId2)->GetBoundsInScreen().y(),
-            GetNotificationView(kNotificationId1)->GetBoundsInScreen().y());
+  EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
+            GetNotificationView(kNotificationId1)->bounds().y());
 
   int previous_vertical_pos_from_bottom =
       GetMessageListView()->height() -
-      GetNotificationView(kNotificationId1)->GetBoundsInScreen().y();
+      GetNotificationView(kNotificationId1)->bounds().y();
   GetMessageListView()->SetRepositionTarget(
-      GetNotificationView(kNotificationId1)->parent()->bounds());
+      GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
@@ -594,21 +594,21 @@ TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
   // The vertical position of the target from bottom should be kept over change.
   int current_vertical_pos_from_bottom =
       GetMessageListView()->height() -
-      GetNotificationView(kNotificationId1)->GetBoundsInScreen().y();
+      GetNotificationView(kNotificationId1)->bounds().y();
   EXPECT_EQ(previous_vertical_pos_from_bottom,
             current_vertical_pos_from_bottom);
 }
 
 TEST_F(MessageCenterViewTest, PositionAfterRemove) {
   // Make sure that the notification 2 is placed above the notification 1.
-  EXPECT_LT(GetNotificationView(kNotificationId2)->GetBoundsInScreen().y(),
-            GetNotificationView(kNotificationId1)->GetBoundsInScreen().y());
+  EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
+            GetNotificationView(kNotificationId1)->bounds().y());
 
   GetMessageListView()->SetRepositionTarget(
-      GetNotificationView(kNotificationId2)->parent()->bounds());
+      GetNotificationView(kNotificationId2)->bounds());
   int previous_height = GetMessageListView()->height();
   int previous_notification2_y =
-      GetNotificationView(kNotificationId2)->GetBoundsInScreen().y();
+      GetNotificationView(kNotificationId2)->bounds().y();
 
   EXPECT_EQ(2, GetMessageListView()->child_count());
   RemoveNotification(kNotificationId2, false);
@@ -620,7 +620,7 @@ TEST_F(MessageCenterViewTest, PositionAfterRemove) {
   // Confirm that notification 1 is moved up to the place on which the
   // notification 2 was.
   EXPECT_EQ(previous_notification2_y,
-            GetNotificationView(kNotificationId1)->GetBoundsInScreen().y());
+            GetNotificationView(kNotificationId1)->bounds().y());
   // The size should be kept.
   EXPECT_EQ(previous_height, GetMessageListView()->height());
 
