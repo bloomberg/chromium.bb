@@ -224,8 +224,8 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     return;
   }
 
-  if (!GetFrame()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kGeolocation)) {
+  if (!GetFrame()->IsFeatureEnabled(mojom::FeaturePolicyFeature::kGeolocation,
+                                    ReportOptions::kReportOnFailure)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kGeolocationDisabledByFeaturePolicy);
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
