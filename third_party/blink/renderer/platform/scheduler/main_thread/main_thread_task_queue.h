@@ -7,6 +7,7 @@
 
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
+#include "net/base/request_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace base {
@@ -262,6 +263,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     return TaskQueue::CreateTaskRunner(static_cast<int>(task_type));
   }
 
+  void SetNetRequestPriority(net::RequestPriority net_request_priority);
+  base::Optional<net::RequestPriority> net_request_priority() const;
+
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
 
@@ -286,6 +290,13 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       fixed_priority_;
   const QueueTraits queue_traits_;
   const bool freeze_when_keep_active_;
+
+  // Warning: net_request_priority is not the same as the priority of the queue.
+  // It is the priority (at the loading stack level) of the resource associated
+  // to the queue, if one exists.
+  //
+  // Used to track UMA metrics for resource loading tasks split by net priority.
+  base::Optional<net::RequestPriority> net_request_priority_;
 
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

@@ -8,6 +8,7 @@ include_rules = [
 specific_include_rules = {
   "main_thread_task_queue.h": [
     "+base/task/sequence_manager/task_queue_impl.h",
+    "+net/base/request_priority.h"
   ],
   "frame_scheduler_impl.h": [
     "+net/base/request_priority.h"
