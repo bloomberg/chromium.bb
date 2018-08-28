@@ -39,9 +39,13 @@ void VulkanDemo::Initialize() {
 
   event_source_ = ui::PlatformEventSource::CreateDefault();
 
+  gfx::Size size(800, 600);
   window_ = std::make_unique<ui::X11Window>(
-      this, gfx::Rect(gfx::Point(100, 100), size_));
+      this, gfx::Rect(gfx::Point(100, 100), size));
   window_->Show();
+
+  // Sync up size between |window_| and |vulkan_surface_|
+  vulkan_surface_->SetSize(size);
 }
 
 void VulkanDemo::Destroy() {
@@ -60,9 +64,9 @@ void VulkanDemo::Run() {
 }
 
 void VulkanDemo::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  if (size_ == new_bounds.size())
+  if (vulkan_surface_->size() == new_bounds.size())
     return;
-  NOTIMPLEMENTED();
+  vulkan_surface_->SetSize(new_bounds.size());
 }
 
 void VulkanDemo::OnCloseRequest() {
@@ -97,7 +101,8 @@ void VulkanDemo::CreateSkSurface() {
   vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
   vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
   vk_image_info.fLevelCount = 1;
-  GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 0,
+  const auto& size = vulkan_surface_->size();
+  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
                                       vk_image_info);
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       vulkan_context_provider_->GetGrContext(), render_target,
@@ -106,7 +111,14 @@ void VulkanDemo::CreateSkSurface() {
 }
 
 void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
+  canvas->save();
   canvas->clear(SkColorSetARGB(255, 255 * fraction, 255 * (1 - fraction), 0));
+
+  constexpr float kWidth = 800;
+  constexpr float kHeight = 600;
+
+  const auto& size = vulkan_surface_->size();
+  canvas->scale(size.width() / kWidth, size.height() / kHeight);
 
   SkPaint paint;
   paint.setColor(SK_ColorRED);
@@ -134,7 +146,6 @@ void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
   paint.setColor(SK_ColorBLACK);
   paint.setTextSize(32);
 
-  canvas->save();
   static const char message[] = "Hello Vulkan";
 
   // Translate and rotate

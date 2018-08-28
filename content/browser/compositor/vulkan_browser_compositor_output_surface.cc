@@ -86,7 +86,7 @@ void VulkanBrowserCompositorOutputSurface::Reshape(
     const gfx::ColorSpace& color_space,
     bool has_alpha,
     bool use_stencil) {
-  NOTIMPLEMENTED();
+  surface_->SetSize(size);
 }
 
 void VulkanBrowserCompositorOutputSurface::SetDrawRectangle(

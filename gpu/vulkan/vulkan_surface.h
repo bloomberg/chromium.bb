@@ -43,13 +43,16 @@ class VULKAN_EXPORT VulkanSurface {
 
   void Finish();
 
+  bool SetSize(const gfx::Size& size);
+  const gfx::Size& size() const { return size_; }
+
  private:
   const VkInstance vk_instance_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
-  VulkanSwapChain swap_chain_;
+  std::unique_ptr<VulkanSwapChain> swap_chain_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);
 };
