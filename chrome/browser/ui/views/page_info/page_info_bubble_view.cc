@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -219,14 +218,6 @@ class InternalPageInfoBubbleView : public PageInfoBubbleViewBase {
                              const GURL& url);
   ~InternalPageInfoBubbleView() override;
 
-  // PageInfoBubbleViewBase:
-  bool ShouldShowCloseButton() const override;
-  gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
-
- private:
-  gfx::ImageSkia* bubble_icon_;
-
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoBubbleView);
 };
 
@@ -390,14 +381,10 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
                              PageInfoBubbleViewBase::BUBBLE_INTERNAL_PAGE,
                              web_contents) {
   int text = IDS_PAGE_INFO_INTERNAL_PAGE;
-  int icon = IDR_PRODUCT_LOGO_16;
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     text = IDS_PAGE_INFO_EXTENSION_PAGE;
-    icon = IDR_PLUGINS_FAVICON;
   } else if (url.SchemeIs(content::kViewSourceScheme)) {
     text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
-    // view-source scheme uses the same icon as chrome:// pages.
-    icon = IDR_PRODUCT_LOGO_16;
   } else if (!url.SchemeIs(content::kChromeUIScheme) &&
              !url.SchemeIs(content::kChromeDevToolsScheme)) {
     NOTREACHED();
@@ -409,8 +396,6 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   set_margins(gfx::Insets());
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  bubble_icon_ = rb.GetImageSkiaNamed(icon);
   set_window_title(l10n_util::GetStringUTF16(text));
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -426,20 +411,6 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
 }
 
 InternalPageInfoBubbleView::~InternalPageInfoBubbleView() {}
-
-bool InternalPageInfoBubbleView::ShouldShowCloseButton() const {
-  // TODO(patricialor): When Harmony is default, also remove |bubble_icon_| and
-  // supporting code.
-  return true;
-}
-
-gfx::ImageSkia InternalPageInfoBubbleView::GetWindowIcon() {
-  return *bubble_icon_;
-}
-
-bool InternalPageInfoBubbleView::ShouldShowWindowIcon() const {
-  return ChromeLayoutProvider::Get()->ShouldShowWindowIcon();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PageInfoBubbleView
