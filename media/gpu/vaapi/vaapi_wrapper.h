@@ -129,6 +129,13 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                     size_t size,
                     const void* buffer);
 
+  // Convenient templatized version of SubmitBuffer() where |size| is deduced to
+  // be the size of the type of |*buffer|.
+  template <typename T>
+  bool SubmitBuffer(VABufferType va_buffer_type, const T* buffer) {
+    return SubmitBuffer(va_buffer_type, sizeof(T), buffer);
+  }
+
   // Submit a VAEncMiscParameterBuffer of given |misc_param_type|, copying its
   // data from |buffer| of size |size|, into HW codec. The data in |buffer| is
   // no longer needed and can be freed after this method returns.

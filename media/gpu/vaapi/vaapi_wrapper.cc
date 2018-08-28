@@ -1016,6 +1016,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
                                 size_t size,
                                 const void* buffer) {
+  DCHECK_LT(va_buffer_type, VABufferTypeMax);
+  DCHECK(buffer);
   base::AutoLock auto_lock(*va_lock_);
 
   VABufferID buffer_id;

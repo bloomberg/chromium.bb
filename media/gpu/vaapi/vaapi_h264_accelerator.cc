@@ -148,8 +148,7 @@ Status VaapiH264Accelerator::SubmitFrameMetadata(
 
   pic_param.num_ref_frames = sps->max_num_ref_frames;
 
-  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType,
-                                    sizeof(pic_param), &pic_param))
+  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param))
     return Status::kFail;
 
   VAIQMatrixBufferH264 iq_matrix_buf;
@@ -181,8 +180,7 @@ Status VaapiH264Accelerator::SubmitFrameMetadata(
     }
   }
 
-  return vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType,
-                                      sizeof(iq_matrix_buf), &iq_matrix_buf)
+  return vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix_buf)
              ? Status::kOk
              : Status::kFail;
 }
@@ -285,8 +283,7 @@ Status VaapiH264Accelerator::SubmitSlice(
       FillVAPicture(&slice_param.RefPicList1[i], ref_pic_list1[i]);
   }
 
-  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType,
-                                    sizeof(slice_param), &slice_param))
+  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param))
     return Status::kFail;
 
   return vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType, size, data)

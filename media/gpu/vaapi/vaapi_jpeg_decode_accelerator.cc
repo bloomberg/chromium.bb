@@ -491,16 +491,14 @@ bool VaapiJpegDecodeAccelerator::DoDecode(VaapiWrapper* vaapi_wrapper,
   // Set picture parameters.
   VAPictureParameterBufferJPEGBaseline pic_param;
   FillPictureParameters(parse_result.frame_header, &pic_param);
-  if (!vaapi_wrapper->SubmitBuffer(VAPictureParameterBufferType,
-                                   sizeof(pic_param), &pic_param)) {
+  if (!vaapi_wrapper->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
     return false;
   }
 
   // Set quantization table.
   VAIQMatrixBufferJPEGBaseline iq_matrix;
   FillIQMatrix(parse_result.q_table, &iq_matrix);
-  if (!vaapi_wrapper->SubmitBuffer(VAIQMatrixBufferType, sizeof(iq_matrix),
-                                   &iq_matrix)) {
+  if (!vaapi_wrapper->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
     return false;
   }
 
@@ -508,16 +506,14 @@ bool VaapiJpegDecodeAccelerator::DoDecode(VaapiWrapper* vaapi_wrapper,
   VAHuffmanTableBufferJPEGBaseline huffman_table;
   FillHuffmanTable(parse_result.dc_table, parse_result.ac_table,
                    &huffman_table);
-  if (!vaapi_wrapper->SubmitBuffer(VAHuffmanTableBufferType,
-                                   sizeof(huffman_table), &huffman_table)) {
+  if (!vaapi_wrapper->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
     return false;
   }
 
   // Set slice parameters.
   VASliceParameterBufferJPEGBaseline slice_param;
   FillSliceParameters(parse_result, &slice_param);
-  if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType,
-                                   sizeof(slice_param), &slice_param)) {
+  if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
     return false;
   }
 

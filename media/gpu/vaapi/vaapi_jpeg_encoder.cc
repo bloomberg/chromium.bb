@@ -384,7 +384,7 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
   VAEncPictureParameterBufferJPEG pic_param;
   FillPictureParameters(input_size, quality, output_buffer_id, &pic_param);
   if (!vaapi_wrapper_->SubmitBuffer(VAEncPictureParameterBufferType,
-                                    sizeof(pic_param), &pic_param)) {
+                                    &pic_param)) {
     return false;
   }
 
@@ -393,7 +393,6 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
     FillQMatrix(q_matrix_cached_.get());
   }
   if (!vaapi_wrapper_->SubmitBuffer(VAQMatrixBufferType,
-                                    sizeof(*q_matrix_cached_),
                                     q_matrix_cached_.get())) {
     return false;
   }
@@ -403,7 +402,6 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
     FillHuffmanTableParameters(huff_table_param_cached_.get());
   }
   if (!vaapi_wrapper_->SubmitBuffer(VAHuffmanTableBufferType,
-                                    sizeof(*huff_table_param_cached_),
                                     huff_table_param_cached_.get())) {
     return false;
   }
@@ -414,7 +412,6 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
     FillSliceParameters(slice_param_cached_.get());
   }
   if (!vaapi_wrapper_->SubmitBuffer(VAEncSliceParameterBufferType,
-                                    sizeof(*slice_param_cached_),
                                     slice_param_cached_.get())) {
     return false;
   }
@@ -434,7 +431,7 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
   header_param.bit_length = length_in_bits;
   header_param.has_emulation_bytes = 0;
   if (!vaapi_wrapper_->SubmitBuffer(VAEncPackedHeaderParameterBufferType,
-                                    sizeof(header_param), &header_param)) {
+                                    &header_param)) {
     return false;
   }
 
