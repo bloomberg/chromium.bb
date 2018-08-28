@@ -171,6 +171,8 @@ void UnifiedConsentService::RegisterPrefs(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::kNotInitialized));
   registry->RegisterBooleanPref(prefs::kShouldShowUnifiedConsentBump, false);
+  registry->RegisterBooleanPref(prefs::kHadEverythingSyncedBeforeMigration,
+                                false);
 }
 
 // static
@@ -184,9 +186,12 @@ void UnifiedConsentService::RollbackIfNeeded(
     // If there was no migration yet, nothing has to be rolled back.
     return;
   }
+  bool had_everything_synced =
+      user_pref_service->GetBoolean(
+          prefs::kHadEverythingSyncedBeforeMigration) ||
+      user_pref_service->GetBoolean(prefs::kShouldShowUnifiedConsentBump);
 
-  if (user_pref_service->GetBoolean(prefs::kShouldShowUnifiedConsentBump) &&
-      sync_service &&
+  if (had_everything_synced && sync_service &&
       sync_service->GetDisableReasons() ==
           syncer::SyncService::DISABLE_REASON_NONE) {
     // This will wait until the sync engine is initialized and then enables the
@@ -199,6 +204,7 @@ void UnifiedConsentService::RollbackIfNeeded(
   user_pref_service->ClearPref(prefs::kUnifiedConsentGiven);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
   user_pref_service->ClearPref(prefs::kShouldShowUnifiedConsentBump);
+  user_pref_service->ClearPref(prefs::kHadEverythingSyncedBeforeMigration);
 }
 
 void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
@@ -390,8 +396,12 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
     SetMigrationState(MigrationState::kCompleted);
     return;
   }
+  bool is_syncing_everything =
+      syncer::SyncPrefs(pref_service_).HasKeepEverythingSynced();
+  pref_service_->SetBoolean(prefs::kHadEverythingSyncedBeforeMigration,
+                            is_syncing_everything);
 
-  if (!syncer::SyncPrefs(pref_service_).HasKeepEverythingSynced()) {
+  if (!is_syncing_everything) {
     RecordConsentBumpSuppressReason(
         ConsentBumpSuppressReason::kSyncEverythingOff);
   } else if (!AreAllOnByDefaultPrivacySettingsOn()) {

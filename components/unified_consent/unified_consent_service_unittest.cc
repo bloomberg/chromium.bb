@@ -522,12 +522,13 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
   // Migrate
-  CreateConsentService(true /* client_services_on_by_default */);
+  CreateConsentService();
   // Check expectations after migration.
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
-  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  EXPECT_TRUE(
+      pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
 
   consent_service_->Shutdown();
   consent_service_.reset();
@@ -539,6 +540,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
             GetMigrationState());
+  EXPECT_FALSE(
+      pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
   // Sync everything should be back on.
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
@@ -562,6 +565,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
+  EXPECT_FALSE(
+      pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
 
   consent_service_->Shutdown();
   consent_service_.reset();
