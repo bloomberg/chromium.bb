@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -158,16 +157,14 @@ NGPaintFragment::NGPaintFragment(
   DCHECK(physical_fragment_);
 }
 
-NGPaintFragment::~NGPaintFragment() {
-  NGAbstractInlineTextBox::WillDestroy(this);
-}
+NGPaintFragment::~NGPaintFragment() = default;
 
-std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
+scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<const NGPhysicalFragment> fragment) {
   DCHECK(fragment);
 
-  std::unique_ptr<NGPaintFragment> paint_fragment =
-      std::make_unique<NGPaintFragment>(std::move(fragment), nullptr);
+  scoped_refptr<NGPaintFragment> paint_fragment =
+      base::AdoptRef(new NGPaintFragment(std::move(fragment), nullptr));
 
   HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
   paint_fragment->PopulateDescendants(NGPhysicalOffset(),
@@ -213,7 +210,7 @@ NGPaintFragment* NGPaintFragment::Last() {
   }
 }
 
-void NGPaintFragment::SetNext(std::unique_ptr<NGPaintFragment> fragment) {
+void NGPaintFragment::SetNext(scoped_refptr<NGPaintFragment> fragment) {
   next_fragmented_ = std::move(fragment);
 }
 
@@ -263,8 +260,8 @@ void NGPaintFragment::PopulateDescendants(
   children_.ReserveCapacity(container.Children().size());
 
   for (const auto& child_fragment : container.Children()) {
-    std::unique_ptr<NGPaintFragment> child =
-        std::make_unique<NGPaintFragment>(child_fragment, this);
+    scoped_refptr<NGPaintFragment> child =
+        base::AdoptRef(new NGPaintFragment(child_fragment, this));
 
     if (!child_fragment->IsFloating() &&
         !child_fragment->IsOutOfFlowPositioned() &&

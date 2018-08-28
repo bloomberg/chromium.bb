@@ -116,9 +116,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
  public:
   explicit LayoutInline(Element*);
 
-#if DCHECK_IS_ON()
   ~LayoutInline() override;
-#endif
 
   static LayoutInline* CreateAnonymous(Document*);
 
@@ -377,7 +375,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     LineBoxList line_boxes_;
     // The first fragment of inline boxes associated with this object.
     // Valid only when IsInLayoutNGInlineFormattingContext().
-    NGPaintFragment* first_paint_fragment_;
+    scoped_refptr<NGPaintFragment> first_paint_fragment_;
   };
 };
 
@@ -387,7 +385,7 @@ inline LineBoxList* LayoutInline::MutableLineBoxes() {
 }
 
 inline NGPaintFragment* LayoutInline::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_.get()
                                                : nullptr;
 }
 
