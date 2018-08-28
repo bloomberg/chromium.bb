@@ -120,6 +120,7 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
 }
 
+// static
 void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
@@ -129,6 +130,11 @@ void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
 #endif
 
   InitializeOneOffImplementation(kGLImplementationStubGL, false);
+}
+
+// static
+void GLSurfaceTestSupport::ShutdownGL() {
+  init::ShutdownGL(false);
 }
 
 }  // namespace gl

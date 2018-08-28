@@ -37,8 +37,8 @@ class TestFocusRules : public wm::BaseFocusRules {
 WindowServiceTestSetup::WindowServiceTestSetup()
     // FocusController takes ownership of TestFocusRules.
     : focus_controller_(new TestFocusRules()) {
-  if (gl::GetGLImplementation() == gl::kGLImplementationNone)
-    gl::GLSurfaceTestSupport::InitializeOneOff();
+  DCHECK_EQ(gl::kGLImplementationNone, gl::GetGLImplementation());
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;
@@ -68,6 +68,7 @@ WindowServiceTestSetup::~WindowServiceTestSetup() {
   aura::client::SetFocusClient(root(), nullptr);
   aura_test_helper_.TearDown();
   ui::TerminateContextFactoryForTests();
+  gl::GLSurfaceTestSupport::ShutdownGL();
 }
 
 std::unique_ptr<EmbeddingHelper> WindowServiceTestSetup::CreateEmbedding(
