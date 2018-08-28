@@ -68,6 +68,17 @@ Polymer({
   },
 
   /**
+   * CSS class for the <div> containing all the text in the multidevice-item
+   * <div>, i.e. the label and sublabel. If the host is set, the Better Together
+   * icon appears so before the text (i.e. text div is 'middle' class).
+   * @return {string}
+   * @private
+   */
+  getMultiDeviceItemLabelBlockCssClass_: function() {
+    return this.isHostSet ? 'middle' : 'start';
+  },
+
+  /**
    * @return {string} Translated item label.
    * @private
    */
@@ -115,8 +126,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showButton_: function() {
-    return this.pageContentData.mode !=
+  shouldShowButton_: function() {
+    return this.pageContentData.mode !==
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
@@ -124,26 +135,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showToggle_: function() {
-    return this.pageContentData.mode ==
+  shouldShowToggle_: function() {
+    return this.pageContentData.mode ===
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  doesClickOpenSubpage_: function() {
-    return [
-      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
-      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
-      settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED,
-    ].includes(this.pageContentData.mode);
   },
 
   /** @private */
   handleItemClick_: function() {
-    if (!this.doesClickOpenSubpage_())
+    if (!this.isHostSet)
       return;
     settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
   },
