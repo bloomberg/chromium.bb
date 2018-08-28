@@ -914,21 +914,21 @@ void ExtensionService::PostActivateExtension(
   // to make sure that the FaviconSource is registered with the
   // ChromeURLDataManager.
   if (permissions_data->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
-    FaviconSource* favicon_source = new FaviconSource(profile_);
-    content::URLDataSource::Add(profile_, favicon_source);
+    content::URLDataSource::Add(profile_,
+                                std::make_unique<FaviconSource>(profile_));
   }
 
   // Same for chrome://theme/ resources.
   if (permissions_data->HasHostPermission(GURL(chrome::kChromeUIThemeURL))) {
-    ThemeSource* theme_source = new ThemeSource(profile_);
-    content::URLDataSource::Add(profile_, theme_source);
+    content::URLDataSource::Add(profile_,
+                                std::make_unique<ThemeSource>(profile_));
   }
 
   // Same for chrome://thumb/ resources.
   if (permissions_data->HasHostPermission(
           GURL(chrome::kChromeUIThumbnailURL))) {
-    ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_, false);
-    content::URLDataSource::Add(profile_, thumbnail_source);
+    content::URLDataSource::Add(
+        profile_, std::make_unique<ThumbnailSource>(profile_, false));
   }
 }
 

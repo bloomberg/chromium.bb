@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_H_
 #define CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/resource_request_info.h"
 
 class GURL;
+
 namespace base {
 class RefCountedMemory;
 }
@@ -29,8 +31,12 @@ class ResourceContext;
 // notify.
 class CONTENT_EXPORT URLDataSource {
  public:
-  // Adds a URL data source to |browser_context|.
+  // Adds a URL data source to |browser_context|. Deprecated.
   static void Add(BrowserContext* browser_context, URLDataSource* source);
+
+  // Adds a URL data source to |browser_context|.
+  static void Add(BrowserContext* browser_context,
+                  std::unique_ptr<URLDataSource> source);
 
   virtual ~URLDataSource() {}
 

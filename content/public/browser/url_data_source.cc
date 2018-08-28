@@ -4,6 +4,9 @@
 
 #include "content/public/browser/url_data_source.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
@@ -11,9 +14,16 @@
 
 namespace content {
 
+// static
 void URLDataSource::Add(BrowserContext* browser_context,
                         URLDataSource* source) {
-  URLDataManager::AddDataSource(browser_context, source);
+  Add(browser_context, base::WrapUnique(source));
+}
+
+// static
+void URLDataSource::Add(BrowserContext* browser_context,
+                        std::unique_ptr<URLDataSource> source) {
+  URLDataManager::AddDataSource(browser_context, std::move(source));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

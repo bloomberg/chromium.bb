@@ -57,7 +57,7 @@ class CONTENT_EXPORT URLDataManager : public base::SupportsUserData::Data {
   // |URLDataManager|. Creates a URLDataSourceImpl to wrap the given
   // source.
   static void AddDataSource(BrowserContext* browser_context,
-                            URLDataSource* source);
+                            std::unique_ptr<URLDataSource> source);
 
   // Adds a WebUI data source to |browser_context|'s |URLDataManager|.
   static void AddWebUIDataSource(BrowserContext* browser_context,
