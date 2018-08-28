@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -117,7 +117,7 @@ bool InstalledApplications::GetInstalledApplications(
 
 InstalledApplications::InstalledApplications(
     std::unique_ptr<MsiUtil> msi_util) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "ThirdPartyModules.InstalledApplications.GetDataTime");
