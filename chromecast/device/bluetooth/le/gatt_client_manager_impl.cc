@@ -53,6 +53,7 @@ GattClientManagerImpl::GattClientManagerImpl(
     bluetooth_v2_shlib::GattClient* gatt_client)
     : gatt_client_(gatt_client),
       observers_(new base::ObserverListThreadSafe<Observer>()),
+      notification_logger_(this),
       weak_factory_(
           std::make_unique<base::WeakPtrFactory<GattClientManagerImpl>>(this)) {
   weak_this_ = weak_factory_->GetWeakPtr();

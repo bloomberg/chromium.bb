@@ -6,6 +6,8 @@ import("//chromecast/chromecast.gni")
 
 cast_source_set("le") {
   sources = [
+    "ble_notification_logger.cc",
+    "ble_notification_logger.h",
     "gatt_client_manager.h",
     "gatt_client_manager_impl.cc",
     "gatt_client_manager_impl.h",
