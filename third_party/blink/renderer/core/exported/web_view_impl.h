@@ -81,7 +81,6 @@ class PageOverlay;
 class PageScaleConstraintsSet;
 class PaintLayerCompositor;
 class UserGestureToken;
-class ValidationMessageClient;
 class WebDevToolsAgentImpl;
 class WebElement;
 class WebInputMethodController;
@@ -276,8 +275,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // the page is shutting down, but will be valid at all other times.
   Page* GetPage() const { return page_.Get(); }
 
-  // Returns a ValidationMessageClient associated to the Page. This is nullable.
-  ValidationMessageClient* GetValidationMessageClient() const;
   WebDevToolsAgentImpl* MainFrameDevToolsAgentImpl();
 
   DevToolsEmulator* GetDevToolsEmulator() const {
