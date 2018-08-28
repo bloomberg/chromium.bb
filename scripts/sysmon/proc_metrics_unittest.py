@@ -125,8 +125,8 @@ class TestProcMetrics(cros_test_lib.TestCase):
                        '/opt/infra-tools/usr/bin/lucifer_watcher']
           ),
           _mock_process(
-              name='lucifer_run_job',
-              cmdline=['/opt/infra-tools/usr/bin/lucifer_run_job',
+              name='lucifer',
+              cmdline=['/opt/infra-tools/usr/bin/lucifer',
                        '-resultsdir',
                        ('/usr/local/autotest/results/167263377-chromeos-test/'
                         'chromeos2-row11-rack6-host5'),
@@ -162,7 +162,7 @@ class TestProcMetrics(cros_test_lib.TestCase):
     calls.extend(_expected_calls_for('gs_offloader'))
     calls.extend(_expected_calls_for('job_aborter'))
     calls.extend(_expected_calls_for('job_reporter'))
-    calls.extend(_expected_calls_for('lucifer_run_job'))
+    calls.extend(_expected_calls_for('lucifer'))
     calls.extend(_expected_calls_for('lxc-start'))
     calls.extend(_expected_calls_for('lxc-attach'))
     calls.extend(_expected_calls_for('sysmon'))
