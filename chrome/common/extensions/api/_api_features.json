@@ -136,7 +136,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://bookmarks/*"
+      "chrome://bookmarks/*",
+      "chrome://welcome/email"
     ]
   }],
   "bookmarks.export": [{

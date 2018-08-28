@@ -142,6 +142,17 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
 
   // Add required resources.
   html_source->AddResourcePath("email", IDR_NUX_EMAIL_HTML);
+  html_source->AddResourcePath("email/nux_email.js", IDR_NUX_EMAIL_JS);
+
+  html_source->AddResourcePath("email/nux_email_proxy.html",
+                               IDR_NUX_EMAIL_PROXY_HTML);
+  html_source->AddResourcePath("email/nux_email_proxy.js",
+                               IDR_NUX_EMAIL_PROXY_JS);
+
+  html_source->AddResourcePath("email/email_chooser.html",
+                               IDR_NUX_EMAIL_CHOOSER_HTML);
+  html_source->AddResourcePath("email/email_chooser.js",
+                               IDR_NUX_EMAIL_CHOOSER_JS);
 
   // Add icons
 }

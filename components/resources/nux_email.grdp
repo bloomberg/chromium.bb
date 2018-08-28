@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <include name="IDR_NUX_EMAIL_HTML" file="../nux/email/resources/nux_email.html" type="BINDATA" />
+  <include name="IDR_NUX_EMAIL_JS" file="../nux/email/resources/nux_email.js" type="BINDATA" />
+  <include name="IDR_NUX_EMAIL_PROXY_HTML" file="../nux/email/resources/nux_email_proxy.html" type="BINDATA" />
+  <include name="IDR_NUX_EMAIL_PROXY_JS" file="../nux/email/resources/nux_email_proxy.js" type="BINDATA" />
+  <include name="IDR_NUX_EMAIL_CHOOSER_HTML" file="../nux/email/resources/email_chooser.html" type="BINDATA" />
+  <include name="IDR_NUX_EMAIL_CHOOSER_JS" file="../nux/email/resources/email_chooser.js" type="BINDATA" />
 </grit-part>
