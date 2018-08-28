@@ -216,6 +216,23 @@ void ExtensionWebContentsObserver::OnInterfaceRequestFromFrame(
   registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
+void ExtensionWebContentsObserver::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  DCHECK(initialized_);
+  if (GetViewType(web_contents()) == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    ProcessManager* const process_manager =
+        ProcessManager::Get(browser_context_);
+    const Extension* const extension =
+        process_manager->GetExtensionForWebContents(web_contents());
+    if (extension == nullptr)
+      return;
+    if (is_picture_in_picture)
+      process_manager->IncrementLazyKeepaliveCount(extension);
+    else
+      process_manager->DecrementLazyKeepaliveCount(extension);
+  }
+}
+
 bool ExtensionWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {

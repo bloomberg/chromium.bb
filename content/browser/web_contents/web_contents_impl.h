@@ -886,6 +886,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void MediaResized(const gfx::Size& size,
                     const WebContentsObserver::MediaPlayerId& id);
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen);
+  void MediaPictureInPictureChanged(bool is_picture_in_picture);
 
   int GetCurrentlyPlayingVideoCount() override;
   base::Optional<gfx::Size> GetFullscreenVideoSize() override;

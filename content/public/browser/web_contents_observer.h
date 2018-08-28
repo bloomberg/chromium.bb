@@ -503,6 +503,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // There is a slight delay between media entering or exiting fullscreen
   // and it being detected.
   virtual void MediaEffectivelyFullscreenChanged(bool is_fullscreen) {}
+  virtual void MediaPictureInPictureChanged(bool is_picture_in_picture) {}
   virtual void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) {}
 
   // Invoked when the renderer process changes the page scale factor.
