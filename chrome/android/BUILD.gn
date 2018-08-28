@@ -1587,7 +1587,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
 if (enable_vr) {
   instrumentation_test_apk("chrome_public_test_vr_apk") {
     apk_name = "ChromePublicTestVr"
-    apk_under_test = ":chrome_public_apk"
+    apk_under_test = ":chrome_public_apk_for_test"
     android_manifest = chrome_public_test_vr_apk_manifest
     android_manifest_dep = ":chrome_public_test_vr_apk_manifest"
 
