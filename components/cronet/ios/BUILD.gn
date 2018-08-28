@@ -131,7 +131,9 @@ ios_framework_bundle("cronet_framework") {
 test("cronet_unittests_ios") {
   testonly = true
 
-  sources = []
+  sources = [
+    "../run_all_unittests.cc",
+  ]
 
   deps = [
     ":cronet_sources_with_global_state",

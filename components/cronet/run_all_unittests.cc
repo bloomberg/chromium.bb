@@ -8,9 +8,10 @@
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-#if defined(CRONET_TESTS_IMPLEMENTATION) && defined(COMPONENT_BUILD)
-  // In component builds cronet_tests and libcronet.so share various libraries,
-  // so globals initialized by libcronet.so are visible to the TestSuite.
+#if defined(CRONET_TESTS_IMPLEMENTATION)
+  // cronet_tests[_android] link the Cronet implementation into the test
+  // suite statically in many configurations, causing globals initialized by
+  // the library (e.g. TaskScheduler) to be visible to the TestSuite.
   test_suite.DisableCheckForLeakedGlobals();
 #endif
   return base::LaunchUnitTests(

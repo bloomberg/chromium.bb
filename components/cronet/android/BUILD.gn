@@ -1222,6 +1222,33 @@ if (!is_component_build) {
       "//base/test:test_support",
       "//components/cronet:cronet_common_unittests",
       "//components/cronet/native:cronet_native_unittests",
+      "//components/metrics",
+      "//components/prefs:test_support",
+      "//net",
+      "//net:test_support",
+      "//net/android:net_java",
+      "//testing/gtest",
+    ]
+
+    sources = [
+      "../run_all_unittests.cc",
+    ]
+
+    data = [
+      "//components/cronet/test/data/",
+    ]
+
+    if (is_android) {
+      shard_timeout = 180
+    }
+  }
+
+  test("cronet_tests_android") {
+    deps = [
+      ":cronet_impl_native_base_java",
+      ":cronet_static",
+      "//base",
+      "//base/test:test_support",
       "//components/cronet/native/test:cronet_native_tests",
       "//components/metrics",
       "//components/prefs:test_support",
@@ -1230,6 +1257,12 @@ if (!is_component_build) {
       "//net/android:net_java",
       "//testing/gtest",
     ]
+
+    sources = [
+      "../run_all_unittests.cc",
+    ]
+
+    defines = [ "CRONET_TESTS_IMPLEMENTATION" ]
 
     data = [
       "//components/cronet/test/data/",
