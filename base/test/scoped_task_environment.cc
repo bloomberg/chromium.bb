@@ -119,7 +119,12 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
               : nullptr),
 #endif  // defined(OS_POSIX)
       task_tracker_(new TestTaskTracker()) {
-  CHECK(!TaskScheduler::GetInstance());
+  CHECK(!TaskScheduler::GetInstance())
+      << "Someone has already initialized TaskScheduler. If nothing in your "
+         "test does so, then a test that ran earlier may have initialized one, "
+         "and leaked it. base::TestSuite will trap leaked globals, unless "
+         "someone has explicitly disabled it with "
+         "DisableCheckForLeakedGlobals().";
 
   // Instantiate a TaskScheduler with 2 threads in each of its 4 pools. Threads
   // stay alive even when they don't have work.
