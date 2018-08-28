@@ -284,13 +284,15 @@ public class CastWebContentsIntentUtils {
 
     // CastWebContentsComponent.Receiver -> CastWebContentsActivity
     public static Intent requestStartCastActivity(Context context, WebContents webContents,
-            boolean enableTouch, boolean turnOnScreen, String instanceId) {
+            boolean enableTouch, boolean isRemoteControlMode, boolean turnOnScreen,
+            String instanceId) {
         Intent intent =
                 new Intent(Intent.ACTION_VIEW, null, context, CastWebContentsActivity.class);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_WEB_CONTENTS, webContents);
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enableTouch);
         intent.putExtra(INTENT_EXTRA_TURN_ON_SCREEN, turnOnScreen);
+        intent.putExtra(INTENT_EXTRA_REMOTE_CONTROL_MODE, isRemoteControlMode);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP
                 | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         return intent;

@@ -48,7 +48,7 @@ public class CastWebContentsActivityTest {
 
     private static Intent defaultIntentForCastWebContentsActivity(WebContents webContents) {
         return CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, webContents, true, true, "0");
+                RuntimeEnvironment.application, webContents, true, false, true, "0");
     }
 
     @Before
@@ -94,7 +94,7 @@ public class CastWebContentsActivityTest {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         WebContents newWebContents = mock(WebContents.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, newWebContents, true, true, null);
+                RuntimeEnvironment.application, newWebContents, true, false, true, null);
         intent.removeExtra(CastWebContentsIntentUtils.INTENT_EXTRA_URI);
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
@@ -107,7 +107,7 @@ public class CastWebContentsActivityTest {
     public void testDropsIntentWithoutWebContents() {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, null, true, true, "1");
+                RuntimeEnvironment.application, null, true, false, true, "1");
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
         reset(surfaceHelper);
@@ -120,14 +120,15 @@ public class CastWebContentsActivityTest {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         WebContents newWebContents = mock(WebContents.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, newWebContents, true, true, "2");
+                RuntimeEnvironment.application, newWebContents, true, false, true, "2");
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
         reset(surfaceHelper);
         mActivityLifecycle.newIntent(intent);
         verify(surfaceHelper)
                 .onNewStartParams(new CastWebContentsSurfaceHelper.StartParams(
-                        CastWebContentsIntentUtils.getInstanceUri("2"), newWebContents, true));
+                        CastWebContentsIntentUtils.getInstanceUri("2"), newWebContents, false,
+                        true));
     }
 
     @Test
@@ -146,7 +147,7 @@ public class CastWebContentsActivityTest {
     public void testTurnsScreenOnIfTurnOnScreen() {
         mActivityLifecycle = Robolectric.buildActivity(CastWebContentsActivity.class,
                 CastWebContentsIntentUtils.requestStartCastActivity(
-                        RuntimeEnvironment.application, mWebContents, true, true, "0"));
+                        RuntimeEnvironment.application, mWebContents, true, false, true, "0"));
         mActivity = mActivityLifecycle.get();
         mActivity.testingModeForTesting();
         mShadowActivity = Shadows.shadowOf(mActivity);
@@ -160,7 +161,7 @@ public class CastWebContentsActivityTest {
     public void testDoesNotTurnScreenOnIfNotTurnOnScreen() {
         mActivityLifecycle = Robolectric.buildActivity(CastWebContentsActivity.class,
                 CastWebContentsIntentUtils.requestStartCastActivity(
-                        RuntimeEnvironment.application, mWebContents, true, false, "0"));
+                        RuntimeEnvironment.application, mWebContents, true, false, false, "0"));
         mActivity = mActivityLifecycle.get();
         mActivity.testingModeForTesting();
         mShadowActivity = Shadows.shadowOf(mActivity);

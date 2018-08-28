@@ -54,17 +54,21 @@ class CastWebContentsSurfaceHelper {
     private String mInstanceId;
     private MediaSessionGetter mMediaSessionGetter;
 
+    private boolean mIsRemoteControlMode = false;
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
     private boolean mTouchInputEnabled = false;
 
     public static class StartParams {
         public final Uri uri;
         public final WebContents webContents;
+        public final boolean isRemoteControlMode;
         public final boolean touchInputEnabled;
 
-        public StartParams(Uri uri, WebContents webContents, boolean touchInputEnabled) {
+        public StartParams(Uri uri, WebContents webContents, boolean isRemoteControlMode,
+                boolean touchInputEnabled) {
             this.uri = uri;
             this.webContents = webContents;
+            this.isRemoteControlMode = isRemoteControlMode;
             this.touchInputEnabled = touchInputEnabled;
         }
 
@@ -73,6 +77,7 @@ class CastWebContentsSurfaceHelper {
             if (other instanceof StartParams) {
                 StartParams that = (StartParams) other;
                 return this.uri.equals(that.uri) && this.webContents.equals(that.webContents)
+                        && this.isRemoteControlMode == that.isRemoteControlMode
                         && this.touchInputEnabled == that.touchInputEnabled;
             }
             return false;
@@ -96,8 +101,10 @@ class CastWebContentsSurfaceHelper {
                 return null;
             }
 
+            final boolean isRemoteControlMode =
+                    CastWebContentsIntentUtils.isRemoteControlMode(bundle);
             final boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(bundle);
-            return new StartParams(uri, webContents, touchInputEnabled);
+            return new StartParams(uri, webContents, isRemoteControlMode, touchInputEnabled);
         }
     }
 
@@ -159,16 +166,16 @@ class CastWebContentsSurfaceHelper {
         // webContentsView is responsible for displaying each new WebContents.
         mWebContentsState.subscribe(webContentsView);
 
-        // Take audio focus when receiving new WebContents.
-        mWebContentsState.map(webContents -> mMediaSessionGetter.get(webContents))
-                .subscribe(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
-
         // Miscellaneous actions responding to WebContents lifecycle.
         mWebContentsState.subscribe((WebContents webContents) -> {
             // Whenever our app is visible, volume controls should modify the music stream.
             // For more information read:
             // http://developer.android.com/training/managing-audio/volume-playback.html
             hostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+            // Take audio focus when receiving new WebContents if not the remote control app.
+            if (!mIsRemoteControlMode) {
+                mMediaSessionGetter.get(webContents).requestSystemAudioFocus();
+            }
             // Notify CastWebContentsComponent when closed.
             return () -> CastWebContentsComponent.onComponentClosed(mInstanceId);
         });
@@ -186,6 +193,7 @@ class CastWebContentsSurfaceHelper {
     }
 
     void onNewStartParams(final StartParams params) {
+        mIsRemoteControlMode = params.isRemoteControlMode;
         mTouchInputEnabled = params.touchInputEnabled;
         Log.d(TAG, "content_uri=" + params.uri);
         mHasUriState.set(params.uri);

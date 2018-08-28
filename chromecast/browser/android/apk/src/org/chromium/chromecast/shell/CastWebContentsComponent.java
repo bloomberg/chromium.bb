@@ -77,7 +77,8 @@ public class CastWebContentsComponent {
         public void start(StartParams params) {
             if (mStarted) return; // No-op if already started.
             if (DEBUG) Log.d(TAG, "start: SHOW_WEB_CONTENT in activity");
-            startCastActivity(params.context, params.webContents, mEnableTouchInput, mTurnOnScreen);
+            startCastActivity(params.context, params.webContents, mEnableTouchInput,
+                    mIsRemoteControlMode, mTurnOnScreen);
             mStarted = true;
         }
 
@@ -97,8 +98,8 @@ public class CastWebContentsComponent {
                         params.appId, params.visibilityPriority, mEnableTouchInput, mInstanceId,
                         mIsRemoteControlMode, mTurnOnScreen))) {
                 // No intent receiver to handle SHOW_WEB_CONTENT in fragment
-                startCastActivity(
-                        params.context, params.webContents, mEnableTouchInput, mTurnOnScreen);
+                startCastActivity(params.context, params.webContents, mEnableTouchInput,
+                        mIsRemoteControlMode, mTurnOnScreen);
             }
         }
 
@@ -108,10 +109,10 @@ public class CastWebContentsComponent {
         }
     }
 
-    private void startCastActivity(
-            Context context, WebContents webContents, boolean enableTouch, boolean turnOnScreen) {
+    private void startCastActivity(Context context, WebContents webContents, boolean enableTouch,
+            boolean isRemoteControlMode, boolean turnOnScreen) {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                context, webContents, enableTouch, turnOnScreen, mInstanceId);
+                context, webContents, enableTouch, isRemoteControlMode, turnOnScreen, mInstanceId);
         if (DEBUG) Log.d(TAG, "start activity by intent: " + intent);
         context.startActivity(intent);
     }
