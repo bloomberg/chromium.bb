@@ -223,6 +223,28 @@ bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
+void UnifiedSystemTray::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  TrayBackgroundView::AddInkDropLayer(ink_drop_layer);
+  ink_drop_layer_ = ink_drop_layer;
+}
+
+void UnifiedSystemTray::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  DCHECK_EQ(ink_drop_layer, ink_drop_layer_);
+  TrayBackgroundView::RemoveInkDropLayer(ink_drop_layer);
+  ink_drop_layer_ = nullptr;
+}
+
+void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  TrayBackgroundView::OnBoundsChanged(previous_bounds);
+  // Workarounding an ui::Layer bug that layer mask is not properly updated.
+  // https://crbug.com/860367
+  // TODO(tetsui): Remove after the bug is fixed on ui::Layer side.
+  if (ink_drop_layer_) {
+    ResetInkDropMask();
+    InstallInkDropMask(ink_drop_layer_);
+  }
+}
+
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
   // We should close bubble at this point. If it remains opened and interactive,
   // it can be dangerous (http://crbug.com/497080).
