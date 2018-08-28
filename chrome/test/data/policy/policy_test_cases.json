@@ -300,6 +300,54 @@
     ]
   },
 
+  "PrintingAllowedColorModes": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingAllowedColorModes": "monochrome" },
+    "pref_mappings": [
+      { "pref": "printing.allowed_color_modes" }
+    ]
+  },
+
+  "PrintingAllowedDuplexModes": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingAllowedDuplexModes": "duplex" },
+    "pref_mappings": [
+      { "pref": "printing.allowed_duplex_modes" }
+    ]
+  },
+
+  "PrintingAllowedPageSizes": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingAllowedPageSizes": [{"WidthUm": 210000, "HeightUm": 297000}] },
+    "pref_mappings": [
+      { "pref": "printing.allowed_page_sizes" }
+    ]
+  },
+
+  "PrintingColorDefault": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingColorDefault": "monochrome" },
+    "pref_mappings": [
+      { "pref": "printing.color_default" }
+    ]
+  },
+
+  "PrintingDuplexDefault": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingDuplexDefault": "long-edge" },
+    "pref_mappings": [
+      { "pref": "printing.duplex_default" }
+    ]
+  },
+
+  "PrintingSizeDefault": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingSizeDefault": {"WidthUm": 210000, "HeightUm": 297000} },
+    "pref_mappings": [
+      { "pref": "printing.size_default" }
+    ]
+  },
+
   "CloudPrintSubmitEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "CloudPrintSubmitEnabled": false },
