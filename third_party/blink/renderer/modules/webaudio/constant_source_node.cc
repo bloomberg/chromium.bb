@@ -61,8 +61,9 @@ void ConstantSourceHandler::Process(size_t frames_to_process) {
 
   // Figure out where in the current rendering quantum that the source is
   // active and for how many frames.
-  UpdateSchedulingInfo(frames_to_process, output_bus, quantum_frame_offset,
-                       non_silent_frames_to_process, start_frame_offset);
+  std::tie(quantum_frame_offset, non_silent_frames_to_process,
+           start_frame_offset) =
+      UpdateSchedulingInfo(frames_to_process, output_bus);
 
   if (!non_silent_frames_to_process) {
     output_bus->Zero();

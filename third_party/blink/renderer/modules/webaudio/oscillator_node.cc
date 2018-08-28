@@ -360,8 +360,9 @@ void OscillatorHandler::Process(size_t frames_to_process) {
   size_t non_silent_frames_to_process;
   double start_frame_offset;
 
-  UpdateSchedulingInfo(frames_to_process, output_bus, quantum_frame_offset,
-                       non_silent_frames_to_process, start_frame_offset);
+  std::tie(quantum_frame_offset, non_silent_frames_to_process,
+           start_frame_offset) =
+      UpdateSchedulingInfo(frames_to_process, output_bus);
 
   if (!non_silent_frames_to_process) {
     output_bus->Zero();

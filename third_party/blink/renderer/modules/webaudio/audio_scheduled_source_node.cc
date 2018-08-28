@@ -54,20 +54,26 @@ AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType node_type,
   }
 }
 
-void AudioScheduledSourceHandler::UpdateSchedulingInfo(
-    size_t quantum_frame_size,
-    AudioBus* output_bus,
-    size_t& quantum_frame_offset,
-    size_t& non_silent_frames_to_process,
-    double& start_frame_offset) {
+std::tuple<size_t, size_t, double>
+AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
+                                                  AudioBus* output_bus) {
+  // Set up default values for the three return values.
+  size_t quantum_frame_offset = 0;
+  size_t non_silent_frames_to_process = 0;
+  double start_frame_offset = 0;
+
   DCHECK(output_bus);
-  if (!output_bus)
-    return;
+  if (!output_bus) {
+    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
+                           start_frame_offset);
+  }
 
   DCHECK_EQ(quantum_frame_size,
             static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
-  if (quantum_frame_size != AudioUtilities::kRenderQuantumFrames)
-    return;
+  if (quantum_frame_size != AudioUtilities::kRenderQuantumFrames) {
+    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
+                           start_frame_offset);
+  }
 
   double sample_rate = Context()->sampleRate();
 
@@ -96,7 +102,8 @@ void AudioScheduledSourceHandler::UpdateSchedulingInfo(
     // Output silence.
     output_bus->Zero();
     non_silent_frames_to_process = 0;
-    return;
+    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
+                           start_frame_offset);
   }
 
   // Check if it's time to start playing.
@@ -119,7 +126,8 @@ void AudioScheduledSourceHandler::UpdateSchedulingInfo(
   if (!non_silent_frames_to_process) {
     // Output silence.
     output_bus->Zero();
-    return;
+    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
+                           start_frame_offset);
   }
 
   // Handle silence before we start playing.
@@ -158,7 +166,8 @@ void AudioScheduledSourceHandler::UpdateSchedulingInfo(
     Finish();
   }
 
-  return;
+  return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
+                         start_frame_offset);
 }
 
 void AudioScheduledSourceHandler::Start(double when,
