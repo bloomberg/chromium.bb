@@ -6,13 +6,13 @@
 #define UI_OZONE_PUBLIC_OZONE_PLATFORM_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
@@ -112,6 +112,8 @@ class OZONE_EXPORT OzonePlatform {
     std::vector<gfx::BufferFormat> supported_buffer_formats;
   };
 
+  using StartupCallback = base::OnceCallback<void(OzonePlatform*)>;
+
   // Ensures the OzonePlatform instance without doing any initialization.
   // No-op in case the instance is already created.
   // This is useful in order call virtual methods that depend on the ozone
@@ -136,8 +138,7 @@ class OZONE_EXPORT OzonePlatform {
   // callback is called once the instance is created and initialized, on the
   // thread it is initialized on. If the caller requires the callback to run on
   // a specific thread, then it needs to do ensure that by itself.
-  static void RegisterStartupCallback(
-      base::OnceCallback<void(OzonePlatform*)> callback);
+  static void RegisterStartupCallback(StartupCallback callback);
 
   // Factory getters to override in subclasses. The returned objects will be
   // injected into the appropriate layer at startup. Subclasses should not
@@ -189,8 +190,6 @@ class OZONE_EXPORT OzonePlatform {
  private:
   virtual void InitializeUI(const InitParams& params) = 0;
   virtual void InitializeGPU(const InitParams& params) = 0;
-
-  static OzonePlatform* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };
