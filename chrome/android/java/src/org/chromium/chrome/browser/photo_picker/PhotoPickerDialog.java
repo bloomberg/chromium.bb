@@ -87,8 +87,8 @@ public class PhotoPickerDialog extends AlertDialog {
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context);
-        mCategoryView.initialize(this, mListenerWrapper, multiSelectionAllowed, mimeTypes);
+        mCategoryView = new PickerCategoryView(context, multiSelectionAllowed);
+        mCategoryView.initialize(this, mListenerWrapper, mimeTypes);
         setView(mCategoryView);
     }
 
