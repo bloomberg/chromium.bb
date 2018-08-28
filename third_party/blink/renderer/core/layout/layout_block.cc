@@ -107,7 +107,8 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
       descendants_with_floats_marked_for_layout_(false),
       has_positioned_objects_(false),
       has_percent_height_descendants_(false),
-      pagination_state_changed_(false) {
+      pagination_state_changed_(false),
+      is_legacy_initiated_out_of_flow_layout_(false) {
   // LayoutBlockFlow calls setChildrenInline(true).
   // By default, subclasses do not have inline children.
 }
@@ -802,11 +803,20 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
     return;
   }
 
-  if (!positioned_object->NormalChildNeedsLayout() &&
-      (relayout_children || height_available_to_children_changed_ ||
-       (!IsLayoutNGBlockFlow() &&
-        NeedsLayoutDueToStaticPosition(positioned_object))))
-    layout_scope.SetChildNeedsLayout(positioned_object);
+  if (!positioned_object->NormalChildNeedsLayout()) {
+    bool update_child_needs_layout =
+        relayout_children || height_available_to_children_changed_;
+    if (!update_child_needs_layout) {
+      if (!positioned_object->IsLayoutNGObject() ||
+          ToLayoutBlock(positioned_object)
+              ->IsLegacyInitiatedOutOfFlowLayout()) {
+        update_child_needs_layout |=
+            NeedsLayoutDueToStaticPosition(positioned_object);
+      }
+    }
+    if (update_child_needs_layout)
+      layout_scope.SetChildNeedsLayout(positioned_object);
+  }
 
   LayoutUnit logical_top_estimate;
   bool is_paginated = View()->GetLayoutState()->IsPaginated();

@@ -271,6 +271,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   }
   scoped_refptr<NGPhysicalFragment> child_fragment = fragment->Children()[0];
   DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
+  SetIsLegacyInitiatedOutOfFlowLayout(true);
 }
 
 }  // namespace blink
