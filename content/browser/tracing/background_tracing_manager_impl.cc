@@ -397,7 +397,11 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
 void BackgroundTracingManagerImpl::OnRuleTriggered(
     const BackgroundTracingRule* triggered_rule,
     StartedFinalizingCallback callback) {
-  CHECK(config_);
+  // Config can be null here if scenario was aborted when validation and rule
+  // was triggered just before validation. If validation kicked in after this
+  // point, we still check before uploading.
+  if (!config_)
+    return;
 
   double trigger_chance = triggered_rule->trigger_chance();
   if (trigger_chance < 1.0 && base::RandDouble() > trigger_chance) {
