@@ -57,6 +57,7 @@ public class CastWebContentsSurfaceHelperTest {
     private static class StartParamsBuilder {
         private String mId = "0";
         private WebContents mWebContents = mock(WebContents.class);
+        private boolean mIsRemoteControlMode = false;
         private boolean mIsTouchInputEnabled = false;
 
         public StartParamsBuilder withId(String id) {
@@ -69,6 +70,11 @@ public class CastWebContentsSurfaceHelperTest {
             return this;
         }
 
+        public StartParamsBuilder withIsRemoteControlMode(boolean isRemoteControlMode) {
+            mIsRemoteControlMode = isRemoteControlMode;
+            return this;
+        }
+
         public StartParamsBuilder enableTouchInput(boolean enableTouchInput) {
             mIsTouchInputEnabled = enableTouchInput;
             return this;
@@ -76,7 +82,7 @@ public class CastWebContentsSurfaceHelperTest {
 
         public StartParams build() {
             return new StartParams(CastWebContentsIntentUtils.getInstanceUri(mId), mWebContents,
-                    mIsTouchInputEnabled);
+                    mIsRemoteControlMode, mIsTouchInputEnabled);
         }
     }
 
@@ -133,6 +139,18 @@ public class CastWebContentsSurfaceHelperTest {
         StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
         mSurfaceHelper.onNewStartParams(params);
         verify(mMediaSessionImpl).requestSystemAudioFocus();
+    }
+
+    @Test
+    public void testDoesNotTakeAudioFocusInRemoteControlMode() {
+        WebContents webContents = mock(WebContents.class);
+        StartParams params = new StartParamsBuilder()
+                                     .withId("3")
+                                     .withWebContents(webContents)
+                                     .withIsRemoteControlMode(true)
+                                     .build();
+        mSurfaceHelper.onNewStartParams(params);
+        verify(mMediaSessionImpl, never()).requestSystemAudioFocus();
     }
 
     @Test
