@@ -118,10 +118,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           &params));
-#if defined(OS_WIN)
-  gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
-      compositor->widget());
-#endif
 }
 
 void HostContextFactoryPrivate::UnconfigureCompositor(Compositor* compositor) {
