@@ -46,10 +46,7 @@ namespace blink {
 
 FindInPage::FindInPage(WebLocalFrameImpl& frame,
                        InterfaceRegistry* interface_registry)
-    : ContextLifecycleObserver(
-          frame.GetFrame() ? frame.GetFrame()->GetDocument() : nullptr),
-      frame_(&frame),
-      binding_(this) {
+    : frame_(&frame), binding_(this) {
   // TODO(rakina): Use InterfaceRegistry of |frame| directly rather than passing
   // both of them.
   if (!interface_registry)
@@ -316,10 +313,6 @@ void FindInPage::BindToRequest(
 }
 
 void FindInPage::Dispose() {
-  binding_.Close();
-}
-
-void FindInPage::ContextDestroyed(ExecutionContext* context) {
   binding_.Close();
 }
 
