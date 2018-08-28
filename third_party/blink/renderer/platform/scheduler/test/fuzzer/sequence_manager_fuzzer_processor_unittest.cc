@@ -1238,7 +1238,8 @@ TEST(SequenceManagerFuzzerProcessorTest, CreateThreadRecursively) {
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 }
 
-TEST(SequenceManagerFuzzerProcessorTest, PostTaskToCreateThread) {
+// Flaky. See https://crbug.com/878203.
+TEST(SequenceManagerFuzzerProcessorTest, DISABLED_PostTaskToCreateThread) {
   std::vector<std::vector<ActionForTest>> executed_actions;
   std::vector<std::vector<TaskForTest>> executed_tasks;
 
