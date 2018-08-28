@@ -125,6 +125,15 @@ class AudioFileReaderTest : public testing::Test {
     EXPECT_EQ(reader_->Read(&decoded_audio_packets), 0);
   }
 
+  void RunTestPartialDecode(const char* fn) {
+    Initialize(fn);
+    EXPECT_TRUE(reader_->Open());
+    std::vector<std::unique_ptr<AudioBus>> decoded_audio_packets;
+    constexpr int packets_to_read = 1;
+    reader_->Read(&decoded_audio_packets, packets_to_read);
+    EXPECT_EQ(static_cast<int>(decoded_audio_packets.size()), packets_to_read);
+  }
+
   void disable_packet_verification() { packet_verification_disabled_ = true; }
 
  protected:
@@ -220,6 +229,10 @@ TEST_F(AudioFileReaderTest, VorbisInvalidChannelLayout) {
 TEST_F(AudioFileReaderTest, WaveValidFourChannelLayout) {
   RunTest("4ch.wav", "131.71,38.02,130.31,44.89,135.98,42.52,", 4, 44100,
           base::TimeDelta::FromMicroseconds(100001), 4411, 4410);
+}
+
+TEST_F(AudioFileReaderTest, ReadPartialMP3) {
+  RunTestPartialDecode("sfx.mp3");
 }
 
 }  // namespace media
