@@ -165,6 +165,23 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
   }
 }
 
+void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
+                                               bool powered) {
+  if (observer_)
+    observer_->BluetoothAdapterPowerChanged(powered);
+
+  // If Bluetooth adapter is powered on, resume scanning for nearby Cable
+  // devices and start advertising client EIDs.
+  if (powered) {
+    StartCableDiscovery();
+  } else {
+    // In order to prevent duplicate client EIDs from being advertised when
+    // BluetoothAdapter is powered back on, unregister all existing client
+    // EIDs.
+    StopAdvertisements(base::DoNothing());
+  }
+}
+
 void FidoCableDiscovery::OnSetPowered() {
   DCHECK(adapter());
 
@@ -214,6 +231,8 @@ void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
       base::BarrierClosure(advertisement_success_counter_, std::move(callback));
   for (auto advertisement : advertisements_)
     advertisement.second->Unregister(barrier_closure, base::DoNothing());
+
+  advertisements_.clear();
 }
 
 void FidoCableDiscovery::OnAdvertisementRegistered(

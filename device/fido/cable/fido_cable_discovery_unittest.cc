@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/containers/span.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -482,6 +483,45 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 
   EXPECT_EQ(1u, cable_discovery->advertisements_.size());
   cable_discovery.reset();
+}
+
+// Tests that cable discovery resumes after Bluetooth adapter is powered on.
+TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
+  auto cable_discovery = CreateDiscovery();
+  NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer, DeviceAdded);
+  cable_discovery->set_observer(&mock_observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(mock_observer, DiscoveryAvailable(cable_discovery.get(), true));
+
+  // After BluetoothAdapter is powered on, we expect that Cable discovery starts
+  // again.
+  mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid);
+  mock_adapter->ExpectRegisterAdvertisementWithResponse(
+      true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
+
+  // Wait until error callback for SetPowered() is invoked. Then, simulate
+  // Bluetooth adapter power change by invoking
+  // MockBluetoothAdapter::NotifyAdapterPoweredChanged().
+  {
+    base::RunLoop run_loop;
+    auto quit = run_loop.QuitClosure();
+    EXPECT_CALL(*mock_adapter, SetPowered)
+        .WillOnce(::testing::WithArg<2>([&quit](const auto& error_callback) {
+          error_callback.Run();
+          quit.Run();
+        }));
+
+    BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+    cable_discovery->Start();
+    run_loop.Run();
+  }
+
+  mock_adapter->NotifyAdapterPoweredChanged(true);
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace device

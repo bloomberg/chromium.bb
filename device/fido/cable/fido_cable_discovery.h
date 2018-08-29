@@ -78,6 +78,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
                      BluetoothDevice* device) override;
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
+  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
 
   // FidoBleDiscoveryBase:
   void OnSetPowered() override;
