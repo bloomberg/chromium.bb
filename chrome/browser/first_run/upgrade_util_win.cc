@@ -32,9 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_switches.h"
@@ -114,14 +112,13 @@ bool SwapNewChromeExeIfPresent() {
 
   // If this is a system-level install, ask Google Update to launch an elevated
   // process to rename Chrome executables.
-  if (!InstallUtil::IsPerUserInstall())
+  if (install_static::IsSystemInstall())
     return InvokeGoogleUpdateForRename();
 
   // If this is a user-level install, directly launch a process to rename Chrome
   // executables. Obtain the command to launch the process from the registry.
   base::win::RegKey key;
-  if (key.Open(HKEY_CURRENT_USER,
-               BrowserDistribution::GetDistribution()->GetVersionKey().c_str(),
+  if (key.Open(HKEY_CURRENT_USER, install_static::GetClientsKeyPath().c_str(),
                KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
     std::wstring rename_cmd;
     if (key.ReadValue(google_update::kRegRenameCmdField,
