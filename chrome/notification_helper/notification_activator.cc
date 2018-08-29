@@ -4,6 +4,8 @@
 
 #include "chrome/notification_helper/notification_activator.h"
 
+#include <windows.h>
+
 #include <shellapi.h>
 
 #include "base/command_line.h"
@@ -143,6 +145,21 @@ HRESULT NotificationActivator::Activate(
   if (info.hProcess != nullptr) {
     base::Process process(info.hProcess);
     DWORD pid = ::GetProcessId(process.Handle());
+
+    // Despite the fact that the Windows notification center grants the helper
+    // permission to set the foreground window, the helper fails to pass the
+    // baton to Chrome at an alarming rate; see https://crbug.com/837796.
+    // Sending generic down/up key events seems to fix it.
+    INPUT keyboard_inputs[2] = {};
+
+    keyboard_inputs[0].type = INPUT_KEYBOARD;
+    keyboard_inputs[0].ki.dwFlags = 0;  // Key press.
+
+    keyboard_inputs[1] = keyboard_inputs[0];
+    keyboard_inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;  // key release.
+
+    ::SendInput(2, keyboard_inputs, sizeof(keyboard_inputs[0]));
+
     if (!::AllowSetForegroundWindow(pid)) {
 #if !defined(NDEBUG)
       DWORD error_code = ::GetLastError();
