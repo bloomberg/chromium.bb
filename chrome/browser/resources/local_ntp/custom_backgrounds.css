@@ -204,10 +204,17 @@ html[dir=rtl] .bg-option-text {
 }
 
 @media (max-width: 356px) {
-   #bg-sel-menu,
-   #edit-bg-dialog {
+   #bg-sel-menu {
      width: 188px;
    }
+}
+
+/* The width is decided by the longest text length plus 16px margin on the
+right, so that every text can stay on its row even on the smallest window */
+@media (max-width: 356px) {
+  #edit-bg-dialog {
+    width: 232px;
+  }
 }
 
 #bg-sel-tiles {
