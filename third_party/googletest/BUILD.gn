@@ -11,6 +11,11 @@ config("gtest_config") {
 config("gmock_config") {
   visibility = [ ":*" ]
 
+  cflags_cc = [
+    # issue/15: GMock does not support the override keyword.
+    "-Wno-inconsistent-missing-override",
+  ]
+
   include_dirs = [ "src/googlemock/include" ]
 }
 
