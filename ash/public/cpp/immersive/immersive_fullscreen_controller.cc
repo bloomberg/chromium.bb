@@ -11,7 +11,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "ash/public/cpp/immersive/immersive_handler_factory.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -72,7 +71,7 @@ ImmersiveFullscreenController::ImmersiveFullscreenController()
     : delegate_(NULL),
       top_container_(NULL),
       widget_(NULL),
-      event_observers_enabled_(false),
+      observers_enabled_(false),
       enabled_(false),
       reveal_state_(CLOSED),
       revealed_lock_count_(0),
@@ -83,7 +82,6 @@ ImmersiveFullscreenController::ImmersiveFullscreenController()
       weak_ptr_factory_(this) {}
 
 ImmersiveFullscreenController::~ImmersiveFullscreenController() {
-  EnableEventObservers(false);
   EnableWindowObservers(false);
 }
 
@@ -91,16 +89,10 @@ void ImmersiveFullscreenController::Init(
     ImmersiveFullscreenControllerDelegate* delegate,
     views::Widget* widget,
     views::View* top_container) {
-  // This function may be called more than once (e.g. by
-  // ClientControlledShellSurface).
-  EnableWindowObservers(false);
-
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;
   ImmersiveContext::Get()->InstallResizeHandleWindowTargeter(this);
-
-  EnableWindowObservers(true);
 }
 
 void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
@@ -109,7 +101,7 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
     return;
   enabled_ = enabled;
 
-  EnableEventObservers(enabled_);
+  EnableWindowObservers(enabled_);
 
   ImmersiveContext::Get()->OnEnteringOrExitingImmersive(this, enabled);
 
@@ -266,43 +258,14 @@ void ImmersiveFullscreenController::OnPointerEventObserved(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver overrides:
+// views::WidgetObserver overrides:
 
-void ImmersiveFullscreenController::OnWindowPropertyChanged(
-    aura::Window* window,
-    const void* key,
-    intptr_t old) {
-  if (key == kImmersiveIsActive) {
-    SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-               window->GetProperty(kImmersiveIsActive));
-  }
-}
-
-void ImmersiveFullscreenController::OnWindowDestroying(aura::Window* window) {
-  EnableEventObservers(false);
+void ImmersiveFullscreenController::OnWidgetDestroying(views::Widget* widget) {
   EnableWindowObservers(false);
 
   // Set |enabled_| to false such that any calls to MaybeStartReveal() and
   // MaybeEndReveal() have no effect.
   enabled_ = false;
-  widget_ = nullptr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::Observer overrides:
-
-void ImmersiveFullscreenController::OnViewBoundsChanged(
-    views::View* observed_view) {
-  DCHECK_EQ(top_container_, observed_view);
-  widget()->GetNativeWindow()->SetProperty(
-      kImmersiveTopContainerBoundsInScreen,
-      new gfx::Rect(top_container_->GetBoundsInScreen()));
-}
-
-void ImmersiveFullscreenController::OnViewIsDeleting(
-    views::View* observed_view) {
-  DCHECK_EQ(observed_view, top_container_);
-  top_container_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,43 +306,24 @@ void ImmersiveFullscreenController::UnlockRevealedState() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// public:
-
-// static
-void ImmersiveFullscreenController::EnableForWidget(views::Widget* widget,
-                                                    bool enabled) {
-  widget->GetNativeWindow()->SetProperty(kImmersiveIsActive, enabled);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // private:
 
 void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
-  if (enable) {
-    top_container_->AddObserver(this);
-    widget_->GetNativeWindow()->AddObserver(this);
-  } else {
-    if (top_container_)
-      top_container_->RemoveObserver(this);
-    if (widget_)
-      widget_->GetNativeWindow()->RemoveObserver(this);
-  }
-}
-
-void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
-  if (event_observers_enabled_ == enable)
+  if (observers_enabled_ == enable)
     return;
-  event_observers_enabled_ = enable;
+  observers_enabled_ = enable;
 
   if (enable) {
     immersive_focus_watcher_ =
         ImmersiveHandlerFactory::Get()->CreateFocusWatcher(this);
     immersive_gesture_handler_ =
         ImmersiveHandlerFactory::Get()->CreateGestureHandler(this);
+    widget_->AddObserver(this);
     ImmersiveContext::Get()->AddPointerWatcher(
         this, views::PointerWatcherEventTypes::MOVES);
   } else {
     ImmersiveContext::Get()->RemovePointerWatcher(this);
+    widget_->RemoveObserver(this);
     immersive_gesture_handler_.reset();
     immersive_focus_watcher_.reset();
 
