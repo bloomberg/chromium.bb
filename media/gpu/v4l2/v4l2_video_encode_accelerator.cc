@@ -806,11 +806,13 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
 
   std::vector<int> fds;
   if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
-    fds = frame->DmabufFds();
-    if (fds.size() != input_planes_count_) {
+    auto& scoped_fds = frame->DmabufFds();
+    if (scoped_fds.size() != input_planes_count_) {
       VLOGF(1) << "Invalid number of planes in the frame";
       return false;
     }
+    for (auto& fd : scoped_fds)
+      fds.push_back(fd.get());
   }
 
   for (size_t i = 0; i < input_planes_count_; ++i) {

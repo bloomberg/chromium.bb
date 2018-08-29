@@ -855,14 +855,10 @@ size_t VideoFrame::shared_memory_offset() const {
 }
 
 #if defined(OS_LINUX)
-std::vector<int> VideoFrame::DmabufFds() const {
+const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
-  std::vector<int> ret;
 
-  for (auto& fd : dmabuf_fds_)
-    ret.emplace_back(fd.get());
-
-  return ret;
+  return dmabuf_fds_;
 }
 
 bool VideoFrame::HasDmaBufs() const {
