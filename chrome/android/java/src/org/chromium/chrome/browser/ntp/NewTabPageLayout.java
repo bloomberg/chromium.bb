@@ -30,12 +30,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.Tile;
@@ -50,7 +52,11 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -265,11 +271,37 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
+        maybeShowIPHOnHomepageTile();
+
         manager.addDestructionObserver(NewTabPageLayout.this ::onDestroy);
 
         mInitialized = true;
 
         TraceEvent.end(TAG + ".initialize()");
+    }
+
+    private void maybeShowIPHOnHomepageTile() {
+        if (!(FeatureUtilities.isNewTabPageButtonEnabled()
+                    && FeatureUtilities.isHomepageTileEnabled())) {
+            return;
+        }
+
+        SiteSuggestion data = getTileGroup().getHomepageTileData();
+        if (data == null) return;
+
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.HOMEPAGE_TILE_FEATURE)) return;
+
+        View homepageView = mSiteSectionViewHolder.findTileView(data);
+        ViewRectProvider rectProvider = new ViewRectProvider(homepageView);
+
+        TextBubble textBubble = new TextBubble(homepageView.getContext(), homepageView,
+                R.string.iph_homepage_tile_text, R.string.iph_homepage_tile_text, true,
+                rectProvider);
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(
+                () -> tracker.dismissed(FeatureConstants.HOMEPAGE_TILE_FEATURE));
+        textBubble.show();
     }
 
     /**

@@ -671,13 +671,18 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
     }
 
-    /** Record that the bottom toolbar was used for IPH reasons. */
-    private void recordBottomToolbarUseForIPH() {
+    /** Record that homepage button was used for IPH reasons */
+    private void recordToolbarUseForIPH(String toolbarIPHEvent) {
         if (mTabModelSelector != null && mTabModelSelector.getCurrentTab() != null) {
             Tab tab = mTabModelSelector.getCurrentTab();
             Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
-            tracker.notifyEvent(EventConstants.CHROME_DUET_USED_BOTTOM_TOOLBAR);
+            tracker.notifyEvent(toolbarIPHEvent);
         }
+    }
+
+    /** Record that the bottom toolbar was used for IPH reasons. */
+    private void recordBottomToolbarUseForIPH() {
+        recordToolbarUseForIPH(EventConstants.CHROME_DUET_USED_BOTTOM_TOOLBAR);
     }
 
     /**
@@ -1277,8 +1282,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab == null) return;
         String homePageUrl = HomepageManager.getHomepageUri();
-        if (TextUtils.isEmpty(homePageUrl) || FeatureUtilities.isNewTabPageButtonEnabled()) {
+        boolean isNewTabPageButtonEnabled = FeatureUtilities.isNewTabPageButtonEnabled();
+        if (TextUtils.isEmpty(homePageUrl) || isNewTabPageButtonEnabled) {
             homePageUrl = UrlConstants.NTP_URL;
+        }
+        if (isNewTabPageButtonEnabled) {
+            recordToolbarUseForIPH(EventConstants.CLEAR_TAB_BUTTON_CLICKED);
+        } else {
+            recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
         }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
     }
