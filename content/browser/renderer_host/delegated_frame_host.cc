@@ -396,10 +396,6 @@ void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
 
 void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
 
-void DelegatedFrameHost::OnCompositingLockStateChanged(
-    ui::Compositor* compositor) {
-}
-
 void DelegatedFrameHost::OnCompositingChildResizing(
     ui::Compositor* compositor) {}
 

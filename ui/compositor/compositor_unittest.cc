@@ -92,32 +92,6 @@ class CompositorTestWithMessageLoop : public CompositorTest {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-class CompositorObserverForLocks : public CompositorObserver {
- public:
-  CompositorObserverForLocks() = default;
-
-  void OnCompositingDidCommit(Compositor* compositor) override {}
-  void OnCompositingStarted(Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(Compositor* compositor) override {
-    changed_ = true;
-    locked_ = compositor->IsLocked();
-  }
-  void OnCompositingChildResizing(Compositor* compositor) override {}
-
-  void OnCompositingShuttingDown(Compositor* compositor) override {}
-
-  bool changed() const { return changed_; }
-  bool locked() const { return locked_; }
-
-  void Reset() { changed_ = false; }
-
- private:
-  bool changed_ = false;
-  bool locked_ = false;
-};
-
 }  // namespace
 
 TEST_F(CompositorTestWithMessageLoop, OutputColorMatrix) {
@@ -155,32 +129,6 @@ TEST_F(CompositorTestWithMessageLoop, OutputColorMatrix) {
   EXPECT_EQ(color_matrix,
             context_factory_private->GetOutputColorMatrix(compositor()));
   compositor()->SetRootLayer(nullptr);
-}
-
-TEST_F(CompositorTestWithMockedTime, LocksAreObserved) {
-  std::unique_ptr<CompositorLock> lock;
-
-  CompositorObserverForLocks observer;
-  compositor()->AddObserver(&observer);
-
-  EXPECT_FALSE(observer.changed());
-
-  lock = compositor()->GetCompositorLock(nullptr, base::TimeDelta());
-  // The observer see that locks changed and that the compositor is locked
-  // at the time.
-  EXPECT_TRUE(observer.changed());
-  EXPECT_TRUE(observer.locked());
-
-  observer.Reset();
-  EXPECT_FALSE(observer.changed());
-
-  lock = nullptr;
-  // The observer see that locks changed and that the compositor is not locked
-  // at the time.
-  EXPECT_TRUE(observer.changed());
-  EXPECT_FALSE(observer.locked());
-
-  compositor()->RemoveObserver(&observer);
 }
 
 TEST_F(CompositorTestWithMockedTime,

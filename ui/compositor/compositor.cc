@@ -650,8 +650,6 @@ void Compositor::SetLayerTreeDebugState(
 
 void Compositor::OnCompositorLockStateChanged(bool locked) {
   host_->SetDeferCommits(locked);
-  for (auto& observer : observer_list_)
-    observer.OnCompositingLockStateChanged(this);
 }
 
 void Compositor::RequestPresentationTimeForNextFrame(

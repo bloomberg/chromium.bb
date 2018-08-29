@@ -408,8 +408,6 @@ class TestCompositorObserver : public CompositorObserver {
 
   void OnCompositingEnded(Compositor* compositor) override { ended_ = true; }
 
-  void OnCompositingLockStateChanged(Compositor* compositor) override {}
-
   void OnCompositingChildResizing(Compositor* compositor) override {}
 
   void OnCompositingShuttingDown(Compositor* compositor) override {}
