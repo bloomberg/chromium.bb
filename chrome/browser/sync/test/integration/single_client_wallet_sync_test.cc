@@ -36,7 +36,6 @@ using autofill_helper::GetAccountWebDataService;
 using autofill_helper::GetPersonalDataManager;
 using autofill_helper::GetProfileWebDataService;
 using base::ASCIIToUTF16;
-using testing::Eq;
 
 namespace {
 
@@ -500,7 +499,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   ASSERT_NE(nullptr, pdm);
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
-  EXPECT_THAT(cards[0]->LastFourDigits(), Eq(ASCIIToUTF16("0001")));
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
   std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
@@ -524,10 +523,55 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   // Make sure only the new data is present.
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
-  EXPECT_THAT(cards[0]->LastFourDigits(), Eq(ASCIIToUTF16("0002")));
+  EXPECT_EQ(ASCIIToUTF16("0002"), cards[0]->LastFourDigits());
   profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-2", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+}
+
+// Wallet is not using incremental updates. The server either sends a non-empty
+// update with deletion gc directives and with the (possibly empty) full data
+// set, or (more often) an empty update.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
+  InitWithDefaultFeatures();
+  sync_pb::SyncEntity first_card =
+      CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001");
+  sync_pb::SyncEntity first_address =
+      CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1");
+
+  GetFakeServer()->SetWalletData({first_card, first_address});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+
+  // Do not change anything on the server so that the update forced below is an
+  // empty one.
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  // Make sure the same data is present on the client.
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
                              profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
 }
 
