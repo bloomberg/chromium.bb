@@ -217,22 +217,23 @@ class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
       Record("All");
   }
 
-  void Record(const std::string& suffix) {
-    if (system_total_power_key_.Exists())
-      base::UmaHistogramCounts100000("Power.Mac.Total." + suffix,
-                                     system_total_power_key_.Read() * 1000);
-    if (cpu_package_cpu_power_key_.Exists())
-      base::UmaHistogramCounts100000("Power.Mac.CPU." + suffix,
-                                     cpu_package_cpu_power_key_.Read() * 1000);
-    if (cpu_package_gpu_power_key_.Exists())
-      base::UmaHistogramCounts100000("Power.Mac.GPUi." + suffix,
-                                     cpu_package_gpu_power_key_.Read() * 1000);
-    if (gpu_0_power_key_.Exists())
-      base::UmaHistogramCounts100000("Power.Mac.GPU0." + suffix,
-                                     gpu_0_power_key_.Read() * 1000);
-    if (gpu_1_power_key_.Exists())
-      base::UmaHistogramCounts100000("Power.Mac.GPU1." + suffix,
-                                     gpu_1_power_key_.Read() * 1000);
+  void Record(const std::string& name) {
+    const struct {
+      const char* uma_prefix;
+      SMCKey& smc_key;
+    } sensors[] = {
+        {"Power.Mac.Total.", system_total_power_key_},
+        {"Power.Mac.CPU.", cpu_package_cpu_power_key_},
+        {"Power.Mac.GPUi.", cpu_package_gpu_power_key_},
+        {"Power.Mac.GPU0.", gpu_0_power_key_},
+        {"Power.Mac.GPU1.", gpu_1_power_key_},
+    };
+    for (const auto& sensor : sensors) {
+      if (sensor.smc_key.Exists()) {
+        if (auto power_mw = sensor.smc_key.Read() * 1000)
+          base::UmaHistogramCounts100000(sensor.uma_prefix + name, power_mw);
+      }
+    }
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
