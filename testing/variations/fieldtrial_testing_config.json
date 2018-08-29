@@ -4955,25 +4955,6 @@
             ]
         }
     ],
-    "WebPaymentsJustInTimePaymentApp": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebPaymentsJustInTimePaymentApp"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebRTC-Aec3AgcGainChangeResponseKillSwitch": [
         {
             "platforms": [
