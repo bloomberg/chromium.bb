@@ -196,9 +196,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
     prefs::kDataSaverEnabled, prefs::kSSLErrorOverrideAllowed,
-#if defined(OS_ANDROID)
-    prefs::kContextualSearchEnabled,
-#endif  // defined(OS_ANDROID)
 #if defined(OS_MACOSX) || defined(OS_WIN) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
     prefs::kConfirmToQuitEnabled,
@@ -298,7 +295,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kLocalDiscoveryNotificationsEnabled,
 
 #if defined(OS_ANDROID)
-    prefs::kNotificationsVibrateEnabled,
     prefs::kMigratedToSiteNotificationChannels,
     prefs::kClearedBlockedSiteNotificationChannels,
 #endif
@@ -344,7 +340,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kOpenPdfDownloadInSystemReader,
 #endif
 #if defined(OS_ANDROID)
-    prefs::kPromptForDownloadAndroid, prefs::kShowMissingSdCardErrorAndroid,
+    prefs::kShowMissingSdCardErrorAndroid,
 #endif
 
     // prefs::kSaveFileDefaultDirectory, prefs::kSaveFileType,
@@ -514,11 +510,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kBackgroundTracingLastUpload,
 
     prefs::kAllowDinosaurEasterEgg,
-
-#if defined(OS_ANDROID)
-    prefs::kClickedUpdateMenuItem,
-    prefs::kLatestVersionWhenClickedUpdateMenuItem,
-#endif
 
     prefs::kOriginTrialPublicKey, prefs::kOriginTrialDisabledFeatures,
     prefs::kOriginTrialDisabledTokens,
