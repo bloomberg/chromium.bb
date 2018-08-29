@@ -736,11 +736,13 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
 
   std::vector<int> fds;
   if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
-    fds = input_record.frame->DmabufFds();
-    if (fds.size() != input_planes_count_) {
+    auto& scoped_fds = input_record.frame->DmabufFds();
+    if (scoped_fds.size() != input_planes_count_) {
       VLOGF(1) << "Invalid number of planes in the frame";
       return false;
     }
+    for (auto& fd : scoped_fds)
+      fds.push_back(fd.get());
   }
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused =
@@ -791,13 +793,13 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
   qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   qbuf.memory = output_memory_type_;
   if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
-    std::vector<int> fds = job_record->output_frame->DmabufFds();
+    auto& fds = job_record->output_frame->DmabufFds();
     if (fds.size() != output_planes_count_) {
       VLOGF(1) << "Invalid number of FDs in output record";
       return false;
     }
     for (size_t i = 0; i < fds.size(); ++i)
-      qbuf_planes[i].m.fd = fds[i];
+      qbuf_planes[i].m.fd = fds[i].get();
   }
   qbuf.m.planes = qbuf_planes;
   qbuf.length = output_planes_count_;
