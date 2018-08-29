@@ -25,6 +25,13 @@ class WebThreadImpl : public WebThread, public base::Thread {
   WebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop);
   ~WebThreadImpl() override;
 
+  // Creates and registers a TaskExecutor that facilitates posting tasks to a
+  // WebThread via //base/task/post_task.h.
+  static void CreateTaskExecutor();
+
+  // Unregister and delete the TaskExecutor after a test.
+  static void ResetTaskExecutorForTesting();
+
  protected:
   void Init() override;
   void Run(base::RunLoop* run_loop) override;
@@ -40,12 +47,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   // the thread id from the callstack alone in crash dumps.
   void UIThreadRun(base::RunLoop* run_loop);
   void IOThreadRun(base::RunLoop* run_loop);
-
-  static bool PostTaskHelper(WebThread::ID identifier,
-                             const base::Location& from_here,
-                             base::OnceClosure task,
-                             base::TimeDelta delay,
-                             bool nestable);
 
   // Common initialization code for the constructors.
   void Initialize();

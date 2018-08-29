@@ -46,9 +46,13 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   base::RunLoop().RunUntilIdle();
 
   scoped_task_environment_.reset();
+
+  WebThreadImpl::ResetTaskExecutorForTesting();
 }
 
 void TestWebThreadBundle::Init(int options) {
+  WebThreadImpl::CreateTaskExecutor();
+
   scoped_task_environment_ =
       std::make_unique<base::test::ScopedTaskEnvironment>(
           options & TestWebThreadBundle::IO_MAINLOOP
