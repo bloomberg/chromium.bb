@@ -2793,6 +2793,11 @@ const char kEnableWebAuthenticationTestingAPIDescription[] =
     "implementation from the real world, and allows configuring virtual "
     "authenticator devices for testing";
 
+const char kHappinessTrackingSurveysForDesktopName[] =
+    "Happiness Tracking Surveys";
+const char kHappinessTrackingSurveysForDesktopDescription[] =
+    "Enable showing Happiness Tracking Surveys to users on Desktop";
+
 const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
 const char kOmniboxRichEntitySuggestionsDescription[] =

@@ -311,6 +311,12 @@ const base::Feature kHappinessTrackingSystem {
 #endif
 
 #if !defined(OS_ANDROID)
+// Enables or disables the Happiness Tracking System for Desktop Chrome.
+const base::Feature kHappinessTrackingSurveysForDesktop{
+    "HappinessTrackingSurveysForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
 // Replaces the WebUI Cast dialog with a Views toolkit one.
 const base::Feature kViewsCastDialog{"ViewsCastDialog",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
