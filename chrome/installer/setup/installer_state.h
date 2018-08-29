@@ -14,7 +14,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/installer/setup/progress_calculator.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 

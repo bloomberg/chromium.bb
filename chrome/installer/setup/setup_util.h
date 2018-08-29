@@ -17,7 +17,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/util_constants.h"
 

@@ -15,6 +15,7 @@
 #include "chrome/install_static/install_modes.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/app_registration_data.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"

@@ -22,6 +22,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/test_app_registration_data.h"
 #include "chrome/installer/util/work_item.h"
