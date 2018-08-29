@@ -1417,6 +1417,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_SUMMARY" desc="Description for which account the data is being synced to">
         Syncing to <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
       </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_OFF_SUMMARY" desc="Description for Chrome Sync status when Chrome Sync is disabled">
+        Sync off for <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
+      </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_SIGN_OUT" desc="Button text for signing out of Chrome">
         Sign out of Chrome
       </message>

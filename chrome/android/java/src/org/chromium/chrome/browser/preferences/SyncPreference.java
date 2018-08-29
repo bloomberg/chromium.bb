@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.preferences;
 
-import android.accounts.Account;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
@@ -14,6 +13,7 @@ import android.util.AttributeSet;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.ChromeSigninController;
@@ -110,8 +110,8 @@ public class SyncPreference extends Preference {
             return res.getString(R.string.sync_error_generic);
         }
 
+        String accountName = ChromeSigninController.get().getSignedInAccountName();
         boolean syncEnabled = AndroidSyncSettings.isSyncEnabled();
-
         if (syncEnabled) {
             if (!profileSyncService.isSyncActive()) {
                 return res.getString(R.string.sync_setup_progress);
@@ -120,12 +120,12 @@ public class SyncPreference extends Preference {
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
                 return res.getString(R.string.sync_need_passphrase);
             }
-
-            Account account = ChromeSigninController.get().getSignedInUser();
-            return String.format(
-                    context.getString(R.string.account_management_sync_summary), account.name);
+            return context.getString(R.string.account_management_sync_summary, accountName);
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            return context.getString(R.string.account_management_sync_off_summary, accountName);
+        }
         return context.getString(R.string.sync_is_disabled);
     }
 }
