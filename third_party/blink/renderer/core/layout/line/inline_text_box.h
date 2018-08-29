@@ -176,7 +176,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   float NewlineSpaceWidth() const;
 
  private:
-  SelectionState GetSelectionState() const;
+  bool IsBoxEndIncludedInSelection() const;
   void SetTruncation(unsigned);
 
   void ClearTruncation() final;

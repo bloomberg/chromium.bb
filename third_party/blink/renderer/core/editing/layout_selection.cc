@@ -275,16 +275,6 @@ static void SetShouldInvalidateSelection(
     SetShouldInvalidateIfNeeded(new_paint_range.end_layout_object);
 }
 
-base::Optional<unsigned> LayoutSelection::SelectionStart() const {
-  DCHECK(!HasPendingSelection());
-  return start_offset_;
-}
-
-base::Optional<unsigned> LayoutSelection::SelectionEnd() const {
-  DCHECK(!HasPendingSelection());
-  return end_offset_;
-}
-
 static LayoutTextFragment* FirstLetterPartFor(
     const LayoutObject* layout_object) {
   if (!layout_object->IsText())
@@ -726,6 +716,49 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   return physical_line_box.BaseDirection() == shape_result->Direction();
 }
 
+static bool IsTextNodeAssociated(const LayoutText& text) {
+  if (const LayoutTextFragment* fragment = ToLayoutTextFragmentOrNull(text))
+    return fragment->AssociatedTextNode();
+  if (Node* node = text.GetNode())
+    return ToTextOrNull(node);
+  return false;
+}
+
+LayoutTextSelectionStatus LayoutSelection::ComputeSelectionStatus(
+    const LayoutText& text) const {
+  DCHECK(!HasPendingSelection());
+  const SelectionState selection_state = text.GetSelectionState();
+  if (selection_state == SelectionState::kNone)
+    return {0, 0, SelectionIncludeEnd::kNotInclude};
+  if (!IsTextNodeAssociated(text)) {
+    // TODO(yoichio): This is really weird legacy behavior. Remove this.
+    if (text.IsBR() && selection_state == SelectionState::kEnd)
+      return {0, 0, SelectionIncludeEnd::kNotInclude};
+    return {0, text.TextLength(), SelectionIncludeEnd::kInclude};
+  }
+
+  switch (selection_state) {
+    case SelectionState::kInside:
+      return {0, text.TextLength(), SelectionIncludeEnd::kInclude};
+    case SelectionState::kStart:
+      return {start_offset_.value(), text.TextLength(),
+              SelectionIncludeEnd::kInclude};
+    case SelectionState::kEnd:
+      return {0, end_offset_.value(), SelectionIncludeEnd::kNotInclude};
+    case SelectionState::kStartAndEnd:
+      return {start_offset_.value(), end_offset_.value(),
+              SelectionIncludeEnd::kNotInclude};
+    default:
+      NOTREACHED();
+      return {0, 0, SelectionIncludeEnd::kNotInclude};
+  }
+}
+
+LayoutTextSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
+    const LayoutText& text) const {
+  return layout_selection_->ComputeSelectionStatus(text);
+}
+
 // FrameSelection holds selection offsets in layout block flow at
 // LayoutSelection::Commit() if selection starts/ends within Text that
 // each LayoutObject::SelectionState indicates.
@@ -740,8 +773,7 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     return {0, 0, SelectSoftLineBreak::kNotSelected};
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
-      DCHECK(SelectionStart().has_value());
-      const unsigned start_in_block = SelectionStart().value_or(0);
+      const unsigned start_in_block = start_offset_.value();
       const bool is_continuous = start_in_block <= text_fragment.EndOffset();
       return {ClampOffset(start_in_block, text_fragment),
               text_fragment.EndOffset(),
@@ -750,9 +782,7 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
                   : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kEnd: {
-      DCHECK(SelectionEnd().has_value());
-      const unsigned end_in_block =
-          SelectionEnd().value_or(text_fragment.EndOffset());
+      const unsigned end_in_block = end_offset_.value();
       const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
       const bool is_continuous = text_fragment.EndOffset() < end_in_block;
       return {text_fragment.StartOffset(), end_in_fragment,
@@ -761,11 +791,8 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
                   : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kStartAndEnd: {
-      DCHECK(SelectionStart().has_value());
-      DCHECK(SelectionEnd().has_value());
-      const unsigned start_in_block = SelectionStart().value_or(0);
-      const unsigned end_in_block =
-          SelectionEnd().value_or(text_fragment.EndOffset());
+      const unsigned start_in_block = start_offset_.value();
+      const unsigned end_in_block = end_offset_.value();
       const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
       const bool is_continuous = start_in_block <= text_fragment.EndOffset() &&
                                  text_fragment.EndOffset() < end_in_block;

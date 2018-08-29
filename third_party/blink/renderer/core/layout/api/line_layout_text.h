@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_TEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_TEXT_H_
 
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
@@ -120,6 +122,11 @@ class LineLayoutText : public LineLayoutItem {
   float MinLogicalWidth() const { return ToText()->MinLogicalWidth(); }
 
   UChar PreviousCharacter() const { return ToText()->PreviousCharacter(); }
+
+  struct LayoutTextSelectionStatus SelectionStatus() const {
+    return ToText()->GetFrame()->Selection().ComputeLayoutSelectionStatus(
+        *ToText());
+  }
 
  private:
   LayoutText* ToText() { return ToLayoutText(GetLayoutObject()); }

@@ -209,31 +209,12 @@ static inline void AppendContextSubtargetsForNode(
       return AppendBasicSubtargetsForNode(node, subtargets);
     const FrameSelection& frame_selection =
         text_layout_object->GetFrame()->Selection();
+    const LayoutTextSelectionStatus& selection_status =
+        frame_selection.ComputeLayoutSelectionStatus(*text_layout_object);
     // If selected, make subtargets out of only the selected part of the text.
-    int start_pos, end_pos;
-    switch (text_layout_object->GetSelectionState()) {
-      case SelectionState::kInside:
-        start_pos = 0;
-        end_pos = text_layout_object->TextLength();
-        break;
-      case SelectionState::kStart:
-        start_pos = frame_selection.LayoutSelectionStart().value();
-        end_pos = text_layout_object->TextLength();
-        break;
-      case SelectionState::kEnd:
-        start_pos = 0;
-        end_pos = frame_selection.LayoutSelectionEnd().value();
-        break;
-      case SelectionState::kStartAndEnd:
-        start_pos = frame_selection.LayoutSelectionStart().value();
-        end_pos = frame_selection.LayoutSelectionEnd().value();
-        break;
-      default:
-        NOTREACHED();
-        return;
-    }
     Vector<FloatQuad> quads;
-    text_layout_object->AbsoluteQuadsForRange(quads, start_pos, end_pos);
+    text_layout_object->AbsoluteQuadsForRange(quads, selection_status.start,
+                                              selection_status.end);
     AppendQuadsToSubtargetList(quads, text_node, subtargets);
   }
 }

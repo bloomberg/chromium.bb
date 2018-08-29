@@ -161,65 +161,37 @@ LayoutUnit InlineTextBox::VerticalPosition(
   return LogicalTop() + OffsetTo(position_type, baseline_type);
 }
 
-SelectionState InlineTextBox::GetSelectionState() const {
-  SelectionState state = GetLineLayoutItem().GetSelectionState();
-  if (state == SelectionState::kStart || state == SelectionState::kEnd ||
-      state == SelectionState::kStartAndEnd) {
-    // The position after a hard line break is considered to be past its end.
-    // See the corresponding code in InlineTextBox::isSelected.
-    int last_selectable = Start() + Len() - (IsLineBreak() ? 1 : 0);
-
-    // FIXME: Remove -webkit-line-break: LineBreakAfterWhiteSpace.
-    int end_of_line_adjustment_for_css_line_break =
-        GetLineLayoutItem().StyleRef().GetLineBreak() ==
-                LineBreak::kAfterWhiteSpace
-            ? -1
-            : 0;
-    const FrameSelection& selection =
-        GetLineLayoutItem().GetDocument().GetFrame()->Selection();
-    // TODO(yoichio): |value_or()| is used to prevent use uininitialized
-    // value on release build. It should be value() because calling
-    // LayoutSelectionStart() if SelectionState is neigher kStart nor
-    // kStartAndEnd is invalid operation.
-    bool start =
-        (state != SelectionState::kEnd &&
-         static_cast<int>(selection.LayoutSelectionStart().value_or(0)) >=
-             start_ &&
-         static_cast<int>(selection.LayoutSelectionStart().value_or(0)) <=
-             start_ + len_ + end_of_line_adjustment_for_css_line_break);
-    bool end = (state != SelectionState::kStart &&
-                static_cast<int>(selection.LayoutSelectionEnd().value_or(0)) >
-                    start_ &&
-                static_cast<int>(selection.LayoutSelectionEnd().value_or(0)) <=
-                    last_selectable);
-    if (start && end)
-      state = SelectionState::kStartAndEnd;
-    else if (start)
-      state = SelectionState::kStart;
-    else if (end)
-      state = SelectionState::kEnd;
-    else if ((state == SelectionState::kEnd ||
-              static_cast<int>(selection.LayoutSelectionStart().value_or(0)) <
-                  start_) &&
-             (state == SelectionState::kStart ||
-              static_cast<int>(selection.LayoutSelectionEnd().value_or(0)) >
-                  last_selectable))
-      state = SelectionState::kInside;
-    else if (state == SelectionState::kStartAndEnd)
-      state = SelectionState::kNone;
-  }
-  return state;
+// Compute if selection includes end of the InlineTextBox.
+bool InlineTextBox::IsBoxEndIncludedInSelection() const {
+  const LayoutTextSelectionStatus& status =
+      GetLineLayoutItem().SelectionStatus();
+  if (status.IsEmpty())
+    return false;
+  if (status.start == status.end)
+    return false;
+  const unsigned box_end = IsLineBreak() ? Start() : Start() + Len();
+  if (status.start > box_end || status.end < box_end)
+    return false;
+  if (status.end > box_end)
+    return true;
+  // status.end == box_end
+  return status.include_end == SelectionIncludeEnd::kInclude;
 }
 
 bool InlineTextBox::IsSelected() const {
-  return GetSelectionState() != SelectionState::kNone;
+  const LayoutTextSelectionStatus& status =
+      GetLineLayoutItem().SelectionStatus();
+  if (status.IsEmpty())
+    return false;
+  if (Start() < status.end && status.start < Start() + Len())
+    return true;
+  return IsBoxEndIncludedInSelection();
 }
 
 bool InlineTextBox::HasWrappedSelectionNewline() const {
   DCHECK(!GetLineLayoutItem().NeedsLayout());
 
-  SelectionState state = GetSelectionState();
-  if (state != SelectionState::kStart && state != SelectionState::kInside)
+  if (!IsBoxEndIncludedInSelection())
     return false;
 
   // Checking last leaf child can be slow, so we make sure to do this
@@ -524,34 +496,10 @@ void InlineTextBox::Paint(const PaintInfo& paint_info,
 }
 
 void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
-  int start_pos, end_pos;
-  if (GetLineLayoutItem().GetSelectionState() == SelectionState::kInside) {
-    start_pos = 0;
-    end_pos = GetLineLayoutItem().TextLength();
-  } else {
-    const FrameSelection& selection =
-        GetLineLayoutItem().GetDocument().GetFrame()->Selection();
-    // TODO(yoichio): |value_or()| is used to prevent use uininitialized
-    // value on release build. It should be |value()| because calling
-    // LayoutSelectionStart() if SelectionState is neigher kStart nor
-    // kStartAndEnd is invalid operation.
-    if (GetLineLayoutItem().GetSelectionState() == SelectionState::kStart) {
-      start_pos = selection.LayoutSelectionStart().value_or(0);
-      end_pos = GetLineLayoutItem().TextLength();
-    } else if (GetLineLayoutItem().GetSelectionState() ==
-               SelectionState::kEnd) {
-      start_pos = 0;
-      end_pos = selection.LayoutSelectionEnd().value_or(0);
-    } else {
-      DCHECK(GetLineLayoutItem().GetSelectionState() ==
-             SelectionState::kStartAndEnd);
-      start_pos = selection.LayoutSelectionStart().value_or(0);
-      end_pos = selection.LayoutSelectionEnd().value_or(0);
-    }
-  }
-
-  s_pos = std::max(start_pos - start_, 0);
-  e_pos = std::min(end_pos - start_, (int)len_);
+  const LayoutTextSelectionStatus& status =
+      GetLineLayoutItem().SelectionStatus();
+  s_pos = std::max(static_cast<int>(status.start) - start_, 0);
+  e_pos = std::min(static_cast<int>(status.end) - start_, (int)len_);
 }
 
 void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
