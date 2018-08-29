@@ -297,9 +297,6 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 #if defined(OS_MACOSX)
 // http://crbug.com/81451
 #define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
-#elif defined(OS_LINUX)
-// http://crbug.com/129235
-#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
 #else
 #define MAYBE_NormalKeyEvents NormalKeyEvents
 #endif
@@ -400,15 +397,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// Linux: http://crbug.com/129235
-// Win: crbug.com/269564
-#define MAYBE_CtrlKeyEvents DISABLED_CtrlKeyEvents
-#else
-#define MAYBE_CtrlKeyEvents CtrlKeyEvents
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_CtrlKeyEvents) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   static const KeyEventTestData kTestCtrlF = {
     ui::VKEY_F, true, false, false, false,
     false, false, false, false, 2,
@@ -457,6 +446,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_CtrlKeyEvents) {
       "U 17 0 true false false false" }
   };
 
+  static const KeyEventTestData kTestEscape = {
+      ui::VKEY_ESCAPE, false, false, false, false, false,
+      false,           false, false, 0,     {}};
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -472,8 +465,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_CtrlKeyEvents) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Press Escape to close the Find box and move the focus back to the web page.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_ESCAPE, false, false, false, false));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestEscape));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Press Ctrl+F with keydown suppressed shall not open the find box.
@@ -486,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_CtrlKeyEvents) {
 }
 #elif defined(OS_MACOSX)
 // http://crbug.com/81451
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   static const KeyEventTestData kTestCmdF = {
     ui::VKEY_F, false, false, false, true,
     false, false, false, false, 2,
@@ -531,9 +523,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
 #if defined(OS_MACOSX)
 // http://crbug.com/81451 for mac
 #define MAYBE_AccessKeys DISABLED_AccessKeys
-#elif defined(OS_LINUX)
-// http://crbug.com/129235
-#define MAYBE_AccessKeys DISABLED_AccessKeys
 #else
 #define MAYBE_AccessKeys AccessKeys
 #endif
@@ -558,17 +547,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
       "D 18 0 true false true false",
       "D 68 0 true false true false",
       "U 68 0 true false true false",
-      "U 18 0 true false true false",
-      "U 17 0 true false false false" }
-  };
-
-  static const KeyEventTestData kTestAccess1 = {
-    ui::VKEY_1, true, false, true, false,
-    false, false, false, false, 6,
-    { "D 17 0 true false false false",
-      "D 18 0 true false true false",
-      "D 49 0 true false true false",
-      "U 49 0 true false true false",
       "U 18 0 true false true false",
       "U 17 0 true false false false" }
   };
@@ -598,16 +576,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
       "U 18 0 false false true false" }
   };
 
-#if !defined(OS_CHROMEOS)
-  static const KeyEventTestData kTestAccess1 = {
-    ui::VKEY_1, false, false, true, false,
-    false, false, false, false, 4,
-    { "D 18 0 false false true false",
-      "D 49 0 false false true false",
-      "U 49 0 false false true false",
-      "U 18 0 false false true false" }
-  };
-#endif
 #endif
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -663,12 +631,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L""));
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-#if !defined(OS_CHROMEOS)
-  // On Chrome OS, alt-1..9 are assigned as window selection global
-  // accelerators, so they cannot be used as accesskeys.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccess1));
-  EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"1"));
-#endif
 }
 
 // Flaky, http://crbug.com/69475.
