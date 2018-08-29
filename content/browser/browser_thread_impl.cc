@@ -192,6 +192,7 @@ class BrowserThreadTaskExecutor : public base::TaskExecutor {
   CreateSingleThreadTaskRunnerWithTraits(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override {
+    // It's not possible to request DEDICATED access to a BrowserThread.
     DCHECK_EQ(thread_mode, base::SingleThreadTaskRunnerThreadMode::SHARED);
     return GetTaskRunnerForThread(GetBrowserThreadIdentifier(traits));
   }
@@ -200,6 +201,7 @@ class BrowserThreadTaskExecutor : public base::TaskExecutor {
   scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override {
+    // Only the UI thread supports COM.
     DCHECK_EQ(GetBrowserThreadIdentifier(traits), BrowserThread::UI);
     return CreateSingleThreadTaskRunnerWithTraits(traits, thread_mode);
   }

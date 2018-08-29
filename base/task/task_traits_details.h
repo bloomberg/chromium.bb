@@ -81,24 +81,22 @@ constexpr typename GetterType::ValueType GetValueFromArgListImpl(
 // Otherwise, returns getter.GetDefaultValue().
 //
 // |getter| must provide:
+//     ValueType:
+//         The return type of GetValueFromArgListImpl().
 //
-// ValueType:
-//     The return type of GetValueFromArgListImpl().
+//     ArgType:
+//         The type of the argument from which GetValueFromArgListImpl() derives
+//         its return value.
 //
-// ArgType:
-//     The type of the argument from which GetValueFromArgListImpl() derives its
-//     return value.
-//
-// ValueType GetValueFromArg(ArgType):
-//     Converts an argument of type ArgType into a value returned by
-//     GetValueFromArgListImpl().
+//     ValueType GetValueFromArg(ArgType):
+//         Converts an argument of type ArgType into a value returned by
+//         GetValueFromArgListImpl().
 //
 // |getter| may provide:
-//
-// ValueType GetDefaultValue():
-//     Returns the value returned by GetValueFromArgListImpl() if none of its
-//     arguments is of type ArgType. If this method is not provided, compilation
-//     will fail when no argument of type ArgType is provided.
+//     ValueType GetDefaultValue():
+//         Returns the value returned by GetValueFromArgListImpl() if none of
+//         its arguments is of type ArgType. If this method is not provided,
+//         compilation will fail when no argument of type ArgType is provided.
 template <class GetterType, class... ArgTypes>
 constexpr typename GetterType::ValueType GetValueFromArgList(
     GetterType getter,
