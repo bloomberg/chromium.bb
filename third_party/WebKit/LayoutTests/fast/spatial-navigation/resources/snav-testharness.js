@@ -47,18 +47,18 @@
        'the element with id: ' + expectedId + '.');
   }
 
-  function assertSnavEnabledAndTestable() {
-    test(() => {
-      assert_true(!!window.testRunner);
-      testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-      testRunner.overridePreference('WebKitSpatialNavigationEnabled', 1);
-    }, 'window.testRunner is present.');
-  }
-
   // TODO: Port all old spatial navigation layout tests to this method.
   window.snav = {
+    assertSnavEnabledAndTestable: function() {
+      test(() => {
+        assert_true(!!window.testRunner);
+        testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
+        testRunner.overridePreference('WebKitSpatialNavigationEnabled', 1);
+      }, 'window.testRunner is present.');
+    },
+
     assertFocusMoves: function(expectedMoves) {
-      assertSnavEnabledAndTestable();
+      snav.assertSnavEnabledAndTestable();
       stepAndAssertMoves(expectedMoves, 0);
     }
   }
