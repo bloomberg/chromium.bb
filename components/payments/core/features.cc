@@ -28,6 +28,6 @@ const base::Feature kWebPaymentsSingleAppUiSkip{
     "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsJustInTimePaymentApp{
-    "WebPaymentsJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebPaymentsJustInTimePaymentApp", base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace payments
