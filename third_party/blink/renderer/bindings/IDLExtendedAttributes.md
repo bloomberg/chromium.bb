@@ -506,16 +506,17 @@ Implementation: Given `[TreatNullAs=EmptyString]`, a JavaScript null is converte
 
 Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
 
-Summary: Makes attributes or non-static oprations unconfigurable and also controls where the member is defined.
+Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
-Usage: Can be specified on methods or non-static attributes:
+Usage: Can be specified on methods, attributes or interfaces:
 
 ```webidl
 [Unforgeable] void func();
 [Unforgeable] attribute DOMString str;
+[Unforgeable] interface XXX { ... };
 ```
 
-By default, members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
+By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
 
 `[Unforgeable]` changes where the member is defined, too. By default, attribute getters/setters and methods are defined on a prototype chain. `[Unforgeable]` defines the member on the instance object instead of the prototype object.
 
