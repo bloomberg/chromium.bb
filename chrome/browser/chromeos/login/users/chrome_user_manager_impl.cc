@@ -190,12 +190,19 @@ base::WeakPtr<ExternalPrinters> GetExternalPrinters(
   return ExternalPrintersFactory::Get()->GetForAccountId(account_id);
 }
 
-// Starts bluetooth logging service for accounts ending with |kGoogleDotCom|.
+// Starts bluetooth logging service for accounts ending with |kGoogleDotCom|
+// and certain devices.
 void MaybeStartBluetoothLogging(const AccountId& account_id) {
   if (!base::EndsWith(account_id.GetUserEmail(), kGoogleDotCom,
                       base::CompareCase::INSENSITIVE_ASCII)) {
     return;
   }
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  const std::string board_name = board[0];
+  if (board_name != "eve" && board_name != "nocturne")
+    return;
   chromeos::DBusThreadManager::Get()
       ->GetUpstartClient()
       ->StartBluetoothLogging();
