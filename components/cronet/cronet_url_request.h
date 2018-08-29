@@ -102,7 +102,7 @@ class CronetURLRequest {
                          const std::string& error_string,
                          int64_t received_byte_count) = 0;
 
-    // Invoked if request was canceled via CronetURLRequest::Start().
+    // Invoked if request was canceled via CronetURLRequest::Destroy().
     virtual void OnCanceled() = 0;
 
     // Invoked when request is destroyed. Once invoked, no other Callback

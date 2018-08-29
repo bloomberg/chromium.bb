@@ -25,7 +25,8 @@ using cronet::test::TestUrlRequestCallback;
 
 namespace {
 
-class UrlRequestTest : public ::testing::Test {
+// Parameterized off whether to use a direct executor.
+class UrlRequestTest : public ::testing::TestWithParam<bool> {
  protected:
   UrlRequestTest() {}
   ~UrlRequestTest() override {}
@@ -61,7 +62,7 @@ class UrlRequestTest : public ::testing::Test {
     }
 
     // Executor provided by the application is owned by |test_callback|.
-    Cronet_ExecutorPtr executor = test_callback->GetExecutor(false);
+    Cronet_ExecutorPtr executor = test_callback->GetExecutor();
     // Callback provided by the application.
     Cronet_UrlRequestCallbackPtr callback =
         test_callback->CreateUrlRequestCallback();
@@ -95,8 +96,8 @@ class UrlRequestTest : public ::testing::Test {
 
   std::unique_ptr<TestUrlRequestCallback> StartAndWaitForComplete(
       const std::string& url) {
-    return StartAndWaitForComplete(url,
-                                   std::make_unique<TestUrlRequestCallback>());
+    return StartAndWaitForComplete(
+        url, std::make_unique<TestUrlRequestCallback>(GetParam()));
   }
 
   void CheckResponseInfo(
@@ -151,7 +152,12 @@ class UrlRequestTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UrlRequestTest);
 };
 
-TEST_F(UrlRequestTest, InitChecks) {
+const bool kDirectExecutorEnabled[]{true, false};
+INSTANTIATE_TEST_CASE_P(,
+                        UrlRequestTest,
+                        testing::ValuesIn(kDirectExecutorEnabled));
+
+TEST_P(UrlRequestTest, InitChecks) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   // Disable runtime CHECK of the result, so it could be verified.
@@ -164,9 +170,9 @@ TEST_F(UrlRequestTest, InitChecks) {
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
   const std::string url = cronet::TestServer::GetEchoMethodURL();
 
-  TestUrlRequestCallback test_callback;
+  TestUrlRequestCallback test_callback(GetParam());
   // Executor provided by the application is owned by |test_callback|.
-  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -263,7 +269,7 @@ TEST_F(UrlRequestTest, InitChecks) {
   Cronet_Engine_Destroy(engine);
 }
 
-TEST_F(UrlRequestTest, SimpleGet) {
+TEST_P(UrlRequestTest, SimpleGet) {
   const std::string url = cronet::TestServer::GetEchoMethodURL();
   auto callback = StartAndWaitForComplete(url);
   EXPECT_EQ(200, callback->response_info_->http_status_code);
@@ -279,11 +285,11 @@ TEST_F(UrlRequestTest, SimpleGet) {
   ExpectResponseInfoEquals(expected_response_info, *callback->response_info_);
 }
 
-TEST_F(UrlRequestTest, UploadEmptyBodySync) {
+TEST_P(UrlRequestTest, UploadEmptyBodySync) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
                                        /* executor = */ nullptr);
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
   data_provider.AssertClosed();
@@ -294,12 +300,12 @@ TEST_F(UrlRequestTest, UploadEmptyBodySync) {
   EXPECT_EQ("", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadSync) {
+TEST_P(UrlRequestTest, UploadSync) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
                                        /* executor = */ nullptr);
   data_provider.AddRead("Test");
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
   data_provider.AssertClosed();
@@ -310,11 +316,11 @@ TEST_F(UrlRequestTest, UploadSync) {
   EXPECT_EQ("Test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadMultiplePiecesSync) {
+TEST_P(UrlRequestTest, UploadMultiplePiecesSync) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.AddRead("Y");
   data_provider.AddRead("et ");
   data_provider.AddRead("another ");
@@ -329,11 +335,11 @@ TEST_F(UrlRequestTest, UploadMultiplePiecesSync) {
   EXPECT_EQ("Yet another test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadMultiplePiecesAsync) {
+TEST_P(UrlRequestTest, UploadMultiplePiecesAsync) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.AddRead("Y");
   data_provider.AddRead("et ");
   data_provider.AddRead("another ");
@@ -348,12 +354,12 @@ TEST_F(UrlRequestTest, UploadMultiplePiecesAsync) {
   EXPECT_EQ("Yet another test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadChangesDefaultMethod) {
+TEST_P(UrlRequestTest, UploadChangesDefaultMethod) {
   const std::string url = cronet::TestServer::GetEchoMethodURL();
   TestUploadDataProvider upload_data_provider(TestUploadDataProvider::SYNC,
                                               /* executor = */ nullptr);
   upload_data_provider.AddRead("Test");
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
 
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &upload_data_provider);
@@ -362,12 +368,12 @@ TEST_F(UrlRequestTest, UploadChangesDefaultMethod) {
   EXPECT_EQ("POST", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadWithSetMethod) {
+TEST_P(UrlRequestTest, UploadWithSetMethod) {
   const std::string url = cronet::TestServer::GetEchoMethodURL();
   TestUploadDataProvider upload_data_provider(TestUploadDataProvider::SYNC,
                                               /* executor = */ nullptr);
   upload_data_provider.AddRead("Test");
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
 
   callback = StartAndWaitForComplete(url, std::move(callback),
                                      std::string("PUT"), &upload_data_provider);
@@ -376,13 +382,11 @@ TEST_F(UrlRequestTest, UploadWithSetMethod) {
   EXPECT_EQ("PUT", callback->response_as_string_);
 }
 
-// TODO(mef): Direct Executor is causing lock re-entrancy when callback invoked
-// on the network thread calls Cronet_UrlRequest_IsDone() on the same thread.
-TEST_F(UrlRequestTest, DISABLED_UploadWithDirectExecutor) {
+TEST_F(UrlRequestTest, UploadWithDirectExecutor) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(true);
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(true));
+                                       callback->GetExecutor());
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
@@ -394,12 +398,12 @@ TEST_F(UrlRequestTest, DISABLED_UploadWithDirectExecutor) {
   EXPECT_EQ("Test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadRedirectSync) {
+TEST_P(UrlRequestTest, UploadRedirectSync) {
   const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
                                        /* executor = */ nullptr);
   data_provider.AddRead("Test");
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
   data_provider.AssertClosed();
@@ -410,11 +414,11 @@ TEST_F(UrlRequestTest, UploadRedirectSync) {
   EXPECT_EQ("Test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadRedirectAsync) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadRedirectAsync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
@@ -426,11 +430,11 @@ TEST_F(UrlRequestTest, UploadRedirectAsync) {
   EXPECT_EQ("Test", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadWithBadLength) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadWithBadLength) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.set_bad_length(1ll);
   data_provider.AddRead("12");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
@@ -449,11 +453,11 @@ TEST_F(UrlRequestTest, UploadWithBadLength) {
                 "Read upload data length 2 exceeds expected length 1"));
 }
 
-TEST_F(UrlRequestTest, UploadWithBadLengthBufferAligned) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadWithBadLengthBufferAligned) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.set_bad_length(8191ll);
   // Add 8192 bytes to read.
   for (int i = 0; i < 512; ++i)
@@ -475,11 +479,11 @@ TEST_F(UrlRequestTest, UploadWithBadLengthBufferAligned) {
                 "Read upload data length 8192 exceeds expected length 8191"));
 }
 
-TEST_F(UrlRequestTest, UploadReadFailSync) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadReadFailSync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.SetReadFailure(0, TestUploadDataProvider::CALLBACK_SYNC);
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
@@ -497,11 +501,11 @@ TEST_F(UrlRequestTest, UploadReadFailSync) {
             callback->last_error_message_.find("Sync read failure"));
 }
 
-TEST_F(UrlRequestTest, UploadReadFailAsync) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadReadFailAsync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.SetReadFailure(0, TestUploadDataProvider::CALLBACK_ASYNC);
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
@@ -519,11 +523,11 @@ TEST_F(UrlRequestTest, UploadReadFailAsync) {
             callback->last_error_message_.find("Async read failure"));
 }
 
-TEST_F(UrlRequestTest, UploadRewindFailSync) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadRewindFailSync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.SetRewindFailure(TestUploadDataProvider::CALLBACK_SYNC);
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
@@ -540,11 +544,11 @@ TEST_F(UrlRequestTest, UploadRewindFailSync) {
             callback->last_error_message_.find("Sync rewind failure"));
 }
 
-TEST_F(UrlRequestTest, UploadRewindFailAsync) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadRewindFailAsync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.SetRewindFailure(TestUploadDataProvider::CALLBACK_ASYNC);
   data_provider.AddRead("Test");
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
@@ -561,11 +565,11 @@ TEST_F(UrlRequestTest, UploadRewindFailAsync) {
             callback->last_error_message_.find("Async rewind failure"));
 }
 
-TEST_F(UrlRequestTest, UploadChunked) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadChunked) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   data_provider.AddRead("Test Hello");
   data_provider.set_chunked(true);
   EXPECT_EQ(-1, data_provider.GetLength());
@@ -578,11 +582,11 @@ TEST_F(UrlRequestTest, UploadChunked) {
   EXPECT_EQ("Test Hello", callback->response_as_string_);
 }
 
-TEST_F(UrlRequestTest, UploadChunkedLastReadZeroLengthBody) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+TEST_P(UrlRequestTest, UploadChunkedLastReadZeroLengthBody) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
-                                       callback->GetExecutor(false));
+                                       callback->GetExecutor());
   // Add 3 reads. The last read has a 0-length body.
   data_provider.AddRead("hello there");
   data_provider.AddRead("!");
@@ -601,13 +605,13 @@ TEST_F(UrlRequestTest, UploadChunkedLastReadZeroLengthBody) {
 
 // Test where an upload fails without ever initializing the
 // UploadDataStream, because it can't connect to the server.
-TEST_F(UrlRequestTest, UploadFailsWithoutInitializingStream) {
+TEST_P(UrlRequestTest, UploadFailsWithoutInitializingStream) {
   // The port for PTP will always refuse a TCP connection
   const std::string url = "http://127.0.0.1:319";
   TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
                                        /* executor = */ nullptr);
   data_provider.AddRead("Test");
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
                                      &data_provider);
   data_provider.AssertClosed();
@@ -618,15 +622,15 @@ TEST_F(UrlRequestTest, UploadFailsWithoutInitializingStream) {
   EXPECT_TRUE(callback->on_error_called_);
 }
 
-TEST_F(UrlRequestTest, SimpleRequest) {
+TEST_P(UrlRequestTest, SimpleRequest) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
   std::string url = cronet::TestServer::GetSimpleURL();
 
-  TestUrlRequestCallback test_callback;
+  TestUrlRequestCallback test_callback(GetParam());
   // Executor provided by the application is owned by |test_callback|.
-  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -647,7 +651,7 @@ TEST_F(UrlRequestTest, SimpleRequest) {
   Cronet_Engine_Destroy(engine);
 }
 
-TEST_F(UrlRequestTest, MultiRedirect) {
+TEST_P(UrlRequestTest, MultiRedirect) {
   const std::string url = cronet::TestServer::GetMultiRedirectURL();
   auto callback = StartAndWaitForComplete(url);
   EXPECT_EQ(2, callback->redirect_count_);
@@ -689,17 +693,17 @@ TEST_F(UrlRequestTest, MultiRedirect) {
   EXPECT_EQ(callback->ON_SUCCEEDED, callback->response_step_);
 }
 
-TEST_F(UrlRequestTest, CancelRequest) {
+TEST_P(UrlRequestTest, CancelRequest) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
   std::string url = cronet::TestServer::GetSimpleURL();
 
-  TestUrlRequestCallback test_callback;
+  TestUrlRequestCallback test_callback(GetParam());
   test_callback.set_failure(test_callback.CANCEL_SYNC,
                             test_callback.ON_RESPONSE_STARTED);
   // Executor provided by the application is owned by |test_callback|.
-  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -721,15 +725,15 @@ TEST_F(UrlRequestTest, CancelRequest) {
   Cronet_Engine_Destroy(engine);
 }
 
-TEST_F(UrlRequestTest, FailedRequestHostNotFound) {
+TEST_P(UrlRequestTest, FailedRequestHostNotFound) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
   std::string url = "https://notfound.example.com";
 
-  TestUrlRequestCallback test_callback;
+  TestUrlRequestCallback test_callback(GetParam());
   // Executor provided by the application is owned by |test_callback|.
-  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -770,7 +774,7 @@ void UrlRequestTest::TestCancel(
     TestUrlRequestCallback::ResponseStep failure_step,
     bool expect_response_info,
     bool expect_error) {
-  auto callback = std::make_unique<TestUrlRequestCallback>();
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
   callback->set_failure(failure_type, failure_step);
   const std::string url = cronet::TestServer::GetRedirectURL();
   callback = StartAndWaitForComplete(url, std::move(callback));
@@ -796,7 +800,7 @@ void UrlRequestTest::TestCancel(
   }
 }
 
-TEST_F(UrlRequestTest, TestCancel) {
+TEST_P(UrlRequestTest, TestCancel) {
   TestCancel(TestUrlRequestCallback::CANCEL_SYNC,
              TestUrlRequestCallback::ON_RECEIVED_REDIRECT, false, false);
   TestCancel(TestUrlRequestCallback::CANCEL_ASYNC,
@@ -821,7 +825,7 @@ TEST_F(UrlRequestTest, TestCancel) {
              TestUrlRequestCallback::ON_READ_COMPLETED, true, false);
 }
 
-TEST_F(UrlRequestTest, PerfTest) {
+TEST_P(UrlRequestTest, PerfTest) {
   const int kTestIterations = 10;
   const int kDownloadSize = 19307439;  // used for internal server only
 
@@ -837,10 +841,10 @@ TEST_F(UrlRequestTest, PerfTest) {
     Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
     Cronet_UrlRequestParamsPtr request_params =
         Cronet_UrlRequestParams_Create();
-    TestUrlRequestCallback test_callback;
+    TestUrlRequestCallback test_callback(GetParam());
     test_callback.set_accumulate_response_data(false);
     // Executor provided by the application is owned by |test_callback|.
-    Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
+    Cronet_ExecutorPtr executor = test_callback.GetExecutor();
     // Callback provided by the application.
     Cronet_UrlRequestCallbackPtr callback =
         test_callback.CreateUrlRequestCallback();

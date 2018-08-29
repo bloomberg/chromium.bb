@@ -86,10 +86,10 @@ class TestUrlRequestCallback {
   int response_data_length_ = 0;
   std::string response_as_string_;
 
-  TestUrlRequestCallback();
+  explicit TestUrlRequestCallback(bool direct_executor);
   virtual ~TestUrlRequestCallback();
 
-  Cronet_ExecutorPtr GetExecutor(bool direct);
+  Cronet_ExecutorPtr GetExecutor();
 
   Cronet_UrlRequestCallbackPtr CreateUrlRequestCallback();
 
@@ -206,8 +206,8 @@ class TestUrlRequestCallback {
   // When false response data is not accuumulated for better performance.
   bool accumulate_response_data_ = true;
 
-  // Whether to permit calls on the network thread.
-  bool allow_direct_executor_ = false;
+  // Whether to create direct executors.
+  const bool direct_executor_;
 
   // Conditionally fail on certain steps.
   FailureType failure_type_ = NONE;

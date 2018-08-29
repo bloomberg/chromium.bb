@@ -375,14 +375,16 @@ void Cronet_UrlRequestImpl::GetStatus(
 
 void Cronet_UrlRequestImpl::OnUploadDataProviderError(
     const std::string& error_message) {
-  base::AutoLock lock(lock_);
-  // If |error_| is not nullptr, that means that another network error is
-  // already reported.
-  if (error_)
-    return;
-  error_ = CreateCronet_Error(
-      0, 0, "Failure from UploadDataProvider: " + error_message);
-  error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+  {
+    base::AutoLock lock(lock_);
+    // If |error_| is not nullptr, that means that another network error is
+    // already reported.
+    if (error_)
+      return;
+    error_ = CreateCronet_Error(
+        0, 0, "Failure from UploadDataProvider: " + error_message);
+    error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+  }
   // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
   PostTaskToExecutor(base::BindOnce(
       &Cronet_UrlRequestImpl::InvokeCallbackOnFailed, base::Unretained(this)));
@@ -460,11 +462,14 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnReceivedRedirect(
     const std::string& proxy_server,
     int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  base::AutoLock lock(url_request_->lock_);
-  url_request_->waiting_on_redirect_ = true;
-  url_request_->response_info_ = CreateCronet_UrlResponseInfo(
-      url_chain_, http_status_code, http_status_text, headers, was_cached,
-      negotiated_protocol, proxy_server, received_byte_count);
+  {
+    base::AutoLock lock(url_request_->lock_);
+    url_request_->waiting_on_redirect_ = true;
+    url_request_->response_info_ = CreateCronet_UrlResponseInfo(
+        url_chain_, http_status_code, http_status_text, headers, was_cached,
+        negotiated_protocol, proxy_server, received_byte_count);
+  }
+
   // Have to do this after creating responseInfo.
   url_chain_.push_back(new_location);
 
@@ -483,11 +488,14 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnResponseStarted(
     const std::string& proxy_server,
     int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  base::AutoLock lock(url_request_->lock_);
-  url_request_->waiting_on_read_ = true;
-  url_request_->response_info_ = CreateCronet_UrlResponseInfo(
-      url_chain_, http_status_code, http_status_text, headers, was_cached,
-      negotiated_protocol, proxy_server, received_byte_count);
+  {
+    base::AutoLock lock(url_request_->lock_);
+    url_request_->waiting_on_read_ = true;
+    url_request_->response_info_ = CreateCronet_UrlResponseInfo(
+        url_chain_, http_status_code, http_status_text, headers, was_cached,
+        negotiated_protocol, proxy_server, received_byte_count);
+  }
+
   if (url_request_->upload_data_sink_)
     url_request_->upload_data_sink_->PostCloseToExecutor();
 
@@ -505,9 +513,11 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnReadCompleted(
   IOBufferWithCronet_Buffer* io_buffer =
       reinterpret_cast<IOBufferWithCronet_Buffer*>(buffer.get());
   std::unique_ptr<Cronet_Buffer> cronet_buffer(io_buffer->Release());
-  base::AutoLock lock(url_request_->lock_);
-  url_request_->waiting_on_read_ = true;
-  url_request_->response_info_->received_byte_count = received_byte_count;
+  {
+    base::AutoLock lock(url_request_->lock_);
+    url_request_->waiting_on_read_ = true;
+    url_request_->response_info_->received_byte_count = received_byte_count;
+  }
 
   // Invoke Cronet_UrlRequestCallback_OnReadCompleted on client executor.
   url_request_->PostTaskToExecutor(base::BindOnce(
@@ -518,8 +528,10 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnReadCompleted(
 void Cronet_UrlRequestImpl::NetworkTasks::OnSucceeded(
     int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  base::AutoLock lock(url_request_->lock_);
-  url_request_->response_info_->received_byte_count = received_byte_count;
+  {
+    base::AutoLock lock(url_request_->lock_);
+    url_request_->response_info_->received_byte_count = received_byte_count;
+  }
 
   // Invoke Cronet_UrlRequestCallback_OnSucceeded on client executor.
   url_request_->PostTaskToExecutor(
@@ -533,13 +545,16 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnError(
     const std::string& error_string,
     int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  base::AutoLock lock(url_request_->lock_);
-  if (url_request_->response_info_)
-    url_request_->response_info_->received_byte_count = received_byte_count;
+  {
+    base::AutoLock lock(url_request_->lock_);
+    if (url_request_->response_info_)
+      url_request_->response_info_->received_byte_count = received_byte_count;
+    url_request_->error_ =
+        CreateCronet_Error(net_error, quic_error, error_string);
+  }
+
   if (url_request_->upload_data_sink_)
     url_request_->upload_data_sink_->PostCloseToExecutor();
-  url_request_->error_ =
-      CreateCronet_Error(net_error, quic_error, error_string);
 
   // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
   url_request_->PostTaskToExecutor(
@@ -549,7 +564,6 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnError(
 
 void Cronet_UrlRequestImpl::NetworkTasks::OnCanceled() {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  base::AutoLock lock(url_request_->lock_);
   if (url_request_->upload_data_sink_)
     url_request_->upload_data_sink_->PostCloseToExecutor();
 
