@@ -51,7 +51,7 @@ base::string16 FakePluginService::GetPluginDisplayNameByPath(
 
 void FakePluginService::GetPlugins(GetPluginsCallback callback) {}
 
-PepperPluginInfo* FakePluginService::GetRegisteredPpapiPluginInfo(
+const PepperPluginInfo* FakePluginService::GetRegisteredPpapiPluginInfo(
     const base::FilePath& plugin_path) {
   return nullptr;
 }

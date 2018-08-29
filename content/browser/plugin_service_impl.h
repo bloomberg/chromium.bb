@@ -35,14 +35,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_WIN)
-#include "base/win/registry.h"
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-#include "base/files/file_path_watcher.h"
-#endif
-
 namespace content {
 class BrowserContext;
 class PluginServiceFilter;
@@ -76,7 +68,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   base::string16 GetPluginDisplayNameByPath(
       const base::FilePath& path) override;
   void GetPlugins(GetPluginsCallback callback) override;
-  PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+  const PepperPluginInfo* GetRegisteredPpapiPluginInfo(
       const base::FilePath& plugin_path) override;
   void SetFilter(PluginServiceFilter* filter) override;
   PluginServiceFilter* GetFilter() override;
@@ -139,10 +131,6 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   PluginServiceImpl();
   ~PluginServiceImpl() override;
 
-#if defined(OS_WIN)
-  void OnKeyChanged(base::win::RegKey* key);
-#endif
-
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
   // started.
@@ -154,9 +142,6 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
       const base::FilePath& broker_path);
 
   void RegisterPepperPlugins();
-
-  // Loads the plugins synchronously in a thread pool.
-  std::vector<WebPluginInfo> GetPluginsInternal();
 
   std::vector<PepperPluginInfo> ppapi_plugins_;
 
