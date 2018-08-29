@@ -47,7 +47,6 @@
 #endif
 
 namespace media_router {
-
 namespace {
 
 std::string TruncateHost(const std::string& host) {
@@ -270,10 +269,12 @@ bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
   }
 
   GetIssueManager()->ClearNonBlockingIssues();
-  GetMediaRouter()->CreateRoute(params->source_id, sink_id, params->origin,
-                                tab_contents,
-                                std::move(params->route_response_callbacks),
-                                params->timeout, params->incognito);
+  GetMediaRouter()->CreateRoute(
+      params->source_id, sink_id, params->origin, tab_contents,
+      base::BindOnce(&MediaRouterUIBase::RunRouteResponseCallbacks,
+                     std::move(params->presentation_callback),
+                     std::move(params->route_result_callbacks)),
+      params->timeout, params->incognito);
   return true;
 }
 
@@ -345,6 +346,19 @@ MediaRouterUIBase::RouteRequest::RouteRequest(const MediaSink::Id& sink_id)
 }
 
 MediaRouterUIBase::RouteRequest::~RouteRequest() = default;
+
+// static
+void MediaRouterUIBase::RunRouteResponseCallbacks(
+    MediaRouteResponseCallback presentation_callback,
+    std::vector<MediaRouteResultCallback> callbacks,
+    mojom::RoutePresentationConnectionPtr connection,
+    const RouteRequestResult& result) {
+  if (presentation_callback)
+    std::move(presentation_callback).Run(std::move(connection), result);
+  DCHECK(!connection);
+  for (auto& callback : callbacks)
+    std::move(callback).Run(result);
+}
 
 std::vector<MediaSource> MediaRouterUIBase::GetSourcesForCastMode(
     MediaCastMode cast_mode) const {
@@ -540,7 +554,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
   // (3) Browser-initiated presentation route request. If successful,
   //     PresentationServiceDelegateImpl will have to be notified.
   if (!for_presentation_source || !start_presentation_context_) {
-    params.route_response_callbacks.push_back(base::BindOnce(
+    params.route_result_callbacks.push_back(base::BindOnce(
         &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
         current_route_request_->id, sink_id, cast_mode,
         base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
@@ -549,20 +563,20 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
     if (start_presentation_context_) {
       // |start_presentation_context_| will be nullptr after this call, as the
       // object will be transferred to the callback.
-      params.route_response_callbacks.push_back(
+      params.presentation_callback =
           base::BindOnce(&StartPresentationContext::HandleRouteResponse,
-                         std::move(start_presentation_context_)));
-      params.route_response_callbacks.push_back(base::BindOnce(
+                         std::move(start_presentation_context_));
+      params.route_result_callbacks.push_back(base::BindOnce(
           &MediaRouterUIBase::HandleCreateSessionRequestRouteResponse,
           weak_factory_.GetWeakPtr()));
     } else if (presentation_service_delegate_) {
-      params.route_response_callbacks.push_back(base::BindOnce(
+      params.presentation_callback = base::BindOnce(
           &PresentationServiceDelegateImpl::OnRouteResponse,
-          presentation_service_delegate_, *presentation_request_));
+          presentation_service_delegate_, *presentation_request_);
     }
   }
 
-  params.route_response_callbacks.push_back(
+  params.route_result_callbacks.push_back(
       base::BindOnce(&MediaRouterUIBase::MaybeReportCastingSource,
                      weak_factory_.GetWeakPtr(), cast_mode));
 
@@ -681,20 +695,20 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetLocalFileRouteParameters(
   params.origin = url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
 
   int request_id = current_route_request() ? current_route_request()->id : -1;
-  params.route_response_callbacks.push_back(base::BindOnce(
+  params.route_result_callbacks.push_back(base::BindOnce(
       &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
       request_id, sink_id, MediaCastMode::LOCAL_FILE,
       base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
 
-  params.route_response_callbacks.push_back(
+  params.route_result_callbacks.push_back(
       base::BindOnce(&MediaRouterUIBase::MaybeReportCastingSource,
                      weak_factory_.GetWeakPtr(), MediaCastMode::LOCAL_FILE));
 
-  params.route_response_callbacks.push_back(
+  params.route_result_callbacks.push_back(
       base::BindOnce(&MediaRouterUIBase::MaybeReportFileInformation,
                      weak_factory_.GetWeakPtr()));
 
-  params.route_response_callbacks.push_back(
+  params.route_result_callbacks.push_back(
       base::BindOnce(&MediaRouterUIBase::FullScreenFirstVideoElement,
                      weak_factory_.GetWeakPtr(), file_url, tab_contents));
 

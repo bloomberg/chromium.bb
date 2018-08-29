@@ -29,21 +29,29 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(
 }
 
 void PresentationConnectionCallbacks::HandlePresentationResponse(
-    mojom::blink::PresentationInfoPtr presentation_info,
+    mojom::blink::PresentationConnectionResultPtr result,
     mojom::blink::PresentationErrorPtr error) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
 
-  if (presentation_info)
-    OnSuccess(*presentation_info);
-  else
+  if (result) {
+    DCHECK(result->connection_ptr);
+    DCHECK(result->connection_request);
+    OnSuccess(*result->presentation_info,
+              mojom::blink::PresentationConnectionPtr(
+                  std::move(result->connection_ptr)),
+              std::move(result->connection_request));
+  } else {
     OnError(*error);
+  }
 }
 
 void PresentationConnectionCallbacks::OnSuccess(
-    const mojom::blink::PresentationInfo& presentation_info) {
+    const mojom::blink::PresentationInfo& presentation_info,
+    mojom::blink::PresentationConnectionPtr connection_ptr,
+    mojom::blink::PresentationConnectionRequest connection_request) {
   // Reconnect to existing connection.
   if (connection_ && connection_->GetState() ==
                          mojom::blink::PresentationConnectionState::CLOSED) {
@@ -58,7 +66,7 @@ void PresentationConnectionCallbacks::OnSuccess(
   }
 
   resolver_->Resolve(connection_);
-  connection_->Init();
+  connection_->Init(std::move(connection_ptr), std::move(connection_request));
 }
 
 void PresentationConnectionCallbacks::OnError(

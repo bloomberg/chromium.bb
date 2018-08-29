@@ -113,7 +113,8 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
   DCHECK(!base::ContainsKey(presentations_, presentation_id));
   base::Optional<Display> display = GetDisplayBySinkId(sink_id);
   if (!display) {
-    std::move(callback).Run(base::nullopt, std::string("Display not found"),
+    std::move(callback).Run(base::nullopt, nullptr,
+                            std::string("Display not found"),
                             RouteRequestResult::SINK_NOT_FOUND);
     return;
   }
@@ -133,7 +134,8 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
   presentation.set_receiver(
       CreatePresentationReceiver(presentation_id, &presentation, *display));
   presentation.receiver()->Start(presentation_id, GURL(media_source));
-  std::move(callback).Run(route, base::nullopt, RouteRequestResult::OK);
+  std::move(callback).Run(route, nullptr, base::nullopt,
+                          RouteRequestResult::OK);
   NotifyRouteObservers();
 }
 
@@ -146,7 +148,7 @@ void WiredDisplayMediaRouteProvider::JoinRoute(
     bool incognito,
     JoinRouteCallback callback) {
   std::move(callback).Run(
-      base::nullopt,
+      base::nullopt, nullptr,
       std::string("Join should be handled by the presentation manager"),
       RouteRequestResult::UNKNOWN_ERROR);
 }
@@ -161,7 +163,7 @@ void WiredDisplayMediaRouteProvider::ConnectRouteByRouteId(
     bool incognito,
     ConnectRouteByRouteIdCallback callback) {
   std::move(callback).Run(
-      base::nullopt,
+      base::nullopt, nullptr,
       std::string("Connect should be handled by the presentation manager"),
       RouteRequestResult::UNKNOWN_ERROR);
 }

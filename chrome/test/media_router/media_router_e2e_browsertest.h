@@ -31,7 +31,8 @@ class MediaRouterE2EBrowserTest : public MediaRouterIntegrationBrowserTest {
 
   // Callback from MediaRouter when a response to a media route request is
   // received.
-  void OnRouteResponseReceived(const RouteRequestResult& result);
+  void OnRouteResponseReceived(mojom::RoutePresentationConnectionPtr,
+                               const RouteRequestResult& result);
 
   // Initializes |observer_| to listen for sinks compatible with |source|,
   // finds sink with name matching receiver_, and establishes media

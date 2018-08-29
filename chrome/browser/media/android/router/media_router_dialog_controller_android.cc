@@ -71,18 +71,15 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
   DCHECK(is_source_from_request);
 #endif  // NDEBUG
 
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(
-      base::BindOnce(&StartPresentationContext::HandleRouteResponse,
-                     std::move(start_presentation_context)));
-
   content::BrowserContext* browser_context = initiator()->GetBrowserContext();
-  MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
-      browser_context);
-  router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id),
-                      presentation_request.frame_origin, initiator(),
-                      std::move(route_response_callbacks), base::TimeDelta(),
-                      browser_context->IsOffTheRecord());
+  MediaRouter* router =
+      MediaRouterFactory::GetApiForBrowserContext(browser_context);
+  router->CreateRoute(
+      source_id, ConvertJavaStringToUTF8(env, jsink_id),
+      presentation_request.frame_origin, initiator(),
+      base::BindOnce(&StartPresentationContext::HandleRouteResponse,
+                     std::move(start_presentation_context)),
+      base::TimeDelta(), browser_context->IsOffTheRecord());
 }
 
 void MediaRouterDialogControllerAndroid::OnRouteClosed(
@@ -135,8 +132,7 @@ MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
       env, reinterpret_cast<jlong>(this)));
 }
 
-MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
-}
+MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {}
 
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   // TODO(crbug.com/736568): Re-enable dialog in VR.

@@ -20,6 +20,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_observers.h"
 #include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -118,17 +119,11 @@ class PresentationServiceDelegateImpl
       const blink::mojom::PresentationInfo& connection,
       const content::PresentationConnectionStateChangedCallback&
           state_changed_cb) override;
-  void ConnectToPresentation(
-      int render_process_id,
-      int render_frame_id,
-      const blink::mojom::PresentationInfo& presentation_info,
-      content::PresentationConnectionPtr controller_connection_ptr,
-      content::PresentationConnectionRequest receiver_connection_request)
-      override;
 
   // Callback invoked when a default PresentationRequest is started from a
   // browser-initiated dialog.
   void OnRouteResponse(const content::PresentationRequest& request,
+                       mojom::RoutePresentationConnectionPtr connection,
                        const RouteRequestResult& result);
 
   // Adds / removes an observer for listening to default PresentationRequest
@@ -186,18 +181,19 @@ class PresentationServiceDelegateImpl
       const std::string& presentation_id,
       content::PresentationConnectionCallback success_cb,
       content::PresentationConnectionErrorCallback error_cb,
+      mojom::RoutePresentationConnectionPtr connection,
       const RouteRequestResult& result);
 
   void OnStartPresentationSucceeded(
       const content::GlobalFrameRoutingId& render_frame_host_id,
       content::PresentationConnectionCallback success_cb,
       const blink::mojom::PresentationInfo& new_presentation_info,
+      mojom::RoutePresentationConnectionPtr connection,
       const MediaRoute& route);
 
   // Notifies the PresentationFrame of |render_frame_host_id| that a
   // presentation and its corresponding MediaRoute has been created.
   // The PresentationFrame will be created if it does not already exist.
-  // This must be called before |ConnectToPresentation()|.
   void AddPresentation(
       const content::GlobalFrameRoutingId& render_frame_host_id,
       const blink::mojom::PresentationInfo& presentation_info,
@@ -224,6 +220,15 @@ class PresentationServiceDelegateImpl
   // Returns true if auto-join requests should be cancelled for |origin|.
   bool ShouldCancelAutoJoinForOrigin(const url::Origin& origin) const;
 #endif
+
+  // Ensures that |connection| contains a valid pair of
+  // blink::mojom::PresentationConnection{PtrInfo,Request} objects which will be
+  // used for all Presentation API communication in a newly-connected
+  // presentation.
+  void EnsurePresentationConnection(
+      const content::GlobalFrameRoutingId& render_frame_host_id,
+      const blink::mojom::PresentationInfo& presentation_info,
+      mojom::RoutePresentationConnectionPtr* connection);
 
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.

@@ -150,6 +150,12 @@ class MediaRouterUIBase
     MediaSink::Id sink_id;
   };
 
+  static void RunRouteResponseCallbacks(
+      MediaRouteResponseCallback presentation_callback,
+      std::vector<MediaRouteResultCallback> callbacks,
+      mojom::RoutePresentationConnectionPtr connection,
+      const RouteRequestResult& result);
+
   std::vector<MediaSource> GetSourcesForCastMode(MediaCastMode cast_mode) const;
 
   // QueryResultManager::Observer:

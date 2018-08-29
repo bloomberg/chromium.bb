@@ -29,8 +29,10 @@ class MediaRouterDialogControllerWebUIImplTest : public MediaRouterWebUITest {
 
   void OpenMediaRouterDialog();
 
-  MOCK_METHOD2(PresentationSuccessCallback,
-               void(const blink::mojom::PresentationInfo&, const MediaRoute&));
+  MOCK_METHOD3(PresentationSuccessCallback,
+               void(const blink::mojom::PresentationInfo&,
+                    mojom::RoutePresentationConnectionPtr,
+                    const MediaRoute&));
   MOCK_METHOD1(PresentationErrorCallback,
                void(const blink::mojom::PresentationError& error));
 

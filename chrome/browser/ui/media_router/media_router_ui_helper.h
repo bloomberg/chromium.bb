@@ -32,6 +32,11 @@ std::string GetHostFromURL(const GURL& gurl);
 // Returns the duration to wait for route creation result before we time out.
 base::TimeDelta GetRouteRequestTimeout(MediaCastMode cast_mode);
 
+// A variation of MediaRouteResponseCallback that doesn't require the
+// PresentationConnection objects.
+using MediaRouteResultCallback =
+    base::OnceCallback<void(const RouteRequestResult&)>;
+
 // Contains common parameters for route requests to MediaRouter.
 struct RouteParameters {
  public:
@@ -41,10 +46,26 @@ struct RouteParameters {
 
   RouteParameters& operator=(RouteParameters&& other);
 
+  // A string identifying the media source, which should be the source for this
+  // route (e.g. a presentation url, tab mirroring id, etc.).
   MediaSource::Id source_id;
+
+  // The origin of the page requesting the route.
   url::Origin origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+
+  // This callback will be null if the route request is not for a presentation
+  // (e.g. it is for tab mirroring).
+  MediaRouteResponseCallback presentation_callback;
+
+  // Callbacks which should be invoked on both success and failure of the route
+  // creation.
+  std::vector<MediaRouteResultCallback> route_result_callbacks;
+
+  // A timeout value, after which the request should be considered to have
+  // failed.
   base::TimeDelta timeout;
+
+  // Whether the route is for an off-the-record profile.
   bool incognito;
 };
 

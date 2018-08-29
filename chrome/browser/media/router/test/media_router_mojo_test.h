@@ -34,6 +34,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
   using RouteCallback =
       base::OnceCallback<void(const base::Optional<MediaRoute>&,
+                              mojom::RoutePresentationConnectionPtr,
                               const base::Optional<std::string>&,
                               RouteRequestResult::ResultCode)>;
 

@@ -20,10 +20,12 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "media/base/flinging_controller.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
 class WebContents;
@@ -46,9 +48,11 @@ class MediaRouteController;
 
 // Type of callback used in |CreateRoute()|, |JoinRoute()|, and
 // |ConnectRouteByRouteId()|. Callback is invoked when the route request either
-// succeeded or failed.
+// succeeded or failed.  |connection| is set depending on whether the MRP
+// chooses to setup the PresentationConnections itself.
 using MediaRouteResponseCallback =
-    base::OnceCallback<void(const RouteRequestResult& result)>;
+    base::OnceCallback<void(mojom::RoutePresentationConnectionPtr connection,
+                            const RouteRequestResult& result)>;
 
 // Type of callback used for |SearchSinks()| to return the sink ID of the
 // newly-found sink. The sink ID will be the empty string if no sink was found.
@@ -89,7 +93,7 @@ class MediaRouter : public KeyedService {
                            const MediaSink::Id& sink_id,
                            const url::Origin& origin,
                            content::WebContents* web_contents,
-                           std::vector<MediaRouteResponseCallback> callbacks,
+                           MediaRouteResponseCallback callback,
                            base::TimeDelta timeout,
                            bool incognito) = 0;
 
@@ -106,14 +110,13 @@ class MediaRouter : public KeyedService {
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
   // If |incognito| is true, the request was made by an incognito profile.
-  virtual void ConnectRouteByRouteId(
-      const MediaSource::Id& source_id,
-      const MediaRoute::Id& route_id,
-      const url::Origin& origin,
-      content::WebContents* web_contents,
-      std::vector<MediaRouteResponseCallback> callbacks,
-      base::TimeDelta timeout,
-      bool incognito) = 0;
+  virtual void ConnectRouteByRouteId(const MediaSource::Id& source_id,
+                                     const MediaRoute::Id& route_id,
+                                     const url::Origin& origin,
+                                     content::WebContents* web_contents,
+                                     MediaRouteResponseCallback callback,
+                                     base::TimeDelta timeout,
+                                     bool incognito) = 0;
 
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
@@ -130,7 +133,7 @@ class MediaRouter : public KeyedService {
                          const std::string& presentation_id,
                          const url::Origin& origin,
                          content::WebContents* web_contents,
-                         std::vector<MediaRouteResponseCallback> callbacks,
+                         MediaRouteResponseCallback callback,
                          base::TimeDelta timeout,
                          bool incognito) = 0;
 

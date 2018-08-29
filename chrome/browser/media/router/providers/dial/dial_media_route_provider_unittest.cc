@@ -121,6 +121,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   }
 
   void ExpectCreateRouteResult(const base::Optional<MediaRoute>& media_route,
+                               mojom::RoutePresentationConnectionPtr,
                                const base::Optional<std::string>& error_text,
                                RouteRequestResult::ResultCode result_code) {
     EXPECT_EQ(expected_result_code_, result_code);

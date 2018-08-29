@@ -94,7 +94,7 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
 
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   if (!sink) {
-    std::move(callback).Run(base::nullopt, "Unknown sink " + sink_id,
+    std::move(callback).Run(base::nullopt, nullptr, "Unknown sink " + sink_id,
                             RouteRequestResult::SINK_NOT_FOUND);
     DialMediaRouteProviderMetrics::RecordCreateRouteResult(
         DialCreateRouteResult::kSinkNotFound);
@@ -104,7 +104,8 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   auto activity =
       DialActivity::From(presentation_id, *sink, media_source, incognito);
   if (!activity) {
-    std::move(callback).Run(base::nullopt, "Unsupported source " + media_source,
+    std::move(callback).Run(base::nullopt, nullptr,
+                            "Unsupported source " + media_source,
                             RouteRequestResult::NO_SUPPORTED_PROVIDER);
     DialMediaRouteProviderMetrics::RecordCreateRouteResult(
         DialCreateRouteResult::kUnsupportedSource);
@@ -114,7 +115,7 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   const MediaRoute::Id& route_id = activity->route.media_route_id();
   if (activity_manager_->GetActivity(route_id) ||
       activity_manager_->GetActivityBySinkId(sink_id)) {
-    std::move(callback).Run(base::nullopt, "Activity already exists",
+    std::move(callback).Run(base::nullopt, nullptr, "Activity already exists",
                             RouteRequestResult::ROUTE_ALREADY_EXISTS);
     DialMediaRouteProviderMetrics::RecordCreateRouteResult(
         DialCreateRouteResult::kRouteAlreadyExists);
@@ -122,7 +123,7 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   }
 
   activity_manager_->AddActivity(*activity);
-  std::move(callback).Run(activity->route, base::nullopt,
+  std::move(callback).Run(activity->route, nullptr, base::nullopt,
                           RouteRequestResult::OK);
 
   // When a custom DIAL launch request is received, DialMediaRouteProvider will
@@ -147,7 +148,7 @@ void DialMediaRouteProvider::JoinRoute(const std::string& media_source,
                                        JoinRouteCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(
-      base::nullopt, std::string("Not implemented"),
+      base::nullopt, nullptr, std::string("Not implemented"),
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 
@@ -162,7 +163,7 @@ void DialMediaRouteProvider::ConnectRouteByRouteId(
     ConnectRouteByRouteIdCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(
-      base::nullopt, std::string("Not implemented"),
+      base::nullopt, nullptr, std::string("Not implemented"),
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 

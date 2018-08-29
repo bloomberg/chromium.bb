@@ -278,7 +278,9 @@ void ControllerPresentationConnection::Trace(blink::Visitor* visitor) {
   PresentationConnection::Trace(visitor);
 }
 
-void ControllerPresentationConnection::Init() {
+void ControllerPresentationConnection::Init(
+    mojom::blink::PresentationConnectionPtr connection_ptr,
+    mojom::blink::PresentationConnectionRequest connection_request) {
   // Note that it is possible for the binding to be already bound here, because
   // the ControllerPresentationConnection object could be reused when
   // reconnecting in the same frame. In this case the existing connections are
@@ -288,16 +290,9 @@ void ControllerPresentationConnection::Init() {
     target_connection_.reset();
   }
 
-  mojom::blink::PresentationConnectionPtr controller_connection_ptr;
-  connection_binding_.Bind(mojo::MakeRequest(&controller_connection_ptr));
-
-  auto& service = controller_->GetPresentationService();
-  if (service) {
-    service->SetPresentationConnection(
-        mojom::blink::PresentationInfo::New(url_, id_),
-        std::move(controller_connection_ptr),
-        mojo::MakeRequest(&target_connection_));
-  }
+  DidChangeState(mojom::blink::PresentationConnectionState::CONNECTING);
+  target_connection_ = std::move(connection_ptr);
+  connection_binding_.Bind(std::move(connection_request));
 }
 
 void ControllerPresentationConnection::DoClose() {
@@ -413,6 +408,7 @@ void PresentationConnection::AddedEventListener(
 }
 
 void PresentationConnection::ContextDestroyed(ExecutionContext*) {
+  target_connection_.reset();
   connection_binding_.Close();
 }
 

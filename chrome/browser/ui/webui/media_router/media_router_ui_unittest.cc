@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -107,7 +108,9 @@ class PresentationRequestCallbacks {
       const blink::mojom::PresentationError& expected_error)
       : expected_error_(expected_error) {}
 
-  void Success(const blink::mojom::PresentationInfo&, const MediaRoute&) {}
+  void Success(const blink::mojom::PresentationInfo&,
+               mojom::RoutePresentationConnectionPtr,
+               const MediaRoute&) {}
 
   void Error(const blink::mojom::PresentationError& error) {
     EXPECT_EQ(expected_error_.error_type, error.error_type);
@@ -244,11 +247,11 @@ class MediaRouterUIIncognitoTest : public MediaRouterUITest {
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   CreateMediaRouterUI(profile());
-  std::vector<MediaRouteResponseCallback> callbacks;
+  MediaRouteResponseCallback callback;
   EXPECT_CALL(mock_router_,
               CreateRouteInternal(_, _, _, _, _,
                                   base::TimeDelta::FromSeconds(60), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+      .WillOnce(SaveArgWithMove<4>(&callback));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::TAB_MIRROR);
 
@@ -257,17 +260,16 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  std::move(callback).Run(nullptr, *result);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
   CreateMediaRouterUI(profile());
-  std::vector<MediaRouteResponseCallback> callbacks;
+  MediaRouteResponseCallback callback;
   EXPECT_CALL(mock_router_,
               CreateRouteInternal(_, _, _, _, _,
                                   base::TimeDelta::FromSeconds(120), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+      .WillOnce(SaveArgWithMove<4>(&callback));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::DESKTOP_MIRROR);
 
@@ -276,8 +278,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
   EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  std::move(callback).Run(nullptr, *result);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
@@ -286,11 +287,11 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
       {0, 0}, {GURL("https://presentationurl.com")},
       url::Origin::Create(GURL("https://frameurl.fakeurl")));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
-  std::vector<MediaRouteResponseCallback> callbacks;
+  MediaRouteResponseCallback callback;
   EXPECT_CALL(mock_router_,
               CreateRouteInternal(_, _, _, _, _,
                                   base::TimeDelta::FromSeconds(20), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+      .WillOnce(SaveArgWithMove<4>(&callback));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::PRESENTATION);
 
@@ -300,8 +301,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  std::move(callback).Run(nullptr, *result);
 }
 
 // Tests that if a local file CreateRoute call is made from a new tab, the

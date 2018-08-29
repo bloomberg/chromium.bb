@@ -43,10 +43,10 @@ class MockMediaRouter : public MediaRouterBase {
                    const MediaSink::Id& sink_id,
                    const url::Origin& origin,
                    content::WebContents* web_contents,
-                   std::vector<MediaRouteResponseCallback> callbacks,
+                   MediaRouteResponseCallback callback,
                    base::TimeDelta timeout,
                    bool incognito) override {
-    CreateRouteInternal(source, sink_id, origin, web_contents, callbacks,
+    CreateRouteInternal(source, sink_id, origin, web_contents, callback,
                         timeout, incognito);
   }
   MOCK_METHOD7(CreateRouteInternal,
@@ -54,7 +54,7 @@ class MockMediaRouter : public MediaRouterBase {
                     const MediaSink::Id& sink_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    std::vector<MediaRouteResponseCallback>& callbacks,
+                    MediaRouteResponseCallback& callback,
                     base::TimeDelta timeout,
                     bool incognito));
 
@@ -62,10 +62,10 @@ class MockMediaRouter : public MediaRouterBase {
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  content::WebContents* web_contents,
-                 std::vector<MediaRouteResponseCallback> callbacks,
+                 MediaRouteResponseCallback callback,
                  base::TimeDelta timeout,
                  bool incognito) override {
-    JoinRouteInternal(source, presentation_id, origin, web_contents, callbacks,
+    JoinRouteInternal(source, presentation_id, origin, web_contents, callback,
                       timeout, incognito);
   }
   MOCK_METHOD7(JoinRouteInternal,
@@ -73,7 +73,7 @@ class MockMediaRouter : public MediaRouterBase {
                     const std::string& presentation_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    std::vector<MediaRouteResponseCallback>& callbacks,
+                    MediaRouteResponseCallback& callback,
                     base::TimeDelta timeout,
                     bool incognito));
 
@@ -81,18 +81,18 @@ class MockMediaRouter : public MediaRouterBase {
                              const MediaRoute::Id& route_id,
                              const url::Origin& origin,
                              content::WebContents* web_contents,
-                             std::vector<MediaRouteResponseCallback> callbacks,
+                             MediaRouteResponseCallback callback,
                              base::TimeDelta timeout,
                              bool incognito) override {
     ConnectRouteByRouteIdInternal(source, route_id, origin, web_contents,
-                                  callbacks, timeout, incognito);
+                                  callback, timeout, incognito);
   }
   MOCK_METHOD7(ConnectRouteByRouteIdInternal,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    std::vector<MediaRouteResponseCallback>& callbacks,
+                    MediaRouteResponseCallback& callback,
                     base::TimeDelta timeout,
                     bool incognito));
 

@@ -27,6 +27,9 @@ using blink::mojom::PresentationConnection;
 using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionMessagePtr;
 using blink::mojom::PresentationConnectionPtr;
+using blink::mojom::PresentationConnectionPtrInfo;
+using blink::mojom::PresentationConnectionResult;
+using blink::mojom::PresentationConnectionResultPtr;
 using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationController;
 using blink::mojom::PresentationControllerPtr;
@@ -83,7 +86,7 @@ class MockPresentationServiceDelegate
                     int render_frame_id,
                     PresentationServiceDelegate::Observer* observer));
   MOCK_METHOD2(RemoveObserver,
-      void(int render_process_id, int render_frame_id));
+               void(int render_process_id, int render_frame_id));
 
   bool AddScreenAvailabilityListener(
       int render_process_id,
@@ -98,12 +101,10 @@ class MockPresentationServiceDelegate
   MOCK_METHOD0(AddScreenAvailabilityListener, bool());
 
   MOCK_METHOD3(RemoveScreenAvailabilityListener,
-      void(int render_process_id,
-           int routing_id,
-           PresentationScreenAvailabilityListener* listener));
-  MOCK_METHOD2(Reset,
-      void(int render_process_id,
-           int routing_id));
+               void(int render_process_id,
+                    int routing_id,
+                    PresentationScreenAvailabilityListener* listener));
+  MOCK_METHOD2(Reset, void(int render_process_id, int routing_id));
   MOCK_METHOD2(SetDefaultPresentationUrls,
                void(const PresentationRequest& request,
                     DefaultPresentationConnectionCallback callback));
@@ -141,12 +142,6 @@ class MockPresentationServiceDelegate
            int render_frame_id,
            const PresentationInfo& connection,
            const PresentationConnectionStateChangedCallback& state_changed_cb));
-  MOCK_METHOD5(ConnectToPresentation,
-               void(int render_process_id,
-                    int render_frame_id,
-                    const PresentationInfo& presentation_info,
-                    PresentationConnectionPtr controller_conn_ptr,
-                    PresentationConnectionRequest receiver_conn_request));
 
   void set_screen_availability_listening_supported(bool value) {
     screen_availability_listening_supported_ = value;
@@ -203,7 +198,7 @@ class MockPresentationController : public blink::mojom::PresentationController {
       void(const PresentationInfo& presentation_info,
            const std::vector<PresentationConnectionMessagePtr>& messages));
   MOCK_METHOD1(OnDefaultPresentationStarted,
-               void(PresentationInfoPtr presentation_info));
+               void(PresentationConnectionResultPtr result));
 };
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
@@ -256,8 +251,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     if (!main_frame)
       rfh = rfh_tester->AppendChild("subframe");
     std::unique_ptr<NavigationHandle> navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), rfh, true);
+        NavigationHandle::CreateNavigationHandleForTesting(GURL(), rfh, true);
     // Destructor calls DidFinishNavigation.
   }
 
@@ -293,17 +287,17 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         service_impl_->screen_availability_listeners_.end());
   }
 
-  void ExpectPresentationSuccess(PresentationInfoPtr info,
+  void ExpectPresentationSuccess(PresentationConnectionResultPtr result,
                                  PresentationErrorPtr error) {
-    EXPECT_FALSE(info.is_null());
-    EXPECT_TRUE(error.is_null());
+    EXPECT_TRUE(result);
+    EXPECT_FALSE(error);
     presentation_cb_was_run_ = true;
   }
 
-  void ExpectPresentationError(PresentationInfoPtr info,
+  void ExpectPresentationError(PresentationConnectionResultPtr result,
                                PresentationErrorPtr error) {
-    EXPECT_TRUE(info.is_null());
-    EXPECT_FALSE(error.is_null());
+    EXPECT_FALSE(result);
+    EXPECT_TRUE(error);
     presentation_cb_was_run_ = true;
   }
 
@@ -406,11 +400,24 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
 
   PresentationInfo presentation_info(presentation_url2_, kPresentationId);
 
-  EXPECT_CALL(mock_controller_,
-              OnDefaultPresentationStarted(InfoPtrEquals(presentation_info)));
+  EXPECT_CALL(mock_controller_, OnDefaultPresentationStarted(_))
+      .WillOnce([&presentation_info](PresentationConnectionResultPtr result) {
+        EXPECT_THAT(*result->presentation_info, InfoEquals(presentation_info));
+      });
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
-  std::move(callback).Run(
-      PresentationInfo(presentation_url2_, kPresentationId));
+
+  // Mojo requires we not send nullptr for the InterfacePtrInfo and
+  // InterfaceRequest in PresentationConnectionResult, but there's no reason to
+  // actually have them properly bound in the test.  To get around this, we
+  // create mojo pipes but bind to a nullptr for the implementation.
+  PresentationConnectionPtrInfo receiver_ptr;
+  PresentationConnectionPtr controller_ptr;
+  auto request = mojo::MakeRequest(&controller_ptr);
+  mojo::Binding<PresentationConnection> binding(
+      /** impl */ nullptr, mojo::MakeRequest(&receiver_ptr));
+  std::move(callback).Run(PresentationConnectionResult::New(
+      blink::mojom::PresentationInfo::New(presentation_url2_, kPresentationId),
+      std::move(receiver_ptr), std::move(request)));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -482,9 +489,10 @@ TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrls) {
 }
 
 TEST_F(PresentationServiceImplTest, StartPresentationSuccess) {
-  base::OnceCallback<void(const PresentationInfo&)> saved_success_cb;
+  PresentationConnectionCallback saved_success_cb;
   EXPECT_CALL(mock_delegate_, StartPresentation(_, _, _))
-      .WillOnce([&](const auto& request, auto success_cb, auto error_cb) {
+      .WillOnce([&saved_success_cb](const auto& request, auto success_cb,
+                                    auto error_cb) {
         saved_success_cb = std::move(success_cb);
       });
   service_impl_->StartPresentation(presentation_urls_,
@@ -493,7 +501,10 @@ TEST_F(PresentationServiceImplTest, StartPresentationSuccess) {
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
   std::move(saved_success_cb)
-      .Run(PresentationInfo(presentation_url1_, kPresentationId));
+      .Run(PresentationConnectionResult::New(
+          blink::mojom::PresentationInfo::New(presentation_url1_,
+                                              kPresentationId),
+          nullptr, nullptr));
   ExpectPresentationCallbackWasRun();
 }
 
@@ -525,11 +536,12 @@ TEST_F(PresentationServiceImplTest, StartPresentationInProgress) {
 }
 
 TEST_F(PresentationServiceImplTest, ReconnectPresentationSuccess) {
-  base::OnceCallback<void(const PresentationInfo&)> saved_success_cb;
+  PresentationConnectionCallback saved_success_cb;
   EXPECT_CALL(mock_delegate_, ReconnectPresentation(_, kPresentationId, _, _))
-      .WillOnce(
-          [&](const auto& request, const std::string& id, auto success_cb,
-              auto error_cb) { saved_success_cb = std::move(success_cb); });
+      .WillOnce([&saved_success_cb](const auto& request, const auto& id,
+                                    auto success_cb, auto error_cb) {
+        saved_success_cb = std::move(success_cb);
+      });
   service_impl_->ReconnectPresentation(
       presentation_urls_, kPresentationId,
       std::move(expect_presentation_success_cb_));
@@ -537,7 +549,10 @@ TEST_F(PresentationServiceImplTest, ReconnectPresentationSuccess) {
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
   std::move(saved_success_cb)
-      .Run(PresentationInfo(presentation_url1_, kPresentationId));
+      .Run(PresentationConnectionResult::New(
+          blink::mojom::PresentationInfo::New(presentation_url1_,
+                                              kPresentationId),
+          nullptr, nullptr));
   ExpectPresentationCallbackWasRun();
 }
 
@@ -586,25 +601,6 @@ TEST_F(PresentationServiceImplTest, CloseConnection) {
 TEST_F(PresentationServiceImplTest, Terminate) {
   EXPECT_CALL(mock_delegate_, Terminate(_, _, Eq(kPresentationId)));
   service_impl_->Terminate(presentation_url1_, kPresentationId);
-}
-
-TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
-  PresentationInfoPtr presentation_info =
-      PresentationInfo::New(presentation_url1_, kPresentationId);
-
-  PresentationConnectionPtr connection;
-  MockPresentationConnection mock_presentation_connection;
-  mojo::Binding<PresentationConnection> connection_binding(
-      &mock_presentation_connection, mojo::MakeRequest(&connection));
-  PresentationConnectionPtr receiver_connection;
-  auto request = mojo::MakeRequest(&receiver_connection);
-
-  PresentationInfo expected(presentation_url1_, kPresentationId);
-  EXPECT_CALL(mock_delegate_,
-              ConnectToPresentation(_, _, InfoEquals(expected), _, _));
-
-  service_impl_->SetPresentationConnection(
-      std::move(presentation_info), std::move(connection), std::move(request));
 }
 
 TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {

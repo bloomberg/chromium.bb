@@ -115,8 +115,10 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
   GetIssueManager()->ClearNonBlockingIssues();
   GetMediaRouter()->ConnectRouteByRouteId(
       params->source_id, route_id, params->origin, initiator(),
-      std::move(params->route_response_callbacks), params->timeout,
-      params->incognito);
+      base::BindOnce(&MediaRouterUIBase::RunRouteResponseCallbacks,
+                     std::move(params->presentation_callback),
+                     std::move(params->route_result_callbacks)),
+      params->timeout, params->incognito);
   return true;
 }
 

@@ -26,9 +26,17 @@ mojom("media_router") {
     "//media/mojo/interfaces:mirror_service_remoting",
     "//mojo/public/mojom/base",
     "//net/interfaces:interfaces",
+    "//third_party/blink/public/mojom:mojom_platform",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
+
+  if (is_component_build) {
+    overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+    component_deps = [ "//third_party/blink/public/common" ]
+  }
+
+  disable_variants = true
 }
 
 mojom("media_router_test_interfaces") {
@@ -39,4 +47,6 @@ mojom("media_router_test_interfaces") {
   public_deps = [
     ":media_router",
   ]
+
+  disable_variants = true
 }

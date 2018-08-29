@@ -19,6 +19,12 @@ async_test(t => {
         connection.onconnect = () => {
           connection.terminate();
         };
+        // Open a receiver page and pass controller connection's
+        // controllerConnectionPtr and receiverConnectionRequest to it.
+        w = window.open("resources/presentation-receiver-close-connection.html");
+        w.controllerConnectionPtr = presentationServiceMock.getControllerConnectionPtr();
+        w.receiverConnectionRequest = presentationServiceMock.getReceiverConnectionRequest();
+        w.shouldCallClose = false;
       });
   }, button);
 }, "Test that controller connection.terminate() fires onterminate event handler.");

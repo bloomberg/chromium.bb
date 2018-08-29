@@ -94,7 +94,8 @@ class MODULES_EXPORT PresentationController
   void OnConnectionClosed(mojom::blink::PresentationInfoPtr,
                           mojom::blink::PresentationConnectionCloseReason,
                           const String& message) override;
-  void OnDefaultPresentationStarted(mojom::blink::PresentationInfoPtr) override;
+  void OnDefaultPresentationStarted(
+      mojom::blink::PresentationConnectionResultPtr result) override;
 
   // Return the connection associated with the given |presentation_info| or
   // null if it doesn't exist.
