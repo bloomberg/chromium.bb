@@ -42,6 +42,7 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/window/frame_background.h"
+#include "ui/views/window/hit_test_utils.h"
 #include "ui/views/window/window_shape.h"
 
 #if defined(OS_LINUX)
@@ -265,6 +266,15 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (minimize_button_ && minimize_button_->visible() &&
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
+
+  if (hosted_app_button_container_) {
+    // TODO(alancutter): Assign hit test components to all children and refactor
+    // this entire function call to just be GetHitTestComponent(this, point).
+    int hosted_app_component =
+        views::GetHitTestComponent(hosted_app_button_container_, point);
+    if (hosted_app_component != HTNOWHERE)
+      return hosted_app_component;
+  }
 
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate) {
