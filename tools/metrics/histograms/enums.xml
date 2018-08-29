@@ -14274,6 +14274,7 @@ Called by update_net_error_codes.py.-->
   <int value="477" label="PrintingColorDefault"/>
   <int value="478" label="PrintingDuplexDefault"/>
   <int value="479" label="PrintingSizeDefault"/>
+  <int value="480" label="PrintHeaderFooter"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

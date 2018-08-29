@@ -325,7 +325,8 @@ Polymer({
     this.notifyPath('documentInfo_.title');
     this.notifyPath('documentInfo_.pageCount');
     this.$.model.setStickySettings(settings.serializedAppStateStr);
-    this.$.model.setPolicySettings(settings.forceEnableHeaderFooter);
+    this.$.model.setPolicySettings(
+        settings.headerFooter, settings.isHeaderFooterManaged);
     this.measurementSystem_ = new print_preview.MeasurementSystem(
         settings.thousandsDelimeter, settings.decimalDelimeter,
         settings.unitType);

@@ -266,9 +266,12 @@ const char kAppState[] = "serializedAppStateStr";
 // Name of a dictionary field holding the default destination selection rules.
 const char kDefaultDestinationSelectionRules[] =
     "serializedDefaultDestinationSelectionRulesStr";
-// Name of a dictionary field holding the header/footer enterprise policy, if
-// any.
-const char kForceEnableHeaderFooter[] = "forceEnableHeaderFooter";
+// Name of a dictionary pref holding the default value for the header/footer
+// checkbox. If set, takes priority over sticky settings.
+const char kHeaderFooter[] = "headerFooter";
+// Name of a dictionary field telling us whether the kPrintHeaderFooter pref is
+// managed by an enterprise policy.
+const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 
 // Get the print job settings dictionary from |json_str|. Returns NULL on
 // failure.
@@ -449,18 +452,6 @@ base::LazyInstance<printing::StickySettings>::DestructorAtExit
 
 printing::StickySettings* GetStickySettings() {
   return g_sticky_settings.Pointer();
-}
-
-base::Optional<bool> GetHeaderFooterPolicy(const PrefService* prefs) {
-  const int enforcement = prefs->GetInteger(prefs::kPrintHeaderFooter);
-  switch (enforcement) {
-    case printing::HeaderFooterEnforcement::kForceEnable:
-      return true;
-    case printing::HeaderFooterEnforcement::kForceDisable:
-      return false;
-    default:
-      return base::nullopt;
-  }
 }
 
 }  // namespace
@@ -1091,9 +1082,15 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetKey(kAppState, base::Value());
   }
 
-  base::Optional<bool> policy = GetHeaderFooterPolicy(prefs);
-  if (policy)
-    initial_settings.SetBoolean(kForceEnableHeaderFooter, policy.value());
+  if (prefs->HasPrefPath(prefs::kPrintHeaderFooter)) {
+    // Don't override sticky settings, unless kPrintHeaderFooter is actually
+    // customized.
+    initial_settings.SetBoolean(kHeaderFooter,
+                                prefs->GetBoolean(prefs::kPrintHeaderFooter));
+  }
+  initial_settings.SetBoolean(
+      kIsHeaderFooterManaged,
+      prefs->IsManagedPreference(prefs::kPrintHeaderFooter));
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolean(kIsInKioskAutoPrintMode,

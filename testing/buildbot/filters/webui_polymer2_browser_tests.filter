@@ -319,6 +319,7 @@ PrintPreviewModelTest.*
 PrintPreviewNewDestinationSearchTest.*
 PrintPreviewNumberSettingsSectionTest.*
 PrintPreviewPagesSettingsTest.*
+PrintPreviewPolicyTest.*
 PrintPreviewPreviewGenerationTest.*
 PrintPreviewPrintButtonTest.*
 PrintPreviewRestoreStateTest.*

@@ -5786,6 +5786,28 @@
       If this policy is not set or is set to false, print commands trigger the print preview screen.''',
     },
     {
+      'name': 'PrintHeaderFooter',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-', 'chrome.*:70-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 480,
+      'caption': '''Print Headers and Footers''',
+      'tags': [],
+      'desc': '''Force 'headers and footers' to be on or off in the printing dialog.
+
+      If the policy is unset, the user can decide whether to print headers and footers.
+
+      If the policy is set to false, 'Headers and footers' is not selected in the print preview dialog, and the user cannot change it.
+
+      If the policy is set to true, 'Headers and footers' is selected in the print preview dialog, and the user cannot change it.''',
+    },
+    {
       'name': 'DefaultPrinterSelection',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -13338,5 +13360,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 479,
+  'highest_id_currently_used': 480
 }
