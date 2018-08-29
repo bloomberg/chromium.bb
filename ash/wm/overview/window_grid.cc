@@ -725,43 +725,23 @@ void WindowGrid::OnWindowDragContinued(aura::Window* dragged_window,
 }
 
 void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
-                                   const gfx::Point& location_in_screen) {
+                                   const gfx::Point& location_in_screen,
+                                   bool should_drop_window_into_overview) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(new_selector_item_widget_.get());
 
-  // Check to see if the dragged window needs to be added to overview. If so,
-  // add it to overview without repositioning the grid. It will be done at the
-  // end of this function.
+  // Add the dragged window into new selector item area in overview if it has
+  // been dragged into it or |should_drop_window_into_overview| is true. Only
+  // consider |should_drop_window_into_overview| if SelectedWindow is false
+  // since tab dragging might drag the widnow to merge it into a browser window
+  // in overview.
   if (SelectedWindow()) {
-    if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow())) {
-      // Update the dragged window's bounds before adding it to overview. The
-      // dragged window might have resized to a smaller size if the drag
-      // happens on tab(s).
-      if (wm::IsDraggingTabs(dragged_window)) {
-        const gfx::Rect old_bounds = dragged_window->bounds();
-        // We need to temporarily disable the dragged window's ability to merge
-        // into another window when changing the dragged window's bounds, so
-        // that the dragged window doesn't merge into another window because of
-        // its changed bounds.
-        dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
-        TabletModeWindowState::UpdateWindowPosition(
-            wm::GetWindowState(dragged_window));
-        const gfx::Rect new_bounds = dragged_window->bounds();
-        if (old_bounds != new_bounds) {
-          // It's for smoother animation.
-          gfx::Transform transform =
-              ScopedTransformOverviewWindow::GetTransformForRect(new_bounds,
-                                                                 old_bounds);
-          dragged_window->SetTransform(transform);
-        }
-        dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);
-      }
-
-      window_selector_->AddItem(dragged_window, /*reposition=*/false,
-                                /*animate=*/false);
-    }
+    if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow()))
+      AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
     SelectedWindow()->set_selected(false);
     selection_widget_.reset();
+  } else if (should_drop_window_into_overview) {
+    AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
   }
 
   window_selector_->RemoveWindowSelectorItem(
@@ -1486,6 +1466,39 @@ WindowGrid::GetWindowSelectorItemIterContainingWindow(aura::Window* window) {
                       [window](std::unique_ptr<WindowSelectorItem>& item) {
                         return item->GetWindow() == window;
                       });
+}
+
+void WindowGrid::AddDraggedWindowIntoOverviewOnDragEnd(
+    aura::Window* dragged_window) {
+  DCHECK(window_selector_);
+  if (window_selector_->IsWindowInOverview(dragged_window))
+    return;
+
+  // Update the dragged window's bounds before adding it to overview. The
+  // dragged window might have resized to a smaller size if the drag
+  // happens on tab(s).
+  if (wm::IsDraggingTabs(dragged_window)) {
+    const gfx::Rect old_bounds = dragged_window->bounds();
+    // We need to temporarily disable the dragged window's ability to merge
+    // into another window when changing the dragged window's bounds, so
+    // that the dragged window doesn't merge into another window because of
+    // its changed bounds.
+    dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
+    TabletModeWindowState::UpdateWindowPosition(
+        wm::GetWindowState(dragged_window));
+    const gfx::Rect new_bounds = dragged_window->bounds();
+    if (old_bounds != new_bounds) {
+      // It's for smoother animation.
+      gfx::Transform transform =
+          ScopedTransformOverviewWindow::GetTransformForRect(new_bounds,
+                                                             old_bounds);
+      dragged_window->SetTransform(transform);
+    }
+    dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);
+  }
+
+  window_selector_->AddItem(dragged_window, /*reposition=*/false,
+                            /*animate=*/false);
 }
 
 }  // namespace ash

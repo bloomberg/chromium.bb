@@ -565,6 +565,10 @@ gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
   return transform_window_.GetTargetBoundsInScreen();
 }
 
+gfx::Rect WindowSelectorItem::GetTransformedBounds() const {
+  return transform_window_.GetTransformedBounds();
+}
+
 void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
                                    OverviewAnimationType animation_type) {
   if (in_bounds_update_)

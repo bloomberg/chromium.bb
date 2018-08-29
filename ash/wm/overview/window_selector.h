@@ -147,7 +147,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                              const gfx::Point& location_in_screen,
                              IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
-                         const gfx::Point& location_in_screen);
+                         const gfx::Point& location_in_screen,
+                         bool should_drop_window_into_overview);
 
   // Positions all of the windows in the overview, except |ignored_item|.
   void PositionWindows(bool animate,
