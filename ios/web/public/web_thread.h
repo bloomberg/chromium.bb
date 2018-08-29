@@ -42,20 +42,12 @@ class WebThreadDelegate;
 // one IO thread for the entire process, and various pieces of code find it
 // useful to retrieve a pointer to the IO thread's message loop.
 //
-// Invoke a task by thread ID:
+// See web_task_traits.h for posting Tasks to a WebThread.
+// TODO(crbug.com/878356): Replace uses with base::PostTaskWithTraits.
 //
-//   WebThread::PostTask(WebThread::IO, FROM_HERE, task);
-//
-// The return value is false if the task couldn't be posted because the target
-// thread doesn't exist.  If this could lead to data loss, you need to check the
-// result and restructure the code to ensure it doesn't occur.
-//
-// This class automatically handles the lifetime of different threads.
-// It's always safe to call PostTask on any thread.  If it's not yet created,
-// the task is deleted.  There are no race conditions.  If the thread that the
-// task is posted to is guaranteed to outlive the current thread, then no locks
-// are used.  You should never need to cache pointers to MessageLoops, since
-// they're not thread safe.
+// This class automatically handles the lifetime of different threads. You
+// should never need to cache pointers to MessageLoops, since they're not thread
+// safe.
 class WebThread {
  public:
   // An enumeration of the well-known threads.
@@ -69,10 +61,8 @@ class WebThread {
     // Blocking IO should happen in TaskScheduler.
     IO,
 
-    // NOTE: do not add new threads here that are only used by a small number of
-    // files. Instead you should just use a Thread class and pass its
-    // SingleThreadTaskRunner around. Named threads there are only for threads
-    // that are used in many places.
+    // NOTE: do not add new threads here. Instead you should just use
+    // base::Create*TaskRunnerWithTraits to run tasks on the TaskScheduler.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
@@ -80,6 +70,9 @@ class WebThread {
     ID_COUNT
   };
 
+  // DEPRECATED: Please use the API described in web_task_traits.h instead.
+  // TODO(crbug.com/878356): Replace uses with base::PostTaskWithTraits.
+  //
   // These are the same methods as in message_loop.h, but are guaranteed to
   // either get posted to the MessageLoop if it's still alive, or be deleted
   // otherwise.
@@ -135,6 +128,10 @@ class WebThread {
   // sets identifier to its ID.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
+  // DEPRECATED: Please use the API described in web_task_traits.h instead.
+  // TODO(crbug.com/878356): Replace uses with
+  // base::Create*TaskRunnerWithTraits.
+  //
   // Callers can hold on to a refcounted SingleThreadTaskRunner beyond the
   // lifetime of the thread.
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(

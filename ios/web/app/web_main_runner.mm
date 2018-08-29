@@ -11,6 +11,7 @@
 #include "ios/web/public/global_state/ios_global_state.h"
 #include "ios/web/public/url_schemes.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/web_thread_impl.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -46,6 +47,7 @@ class WebMainRunnerImpl : public WebMainRunner {
     create_params.argc = params.argc;
     create_params.argv = params.argv;
     ios_global_state::Create(create_params);
+    web::WebThreadImpl::CreateTaskExecutor();
 
     if (delegate_) {
       delegate_->BasicStartupComplete();

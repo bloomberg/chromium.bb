@@ -212,6 +212,7 @@ source_set("ios_web_general_unittests") {
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
     "web_client_unittest.mm",
+    "web_thread_unittest.cc",
   ]
 }
 
