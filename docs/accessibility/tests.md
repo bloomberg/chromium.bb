@@ -114,6 +114,10 @@ autoninja -C out/release unit_tests
 out/release/unit_tests --gtest_filter="*SelectToSpeak*"
 ```
 
+## Performance tests
+
+We also have a page on [Performance Tests](perf.md).
+
 ## Other locations of accessibility tests:
 
 Even this isn't a complete list. The tests described above cover more

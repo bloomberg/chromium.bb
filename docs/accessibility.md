@@ -7,6 +7,7 @@
 
 * [Offscreen, Invisible and Size](accessibility/offscreen.md)
 * [Text to Speech in Chrome and Chrome OS](accessibility/tts.md)
+* [Performance Measurement](accessibility/perf.md)
 
 ## Chrome OS
 
