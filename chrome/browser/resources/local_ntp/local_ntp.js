@@ -596,7 +596,10 @@ function reloadTiles() {
  * @param {string} success True if the link was successfully added.
  */
 function onAddCustomLinkDone(success) {
-  showNotification(configData.translatedStrings.linkAddedMsg);
+  if (success)
+    showNotification(configData.translatedStrings.linkAddedMsg);
+  else
+    showErrorNotification(configData.translatedStrings.linkCantCreate);
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
@@ -608,7 +611,10 @@ function onAddCustomLinkDone(success) {
  * @param {string} success True if the link was successfully updated.
  */
 function onUpdateCustomLinkDone(success) {
-  showNotification(configData.translatedStrings.linkEditedMsg);
+  if (success)
+    showNotification(configData.translatedStrings.linkEditedMsg);
+  else
+    showErrorNotification(configData.translatedStrings.linkCantEdit);
 }
 
 
@@ -619,7 +625,10 @@ function onUpdateCustomLinkDone(success) {
  * @param {string} success True if the link was successfully deleted.
  */
 function onDeleteCustomLinkDone(success) {
-  showNotification(configData.translatedStrings.linkRemovedMsg);
+  if (success)
+    showNotification(configData.translatedStrings.linkRemovedMsg);
+  else
+    showErrorNotification(configData.translatedStrings.linkCantRemove);
 }
 
 
@@ -734,7 +743,7 @@ function floatDownNotification(notification, notificationContainer) {
       notificationContainer.removeEventListener('transitionend', afterHide);
     }
   };
-  notification.addEventListener('transitionend', afterHide);
+  notificationContainer.addEventListener('transitionend', afterHide);
 }
 
 
