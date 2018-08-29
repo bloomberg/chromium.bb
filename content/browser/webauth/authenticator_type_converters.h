@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "device/fido/authenticator_selection_criteria.h"
-#include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
@@ -91,10 +91,9 @@ struct TypeConverter<::device::PublicKeyCredentialUserEntity,
 };
 
 template <>
-struct TypeConverter<
-    std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
-    std::vector<::blink::mojom::CableAuthenticationPtr>> {
-  static std::vector<::device::FidoCableDiscovery::CableDiscoveryData> Convert(
+struct TypeConverter<std::vector<::device::CableDiscoveryData>,
+                     std::vector<::blink::mojom::CableAuthenticationPtr>> {
+  static std::vector<::device::CableDiscoveryData> Convert(
       const std::vector<::blink::mojom::CableAuthenticationPtr>& input);
 };
 

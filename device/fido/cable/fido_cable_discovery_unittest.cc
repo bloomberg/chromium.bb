@@ -36,38 +36,38 @@ constexpr uint8_t kTestCableVersionNumber = 0x01;
 
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
-constexpr FidoCableDiscovery::EidArray kClientEid = {
-    {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
-     0x12, 0x13, 0x14, 0x15}};
+constexpr EidArray kClientEid = {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                                  0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13,
+                                  0x14, 0x15}};
 
 constexpr char kUuidFormattedClientEid[] =
     "00010203-0405-0607-0809-101112131415";
 
-constexpr FidoCableDiscovery::EidArray kAuthenticatorEid = {
-    {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-     0x01, 0x01, 0x01, 0x01}};
+constexpr EidArray kAuthenticatorEid = {{0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                                         0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                                         0x01, 0x01, 0x01, 0x01}};
 
-constexpr FidoCableDiscovery::EidArray kInvalidAuthenticatorEid = {
+constexpr EidArray kInvalidAuthenticatorEid = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}};
 
-constexpr FidoCableDiscovery::SessionPreKeyArray kTestSessionPreKey = {
+constexpr SessionPreKeyArray kTestSessionPreKey = {
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 
-constexpr FidoCableDiscovery::EidArray kSecondaryClientEid = {
-    {0x15, 0x14, 0x13, 0x12, 0x11, 0x10, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
-     0x03, 0x02, 0x01, 0x00}};
+constexpr EidArray kSecondaryClientEid = {{0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+                                           0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
+                                           0x03, 0x02, 0x01, 0x00}};
 
 constexpr char kUuidFormattedSecondaryClientEid[] =
     "15141312-1110-0908-0706-050403020100";
 
-constexpr FidoCableDiscovery::EidArray kSecondaryAuthenticatorEid = {
+constexpr EidArray kSecondaryAuthenticatorEid = {
     {0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
      0xee, 0xee, 0xee, 0xee}};
 
-constexpr FidoCableDiscovery::SessionPreKeyArray kSecondarySessionPreKey = {
+constexpr SessionPreKeyArray kSecondarySessionPreKey = {
     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
@@ -150,8 +150,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
                     const AdvertisementErrorCallback&));
 
   void AddNewTestBluetoothDevice(
-      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
-          authenticator_eid) {
+      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
 
     std::vector<uint8_t> service_data(18);
@@ -175,8 +174,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void AddNewTestAppleBluetoothDevice(
-      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
-          authenticator_eid) {
+      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
     // Apple doesn't allow advertising service data, so we advertise a 16 bit
     // UUID plus the EID converted into 128 bit UUID.
@@ -234,7 +232,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectDiscoveryWithScanCallback(
-      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize> eid,
+      base::span<const uint8_t, kEphemeralIdSize> eid,
       bool is_apple_device = false) {
     EXPECT_CALL(*this, StartDiscoverySessionWithFilterRaw(_, _, _))
         .WillOnce(::testing::WithArg<1>(
@@ -295,7 +293,7 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
 class FidoCableDiscoveryTest : public ::testing::Test {
  public:
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
-    std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
+    std::vector<CableDiscoveryData> discovery_data;
     discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
                                 kAuthenticatorEid, kTestSessionPreKey);
     return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
@@ -367,7 +365,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 // are passed on from the relying party. We should expect 2 invocations of
 // BluetoothAdapter::RegisterAdvertisement().
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
-  std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
+  std::vector<CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
                               kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
@@ -401,7 +399,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 // successfully. Since at least one advertisement are successfully processed,
 // scanning process should be invoked.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
-  std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
+  std::vector<CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
                               kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
@@ -432,7 +430,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 
 // Test the scenario when all advertisement for client EID's fails.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
-  std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
+  std::vector<CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
                               kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,

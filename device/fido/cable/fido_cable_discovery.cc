@@ -50,8 +50,7 @@ bool IsCableDevice(const BluetoothDevice* device) {
 // with the EID as its UUID.
 std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
     uint8_t version_number,
-    base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
-        client_eid) {
+    base::span<const uint8_t, kEphemeralIdSize> client_eid) {
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
       BluetoothAdvertisement::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST);
 
@@ -97,9 +96,9 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 }  // namespace
 
-// FidoCableDiscovery::CableDiscoveryData -------------------------------------
+// CableDiscoveryData -------------------------------------
 
-FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
+CableDiscoveryData::CableDiscoveryData(
     uint8_t version,
     const EidArray& client_eid,
     const EidArray& authenticator_eid,
@@ -109,13 +108,13 @@ FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
       authenticator_eid(authenticator_eid),
       session_pre_key(session_pre_key) {}
 
-FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
-    const CableDiscoveryData& data) = default;
+CableDiscoveryData::CableDiscoveryData(const CableDiscoveryData& data) =
+    default;
 
-FidoCableDiscovery::CableDiscoveryData& FidoCableDiscovery::CableDiscoveryData::
-operator=(const CableDiscoveryData& other) = default;
+CableDiscoveryData& CableDiscoveryData::operator=(
+    const CableDiscoveryData& other) = default;
 
-FidoCableDiscovery::CableDiscoveryData::~CableDiscoveryData() = default;
+CableDiscoveryData::~CableDiscoveryData() = default;
 
 // FidoCableDiscovery ---------------------------------------------------------
 
@@ -322,8 +321,7 @@ void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
   }
 }
 
-const FidoCableDiscovery::CableDiscoveryData*
-FidoCableDiscovery::GetFoundCableDiscoveryData(
+const CableDiscoveryData* FidoCableDiscovery::GetFoundCableDiscoveryData(
     const BluetoothDevice* device) const {
   const auto* discovery_data =
       GetFoundCableDiscoveryDataFromServiceData(device);
@@ -334,7 +332,7 @@ FidoCableDiscovery::GetFoundCableDiscoveryData(
   return GetFoundCableDiscoveryDataFromServiceUUIDs(device);
 }
 
-const FidoCableDiscovery::CableDiscoveryData*
+const CableDiscoveryData*
 FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceData(
     const BluetoothDevice* device) const {
   const auto* service_data =
@@ -366,7 +364,7 @@ FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceData(
              : nullptr;
 }
 
-const FidoCableDiscovery::CableDiscoveryData*
+const CableDiscoveryData*
 FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceUUIDs(
     const BluetoothDevice* device) const {
   const auto service_uuids = device->GetUUIDs();

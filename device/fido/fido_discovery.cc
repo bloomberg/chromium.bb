@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
+#include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_device.h"
 
 // HID is not supported on Android.
@@ -34,12 +35,9 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
 #endif  // !defined(OS_ANDROID)
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
-    // FidoCaBleDiscovery is not constructed using FidoDiscovery factory
-    // function and instead constructed in FidoGetAssertionRequestHandler as it
-    // requires extensions passed on from the relying party.
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      NOTREACHED()
-          << "Cable discovery is not constructed using factory method.";
+      NOTREACHED() << "Cable discovery is constructed using the dedicated "
+                      "factory method.";
       return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:
       // TODO(https://crbug.com/825949): Add NFC support.
@@ -52,6 +50,11 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
   return nullptr;
 }
 
+std::unique_ptr<FidoDiscovery> CreateCableDiscoveryImpl(
+    std::vector<CableDiscoveryData> cable_data) {
+  return std::make_unique<FidoCableDiscovery>(std::move(cable_data));
+}
+
 }  // namespace
 
 FidoDiscovery::Observer::~Observer() = default;
@@ -61,10 +64,20 @@ FidoDiscovery::FactoryFuncPtr FidoDiscovery::g_factory_func_ =
     &CreateFidoDiscoveryImpl;
 
 // static
+FidoDiscovery::CableFactoryFuncPtr FidoDiscovery::g_cable_factory_func_ =
+    &CreateCableDiscoveryImpl;
+
+// static
 std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   return (*g_factory_func_)(transport, connector);
+}
+
+//  static
+std::unique_ptr<FidoDiscovery> FidoDiscovery::CreateCable(
+    std::vector<CableDiscoveryData> cable_data) {
+  return (*g_cable_factory_func_)(std::move(cable_data));
 }
 
 FidoDiscovery::FidoDiscovery(FidoTransportProtocol transport)
@@ -168,11 +181,15 @@ ScopedFidoDiscoveryFactory::ScopedFidoDiscoveryFactory() {
   original_factory_func_ =
       std::exchange(FidoDiscovery::g_factory_func_,
                     &ForwardCreateFidoDiscoveryToCurrentFactory);
+  original_cable_factory_func_ =
+      std::exchange(FidoDiscovery::g_cable_factory_func_,
+                    &ForwardCreateCableDiscoveryToCurrentFactory);
 }
 
 ScopedFidoDiscoveryFactory::~ScopedFidoDiscoveryFactory() {
   g_current_factory = nullptr;
   FidoDiscovery::g_factory_func_ = original_factory_func_;
+  FidoDiscovery::g_cable_factory_func_ = original_cable_factory_func_;
 }
 
 // static
@@ -182,6 +199,17 @@ ScopedFidoDiscoveryFactory::ForwardCreateFidoDiscoveryToCurrentFactory(
     ::service_manager::Connector* connector) {
   DCHECK(g_current_factory);
   return g_current_factory->CreateFidoDiscovery(transport, connector);
+}
+
+// static
+std::unique_ptr<FidoDiscovery>
+ScopedFidoDiscoveryFactory::ForwardCreateCableDiscoveryToCurrentFactory(
+    std::vector<CableDiscoveryData> cable_data) {
+  DCHECK(g_current_factory);
+  g_current_factory->set_last_cable_data(std::move(cable_data));
+  return g_current_factory->CreateFidoDiscovery(
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+      nullptr /* connector */);
 }
 
 // static

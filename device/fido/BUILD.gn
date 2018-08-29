@@ -41,6 +41,7 @@ component("fido") {
     "ble/fido_ble_transaction.h",
     "ble/fido_ble_uuids.cc",
     "ble/fido_ble_uuids.h",
+    "cable/cable_discovery_data.h",
     "cable/fido_cable_device.cc",
     "cable/fido_cable_device.h",
     "cable/fido_cable_discovery.cc",
