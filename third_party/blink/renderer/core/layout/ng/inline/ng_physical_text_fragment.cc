@@ -14,6 +14,48 @@
 
 namespace blink {
 
+namespace {
+
+inline bool IsPhysicalTextFragmentAnonymousText(
+    const LayoutObject* layout_object) {
+  if (!layout_object)
+    return false;
+  if (layout_object->IsText() && ToLayoutText(layout_object)->IsTextFragment())
+    return !ToLayoutTextFragment(layout_object)->AssociatedTextNode();
+  const Node* node = layout_object->GetNode();
+  return !node || node->IsPseudoElement();
+}
+
+}  // anonymous namespace
+
+NGPhysicalTextFragment::NGPhysicalTextFragment(
+    LayoutObject* layout_object,
+    const ComputedStyle& style,
+    NGStyleVariant style_variant,
+    NGTextType text_type,
+    const String& text,
+    unsigned start_offset,
+    unsigned end_offset,
+    NGPhysicalSize size,
+    NGLineOrientation line_orientation,
+    NGTextEndEffect end_effect,
+    scoped_refptr<const ShapeResult> shape_result)
+    : NGPhysicalFragment(layout_object,
+                         style,
+                         style_variant,
+                         size,
+                         kFragmentText,
+                         text_type),
+      text_(text),
+      start_offset_(start_offset),
+      end_offset_(end_offset),
+      shape_result_(shape_result),
+      line_orientation_(static_cast<unsigned>(line_orientation)),
+      end_effect_(static_cast<unsigned>(end_effect)) {
+  DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  is_anonymous_text_ = IsPhysicalTextFragmentAnonymousText(layout_object);
+}
+
 // Convert logical cooridnate to local physical coordinate.
 NGPhysicalOffsetRect NGPhysicalTextFragment::ConvertToLocal(
     const LayoutRect& logical_rect) const {
@@ -175,16 +217,6 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::CloneWithoutOffset()
       layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
       TextType(), text_, start_offset_, end_offset_, size_, LineOrientation(),
       EndEffect(), shape_result_));
-}
-
-bool NGPhysicalTextFragment::IsAnonymousText() const {
-  // TODO(xiaochengh): Introduce and set a flag for anonymous text.
-  const LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object && layout_object->IsText() &&
-      ToLayoutText(layout_object)->IsTextFragment())
-    return !ToLayoutTextFragment(layout_object)->AssociatedTextNode();
-  const Node* node = GetNode();
-  return !node || node->IsPseudoElement();
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
