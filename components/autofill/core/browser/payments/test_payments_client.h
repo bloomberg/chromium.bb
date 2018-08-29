@@ -42,7 +42,16 @@ class TestPaymentsClient : public payments::PaymentsClient {
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const std::string&)> callback) override;
 
+  void MigrateCards(
+      const MigrationRequestDetails& details,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrateCardsCallback callback) override;
+
   void SetServerIdForCardUpload(std::string);
+
+  void SetSaveResultForCardsMigration(
+      std::unique_ptr<std::unordered_map<std::string, std::string>>
+          save_result);
 
   int detected_values_in_upload_details() const { return detected_values_; }
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
@@ -59,6 +68,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
   int detected_values_;
   std::string pan_first_six_;
   std::vector<const char*> active_experiments_;
+  std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);
 };

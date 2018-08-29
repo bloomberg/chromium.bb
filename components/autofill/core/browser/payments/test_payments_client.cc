@@ -47,8 +47,21 @@ void TestPaymentsClient::UploadCard(
   std::move(callback).Run(AutofillClient::SUCCESS, server_id_);
 }
 
+void TestPaymentsClient::MigrateCards(
+    const MigrationRequestDetails& details,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    MigrateCardsCallback callback) {
+  std::move(callback).Run(AutofillClient::SUCCESS, std::move(save_result_),
+                          "this is display text");
+}
+
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {
   server_id_ = server_id;
+}
+
+void TestPaymentsClient::SetSaveResultForCardsMigration(
+    std::unique_ptr<std::unordered_map<std::string, std::string>> save_result) {
+  save_result_ = std::move(save_result);
 }
 
 }  // namespace payments
