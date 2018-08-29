@@ -39,7 +39,10 @@ class TestableAccessibilityFocusRingGroup : public AccessibilityFocusRingGroup {
 
 class AccessibilityFocusRingGroupTest : public AshTestBase {
  public:
-  AccessibilityFocusRingGroupTest() = default;
+  AccessibilityFocusRingGroupTest() {
+    AccessibilityFocusRing::set_screen_bounds_for_testing(
+        gfx::Rect(0, 0, 1000, 500));
+  }
   ~AccessibilityFocusRingGroupTest() override = default;
 
  protected:
@@ -60,6 +63,25 @@ TEST_F(AccessibilityFocusRingGroupTest, RectsToRingsSimpleBoundsCheck) {
   group_.RectsToRings(rects, &rings);
   ASSERT_EQ(1U, rings.size());
   ASSERT_EQ(AddMargin(rects[0]), rings[0].GetBounds());
+}
+
+TEST_F(AccessibilityFocusRingGroupTest, RectsToRingsSnapToScreen) {
+  // Given a rectangle that goes all the way to the screen edges, or off the
+  // edge, check that we snap the focus ring to the screen, rather than going
+  // offscreen.
+  int x = -10;  // offscreen
+  int y = -20;  // offscreen
+  int length = 50;
+  std::vector<gfx::Rect> rects;
+
+  rects.push_back(gfx::Rect(x, y, length, length));
+  std::vector<AccessibilityFocusRing> rings;
+  group_.RectsToRings(rects, &rings);
+  gfx::Rect result(0, 0, length + x + group_.GetMargin(),
+                   length + y + group_.GetMargin());
+
+  ASSERT_EQ(1U, rings.size());
+  ASSERT_EQ(result, rings[0].GetBounds());
 }
 
 TEST_F(AccessibilityFocusRingGroupTest, RectsToRingsVerticalStack) {
