@@ -5049,19 +5049,4 @@ crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavi
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
-# Sheriff 2018-08-24
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?1-1000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?1001-2000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?3001-4000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?4001-5000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?5001-6000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/delete.html?6001-last [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?1-1000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?1001-2000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?2001-3000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?3001-4000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?4001-5000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?5001-6000 [ Timeout Pass Failure ]
-crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?6001-last [ Timeout Pass Failure ]
-
 crbug.com/878535 media/avtrack/video-track-selected.html [ Pass Crash ]
