@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -317,7 +316,6 @@ public class ContextualSearchTapEventTest {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/878512")
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTextTapFollowedByNonTextTap() {
@@ -340,7 +338,6 @@ public class ContextualSearchTapEventTest {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/878512")
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapProcessIsRobustWhenSelectionGetsCleared() throws InterruptedException {
