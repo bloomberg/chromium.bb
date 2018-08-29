@@ -5,10 +5,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/limits.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -172,8 +175,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
     consumer_->SetFrameSinkId(kInitialFrameSinkId);
   }
 
-  void SimulateFrameCapture(mojo::ScopedSharedBufferHandle buffer,
-                            uint32_t buffer_size) {
+  void SimulateFrameCapture(base::ReadOnlySharedMemoryRegion data) {
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks_ptr;
     callbacks.Bind(mojo::MakeRequest(&callbacks_ptr));
 
@@ -181,7 +183,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
         base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
         kResolution, gfx::Rect(kResolution));
 
-    consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
+    consumer_->OnFrameCaptured(std::move(data), std::move(info),
                                gfx::Rect(kResolution), gfx::Rect(kResolution),
                                std::move(callbacks_ptr));
   }
@@ -235,48 +237,40 @@ class DevToolsVideoConsumerTest : public testing::Test {
 // Tests that the OnFrameFromVideoConsumer callbacks is called when
 // OnFrameCaptured is passed a valid buffer with valid mapping.
 TEST_F(DevToolsVideoConsumerTest, CallbacksAreCalledWhenBufferValid) {
-  // Create a valid buffer.
-  const size_t buffer_size =
-      media::VideoFrame::AllocationSize(kFormat, kResolution);
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(buffer_size);
-
   // On valid buffer the |receiver_| gets a frame via OnFrameFromVideoConsumer.
   EXPECT_CALL(receiver_, OnFrameFromVideoConsumerMock(_)).Times(1);
 
-  SimulateFrameCapture(std::move(buffer), buffer_size);
+  auto region = mojo::CreateReadOnlySharedMemoryRegion(
+                    media::VideoFrame::AllocationSize(kFormat, kResolution))
+                    .region;
+  ASSERT_TRUE(region.IsValid());
+  SimulateFrameCapture(std::move(region));
   base::RunLoop().RunUntilIdle();
 }
 
 // Tests that only the OnFrameFromVideoConsumer callback is not called when
 // OnFrameCaptured is passed an invalid buffer.
-TEST_F(DevToolsVideoConsumerTest, OnFrameCapturedExitEarlyOnInvalidBuffer) {
-  // Create an invalid buffer.
-  const size_t buffer_size = 0;
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(buffer_size);
-
+TEST_F(DevToolsVideoConsumerTest, CallbackIsNotCalledWhenBufferIsNotValid) {
   // On invalid buffer, the |receiver_| doesn't get a frame.
   EXPECT_CALL(receiver_, OnFrameFromVideoConsumerMock(_)).Times(0);
 
-  SimulateFrameCapture(std::move(buffer), buffer_size);
+  SimulateFrameCapture(base::ReadOnlySharedMemoryRegion());
   base::RunLoop().RunUntilIdle();
 }
 
 // Tests that the OnFrameFromVideoConsumer callback is not called when
-// OnFrameCaptured is passed a buffer with invalid mapping.
-TEST_F(DevToolsVideoConsumerTest, OnFrameCapturedExitsOnInvalidMapping) {
-  // Create a valid buffer, but change buffer_size to simulate an invalid
-  // mapping.
-  size_t buffer_size = media::VideoFrame::AllocationSize(kFormat, kResolution);
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(buffer_size);
-  buffer_size = 0;
-
+// OnFrameCaptured is passed a buffer with less-than-expected size.
+TEST_F(DevToolsVideoConsumerTest, CallbackIsNotCalledWhenBufferIsTooSmall) {
   // On invalid mapping, the |receiver_| doesn't get a frame.
   EXPECT_CALL(receiver_, OnFrameFromVideoConsumerMock(_)).Times(0);
 
-  SimulateFrameCapture(std::move(buffer), buffer_size);
+  constexpr size_t too_few_number_of_bytes = 4;
+  ASSERT_LT(too_few_number_of_bytes,
+            media::VideoFrame::AllocationSize(kFormat, kResolution));
+  auto region =
+      mojo::CreateReadOnlySharedMemoryRegion(too_few_number_of_bytes).region;
+  ASSERT_TRUE(region.IsValid());
+  SimulateFrameCapture(std::move(region));
   base::RunLoop().RunUntilIdle();
 }
 

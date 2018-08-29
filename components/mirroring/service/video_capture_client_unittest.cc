@@ -4,12 +4,14 @@
 
 #include "components/mirroring/service/video_capture_client.h"
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,11 +84,9 @@ TEST_F(VideoCaptureClientTest, Basic) {
   }
   scoped_task_environment_.RunUntilIdle();
 
-  media::mojom::VideoBufferHandlePtr buffer_handle =
-      media::mojom::VideoBufferHandle::New();
-  buffer_handle->set_shared_buffer_handle(
-      mojo::SharedBufferHandle::Create(100000));
-  client_->OnNewBuffer(0, std::move(buffer_handle));
+  client_->OnNewBuffer(
+      0, media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
+             mojo::CreateReadOnlySharedMemoryRegion(100000).region));
   scoped_task_environment_.RunUntilIdle();
   {
     base::RunLoop run_loop;

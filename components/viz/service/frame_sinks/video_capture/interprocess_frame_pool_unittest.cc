@@ -18,12 +18,12 @@ namespace {
 constexpr gfx::Size kSize = gfx::Size(32, 18);
 constexpr media::VideoPixelFormat kFormat = media::PIXEL_FORMAT_I420;
 
-void ExpectValidBufferForDelivery(
-    const InterprocessFramePool::BufferAndSize& buffer_and_size) {
-  EXPECT_TRUE(buffer_and_size.first.is_valid());
+void ExpectValidHandleForDelivery(
+    const base::ReadOnlySharedMemoryRegion& region) {
+  EXPECT_TRUE(region.IsValid());
   constexpr int kI420BitsPerPixel = 12;
   EXPECT_LE(static_cast<size_t>(kSize.GetArea() * kI420BitsPerPixel / 8),
-            buffer_and_size.second);
+            region.GetSize());
 }
 
 TEST(InterprocessFramePoolTest, FramesConfiguredCorrectly) {
@@ -51,9 +51,9 @@ TEST(InterprocessFramePool, UsesAvailableBuffersIfPossible) {
   ASSERT_TRUE(frame);
   size_t baseline_bytes_allocated;
   {
-    auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-    ExpectValidBufferForDelivery(buffer_and_size);
-    baseline_bytes_allocated = buffer_and_size.second;
+    auto handle = pool.CloneHandleForDelivery(frame.get());
+    ExpectValidHandleForDelivery(handle);
+    baseline_bytes_allocated = handle.GetSize();
   }
   frame = nullptr;  // Returns frame to pool.
 
@@ -62,9 +62,9 @@ TEST(InterprocessFramePool, UsesAvailableBuffersIfPossible) {
   frame = pool.ReserveVideoFrame(kFormat, kSmallerSize);
   ASSERT_TRUE(frame);
   {
-    auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-    ExpectValidBufferForDelivery(buffer_and_size);
-    EXPECT_EQ(baseline_bytes_allocated, buffer_and_size.second);
+    auto handle = pool.CloneHandleForDelivery(frame.get());
+    ExpectValidHandleForDelivery(handle);
+    EXPECT_EQ(baseline_bytes_allocated, handle.GetSize());
   }
   frame = nullptr;  // Returns frame to pool.
 
@@ -75,9 +75,9 @@ TEST(InterprocessFramePool, UsesAvailableBuffersIfPossible) {
   ASSERT_TRUE(frame);
   size_t larger_buffer_bytes_allocated;
   {
-    auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-    ExpectValidBufferForDelivery(buffer_and_size);
-    larger_buffer_bytes_allocated = buffer_and_size.second;
+    auto handle = pool.CloneHandleForDelivery(frame.get());
+    ExpectValidHandleForDelivery(handle);
+    larger_buffer_bytes_allocated = handle.GetSize();
     EXPECT_LT(baseline_bytes_allocated, larger_buffer_bytes_allocated);
   }
   frame = nullptr;  // Returns frame to pool.
@@ -89,9 +89,9 @@ TEST(InterprocessFramePool, UsesAvailableBuffersIfPossible) {
     frame = pool.ReserveVideoFrame(kFormat, size);
     ASSERT_TRUE(frame);
     {
-      auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-      ExpectValidBufferForDelivery(buffer_and_size);
-      EXPECT_EQ(larger_buffer_bytes_allocated, buffer_and_size.second);
+      auto handle = pool.CloneHandleForDelivery(frame.get());
+      ExpectValidHandleForDelivery(handle);
+      EXPECT_EQ(larger_buffer_bytes_allocated, handle.GetSize());
     }
     frame = nullptr;  // Returns frame to pool.
   }
@@ -165,8 +165,8 @@ TEST(InterprocessFramePoolTest, ResurrectsDeliveredFramesOnly) {
   const uint8_t kValues[3] = {0x44, 0x55, 0x66};
   media::FillYUV(frame.get(), kValues[0], kValues[1], kValues[2]);
   {
-    auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-    ExpectValidBufferForDelivery(buffer_and_size);
+    auto handle = pool.CloneHandleForDelivery(frame.get());
+    ExpectValidHandleForDelivery(handle);
   }
   frame = nullptr;  // Returns frame to pool.
 
@@ -190,8 +190,8 @@ TEST(InterprocessFramePoolTest, ResurrectsDeliveredFramesOnly) {
       media::FillYUV(frame.get(), 0x77, 0x88, 0x99);
     }
     {
-      auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-      ExpectValidBufferForDelivery(buffer_and_size);
+      auto handle = pool.CloneHandleForDelivery(frame.get());
+      ExpectValidHandleForDelivery(handle);
     }
     scoped_refptr<media::VideoFrame> should_be_null =
         pool.ResurrectLastVideoFrame(kFormat, kSize);
@@ -226,8 +226,8 @@ TEST(InterprocessFramePoolTest, ReportsCorrectUtilization) {
     // Signal that the frame will be delivered. This should not change the
     // utilization.
     {
-      auto buffer_and_size = pool.CloneHandleForDelivery(frame.get());
-      ExpectValidBufferForDelivery(buffer_and_size);
+      auto handle = pool.CloneHandleForDelivery(frame.get());
+      ExpectValidHandleForDelivery(handle);
     }
     ASSERT_EQ(0.5f, pool.GetUtilization());
 

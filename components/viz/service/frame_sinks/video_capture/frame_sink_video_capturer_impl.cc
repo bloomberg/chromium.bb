@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -702,8 +703,9 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // send to the consumer. The handle is READ_WRITE because the consumer is free
   // to modify the content further (so long as it undoes its changes before the
   // InFlightFrameDelivery::Done() call).
-  auto buffer_and_size = frame_pool_.CloneHandleForDelivery(frame.get());
-  DCHECK(buffer_and_size.first.is_valid());
+  base::ReadOnlySharedMemoryRegion handle =
+      frame_pool_.CloneHandleForDelivery(frame.get());
+  DCHECK(handle.IsValid());
 
   // Assemble frame layout, format, and metadata into a mojo struct to send to
   // the consumer.
@@ -733,9 +735,8 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
       mojo::MakeRequest(&callbacks));
 
   // Send the frame to the consumer.
-  consumer_->OnFrameCaptured(std::move(buffer_and_size.first),
-                             buffer_and_size.second, std::move(info),
-                             update_rect, content_rect, std::move(callbacks));
+  consumer_->OnFrameCaptured(std::move(handle), std::move(info), update_rect,
+                             content_rect, std::move(callbacks));
 }
 
 gfx::Size FrameSinkVideoCapturerImpl::AdjustSizeForPixelFormat(

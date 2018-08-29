@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -131,33 +132,36 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
 
  private:
   void OnFrameCaptured(
-      mojo::ScopedSharedBufferHandle buffer,
-      uint32_t buffer_size,
+      base::ReadOnlySharedMemoryRegion data,
       media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final {
-    ASSERT_TRUE(buffer.is_valid());
+    ASSERT_TRUE(data.IsValid());
     const auto required_bytes_to_hold_planes =
         static_cast<uint32_t>(info->coded_size.GetArea() * 3 / 2);
-    ASSERT_LE(required_bytes_to_hold_planes, buffer_size);
+    ASSERT_LE(required_bytes_to_hold_planes, data.GetSize());
     ASSERT_TRUE(info);
     EXPECT_EQ(gfx::Rect(kCaptureSize), update_rect);
     ASSERT_TRUE(callbacks.get());
 
     // Map the shared memory buffer and re-constitute a VideoFrame instance
     // around it for analysis by OnFrameCapturedMock().
-    mojo::ScopedSharedBufferMapping mapping = buffer->Map(buffer_size);
-    ASSERT_TRUE(mapping);
+    base::ReadOnlySharedMemoryMapping mapping = data.Map();
+    ASSERT_TRUE(mapping.IsValid());
+    ASSERT_LE(
+        media::VideoFrame::AllocationSize(info->pixel_format, info->coded_size),
+        mapping.size());
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::WrapExternalData(
             info->pixel_format, info->coded_size, info->visible_rect,
-            info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
-            buffer_size, info->timestamp);
+            info->visible_rect.size(),
+            const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
+            mapping.size(), info->timestamp);
     ASSERT_TRUE(frame);
     frame->metadata()->MergeInternalValuesFrom(info->metadata);
     frame->AddDestructionObserver(base::BindOnce(
-        [](mojo::ScopedSharedBufferMapping mapping) {}, std::move(mapping)));
+        [](base::ReadOnlySharedMemoryMapping mapping) {}, std::move(mapping)));
     OnFrameCapturedMock(frame, update_rect, callbacks.get());
 
     frames_.push_back(std::move(frame));

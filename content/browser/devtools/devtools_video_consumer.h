@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
@@ -64,8 +63,7 @@ class CONTENT_EXPORT DevToolsVideoConsumer
 
   // viz::mojom::FrameSinkVideoConsumer:
   void OnFrameCaptured(
-      mojo::ScopedSharedBufferHandle buffer,
-      uint32_t buffer_size,
+      base::ReadOnlySharedMemoryRegion data,
       ::media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,

@@ -11,14 +11,15 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -27,8 +28,6 @@ namespace viz {
 // efficiently across mojo service boundaries.
 class VIZ_SERVICE_EXPORT InterprocessFramePool {
  public:
-  using BufferAndSize = std::pair<mojo::ScopedSharedBufferHandle, size_t>;
-
   // |capacity| is the maximum number of pooled VideoFrames; but they can be of
   // any byte size.
   explicit InterprocessFramePool(int capacity);
@@ -58,24 +57,15 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
   //
   // Calling this method is a signal that |frame| should be considered the
   // last-delivered frame, for the purposes of ResurrectLastVideoFrame().
-  BufferAndSize CloneHandleForDelivery(const media::VideoFrame* frame);
+  base::ReadOnlySharedMemoryRegion CloneHandleForDelivery(
+      const media::VideoFrame* frame);
 
   // Returns the current pool utilization, based on the number of VideoFrames
   // being held by the client.
   float GetUtilization() const;
 
  private:
-  // Tracking data for pooled buffers.
-  struct PooledBuffer {
-    mojo::ScopedSharedBufferHandle buffer;
-    size_t bytes_allocated;
-    mojo::ScopedSharedBufferMapping mapping;
-
-    PooledBuffer();
-    PooledBuffer(PooledBuffer&&) noexcept;
-    PooledBuffer& operator=(PooledBuffer&&) noexcept;
-    ~PooledBuffer();
-  };
+  using PooledBuffer = base::MappedReadOnlyRegion;
 
   // Creates a media::VideoFrame backed by a specific pooled buffer.
   scoped_refptr<media::VideoFrame> WrapBuffer(PooledBuffer pooled_buffer,
@@ -86,7 +76,7 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
   // the entry from |utilized_buffers_| and place the PooledBuffer back into
   // |available_buffers_|.
   void OnFrameWrapperDestroyed(const media::VideoFrame* frame,
-                               mojo::ScopedSharedBufferMapping mapping);
+                               base::WritableSharedMemoryMapping mapping);
 
   // Returns true if a shared memory failure can be logged. This is a rate
   // throttle, to ensure the logs aren't spammed in chronically low-memory
@@ -105,12 +95,13 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
 
   // A map of externally-owned VideoFrames and the tracking information about
   // the shared memory buffer backing them.
-  base::flat_map<const media::VideoFrame*, PooledBuffer> utilized_buffers_;
+  base::flat_map<const media::VideoFrame*, base::ReadOnlySharedMemoryRegion>
+      utilized_buffers_;
 
-  // The handle of the buffer that was last delivered, along with its format and
-  // size. ResurrectLastVideoFrame() uses this information to locate and confirm
-  // that a prior frame can be resurrected.
-  MojoHandle resurrectable_handle_ = MOJO_HANDLE_INVALID;
+  // The pointer to the mapped memory of the buffer that was last delivered,
+  // along with its format and size. ResurrectLastVideoFrame() uses this
+  // information to locate and confirm that a prior frame can be resurrected.
+  const void* resurrectable_buffer_memory_ = nullptr;
   media::VideoPixelFormat last_delivered_format_ = media::PIXEL_FORMAT_UNKNOWN;
   gfx::Size last_delivered_size_;
 

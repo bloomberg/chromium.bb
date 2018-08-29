@@ -4,8 +4,9 @@
 
 #include "components/mirroring/service/fake_video_capture_host.h"
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/system/buffer.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 
 namespace mirroring {
 
@@ -38,13 +39,11 @@ void FakeVideoCaptureHost::SendOneFrame(const gfx::Size& size,
   if (!observer_)
     return;
 
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(5000);
-  memset(buffer->Map(5000).get(), 125, 5000);
-  media::mojom::VideoBufferHandlePtr buffer_handle =
-      media::mojom::VideoBufferHandle::New();
-  buffer_handle->set_shared_buffer_handle(std::move(buffer));
-  observer_->OnNewBuffer(0, std::move(buffer_handle));
+  auto shmem = mojo::CreateReadOnlySharedMemoryRegion(5000);
+  memset(shmem.mapping.memory(), 125, 5000);
+  observer_->OnNewBuffer(
+      0, media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
+             std::move(shmem.region)));
   media::VideoFrameMetadata metadata;
   metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30);
   metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
