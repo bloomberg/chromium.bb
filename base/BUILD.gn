@@ -939,7 +939,6 @@ jumbo_component("base") {
     "threading/platform_thread_linux.cc",
     "threading/platform_thread_mac.mm",
     "threading/platform_thread_win.cc",
-    "threading/platform_thread_win.h",
     "threading/post_task_and_reply_impl.cc",
     "threading/post_task_and_reply_impl.h",
     "threading/scoped_blocking_call.cc",
