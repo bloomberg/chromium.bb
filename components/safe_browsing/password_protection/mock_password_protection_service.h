@@ -35,6 +35,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
+  MOCK_METHOD0(IsUnderAdvancedProtection, bool());
   MOCK_METHOD0(OnPolicySpecifiedPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));

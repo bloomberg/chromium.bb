@@ -18,6 +18,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -1214,6 +1215,10 @@ bool ChromePasswordProtectionService::CanShowInterstitial(
     reason = RequestOutcome::SUCCEEDED;
   LogPasswordAlertModeOutcome(reason, password_type);
   return reason == RequestOutcome::SUCCEEDED;
+}
+
+bool ChromePasswordProtectionService::IsUnderAdvancedProtection() {
+  return AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile_);
 }
 
 }  // namespace safe_browsing

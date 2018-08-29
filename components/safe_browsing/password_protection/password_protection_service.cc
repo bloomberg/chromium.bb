@@ -526,6 +526,8 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_profile_management_status(
       GetProfileManagementStatus(GetBrowserPolicyConnector()));
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
+  user_population->set_is_under_advanced_protection(
+      IsUnderAdvancedProtection());
 }
 
 void PasswordProtectionService::OnURLsDeleted(

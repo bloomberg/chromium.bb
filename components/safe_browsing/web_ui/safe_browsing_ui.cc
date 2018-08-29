@@ -793,6 +793,9 @@ base::Value SerializeChromeUserPopulation(
   }
   population_dict.SetKey("profile_management_status",
                          base::Value(management_status));
+  population_dict.SetKey(
+      "is_under_advanced_protection",
+      base::Value(population.is_under_advanced_protection()));
 
   return std::move(population_dict);
 }
