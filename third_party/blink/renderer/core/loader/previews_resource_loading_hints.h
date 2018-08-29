@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -28,9 +29,10 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
 
   ~PreviewsResourceLoadingHints();
 
-  // Returns true if load of |resource_url| is allowed as per resource loading
-  // hints.
-  bool AllowLoad(const KURL& resource_url) const;
+  // Returns true if load of resource with URL |resource_url| and priority
+  // |resource_load_priority| is allowed as per resource loading hints.
+  bool AllowLoad(const KURL& resource_url,
+                 ResourceLoadPriority resource_load_priority) const;
 
   virtual void Trace(blink::Visitor*);
 
