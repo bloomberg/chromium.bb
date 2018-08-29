@@ -283,4 +283,29 @@ TEST_F(FidoBleDeviceTest, IsInPairingMode) {
   EXPECT_FALSE(device()->IsInPairingMode());
 }
 
+TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
+  // kError(BF), followed by payload length(0001), followed by INVALID_CMD(01).
+  constexpr uint8_t kBleInvalidCommandError[] = {0xbf, 0x00, 0x01, 0x01};
+  ConnectWithLength(kControlPointLength);
+
+  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
+      .WillOnce(::testing::WithArg<1>(
+          Invoke([this, kBleInvalidCommandError](auto* cb) {
+            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+                FROM_HERE, base::BindOnce(std::move(*cb), true));
+
+            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+                FROM_HERE, base::BindOnce(connection()->read_callback(),
+                                          fido_parsing_utils::Materialize(
+                                              kBleInvalidCommandError)));
+          })));
+
+  TestDeviceCallbackReceiver callback_receiver;
+  const auto payload = fido_parsing_utils::Materialize(kTestData);
+  device()->SendPing(payload, callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(FidoDevice::State::kMsgError, device()->state());
+}
+
 }  // namespace device
