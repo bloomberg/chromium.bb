@@ -1542,8 +1542,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 }
 
 // Merge disjoint sets of bookmark hierarchy under bookmark bar.
-IN_PROC_BROWSER_TEST_F(
-    TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(
+    TwoClientBookmarksSyncTestIncludingUssTests,
     MC_Merge_SimpleBMHierarchy_DisjointSets_Under_BookmarkBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
