@@ -443,9 +443,6 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
 
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
-
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
@@ -483,9 +480,6 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
-
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -525,9 +519,6 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
 
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
-
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
@@ -563,9 +554,6 @@ TEST_F(PasswordAutofillManagerTest,
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
-
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -606,9 +594,6 @@ TEST_F(PasswordAutofillManagerTest,
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
-
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);

@@ -362,10 +362,6 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
     return r.form_renderer_id;
   }
 
-  static const base::string16& name(const autofill::PasswordFormFillData& r) {
-    return r.name;
-  }
-
   static const GURL& origin(const autofill::PasswordFormFillData& r) {
     return r.origin;
   }
@@ -401,11 +397,6 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 
   static bool wait_for_username(const autofill::PasswordFormFillData& r) {
     return r.wait_for_username;
-  }
-
-  static bool is_possible_change_password_form(
-      const autofill::PasswordFormFillData& r) {
-    return r.is_possible_change_password_form;
   }
 
   static bool has_renderer_ids(const autofill::PasswordFormFillData& r) {

@@ -179,7 +179,6 @@ struct PasswordAndRealm {
 // autofill::PasswordFormFillData
 struct PasswordFormFillData {
   uint32 form_renderer_id;
-  mojo_base.mojom.String16 name;
   url.mojom.Url origin;
   url.mojom.Url action;
   FormFieldData username_field;
@@ -188,7 +187,6 @@ struct PasswordFormFillData {
   string preferred_realm;
   map<mojo_base.mojom.String16, PasswordAndRealm> additional_logins;
   bool wait_for_username;
-  bool is_possible_change_password_form;
   bool has_renderer_ids;
 };
 

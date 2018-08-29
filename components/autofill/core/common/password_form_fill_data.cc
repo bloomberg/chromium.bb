@@ -11,18 +11,7 @@
 
 namespace autofill {
 
-UsernamesCollectionKey::UsernamesCollectionKey() {}
-
-UsernamesCollectionKey::~UsernamesCollectionKey() {}
-
-bool UsernamesCollectionKey::operator<(
-    const UsernamesCollectionKey& other) const {
-  return std::tie(username, password, realm) <
-         std::tie(other.username, other.password, other.realm);
-}
-
-PasswordFormFillData::PasswordFormFillData()
-    : wait_for_username(false), is_possible_change_password_form(false) {}
+PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {}
 
 PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData& other) =
     default;
@@ -58,8 +47,6 @@ void InitPasswordFormFillData(
   result->username_field = username_field;
   result->password_field = password_field;
   result->wait_for_username = wait_for_username_before_autofill;
-  result->is_possible_change_password_form =
-      form_on_page.IsPossibleChangePasswordForm();
   result->has_renderer_ids = form_on_page.has_renderer_ids;
 
   if (preferred_match->is_public_suffix_match ||
