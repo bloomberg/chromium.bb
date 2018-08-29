@@ -278,6 +278,9 @@ class MockCustomLinksManager : public CustomLinksManager {
                     const base::string16& new_title));
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
   MOCK_METHOD0(UndoAction, bool());
+  MOCK_METHOD1(RegisterCallbackForOnChanged,
+               std::unique_ptr<base::CallbackList<void()>::Subscription>(
+                   base::RepeatingClosure callback));
 };
 
 class PopularSitesFactoryForTest {
@@ -1086,6 +1089,7 @@ TEST_P(MostVisitedSitesTest, ShouldOnlyBuildCustomLinksWhenInitialized) {
 
   // Build tiles when custom links is not initialized. Tiles should be Top
   // Sites.
+  EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_));
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(
           MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}));
@@ -1153,6 +1157,7 @@ TEST_P(MostVisitedSitesTest, ShouldFavorCustomLinksOverTopSites) {
 
   // Build tiles when custom links is not initialized. Tiles should be Top
   // Sites.
+  EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_));
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(
           MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}));
@@ -1208,6 +1213,7 @@ TEST_P(MostVisitedSitesTest, ShouldFavorCustomLinksOverSuggestions) {
 
   // Build tiles when custom links is not initialized. Tiles should be Top
   // Sites.
+  EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_));
   EXPECT_CALL(mock_suggestions_service_, AddCallback(_))
       .WillOnce(Invoke(&suggestions_service_callbacks_,
                        &SuggestionsService::ResponseCallbackList::Add));

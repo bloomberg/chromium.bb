@@ -8,10 +8,15 @@
 
 #include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using Link = ntp_tiles::CustomLinksManager::Link;
 using sync_preferences::TestingPrefServiceSyncable;
 
 namespace ntp_tiles {
@@ -54,12 +59,11 @@ NTPTilesVector FillTestTiles(base::span<const TestCaseItem> test_cases) {
   return tiles;
 }
 
-std::vector<CustomLinksManager::Link> FillTestLinks(
-    base::span<const TestCaseItem> test_cases) {
-  std::vector<CustomLinksManager::Link> links;
+std::vector<Link> FillTestLinks(base::span<const TestCaseItem> test_cases) {
+  std::vector<Link> links;
   for (const auto& test_case : test_cases) {
-    links.emplace_back(CustomLinksManager::Link{
-        GURL(test_case.url), base::UTF8ToUTF16(test_case.title)});
+    links.emplace_back(
+        Link{GURL(test_case.url), base::UTF8ToUTF16(test_case.title), true});
   }
   return links;
 }
@@ -70,11 +74,21 @@ class CustomLinksManagerImplTest : public testing::Test {
  public:
   CustomLinksManagerImplTest() {
     CustomLinksManagerImpl::RegisterProfilePrefs(prefs_.registry());
-    custom_links_ = std::make_unique<CustomLinksManagerImpl>(&prefs_);
+  }
+
+  void SetUp() override {
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    history_service_ = history::CreateHistoryService(scoped_temp_dir_.GetPath(),
+                                                     /*create_db=*/false);
+    custom_links_ = std::make_unique<CustomLinksManagerImpl>(
+        &prefs_, history_service_.get());
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
+  base::ScopedTempDir scoped_temp_dir_;
+  std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<CustomLinksManagerImpl> custom_links_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLinksManagerImplTest);
@@ -83,9 +97,8 @@ class CustomLinksManagerImplTest : public testing::Test {
 TEST_F(CustomLinksManagerImplTest, InitializeOnlyOnce) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
   NTPTilesVector new_tiles = FillTestTiles(kTestCase2);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> empty_links;
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> empty_links;
 
   ASSERT_FALSE(custom_links_->IsInitialized());
   ASSERT_TRUE(custom_links_->GetLinks().empty());
@@ -101,8 +114,7 @@ TEST_F(CustomLinksManagerImplTest, InitializeOnlyOnce) {
 
 TEST_F(CustomLinksManagerImplTest, UninitializeDeletesOldLinks) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -119,9 +131,8 @@ TEST_F(CustomLinksManagerImplTest, UninitializeDeletesOldLinks) {
 TEST_F(CustomLinksManagerImplTest, ReInitializeWithNewLinks) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
   NTPTilesVector new_tiles = FillTestTiles(kTestCase2);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> new_links = FillTestLinks(kTestCase2);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> new_links = FillTestLinks(kTestCase2);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -137,11 +148,10 @@ TEST_F(CustomLinksManagerImplTest, ReInitializeWithNewLinks) {
 
 TEST_F(CustomLinksManagerImplTest, AddLink) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> expected_links = initial_links;
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> expected_links = initial_links;
   expected_links.emplace_back(
-      CustomLinksManager::Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)});
+      Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false});
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -155,8 +165,7 @@ TEST_F(CustomLinksManagerImplTest, AddLink) {
 
 TEST_F(CustomLinksManagerImplTest, AddLinkWhenAtMaxLinks) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCaseMax);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCaseMax);
+  std::vector<Link> initial_links = FillTestLinks(kTestCaseMax);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -170,8 +179,7 @@ TEST_F(CustomLinksManagerImplTest, AddLinkWhenAtMaxLinks) {
 
 TEST_F(CustomLinksManagerImplTest, AddDuplicateLink) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -185,13 +193,14 @@ TEST_F(CustomLinksManagerImplTest, AddDuplicateLink) {
 
 TEST_F(CustomLinksManagerImplTest, UpdateLink) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> links_after_update_url(initial_links);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> links_after_update_url(initial_links);
   links_after_update_url[0].url = GURL(kTestUrl);
-  std::vector<CustomLinksManager::Link> links_after_update_title(
-      links_after_update_url);
+  links_after_update_url[0].is_most_visited = false;
+  std::vector<Link> links_after_update_title(links_after_update_url);
   links_after_update_title[0].title = base::UTF8ToUTF16(kTestTitle);
+  std::vector<Link> links_after_update_both(initial_links);
+  links_after_update_both[0].is_most_visited = false;
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -211,14 +220,13 @@ TEST_F(CustomLinksManagerImplTest, UpdateLink) {
   EXPECT_TRUE(
       custom_links_->UpdateLink(GURL(kTestUrl), GURL(kTestCase1[0].url),
                                 base::UTF8ToUTF16(kTestCase1[0].title)));
-  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+  EXPECT_EQ(links_after_update_both, custom_links_->GetLinks());
 }
 
 TEST_F(CustomLinksManagerImplTest, UpdateLinkWithInvalidParams) {
   const GURL kInvalidUrl = GURL("test");
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -246,8 +254,7 @@ TEST_F(CustomLinksManagerImplTest, UpdateLinkWithInvalidParams) {
 
 TEST_F(CustomLinksManagerImplTest, UpdateLinkWhenUrlAlreadyExists) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase2);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase2);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase2);
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -263,8 +270,8 @@ TEST_F(CustomLinksManagerImplTest, UpdateLinkWhenUrlAlreadyExists) {
 TEST_F(CustomLinksManagerImplTest, DeleteLink) {
   NTPTilesVector initial_tiles;
   AddTile(&initial_tiles, kTestUrl, kTestTitle);
-  std::vector<CustomLinksManager::Link> initial_links({CustomLinksManager::Link{
-      GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)}});
+  std::vector<Link> initial_links(
+      {Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), true}});
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -289,11 +296,10 @@ TEST_F(CustomLinksManagerImplTest, DeleteLinkWhenUrlDoesNotExist) {
 
 TEST_F(CustomLinksManagerImplTest, UndoAddLink) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> expected_links = initial_links;
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> expected_links = initial_links;
   expected_links.emplace_back(
-      CustomLinksManager::Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)});
+      Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false});
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -319,12 +325,13 @@ TEST_F(CustomLinksManagerImplTest, UndoAddLink) {
 
 TEST_F(CustomLinksManagerImplTest, UndoUpdateLink) {
   NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
-  std::vector<CustomLinksManager::Link> initial_links =
-      FillTestLinks(kTestCase1);
-  std::vector<CustomLinksManager::Link> links_after_update_url(initial_links);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> links_after_update_url(initial_links);
   links_after_update_url[0].url = GURL(kTestUrl);
-  std::vector<CustomLinksManager::Link> links_after_update_title(initial_links);
+  links_after_update_url[0].is_most_visited = false;
+  std::vector<Link> links_after_update_title(initial_links);
   links_after_update_title[0].title = base::UTF8ToUTF16(kTestTitle);
+  links_after_update_title[0].is_most_visited = false;
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -356,9 +363,8 @@ TEST_F(CustomLinksManagerImplTest, UndoUpdateLink) {
 TEST_F(CustomLinksManagerImplTest, UndoDeleteLink) {
   NTPTilesVector initial_tiles;
   AddTile(&initial_tiles, kTestUrl, kTestTitle);
-  std::vector<CustomLinksManager::Link> expected_links(
-      {CustomLinksManager::Link{GURL(kTestUrl),
-                                base::UTF8ToUTF16(kTestTitle)}});
+  std::vector<Link> expected_links(
+      {Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), true}});
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -375,9 +381,8 @@ TEST_F(CustomLinksManagerImplTest, UndoDeleteLink) {
 
 TEST_F(CustomLinksManagerImplTest, UndoDeleteLinkAfterAdd) {
   NTPTilesVector initial_tiles;
-  std::vector<CustomLinksManager::Link> expected_links(
-      {CustomLinksManager::Link{GURL(kTestUrl),
-                                base::UTF8ToUTF16(kTestTitle)}});
+  std::vector<Link> expected_links(
+      {Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false}});
 
   // Initialize.
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
@@ -395,6 +400,206 @@ TEST_F(CustomLinksManagerImplTest, UndoDeleteLinkAfterAdd) {
   // Undo delete link.
   EXPECT_TRUE(custom_links_->UndoAction());
   EXPECT_EQ(expected_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldDeleteMostVisitedOnHistoryDeletion) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase2);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase2);
+  std::vector<Link> expected_links(initial_links);
+  // Remove the link that will be deleted on history clear.
+  expected_links.pop_back();
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Delete a specific Most Visited link.
+  EXPECT_CALL(callback, Run());
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(
+          history_service_.get(),
+          history::DeletionInfo(history::DeletionTimeRange::Invalid(),
+                                /*expired=*/false,
+                                {history::URLRow(GURL(kTestCase2[1].url))},
+                                /*favicon_urls=*/std::set<GURL>(),
+                                /*restrict_urls=*/base::nullopt));
+  EXPECT_EQ(expected_links, custom_links_->GetLinks());
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(CustomLinksManagerImplTest,
+       ShouldDeleteMostVisitedOnAllHistoryDeletion) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase2);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase2);
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Delete all Most Visited links.
+  EXPECT_CALL(callback, Run());
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(
+          history_service_.get(),
+          history::DeletionInfo(history::DeletionTimeRange::AllTime(),
+                                /*expired=*/false, history::URLRows(),
+                                /*favicon_urls=*/std::set<GURL>(),
+                                /*restrict_urls=*/base::nullopt));
+  EXPECT_TRUE(custom_links_->GetLinks().empty());
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldNotDeleteCustomLinkOnHistoryDeletion) {
+  Link added_link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false};
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> links_after_add(initial_links);
+  links_after_add.emplace_back(added_link);
+  std::vector<Link> links_after_all_history_delete;
+  links_after_all_history_delete.emplace_back(added_link);
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+  // Add link.
+  ASSERT_TRUE(
+      custom_links_->AddLink(GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)));
+  ASSERT_EQ(links_after_add, custom_links_->GetLinks());
+
+  // Try to delete the added link. This should fail and not modify the list.
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(history_service_.get(),
+                      history::DeletionInfo(
+                          history::DeletionTimeRange::Invalid(),
+                          /*expired=*/false, {history::URLRow(GURL(kTestUrl))},
+                          /*favicon_urls=*/std::set<GURL>(),
+                          /*restrict_urls=*/base::nullopt));
+  EXPECT_EQ(links_after_add, custom_links_->GetLinks());
+
+  // Delete all Most Visited links.
+  EXPECT_CALL(callback, Run());
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(
+          history_service_.get(),
+          history::DeletionInfo(history::DeletionTimeRange::AllTime(),
+                                /*expired=*/false, history::URLRows(),
+                                /*favicon_urls=*/std::set<GURL>(),
+                                /*restrict_urls=*/base::nullopt));
+  EXPECT_EQ(links_after_all_history_delete, custom_links_->GetLinks());
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldIgnoreHistoryExpiredDeletions) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  EXPECT_CALL(callback, Run()).Times(0);
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(
+          history_service_.get(),
+          history::DeletionInfo(history::DeletionTimeRange::AllTime(),
+                                /*expired=*/true, history::URLRows(),
+                                /*favicon_urls=*/std::set<GURL>(),
+                                /*restrict_urls=*/base::nullopt));
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(
+          // /*history_service=*/nullptr,
+          history_service_.get(),
+          history::DeletionInfo(history::DeletionTimeRange::Invalid(),
+                                /*expired=*/true,
+                                {history::URLRow(GURL(kTestCase1[0].url))},
+                                /*favicon_urls=*/std::set<GURL>(),
+                                /*restrict_urls=*/base::nullopt));
+
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldIgnoreEmptyHistoryDeletions) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  EXPECT_CALL(callback, Run()).Times(0);
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(history_service_.get(),
+                      history::DeletionInfo::ForUrls({}, {}));
+
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldNotUndoAfterHistoryDeletion) {
+  Link added_link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false};
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> links_after_add(initial_links);
+  links_after_add.emplace_back(added_link);
+  std::vector<Link> links_after_all_history_delete;
+  links_after_all_history_delete.emplace_back(added_link);
+
+  // Set up Most Visited callback.
+  base::MockCallback<base::RepeatingClosure> callback;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription =
+      custom_links_->RegisterCallbackForOnChanged(callback.Get());
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+  // Add link.
+  ASSERT_TRUE(
+      custom_links_->AddLink(GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)));
+  ASSERT_EQ(links_after_add, custom_links_->GetLinks());
+
+  // Try an empty history deletion. This should do nothing.
+  EXPECT_CALL(callback, Run()).Times(0);
+  static_cast<history::HistoryServiceObserver*>(custom_links_.get())
+      ->OnURLsDeleted(history_service_.get(),
+                      history::DeletionInfo::ForUrls({}, {}));
+  EXPECT_EQ(links_after_add, custom_links_->GetLinks());
+
+  // Try to undo. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UndoAction());
+  EXPECT_EQ(links_after_add, custom_links_->GetLinks());
+
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace ntp_tiles

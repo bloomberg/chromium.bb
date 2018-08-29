@@ -20,9 +20,16 @@ const int kMaxNumLinks = 10;
 
 }  // namespace
 
-CustomLinksManagerImpl::CustomLinksManagerImpl(PrefService* prefs)
-    : prefs_(prefs), store_(prefs), weak_ptr_factory_(this) {
+CustomLinksManagerImpl::CustomLinksManagerImpl(
+    PrefService* prefs,
+    history::HistoryService* history_service)
+    : prefs_(prefs),
+      store_(prefs),
+      history_service_observer_(this),
+      weak_ptr_factory_(this) {
   DCHECK(prefs);
+  if (history_service)
+    history_service_observer_.Add(history_service);
   if (IsInitialized())
     current_links_ = store_.RetrieveLinks();
 }
@@ -34,7 +41,7 @@ bool CustomLinksManagerImpl::Initialize(const NTPTilesVector& tiles) {
     return false;
 
   for (const NTPTile& tile : tiles)
-    current_links_.emplace_back(Link{tile.url, tile.title});
+    current_links_.emplace_back(Link{tile.url, tile.title, true});
 
   store_.StoreLinks(current_links_);
   prefs_->SetBoolean(prefs::kCustomLinksInitialized, true);
@@ -66,7 +73,7 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
     return false;
 
   previous_links_ = current_links_;
-  current_links_.emplace_back(Link{url, title});
+  current_links_.emplace_back(Link{url, title, false});
   store_.StoreLinks(current_links_);
   return true;
 }
@@ -97,6 +104,7 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     it->url = new_url;
   if (!new_title.empty())
     it->title = new_title;
+  it->is_most_visited = false;
 
   store_.StoreLinks(current_links_);
   return true;
@@ -137,6 +145,44 @@ std::vector<CustomLinksManager::Link>::iterator
 CustomLinksManagerImpl::FindLinkWithUrl(const GURL& url) {
   return std::find_if(current_links_.begin(), current_links_.end(),
                       [&url](const Link& link) { return link.url == url; });
+}
+
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+CustomLinksManagerImpl::RegisterCallbackForOnChanged(
+    base::RepeatingClosure callback) {
+  return callback_list_.Add(callback);
+}
+
+// history::HistoryServiceObserver implementation.
+void CustomLinksManagerImpl::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  // We don't care about expired entries.
+  if (!IsInitialized() || deletion_info.is_from_expiration())
+    return;
+
+  size_t initial_size = current_links_.size();
+  if (deletion_info.IsAllHistory()) {
+    base::EraseIf(current_links_,
+                  [](auto& link) { return link.is_most_visited; });
+  } else {
+    for (const history::URLRow& row : deletion_info.deleted_rows()) {
+      auto it = FindLinkWithUrl(row.url());
+      if (it != current_links_.end() && it->is_most_visited)
+        current_links_.erase(it);
+    }
+  }
+  store_.StoreLinks(current_links_);
+  previous_links_ = base::nullopt;
+
+  // Alert MostVisitedSites that some links have been deleted.
+  if (initial_size != current_links_.size())
+    callback_list_.Notify();
+}
+
+void CustomLinksManagerImpl::HistoryServiceBeingDeleted(
+    history::HistoryService* history_service) {
+  history_service_observer_.RemoveAll();
 }
 
 // static
