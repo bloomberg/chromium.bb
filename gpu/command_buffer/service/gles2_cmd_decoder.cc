@@ -11384,29 +11384,24 @@ void GLES2DecoderImpl::GetTexParameterImpl(
         return;
       }
       break;
-    // Get the level information from the texture to avoid a Mac driver
-    // bug where they store the levels in int16_t, making values bigger
-    // than 2^15-1 overflow in the negative range.
     case GL_TEXTURE_BASE_LEVEL:
-      if (workarounds().use_shadowed_tex_level_params) {
-        if (fparams) {
-          fparams[0] = static_cast<GLfloat>(texture->base_level());
-        } else {
-          iparams[0] = texture->base_level();
-        }
-        return;
+      // Use shadowed value in case it's clamped; also because older MacOSX
+      // stores the value on int16_t (see https://crbug.com/610153).
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->unclamped_base_level());
+      } else {
+        iparams[0] = texture->unclamped_base_level();
       }
-      break;
+      return;
     case GL_TEXTURE_MAX_LEVEL:
-      if (workarounds().use_shadowed_tex_level_params) {
-        if (fparams) {
-          fparams[0] = static_cast<GLfloat>(texture->max_level());
-        } else {
-          iparams[0] = texture->max_level();
-        }
-        return;
+      // Use shadowed value in case it's clamped; also because older MacOSX
+      // stores the value on int16_t (see https://crbug.com/610153).
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->unclamped_max_level());
+      } else {
+        iparams[0] = texture->unclamped_max_level();
       }
-      break;
+      return;
     case GL_TEXTURE_SWIZZLE_R:
       if (fparams) {
         fparams[0] = static_cast<GLfloat>(texture->swizzle_r());
@@ -17573,25 +17568,6 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     compatibility_internal_format = format_info->decompressed_internal_format;
   }
 
-  if (workarounds().reset_base_mipmap_level_before_texstorage &&
-      texture->base_level() > 0)
-    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL, 0);
-
-  // TODO(zmo): We might need to emulate TexStorage using TexImage or
-  // CompressedTexImage on Mac OSX where we expose ES3 APIs when the underlying
-  // driver is lower than 4.2 and ARB_texture_storage extension doesn't exist.
-  if (dimension == ContextState::k2D) {
-    api()->glTexStorage2DEXTFn(target, levels, compatibility_internal_format,
-                               width, height);
-  } else {
-    api()->glTexStorage3DFn(target, levels, compatibility_internal_format,
-                            width, height, depth);
-  }
-  if (workarounds().reset_base_mipmap_level_before_texstorage &&
-      texture->base_level() > 0)
-    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
-                             texture->base_level());
-
   {
     GLsizei level_width = width;
     GLsizei level_height = height;
@@ -17619,6 +17595,29 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     }
     texture->ApplyFormatWorkarounds(feature_info_.get());
     texture->SetImmutable(true);
+  }
+
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0)
+    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL, 0);
+
+  // TODO(zmo): We might need to emulate TexStorage using TexImage or
+  // CompressedTexImage on Mac OSX where we expose ES3 APIs when the underlying
+  // driver is lower than 4.2 and ARB_texture_storage extension doesn't exist.
+  if (dimension == ContextState::k2D) {
+    api()->glTexStorage2DEXTFn(target, levels, compatibility_internal_format,
+                               width, height);
+  } else {
+    api()->glTexStorage3DFn(target, levels, compatibility_internal_format,
+                            width, height, depth);
+  }
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0) {
+    // Note base_level is already clamped due to texture->SetImmutable(true).
+    // This is necessary for certain NVidia Linux drivers; otherwise they
+    // may trigger segmentation fault. See https://crbug.com/877874.
+    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
+                             texture->base_level());
   }
 }
 
