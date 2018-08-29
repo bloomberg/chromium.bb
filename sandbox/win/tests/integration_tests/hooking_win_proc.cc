@@ -87,5 +87,5 @@ int WINAPI WinMain(HINSTANCE instance,
   ::SetEvent(event);
   ::CloseHandle(event);
 
-  return message.wParam;
+  return 0;
 }

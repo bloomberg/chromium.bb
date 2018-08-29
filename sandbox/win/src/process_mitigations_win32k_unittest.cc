@@ -110,7 +110,7 @@ CreateOPMProtectedOutputsTest(PUNICODE_STRING device_name,
   return STATUS_SUCCESS;
 }
 
-ULONG CalculateCertLength(ULONG monitor) {
+ULONG CalculateCertLength(DWORD monitor) {
   return (monitor * 0x800) + 0xabc;
 }
 
@@ -356,12 +356,14 @@ bool RunTestsOnVideoOutputConfigure(uintptr_t monitor_index,
 bool RunTestsOnVideoOutputFinishInitialization(uintptr_t monitor_index,
                                                IOPMVideoOutput* video_output) {
   OPM_ENCRYPTED_INITIALIZATION_PARAMETERS init_params = {};
-  memset(init_params.abEncryptedInitializationParameters, 'a' + monitor_index,
+  memset(init_params.abEncryptedInitializationParameters,
+         'a' + static_cast<DWORD>(monitor_index),
          sizeof(init_params.abEncryptedInitializationParameters));
   HRESULT hr = video_output->FinishInitialization(&init_params);
   if (FAILED(hr))
     return false;
-  memset(init_params.abEncryptedInitializationParameters, 'Z' + monitor_index,
+  memset(init_params.abEncryptedInitializationParameters,
+         'Z' + static_cast<DWORD>(monitor_index),
          sizeof(init_params.abEncryptedInitializationParameters));
   hr = video_output->FinishInitialization(&init_params);
   if (SUCCEEDED(hr))
@@ -380,7 +382,8 @@ bool RunTestsOnVideoOutputStartInitialization(uintptr_t monitor_index,
   if (FAILED(hr))
     return false;
 
-  if (certificate_length != CalculateCertLength(monitor_index))
+  if (certificate_length !=
+      CalculateCertLength(static_cast<DWORD>(monitor_index)))
     return false;
 
   for (ULONG i = 0; i < certificate_length; ++i) {
