@@ -62,6 +62,12 @@ typedef std::vector<Schema> SchemaList;
 // standard.
 class POLICY_EXPORT Schema {
  public:
+  enum Options {
+    // Ignore unknown attributes. If this option is not set then unknown
+    // attributes will make the schema validation fail.
+    OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES = 1 << 0,
+  };
+
   // Used internally to store shared data.
   class InternalStorage;
 
@@ -84,6 +90,24 @@ class POLICY_EXPORT Schema {
   // the internal representation. If |schema| is invalid then an invalid Schema
   // is returned and |error| contains a reason for the failure.
   static Schema Parse(const std::string& schema, std::string* error);
+
+  // Verifies if |schema| is a valid JSON v3 schema. When this validation passes
+  // then |schema| is valid JSON that can be parsed into a DictionaryValue,
+  // and that DictionaryValue can be used to build a |Schema|.
+  // Returns the parsed DictionaryValue when |schema| validated, otherwise
+  // returns NULL. In that case, |error| contains an error description.
+  // For performance reasons, currently IsValidSchema() won't check the
+  // correctness of regular expressions used in "pattern" and
+  // "patternProperties" and in Validate() invalid regular expression don't
+  // accept any strings.
+  static std::unique_ptr<base::DictionaryValue> IsValidSchema(
+      const std::string& schema,
+      std::string* error);
+
+  // Same as above but with |options|, which is a bitwise-OR combination of the
+  // Options above.
+  static std::unique_ptr<base::DictionaryValue>
+  IsValidSchema(const std::string& schema, int options, std::string* error);
 
   // Returns true if this Schema is valid. Schemas returned by the methods below
   // may be invalid, and in those cases the other methods must not be used.
