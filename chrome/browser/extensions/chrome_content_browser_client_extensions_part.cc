@@ -428,28 +428,29 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
 bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  // https://crbug.com/160576 workaround: Origin lock to the chrome-extension://
-  // scheme for a hosted app would kill processes on legitimate requests for the
-  // app's cookies.
-  if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
-    const Extension* extension =
-        ExtensionRegistry::Get(browser_context)
-            ->enabled_extensions()
-            .GetExtensionOrAppByURL(effective_site_url);
-    if (extension && extension->is_hosted_app())
-      return false;
+  if (!effective_site_url.SchemeIs(kExtensionScheme))
+    return true;
 
-    // Extensions are allowed to share processes, even in --site-per-process
-    // currently. See https://crbug.com/600441#c1 for some background on the
-    // intersection of extension process reuse and site isolation.
-    //
-    // TODO(nick): Fix this, possibly by revamping the extensions process model
-    // so that sharing is determined by privilege level, as described in
-    // https://crbug.com/766267
-    if (extension)
-      return false;
-  }
-  return true;
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(effective_site_url);
+  if (!extension)
+    return true;
+
+  // Hosted apps should be locked to their web origin. See
+  // https://crbug.com/794315.
+  if (extension->is_hosted_app())
+    return true;
+
+  // Other extensions are allowed to share processes, even in
+  // --site-per-process currently. See https://crbug.com/600441#c1 for some
+  // background on the intersection of extension process reuse and site
+  // isolation.
+  //
+  // TODO(nick): Fix this, possibly by revamping the extensions process model
+  // so that sharing is determined by privilege level, as described in
+  // https://crbug.com/766267.
+  return false;
 }
 
 // static
