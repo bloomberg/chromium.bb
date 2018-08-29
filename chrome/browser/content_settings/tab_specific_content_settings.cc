@@ -778,17 +778,27 @@ void TabSpecificContentSettings::OnContentSettingChanged(
       status.allowed = setting == CONTENT_SETTING_ALLOW;
       status.blocked = setting == CONTENT_SETTING_BLOCK;
     }
+
+    content::RenderProcessHost* process =
+        web_contents()->GetMainFrame()->GetProcess();
+
+    // Only send a message to the renderer if it is initialised and not dead.
+    // Otherwise, the IPC messages will be queued in the browser process,
+    // potentially causing large memory leaks. See https://crbug.com/875937.
+    if (!process->IsInitializedAndNotDead())
+      return;
+
+    // |channel| may be null in tests.
+    IPC::ChannelProxy* channel = process->GetChannel();
+    if (!channel)
+      return;
+
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(map, &rules);
 
-    IPC::ChannelProxy* channel =
-        web_contents()->GetMainFrame()->GetProcess()->GetChannel();
-    // channel might be NULL in tests.
-    if (channel) {
-      chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
-      channel->GetRemoteAssociatedInterface(&rc_interface);
-      rc_interface->SetContentSettingRules(rules);
-    }
+    chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
+    channel->GetRemoteAssociatedInterface(&rc_interface);
+    rc_interface->SetContentSettingRules(rules);
   }
 }
 
