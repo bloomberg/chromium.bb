@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/nux/email/constants.h"
+#include "components/nux/constants.h"
 
 #include "base/feature_list.h"
 
@@ -11,6 +11,10 @@ namespace nux {
 extern const base::Feature kNuxEmailFeature{"NuxEmail",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+extern const base::Feature kNuxGoogleAppsFeature{
+    "NuxGoogleApps", base::FEATURE_DISABLED_BY_DEFAULT};
+
 extern const char kNuxEmailUrl[] = "chrome://welcome/email";
+extern const char kNuxGoogleAppsUrl[] = "chrome://welcome/apps";
 
 }  // namespace nux

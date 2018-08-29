@@ -5,10 +5,19 @@
 import("//build/config/chrome_build.gni")
 
 if (is_win && is_chrome_branded) {
+  source_set("constants") {
+    sources = [
+      "constants.cc",
+      "constants.h",
+    ]
+
+    public_deps = [
+      "//base",
+    ]
+  }
+
   static_library("email_feature") {
     sources = [
-      "email/constants.cc",
-      "email/constants.h",
       "email/email_handler.cc",
       "email/email_handler.h",
     ]
@@ -35,8 +44,6 @@ if (is_win && is_chrome_branded) {
 
   static_library("google_apps_feature") {
     sources = [
-      "google_apps/constants.cc",
-      "google_apps/constants.h",
       "google_apps/google_apps_handler.cc",
       "google_apps/google_apps_handler.h",
     ]
