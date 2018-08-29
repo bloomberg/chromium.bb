@@ -59,6 +59,35 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
   }
 }
 
+TEST_F(BluetoothTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
+  FidoBleDiscovery discovery;
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(*mock_adapter, SetPowered)
+      .WillOnce(::testing::WithArg<2>(
+          [](const auto& error_callback) { error_callback.Run(); }));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+
+  {
+    base::RunLoop run_loop;
+    auto quit = run_loop.QuitClosure();
+    EXPECT_CALL(observer, DiscoveryAvailable(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
+
+    discovery.Start();
+    run_loop.Run();
+  }
+
+  // After BluetoothAdapter is powered on, we expect that discovery session
+  // starts again.
+  EXPECT_CALL(*mock_adapter, StartDiscoverySessionWithFilterRaw);
+  mock_adapter->NotifyAdapterPoweredChanged(true);
+}
+
 TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
   // We purposefully construct a temporary and provide no fake adapter,
   // simulating cases where the discovery is destroyed before obtaining a handle
