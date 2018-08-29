@@ -20,8 +20,9 @@ namespace autofill_assistant {
 AssistantDevtoolsClient::AssistantDevtoolsClient(
     scoped_refptr<content::DevToolsAgentHost> agent_host)
     : agent_host_(agent_host),
+      input_domain_(this),
       dom_domain_(this),
-      page_domain_(this),
+      runtime_domain_(this),
       renderer_crashed_(false),
       next_message_id_(0),
       weak_ptr_factory_(this) {
@@ -32,12 +33,16 @@ AssistantDevtoolsClient::AssistantDevtoolsClient(
 
 AssistantDevtoolsClient::~AssistantDevtoolsClient() {}
 
+input::Domain* AssistantDevtoolsClient::GetInput() {
+  return &input_domain_;
+}
+
 dom::Domain* AssistantDevtoolsClient::GetDOM() {
   return &dom_domain_;
 }
 
-page::Domain* AssistantDevtoolsClient::GetPage() {
-  return &page_domain_;
+runtime::Domain* AssistantDevtoolsClient::GetRuntime() {
+  return &runtime_domain_;
 }
 
 void AssistantDevtoolsClient::SendMessage(

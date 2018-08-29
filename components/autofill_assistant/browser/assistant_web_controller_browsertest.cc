@@ -50,6 +50,39 @@ class AssistantWebControllerBrowserTest : public content::ContentBrowserTest {
     done_callback.Run();
   }
 
+  void ClickElement(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    assistant_web_controller_->ClickElement(
+        selectors,
+        base::BindOnce(&AssistantWebControllerBrowserTest::ClickElementCallback,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void ClickElementCallback(const base::Closure& done_callback, bool result) {
+    ASSERT_TRUE(result);
+    done_callback.Run();
+  }
+
+  void WaitForElementRemove(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    assistant_web_controller_->ElementExists(
+        selectors,
+        base::BindOnce(
+            &AssistantWebControllerBrowserTest::OnWaitForElementRemove,
+            base::Unretained(this), run_loop.QuitClosure(), selectors));
+    run_loop.Run();
+  }
+
+  void OnWaitForElementRemove(const base::Closure& done_callback,
+                              const std::vector<std::string>& selectors,
+                              bool result) {
+    done_callback.Run();
+    if (result) {
+      WaitForElementRemove(selectors);
+    }
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<autofill_assistant::AssistantWebController>
@@ -68,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, IsElementExists) {
   // IFrame.
   selectors.clear();
   selectors.emplace_back("#iframe");
-  selectors.emplace_back("#text");
+  selectors.emplace_back("#button");
   IsElementExists(selectors, true);
   selectors.emplace_back("#whatever");
   IsElementExists(selectors, false);
@@ -82,10 +115,31 @@ IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, IsElementExists) {
   selectors.clear();
   selectors.emplace_back("#iframe");
   selectors.emplace_back("#shadowsection");
-  selectors.emplace_back("#button");
+  selectors.emplace_back("#shadowbutton");
   IsElementExists(selectors, true);
   selectors.emplace_back("#whatever");
   IsElementExists(selectors, false);
 }
 
+IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, ClickElement) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#button");
+  ClickElement(selectors);
+
+  WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest,
+                       ClickElementInIFrame) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#shadowsection");
+  selectors.emplace_back("#shadowbutton");
+  ClickElement(selectors);
+
+  selectors.clear();
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#button");
+  WaitForElementRemove(selectors);
+}
 }  // namespace
