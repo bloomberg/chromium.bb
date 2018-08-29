@@ -15,6 +15,7 @@
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -24,6 +25,12 @@ namespace ash {
 
 namespace {
 
+// The animation speed at which the window moves when the gesture is released.
+constexpr base::TimeDelta kAnimationDurationMs =
+    base::TimeDelta::FromMilliseconds(250);
+
+// The width of the target of screen bounds will be the work area width times
+// this ratio.
 constexpr float kWidthRatio = 0.8f;
 
 // Find the transform that will convert |src| to |dst|.
@@ -102,16 +109,22 @@ class ScopedAnimationDisabler {
 
 }  // namespace
 
-HomeLauncherGestureHandler::HomeLauncherGestureHandler() = default;
+HomeLauncherGestureHandler::HomeLauncherGestureHandler() {
+  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+}
 
 HomeLauncherGestureHandler::~HomeLauncherGestureHandler() = default;
 
-void HomeLauncherGestureHandler::OnPressEvent() {
+bool HomeLauncherGestureHandler::OnPressEvent() {
+  // Do not start a new session if a window is currently being processed.
+  if (last_event_location_)
+    return false;
+
   // We want the first window in the mru list, if it exists and is usable.
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (windows.empty() || !CanHideWindow(windows[0])) {
     window_ = nullptr;
-    return;
+    return false;
   }
 
   window_ = windows[0];
@@ -154,18 +167,77 @@ void HomeLauncherGestureHandler::OnPressEvent() {
     window->AddObserver(this);
     transient_descendants_values_[window] = values;
   }
+
+  return true;
 }
 
-void HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location) {
+bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location) {
+  if (!window_)
+    return false;
+
+  last_event_location_ = base::make_optional(location);
   double progress = GetHeightInWorkAreaAsRatio(location.y(), window_);
-  UpdateWindows(progress);
+  UpdateWindows(progress, /*animate=*/false);
+  return true;
 }
 
-void HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
-  // TODO(sammiequon): Animate the window to its final destination.
-  if (GetHeightInWorkAreaAsRatio(location.y(), window_) > 0.5) {
-    UpdateWindows(1.0);
+bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
+  if (!window_)
+    return false;
 
+  last_event_location_ = base::make_optional(location);
+  UpdateWindows(
+      GetHeightInWorkAreaAsRatio(location.y(), window_) > 0.5 ? 1.0 : 0.0,
+      /*animate=*/true);
+  return true;
+}
+
+void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
+  if (window == window_) {
+    for (auto* hidden_window : hidden_windows_)
+      hidden_window->Show();
+
+    last_event_location_ = base::nullopt;
+    RemoveObserversAndStopTracking();
+    return;
+  }
+
+  if (transient_descendants_values_.find(window) !=
+      transient_descendants_values_.end()) {
+    window->RemoveObserver(this);
+    transient_descendants_values_.erase(window);
+    return;
+  }
+
+  DCHECK(base::ContainsValue(hidden_windows_, window));
+  window->RemoveObserver(this);
+  hidden_windows_.erase(
+      std::find(hidden_windows_.begin(), hidden_windows_.end(), window));
+}
+
+void HomeLauncherGestureHandler::OnTabletModeEnded() {
+  if (!last_event_location_)
+    return;
+
+  // When leaving tablet mode advance to the end of the in progress scroll
+  // session or animation.
+  StopObservingImplicitAnimations();
+  window_->layer()->GetAnimator()->StopAnimating();
+  for (const auto& descendant : transient_descendants_values_)
+    descendant.first->layer()->GetAnimator()->StopAnimating();
+  UpdateWindows(
+      GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5
+          ? 1.0
+          : 0.0,
+      /*animate=*/false);
+  OnImplicitAnimationsCompleted();
+}
+
+void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
+  DCHECK(last_event_location_);
+  DCHECK(window_);
+
+  if (GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5) {
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview.
     for (auto* window : hidden_windows_) {
@@ -183,33 +255,10 @@ void HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
       ScopedAnimationDisabler disable(window);
       window->Show();
     }
-
-    UpdateWindows(0.0);
   }
 
+  last_event_location_ = base::nullopt;
   RemoveObserversAndStopTracking();
-}
-
-void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
-  if (window == window_) {
-    for (auto* hidden_window : hidden_windows_)
-      hidden_window->Show();
-
-    RemoveObserversAndStopTracking();
-    return;
-  }
-
-  if (transient_descendants_values_.find(window) !=
-      transient_descendants_values_.end()) {
-    window->RemoveObserver(this);
-    transient_descendants_values_.erase(window);
-    return;
-  }
-
-  DCHECK(base::ContainsValue(hidden_windows_, window));
-  window->RemoveObserver(this);
-  hidden_windows_.erase(
-      std::find(hidden_windows_.begin(), hidden_windows_.end(), window));
 }
 
 bool HomeLauncherGestureHandler::CanHideWindow(aura::Window* window) {
@@ -237,22 +286,37 @@ bool HomeLauncherGestureHandler::CanHideWindow(aura::Window* window) {
   return state->CanMaximize() && state->CanResize();
 }
 
-void HomeLauncherGestureHandler::UpdateWindows(double progress) {
+void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   // Helper to update a single windows opacity and transform based on by
   // calculating the in between values using |value| and |values|.
-  auto update_windows_helper = [](double progress, aura::Window* window,
-                                  const WindowValues& values) {
+  auto update_windows_helper = [this](double progress, bool animate,
+                                      aura::Window* window,
+                                      const WindowValues& values) {
     float opacity = gfx::Tween::FloatValueBetween(
         progress, values.initial_opacity, values.target_opacity);
-    window->layer()->SetOpacity(opacity);
     gfx::Transform transform = gfx::Tween::TransformValueBetween(
         progress, values.initial_transform, values.target_transform);
+
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (animate) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          window->layer()->GetAnimator());
+      settings->SetTransitionDuration(kAnimationDurationMs);
+      settings->SetTweenType(gfx::Tween::LINEAR);
+      settings->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      if (window == this->window())
+        settings->AddObserver(this);
+    }
+    window->layer()->SetOpacity(opacity);
     window->SetTransform(transform);
   };
 
-  update_windows_helper(progress, window_, window_values_);
-  for (const auto& descendant : transient_descendants_values_)
-    update_windows_helper(progress, descendant.first, descendant.second);
+  for (const auto& descendant : transient_descendants_values_) {
+    update_windows_helper(progress, animate, descendant.first,
+                          descendant.second);
+  }
+  update_windows_helper(progress, animate, window_, window_values_);
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {

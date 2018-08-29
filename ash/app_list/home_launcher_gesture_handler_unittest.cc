@@ -47,14 +47,6 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandlerTest);
 };
 
-// Tests that the gesture handler is available when in tablet mode.
-TEST_F(HomeLauncherGestureHandlerTest, Setup) {
-  EXPECT_TRUE(GetGestureHandler());
-
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(GetGestureHandler());
-}
-
 // Tests that the gesture handler will not have a window to act on if there are
 // none in the mru list.
 TEST_F(HomeLauncherGestureHandlerTest, NeedsOneWindow) {
@@ -191,6 +183,26 @@ TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
   EXPECT_EQ(1.0f, child->layer()->opacity());
   EXPECT_EQ(gfx::Transform(), child->transform());
+}
+
+// Tests that when tablet mode is ended while in the middle of a scroll session,
+// the window is advanced to its end state.
+TEST_F(HomeLauncherGestureHandlerTest, EndScrollOnTabletModeEnd) {
+  auto window = CreateWindowForTesting();
+
+  GetGestureHandler()->OnPressEvent();
+  ASSERT_TRUE(GetGestureHandler()->window());
+
+  // Scroll to a point above the halfway mark of the work area.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50));
+  EXPECT_TRUE(GetGestureHandler()->window());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMinimized());
+
+  // Tests that on exiting tablet mode, |window| gets minimized and is no longer
+  // tracked by the gesture handler.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(GetGestureHandler()->window());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
 }
 
 }  // namespace ash
