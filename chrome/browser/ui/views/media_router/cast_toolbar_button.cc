@@ -21,13 +21,13 @@ namespace media_router {
 namespace {
 
 SkColor GetIconColor(const gfx::VectorIcon* icon_id) {
-  if (icon_id == &vector_icons::kMediaRouterIdleIcon)
+  if (icon_id == &::vector_icons::kMediaRouterIdleIcon)
     return gfx::kChromeIconGrey;
-  else if (icon_id == &vector_icons::kMediaRouterActiveIcon)
+  else if (icon_id == &::vector_icons::kMediaRouterActiveIcon)
     return gfx::kGoogleBlue500;
-  else if (icon_id == &vector_icons::kMediaRouterWarningIcon)
+  else if (icon_id == &::vector_icons::kMediaRouterWarningIcon)
     return gfx::kGoogleYellow700;
-  else if (icon_id == &vector_icons::kMediaRouterErrorIcon)
+  else if (icon_id == &::vector_icons::kMediaRouterErrorIcon)
     return gfx::kGoogleRed700;
 
   NOTREACHED();
@@ -88,16 +88,16 @@ const gfx::VectorIcon& CastToolbarButton::GetCurrentIcon() const {
     media_router::IssueInfo::Severity severity = current_issue_->severity;
     switch (severity) {
       case media_router::IssueInfo::Severity::FATAL:
-        return vector_icons::kMediaRouterErrorIcon;
+        return ::vector_icons::kMediaRouterErrorIcon;
       case media_router::IssueInfo::Severity::WARNING:
-        return vector_icons::kMediaRouterWarningIcon;
+        return ::vector_icons::kMediaRouterWarningIcon;
       case media_router::IssueInfo::Severity::NOTIFICATION:
         // There is no icon specific to notification issues.
         break;
     }
   }
-  return has_local_display_route_ ? vector_icons::kMediaRouterActiveIcon
-                                  : vector_icons::kMediaRouterIdleIcon;
+  return has_local_display_route_ ? ::vector_icons::kMediaRouterActiveIcon
+                                  : ::vector_icons::kMediaRouterIdleIcon;
 }
 
 void CastToolbarButton::ShowIcon() {
