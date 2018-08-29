@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * copyright (c) 2013 google inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -264,10 +264,12 @@ class CORE_EXPORT VisualViewport final
   // translation property nodes. Also set the layer states (inner viewport
   // container, page scale layer, inner viewport scroll layer) to reference
   // these nodes.
-  void UpdatePaintPropertyNodes(
+  void UpdatePaintPropertyNodesIfNeeded(
       PaintPropertyTreeBuilderFragmentContext& context);
 
   CompositorElementId GetCompositorOverscrollElasticityElementId() const;
+
+  void SetNeedsPaintPropertiesUpdate();
 
  private:
   explicit VisualViewport(Page&);
@@ -367,6 +369,8 @@ class CORE_EXPORT VisualViewport final
   CompositorElementId element_id_;
   CompositorElementId scroll_element_id_;
   CompositorElementId overscroll_elasticity_element_id_;
+
+  bool needs_paint_property_update_;
 };
 
 }  // namespace blink
