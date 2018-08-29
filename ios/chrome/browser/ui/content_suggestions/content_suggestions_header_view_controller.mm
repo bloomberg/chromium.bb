@@ -326,18 +326,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   // allow to select the content below it.
   self.searchHintLabel.isAccessibilityElement = NO;
   UIButton* accessibilityButton = [[UIButton alloc] init];
-
-  // Because the visual fakebox background is implemented within
-  // ContentSuggestionsHeaderView, overload the tap and highlight events of
-  // |accessibilityButton| with a UILongPressGestureRecognizer, and pass along
-  // the tap and highlight events.
-  UILongPressGestureRecognizer* longPressRecognizer =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleFakeboxPress:)];
-  longPressRecognizer.minimumPressDuration = 0.001;
-  [accessibilityButton addGestureRecognizer:longPressRecognizer];
-
+  [accessibilityButton addTarget:self
+                          action:@selector(fakeOmniboxTapped:)
+                forControlEvents:UIControlEventTouchUpInside];
   accessibilityButton.isAccessibilityElement = YES;
   accessibilityButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
@@ -377,7 +368,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
-                    action:@selector(fakeOmniboxTapped)
+                    action:@selector(fakeOmniboxTapped:)
           forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -412,41 +403,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   [self.dispatcher preloadVoiceSearch];
 }
 
-- (void)fakeOmniboxTapped {
+- (void)fakeOmniboxTapped:(id)sender {
   if (IsUIRefreshPhase1Enabled()) {
     [self shiftTilesUp];
   } else {
     [self.dispatcher focusFakebox];
-  }
-}
-
-// TODO(crbug.com/807330) The fakebox is currently a collection of views spread
-// between ContentSuggestionsHeaderViewController and inside
-// ContentSuggestionsHeaderView.  Post refresh this can be coalesced into one
-// control, and the long press highlight and touchInside logic below can be
-// removed.
-- (void)handleFakeboxPress:(UILongPressGestureRecognizer*)gesture {
-  BOOL touchInside = CGRectContainsPoint(gesture.view.bounds,
-                                         [gesture locationInView:gesture.view]);
-  switch (gesture.state) {
-    case UIGestureRecognizerStateBegan:
-      [self.headerView setFakeboxHighlighted:YES];
-      break;
-    case UIGestureRecognizerStateChanged:
-      if (!touchInside) {
-        gesture.enabled = NO;
-        gesture.enabled = YES;
-      }
-      break;
-    case UIGestureRecognizerStateCancelled:
-    case UIGestureRecognizerStateEnded:
-      [self.headerView setFakeboxHighlighted:NO];
-      if (touchInside) {
-        [self fakeOmniboxTapped];
-      }
-      break;
-    default:
-      break;
   }
 }
 

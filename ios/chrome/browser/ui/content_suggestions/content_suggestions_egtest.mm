@@ -66,8 +66,7 @@ void ScrollUp() {
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(chrome_test_util::ToolsMenuButton(),
                                           grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirectionWithStartPoint(
-                               kGREYDirectionUp, 150, 0.5, 0.5)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
       onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()]
       assertWithMatcher:grey_notNil()];
 }

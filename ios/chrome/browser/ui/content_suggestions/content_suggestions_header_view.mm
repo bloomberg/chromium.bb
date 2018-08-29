@@ -30,12 +30,6 @@ namespace {
 // Landscape inset for fake omnibox background container
 const CGFloat kBackgroundLandscapeInset = 169;
 
-// Fakebox highlight animation duration.
-const CGFloat kFakeboxHighlightDuration = 0.4;
-
-// Fakebox highlight background alpha increase.
-const CGFloat kFakeboxHighlightIncrease = 0.06;
-
 }  // namespace
 
 @interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
@@ -251,20 +245,6 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
     else
       constraint.constant = -constantDiff;
   }
-}
-
-- (void)setFakeboxHighlighted:(BOOL)highlighted {
-  [UIView animateWithDuration:kFakeboxHighlightDuration
-                        delay:0
-                      options:UIViewAnimationOptionCurveEaseOut
-                   animations:^{
-                     CGFloat alpha = kAdaptiveLocationBarBackgroundAlpha;
-                     if (highlighted)
-                       alpha += kFakeboxHighlightIncrease;
-                     self.backgroundContainer.backgroundColor =
-                         [UIColor colorWithWhite:0 alpha:alpha];
-                   }
-                   completion:nil];
 }
 
 - (void)fadeOutShadow {
