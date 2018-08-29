@@ -70,6 +70,8 @@ typedef std::vector<Schema> SchemaList;
 //  - "additionalProperties": false is not supported. The value of
 //    "additionalProperties" has to be a schema if present. Otherwise, the
 //    behavior for unknown attributes is controlled by |SchemaOnErrorStrategy|.
+//  - "sensitiveValue" (bool) marks a value to be sensitive. This is used to
+//    mask those values in the UI by calling |MaskSensitiveValues()|.
 class POLICY_EXPORT Schema {
  public:
   // Used internally to store shared data.
