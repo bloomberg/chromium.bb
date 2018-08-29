@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
@@ -76,15 +75,13 @@ public class RepostFormWarningTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Verify that the form resubmission warning was not shown.
-        Assert.assertNull("Form resubmission warning shown upon first load.",
-                RepostFormWarningDialog.getCurrentDialogForTesting());
+        waitForNoReportFormWarningDialog();
     }
 
     /** Verifies that confirming the form reload performs the reload. */
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @DisabledTest(message = "crbug.com/878651")
     public void testFormResubmissionContinue() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
@@ -99,8 +96,7 @@ public class RepostFormWarningTest {
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
-        Assert.assertNull("Form resubmission warning dialog was not dismissed correctly.",
-                RepostFormWarningDialog.getCurrentDialogForTesting());
+        waitForNoReportFormWarningDialog();
     }
 
     /**
@@ -131,8 +127,7 @@ public class RepostFormWarningTest {
         Assert.assertTrue("Page was reloaded despite selecting Cancel.", timedOut);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
-        Assert.assertNull("Form resubmission warning dialog was not dismissed correctly.",
-                RepostFormWarningDialog.getCurrentDialogForTesting());
+        waitForNoReportFormWarningDialog();
     }
 
     /**
@@ -154,6 +149,10 @@ public class RepostFormWarningTest {
                 (Runnable) () -> mActivityTestRule.getActivity().getCurrentTabModel().closeTab(
                         mTab));
 
+        waitForNoReportFormWarningDialog();
+    }
+
+    private void waitForNoReportFormWarningDialog() {
         CriteriaHelper.pollUiThread(
                 new Criteria("Form resubmission dialog not dismissed correctly") {
                     @Override
