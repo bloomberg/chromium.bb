@@ -40,6 +40,19 @@ chrome_cleaner_mojom("json_parser_interface") {
   ]
 }
 
+chrome_cleaner_mojom("engine_sandbox_test_interface") {
+  testonly = true
+
+  sources = [
+    "test_pup_typemap.mojom",
+    "test_string16_embedded_nulls.mojom",
+  ]
+
+  deps = [
+    ":engine_sandbox_interface",
+  ]
+}
+
 chrome_cleaner_mojom("mojo_sandbox_hooks_test_interface") {
   testonly = true
 
