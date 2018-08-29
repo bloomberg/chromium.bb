@@ -24,7 +24,9 @@ void FakeDeviceDescriptorTest::SetUp() {
       .WillOnce(
           Invoke([this, &wait_loop](
                      const std::vector<media::VideoCaptureDeviceInfo>& infos) {
-            fake_device_info_ = infos[0];
+            CHECK(infos.size() >= 3);
+            i420_fake_device_info_ = infos[0];
+            mjpeg_fake_device_info_ = infos[2];
             wait_loop.Quit();
           }));
   factory_->GetDeviceInfos(device_info_receiver_.Get());
