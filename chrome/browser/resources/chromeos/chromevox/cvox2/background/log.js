@@ -84,13 +84,34 @@ LogPage.updateLog = function(log, div) {
     var typeName = document.createElement('span');
     typeName.textContent = log[i].logType;
     typeName.className = 'log-type-tag';
+    var timeStamp = document.createElement('span');
+    timeStamp.textContent = LogPage.formatTimeStamp(log[i].date);
+    timeStamp.className = 'log-time-tag';
     var textWrapper = document.createElement('span');
     textWrapper.textContent = log[i].logStr;
 
     p.appendChild(typeName);
+    p.appendChild(timeStamp);
     p.appendChild(textWrapper);
     div.appendChild(p);
   }
+};
+
+/**
+ * Format time stamp.
+ * In this log, events are dispatched many times in a short time, so
+ * milliseconds order time stamp is required.
+ * @param {!Date} date
+ * @return {!string}
+ */
+LogPage.formatTimeStamp = function(date) {
+  var time = date.getTime();
+  time -= date.getTimezoneOffset() * 1000 * 60;
+  var timeStr = ('00' + Math.floor(time / 1000 / 60 / 60) % 24).slice(-2) + ':';
+  timeStr += ('00' + Math.floor(time / 1000 / 60) % 60).slice(-2) + ':';
+  timeStr += ('00' + Math.floor(time / 1000) % 60).slice(-2) + '.';
+  timeStr += ('000' + time % 1000).slice(-3);
+  return timeStr;
 };
 
 document.addEventListener('DOMContentLoaded', function() {
