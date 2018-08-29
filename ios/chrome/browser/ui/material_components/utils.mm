@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarContainerViewController.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
@@ -18,7 +19,8 @@
 #endif
 
 // Customize the length and opacity of AppBar's shadow.
-void CustomizeAppBarShadow(MDCAppBar* appBar) {
+void CustomizeAppBarShadow(
+    MDCFlexibleHeaderViewController* headerViewController) {
   // Adjust the length of the shadow using a customized intensityBlock.
   MDCFlexibleHeaderShadowIntensityChangeBlock intensityBlock = ^(
       CALayer* _Nonnull shadowLayer, CGFloat intensity) {
@@ -30,8 +32,8 @@ void CustomizeAppBarShadow(MDCAppBar* appBar) {
   MDCShadowLayer* shadowLayer = [MDCShadowLayer layer];
   shadowLayer.opacity = 0.4f;
   // Apply the customized shadow layer on the headerView of appBar.
-  [appBar.headerViewController.headerView setShadowLayer:shadowLayer
-                                 intensityDidChangeBlock:intensityBlock];
+  [headerViewController.headerView setShadowLayer:shadowLayer
+                          intensityDidChangeBlock:intensityBlock];
 }
 
 void ConfigureAppBarWithCardStyle(MDCAppBar* appBar) {
@@ -43,5 +45,19 @@ void ConfigureAppBarWithCardStyle(MDCAppBar* appBar) {
   appBar.navigationBar.tintColor = [[MDCPalette greyPalette] tint900];
   appBar.navigationBar.titleAlignment = MDCNavigationBarTitleAlignmentLeading;
 
-  CustomizeAppBarShadow(appBar);
+  CustomizeAppBarShadow(appBar.headerViewController);
+}
+
+void ConfigureAppBarViewControllerWithCardStyle(
+    MDCAppBarViewController* viewController) {
+  viewController.headerView.canOverExtend = NO;
+  viewController.headerView.shiftBehavior =
+      MDCFlexibleHeaderShiftBehaviorDisabled;
+  viewController.headerView.backgroundColor =
+      [[MDCPalette greyPalette] tint200];
+  viewController.navigationBar.tintColor = [[MDCPalette greyPalette] tint900];
+  viewController.navigationBar.titleAlignment =
+      MDCNavigationBarTitleAlignmentLeading;
+
+  CustomizeAppBarShadow(viewController);
 }
