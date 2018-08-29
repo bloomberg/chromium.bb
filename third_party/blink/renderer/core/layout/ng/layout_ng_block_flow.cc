@@ -37,19 +37,11 @@ void LayoutNGBlockFlow::ComputeIntrinsicLogicalWidths(
                                                    max_logical_width);
     return;
   }
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(StyleRef().GetWritingMode(), MinMaxSizeInput());
-  // ComputeMinMaxSize returns a border-box size. This function needs to return
-  // content-box plus scrollbar.
-  // We can't just call BorderAndPaddingLogicalWidth() here because that
-  // handles percentages differently from NG intrinsic sizing.
-  scoped_refptr<NGConstraintSpace> space =
-      NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
-                               node.InitialContainingBlockSize())
-          .ToConstraintSpace(node.Style().GetWritingMode());
-  sizes -=
-      (ComputeBorders(*space, StyleRef()) + ComputePadding(*space, StyleRef()))
-          .InlineSum();
+  MinMaxSizeInput input;
+  // This function returns content-box plus scrollbar.
+  input.size_type = NGMinMaxSizeType::kContentBoxSize;
+  MinMaxSize sizes = node.ComputeMinMaxSize(StyleRef().GetWritingMode(), input);
+  sizes += LayoutUnit(ScrollbarLogicalWidth());
   min_logical_width = sizes.min_size;
   max_logical_width = sizes.max_size;
 }

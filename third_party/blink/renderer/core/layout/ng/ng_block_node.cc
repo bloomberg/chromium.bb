@@ -281,7 +281,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   // if we're outside of layout, we can't do that. This can happen on Mac.
   if ((!CanUseNewLayout() && !is_orthogonal_flow_root) ||
       (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
-    return ComputeMinMaxSizeFromLegacy();
+    return ComputeMinMaxSizeFromLegacy(input.size_type);
   }
 
   scoped_refptr<NGConstraintSpace> zero_constraint_space =
@@ -304,6 +304,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
         TextDirection::kLtr,  // irrelevant here
         ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
+    if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
+      sizes -= fragment.Borders().InlineSum() + fragment.Padding().InlineSum() +
+               box_->ScrollbarLogicalWidth();
+      DCHECK_GE(sizes.min_size, LayoutUnit());
+      DCHECK_GE(sizes.max_size, LayoutUnit());
+    }
     return sizes;
   }
 
@@ -316,7 +322,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   if (!box_->GetFrameView()->IsInPerformLayout()) {
     // We can't synthesize these using Layout() if we're not in PerformLayout.
     // This situation can happen on mac. Fall back to legacy instead.
-    return ComputeMinMaxSizeFromLegacy();
+    return ComputeMinMaxSizeFromLegacy(input.size_type);
   }
 
   // Have to synthesize this value.
@@ -340,10 +346,18 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       TextDirection::kLtr,  // irrelevant here
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
+
+  if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
+    sizes -= max_fragment.Borders().InlineSum() +
+             max_fragment.Padding().InlineSum() + box_->ScrollbarLogicalWidth();
+    DCHECK_GE(sizes.min_size, LayoutUnit());
+    DCHECK_GE(sizes.max_size, LayoutUnit());
+  }
   return sizes;
 }
 
-MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy() const {
+MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
+    NGMinMaxSizeType type) const {
   // TODO(layout-ng): This could be somewhat optimized by directly calling
   // computeIntrinsicLogicalWidths, but that function is currently private.
   // Consider doing that if this becomes a performance issue.
@@ -354,6 +368,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy() const {
   sizes.max_size =
       box_->ComputeLogicalWidthUsing(kMainOrPreferredSize, Length(kMaxContent),
                                      LayoutUnit(), box_->ContainingBlock());
+  if (type == NGMinMaxSizeType::kContentBoxSize) {
+    sizes -=
+        (box_->BorderAndPaddingLogicalWidth() + box_->ScrollbarLogicalWidth());
+    DCHECK_GE(sizes.min_size, LayoutUnit());
+    DCHECK_GE(sizes.max_size, LayoutUnit());
+  }
   return sizes;
 }
 

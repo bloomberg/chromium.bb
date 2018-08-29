@@ -196,7 +196,10 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   // First calculate the min/max sizes of columns.
   NGBlockLayoutAlgorithm algorithm(Node(), ConstraintSpace());
-  base::Optional<MinMaxSize> min_max_sizes = algorithm.ComputeMinMaxSize(input);
+  MinMaxSizeInput child_input(input);
+  child_input.size_type = NGMinMaxSizeType::kContentBoxSize;
+  base::Optional<MinMaxSize> min_max_sizes =
+      algorithm.ComputeMinMaxSize(child_input);
   DCHECK(min_max_sizes.has_value());
   MinMaxSize sizes = min_max_sizes.value();
 
@@ -215,10 +218,13 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   sizes.min_size *= column_count;
   sizes.max_size *= column_count;
   LayoutUnit column_gap = ResolveUsedColumnGap(LayoutUnit(), Style());
-  LayoutUnit gap_extra = column_gap * (column_count - 1);
-  LayoutUnit border_scrollbar_padding =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), node_).InlineSum();
-  sizes += gap_extra + border_scrollbar_padding;
+  sizes += column_gap * (column_count - 1);
+
+  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize) {
+    LayoutUnit border_scrollbar_padding =
+        CalculateBorderScrollbarPadding(ConstraintSpace(), node_).InlineSum();
+    sizes += border_scrollbar_padding;
+  }
 
   return sizes;
 }
