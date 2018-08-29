@@ -170,8 +170,8 @@ void TestUrlRequestCallback::OnSucceeded(Cronet_UrlRequestPtr request,
   response_step_ = ON_SUCCEEDED;
   response_info_ = std::make_unique<UrlResponseInfo>(info);
 
-  SignalDone();
   MaybeCancelOrPause(request);
+  SignalDone();
 }
 
 void TestUrlRequestCallback::OnFailed(Cronet_UrlRequestPtr request,
@@ -194,8 +194,8 @@ void TestUrlRequestCallback::OnFailed(Cronet_UrlRequestPtr request,
   last_error_ = error;
   last_error_code_ = Cronet_Error_error_code_get(error);
   last_error_message_ = Cronet_Error_message_get(error);
-  SignalDone();
   MaybeCancelOrPause(request);
+  SignalDone();
 }
 
 void TestUrlRequestCallback::OnCanceled(Cronet_UrlRequestPtr request,
@@ -209,8 +209,8 @@ void TestUrlRequestCallback::OnCanceled(Cronet_UrlRequestPtr request,
 
   response_step_ = ON_CANCELED;
   on_canceled_called_ = true;
-  SignalDone();
   MaybeCancelOrPause(request);
+  SignalDone();
 }
 
 void TestUrlRequestCallback::ShutdownExecutor() {

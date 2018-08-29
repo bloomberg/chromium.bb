@@ -313,8 +313,10 @@ Cronet_RESULT Cronet_UrlRequestImpl::Read(Cronet_BufferPtr buffer) {
   if (!waiting_on_read_)
     return engine_->CheckResult(Cronet_RESULT_ILLEGAL_STATE_UNEXPECTED_READ);
   waiting_on_read_ = false;
-  if (IsDoneLocked())
+  if (IsDoneLocked()) {
+    Cronet_Buffer_Destroy(buffer);
     return engine_->CheckResult(Cronet_RESULT_SUCCESS);
+  }
   // Create IOBuffer that will own |buffer| while it is used by |request_|.
   net::IOBuffer* io_buffer = new IOBufferWithCronet_Buffer(buffer);
   if (request_->ReadData(io_buffer, Cronet_Buffer_GetSize(buffer)))
