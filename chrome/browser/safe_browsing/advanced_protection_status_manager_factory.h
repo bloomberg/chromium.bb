@@ -37,6 +37,8 @@ class AdvancedProtectionStatusManagerFactory
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
   bool ServiceIsNULLWhileTesting() const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AdvancedProtectionStatusManagerFactory);
 };
 
 }  // namespace safe_browsing
