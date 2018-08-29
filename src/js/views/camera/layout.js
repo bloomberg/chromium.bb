@@ -113,7 +113,7 @@ camera.views.camera.Layout.prototype.update = function() {
     // least: button-size + 2 * min-margin
     // gap: preset-margin - min-margin
     // baseline: preset-baseline
-    return shutter ? [100, 88, 12, 56] : [68, 56, 12, 40];
+    return shutter ? [100, 88, 12, 56] : [76, 56, 20, 48];
   };
   var accommodate = (measure) => {
     var [_, leastShutter, _, _] = dimens(true);
