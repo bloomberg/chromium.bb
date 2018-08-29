@@ -252,10 +252,6 @@ class LoginHandler : public content::LoginDelegate,
   // or rejected.  This should only be accessed on the UI loop.
   autofill::PasswordForm password_form_;
 
-  // Points to the password manager owned by the WebContents requesting auth.
-  // This should only be accessed on the UI loop.
-  password_manager::PasswordManager* password_manager_;
-
   // Cached from the net::URLRequest, in case it goes NULL on us.
   content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
