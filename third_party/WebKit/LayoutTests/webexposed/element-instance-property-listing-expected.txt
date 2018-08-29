@@ -865,6 +865,7 @@ html element param
 html element picture
 html element plaintext
 html element portal
+    property src
 html element pre
     property width
 html element progress

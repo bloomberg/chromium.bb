@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "url/mojom/url.mojom";
 
 // The Portal interface is used by the renderer to interact with the Portal.
 interface Portal {
@@ -12,4 +13,7 @@ interface Portal {
   // interface. |token| is the unique token representing the portal. This token
   // will be used by the content layer when referencing the portal.
   Init() => (mojo_base.mojom.UnguessableToken token);
+
+  // Navigates the portal to |url|.
+  Navigate(url.mojom.Url url);
 };

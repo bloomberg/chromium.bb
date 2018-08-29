@@ -33,9 +33,16 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  private:
   explicit HTMLPortalElement(Document&);
 
+  // Navigates the portal to |url_|.
+  void Navigate();
+
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
+
+  // Element overrides
+  bool IsURLAttribute(const Attribute&) const override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
   // HTMLFrameOwnerElement overrides
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {

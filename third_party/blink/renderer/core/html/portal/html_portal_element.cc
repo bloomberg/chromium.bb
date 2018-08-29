@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -25,6 +26,13 @@ HTMLElement* HTMLPortalElement::Create(Document& document) {
   return HTMLUnknownElement::Create(HTMLNames::portalTag, document);
 }
 
+void HTMLPortalElement::Navigate() {
+  KURL url = GetNonEmptyURLAttribute(HTMLNames::srcAttr);
+  if (!url.IsEmpty() && portal_ptr_) {
+    portal_ptr_->Navigate(url);
+  }
+}
+
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
@@ -40,6 +48,7 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
           portal->portal_token_ = portal_token;
         },
         WrapPersistent(this)));
+    Navigate();
   }
 
   return result;
@@ -53,6 +62,19 @@ void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
   if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
     portal_ptr_.reset();
   }
+}
+
+bool HTMLPortalElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == HTMLNames::srcAttr ||
+         HTMLFrameOwnerElement::IsURLAttribute(attribute);
+}
+
+void HTMLPortalElement::ParseAttribute(
+    const AttributeModificationParams& params) {
+  HTMLFrameOwnerElement::ParseAttribute(params);
+
+  if (params.name == HTMLNames::srcAttr)
+    Navigate();
 }
 
 }  // namespace blink
