@@ -55,9 +55,9 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
   // earlier.
   web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
 
-  std::unique_ptr<HTMLSource> html_source(
-      new HTMLSource(GetProfile()->GetOriginalProfile()));
-  content::URLDataSource::Add(GetProfile(), html_source.release());
+  content::URLDataSource::Add(
+      GetProfile(),
+      std::make_unique<HTMLSource>(GetProfile()->GetOriginalProfile()));
 }
 
 AppLauncherPageUI::~AppLauncherPageUI() {

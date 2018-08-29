@@ -39,17 +39,17 @@ void RegisterViewerSource(Profile* profile) {
   std::unique_ptr<DistillerUIHandle> ui_handle;
 
 #if defined(OS_ANDROID)
-  ui_handle.reset(new dom_distiller::android::DistillerUIHandleAndroid());
+  ui_handle =
+      std::make_unique<dom_distiller::android::DistillerUIHandleAndroid>();
 #endif  // defined(OS_ANDROID)
 
   // Set the JavaScript world ID.
-  if (!DistillerJavaScriptWorldIdIsSet()) {
+  if (!DistillerJavaScriptWorldIdIsSet())
     SetDistillerJavaScriptWorldId(ISOLATED_WORLD_ID_CHROME_INTERNAL);
-  }
 
   content::URLDataSource::Add(
-      profile, new DomDistillerViewerSource(lazy_service, kDomDistillerScheme,
-                                            std::move(ui_handle)));
+      profile, std::make_unique<DomDistillerViewerSource>(
+                   lazy_service, kDomDistillerScheme, std::move(ui_handle)));
 }
 
 }  // namespace dom_distiller
