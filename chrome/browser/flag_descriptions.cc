@@ -1048,12 +1048,6 @@ const char kIconNtpName[] = "Large icons on the New Tab page";
 const char kIconNtpDescription[] =
     "Enable the experimental New Tab page using large icons.";
 
-const char kIdnNavigationSuggestionsName[] =
-    "Navigation suggestions for internationalized domain names";
-const char kIdnNavigationSuggestionsDescription[] =
-    "Enable navigation suggestions for internationalized domain names that are "
-    "visually similar to popular domains.";
-
 const char kIgnoreGpuBlacklistName[] = "Override software rendering list";
 const char kIgnoreGpuBlacklistDescription[] =
     "Overrides the built-in software rendering list and enables "
@@ -1118,6 +1112,12 @@ const char kLoadMediaRouterComponentExtensionName[] =
     "Load Media Router Component Extension";
 const char kLoadMediaRouterComponentExtensionDescription[] =
     "Loads the Media Router component extension at startup.";
+
+const char kLookalikeUrlNavigationSuggestionsName[] =
+    "Navigation suggestions for lookalike URLs";
+const char kLookalikeUrlNavigationSuggestionsDescription[] =
+    "Enable navigation suggestions for URLs that are visually similar to "
+    "popular domains or to domains with a site engagement score.";
 
 const char kMacViewsAutofillPopupName[] =
     "Uses the Views Autofill Popup on Mac";

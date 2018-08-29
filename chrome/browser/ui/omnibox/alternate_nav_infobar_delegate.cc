@@ -38,7 +38,7 @@ void AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
 }
 
 // static
-void AlternateNavInfoBarDelegate::CreateForIDNNavigation(
+void AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
     content::WebContents* web_contents,
     const base::string16& text,
     const GURL& destination_url,
@@ -113,7 +113,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
     if (history_service)
       history_service->DeleteKeywordSearchTermForURL(original_url_);
   } else {
-    // This is an IDN navigation suggestion. Remove the current entry.
+    // This is a lookalike URL navigation suggestion. Remove the current entry.
     if (history_service)
       history_service->DeleteURL(original_url_);
   }

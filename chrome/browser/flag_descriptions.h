@@ -650,9 +650,6 @@ extern const char kHtmlBasedUsernameDetectorDescription[];
 extern const char kIconNtpName[];
 extern const char kIconNtpDescription[];
 
-extern const char kIdnNavigationSuggestionsName[];
-extern const char kIdnNavigationSuggestionsDescription[];
-
 extern const char kIgnoreGpuBlacklistName[];
 extern const char kIgnoreGpuBlacklistDescription[];
 
@@ -688,6 +685,9 @@ extern const char kLeftToRightUrlsDescription[];
 
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
+
+extern const char kLookalikeUrlNavigationSuggestionsName[];
+extern const char kLookalikeUrlNavigationSuggestionsDescription[];
 
 extern const char kMacViewsAutofillPopupName[];
 extern const char kMacViewsAutofillPopupDescription[];

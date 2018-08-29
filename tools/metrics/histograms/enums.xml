@@ -29119,7 +29119,6 @@ from previous Chrome versions.
   <int value="120429808" label="disable-new-profile-management"/>
   <int value="121684313" label="QuickUnlockPin:enabled"/>
   <int value="121858954" label="enable-supervised-user-safesites"/>
-  <int value="122812452" label="IdnNavigationSuggestions:enabled"/>
   <int value="123097915" label="FaviconsFromWebManifest:enabled"/>
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
@@ -29336,6 +29335,7 @@ from previous Chrome versions.
   <int value="609112512" label="touch-selection-strategy"/>
   <int value="609580715" label="ArcCupsApi:disabled"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
+  <int value="613629912" label="LookalikeUrlNavigationSuggestions:enabled"/>
   <int value="624317932" label="print-pdf-as-image"/>
   <int value="624368375" label="OmniboxEntitySuggestions:enabled"/>
   <int value="625273056" label="disable-boot-animation"/>
@@ -29858,6 +29858,7 @@ from previous Chrome versions.
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
@@ -29935,7 +29936,6 @@ from previous Chrome versions.
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
-  <int value="1815359532" label="IdnNavigationSuggestions:disabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1819256299" label="disable-webrtc-hw-decoding"/>
