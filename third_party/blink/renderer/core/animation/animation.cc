@@ -797,18 +797,17 @@ CompositorAnimations::FailureCode Animation::CheckCanStartAnimationOnCompositor(
     const base::Optional<CompositorElementIdSet>& composited_element_ids)
     const {
   CompositorAnimations::FailureCode code =
-      CheckCanStartAnimationOnCompositorInternal(composited_element_ids);
+      CheckCanStartAnimationOnCompositorInternal();
   if (!code.Ok()) {
     return code;
   }
   return ToKeyframeEffect(content_.Get())
-      ->CheckCanStartAnimationOnCompositor(playback_rate_);
+      ->CheckCanStartAnimationOnCompositor(composited_element_ids,
+                                           playback_rate_);
 }
 
 CompositorAnimations::FailureCode
-Animation::CheckCanStartAnimationOnCompositorInternal(
-    const base::Optional<CompositorElementIdSet>& composited_element_ids)
-    const {
+Animation::CheckCanStartAnimationOnCompositorInternal() const {
   if (is_composited_animation_disabled_for_testing_) {
     return CompositorAnimations::FailureCode::NonActionable(
         "Accelerated animations disabled for testing");
@@ -849,35 +848,6 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
         "Animation effect is not keyframe-based");
   }
 
-  // If the optional element id set has no value we must be in SPv1 mode in
-  // which case we trust the compositing logic will create a layer if needed.
-  if (composited_element_ids) {
-    DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-           RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-    Element* target_element = ToKeyframeEffect(content_.Get())->target();
-    if (!target_element) {
-      return CompositorAnimations::FailureCode::Actionable(
-          "Animation is not attached to an element");
-    }
-
-    bool has_own_layer_id = false;
-    if (target_element->GetLayoutObject() &&
-        target_element->GetLayoutObject()->IsBoxModelObject() &&
-        target_element->GetLayoutObject()->HasLayer()) {
-      CompositorElementId target_element_id =
-          CompositorElementIdFromUniqueObjectId(
-              target_element->GetLayoutObject()->UniqueId(),
-              CompositorElementIdNamespace::kPrimary);
-      if (composited_element_ids->Contains(target_element_id)) {
-        has_own_layer_id = true;
-      }
-    }
-    if (!has_own_layer_id) {
-      return CompositorAnimations::FailureCode::NonActionable(
-          "Target element does not have its own compositing layer");
-    }
-  }
-
   if (!Playing()) {
     return CompositorAnimations::FailureCode::Actionable(
         "Animation is not playing");
@@ -907,6 +877,7 @@ void Animation::StartAnimationOnCompositor(
 
   DCHECK(!start_time || !IsNull(start_time.value()));
   DCHECK_NE(compositor_group_, 0);
+  DCHECK(ToKeyframeEffect(content_.Get()));
   ToKeyframeEffect(content_.Get())
       ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
                                    playback_rate_);

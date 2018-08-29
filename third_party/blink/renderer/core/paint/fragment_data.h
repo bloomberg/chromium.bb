@@ -141,6 +141,7 @@ class CORE_EXPORT FragmentData {
     if (rare_data_)
       rare_data_->paint_properties = nullptr;
   }
+  void EnsureIdForTesting() { EnsureRareData(); }
 
   // This is a complete set of property nodes that should be used as a
   // starting point to paint a LayoutObject. This data is cached because some
