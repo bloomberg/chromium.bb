@@ -103,10 +103,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 
-  // Returns true when additional padding equal to GetPrefixedSeparatorWidth()
-  // should be added to the end of the view. This is useful in the case where
-  // it's required to layout subsequent views in the same position regardless
-  // of whether the separator is shown or not.
+  // Returns true when additional padding equal to
+  // GetWidthBetweenIconAndSeparator() should be added to the end of the view.
+  // This is useful in the case where it's required to layout subsequent views
+  // in the same position regardless of whether the separator is shown or not.
   virtual bool ShouldShowExtraEndSpace() const;
 
   // Returns a multiplier used to calculate the actual width of the view based
@@ -160,10 +160,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
-  // Returns the width taken by the separator stroke and the before-padding.
-  // If the separator is not shown, and ShouldShowExtraEndSpace() is false,
-  // this returns 0.
-  int GetPrefixedSeparatorWidth() const;
+  // Returns the width after the icon and before the separator. If the
+  // separator is not shown, and ShouldShowExtraEndSpace() is false, this
+  // returns 0.
+  int GetWidthBetweenIconAndSeparator() const;
 
   // Set up for icons that animate their labels in and then out.
   void SetUpForInOutAnimation();
@@ -189,8 +189,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // to the suggestion text, like in the SelectedKeywordView.
   virtual int GetExtraInternalSpacing() const;
 
-  // Padding after the separator.
-  int GetEndPadding() const;
+  // Padding after the separator. If this separator is shown, this includes the
+  // separator width.
+  int GetEndPaddingWithSeparator() const;
 
   // The view has been activated by a user gesture such as spacebar.
   // Returns true if some handling was performed.
