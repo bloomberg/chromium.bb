@@ -52,12 +52,6 @@ class IEImporter : public Importer {
   // Reads history information from COM interface.
   void ImportHistory();
 
-  // Import password for IE6 stored in protected storage.
-  void ImportPasswordsIE6();
-
-  // Import password for IE7 and IE8 stored in Storage2.
-  void ImportPasswordsIE7();
-
   void ImportSearchEngines();
 
   // Import the homepage setting of IE. Note: IE supports multiple home pages,
@@ -74,9 +68,6 @@ class IEImporter : public Importer {
   void ParseFavoritesFolder(const FavoritesInfo& info,
                             BookmarkVector* bookmarks,
                             favicon_base::FaviconUsageDataList* favicons);
-
-  // Determines which version of IE is in use.
-  int CurrentIEVersion() const;
 
   // Set to true when importing favorites from old Edge on Windows 10.
   bool edge_import_mode_;

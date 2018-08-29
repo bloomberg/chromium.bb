@@ -40,7 +40,6 @@
 #include "chrome/common/importer/pstore_declarations.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/favicon_reencode.h"
-#include "components/autofill/core/common/password_form.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -50,7 +49,6 @@ namespace {
 // Registry key paths from which we import IE settings.
 const base::char16 kSearchScopePath[] =
     L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
-const base::char16 kIEVersionKey[] = L"Software\\Microsoft\\Internet Explorer";
 
 // NTFS stream name of favicon image data.
 const base::char16 kFaviconStreamName[] = L":favicon:$DATA";
@@ -460,15 +458,6 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
     ImportSearchEngines();
     bridge_->NotifyItemEnded(importer::SEARCH_ENGINES);
   }
-  if ((items & importer::PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(importer::PASSWORDS);
-    // Always import IE6 passwords.
-    ImportPasswordsIE6();
-
-    if (CurrentIEVersion() >= 7)
-      ImportPasswordsIE7();
-    bridge_->NotifyItemEnded(importer::PASSWORDS);
-  }
   bridge_->NotifyEnded();
 }
 
@@ -555,147 +544,6 @@ void IEImporter::ImportHistory() {
     if (!cancelled()) {
       bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_IE_IMPORTED);
     }
-  }
-}
-
-void IEImporter::ImportPasswordsIE6() {
-  GUID AutocompleteGUID = kPStoreAutocompleteGUID;
-  if (!source_path_.empty()) {
-    // We supply a fake GUID for testting.
-    AutocompleteGUID = kUnittestGUID;
-  }
-
-  // The PStoreCreateInstance function retrieves an interface pointer
-  // to a storage provider. But this function has no associated import
-  // library or header file, we must call it using the LoadLibrary()
-  // and GetProcAddress() functions.
-  typedef HRESULT(WINAPI * PStoreCreateFunc)(IPStore**, DWORD, DWORD, DWORD);
-  HMODULE pstorec_dll = LoadLibrary(L"pstorec.dll");
-  if (!pstorec_dll)
-    return;
-  PStoreCreateFunc PStoreCreateInstance =
-      (PStoreCreateFunc)GetProcAddress(pstorec_dll, "PStoreCreateInstance");
-  if (!PStoreCreateInstance) {
-    FreeLibrary(pstorec_dll);
-    return;
-  }
-
-  Microsoft::WRL::ComPtr<IPStore> pstore;
-  HRESULT result = PStoreCreateInstance(pstore.GetAddressOf(), 0, 0, 0);
-  if (result != S_OK) {
-    FreeLibrary(pstorec_dll);
-    return;
-  }
-
-  std::vector<AutoCompleteInfo> ac_list;
-
-  // Enumerates AutoComplete items in the protected database.
-  Microsoft::WRL::ComPtr<IEnumPStoreItems> item;
-  result = pstore->EnumItems(0, &AutocompleteGUID, &AutocompleteGUID, 0,
-                             item.GetAddressOf());
-  if (result != PST_E_OK) {
-    pstore.Reset();
-    FreeLibrary(pstorec_dll);
-    return;
-  }
-
-  wchar_t* item_name;
-  while (!cancelled() && SUCCEEDED(item->Next(1, &item_name, 0))) {
-    DWORD length = 0;
-    unsigned char* buffer = NULL;
-    result = pstore->ReadItem(0, &AutocompleteGUID, &AutocompleteGUID,
-                              item_name, &length, &buffer, NULL, 0);
-    if (SUCCEEDED(result)) {
-      AutoCompleteInfo ac;
-      ac.key = item_name;
-      base::string16 data;
-      data.insert(0, reinterpret_cast<wchar_t*>(buffer),
-                  length / sizeof(wchar_t));
-
-      // The key name is always ended with ":StringData".
-      const wchar_t kDataSuffix[] = L":StringData";
-      size_t i = ac.key.rfind(kDataSuffix);
-      if (i != base::string16::npos && ac.key.substr(i) == kDataSuffix) {
-        ac.key.erase(i);
-        ac.is_url = (ac.key.find(L"://") != base::string16::npos);
-        ac_list.push_back(ac);
-        ac_list.back().data =
-            base::SplitString(data, base::string16(1, '\0'),
-                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      }
-      CoTaskMemFree(buffer);
-    }
-    CoTaskMemFree(item_name);
-  }
-  // Releases them before unload the dll.
-  item.Reset();
-  pstore.Reset();
-  FreeLibrary(pstorec_dll);
-
-  size_t i;
-  for (i = 0; i < ac_list.size(); i++) {
-    if (!ac_list[i].is_url || ac_list[i].data.size() < 2)
-      continue;
-
-    GURL url(ac_list[i].key.c_str());
-    if (!(base::LowerCaseEqualsASCII(url.scheme(), url::kHttpScheme) ||
-          base::LowerCaseEqualsASCII(url.scheme(), url::kHttpsScheme))) {
-      continue;
-    }
-
-    autofill::PasswordForm form;
-    GURL::Replacements rp;
-    rp.ClearUsername();
-    rp.ClearPassword();
-    rp.ClearQuery();
-    rp.ClearRef();
-    form.origin = url.ReplaceComponents(rp);
-    form.username_value = ac_list[i].data[0];
-    form.password_value = ac_list[i].data[1];
-    form.signon_realm = url.GetOrigin().spec();
-
-    // Goes through the list to find out the username field
-    // of the web page.
-    size_t list_it, item_it;
-    for (list_it = 0; list_it < ac_list.size(); ++list_it) {
-      if (ac_list[list_it].is_url)
-        continue;
-
-      for (item_it = 0; item_it < ac_list[list_it].data.size(); ++item_it)
-        if (ac_list[list_it].data[item_it] == form.username_value) {
-          form.username_element = ac_list[list_it].key;
-          break;
-        }
-    }
-
-    bridge_->SetPasswordForm(form);
-  }
-}
-
-void IEImporter::ImportPasswordsIE7() {
-  base::string16 key_path(importer::GetIE7PasswordsKey());
-  base::win::RegKey key(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ);
-  base::win::RegistryValueIterator reg_iterator(HKEY_CURRENT_USER,
-                                                key_path.c_str());
-  importer::ImporterIE7PasswordInfo password_info;
-  while (reg_iterator.Valid() && !cancelled()) {
-    // Get the size of the encrypted data.
-    DWORD value_len = 0;
-    key.ReadValue(reg_iterator.Name(), NULL, &value_len, NULL);
-    if (value_len) {
-      // Query the encrypted data.
-      password_info.encrypted_data.resize(value_len);
-      if (key.ReadValue(reg_iterator.Name(),
-                        &password_info.encrypted_data.front(), &value_len,
-                        NULL) == ERROR_SUCCESS) {
-        password_info.url_hash = reg_iterator.Name();
-        password_info.date_created = base::Time::Now();
-
-        bridge_->AddIE7PasswordInfo(password_info);
-      }
-    }
-
-    ++reg_iterator;
   }
 }
 
@@ -889,16 +737,4 @@ void IEImporter::ParseFavoritesFolder(
   for (FaviconMap::iterator iter = favicon_map.begin();
        iter != favicon_map.end(); ++iter)
     favicons->push_back(iter->second);
-}
-
-int IEImporter::CurrentIEVersion() const {
-  static int version = -1;
-  if (version < 0) {
-    wchar_t buffer[128];
-    DWORD buffer_length = sizeof(buffer);
-    base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kIEVersionKey, KEY_READ);
-    LONG result = reg_key.ReadValue(L"Version", buffer, &buffer_length, NULL);
-    version = ((result == ERROR_SUCCESS) ? _wtoi(buffer) : 0);
-  }
-  return version;
 }
