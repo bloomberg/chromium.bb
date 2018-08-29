@@ -48,8 +48,8 @@ void PrintingAllowedColorModesPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   printing::ColorModeRestriction value;
   if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingAllowedColorModes,
-                    std::make_unique<base::Value>(static_cast<int>(value)));
+    prefs->SetInteger(prefs::kPrintingAllowedColorModes,
+                      static_cast<int>(value));
   }
 }
 
@@ -90,8 +90,8 @@ void PrintingAllowedDuplexModesPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   printing::DuplexModeRestriction value;
   if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingAllowedDuplexModes,
-                    std::make_unique<base::Value>(static_cast<int>(value)));
+    prefs->SetInteger(prefs::kPrintingAllowedDuplexModes,
+                      static_cast<int>(value));
   }
 }
 
@@ -151,10 +151,8 @@ void PrintingColorDefaultPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   printing::ColorModeRestriction value;
-  if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingColorDefault,
-                    std::make_unique<base::Value>(static_cast<int>(value)));
-  }
+  if (GetValue(policies, nullptr, &value))
+    prefs->SetInteger(prefs::kPrintingColorDefault, static_cast<int>(value));
 }
 
 PrintingDuplexDefaultPolicyHandler::PrintingDuplexDefaultPolicyHandler()
@@ -191,10 +189,8 @@ void PrintingDuplexDefaultPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   printing::DuplexModeRestriction value;
-  if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingDuplexDefault,
-                    std::make_unique<base::Value>(static_cast<int>(value)));
-  }
+  if (GetValue(policies, nullptr, &value))
+    prefs->SetInteger(prefs::kPrintingDuplexDefault, static_cast<int>(value));
 }
 
 PrintingSizeDefaultPolicyHandler::PrintingSizeDefaultPolicyHandler()
