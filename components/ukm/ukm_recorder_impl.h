@@ -122,7 +122,9 @@ class UkmRecorderImpl : public UkmRecorder {
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
 
   // Returns true if |sanitized_url| should be recorded.
-  bool ShouldRecordUrl(SourceId source_id, const GURL& sanitized_url);
+  bool ShouldRecordUrl(SourceId source_id, const GURL& sanitized_url) const;
+
+  void RecordSource(std::unique_ptr<UkmSource> source);
 
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
