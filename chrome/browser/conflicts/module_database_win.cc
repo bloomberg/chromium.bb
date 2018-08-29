@@ -15,7 +15,6 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "base/win/win_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
@@ -343,15 +342,6 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
 
 #if defined(GOOGLE_CHROME_BUILD)
 void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
-  // Temporarily disable this class on domain-joined machines because enterprise
-  // clients depend on IAttachmentExecute::Save() to be invoked for downloaded
-  // files, but that API call has a known issue (https://crbug.com/870998) with
-  // third-party modules blocking.
-  // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
-  //                 remove this.
-  if (base::win::IsEnterpriseManaged())
-    return;
-
   if (!IsThirdPartyBlockingPolicyEnabled())
     return;
 
