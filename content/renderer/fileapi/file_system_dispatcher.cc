@@ -565,6 +565,32 @@ void FileSystemDispatcher::CreateFileWriter(
           std::move(callbacks)));
 }
 
+void FileSystemDispatcher::ChooseEntry(
+    int render_frame_id,
+    std::unique_ptr<ChooseEntryCallbacks> callbacks) {
+  GetFileSystemManager().ChooseEntry(
+      render_frame_id,
+      base::BindOnce(
+          [](std::unique_ptr<ChooseEntryCallbacks> callbacks,
+             base::File::Error result,
+             std::vector<blink::mojom::FileSystemEntryPtr> entries) {
+            if (result != base::File::FILE_OK) {
+              callbacks->OnError(result);
+            } else {
+              blink::WebVector<blink::WebFileSystem::FileSystemEntry>
+                  web_entries(entries.size());
+              for (size_t i = 0; i < entries.size(); ++i) {
+                web_entries[i].file_system_id =
+                    blink::WebString::FromASCII(entries[i]->file_system_id);
+                web_entries[i].base_name =
+                    blink::WebString::FromASCII(entries[i]->base_name);
+              }
+              callbacks->OnSuccess(std::move(web_entries));
+            }
+          },
+          std::move(callbacks)));
+}
+
 void FileSystemDispatcher::DidOpenFileSystem(int request_id,
                                              const std::string& name,
                                              const GURL& root,

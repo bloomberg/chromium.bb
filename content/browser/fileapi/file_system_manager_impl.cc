@@ -24,6 +24,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/fileapi/file_system_chooser.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
@@ -41,6 +42,7 @@
 #include "storage/common/fileapi/file_system_type_converters.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 using storage::FileSystemFileUtil;
@@ -584,6 +586,21 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
                               blob_storage_context_->context()->AsWeakPtr()),
                           MakeRequest(&writer));
   std::move(callback).Run(base::File::FILE_OK, std::move(writer));
+}
+
+void FileSystemManagerImpl::ChooseEntry(int32_t render_frame_id,
+                                        ChooseEntryCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+    bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&FileSystemChooser::CreateAndShow, process_id_,
+                     render_frame_id, std::move(callback),
+                     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 }
 
 void FileSystemManagerImpl::Cancel(

@@ -492,6 +492,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(media::kMediaControlsExpandGesture));
 #endif
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "WritableFiles",
+      base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :

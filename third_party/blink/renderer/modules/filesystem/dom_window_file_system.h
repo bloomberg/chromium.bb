@@ -33,6 +33,8 @@
 namespace blink {
 
 class LocalDOMWindow;
+class ScriptPromise;
+class ScriptState;
 class V8EntryCallback;
 class V8ErrorCallback;
 class V8FileSystemCallback;
@@ -51,12 +53,14 @@ class DOMWindowFileSystem {
                                               V8EntryCallback*,
                                               V8ErrorCallback*);
 
-  // They are placed here and in all capital letters so they can be checked
-  // against the constants in the IDL at compile time.
+  // Defined here so they can be checked against the constants in the IDL at
+  // compile time.
   enum {
     kTemporary,
     kPersistent,
   };
+
+  static ScriptPromise chooseFileSystemEntries(ScriptState*, LocalDOMWindow&);
 };
 
 }  // namespace blink

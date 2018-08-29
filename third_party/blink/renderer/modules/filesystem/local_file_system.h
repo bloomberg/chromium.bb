@@ -48,6 +48,7 @@ class CallbackWrapper;
 class FileSystemClient;
 class ExecutionContext;
 class KURL;
+class ScriptPromiseResolver;
 class WebFileSystem;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
@@ -71,6 +72,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                          mojom::blink::FileSystemType,
                          long long size,
                          std::unique_ptr<AsyncFileSystemCallbacks>);
+
+  void ChooseEntry(ScriptPromiseResolver*);
 
   FileSystemClient& Client() const { return *client_; }
 

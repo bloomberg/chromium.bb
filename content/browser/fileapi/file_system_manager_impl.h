@@ -122,6 +122,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
                        GetPlatformPathCallback callback) override;
   void CreateWriter(const GURL& file_path,
                     CreateWriterCallback callback) override;
+  void ChooseEntry(int32_t render_frame_id,
+                   ChooseEntryCallback callback) override;
 
  private:
   class FileSystemCancellableOperationImpl;

@@ -37,4 +37,11 @@
     // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
     [RuntimeEnabled=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
             EntryCallback successCallback, optional ErrorCallback? errorCallback);
+
+    // https://github.com/WICG/writable-files/blob/master/EXPLAINER.md
+    // TODO(crbug.com/878581): This needs some kind of options dictionary.
+    // TODO(crbug.com/878566): This should be SecureContext, but that is
+    //     currently broken.
+    [RuntimeEnabled=WritableFiles, CallWith=ScriptState]
+    Promise<(FileSystemBaseHandle or sequence<FileSystemBaseHandle>)> chooseFileSystemEntries();
 };

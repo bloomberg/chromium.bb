@@ -23,6 +23,8 @@
 #include "storage/common/quota/quota_limit_type.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace base {
 class FilePath;
@@ -180,9 +182,13 @@ class FileSystemDispatcher {
       const StatusCallback& error_callback);
 
   using CreateFileWriterCallbacks =
-      blink::WebCallbacks<mojo::ScopedMessagePipeHandle, base::File::Error>;
+      blink::WebFileSystem::CreateFileWriterCallbacks;
   void CreateFileWriter(const GURL& file_path,
                         std::unique_ptr<CreateFileWriterCallbacks> callbacks);
+
+  using ChooseEntryCallbacks = blink::WebFileSystem::ChooseEntryCallbacks;
+  void ChooseEntry(int render_frame_id,
+                   std::unique_ptr<ChooseEntryCallbacks> callbacks);
 
  private:
   class CallbackDispatcher;
