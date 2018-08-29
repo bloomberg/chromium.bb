@@ -539,4 +539,39 @@ TEST_F(ConsentAuditorImplTest, RecordAssistantActivityControlConsent) {
             consent.assistant_activity_control_consent().ui_audit_key());
 }
 
+TEST_F(ConsentAuditorImplTest,
+       RecordAssistantActivityControlConsent_UserEvent) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
+
+  SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
+  BuildConsentAuditorImpl();
+
+  AssistantActivityControlConsent assistant_consent;
+  assistant_consent.set_status(UserConsentTypes::GIVEN);
+  const char ui_audit_key[] = {0x67, 0x23, 0x78};
+  const int ui_audit_key_length = 3;
+  assistant_consent.set_ui_audit_key(
+      std::string(ui_audit_key, ui_audit_key_length));
+
+  consent_auditor()->RecordAssistantActivityControlConsent(kAccountId,
+                                                           assistant_consent);
+
+  auto& events = user_event_service()->GetRecordedUserEvents();
+  EXPECT_EQ(1U, events.size());
+
+  auto& consent = events[0].user_consent();
+  EXPECT_EQ(kAccountId, consent.account_id());
+  EXPECT_EQ(UserEventSpecifics::UserConsent::ASSISTANT_ACTIVITY_CONTROL,
+            consent.feature());
+  // The ui_audit_key and its length is stored in description_grd_ids.
+  EXPECT_EQ(ui_audit_key_length + 1, consent.description_grd_ids_size());
+  EXPECT_EQ(ui_audit_key_length, consent.description_grd_ids(0));
+  EXPECT_EQ(0x67, consent.description_grd_ids(1));
+  EXPECT_EQ(0x23, consent.description_grd_ids(2));
+  EXPECT_EQ(0x78, consent.description_grd_ids(3));
+  // There is no confirmation grd id to record. Therefore it is set to 0.
+  EXPECT_EQ(0, consent.confirmation_grd_id());
+}
+
 }  // namespace consent_auditor

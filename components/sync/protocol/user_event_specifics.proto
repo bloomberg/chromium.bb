@@ -161,6 +161,9 @@ message UserEventSpecifics {
       BACKUP_AND_RESTORE = 3;
       GOOGLE_LOCATION_SERVICE = 4;
       CHROME_UNIFIED_CONSENT = 5;
+      // TODO(markusheintz): ASSISTANT_ACTIVITY_CONTROL was only added as
+      // emergency fallback. Remove if not needed.
+      ASSISTANT_ACTIVITY_CONTROL = 6;
     }
     optional Feature feature = 1 [deprecated = true];
     // Ids of the strings of the consent text presented to the user.
