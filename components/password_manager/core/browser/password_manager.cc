@@ -60,14 +60,6 @@ const char kSpdyProxyRealm[] = "/SpdyProxy";
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
 
-enum class ShouldShowPromptResults {
-  kOldNoNewNo = 0,
-  kOldNoNewYes,
-  kOldYesNewNo,
-  kOldYesNewYes,
-  kMaxValue = kOldYesNewYes,
-};
-
 bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
   return (a.GetContent() == b.GetContent());
 }
@@ -234,22 +226,6 @@ PasswordFormManager* FindMatchedManager(
   return matched_manager_it == pending_login_managers.end()
              ? nullptr
              : matched_manager_it->get();
-}
-
-void LogShouldShouldPromptComparison(bool should_show_prompt_old,
-                                     bool should_show_prompt) {
-  ShouldShowPromptResults outcome = ShouldShowPromptResults::kMaxValue;
-  if (!should_show_prompt_old && !should_show_prompt)
-    outcome = ShouldShowPromptResults::kOldNoNewNo;
-  if (!should_show_prompt_old && should_show_prompt)
-    outcome = ShouldShowPromptResults::kOldNoNewYes;
-  if (should_show_prompt_old && !should_show_prompt)
-    outcome = ShouldShowPromptResults::kOldYesNewNo;
-  if (should_show_prompt_old && should_show_prompt)
-    outcome = ShouldShowPromptResults::kOldYesNewYes;
-
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ShouldShowPromptComparison",
-                            outcome);
 }
 
 // Returns true if the user needs to be prompted before a password can be
@@ -857,17 +833,6 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
          !new_origin.SchemeIsCryptographic();
 }
 
-bool PasswordManager::ShouldPromptUserToSavePasswordOld() const {
-  return (provisional_save_manager_->IsNewLogin() ||
-          provisional_save_manager_
-              ->IsPossibleChangePasswordFormWithoutUsername() ||
-          provisional_save_manager_->RetryPasswordFormPasswordUpdate() ||
-          provisional_save_manager_->IsPasswordOverridden()) &&
-         !(provisional_save_manager_->HasGeneratedPassword() &&
-           provisional_save_manager_->IsNewLogin()) &&
-         !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
-}
-
 void PasswordManager::OnPasswordFormsRendered(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<PasswordForm>& visible_forms,
@@ -987,10 +952,6 @@ void PasswordManager::OnLoginSuccessful() {
   // If the form is eligible only for saving fallback, it shouldn't go here.
   DCHECK(!provisional_save_manager_->GetPendingCredentials()
               .only_for_fallback_saving);
-
-  LogShouldShouldPromptComparison(
-      ShouldPromptUserToSavePasswordOld(),
-      ShouldPromptUserToSavePassword(*provisional_save_manager_));
 
   PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
   DCHECK(submitted_manager);

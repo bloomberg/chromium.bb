@@ -43985,6 +43985,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ShouldShowPromptResults">
+  <obsolete>
+    Deprecated 08/2018 because the only associated histogram was deprecated.
+  </obsolete>
   <summary>
     The results of the new and the old algorithm for detecting whether to show a
     password prompt for the user.
