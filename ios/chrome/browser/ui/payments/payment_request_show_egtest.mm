@@ -82,12 +82,10 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // the promise resolves, the payment sheet displays the payment details and the
 // Buy button is enabled.
 - (void)testBuyWithResolvingPromise {
-  // TODO(crbug.com/833562): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Test currently failing within suite.");
-
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
-  // Disable EarlGrey's synchronization.
+  // Disable EarlGrey's synchronization. Needed likely due to
+  // MDCActivityIndicator being present on the payment request view.
   [[GREYConfiguration sharedInstance]
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
@@ -138,16 +136,24 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 - (void)testBuyWithRejectingPromise {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
-  // Disable EarlGrey's synchronization.
+  // Disable EarlGrey's synchronization. Needed likely due to
+  // MDCActivityIndicator being present on the payment request view.
   [[GREYConfiguration sharedInstance]
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buyWithRejectingPromise"];
 
-  // Confirm that the Payment Request UI is showing.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
-      assertWithMatcher:grey_notNil()];
+  // Wait until the payment request view shows.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(WaitUntilConditionOrTimeout(kShowPromiseTimeout, condition),
+             @"Payment request view failed to show.");
 
   // Verify that the Buy button is not enabled.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -155,11 +161,10 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
       assertWithMatcher:grey_not(grey_enabled())];
 
   // Wait until the error screen becomes visible.
-  ConditionBlock condition = ^{
+  condition = ^{
     NSError* error = nil;
     [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     kPaymentRequestErrorCollectionViewID)]
+        selectElementWithMatcher:chrome_test_util::PaymentRequestErrorView()]
         assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
@@ -171,6 +176,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [[GREYConfiguration sharedInstance]
           setValue:@YES
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
+
+  // Confirm the error.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_ACCNAME_OK)]
+      performAction:grey_tap()];
 }
 
 @end
