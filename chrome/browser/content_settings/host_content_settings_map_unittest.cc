@@ -2096,6 +2096,68 @@ TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
 
   pref_provider.ShutdownOnUIThread();
 }
+
 #endif  // !defined(OS_ANDROID)
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
+  const GURL primary_url("http://a.b.example1.com:8080");
+  const GURL secondary_url("http://a.b.example2.com:8080");
+
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  // Testing case: WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      primary_url, secondary_url, CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  ContentSettingsForOneType settings;
+
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+
+  EXPECT_EQ(settings[0].primary_pattern,
+            ContentSettingsPattern::FromURL(primary_url));
+  EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
+
+  // Testing case: WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      primary_url, secondary_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      std::string(), CONTENT_SETTING_ALLOW);
+
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), &settings);
+
+  EXPECT_EQ(settings[0].primary_pattern,
+            ContentSettingsPattern::FromURLNoWildcard(primary_url));
+  EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
+
+  // Testing case: WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      primary_url, secondary_url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(), CONTENT_SETTING_ASK);
+
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &settings);
+
+  EXPECT_EQ(settings[0].primary_pattern,
+            ContentSettingsPattern::FromURLNoWildcard(primary_url));
+  EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
+
+  // Testing case:
+  // WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      primary_url, secondary_url, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(), CONTENT_SETTING_ASK);
+
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), &settings);
+
+  EXPECT_EQ(settings[0].primary_pattern,
+            ContentSettingsPattern::FromURLNoWildcard(primary_url));
+  EXPECT_EQ(settings[0].secondary_pattern,
+            ContentSettingsPattern::FromURLNoWildcard(secondary_url));
+}
