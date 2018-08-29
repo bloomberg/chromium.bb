@@ -192,7 +192,8 @@ void Unfullscreen(Document& document) {
 }
 
 // https://html.spec.whatwg.org/multipage/embedded-content.html#allowed-to-use
-bool AllowedToUseFullscreen(const Frame* frame) {
+bool AllowedToUseFullscreen(const Frame* frame,
+                            ReportOptions report_on_failure) {
   // To determine whether a Document object |document| is allowed to use the
   // feature indicated by attribute name |allowattribute|, run these steps:
 
@@ -202,7 +203,8 @@ bool AllowedToUseFullscreen(const Frame* frame) {
 
   // 2. If Feature Policy is enabled, return the policy for "fullscreen"
   // feature.
-  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kFullscreen);
+  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kFullscreen,
+                                 report_on_failure);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {
@@ -243,7 +245,8 @@ bool FullscreenIsSupported(const Document& document) {
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-element-ready-check
-bool FullscreenElementReady(const Element& element) {
+bool FullscreenElementReady(const Element& element,
+                            ReportOptions report_on_failure) {
   // A fullscreen element ready check for an element |element| returns true if
   // all of the following are true, and false otherwise:
 
@@ -253,7 +256,8 @@ bool FullscreenElementReady(const Element& element) {
 
   // |element|'s node document is allowed to use the feature indicated by
   // attribute name allowfullscreen.
-  if (!AllowedToUseFullscreen(element.GetDocument().GetFrame()))
+  if (!AllowedToUseFullscreen(element.GetDocument().GetFrame(),
+                              report_on_failure))
     return false;
 
   // |element|'s node document's fullscreen element stack is either empty or its
@@ -274,7 +278,7 @@ bool FullscreenElementReady(const Element& element) {
   // |element|'s node document's browsing context's browsing context container,
   // or it has no browsing context container.
   if (const Element* owner = element.GetDocument().LocalOwner()) {
-    if (!FullscreenElementReady(*owner))
+    if (!FullscreenElementReady(*owner, ReportOptions::kDoNotReport))
       return false;
   }
 
@@ -293,7 +297,7 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
     return false;
 
   // The fullscreen element ready check for |pending| returns false.
-  if (!FullscreenElementReady(pending))
+  if (!FullscreenElementReady(pending, ReportOptions::kReportOnFailure))
     return false;
 
   // Fullscreen is supported.
@@ -669,7 +673,8 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
   // 9. If any of the following conditions are false, then set |error| to true:
   //     * |pending|'s node document is |pendingDoc|.
   //     * The fullscreen element ready check for |pending| returns true.
-  if (pending.GetDocument() != document || !FullscreenElementReady(pending))
+  if (pending.GetDocument() != document ||
+      !FullscreenElementReady(pending, ReportOptions::kDoNotReport))
     error = true;
 
   // 10. If |error| is true:
@@ -960,7 +965,8 @@ bool Fullscreen::FullscreenEnabled(Document& document) {
   // The fullscreenEnabled attribute's getter must return true if the context
   // object is allowed to use the feature indicated by attribute name
   // allowfullscreen and fullscreen is supported, and false otherwise.
-  return AllowedToUseFullscreen(document.GetFrame()) &&
+  return AllowedToUseFullscreen(document.GetFrame(),
+                                ReportOptions::kDoNotReport) &&
          FullscreenIsSupported(document);
 }
 
