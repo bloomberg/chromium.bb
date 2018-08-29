@@ -56,7 +56,8 @@
 
 namespace {
 // URL for the page displaying help for the NTP.
-const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
+const char kNTPHelpURL[] =
+    "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
 
 // The What's New promo command that shows the Bookmarks Manager.
 const char kBookmarkCommand[] = "bookmark";

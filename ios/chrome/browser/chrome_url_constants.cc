@@ -71,18 +71,21 @@ const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
 
 const char kPageInfoHelpCenterURL[] =
-    "https://support.google.com/chrome/?p=ui_security_indicator";
+    "https://support.google.com/chrome?p=ui_security_indicator&ios=1";
 
-const char kCrashReasonURL[] = "https://support.google.com/chrome/?p=e_awsnap";
+const char kCrashReasonURL[] =
+    "https://support.google.com/chrome/answer/95669?p=e_awsnap&ios=1";
 
 const char kPrivacyLearnMoreURL[] =
-    "https://support.google.com/chrome/answer/114836?p=settings_privacy";
+    "https://support.google.com/chrome/answer/114836?p=settings_privacy&ios=1";
 
 const char kDoNotTrackLearnMoreURL[] =
-    "https://support.google.com/chrome/answer/2942429?p=mobile_do_not_track";
+    "https://support.google.com/chrome/answer/"
+    "2942429?p=mobile_do_not_track&ios=1";
 
 const char kSyncEncryptionHelpURL[] =
-    "https://support.google.com/chrome/answer/1181035?p=settings_encryption";
+    "https://support.google.com/chrome/answer/"
+    "1181035?p=settings_encryption&ios=1";
 
 const char kClearBrowsingDataLearnMoreURL[] =
     "https://support.google.com/chrome/answer/2392709";
