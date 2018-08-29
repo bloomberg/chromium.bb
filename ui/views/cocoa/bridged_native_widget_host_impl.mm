@@ -266,6 +266,10 @@ gfx::Rect BridgedNativeWidgetHostImpl::GetRestoredBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHost:
 
+NSView* BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
+  return root_view_ ? root_view_->GetNativeViewAccessible() : nil;
+}
+
 void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
   is_visible_ = window_visible;
   if (compositor_) {

@@ -69,6 +69,13 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
   // BridgedNativeWidgetHost.
   virtual void InitCompositorView() = 0;
 
+  // Create the NSView to be the content view for the window.
+  virtual void CreateContentView(const gfx::Rect& bounds) = 0;
+
+  // Destroy the content NSView for this window. Note that the window will
+  // become blank once this has been called.
+  virtual void DestroyContentView() = 0;
+
   // Initiate the closing of the window (the closing may be animated or posted
   // to be run later).
   virtual void CloseWindow() = 0;
@@ -166,14 +173,11 @@ class VIEWS_EXPORT BridgedNativeWidget
   // way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
-  // Create the NSView to be the content view for the window.
-  // TODO(ccameron): This function takes a views::View because not all calls
-  // have been routed through |host_| yet.
-  void CreateContentView(views::View* view);
-
-  // Destroy the content NSView for this window. Note that the window will
-  // become blank once this has been called.
-  void DestroyContentView();
+  // Create the drag drop client for this widget.
+  // TODO(ccameron): This function takes a views::View (and is not rolled into
+  // CreateContentView) because drag-drop has not been routed through |host_|
+  // yet.
+  void CreateDragDropClient(views::View* view);
 
   // Set the parent NSView for the widget.
   // TODO(ccameron): Like SetWindow, this will need to pass a handle instead of
@@ -256,6 +260,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
   DragDropClientMac* drag_drop_client() { return drag_drop_client_.get(); }
+  bool is_translucent_window() const { return is_translucent_window_; }
 
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
@@ -302,6 +307,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   // views::BridgedNativeWidgetPublic:
   void InitWindow(const InitParams& params) override;
   void InitCompositorView() override;
+  void CreateContentView(const gfx::Rect& bounds) override;
+  void DestroyContentView() override;
   void CloseWindow() override;
   void CloseWindowNow() override;
   void SetInitialBounds(const gfx::Rect& new_bounds,
