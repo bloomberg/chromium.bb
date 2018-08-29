@@ -48,3 +48,28 @@ class AccessibilityAmazonStory(_AccessibilityStory):
   NAME = 'load_accessibility:shopping:amazon'
   URL = 'https://www.amazon.com/gp/offer-listing/B01IENFJ14'
   TAGS = [story_tags.ACCESSIBILITY]
+
+
+class AccessibilityYouTubeHomepageStory(_AccessibilityStory):
+  """Tests interacting with the YouTube home page."""
+  NAME = 'browse_accessibility:media:youtube'
+  URL = 'https://www.youtube.com/'
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.KEYBOARD_INPUT]
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.Navigate('https://www.youtube.com/')
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+    # Open and close the sidebar.
+    action_runner.ClickElement(selector='[aria-label="Guide"]')
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector='[aria-label="Guide"]')
+    action_runner.Wait(1)
+
+    # Open the apps menu.
+    action_runner.ClickElement(selector='[aria-label="YouTube apps"]')
+    action_runner.Wait(1)
+
+    # Navigate through the items in the apps menu.
+    for _ in range(6):
+      action_runner.PressKey('Tab')

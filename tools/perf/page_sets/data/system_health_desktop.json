@@ -66,6 +66,9 @@
         "browse_accessibility:tools:gmail_compose": {
             "DEFAULT": "system_health_desktop_059.wprgo"
         },
+        "browse_accessibility:media:youtube": {
+            "DEFAULT": "system_health_desktop_062.wprgo"
+        },
         "load:games:alphabetty": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
