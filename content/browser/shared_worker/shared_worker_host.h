@@ -62,16 +62,24 @@ class CONTENT_EXPORT SharedWorkerHost
   // supporting the shared worker as a service worker client.
   //
   // S13nServiceWorker:
-  // |script_loader_factory| is sent to the renderer process and is to be used
-  // to request the shared worker's script. Currently it's only non-null when
-  // S13nServiceWorker is enabled, to allow service worker machinery to observe
-  // the request, but other web platform features may also use it someday.
+  // |main_script_loader_factory| is sent to the renderer process and is to be
+  // used to request the shared worker's main script. Currently it's only
+  // non-null when S13nServiceWorker is enabled, to allow service worker
+  // machinery to observe the request, but other web platform features may also
+  // use it someday.
+  //
+  // NetworkService:
+  // |subresource_loader_factories| is sent to the renderer process and is to be
+  // used to request subresources where applicable. For example, this allows the
+  // shared worker to load chrome-extension:// URLs which the renderer's default
+  // loader factory can't load.
   void Start(
       mojom::SharedWorkerFactoryPtr factory,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle);
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          main_script_loader_factory,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
