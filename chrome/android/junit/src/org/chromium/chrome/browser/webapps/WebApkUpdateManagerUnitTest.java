@@ -256,8 +256,8 @@ public class WebApkUpdateManagerUnitTest {
                 new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
-                WEB_MANIFEST_URL, manifestData.startUrl, manifestData.iconUrlToMurmur2HashMap,
-                false /* forceNavigation */);
+                WEB_MANIFEST_URL, manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                manifestData.iconUrlToMurmur2HashMap, false /* forceNavigation */);
     }
 
     /**
