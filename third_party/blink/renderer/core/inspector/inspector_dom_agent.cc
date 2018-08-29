@@ -1319,7 +1319,9 @@ Response InspectorDOMAgent::getNodeForLocation(
   Response response = PushDocumentUponHandlelessOperation();
   if (!response.isSuccess())
     return response;
-  LayoutPoint document_point(x, y);
+
+  LayoutPoint document_point(x * inspected_frames_->Root()->PageZoomFactor(),
+                             y * inspected_frames_->Root()->PageZoomFactor());
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
   HitTestLocation location(document_->View()->DocumentToFrame(document_point));
