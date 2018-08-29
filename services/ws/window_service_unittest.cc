@@ -17,8 +17,7 @@
 #include "services/ws/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 // Used as callback from ScheduleEmbed().
@@ -46,11 +45,11 @@ TEST(WindowServiceTest, DeleteWithClients) {
       factory->CreateConnector();
 
   // Connect to |window_service| and ask for a new WindowTree.
-  ws::mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(ws::mojom::kServiceName, &window_tree_factory);
-  ws::mojom::WindowTreePtr window_tree;
-  ws::mojom::WindowTreeClientPtr client;
-  ws::mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  mojom::WindowTreeFactoryPtr window_tree_factory;
+  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  mojom::WindowTreePtr window_tree;
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
   window_tree_factory->CreateWindowTree(MakeRequest(&window_tree),
                                         std::move(client));
 
@@ -157,5 +156,4 @@ TEST(WindowServiceTest,
   EXPECT_FALSE(WindowService::HasRemoteClient(local_window.get()));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

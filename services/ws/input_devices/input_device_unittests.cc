@@ -15,7 +15,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 
-namespace ui {
+namespace ws {
 
 namespace {
 
@@ -48,8 +48,8 @@ class InputDeviceTest : public testing::Test {
     server_.AddObserver(client->GetIntefacePtr());
   }
 
-  DeviceHotplugEventObserver* GetHotplugObserver() {
-    return DeviceDataManager::GetInstance();
+  ui::DeviceHotplugEventObserver* GetHotplugObserver() {
+    return ui::DeviceDataManager::GetInstance();
   }
 
   // testing::Test:
@@ -58,11 +58,11 @@ class InputDeviceTest : public testing::Test {
         base::Time::Now(), base::TimeTicks::Now());
     message_loop_.SetTaskRunner(task_runner_);
 
-    DeviceDataManager::CreateInstance();
+    ui::DeviceDataManager::CreateInstance();
     server_.RegisterAsObserver();
   }
 
-  void TearDown() override { DeviceDataManager::DeleteInstance(); }
+  void TearDown() override { ui::DeviceDataManager::DeleteInstance(); }
 
  private:
   base::MessageLoop message_loop_;
@@ -108,8 +108,8 @@ TEST_F(InputDeviceTest, DeviceListsCompleteTwoClients) {
 }
 
 TEST_F(InputDeviceTest, AddDevices) {
-  const TouchscreenDevice touchscreen(100, INPUT_DEVICE_INTERNAL, "Touchscreen",
-                                      gfx::Size(2600, 1700), 3);
+  const ui::TouchscreenDevice touchscreen(
+      100, ui::INPUT_DEVICE_INTERNAL, "Touchscreen", gfx::Size(2600, 1700), 3);
 
   TestInputDeviceClient client;
   AddClientAsObserver(&client);
@@ -127,9 +127,9 @@ TEST_F(InputDeviceTest, AddDevices) {
 }
 
 TEST_F(InputDeviceTest, AddDeviceAfterComplete) {
-  const InputDevice keyboard1(100, INPUT_DEVICE_INTERNAL, "Keyboard1");
-  const InputDevice keyboard2(200, INPUT_DEVICE_EXTERNAL, "Keyboard2");
-  const InputDevice mouse(300, INPUT_DEVICE_EXTERNAL, "Mouse");
+  const ui::InputDevice keyboard1(100, ui::INPUT_DEVICE_INTERNAL, "Keyboard1");
+  const ui::InputDevice keyboard2(200, ui::INPUT_DEVICE_EXTERNAL, "Keyboard2");
+  const ui::InputDevice mouse(300, ui::INPUT_DEVICE_EXTERNAL, "Mouse");
 
   TestInputDeviceClient client;
   AddClientAsObserver(&client);
@@ -155,7 +155,7 @@ TEST_F(InputDeviceTest, AddDeviceAfterComplete) {
 }
 
 TEST_F(InputDeviceTest, AddThenRemoveDevice) {
-  const InputDevice mouse(100, INPUT_DEVICE_INTERNAL, "Mouse");
+  const ui::InputDevice mouse(100, ui::INPUT_DEVICE_INTERNAL, "Mouse");
 
   TestInputDeviceClient client;
   AddClientAsObserver(&client);
@@ -169,14 +169,14 @@ TEST_F(InputDeviceTest, AddThenRemoveDevice) {
   EXPECT_EQ(1u, client.GetMouseDevices().size());
 
   // Remove mouse device.
-  GetHotplugObserver()->OnMouseDevicesUpdated(AsVector<InputDevice>({}));
+  GetHotplugObserver()->OnMouseDevicesUpdated(AsVector<ui::InputDevice>({}));
 
   RunUntilIdle();
   EXPECT_EQ(0u, client.GetMouseDevices().size());
 }
 
 TEST_F(InputDeviceTest, CheckClientDeviceFields) {
-  const InputDevice touchpad(100, INPUT_DEVICE_INTERNAL, "Touchpad");
+  const ui::InputDevice touchpad(100, ui::INPUT_DEVICE_INTERNAL, "Touchpad");
 
   TestInputDeviceClient client;
   AddClientAsObserver(&client);
@@ -190,10 +190,10 @@ TEST_F(InputDeviceTest, CheckClientDeviceFields) {
   EXPECT_EQ(1u, client.GetTouchpadDevices().size());
 
   // Check the touchpad fields match.
-  const InputDevice& output = client.GetTouchpadDevices()[0];
+  const ui::InputDevice& output = client.GetTouchpadDevices()[0];
   EXPECT_EQ(touchpad.id, output.id);
   EXPECT_EQ(touchpad.type, output.type);
   EXPECT_EQ(touchpad.name, output.name);
 }
 
-}  // namespace ui
+}  // namespace ws

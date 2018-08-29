@@ -20,8 +20,7 @@ namespace display {
 class Display;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // Provides information about displays to window service clients.
 // display::Screen must outlive this object. Exported for test.
@@ -31,8 +30,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ScreenProvider
   ScreenProvider();
   ~ScreenProvider() override;
 
-  void AddObserver(ws::mojom::ScreenProviderObserver* observer);
-  void RemoveObserver(ws::mojom::ScreenProviderObserver* observer);
+  void AddObserver(mojom::ScreenProviderObserver* observer);
+  void RemoveObserver(mojom::ScreenProviderObserver* observer);
 
   // Sets the window frame metrics.
   void SetFrameDecorationValues(const gfx::Insets& client_area_insets,
@@ -51,25 +50,24 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ScreenProvider
  private:
   void NotifyAllObservers();
 
-  void NotifyObserver(ws::mojom::ScreenProviderObserver* observer);
+  void NotifyObserver(mojom::ScreenProviderObserver* observer);
 
-  std::vector<ws::mojom::WsDisplayPtr> GetAllDisplays();
+  std::vector<mojom::WsDisplayPtr> GetAllDisplays();
 
   // Returns the window frame metrics as a mojo struct.
-  ws::mojom::FrameDecorationValuesPtr GetFrameDecorationValues();
+  mojom::FrameDecorationValuesPtr GetFrameDecorationValues();
 
-  // See ws::mojom::FrameDecorationValuesPtr documentation.
+  // See mojom::FrameDecorationValuesPtr documentation.
   gfx::Insets client_area_insets_;
   int max_title_bar_button_width_ = 0;
 
   int64_t display_id_for_new_windows_ = display::kInvalidDisplayId;
 
-  base::ObserverList<ws::mojom::ScreenProviderObserver>::Unchecked observers_;
+  base::ObserverList<mojom::ScreenProviderObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenProvider);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_SCREEN_PROVIDER_H_

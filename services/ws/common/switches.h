@@ -5,15 +5,14 @@
 #ifndef SERVICES_WS_COMMON_SWITCHES_H_
 #define SERVICES_WS_COMMON_SWITCHES_H_
 
-namespace ui {
+namespace ws {
 namespace switches {
 
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kUseAsyncEventTargeting[];
 extern const char kUseTestConfig[];
 
 }  // namespace switches
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_COMMON_SWITCHES_H_

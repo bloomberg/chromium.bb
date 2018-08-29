@@ -199,7 +199,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(
-      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
 
   viz::FrameSinkId frame_sink_id_;
 

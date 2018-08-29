@@ -42,7 +42,7 @@ struct CardData {
 
 // Get answer card data by token.
 CardData GetCardDataByToken(
-    ui::ws2::WindowService* window_service,
+    ws::WindowService* window_service,
     const base::Optional<base::UnguessableToken>& token) {
   // Bail for invalid token.
   if (!token.has_value() || token->is_empty())
@@ -60,8 +60,8 @@ CardData GetCardDataByToken(
   // Use ServerRemoteViewHost to embed the answer card contents provided in the
   // browser process in Mash.
   if (features::IsUsingWindowService()) {
-    ui::ws2::ServerRemoteViewHost* view =
-        new ui::ws2::ServerRemoteViewHost(window_service);
+    ws::ServerRemoteViewHost* view =
+        new ws::ServerRemoteViewHost(window_service);
     view->EmbedUsingToken(token.value(),
                           ws::mojom::kEmbedFlagEmbedderControlsVisibility,
                           base::DoNothing());

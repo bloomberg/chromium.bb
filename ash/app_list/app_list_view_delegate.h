@@ -16,11 +16,9 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 class WindowService;
-}
-}  // namespace ui
+}  // namespace ws
 
 namespace app_list {
 
@@ -111,7 +109,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                         ui::MenuSourceType source_type) = 0;
 
-  virtual ui::ws2::WindowService* GetWindowService() = 0;
+  virtual ws::WindowService* GetWindowService() = 0;
 };
 
 }  // namespace app_list

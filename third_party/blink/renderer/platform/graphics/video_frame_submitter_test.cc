@@ -149,7 +149,7 @@ class VideoFrameSubmitterTest : public testing::Test {
     submitter_ = std::make_unique<VideoFrameSubmitter>(
         base::BindRepeating(
             [](base::OnceCallback<void(
-                   bool, scoped_refptr<ui::ContextProviderCommandBuffer>)>) {}),
+                   bool, scoped_refptr<ws::ContextProviderCommandBuffer>)>) {}),
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
     submitter_->Initialize(provider_.get());

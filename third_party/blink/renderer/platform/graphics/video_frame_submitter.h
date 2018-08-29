@@ -49,7 +49,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   void OnReceivedContextProvider(
       bool,
-      scoped_refptr<ui::ContextProviderCommandBuffer>);
+      scoped_refptr<ws::ContextProviderCommandBuffer>);
 
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;
@@ -118,7 +118,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool ShouldSubmit() const;
 
   cc::VideoFrameProvider* provider_ = nullptr;
-  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   WebContextProviderCallback context_provider_callback_;

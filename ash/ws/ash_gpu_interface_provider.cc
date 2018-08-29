@@ -14,7 +14,7 @@
 namespace ash {
 
 AshGpuInterfaceProvider::AshGpuInterfaceProvider(
-    ui::gpu_host::GpuHost* gpu_host,
+    ws::gpu_host::GpuHost* gpu_host,
     discardable_memory::DiscardableSharedMemoryManager*
         discardable_shared_memory_manager)
     : gpu_host_(gpu_host),

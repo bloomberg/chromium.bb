@@ -13,8 +13,7 @@ template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }  // namespace aura
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // This property is set from WindowTree::SetCanFocus(). The value of this
 // property influeces activation as well. In particular, if this is false and
@@ -22,7 +21,6 @@ namespace ws2 {
 COMPONENT_EXPORT(WINDOW_SERVICE)
 extern const aura::WindowProperty<bool>* const kCanFocus;
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_PROPERTIES_H_

@@ -40,7 +40,7 @@
 
 class SkDiscardableMemory;
 
-namespace ui {
+namespace ws {
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     scoped_refptr<gpu::GpuChannelHost> channel,
@@ -447,4 +447,4 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   return true;
 }
 
-}  // namespace ui
+}  // namespace ws

@@ -90,7 +90,7 @@ class OobeDisplayChooserTest : public ash::AshTestBase {
     display_chooser_->set_cros_display_config_ptr_for_test(
         cros_display_config_->CreateInterfacePtrAndBind());
 
-    ui::InputDeviceClientTestApi().OnDeviceListsComplete();
+    ws::InputDeviceClientTestApi().OnDeviceListsComplete();
   }
 
   OobeDisplayChooser* display_chooser() { return display_chooser_.get(); }
@@ -124,7 +124,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
                             "Touchscreen", gfx::Size(800, 600), 1);
   touchscreen.vendor_id = kWhitelistedId;
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 
   // Associate touchscreen device with display
@@ -140,7 +140,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
   // ws::mojom::InputDeviceObserverMojo. In unit tests InputDeviceClient is not
   // wired to the window server (the window server isn't running).
   touchscreen.target_display_id = display_info[1].id();
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen}, true);
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen}, true);
 
   EXPECT_EQ(1, GetPrimaryDisplay());
   display_chooser()->TryToPlaceUiOnTouchDisplay();
@@ -167,7 +167,7 @@ TEST_F(OobeDisplayChooserTest, DontSwitchFromTouch) {
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
                             "Touchscreen", gfx::Size(800, 600), 1);
   touchscreen.vendor_id = kWhitelistedId;
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 
   // Associate touchscreen device with display

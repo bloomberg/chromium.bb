@@ -64,7 +64,7 @@ void MusEmbeddedFrame::SetWindowBounds(
 MusEmbeddedFrame::MusEmbeddedFrame(
     RendererWindowTreeClient* renderer_window_tree_client,
     MusEmbeddedFrameDelegate* delegate,
-    ui::ClientSpecificId window_id,
+    ws::ClientSpecificId window_id,
     const base::UnguessableToken& token)
     : renderer_window_tree_client_(renderer_window_tree_client),
       delegate_(delegate),

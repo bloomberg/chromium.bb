@@ -10,7 +10,7 @@
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.
 
-namespace ui {
+namespace ws {
 
 // Used to identify windows and change ids.
 using Id = uint64_t;
@@ -20,6 +20,6 @@ using Id = uint64_t;
 // and the ClientSpecificId of the window.
 using ClientSpecificId = uint32_t;
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_COMMON_TYPES_H_

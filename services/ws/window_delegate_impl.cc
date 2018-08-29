@@ -12,8 +12,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 WindowDelegateImpl::WindowDelegateImpl() = default;
 
@@ -95,5 +94,4 @@ void WindowDelegateImpl::GetHitTestMask(gfx::Path* mask) const {}
 
 WindowDelegateImpl::~WindowDelegateImpl() = default;
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

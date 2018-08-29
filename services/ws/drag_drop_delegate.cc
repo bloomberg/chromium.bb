@@ -14,8 +14,7 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "url/gurl.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 namespace {
 
@@ -56,10 +55,9 @@ gfx::Point ToScreenLocation(aura::Window* window, const gfx::Point& location) {
 
 }  // namespace
 
-DragDropDelegate::DragDropDelegate(
-    ws::mojom::WindowTreeClient* window_tree_client,
-    aura::Window* window,
-    Id transport_window_id)
+DragDropDelegate::DragDropDelegate(mojom::WindowTreeClient* window_tree_client,
+                                   aura::Window* window,
+                                   Id transport_window_id)
     : tree_client_(window_tree_client),
       window_(window),
       transport_window_id_(transport_window_id) {}
@@ -134,5 +132,4 @@ void DragDropDelegate::UpdateDragOperations(uint32_t drag_operations) {
   last_drag_operations_ = drag_operations;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

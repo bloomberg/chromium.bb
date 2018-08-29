@@ -15,11 +15,10 @@
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 struct EventInjector::EventAndHost {
-  std::unique_ptr<Event> event;
+  std::unique_ptr<ui::Event> event;
   aura::WindowTreeHost* window_tree_host = nullptr;
 };
 
@@ -39,7 +38,7 @@ EventInjector::~EventInjector() {
     std::move(handler_and_callback->callback).Run(false);
 }
 
-void EventInjector::AddBinding(ws::mojom::EventInjectorRequest request) {
+void EventInjector::AddBinding(mojom::EventInjectorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -57,7 +56,7 @@ void EventInjector::OnEventDispatched(InjectedEventHandler* handler) {
 
 EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
     int64_t display_id,
-    std::unique_ptr<Event> event) {
+    std::unique_ptr<ui::Event> event) {
   EventAndHost event_and_host;
   aura::WindowTreeHost* window_tree_host =
       window_service_->delegate()->GetWindowTreeHostForDisplayId(display_id);
@@ -67,7 +66,7 @@ EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
   }
 
   if (event->IsLocatedEvent()) {
-    LocatedEvent* located_event = event->AsLocatedEvent();
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
     if (located_event->root_location_f() != located_event->location_f()) {
       DVLOG(1) << "InjectEvent(): root_location and location must match";
       return event_and_host;
@@ -85,10 +84,10 @@ EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
   // TODO: https://crbug.com/865781
   if (event->IsMousePointerEvent()) {
     event_and_host.event =
-        std::make_unique<MouseEvent>(*event->AsPointerEvent());
+        std::make_unique<ui::MouseEvent>(*event->AsPointerEvent());
   } else if (event->IsTouchPointerEvent()) {
     event_and_host.event =
-        std::make_unique<TouchEvent>(*event->AsPointerEvent());
+        std::make_unique<ui::TouchEvent>(*event->AsPointerEvent());
   } else {
     event_and_host.event = std::move(event);
   }
@@ -118,7 +117,7 @@ void EventInjector::InjectEvent(int64_t display_id,
 }
 
 void EventInjector::InjectEventNoAck(int64_t display_id,
-                                     std::unique_ptr<Event> event) {
+                                     std::unique_ptr<ui::Event> event) {
   EventAndHost event_and_host =
       DetermineEventAndHost(display_id, std::move(event));
   if (!event_and_host.window_tree_host)
@@ -130,5 +129,4 @@ void EventInjector::InjectEventNoAck(int64_t display_id,
           event_and_host.event.get()));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

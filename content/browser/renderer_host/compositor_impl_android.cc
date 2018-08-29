@@ -360,20 +360,20 @@ void CreateContextProviderAfterGpuChannelEstablished(
   constexpr bool support_grcontext = false;
 
   auto context_provider =
-      base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+      base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, support_grcontext,
           shared_memory_limits, attributes,
-          ui::command_buffer_metrics::ContextType::UNKNOWN);
+          ws::command_buffer_metrics::ContextType::UNKNOWN);
   callback.Run(std::move(context_provider));
 }
 
 class AndroidOutputSurface : public viz::OutputSurface {
  public:
   AndroidOutputSurface(
-      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
+      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider,
       base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
@@ -458,7 +458,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl =
-        static_cast<ui::ContextProviderCommandBuffer*>(context_provider());
+        static_cast<ws::ContextProviderCommandBuffer*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
 
@@ -466,8 +466,8 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
-    ui::ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<ui::ContextProviderCommandBuffer*>(context_provider_.get());
+    ws::ContextProviderCommandBuffer* provider_command_buffer =
+        static_cast<ws::ContextProviderCommandBuffer*>(context_provider_.get());
     gpu::CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
@@ -1065,7 +1065,7 @@ void CompositorImpl::OnGpuChannelEstablished(
   gpu::SurfaceHandle surface_handle =
       enable_viz_ ? gpu::kNullSurfaceHandle : surface_handle_;
   auto context_provider =
-      base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+      base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, surface_handle,
           GURL(std::string("chrome://gpu/CompositorImpl::") +
@@ -1074,7 +1074,7 @@ void CompositorImpl::OnGpuChannelEstablished(
           GetCompositorContextSharedMemoryLimits(root_window_),
           GetCompositorContextAttributes(display_color_space_,
                                          requires_alpha_channel_),
-          ui::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
+          ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
   LOG_IF(FATAL, result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
@@ -1311,7 +1311,7 @@ void CompositorImpl::DoLowEndBackgroundCleanup() {
 }
 
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
-    scoped_refptr<ui::ContextProviderCommandBuffer> context_provider) {
+    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
 
   pending_frames_ = 0;

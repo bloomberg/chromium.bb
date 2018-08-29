@@ -36,8 +36,8 @@ enum class WindowTreeChangeType {
 };
 
 struct TransientData {
-  ui::Id parent_id;
-  ui::Id child_id;
+  ws::Id parent_id;
+  ws::Id child_id;
 };
 
 // WindowTree implementation for tests. TestWindowTree maintains a list of all
@@ -75,7 +75,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void AddEmbedRootForToken(const base::UnguessableToken& token);
 
   // Pretends the embedder window goes away.
-  void RemoveEmbedderWindow(ui::Id embedder_window_id);
+  void RemoveEmbedderWindow(ws::Id embedder_window_id);
 
   // Acks all changes with a value of true.
   void AckAllChanges();
@@ -128,119 +128,119 @@ class TestWindowTree : public ws::mojom::WindowTree {
   // ws::mojom::WindowTree:
   void NewWindow(
       uint32_t change_id,
-      ui::Id window_id,
+      ws::Id window_id,
       const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
           properties) override;
   void NewTopLevelWindow(
       uint32_t change_id,
-      ui::Id window_id,
+      ws::Id window_id,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
-  void DeleteWindow(uint32_t change_id, ui::Id window_id) override;
+  void DeleteWindow(uint32_t change_id, ws::Id window_id) override;
   void SetWindowBounds(
       uint32_t change_id,
-      ui::Id window_id,
+      ws::Id window_id,
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void SetWindowTransform(uint32_t change_id,
-                          ui::Id window_id,
+                          ws::Id window_id,
                           const gfx::Transform& transform) override;
-  void SetClientArea(ui::Id window_id,
+  void SetClientArea(ws::Id window_id,
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
                          additional_client_areas) override;
-  void SetHitTestMask(ui::Id window_id,
+  void SetHitTestMask(ws::Id window_id,
                       const base::Optional<gfx::Rect>& mask) override;
-  void SetCanAcceptDrops(ui::Id window_id, bool accepts_drags) override;
+  void SetCanAcceptDrops(ws::Id window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
-                           ui::Id window_id,
+                           ws::Id window_id,
                            bool visible) override;
   void SetWindowProperty(
       uint32_t change_id,
-      ui::Id window_id,
+      ws::Id window_id,
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& value) override;
   void SetWindowOpacity(uint32_t change_id,
-                        ui::Id window_id,
+                        ws::Id window_id,
                         float opacity) override;
   void AttachCompositorFrameSink(
-      ui::Id window_id,
+      ws::Id window_id,
       mojo::InterfaceRequest<viz::mojom::CompositorFrameSink> surface,
       viz::mojom::CompositorFrameSinkClientPtr client) override;
-  void AddWindow(uint32_t change_id, ui::Id parent, ui::Id child) override;
-  void RemoveWindowFromParent(uint32_t change_id, ui::Id window_id) override;
+  void AddWindow(uint32_t change_id, ws::Id parent, ws::Id child) override;
+  void RemoveWindowFromParent(uint32_t change_id, ws::Id window_id) override;
   void AddTransientWindow(uint32_t change_id,
-                          ui::Id window_id,
-                          ui::Id transient_window_id) override;
+                          ws::Id window_id,
+                          ws::Id transient_window_id) override;
   void RemoveTransientWindowFromParent(uint32_t change_id,
-                                       ui::Id window_id) override;
+                                       ws::Id window_id) override;
   void SetModalType(uint32_t change_id,
-                    ui::Id window_id,
+                    ws::Id window_id,
                     ui::ModalType modal_type) override;
   void SetChildModalParent(uint32_t change_id,
-                           ui::Id window_id,
-                           ui::Id parent_window_id) override;
+                           ws::Id window_id,
+                           ws::Id parent_window_id) override;
   void ReorderWindow(uint32_t change_id,
-                     ui::Id window_id,
-                     ui::Id relative_window_id,
+                     ws::Id window_id,
+                     ws::Id relative_window_id,
                      ws::mojom::OrderDirection direction) override;
-  void GetWindowTree(ui::Id window_id, GetWindowTreeCallback callback) override;
-  void SetCapture(uint32_t change_id, ui::Id window_id) override;
-  void ReleaseCapture(uint32_t change_id, ui::Id window_id) override;
+  void GetWindowTree(ws::Id window_id, GetWindowTreeCallback callback) override;
+  void SetCapture(uint32_t change_id, ws::Id window_id) override;
+  void ReleaseCapture(uint32_t change_id, ws::Id window_id) override;
   void StartPointerWatcher(bool want_moves) override;
   void StopPointerWatcher() override;
-  void Embed(ui::Id window_id,
+  void Embed(ws::Id window_id,
              ws::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              EmbedCallback callback) override;
   void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
                      ScheduleEmbedCallback callback) override;
-  void EmbedUsingToken(ui::Id window_id,
+  void EmbedUsingToken(ws::Id window_id,
                        const base::UnguessableToken& token,
                        uint32_t embed_flags,
                        EmbedUsingTokenCallback callback) override;
   void ScheduleEmbedForExistingClient(
-      ui::ClientSpecificId window_id,
+      ws::ClientSpecificId window_id,
       ScheduleEmbedForExistingClientCallback callback) override;
-  void SetFocus(uint32_t change_id, ui::Id window_id) override;
-  void SetCanFocus(ui::Id window_id, bool can_focus) override;
-  void SetEventTargetingPolicy(ui::Id window_id,
+  void SetFocus(uint32_t change_id, ws::Id window_id) override;
+  void SetCanFocus(ws::Id window_id, bool can_focus) override;
+  void SetEventTargetingPolicy(ws::Id window_id,
                                ws::mojom::EventTargetingPolicy policy) override;
   void SetCursor(uint32_t change_id,
-                 ui::Id transport_window_id,
+                 ws::Id transport_window_id,
                  ui::CursorData cursor_data) override;
-  void SetWindowTextInputState(ui::Id window_id,
+  void SetWindowTextInputState(ws::Id window_id,
                                ui::mojom::TextInputStatePtr state) override;
-  void SetImeVisibility(ui::Id window_id,
+  void SetImeVisibility(ws::Id window_id,
                         bool visible,
                         ui::mojom::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
                              ws::mojom::EventResult result) override;
-  void DeactivateWindow(ui::Id window_id) override;
+  void DeactivateWindow(ws::Id window_id) override;
   void StackAbove(uint32_t change_id,
-                  ui::Id above_id,
-                  ui::Id below_id) override;
-  void StackAtTop(uint32_t change_id, ui::Id window_id) override;
-  void PerformWmAction(ui::Id window_id, const std::string& action) override;
+                  ws::Id above_id,
+                  ws::Id below_id) override;
+  void StackAtTop(uint32_t change_id, ws::Id window_id) override;
+  void PerformWmAction(ws::Id window_id, const std::string& action) override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformDragDrop(
       uint32_t change_id,
-      ui::Id source_window_id,
+      ws::Id source_window_id,
       const gfx::Point& screen_location,
       const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
       const gfx::ImageSkia& drag_image,
       const gfx::Vector2d& drag_image_offset,
       uint32_t drag_operation,
       ui::mojom::PointerKind source) override;
-  void CancelDragDrop(ui::Id window_id) override;
+  void CancelDragDrop(ws::Id window_id) override;
   void PerformWindowMove(uint32_t change_id,
-                         ui::Id window_id,
+                         ws::Id window_id,
                          ws::mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
-  void CancelWindowMove(ui::Id window_id) override;
+  void CancelWindowMove(ws::Id window_id) override;
   void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
-                            ui::Id window_id) override;
+                            ws::Id window_id) override;
   void StopObservingTopmostWindow() override;
 
   struct AckedEvent {
@@ -248,7 +248,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
     ws::mojom::EventResult result;
   };
   std::vector<AckedEvent> acked_events_;
-  ui::Id window_id_ = 0u;
+  ws::Id window_id_ = 0u;
 
   base::Optional<std::vector<uint8_t>> last_property_value_;
 

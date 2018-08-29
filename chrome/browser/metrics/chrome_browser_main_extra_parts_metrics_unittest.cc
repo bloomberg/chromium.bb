@@ -33,7 +33,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  protected:
 #if defined(USE_OZONE) || defined(USE_X11)
-  ui::InputDeviceClientTestApi input_device_client_test_api_;
+  ws::InputDeviceClientTestApi input_device_client_test_api_;
 #endif
 
  private:

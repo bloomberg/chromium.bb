@@ -13,8 +13,9 @@
 namespace ui {
 
 class Event;
+}
 
-namespace ws2 {
+namespace ws {
 
 class WindowTree;
 
@@ -24,7 +25,7 @@ class WindowTree;
 // client.
 //
 // This class provides the server implementation of
-// ws::mojom::WindowTree::StartPointerWatcher(), see it for more information.
+// mojom::WindowTree::StartPointerWatcher(), see it for more information.
 class PointerWatcher : public aura::WindowEventDispatcherObserver {
  public:
   enum class TypesToWatch {
@@ -40,7 +41,8 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
 
   // Applies any necessary transformations on the event before sending to the
   // client.
-  static std::unique_ptr<Event> CreateEventForClient(const Event& event);
+  static std::unique_ptr<ui::Event> CreateEventForClient(
+      const ui::Event& event);
 
   // Returns true if |event| matches the types the PointerWatcher has been
   // configured to monitor.
@@ -77,7 +79,6 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
   DISALLOW_COPY_AND_ASSIGN(PointerWatcher);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_POINTER_WATCHER_H_

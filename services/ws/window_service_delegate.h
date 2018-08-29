@@ -31,12 +31,12 @@ class Point;
 }
 
 namespace ui {
-
 class KeyEvent;
 class OSExchangeData;
 class SystemInputInjector;
+}  // namespace ui
 
-namespace ws2 {
+namespace ws {
 
 // A delegate used by the WindowService for context-specific operations.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
       const base::flat_map<std::string, std::vector<uint8_t>>& properties) = 0;
 
   // Called for KeyEvents the client does not handle.
-  virtual void OnUnhandledKeyEvent(const KeyEvent& key_event) {}
+  virtual void OnUnhandledKeyEvent(const ui::KeyEvent& key_event) {}
 
   // Sets the cursor for |window| to |cursor|. This will immediately change the
   // actual on-screen cursor if the pointer is hovered over |window|. Also store
@@ -66,7 +66,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // allowed, the delegate should run |callback| immediately.
   using DoneCallback = base::OnceCallback<void(bool)>;
   virtual void RunWindowMoveLoop(aura::Window* window,
-                                 ws::mojom::MoveLoopSource source,
+                                 mojom::MoveLoopSource source,
                                  const gfx::Point& cursor,
                                  DoneCallback callback);
 
@@ -109,7 +109,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // Returns the SystemInputInjector to use when processing events from a
   // remote client. A return value of null (the default) results in disallowing
   // injection.
-  virtual SystemInputInjector* GetSystemInputInjector();
+  virtual ui::SystemInputInjector* GetSystemInputInjector();
 
   // Returns the WindowTreeHost for the specified display id, null if not a
   // valid display.
@@ -128,7 +128,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   virtual ~WindowServiceDelegate() = default;
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_SERVICE_DELEGATE_H_

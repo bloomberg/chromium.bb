@@ -203,7 +203,7 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
 };
 
 TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhenScreenOn) {
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -226,7 +226,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhenScreenOn) {
 TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhenScreenOff) {
   TurnScreenOffForUserInactivity();
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -259,7 +259,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   EXPECT_TRUE(power_manager_observer_->brightness_changes().empty());
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -288,7 +288,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest,
 TEST_F(LockScreenNoteDisplayStateHandlerTest, TurnScreenOnWhenAppLaunchFails) {
   TurnScreenOffForUserInactivity();
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -324,7 +324,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhileScreenForcedOff) {
             power_manager_observer_->brightness_changes());
   power_manager_observer_->ClearBrightnessChanges();
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -348,7 +348,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhileScreenForcedOff) {
 TEST_F(LockScreenNoteDisplayStateHandlerTest, DisplayNotTurnedOffIndefinitely) {
   TurnScreenOffForUserInactivity();
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -391,7 +391,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest,
   EXPECT_EQ(1u,
             power_manager_client_->pending_screen_brightness_changes().size());
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 
@@ -439,7 +439,7 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, ScreenA11yAlerts) {
   EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF,
             a11y_client.last_a11y_alert());
 
-  ui::InputDeviceClientTestApi devices_test_api;
+  ws::InputDeviceClientTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
 

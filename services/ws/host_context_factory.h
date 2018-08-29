@@ -22,18 +22,19 @@ class GpuChannelHost;
 }
 
 namespace ui {
+class HostContextFactoryPrivate;
+}  // namespace ui
+
+namespace ws {
 
 class Gpu;
-class HostContextFactoryPrivate;
-
-namespace ws2 {
 
 // ui::ContextFactory used when the WindowService is acting as the viz host.
 // Internally this creates a ui::HostContextFactoryPrivate for the
 // ui::ContextFactoryPrivate implementation.
 class HostContextFactory : public ui::ContextFactory {
  public:
-  HostContextFactory(ui::Gpu* gpu,
+  HostContextFactory(Gpu* gpu,
                      viz::HostFrameSinkManager* host_frame_sink_manager);
   ~HostContextFactory() override;
 
@@ -57,18 +58,17 @@ class HostContextFactory : public ui::ContextFactory {
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
   bool SyncTokensRequiredForDisplayCompositor() override;
 
-  ui::RasterThreadHelper raster_thread_helper_;
-  ui::Gpu* gpu_;
+  RasterThreadHelper raster_thread_helper_;
+  Gpu* gpu_;
   scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
 
-  std::unique_ptr<HostContextFactoryPrivate> context_factory_private_;
+  std::unique_ptr<ui::HostContextFactoryPrivate> context_factory_private_;
 
   base::WeakPtrFactory<HostContextFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContextFactory);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_HOST_CONTEXT_FACTORY_H_

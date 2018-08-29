@@ -22,8 +22,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/focus_controller.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 TEST(FocusHandlerTest, FocusTopLevel) {
@@ -157,8 +156,8 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   EXPECT_TRUE(embedding_helper->changes()->empty());
 
   // Send an event, the embedded client should get it.
-  test::EventGenerator event_generator(setup.root());
-  event_generator.PressKey(VKEY_A, EF_NONE);
+  ui::test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(setup.changes()->empty());
   EXPECT_EQ(
       "KEY_PRESSED",
@@ -176,7 +175,7 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   embedding_helper->changes()->clear();
 
   // And events should now target the parent.
-  event_generator.PressKey(VKEY_B, EF_NONE);
+  event_generator.PressKey(ui::VKEY_B, ui::EF_NONE);
   EXPECT_EQ("KEY_PRESSED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
@@ -195,7 +194,7 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   embed_window->Show();
 
   std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
-      embed_window, ws::mojom::kEmbedFlagEmbedderInterceptsEvents);
+      embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
   ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
       embedding_helper->window_tree_test_helper->NewWindow();
@@ -212,8 +211,8 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
 
   // Generate a key-press. Even though focus is on a window in the embedded
   // client, the event goes to the embedder because it intercepts events.
-  test::EventGenerator event_generator(setup.root());
-  event_generator.PressKey(VKEY_A, EF_NONE);
+  ui::test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(embedding_helper->changes()->empty());
   EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
   EXPECT_EQ("KEY_PRESSED",
@@ -222,5 +221,4 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
 }
 
 }  // namespace
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

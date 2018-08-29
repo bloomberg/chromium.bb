@@ -12,8 +12,11 @@
 
 namespace ui {
 class ContextFactory;
-class InputDeviceClient;
 }  // namespace ui
+
+namespace ws {
+class InputDeviceClient;
+}
 
 namespace aura {
 
@@ -46,7 +49,7 @@ class AuraTestSuiteSetup {
 #endif
 
 #if defined(USE_OZONE)
-  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
+  std::unique_ptr<ws::InputDeviceClient> input_device_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestSuiteSetup);

@@ -10,7 +10,7 @@ namespace chromeos {
 namespace input_method {
 
 ImeKeyboardMus::ImeKeyboardMus(
-    ui::InputDeviceControllerClient* input_device_controller_client)
+    ws::InputDeviceControllerClient* input_device_controller_client)
     : input_device_controller_client_(input_device_controller_client) {
   ImeKeyboard::SetCapsLockEnabled(CapsLockIsEnabled());
 }

@@ -118,7 +118,7 @@ void AshService::InitForMash() {
   discardable_shared_memory_manager_ =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
-  gpu_host_ = std::make_unique<ui::gpu_host::DefaultGpuHost>(
+  gpu_host_ = std::make_unique<ws::gpu_host::DefaultGpuHost>(
       this, context()->connector(), discardable_shared_memory_manager_.get());
 
   host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
@@ -128,10 +128,10 @@ void AshService::InitForMash() {
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(io_thread_->StartWithOptions(thread_options));
-  gpu_ = ui::Gpu::Create(context()->connector(), ws::mojom::kServiceName,
+  gpu_ = ws::Gpu::Create(context()->connector(), ws::mojom::kServiceName,
                          io_thread_->task_runner());
 
-  context_factory_ = std::make_unique<ui::ws2::HostContextFactory>(
+  context_factory_ = std::make_unique<ws::HostContextFactory>(
       gpu_.get(), host_frame_sink_manager_.get());
 
   env_ = aura::Env::CreateInstanceToHostViz(context()->connector());
@@ -207,9 +207,9 @@ void AshService::CreateService(
   DCHECK_EQ(name, ws::mojom::kServiceName);
   Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
   if (base::FeatureList::IsEnabled(features::kMash)) {
-    ui::ws2::WindowService* window_service =
+    ws::WindowService* window_service =
         Shell::Get()->window_service_owner()->window_service();
-    input_device_controller_ = std::make_unique<ui::InputDeviceController>();
+    input_device_controller_ = std::make_unique<ws::InputDeviceController>();
     input_device_controller_->AddInterface(window_service->registry());
   }
   pid_receiver->SetPID(base::GetCurrentProcId());

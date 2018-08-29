@@ -19,9 +19,8 @@
 
 namespace aura {
 
-MusContextFactory::MusContextFactory(ui::Gpu* gpu)
-    : gpu_(gpu),
-      weak_ptr_factory_(this) {}
+MusContextFactory::MusContextFactory(ws::Gpu* gpu)
+    : gpu_(gpu), weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}
 

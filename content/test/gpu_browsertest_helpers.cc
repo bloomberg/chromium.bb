@@ -46,7 +46,7 @@ GpuBrowsertestEstablishGpuChannelSyncRunLoop() {
   return gpu_channel_host;
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer> GpuBrowsertestCreateContext(
+scoped_refptr<ws::ContextProviderCommandBuffer> GpuBrowsertestCreateContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   gpu::GpuChannelEstablishFactory* factory =
       content::BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
@@ -62,12 +62,12 @@ scoped_refptr<ui::ContextProviderCommandBuffer> GpuBrowsertestCreateContext(
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
   constexpr bool support_grcontext = true;
-  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+  return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
       content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
       gpu::kNullSurfaceHandle, GURL(), automatic_flushes, support_locking,
       support_grcontext, gpu::SharedMemoryLimits(), attributes,
-      ui::command_buffer_metrics::ContextType::FOR_TESTING);
+      ws::command_buffer_metrics::ContextType::FOR_TESTING);
 }
 
 }  // namespace content

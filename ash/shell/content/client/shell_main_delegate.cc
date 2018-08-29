@@ -43,7 +43,7 @@ std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
 }
 
 std::unique_ptr<service_manager::Service> CreateTestImeDriver() {
-  return std::make_unique<ui::test::TestIMEApplication>();
+  return std::make_unique<ws::test::TestIMEApplication>();
 }
 
 class ShellContentUtilityClient : public content::ContentUtilityClient {

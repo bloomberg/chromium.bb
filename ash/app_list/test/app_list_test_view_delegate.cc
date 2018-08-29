@@ -88,7 +88,7 @@ void AppListTestViewDelegate::ShowWallpaperContextMenu(
   ++show_wallpaper_context_menu_count_;
 }
 
-ui::ws2::WindowService* AppListTestViewDelegate::GetWindowService() {
+ws::WindowService* AppListTestViewDelegate::GetWindowService() {
   return nullptr;
 }
 

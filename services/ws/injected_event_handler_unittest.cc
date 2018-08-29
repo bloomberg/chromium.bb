@@ -20,8 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TEST(InjectedEventHandlerTest, SyncDispatch) {
   WindowServiceTestSetup test_setup;
@@ -32,8 +31,8 @@ TEST(InjectedEventHandlerTest, SyncDispatch) {
 
   // Inject the event, the callback should be run immediately as the location is
   // not over a client's window.
-  std::unique_ptr<Event> event = std::make_unique<MouseEvent>(
-      ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks::Now(),
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks::Now(),
       /* flags */ 0, /*changed_button_flags*/ 0);
   injected_event_handler.Inject(
       std::move(event),
@@ -55,18 +54,18 @@ TEST(InjectedEventHandlerTest, OverRemoteWindow) {
 
   // Inject the event, the callback should not be run immediately as the
   // location is over a client's window.
-  std::unique_ptr<Event> event =
-      std::make_unique<MouseEvent>(ET_MOUSE_PRESSED, gfx::Point(10, 10),
-                                   gfx::Point(10, 10), base::TimeTicks::Now(),
-                                   /* flags */ 0, /*changed_button_flags*/ 0);
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(10, 10),
+      base::TimeTicks::Now(),
+      /* flags */ 0, /*changed_button_flags*/ 0);
   injected_event_handler.Inject(
       std::move(event), base::BindOnce([](bool* was_run) { *was_run = true; },
                                        &was_callback_run));
   EXPECT_FALSE(was_callback_run);
 
   // Ack the event, which should trigger running the callback.
-  test_setup.window_tree_client()->AckFirstEvent(
-      test_setup.window_tree(), ws::mojom::EventResult::HANDLED);
+  test_setup.window_tree_client()->AckFirstEvent(test_setup.window_tree(),
+                                                 mojom::EventResult::HANDLED);
   EXPECT_TRUE(was_callback_run);
 }
 
@@ -95,10 +94,10 @@ TEST(InjectedEventHandlerTest, WindowTreeHostDeletedWhileWaiting) {
 
   // Inject the event, the callback should not be run immediately as the
   // location is over a client's window.
-  std::unique_ptr<Event> event =
-      std::make_unique<MouseEvent>(ET_MOUSE_PRESSED, gfx::Point(10, 10),
-                                   gfx::Point(10, 10), base::TimeTicks::Now(),
-                                   /* flags */ 0, /*changed_button_flags*/ 0);
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(10, 10),
+      base::TimeTicks::Now(),
+      /* flags */ 0, /*changed_button_flags*/ 0);
   injected_event_handler.Inject(
       std::move(event), base::BindOnce([](bool* was_run) { *was_run = true; },
                                        &was_callback_run));
@@ -126,10 +125,10 @@ TEST(InjectedEventHandlerTest, HeldEvent) {
   // Inject the event, the callback should not be run immediately as moves are
   // being held (ET_MOUSE_DRAGGED triggers the event holding logic in
   // WindowEventDispatcher).
-  std::unique_ptr<Event> event =
-      std::make_unique<MouseEvent>(ET_MOUSE_DRAGGED, gfx::Point(10, 10),
-                                   gfx::Point(10, 10), base::TimeTicks::Now(),
-                                   /* flags */ 0, /*changed_button_flags*/ 0);
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(10, 10), gfx::Point(10, 10),
+      base::TimeTicks::Now(),
+      /* flags */ 0, /*changed_button_flags*/ 0);
   injected_event_handler.Inject(
       std::move(event), base::BindOnce([](bool* was_run) { *was_run = true; },
                                        &was_callback_run));
@@ -143,5 +142,4 @@ TEST(InjectedEventHandlerTest, HeldEvent) {
   EXPECT_TRUE(was_callback_run);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -16,8 +16,7 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class ClientChange;
 
@@ -42,7 +41,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientChangeTracker {
   DISALLOW_COPY_AND_ASSIGN(ClientChangeTracker);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_CLIENT_CHANGE_TRACKER_H_

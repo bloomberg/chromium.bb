@@ -7,19 +7,18 @@
 #include "services/ws/server_window.h"
 #include "services/ws/window_tree_binding.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 WindowTreeTestHelper::WindowTreeTestHelper(WindowTree* window_tree)
     : window_tree_(window_tree) {}
 
 WindowTreeTestHelper::~WindowTreeTestHelper() = default;
 
-ws::mojom::WindowTree* WindowTreeTestHelper::window_tree() {
-  return static_cast<ws::mojom::WindowTree*>(window_tree_);
+mojom::WindowTree* WindowTreeTestHelper::window_tree() {
+  return static_cast<mojom::WindowTree*>(window_tree_);
 }
 
-ws::mojom::WindowDataPtr WindowTreeTestHelper::WindowToWindowData(
+mojom::WindowDataPtr WindowTreeTestHelper::WindowToWindowData(
     aura::Window* window) {
   return window_tree_->WindowToWindowData(window);
 }
@@ -66,7 +65,7 @@ bool WindowTreeTestHelper::ReleaseCapture(aura::Window* window) {
 
 bool WindowTreeTestHelper::ReorderWindow(aura::Window* window,
                                          aura::Window* relative_window,
-                                         ws::mojom::OrderDirection direction) {
+                                         mojom::OrderDirection direction) {
   return window_tree_->ReorderWindowImpl(
       ClientWindowIdForWindow(window), ClientWindowIdForWindow(relative_window),
       direction);
@@ -109,11 +108,10 @@ void WindowTreeTestHelper::SetWindowProperty(aura::Window* window,
                                   value);
 }
 
-Embedding* WindowTreeTestHelper::Embed(
-    aura::Window* window,
-    ws::mojom::WindowTreeClientPtr client_ptr,
-    ws::mojom::WindowTreeClient* client,
-    uint32_t embed_flags) {
+Embedding* WindowTreeTestHelper::Embed(aura::Window* window,
+                                       mojom::WindowTreeClientPtr client_ptr,
+                                       mojom::WindowTreeClient* client,
+                                       uint32_t embed_flags) {
   if (!window_tree_->EmbedImpl(ClientWindowIdForWindow(window),
                                std::move(client_ptr), client, embed_flags)) {
     return nullptr;
@@ -123,13 +121,12 @@ Embedding* WindowTreeTestHelper::Embed(
 
 void WindowTreeTestHelper::SetEventTargetingPolicy(
     aura::Window* window,
-    ws::mojom::EventTargetingPolicy policy) {
+    mojom::EventTargetingPolicy policy) {
   window_tree_->SetEventTargetingPolicy(TransportIdForWindow(window), policy);
 }
 
-void WindowTreeTestHelper::OnWindowInputEventAck(
-    uint32_t event_id,
-    ws::mojom::EventResult result) {
+void WindowTreeTestHelper::OnWindowInputEventAck(uint32_t event_id,
+                                                 mojom::EventResult result) {
   window_tree_->OnWindowInputEventAck(event_id, result);
 }
 
@@ -177,5 +174,4 @@ ClientWindowId WindowTreeTestHelper::ClientWindowIdForWindow(
   return window_tree_->MakeClientWindowId(TransportIdForWindow(window));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -49,7 +49,7 @@ class AURA_EXPORT EmbedRoot {
 
   EmbedRoot(WindowTreeClient* window_tree_client,
             EmbedRootDelegate* delegate,
-            ui::ClientSpecificId window_id);
+            ws::ClientSpecificId window_id);
 
   // Callback from WindowTreeClient once the token has been determined.
   void OnScheduledEmbedForExistingClient(const base::UnguessableToken& token);

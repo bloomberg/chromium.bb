@@ -698,7 +698,7 @@ TEST_F(TabletModeControllerTest, ForceTabletModeTest) {
   EXPECT_TRUE(AreEventsBlocked());
 
   // Tests that attaching a external mouse will not change the mode.
-  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
@@ -787,7 +787,7 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
   base::RunLoop().RunUntilIdle();
-  ui::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
   base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
@@ -797,7 +797,7 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Attach a external mouse.
-  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
@@ -813,7 +813,7 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
   base::RunLoop().RunUntilIdle();
-  ui::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
   base::RunLoop().RunUntilIdle();
 
   // Start in tablet mode.
@@ -823,14 +823,14 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
 
   // Attach external mouse and keyboard. Verify that tablet mode has ended, but
   // events are still blocked because the keyboard is still facing the bottom.
-  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Verify that after unplugging the mouse, tablet mode will resume.
-  ui::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());

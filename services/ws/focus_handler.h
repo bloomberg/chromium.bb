@@ -12,8 +12,7 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class ServerWindow;
 class WindowTree;
@@ -47,7 +46,6 @@ class FocusHandler : public aura::client::FocusChangeObserver {
   DISALLOW_COPY_AND_ASSIGN(FocusHandler);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_FOCUS_HANDLER_H_

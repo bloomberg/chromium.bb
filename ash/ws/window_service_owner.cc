@@ -20,14 +20,14 @@
 namespace ash {
 
 WindowServiceOwner::WindowServiceOwner(
-    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider)
+    std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider)
     : window_service_delegate_(std::make_unique<WindowServiceDelegateImpl>()),
-      owned_window_service_(std::make_unique<ui::ws2::WindowService>(
-          window_service_delegate_.get(),
-          std::move(gpu_interface_provider),
-          Shell::Get()->focus_controller(),
-          !::features::IsMultiProcessMash(),
-          Shell::Get()->aura_env())),
+      owned_window_service_(
+          std::make_unique<ws::WindowService>(window_service_delegate_.get(),
+                                              std::move(gpu_interface_provider),
+                                              Shell::Get()->focus_controller(),
+                                              !::features::IsMultiProcessMash(),
+                                              Shell::Get()->aura_env())),
       window_service_(owned_window_service_.get()) {
   window_service_->SetFrameDecorationValues(
       NonClientFrameController::GetPreferredClientAreaInsets(),

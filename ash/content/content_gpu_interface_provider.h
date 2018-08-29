@@ -15,12 +15,12 @@ namespace ash {
 // An implementation of GpuInterfaceProvider that forwards to the Gpu
 // implementation in content.
 class ASH_WITH_CONTENT_EXPORT ContentGpuInterfaceProvider
-    : public ui::ws2::GpuInterfaceProvider {
+    : public ws::GpuInterfaceProvider {
  public:
   ContentGpuInterfaceProvider();
   ~ContentGpuInterfaceProvider() override;
 
-  // ui::ws2::GpuInterfaceProvider:
+  // ws::GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
   void RegisterOzoneGpuInterfaces(

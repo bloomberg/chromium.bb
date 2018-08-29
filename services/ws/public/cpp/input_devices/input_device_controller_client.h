@@ -21,13 +21,15 @@ class Connector;
 }
 
 namespace ui {
-
 enum class DomCode;
+}
+
+namespace ws {
 
 // InputDeviceControllerClient is mostly a call through to
-// ws::mojom::InputDeviceController. It does a minimal amount of caching and is
+// mojom::InputDeviceController. It does a minimal amount of caching and is
 // itself a KeyboardDeviceObserver to maintain local keyboard state.
-class InputDeviceControllerClient : public ws::mojom::KeyboardDeviceObserver {
+class InputDeviceControllerClient : public mojom::KeyboardDeviceObserver {
  public:
   // |service_Name| is the name of the service providing mojom::KeyboardDevice,
   // generally use the default, unless a specific service is needed.
@@ -70,7 +72,7 @@ class InputDeviceControllerClient : public ws::mojom::KeyboardDeviceObserver {
 
   void SetTouchscreensEnabled(bool enabled);
   void SetInternalKeyboardFilter(bool enable_filter,
-                                 const std::vector<DomCode>& allowed_keys);
+                                 const std::vector<ui::DomCode>& allowed_keys);
 
   // Sets whether the internal touch pad. Returns true if there is an internal
   // touchpad.
@@ -79,16 +81,16 @@ class InputDeviceControllerClient : public ws::mojom::KeyboardDeviceObserver {
                                   SetInternalTouchpadEnabledCallback callback);
 
  private:
-  // ws::mojom::KeyboardDeviceObserver:
-  void OnKeyboardStateChanged(ws::mojom::KeyboardDeviceStatePtr state) override;
+  // mojom::KeyboardDeviceObserver:
+  void OnKeyboardStateChanged(mojom::KeyboardDeviceStatePtr state) override;
 
-  ws::mojom::InputDeviceControllerPtr input_device_controller_;
-  ws::mojom::KeyboardDeviceState keyboard_device_state_;
-  mojo::Binding<ws::mojom::KeyboardDeviceObserver> binding_;
+  mojom::InputDeviceControllerPtr input_device_controller_;
+  mojom::KeyboardDeviceState keyboard_device_state_;
+  mojo::Binding<mojom::KeyboardDeviceObserver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceControllerClient);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_INPUT_DEVICES_INPUT_DEVICE_CONTROLLER_CLIENT_H_

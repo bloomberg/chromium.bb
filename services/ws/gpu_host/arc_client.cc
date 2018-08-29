@@ -6,7 +6,7 @@
 
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 
 ArcClient::ArcClient(viz::mojom::GpuService* gpu_service)
@@ -35,4 +35,4 @@ void ArcClient::CreateProtectedBufferManager(
 }
 
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws

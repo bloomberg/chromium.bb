@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 namespace test {
 namespace {
@@ -98,7 +98,7 @@ class GpuHostTest : public testing::Test {
 };
 
 base::WeakPtr<GpuClient> GpuHostTest::AddGpuClient() {
-  GpuClient* client = gpu_host_->AddInternal(ws::mojom::GpuRequest());
+  GpuClient* client = gpu_host_->AddInternal(mojom::GpuRequest());
   return client->weak_factory_.GetWeakPtr();
 }
 
@@ -132,7 +132,7 @@ TEST_F(GpuHostTest, GpuClientDestructionOrder) {
 
 TEST_F(GpuHostTest, GpuClientDestroyedWhileChannelRequestInFlight) {
   base::WeakPtr<GpuClient> client_ref = AddGpuClient();
-  ws::mojom::Gpu* gpu = client_ref.get();
+  mojom::Gpu* gpu = client_ref.get();
   bool callback_called = false;
   gpu->EstablishGpuChannel(
       base::Bind([](bool* callback_called, int, mojo::ScopedMessagePipeHandle,
@@ -146,4 +146,4 @@ TEST_F(GpuHostTest, GpuClientDestroyedWhileChannelRequestInFlight) {
 
 }  // namespace test
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws

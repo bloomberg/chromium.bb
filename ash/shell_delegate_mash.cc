@@ -66,14 +66,14 @@ AccessibilityDelegate* ShellDelegateMash::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
-ui::InputDeviceControllerClient*
+ws::InputDeviceControllerClient*
 ShellDelegateMash::GetInputDeviceControllerClient() {
   if (!Shell::Get()->connector())
     return nullptr;  // Happens in tests.
 
   if (!input_device_controller_client_) {
     input_device_controller_client_ =
-        std::make_unique<ui::InputDeviceControllerClient>(
+        std::make_unique<ws::InputDeviceControllerClient>(
             Shell::Get()->connector());
   }
   return input_device_controller_client_.get();

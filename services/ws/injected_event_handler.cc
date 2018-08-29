@@ -11,8 +11,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 InjectedEventHandler::InjectedEventHandler(
     WindowService* window_service,
@@ -36,7 +35,7 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
 
   aura::Window* window_tree_host_window = window_tree_host_->window();
   window_tree_host_window->AddPreTargetHandler(
-      this, EventTarget::Priority::kAccessibility);
+      this, ui::EventTarget::Priority::kAccessibility);
   // No need to do anything with the result of sending the event.
   ignore_result(
       window_tree_host_->event_sink()->OnEventFromSource(event.get()));
@@ -111,12 +110,11 @@ void InjectedEventHandler::OnWillDestroyClient(ClientSpecificId client_id) {
     NotifyCallback();
 }
 
-void InjectedEventHandler::OnEvent(Event* event) {
+void InjectedEventHandler::OnEvent(ui::Event* event) {
   // This is called if the event is actually going to be delivered to a target
   // (not held by WindowEventDispatcher). Don't call NotifyCallback() yet, as we
   // don't yet know if the event is going to a remote client.
   event_dispatched_ = true;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

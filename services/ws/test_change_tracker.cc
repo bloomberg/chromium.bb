@@ -15,8 +15,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
@@ -27,8 +26,8 @@ std::string WindowIdToString(Id id) {
 
 namespace {
 
-std::string DirectionToString(ws::mojom::OrderDirection direction) {
-  return direction == ws::mojom::OrderDirection::ABOVE ? "above" : "below";
+std::string DirectionToString(mojom::OrderDirection direction) {
+  return direction == mojom::OrderDirection::ABOVE ? "above" : "below";
 }
 
 enum class ChangeDescriptionType { ONE, TWO };
@@ -242,7 +241,7 @@ std::string ChangeWindowDescription(const std::vector<Change>& changes) {
   return base::JoinString(window_strings, ",");
 }
 
-TestWindow WindowDataToTestWindow(const ws::mojom::WindowDataPtr& data) {
+TestWindow WindowDataToTestWindow(const mojom::WindowDataPtr& data) {
   TestWindow window;
   window.parent_id = data->parent_id;
   window.window_id = data->window_id;
@@ -252,7 +251,7 @@ TestWindow WindowDataToTestWindow(const ws::mojom::WindowDataPtr& data) {
   return window;
 }
 
-void WindowDatasToTestWindows(const std::vector<ws::mojom::WindowDataPtr>& data,
+void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
                               std::vector<TestWindow>* test_windows) {
   for (size_t i = 0; i < data.size(); ++i)
     test_windows->push_back(WindowDataToTestWindow(data[i]));
@@ -274,7 +273,7 @@ Change::Change()
       window_id3(0),
       event_action(0),
       matches_pointer_watcher(false),
-      direction(ws::mojom::OrderDirection::ABOVE),
+      direction(mojom::OrderDirection::ABOVE),
       bool_value(false),
       float_value(0.f),
       cursor_type(ui::CursorType::kNull),
@@ -289,7 +288,7 @@ TestChangeTracker::TestChangeTracker() : delegate_(NULL) {}
 
 TestChangeTracker::~TestChangeTracker() {}
 
-void TestChangeTracker::OnEmbed(ws::mojom::WindowDataPtr root, bool drawn) {
+void TestChangeTracker::OnEmbed(mojom::WindowDataPtr root, bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.bool_value = drawn;
@@ -298,7 +297,7 @@ void TestChangeTracker::OnEmbed(ws::mojom::WindowDataPtr root, bool drawn) {
 }
 
 void TestChangeTracker::OnEmbedFromToken(
-    ws::mojom::WindowDataPtr root,
+    mojom::WindowDataPtr root,
     int64_t display_id,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   Change change;
@@ -384,7 +383,7 @@ void TestChangeTracker::OnWindowHierarchyChanged(
     Id window_id,
     Id old_parent_id,
     Id new_parent_id,
-    std::vector<ws::mojom::WindowDataPtr> windows) {
+    std::vector<mojom::WindowDataPtr> windows) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.window_id = window_id;
@@ -396,7 +395,7 @@ void TestChangeTracker::OnWindowHierarchyChanged(
 
 void TestChangeTracker::OnWindowReordered(Id window_id,
                                           Id relative_window_id,
-                                          ws::mojom::OrderDirection direction) {
+                                          mojom::OrderDirection direction) {
   Change change;
   change.type = CHANGE_TYPE_NODE_REORDERED;
   change.window_id = window_id;
@@ -503,7 +502,7 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
 }
 
 void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
-                                          ws::mojom::WindowDataPtr window_data,
+                                          mojom::WindowDataPtr window_data,
                                           bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
@@ -621,5 +620,4 @@ std::string TestWindow::ToString2() const {
       WindowIdToString(parent_id).c_str(), visible ? "true" : "false");
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

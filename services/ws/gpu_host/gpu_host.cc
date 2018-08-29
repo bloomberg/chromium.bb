@@ -30,7 +30,7 @@
 #include "services/ws/gpu_host/arc_client.h"
 #endif
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 
 namespace {
@@ -111,7 +111,7 @@ void DefaultGpuHost::Shutdown() {
   gpu_bindings_.CloseAllBindings();
 }
 
-void DefaultGpuHost::Add(ws::mojom::GpuRequest request) {
+void DefaultGpuHost::Add(mojom::GpuRequest request) {
   AddInternal(std::move(request));
 }
 
@@ -135,13 +135,13 @@ void DefaultGpuHost::CreateFrameSinkManager(
 }
 
 #if defined(OS_CHROMEOS)
-void DefaultGpuHost::AddArc(ws::mojom::ArcRequest request) {
+void DefaultGpuHost::AddArc(mojom::ArcRequest request) {
   arc_bindings_.AddBinding(std::make_unique<ArcClient>(gpu_service_.get()),
                            std::move(request));
 }
 #endif  // defined(OS_CHROMEOS)
 
-GpuClient* DefaultGpuHost::AddInternal(ws::mojom::GpuRequest request) {
+GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
   auto client(std::make_unique<GpuClient>(
       next_client_id_++, &gpu_info_, &gpu_feature_info_,
       gpu_memory_buffer_manager_.get(), gpu_service_.get()));
@@ -224,4 +224,4 @@ void DefaultGpuHost::RecordLogMessage(int32_t severity,
                                       const std::string& message) {}
 
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws

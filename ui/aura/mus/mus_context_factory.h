@@ -21,7 +21,7 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace ui {
+namespace ws {
 class Gpu;
 }
 
@@ -30,7 +30,7 @@ namespace aura {
 // ContextFactory implementation that can be used with Mus.
 class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
  public:
-  explicit MusContextFactory(ui::Gpu* gpu);
+  explicit MusContextFactory(ws::Gpu* gpu);
   ~MusContextFactory() override;
 
  private:
@@ -51,8 +51,8 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
   bool SyncTokensRequiredForDisplayCompositor() override;
 
-  ui::RasterThreadHelper raster_thread_helper_;
-  ui::Gpu* gpu_;
+  ws::RasterThreadHelper raster_thread_helper_;
+  ws::Gpu* gpu_;
   scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
 
   base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;

@@ -14,7 +14,7 @@
 
 namespace aura {
 
-constexpr ui::Id kInvalidServerId = 0;
+constexpr ws::Id kInvalidServerId = 0;
 
 enum class WindowMusType {
   // The window is an embed root in the embedded client. That is, the client

@@ -64,7 +64,7 @@ bool MoveWindowToRoot(aura::Window* window, aura::Window* root) {
 // Asks the remote client that owns |window| to close it. Returns true if there
 // was a remote client for |window|, false otherwise.
 bool AskRemoteClientToCloseWindow(aura::Window* window) {
-  ui::ws2::WindowService* window_service =
+  ws::WindowService* window_service =
       Shell::Get()->window_service_owner()->window_service();
   return window_service && window_service->RequestClose(window);
 }

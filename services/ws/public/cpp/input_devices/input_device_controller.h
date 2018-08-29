@@ -12,12 +12,14 @@
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 
 namespace ui {
-
 class InputController;
+}  // namespace ui
 
-// Implementation of ws::mojom::InputDeviceController that forwards to
+namespace ws {
+
+// Implementation of mojom::InputDeviceController that forwards to
 // ui::InputController.
-class InputDeviceController : public ws::mojom::InputDeviceController {
+class InputDeviceController : public mojom::InputDeviceController {
  public:
   InputDeviceController();
   ~InputDeviceController() override;
@@ -27,9 +29,9 @@ class InputDeviceController : public ws::mojom::InputDeviceController {
       service_manager::BinderRegistry* registry,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr);
 
-  // ws::mojom::InputDeviceController::
+  // mojom::InputDeviceController::
   void AddKeyboardDeviceObserver(
-      ws::mojom::KeyboardDeviceObserverPtr observer) override;
+      mojom::KeyboardDeviceObserverPtr observer) override;
   void GetHasTouchpad(GetHasTouchpadCallback callback) override;
   void GetHasMouse(GetHasMouseCallback callback) override;
   void SetCapsLockEnabled(bool enabled) override;
@@ -65,17 +67,17 @@ class InputDeviceController : public ws::mojom::InputDeviceController {
   void NotifyObservers();
 
   // Notifies a single KeyboardDeviceObserver.
-  void NotifyObserver(ws::mojom::KeyboardDeviceObserver* observer);
+  void NotifyObserver(mojom::KeyboardDeviceObserver* observer);
 
   void BindInputDeviceControllerRequest(
-      ws::mojom::InputDeviceControllerRequest request);
+      mojom::InputDeviceControllerRequest request);
 
-  mojo::BindingSet<ws::mojom::InputDeviceController> bindings_;
-  mojo::InterfacePtrSet<ws::mojom::KeyboardDeviceObserver> observers_;
+  mojo::BindingSet<mojom::InputDeviceController> bindings_;
+  mojo::InterfacePtrSet<mojom::KeyboardDeviceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceController);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_INPUT_DEVICES_INPUT_DEVICE_CONTROLLER_H_

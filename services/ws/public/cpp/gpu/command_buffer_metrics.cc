@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 
-namespace ui {
+namespace ws {
 namespace command_buffer_metrics {
 
 namespace {
@@ -102,4 +102,4 @@ void UmaRecordContextLost(ContextType type,
 }
 
 }  // namespace command_buffer_metrics
-}  // namespace ui
+}  // namespace ws

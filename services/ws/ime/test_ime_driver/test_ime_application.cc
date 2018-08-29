@@ -11,7 +11,7 @@
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 TestIMEApplication::TestIMEApplication() {}
@@ -19,15 +19,14 @@ TestIMEApplication::TestIMEApplication() {}
 TestIMEApplication::~TestIMEApplication() {}
 
 void TestIMEApplication::OnStart() {
-  ws::mojom::IMEDriverPtr ime_driver_ptr;
+  mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(std::make_unique<TestIMEDriver>(),
                           MakeRequest(&ime_driver_ptr));
 
-  ws::mojom::IMERegistrarPtr ime_registrar;
-  context()->connector()->BindInterface(ws::mojom::kServiceName,
-                                        &ime_registrar);
+  mojom::IMERegistrarPtr ime_registrar;
+  context()->connector()->BindInterface(mojom::kServiceName, &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws

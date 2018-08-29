@@ -6,10 +6,8 @@
 
 #include "ui/aura/window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanFocus, true);
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

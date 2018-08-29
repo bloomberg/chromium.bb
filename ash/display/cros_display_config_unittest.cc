@@ -39,7 +39,7 @@ void InitExternalTouchDevices(int64_t display_id) {
   ui::TouchscreenDevice touchdevice(
       123, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
       std::string("test external touch device"), gfx::Size(1000, 1000), 1);
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
 
   std::vector<ui::TouchDeviceTransform> transforms;
   ui::TouchDeviceTransform touch_device_transform;
@@ -633,7 +633,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationNonTouchDisplay) {
                                  ? display_id_list[1]
                                  : display_id_list[0];
 
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({});
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
   std::string id = base::Int64ToString(display_id);
 
   // Since no external touch devices are present, the calibration should fail.

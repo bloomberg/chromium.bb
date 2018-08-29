@@ -159,8 +159,8 @@ TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
 TEST_F(LaserPointerControllerTest, LaserPointerWorksWithRemoteApp) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(50, 50, 100, 100));
-  ui::ws2::ServerWindow* server_window =
-      ui::ws2::ServerWindow::GetMayBeNull(window.get());
+  ws::ServerWindow* server_window =
+      ws::ServerWindow::GetMayBeNull(window.get());
   ASSERT_TRUE(server_window);
   // Setting the client area triggers slightly different logic.
   server_window->SetClientArea(gfx::Insets(10), std::vector<gfx::Rect>());

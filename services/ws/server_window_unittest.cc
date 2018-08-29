@@ -15,8 +15,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
   WindowServiceTestSetup setup;
@@ -50,5 +49,4 @@ TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
                            setup.root(), &mouse_event2));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

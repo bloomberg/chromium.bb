@@ -28,17 +28,17 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace ui {
-class MouseWheelEvent;
-
-namespace ws2 {
-class WindowService;
-}  // namespace ws2
-}  // namespace ui
-
 namespace app_list {
 class AnswerCardContentsRegistry;
 }  // namespace app_list
+
+namespace ui {
+class MouseWheelEvent;
+}  // namespace ui
+
+namespace ws {
+class WindowService;
+}  // namespace ws
 
 namespace ash {
 
@@ -60,7 +60,7 @@ class ASH_EXPORT AppListControllerImpl
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
-  explicit AppListControllerImpl(ui::ws2::WindowService* window_service);
+  explicit AppListControllerImpl(ws::WindowService* window_service);
   ~AppListControllerImpl() override;
 
   // Binds the mojom::AppListController interface request to this object.
@@ -174,7 +174,7 @@ class ASH_EXPORT AppListControllerImpl
                                int event_flags) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
-  ui::ws2::WindowService* GetWindowService() override;
+  ws::WindowService* GetWindowService() override;
 
   void OnVisibilityChanged(bool visible);
   void OnTargetVisibilityChanged(bool visible);
@@ -231,7 +231,7 @@ class ASH_EXPORT AppListControllerImpl
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
 
-  ui::ws2::WindowService* window_service_;
+  ws::WindowService* window_service_;
 
   base::string16 last_raw_query_;
 

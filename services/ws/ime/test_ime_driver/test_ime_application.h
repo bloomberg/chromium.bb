@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 class TestIMEApplication : public service_manager::Service {
@@ -24,6 +24,6 @@ class TestIMEApplication : public service_manager::Service {
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_IME_TEST_IME_DRIVER_TEST_IME_APPLICATION_H_

@@ -9,7 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 TestDragDropClient::TestDragDropClient() = default;
@@ -147,4 +147,4 @@ void TestDragDropClient::Drop(aura::Window* target,
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws

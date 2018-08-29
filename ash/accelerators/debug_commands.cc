@@ -55,7 +55,7 @@ void HandlePrintViewHierarchy() {
   views::PrintViewHierarchy(widget->GetRootView());
 }
 
-void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
+void PrintWindowHierarchy(ws::WindowService* window_service,
                           const aura::Window* active_window,
                           const aura::Window* focused_window,
                           aura::Window* window,
@@ -77,7 +77,7 @@ void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
     *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
-  if (window_service && ui::ws2::WindowService::HasRemoteClient(window))
+  if (window_service && ws::WindowService::HasRemoteClient(window))
     *out << " remote_id=" << window_service->GetIdForDebugging(window);
   *out << '\n';
 
@@ -91,7 +91,7 @@ void HandlePrintWindowHierarchy() {
   aura::Window* active_window = wm::GetActiveWindow();
   aura::Window* focused_window = wm::GetFocusedWindow();
   aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
-  ui::ws2::WindowService* window_service =
+  ws::WindowService* window_service =
       Shell::Get()->window_service_owner()->window_service();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;

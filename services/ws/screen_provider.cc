@@ -10,8 +10,7 @@
 using display::Display;
 using display::Screen;
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 int64_t GetPrimaryDisplayId() {
@@ -33,13 +32,12 @@ ScreenProvider::~ScreenProvider() {
   Screen::GetScreen()->RemoveObserver(this);
 }
 
-void ScreenProvider::AddObserver(ws::mojom::ScreenProviderObserver* observer) {
+void ScreenProvider::AddObserver(mojom::ScreenProviderObserver* observer) {
   observers_.AddObserver(observer);
   NotifyObserver(observer);
 }
 
-void ScreenProvider::RemoveObserver(
-    ws::mojom::ScreenProviderObserver* observer) {
+void ScreenProvider::RemoveObserver(mojom::ScreenProviderObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -72,25 +70,24 @@ void ScreenProvider::OnDidProcessDisplayChanges() {
 }
 
 void ScreenProvider::NotifyAllObservers() {
-  for (ws::mojom::ScreenProviderObserver& observer : observers_)
+  for (mojom::ScreenProviderObserver& observer : observers_)
     NotifyObserver(&observer);
 }
 
-void ScreenProvider::NotifyObserver(
-    ws::mojom::ScreenProviderObserver* observer) {
+void ScreenProvider::NotifyObserver(mojom::ScreenProviderObserver* observer) {
   observer->OnDisplaysChanged(GetAllDisplays(), GetPrimaryDisplayId(),
                               GetInternalDisplayId(),
                               display_id_for_new_windows_);
 }
 
-std::vector<ws::mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {
+std::vector<mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {
   std::vector<Display> displays = Screen::GetScreen()->GetAllDisplays();
 
-  std::vector<ws::mojom::WsDisplayPtr> ws_displays;
+  std::vector<mojom::WsDisplayPtr> ws_displays;
   ws_displays.reserve(displays.size());
 
   for (const Display& display : displays) {
-    ws::mojom::WsDisplayPtr ws_display = ws::mojom::WsDisplay::New();
+    mojom::WsDisplayPtr ws_display = mojom::WsDisplay::New();
     ws_display->display = display;
     ws_display->frame_decoration_values = GetFrameDecorationValues();
     ws_displays.push_back(std::move(ws_display));
@@ -99,9 +96,8 @@ std::vector<ws::mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {
   return ws_displays;
 }
 
-ws::mojom::FrameDecorationValuesPtr ScreenProvider::GetFrameDecorationValues() {
-  ws::mojom::FrameDecorationValuesPtr values =
-      ws::mojom::FrameDecorationValues::New();
+mojom::FrameDecorationValuesPtr ScreenProvider::GetFrameDecorationValues() {
+  mojom::FrameDecorationValuesPtr values = mojom::FrameDecorationValues::New();
   // TODO(jamescook): These insets are always the same. Collapse them.
   values->normal_client_area_insets = client_area_insets_;
   values->maximized_client_area_insets = client_area_insets_;
@@ -109,5 +105,4 @@ ws::mojom::FrameDecorationValuesPtr ScreenProvider::GetFrameDecorationValues() {
   return values;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

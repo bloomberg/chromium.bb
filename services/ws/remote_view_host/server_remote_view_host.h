@@ -16,8 +16,7 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 
@@ -67,7 +66,6 @@ class ServerRemoteViewHost : public views::NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(ServerRemoteViewHost);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_REMOTE_VIEW_HOST_SERVER_REMOTE_VIEW_HOST_H_

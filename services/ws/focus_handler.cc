@@ -13,8 +13,7 @@
 #include "services/ws/window_tree.h"
 #include "ui/aura/client/focus_client.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 FocusHandler::FocusHandler(WindowTree* window_tree)
     : window_tree_(window_tree) {
@@ -148,5 +147,4 @@ void FocusHandler::OnWindowFocused(aura::Window* gained_focus,
   }
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

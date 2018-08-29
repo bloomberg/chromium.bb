@@ -16,8 +16,7 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 class WindowTree;
@@ -39,8 +38,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
   ~Embedding();
 
   void Init(WindowService* window_service,
-            ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-            ws::mojom::WindowTreeClient* window_tree_client,
+            mojom::WindowTreeClientPtr window_tree_client_ptr,
+            mojom::WindowTreeClient* window_tree_client,
             base::OnceClosure connection_lost_callback);
 
   // Initializes the Embedding as the result of
@@ -88,7 +87,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
   DISALLOW_COPY_AND_ASSIGN(Embedding);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_EMBEDDING_H_

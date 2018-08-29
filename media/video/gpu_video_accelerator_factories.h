@@ -33,11 +33,11 @@ class Size;
 
 namespace gpu {
 struct SyncToken;
-};
+}
 
-namespace ui {
+namespace ws {
 class ContextProviderCommandBuffer;
-}  // namespace ui
+}  // namespace ws
 
 namespace media {
 
@@ -139,7 +139,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
-  virtual scoped_refptr<ui::ContextProviderCommandBuffer>
+  virtual scoped_refptr<ws::ContextProviderCommandBuffer>
   GetMediaContextProvider() = 0;
 
   // Sets the current pipeline rendering color space.

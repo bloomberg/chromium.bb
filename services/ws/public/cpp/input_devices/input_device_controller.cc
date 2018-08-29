@@ -14,7 +14,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 
-namespace ui {
+namespace ws {
 
 InputDeviceController::InputDeviceController() = default;
 
@@ -25,14 +25,14 @@ void InputDeviceController::AddInterface(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   // base::Unretained() is safe here as this class is tied to the life of
   // Service, so that no requests should come in after this class is deleted.
-  registry->AddInterface<ws::mojom::InputDeviceController>(
+  registry->AddInterface<mojom::InputDeviceController>(
       base::Bind(&InputDeviceController::BindInputDeviceControllerRequest,
                  base::Unretained(this)),
       task_runner);
 }
 
 void InputDeviceController::AddKeyboardDeviceObserver(
-    ws::mojom::KeyboardDeviceObserverPtr observer) {
+    mojom::KeyboardDeviceObserverPtr observer) {
   NotifyObserver(observer.get());
   observers_.AddPtr(std::move(observer));
 }
@@ -120,7 +120,7 @@ void InputDeviceController::SetTapToClickPaused(bool state) {
 void InputDeviceController::SetInternalTouchpadEnabled(
     bool enabled,
     SetInternalTouchpadEnabledCallback callback) {
-  InputController* input_controller = GetInputController();
+  ui::InputController* input_controller = GetInputController();
   const bool value_changed =
       input_controller->HasTouchpad() &&
       (input_controller->IsInternalTouchpadEnabled() != enabled);
@@ -136,11 +136,11 @@ void InputDeviceController::SetTouchscreensEnabled(bool enabled) {
 void InputDeviceController::SetInternalKeyboardFilter(
     bool enable_filter,
     const std::vector<uint32_t>& allowed_keys) {
-  std::vector<DomCode> dom_codes;
+  std::vector<ui::DomCode> dom_codes;
   for (uint32_t key : allowed_keys) {
     // NOTE: DomCodes and UsbKeycodes are the same thing.
-    const DomCode dom_code = KeycodeConverter::UsbKeycodeToDomCode(key);
-    if (dom_code != DomCode::NONE)
+    const ui::DomCode dom_code = ui::KeycodeConverter::UsbKeycodeToDomCode(key);
+    if (dom_code != ui::DomCode::NONE)
       dom_codes.push_back(dom_code);
   }
   GetInputController()->SetInternalKeyboardFilter(enable_filter,
@@ -148,19 +148,18 @@ void InputDeviceController::SetInternalKeyboardFilter(
 }
 
 ui::InputController* InputDeviceController::GetInputController() {
-  return OzonePlatform::GetInstance()->GetInputController();
+  return ui::OzonePlatform::GetInstance()->GetInputController();
 }
 
 void InputDeviceController::NotifyObservers() {
-  observers_.ForAllPtrs([this](ws::mojom::KeyboardDeviceObserver* observer) {
+  observers_.ForAllPtrs([this](mojom::KeyboardDeviceObserver* observer) {
     NotifyObserver(observer);
   });
 }
 
 void InputDeviceController::NotifyObserver(
-    ws::mojom::KeyboardDeviceObserver* observer) {
-  ws::mojom::KeyboardDeviceStatePtr state =
-      ws::mojom::KeyboardDeviceState::New();
+    mojom::KeyboardDeviceObserver* observer) {
+  mojom::KeyboardDeviceStatePtr state = mojom::KeyboardDeviceState::New();
   ui::InputController* input_controller = GetInputController();
   state->is_caps_lock_enabled = input_controller->IsCapsLockEnabled();
   state->is_auto_repeat_enabled = input_controller->IsAutoRepeatEnabled();
@@ -168,8 +167,8 @@ void InputDeviceController::NotifyObserver(
 }
 
 void InputDeviceController::BindInputDeviceControllerRequest(
-    ws::mojom::InputDeviceControllerRequest request) {
+    mojom::InputDeviceControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace ui
+}  // namespace ws

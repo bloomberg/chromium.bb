@@ -12,15 +12,14 @@
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "ui/compositor/host/host_context_factory_private.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // NOTE: resize_task_runner needs to be specialized on mac.
 HostContextFactory::HostContextFactory(
-    ui::Gpu* gpu,
+    Gpu* gpu,
     viz::HostFrameSinkManager* host_frame_sink_manager)
     : gpu_(gpu),
-      context_factory_private_(std::make_unique<HostContextFactoryPrivate>(
+      context_factory_private_(std::make_unique<ui::HostContextFactoryPrivate>(
           kWindowServerClientId,
           host_frame_sink_manager,
           base::ThreadTaskRunnerHandle::Get())),
@@ -93,5 +92,4 @@ bool HostContextFactory::SyncTokensRequiredForDisplayCompositor() {
   return true;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

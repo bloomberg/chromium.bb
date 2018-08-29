@@ -206,14 +206,14 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
 }
 
-ui::InputDeviceControllerClient*
+ws::InputDeviceControllerClient*
 BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
     const std::string service_name = !features::IsMultiProcessMash()
                                          ? chromeos::kChromeServiceName
                                          : ws::mojom::kServiceName;
     input_device_controller_client_ =
-        std::make_unique<ui::InputDeviceControllerClient>(
+        std::make_unique<ws::InputDeviceControllerClient>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector(),
             service_name);
   }

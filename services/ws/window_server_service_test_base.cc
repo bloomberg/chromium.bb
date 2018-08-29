@@ -14,8 +14,7 @@
 #include "services/ws/common/switches.h"
 #include "ui/gl/gl_switches.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 namespace {
 
@@ -63,5 +62,4 @@ WindowServerServiceTestBase::CreateService() {
   return std::make_unique<WindowServerServiceTestClient>(this);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

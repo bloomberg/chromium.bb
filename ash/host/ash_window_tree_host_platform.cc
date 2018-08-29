@@ -182,7 +182,7 @@ void AshWindowTreeHostPlatform::InitInputMethodIfNecessary() {
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
-  ui::InputDeviceControllerClient* input_device_controller_client =
+  ws::InputDeviceControllerClient* input_device_controller_client =
       Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
   if (!input_device_controller_client)
     return;  // Happens in tests.

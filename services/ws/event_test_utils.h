@@ -8,10 +8,10 @@
 #include <string>
 
 namespace ui {
-
 class Event;
+}
 
-namespace ws2 {
+namespace ws {
 
 // Returns a string description of event->type(), or "<null>" if |event| is
 // null.
@@ -21,7 +21,6 @@ std::string EventToEventType(const ui::Event* event);
 // EventToEventType()) and the location.
 std::string LocatedEventToEventTypeAndLocation(const ui::Event* event);
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_EVENT_TEST_UTILS_H_

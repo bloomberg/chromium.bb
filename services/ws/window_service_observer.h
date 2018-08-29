@@ -10,8 +10,7 @@
 #include "base/component_export.h"
 #include "services/ws/common/types.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceObserver {
  public:
@@ -33,7 +32,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceObserver {
   virtual ~WindowServiceObserver() {}
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_SERVICE_OBSERVER_H_

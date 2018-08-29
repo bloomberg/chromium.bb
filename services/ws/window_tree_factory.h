@@ -14,28 +14,27 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 class WindowTreeBinding;
 
-// Implementation of ws::mojom::WindowTreeFactory. This creates a
+// Implementation of mojom::WindowTreeFactory. This creates a
 // WindowTreeBinding for each request for a WindowTree. Any WindowTreeBindings
 // created by WindowTreeFactory are owned by the WindowTreeFactory.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
-    : public ws::mojom::WindowTreeFactory {
+    : public mojom::WindowTreeFactory {
  public:
   explicit WindowTreeFactory(WindowService* window_service);
   ~WindowTreeFactory() override;
 
   // |client_name| is the name of the client requesting the factory.
-  void AddBinding(ws::mojom::WindowTreeFactoryRequest request,
+  void AddBinding(mojom::WindowTreeFactoryRequest request,
                   const std::string& client_name);
 
-  // ws::mojom::WindowTreeFactory:
-  void CreateWindowTree(ws::mojom::WindowTreeRequest tree_request,
-                        ws::mojom::WindowTreeClientPtr client) override;
+  // mojom::WindowTreeFactory:
+  void CreateWindowTree(mojom::WindowTreeRequest tree_request,
+                        mojom::WindowTreeClientPtr client) override;
 
  private:
   void OnLostConnectionToClient(WindowTreeBinding* binding);
@@ -45,14 +44,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
   WindowService* window_service_;
 
   // The |string| parameter is the name of the client that created by binding.
-  mojo::BindingSet<ws::mojom::WindowTreeFactory, std::string> bindings_;
+  mojo::BindingSet<mojom::WindowTreeFactory, std::string> bindings_;
 
   WindowTreeBindings window_tree_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_TREE_FACTORY_H_

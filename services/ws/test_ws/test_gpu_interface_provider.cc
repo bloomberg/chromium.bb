@@ -11,11 +11,11 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ws/gpu_host/gpu_host.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 TestGpuInterfaceProvider::TestGpuInterfaceProvider(
-    ui::gpu_host::GpuHost* gpu_host,
+    gpu_host::GpuHost* gpu_host,
     discardable_memory::DiscardableSharedMemoryManager*
         discardable_shared_memory_manager)
     : gpu_host_(gpu_host),
@@ -50,7 +50,7 @@ void TestGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest(
                                            service_manager::BindSourceInfo());
 }
 
-void TestGpuInterfaceProvider::BindGpuRequest(ws::mojom::GpuRequest request) {
+void TestGpuInterfaceProvider::BindGpuRequest(mojom::GpuRequest request) {
   // |gpu_host_| could be null. See test_ws.cc for details.
   if (!gpu_host_) {
     NOTIMPLEMENTED_LOG_ONCE();
@@ -61,4 +61,4 @@ void TestGpuInterfaceProvider::BindGpuRequest(ws::mojom::GpuRequest request) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws

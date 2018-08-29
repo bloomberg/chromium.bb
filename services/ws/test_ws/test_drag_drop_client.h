@@ -15,7 +15,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 // Drives drag and drop loop in a single root window for test. The logic is
@@ -65,6 +65,6 @@ class TestDragDropClient : public aura::client::DragDropClient,
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_TEST_WS_TEST_DRAG_DROP_CLIENT_H_

@@ -4,7 +4,7 @@
 
 #include "services/ws/common/task_runner_test_base.h"
 
-namespace ui {
+namespace ws {
 
 TaskRunnerTestBase::TaskRunnerTestBase() {}
 
@@ -28,4 +28,4 @@ void TaskRunnerTestBase::SetUp() {
   message_loop_.SetTaskRunner(task_runner_);
 }
 
-}  // namespace ui
+}  // namespace ws

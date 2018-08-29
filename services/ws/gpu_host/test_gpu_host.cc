@@ -4,7 +4,7 @@
 
 #include "services/ws/gpu_host/test_gpu_host.h"
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 
 TestGpuHost::TestGpuHost() = default;
@@ -21,4 +21,4 @@ void TestGpuHost::CreateFrameSinkManager(
 }
 
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws

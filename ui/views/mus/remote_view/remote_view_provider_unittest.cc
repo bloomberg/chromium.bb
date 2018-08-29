@@ -102,7 +102,7 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
         base::BindRepeating([](base::RunLoop* run_loop) { run_loop->Quit(); },
                             &run_loop));
 
-    const ui::Id embedder_window_id =
+    const ws::Id embedder_window_id =
         aura::WindowMus::Get(embedder)->server_id();
     window_tree()->RemoveEmbedderWindow(embedder_window_id);
     run_loop.Run();

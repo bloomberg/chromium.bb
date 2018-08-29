@@ -6,17 +6,15 @@
 
 #include "services/ws/server_window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 ServerWindowTestHelper::ServerWindowTestHelper(ServerWindow* server_window)
     : server_window_(server_window) {}
 
 ServerWindowTestHelper::~ServerWindowTestHelper() = default;
 
-bool ServerWindowTestHelper::IsHandlingPointerPress(PointerId pointer_id) {
+bool ServerWindowTestHelper::IsHandlingPointerPress(ui::PointerId pointer_id) {
   return server_window_->IsHandlingPointerPressForTesting(pointer_id);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

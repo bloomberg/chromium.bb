@@ -13,8 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/views/test/test_views_delegate.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TEST(ServerRemoteViewHostTest, EmbedUsingToken) {
   // Use |test_setup| to configure aura and other state.
@@ -65,5 +64,4 @@ TEST(ServerRemoteViewHostTest, EmbedUsingToken) {
   widget->CloseNow();
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

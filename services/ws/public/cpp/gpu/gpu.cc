@@ -22,13 +22,13 @@
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
-namespace ui {
+namespace ws {
 
 namespace {
 
-ws::mojom::GpuPtr DefaultFactory(service_manager::Connector* connector,
-                                 const std::string& service_name) {
-  ws::mojom::GpuPtr gpu_ptr;
+mojom::GpuPtr DefaultFactory(service_manager::Connector* connector,
+                             const std::string& service_name) {
+  mojom::GpuPtr gpu_ptr;
   connector->BindInterface(service_name, &gpu_ptr);
   return gpu_ptr;
 }
@@ -44,7 +44,7 @@ class Gpu::GpuPtrIO {
   GpuPtrIO() { DETACH_FROM_THREAD(thread_checker_); }
   ~GpuPtrIO() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  void Initialize(ws::mojom::GpuPtrInfo ptr_info) {
+  void Initialize(mojom::GpuPtrInfo ptr_info) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     gpu_ptr_.Bind(std::move(ptr_info));
@@ -84,7 +84,7 @@ class Gpu::GpuPtrIO {
                                const gpu::GPUInfo& gpu_info,
                                const gpu::GpuFeatureInfo& gpu_feature_info);
 
-  ws::mojom::GpuPtr gpu_ptr_;
+  mojom::GpuPtr gpu_ptr_;
 
   // This will point to a request that is waiting for the result of
   // EstablishGpuChannel(). |establish_request_| will be notified when the IPC
@@ -246,7 +246,7 @@ Gpu::Gpu(GpuPtrFactory factory,
   DCHECK(main_task_runner_);
   DCHECK(io_task_runner_);
 
-  ws::mojom::GpuMemoryBufferFactoryPtr gpu_memory_buffer_factory;
+  mojom::GpuMemoryBufferFactoryPtr gpu_memory_buffer_factory;
   auto gpu_for_buffer_factory = factory.Run();
   gpu_for_buffer_factory->CreateGpuMemoryBufferFactory(
       mojo::MakeRequest(&gpu_memory_buffer_factory));
@@ -255,8 +255,8 @@ Gpu::Gpu(GpuPtrFactory factory,
   // Attach ownership of |gpu_for_buffer_factory| to
   // |gpu_memory_buffer_manager_| to ensure |gpu_memory_buffer_factory| stays
   // alive.
-  gpu_memory_buffer_manager_->SetOptionalDestructionCallback(base::BindOnce(
-      [](ws::mojom::GpuPtr) {}, std::move(gpu_for_buffer_factory)));
+  gpu_memory_buffer_manager_->SetOptionalDestructionCallback(
+      base::BindOnce([](mojom::GpuPtr) {}, std::move(gpu_for_buffer_factory)));
 
   // Initialize mojom::GpuPtr on the IO thread. |gpu_| can only be used on
   // the IO thread after this point. It is safe to use base::Unretained with
@@ -410,4 +410,4 @@ void Gpu::OnEstablishedGpuChannel() {
     std::move(callback).Run(gpu_channel_);
 }
 
-}  // namespace ui
+}  // namespace ws

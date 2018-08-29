@@ -16,35 +16,35 @@
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/gfx/range/mojo/range_struct_traits.h"
 
-namespace ui {
+namespace ws {
 
 namespace {
 
 class IMEStructTraitsTest : public testing::Test,
-                            public ws::mojom::IMEStructTraitsTest {
+                            public mojom::IMEStructTraitsTest {
  public:
   IMEStructTraitsTest() {}
 
  protected:
-  ws::mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
-    ws::mojom::IMEStructTraitsTestPtr proxy;
+  mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
+    mojom::IMEStructTraitsTestPtr proxy;
     traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
     return proxy;
   }
 
  private:
   // mojom::IMEStructTraitsTest:
-  void EchoTextInputMode(TextInputMode in,
+  void EchoTextInputMode(ui::TextInputMode in,
                          EchoTextInputModeCallback callback) override {
     std::move(callback).Run(in);
   }
-  void EchoTextInputType(TextInputType in,
+  void EchoTextInputType(ui::TextInputType in,
                          EchoTextInputTypeCallback callback) override {
     std::move(callback).Run(in);
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
-  mojo::BindingSet<ws::mojom::IMEStructTraitsTest> traits_test_bindings_;
+  mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);
 };
@@ -52,7 +52,7 @@ class IMEStructTraitsTest : public testing::Test,
 }  // namespace
 
 TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
-  CandidateWindow::CandidateWindowProperty input;
+  ui::CandidateWindow::CandidateWindowProperty input;
   input.page_size = 7;
   input.cursor_position = 3;
   input.is_cursor_visible = true;
@@ -61,9 +61,9 @@ TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
   input.auxiliary_text = "abcdefghij";
   input.is_auxiliary_text_visible = false;
 
-  CandidateWindow::CandidateWindowProperty output;
-  EXPECT_TRUE(ws::mojom::CandidateWindowProperties::Deserialize(
-      ws::mojom::CandidateWindowProperties::Serialize(&input), &output));
+  ui::CandidateWindow::CandidateWindowProperty output;
+  EXPECT_TRUE(mojom::CandidateWindowProperties::Deserialize(
+      mojom::CandidateWindowProperties::Serialize(&input), &output));
 
   EXPECT_EQ(input.page_size, output.page_size);
   EXPECT_EQ(input.cursor_position, output.cursor_position);
@@ -79,8 +79,8 @@ TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
   input.is_vertical = !input.is_vertical;
   input.show_window_at_composition = !input.show_window_at_composition;
   input.is_auxiliary_text_visible = !input.is_auxiliary_text_visible;
-  EXPECT_TRUE(ws::mojom::CandidateWindowProperties::Deserialize(
-      ws::mojom::CandidateWindowProperties::Serialize(&input), &output));
+  EXPECT_TRUE(mojom::CandidateWindowProperties::Deserialize(
+      mojom::CandidateWindowProperties::Serialize(&input), &output));
 
   EXPECT_EQ(input.is_cursor_visible, output.is_cursor_visible);
   EXPECT_EQ(input.is_vertical, output.is_vertical);
@@ -90,16 +90,16 @@ TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
 }
 
 TEST_F(IMEStructTraitsTest, CandidateWindowEntry) {
-  CandidateWindow::Entry input;
+  ui::CandidateWindow::Entry input;
   input.value = base::UTF8ToUTF16("entry_value");
   input.label = base::UTF8ToUTF16("entry_label");
   input.annotation = base::UTF8ToUTF16("entry_annotation");
   input.description_title = base::UTF8ToUTF16("entry_description_title");
   input.description_body = base::UTF8ToUTF16("entry_description_body");
 
-  CandidateWindow::Entry output;
-  EXPECT_TRUE(ws::mojom::CandidateWindowEntry::Deserialize(
-      ws::mojom::CandidateWindowEntry::Serialize(&input), &output));
+  ui::CandidateWindow::Entry output;
+  EXPECT_TRUE(mojom::CandidateWindowEntry::Deserialize(
+      mojom::CandidateWindowEntry::Serialize(&input), &output));
 
   EXPECT_EQ(input.value, output.value);
   EXPECT_EQ(input.label, output.label);
@@ -109,32 +109,35 @@ TEST_F(IMEStructTraitsTest, CandidateWindowEntry) {
 }
 
 TEST_F(IMEStructTraitsTest, CompositionText) {
-  CompositionText input;
+  ui::CompositionText input;
   input.text = base::UTF8ToUTF16("abcdefghij");
-  ImeTextSpan ime_text_span_1(0, 2, ImeTextSpan::Thickness::kThin);
+  ui::ImeTextSpan ime_text_span_1(0, 2, ui::ImeTextSpan::Thickness::kThin);
   ime_text_span_1.underline_color = SK_ColorGRAY;
   input.ime_text_spans.push_back(ime_text_span_1);
-  ImeTextSpan ime_text_span_2(ImeTextSpan::Type::kComposition, 3, 6,
-                              ImeTextSpan::Thickness::kThick, SK_ColorGREEN);
+  ui::ImeTextSpan ime_text_span_2(ui::ImeTextSpan::Type::kComposition, 3, 6,
+                                  ui::ImeTextSpan::Thickness::kThick,
+                                  SK_ColorGREEN);
   ime_text_span_2.underline_color = SK_ColorRED;
   input.ime_text_spans.push_back(ime_text_span_2);
   input.selection = gfx::Range(1, 7);
 
-  CompositionText output;
-  EXPECT_TRUE(ws::mojom::CompositionText::Deserialize(
-      ws::mojom::CompositionText::Serialize(&input), &output));
+  ui::CompositionText output;
+  EXPECT_TRUE(mojom::CompositionText::Deserialize(
+      mojom::CompositionText::Serialize(&input), &output));
 
   EXPECT_EQ(input, output);
 }
 
 TEST_F(IMEStructTraitsTest, TextInputMode) {
-  const TextInputMode kTextInputModes[] = {
-      TEXT_INPUT_MODE_DEFAULT, TEXT_INPUT_MODE_NONE,    TEXT_INPUT_MODE_TEXT,
-      TEXT_INPUT_MODE_TEL,     TEXT_INPUT_MODE_URL,     TEXT_INPUT_MODE_EMAIL,
-      TEXT_INPUT_MODE_NUMERIC, TEXT_INPUT_MODE_DECIMAL, TEXT_INPUT_MODE_SEARCH,
+  const ui::TextInputMode kTextInputModes[] = {
+      ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_MODE_NONE,
+      ui::TEXT_INPUT_MODE_TEXT,    ui::TEXT_INPUT_MODE_TEL,
+      ui::TEXT_INPUT_MODE_URL,     ui::TEXT_INPUT_MODE_EMAIL,
+      ui::TEXT_INPUT_MODE_NUMERIC, ui::TEXT_INPUT_MODE_DECIMAL,
+      ui::TEXT_INPUT_MODE_SEARCH,
   };
 
-  ws::mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
   for (size_t i = 0; i < arraysize(kTextInputModes); i++) {
     ui::TextInputMode mode_out;
     ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
@@ -143,27 +146,27 @@ TEST_F(IMEStructTraitsTest, TextInputMode) {
 }
 
 TEST_F(IMEStructTraitsTest, TextInputType) {
-  const TextInputType kTextInputTypes[] = {
-      TEXT_INPUT_TYPE_NONE,
-      TEXT_INPUT_TYPE_TEXT,
-      TEXT_INPUT_TYPE_PASSWORD,
-      TEXT_INPUT_TYPE_SEARCH,
-      TEXT_INPUT_TYPE_EMAIL,
-      TEXT_INPUT_TYPE_NUMBER,
-      TEXT_INPUT_TYPE_TELEPHONE,
-      TEXT_INPUT_TYPE_URL,
-      TEXT_INPUT_TYPE_DATE,
-      TEXT_INPUT_TYPE_DATE_TIME,
-      TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
-      TEXT_INPUT_TYPE_MONTH,
-      TEXT_INPUT_TYPE_TIME,
-      TEXT_INPUT_TYPE_WEEK,
-      TEXT_INPUT_TYPE_TEXT_AREA,
-      TEXT_INPUT_TYPE_CONTENT_EDITABLE,
-      TEXT_INPUT_TYPE_DATE_TIME_FIELD,
+  const ui::TextInputType kTextInputTypes[] = {
+      ui::TEXT_INPUT_TYPE_NONE,
+      ui::TEXT_INPUT_TYPE_TEXT,
+      ui::TEXT_INPUT_TYPE_PASSWORD,
+      ui::TEXT_INPUT_TYPE_SEARCH,
+      ui::TEXT_INPUT_TYPE_EMAIL,
+      ui::TEXT_INPUT_TYPE_NUMBER,
+      ui::TEXT_INPUT_TYPE_TELEPHONE,
+      ui::TEXT_INPUT_TYPE_URL,
+      ui::TEXT_INPUT_TYPE_DATE,
+      ui::TEXT_INPUT_TYPE_DATE_TIME,
+      ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
+      ui::TEXT_INPUT_TYPE_MONTH,
+      ui::TEXT_INPUT_TYPE_TIME,
+      ui::TEXT_INPUT_TYPE_WEEK,
+      ui::TEXT_INPUT_TYPE_TEXT_AREA,
+      ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+      ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
   };
 
-  ws::mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
   for (size_t i = 0; i < arraysize(kTextInputTypes); i++) {
     ui::TextInputType type_out;
     ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
@@ -171,4 +174,4 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
   }
 }
 
-}  // namespace ui
+}  // namespace ws

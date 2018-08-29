@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 
 class GpuHostDelegate {
@@ -18,6 +18,6 @@ class GpuHostDelegate {
 };
 
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_GPU_HOST_GPU_HOST_DELEGATE_H_

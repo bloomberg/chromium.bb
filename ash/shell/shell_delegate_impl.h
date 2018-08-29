@@ -28,7 +28,7 @@ class ShellDelegateImpl : public ShellDelegate {
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
+  ws::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

@@ -14,8 +14,7 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 class WindowTree;
 
 // TopmostWindowObserver is used to track the topmost window under the cursor or
@@ -30,7 +29,7 @@ class TopmostWindowObserver : public ui::EventHandler,
   // initial target of the event. This will report the topmost window under the
   // cursor to |window_tree|.
   TopmostWindowObserver(WindowTree* window_tree,
-                        ws::mojom::MoveLoopSource source,
+                        mojom::MoveLoopSource source,
                         aura::Window* initial_target);
   ~TopmostWindowObserver() override;
 
@@ -54,7 +53,7 @@ class TopmostWindowObserver : public ui::EventHandler,
   WindowTree* window_tree_;
 
   // The type of the events which should be obsered.
-  ws::mojom::MoveLoopSource source_;
+  mojom::MoveLoopSource source_;
 
   // The last target of the event. This is remembered since sometimes the client
   // wants to see the topmost window excluding the event target (i.e. dragging
@@ -76,7 +75,6 @@ class TopmostWindowObserver : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(TopmostWindowObserver);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_TOPMOST_WINDOW_OBSERVER_H_

@@ -24,7 +24,7 @@
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
-    scoped_refptr<ui::ContextProviderCommandBuffer> context,
+    scoped_refptr<ws::ContextProviderCommandBuffer> context,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<viz::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
@@ -147,7 +147,7 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 uint32_t GpuBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
-  auto* gl = static_cast<ui::ContextProviderCommandBuffer*>(context_provider());
+  auto* gl = static_cast<ws::ContextProviderCommandBuffer*>(context_provider());
   return gl->GetCopyTextureInternalFormat();
 }
 
@@ -192,8 +192,8 @@ void GpuBrowserCompositorOutputSurface::OnUpdateVSyncParameters(
 
 gpu::CommandBufferProxyImpl*
 GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
-  ui::ContextProviderCommandBuffer* provider_command_buffer =
-      static_cast<ui::ContextProviderCommandBuffer*>(context_provider_.get());
+  ws::ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<ws::ContextProviderCommandBuffer*>(context_provider_.get());
   gpu::CommandBufferProxyImpl* command_buffer_proxy =
       provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);

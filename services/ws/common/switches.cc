@@ -4,11 +4,8 @@
 
 #include "services/ws/common/switches.h"
 
-namespace ui {
+namespace ws {
 namespace switches {
-
-// WindowServer uses the asynchronous event targeting logic.
-const char kUseAsyncEventTargeting[] = "enable-async-event-targeting";
 
 // Initializes X11 in threaded mode, and sets the |override_redirect| flag when
 // creating X11 windows. Also, exposes the WindowServerTest interface to clients
@@ -18,4 +15,4 @@ const char kUseAsyncEventTargeting[] = "enable-async-event-targeting";
 const char kUseTestConfig[] = "use-test-config";
 
 }  // namespace switches
-}  // namespace ui
+}  // namespace ws

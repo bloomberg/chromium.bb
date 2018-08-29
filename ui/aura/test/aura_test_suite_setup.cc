@@ -23,7 +23,7 @@ namespace aura {
 namespace {
 
 #if defined(USE_OZONE)
-class TestInputDeviceClient : public ui::InputDeviceClient {
+class TestInputDeviceClient : public ws::InputDeviceClient {
  public:
   TestInputDeviceClient() = default;
   ~TestInputDeviceClient() override = default;

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace ui {
+namespace ws {
 
 InputDeviceClient::InputDeviceClient() : InputDeviceClient(true) {}
 
@@ -15,7 +15,7 @@ InputDeviceClient::~InputDeviceClient() {
     InputDeviceManager::ClearInstance();
 }
 
-void InputDeviceClient::Connect(ws::mojom::InputDeviceServerPtr server) {
+void InputDeviceClient::Connect(mojom::InputDeviceServerPtr server) {
   DCHECK(server.is_bound());
   server->AddObserver(GetIntefacePtr());
 }
@@ -67,8 +67,8 @@ InputDeviceClient::InputDeviceClient(bool is_input_device_manager)
     InputDeviceManager::SetInstance(this);
 }
 
-ws::mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
-  ws::mojom::InputDeviceObserverMojoPtr ptr;
+mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
+  mojom::InputDeviceObserverMojoPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
 }
@@ -138,7 +138,7 @@ void InputDeviceClient::OnDeviceListsComplete(
   }
 }
 
-void InputDeviceClient::OnStylusStateChanged(StylusState state) {
+void InputDeviceClient::OnStylusStateChanged(ui::StylusState state) {
   for (auto& observer : observers_)
     observer.OnStylusStateChanged(state);
 }
@@ -158,4 +158,4 @@ void InputDeviceClient::NotifyObserversTouchscreenDeviceConfigurationChanged() {
     observer.OnTouchscreenDeviceConfigurationChanged();
 }
 
-}  // namespace ui
+}  // namespace ws

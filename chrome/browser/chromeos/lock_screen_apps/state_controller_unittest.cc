@@ -493,7 +493,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   void SetStylusEnabled() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshForceEnableStylusTools);
-    ui::InputDeviceClientTestApi()
+    ws::InputDeviceClientTestApi()
         .NotifyObserversTouchscreenDeviceConfigurationChanged();
   }
 

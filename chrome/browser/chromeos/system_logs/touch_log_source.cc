@@ -160,7 +160,7 @@ void OnStatusLogCollected(
 
   // Collect touch event logs.
   const base::FilePath kBaseLogPath(kTouchEventLogDir);
-  ui::InputDeviceControllerClient* input_device_controller_client =
+  ws::InputDeviceControllerClient* input_device_controller_client =
       g_browser_process->platform_part()->GetInputDeviceControllerClient();
   input_device_controller_client->GetTouchEventLog(
       kBaseLogPath, base::BindOnce(&OnEventLogCollected, std::move(response),
@@ -197,7 +197,7 @@ void TouchLogSource::Fetch(SysLogsSourceCallback callback) {
   CollectTouchHudDebugLog(response.get());
 
   // Collect touch device status logs.
-  ui::InputDeviceControllerClient* input_device_controller_client =
+  ws::InputDeviceControllerClient* input_device_controller_client =
       g_browser_process->platform_part()->GetInputDeviceControllerClient();
   input_device_controller_client->GetTouchDeviceStatus(base::BindOnce(
       &OnStatusLogCollected, std::move(response), std::move(callback)));

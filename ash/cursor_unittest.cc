@@ -55,7 +55,7 @@ TEST_F(CursorTest, TopLevel) {
 TEST_F(CursorTest, Embedded) {
   // Create a window to hold an embedding and set its cursor.
   aura::Window* embed_root = GetWindowTreeTestHelper()->NewWindow();
-  ui::ws2::TestWindowTreeClient test_client;
+  ws::TestWindowTreeClient test_client;
   GetWindowTreeTestHelper()->Embed(embed_root, nullptr, &test_client, 0);
   const ui::CursorData help_cursor(ui::CursorType::kHelp);
   GetWindowTreeTestHelper()->SetCursor(embed_root, help_cursor);

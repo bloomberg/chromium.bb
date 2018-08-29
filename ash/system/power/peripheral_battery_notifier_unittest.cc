@@ -195,7 +195,7 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
                                1 /* touch_points */, true /* has_stylus */);
   stylus.sys_path = base::FilePath(kTestStylusBatteryPath);
 
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({stylus});
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({stylus});
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();

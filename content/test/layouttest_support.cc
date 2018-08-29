@@ -380,14 +380,14 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
-      context_provider = base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+      context_provider = base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
           gpu_channel_, gpu_memory_buffer_manager_, kGpuStreamIdDefault,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
           GURL("chrome://gpu/"
                "LayoutTestDependenciesImpl::CreateOutputSurface"),
           automatic_flushes, support_locking, support_grcontext,
           gpu::SharedMemoryLimits(), attributes,
-          ui::command_buffer_metrics::ContextType::FOR_TESTING);
+          ws::command_buffer_metrics::ContextType::FOR_TESTING);
       context_result = context_provider->BindToCurrentThread();
 
       // Layout tests can't recover from a fatal failure.

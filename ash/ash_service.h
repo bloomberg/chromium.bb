@@ -36,17 +36,6 @@ namespace service_manager {
 struct EmbeddedServiceInfo;
 }
 
-namespace ui {
-class Gpu;
-class InputDeviceController;
-namespace gpu_host {
-class DefaultGpuHost;
-}
-namespace ws2 {
-class HostContextFactory;
-}
-}  // namespace ui
-
 namespace views {
 class ViewsDelegate;
 }
@@ -58,6 +47,16 @@ class HostFrameSinkManager;
 namespace wm {
 class WMState;
 }
+
+namespace ws {
+class Gpu;
+class HostContextFactory;
+class InputDeviceController;
+namespace gpu_host {
+class DefaultGpuHost;
+}  // namespace gpu_host
+}  // namespace ws
+
 namespace ash {
 
 class NetworkConnectDelegateMus;
@@ -67,7 +66,7 @@ class NetworkConnectDelegateMus;
 // UI-Service/WindowService when ash runs out of process.
 class ASH_EXPORT AshService : public service_manager::Service,
                               public service_manager::mojom::ServiceFactory,
-                              public ui::gpu_host::GpuHostDelegate {
+                              public ws::gpu_host::GpuHostDelegate {
  public:
   AshService();
   ~AshService() override;
@@ -109,14 +108,14 @@ class ASH_EXPORT AshService : public service_manager::Service,
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
 
-  std::unique_ptr<ui::gpu_host::DefaultGpuHost> gpu_host_;
+  std::unique_ptr<ws::gpu_host::DefaultGpuHost> gpu_host_;
 
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
 
   // IO thread for GPU and discardable shared memory IPC.
   std::unique_ptr<base::Thread> io_thread_;
-  std::unique_ptr<ui::Gpu> gpu_;
-  std::unique_ptr<ui::ws2::HostContextFactory> context_factory_;
+  std::unique_ptr<ws::Gpu> gpu_;
+  std::unique_ptr<ws::HostContextFactory> context_factory_;
 
   std::unique_ptr<aura::Env> env_;
 
@@ -126,7 +125,7 @@ class ASH_EXPORT AshService : public service_manager::Service,
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
 
-  std::unique_ptr<ui::InputDeviceController> input_device_controller_;
+  std::unique_ptr<ws::InputDeviceController> input_device_controller_;
 
   // Whether this class initialized NetworkHandler and needs to clean it up.
   bool network_handler_initialized_ = false;

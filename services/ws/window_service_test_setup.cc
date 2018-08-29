@@ -14,8 +14,7 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/public/activation_client.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 class TestFocusRules : public wm::BaseFocusRules {
@@ -96,5 +95,4 @@ EmbeddingHelper::~EmbeddingHelper() {
   WindowTreeTestHelper(parent_window_tree).DestroyEmbedding(embedding);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

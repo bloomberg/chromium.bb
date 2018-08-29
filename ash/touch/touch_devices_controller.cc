@@ -41,7 +41,7 @@ void OnSetTouchpadEnabledDone(bool enabled, bool succeeded) {
     cursor_manager->HideCursor();
 }
 
-ui::InputDeviceControllerClient* GetInputDeviceControllerClient() {
+ws::InputDeviceControllerClient* GetInputDeviceControllerClient() {
   return Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
 }
 

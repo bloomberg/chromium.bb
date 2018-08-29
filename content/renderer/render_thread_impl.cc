@@ -329,7 +329,7 @@ void CreateFrameFactory(mojom::FrameFactoryRequest request,
                           std::move(request));
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
+scoped_refptr<ws::ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gpu::SharedMemoryLimits& limits,
@@ -338,7 +338,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
     bool support_raster_interface,
     bool support_oop_rasterization,
     bool support_grcontext,
-    ui::command_buffer_metrics::ContextType type,
+    ws::command_buffer_metrics::ContextType type,
     int32_t stream_id,
     gpu::SchedulingPriority stream_priority) {
   DCHECK(gpu_channel_host);
@@ -365,11 +365,11 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
                                         !support_gles2_interface;
 
   const bool automatic_flushes = false;
-  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+  return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager, stream_id,
       stream_priority, gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
-           ui::command_buffer_metrics::ContextTypeToString(type)),
+           ws::command_buffer_metrics::ContextTypeToString(type)),
       automatic_flushes, support_locking, support_grcontext, limits, attributes,
       type);
 }
@@ -744,7 +744,7 @@ void RenderThreadImpl::Init() {
       base::BindRepeating(&CreateSingleSampleMetricsProvider,
                           main_thread_runner(), GetConnector()));
 
-  gpu_ = ui::Gpu::Create(GetConnector(),
+  gpu_ = ws::Gpu::Create(GetConnector(),
                          features::IsUsingWindowService()
                              ? ws::mojom::kServiceName
                              : mojom::kBrowserServiceName,
@@ -1393,12 +1393,12 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   bool support_raster_interface = false;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
-  scoped_refptr<ui::ContextProviderCommandBuffer> media_context_provider =
+  scoped_refptr<ws::ContextProviderCommandBuffer> media_context_provider =
       CreateOffscreenContext(gpu_channel_host, GetGpuMemoryBufferManager(),
                              limits, support_locking, support_gles2_interface,
                              support_raster_interface,
                              support_oop_rasterization, support_grcontext,
-                             ui::command_buffer_metrics::ContextType::MEDIA,
+                             ws::command_buffer_metrics::ContextType::MEDIA,
                              kGpuStreamIdMedia, kGpuStreamPriorityMedia);
 
   const bool enable_video_accelerator =
@@ -1437,7 +1437,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return gpu_factories_.back().get();
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer>
+scoped_refptr<ws::ContextProviderCommandBuffer>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (shared_main_thread_contexts_ &&
@@ -1461,7 +1461,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
       gpu::SharedMemoryLimits(), support_locking, support_gles2_interface,
       support_raster_interface, support_oop_rasterization, support_grcontext,
-      ui::command_buffer_metrics::ContextType::RENDERER_MAIN_THREAD,
+      ws::command_buffer_metrics::ContextType::RENDERER_MAIN_THREAD,
       kGpuStreamIdDefault, kGpuStreamPriorityDefault);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
@@ -1476,7 +1476,7 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   if (!stream_texture_factory_.get() ||
       stream_texture_factory_->ContextGL()->GetGraphicsResetStatusKHR() !=
           GL_NO_ERROR) {
-    scoped_refptr<ui::ContextProviderCommandBuffer> shared_context_provider =
+    scoped_refptr<ws::ContextProviderCommandBuffer> shared_context_provider =
         SharedMainThreadContextProvider();
     if (!shared_context_provider) {
       stream_texture_factory_ = nullptr;
@@ -2027,13 +2027,13 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   constexpr bool support_locking = false;
   constexpr bool support_grcontext = true;
 
-  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider(
-      new ui::ContextProviderCommandBuffer(
+  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider(
+      new ws::ContextProviderCommandBuffer(
           gpu_channel_host, GetGpuMemoryBufferManager(), kGpuStreamIdDefault,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, url,
           automatic_flushes, support_locking, support_grcontext, limits,
           attributes,
-          ui::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
+          ws::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
 
   if (layout_test_deps_) {
     if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
@@ -2348,7 +2348,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
       shared_memory_limits, support_locking, support_gles2_interface,
       support_raster_interface, support_oop_rasterization, support_grcontext,
-      ui::command_buffer_metrics::ContextType::RENDER_WORKER,
+      ws::command_buffer_metrics::ContextType::RENDER_WORKER,
       kGpuStreamIdWorker, kGpuStreamPriorityWorker);
   auto result = shared_worker_context_provider_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)

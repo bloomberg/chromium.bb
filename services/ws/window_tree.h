@@ -27,10 +27,10 @@ class Window;
 }
 
 namespace ui {
-
 class Event;
+}
 
-namespace ws2 {
+namespace ws {
 
 class ClientChangeTracker;
 class ClientRoot;
@@ -42,11 +42,11 @@ class TopmostWindowObserver;
 class WindowService;
 
 // WindowTree manages a client connected to the Window Service. WindowTree
-// provides the implementation of ws::mojom::WindowTree that the client talks
-// to. WindowTree implements the ws::mojom::WindowTree interface on top of aura.
+// provides the implementation of mojom::WindowTree that the client talks
+// to. WindowTree implements the mojom::WindowTree interface on top of aura.
 // That is, changes to the aura Window hierarchy are mirrored to the
-// ws::mojom::WindowTreeClient interface. Similarly, changes from the client by
-// way of the ws::mojom::WindowTree interface modify the underlying aura
+// mojom::WindowTreeClient interface. Similarly, changes from the client by
+// way of the mojom::WindowTree interface modify the underlying aura
 // Windows.
 //
 // WindowTree is created in two distinct ways:
@@ -62,19 +62,18 @@ class WindowService;
 // created via WindowTreeFactory, but that is not necessary (in particular tests
 // often do not use WindowTreeBinding).
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
-    : public ws::mojom::WindowTree,
+    : public mojom::WindowTree,
       public aura::WindowObserver,
       public aura::client::CaptureClientObserver {
  public:
   WindowTree(WindowService* window_service,
              ClientSpecificId client_id,
-             ws::mojom::WindowTreeClient* client,
+             mojom::WindowTreeClient* client,
              const std::string& client_name);
   ~WindowTree() override;
 
   // See class description for details on Init variants.
-  void InitForEmbed(aura::Window* root,
-                    ws::mojom::WindowTreePtr window_tree_ptr);
+  void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
   void InitFromFactory();
 
   ClientSpecificId client_id() const { return client_id_; }
@@ -85,7 +84,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Notifies the client that an event matching a pointer watcher has been
   // received.
   void SendPointerWatcherEventToClient(int64_t display_id,
-                                       std::unique_ptr<Event> event);
+                                       std::unique_ptr<ui::Event> event);
 
   // Returns true if |window| was created by the client calling
   // NewTopLevelWindow().
@@ -143,8 +142,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
     // This client is not the result of an embedding. More specifically
     // InitFromFactory() was called. Generally this means the client first
-    // connected to ws::mojom::WindowTreeFactory and then called
-    // ws::mojom::WindowTreeFactory::CreateWindowTree().
+    // connected to mojom::WindowTreeFactory and then called
+    // mojom::WindowTreeFactory::CreateWindowTree().
     kOther,
   };
 
@@ -257,9 +256,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // either another client, or by the WindowService itself.
   bool IsLocalSurfaceIdAssignedByClient(aura::Window* window);
 
-  std::vector<ws::mojom::WindowDataPtr> WindowsToWindowDatas(
+  std::vector<mojom::WindowDataPtr> WindowsToWindowDatas(
       const std::vector<aura::Window*>& windows);
-  ws::mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
+  mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
 
   // Returns the WindowTreeClient previously scheduled for an embed with the
   // given |token| from ScheduleEmbed(). If this client is the result of an
@@ -268,11 +267,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // the WindowTrees that have already been visited. Recursing enables an
   // ancestor to call ScheduleEmbed() and the ancestor to communicate the
   // token with the client.
-  ws::mojom::WindowTreeClientPtr GetAndRemoveScheduledEmbedWindowTreeClient(
+  mojom::WindowTreeClientPtr GetAndRemoveScheduledEmbedWindowTreeClient(
       const base::UnguessableToken& token,
       std::set<WindowTree*>* visited_trees);
 
-  // Methods with the name Impl() mirror those of ws::mojom::WindowTree. The
+  // Methods with the name Impl() mirror those of mojom::WindowTree. The
   // return value indicates whether they succeeded or not. Generally failure
   // means the operation was not allowed.
   bool NewWindowImpl(
@@ -296,8 +295,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                              const std::string& name,
                              const base::Optional<std::vector<uint8_t>>& value);
   bool EmbedImpl(const ClientWindowId& window_id,
-                 ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-                 ws::mojom::WindowTreeClient* window_tree_client,
+                 mojom::WindowTreeClientPtr window_tree_client_ptr,
+                 mojom::WindowTreeClient* window_tree_client,
                  uint32_t flags);
   bool SetWindowOpacityImpl(const ClientWindowId& window_id, float opacity);
   bool SetWindowBoundsImpl(
@@ -306,7 +305,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   bool ReorderWindowImpl(const ClientWindowId& window_id,
                          const ClientWindowId& relative_window_id,
-                         ws::mojom::OrderDirection direction);
+                         mojom::OrderDirection direction);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
   bool SetFocusImpl(const ClientWindowId& window_id);
   bool SetCursorImpl(const ClientWindowId& window_id, ui::CursorData cursor);
@@ -328,7 +327,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void OnCaptureChanged(aura::Window* lost_capture,
                         aura::Window* gained_capture) override;
 
-  // ws::mojom::WindowTree:
+  // mojom::WindowTree:
   void NewWindow(
       uint32_t change_id,
       Id transport_window_id,
@@ -390,13 +389,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ReorderWindow(uint32_t change_id,
                      Id transport_window_id,
                      Id transport_relative_window_id,
-                     ws::mojom::OrderDirection direction) override;
+                     mojom::OrderDirection direction) override;
   void GetWindowTree(Id window_id, GetWindowTreeCallback callback) override;
   void Embed(Id transport_window_id,
-             ws::mojom::WindowTreeClientPtr client_ptr,
+             mojom::WindowTreeClientPtr client_ptr,
              uint32_t embed_flags,
              EmbedCallback callback) override;
-  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
+  void ScheduleEmbed(mojom::WindowTreeClientPtr client,
                      ScheduleEmbedCallback callback) override;
   void ScheduleEmbedForExistingClient(
       uint32_t window_id,
@@ -416,9 +415,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                         bool visible,
                         ::ui::mojom::TextInputStatePtr state) override;
   void SetEventTargetingPolicy(Id transport_window_id,
-                               ws::mojom::EventTargetingPolicy policy) override;
+                               mojom::EventTargetingPolicy policy) override;
   void OnWindowInputEventAck(uint32_t event_id,
-                             ws::mojom::EventResult result) override;
+                             mojom::EventResult result) override;
   void DeactivateWindow(Id transport_window_id) override;
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
@@ -427,7 +426,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       GetCursorLocationMemoryCallback callback) override;
   void PerformWindowMove(uint32_t change_id,
                          Id transport_window_id,
-                         ws::mojom::MoveLoopSource source,
+                         mojom::MoveLoopSource source,
                          const gfx::Point& cursor) override;
   void CancelWindowMove(Id transport_window_id) override;
   void PerformDragDrop(
@@ -440,7 +439,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       uint32_t drag_operation,
       ui::mojom::PointerKind source) override;
   void CancelDragDrop(Id window_id) override;
-  void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
+  void ObserveTopmostWindow(mojom::MoveLoopSource source,
                             Id window_id) override;
   void StopObservingTopmostWindow() override;
 
@@ -455,7 +454,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ConnectionType connection_type_ = ConnectionType::kEmbedding;
 
-  ws::mojom::WindowTreeClient* window_tree_client_;
+  mojom::WindowTreeClient* window_tree_client_;
 
   // Controls whether the client can change the visibility of the roots.
   bool can_change_root_window_visibility_ = true;
@@ -491,7 +490,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Holds WindowTreeClients passed to ScheduleEmbed(). Entries are removed
   // when EmbedUsingToken() is called.
   using ScheduledEmbeds =
-      base::flat_map<base::UnguessableToken, ws::mojom::WindowTreeClientPtr>;
+      base::flat_map<base::UnguessableToken, mojom::WindowTreeClientPtr>;
   ScheduledEmbeds scheduled_embeds_;
 
   // Calls to ScheduleEmbedForExistingClient() add an entry here. The value is
@@ -520,7 +519,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_TREE_H_

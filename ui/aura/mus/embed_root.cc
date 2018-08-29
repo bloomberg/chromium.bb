@@ -104,7 +104,7 @@ Window* EmbedRoot::window() {
 
 EmbedRoot::EmbedRoot(WindowTreeClient* window_tree_client,
                      EmbedRootDelegate* delegate,
-                     ui::ClientSpecificId window_id)
+                     ws::ClientSpecificId window_id)
     : window_tree_client_(window_tree_client),
       delegate_(delegate),
       weak_factory_(this) {

@@ -20,7 +20,7 @@ namespace keyboard {
 class KeyboardUI;
 }
 
-namespace ui {
+namespace ws {
 class InputDeviceControllerClient;
 }
 
@@ -51,7 +51,7 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   // Creator of Shell owns this; it's assumed this outlives Shell.
-  virtual ui::InputDeviceControllerClient* GetInputDeviceControllerClient() = 0;
+  virtual ws::InputDeviceControllerClient* GetInputDeviceControllerClient() = 0;
 };
 
 }  // namespace ash

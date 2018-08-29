@@ -9,25 +9,25 @@
 #include "services/ws/ime/ime_driver_bridge.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
-namespace ui {
+namespace ws {
 
-class IMERegistrarImpl : public ws::mojom::IMERegistrar {
+class IMERegistrarImpl : public mojom::IMERegistrar {
  public:
   explicit IMERegistrarImpl(IMEDriverBridge* ime_driver_bridge);
   ~IMERegistrarImpl() override;
 
-  void AddBinding(ws::mojom::IMERegistrarRequest request);
+  void AddBinding(mojom::IMERegistrarRequest request);
 
  private:
-  // ws::mojom::IMERegistrar:
-  void RegisterDriver(ws::mojom::IMEDriverPtr driver) override;
+  // mojom::IMERegistrar:
+  void RegisterDriver(mojom::IMEDriverPtr driver) override;
 
-  mojo::BindingSet<ws::mojom::IMERegistrar> bindings_;
+  mojo::BindingSet<mojom::IMERegistrar> bindings_;
   IMEDriverBridge* ime_driver_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(IMERegistrarImpl);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_IME_IME_REGISTRAR_IMPL_H_

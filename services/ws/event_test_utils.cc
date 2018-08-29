@@ -8,39 +8,38 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
-std::string EventToEventType(const Event* event) {
+std::string EventToEventType(const ui::Event* event) {
   if (!event)
     return "<null>";
 
   // TODO(sky): convert to using EventTypeName() is ui/events.h.
   switch (event->type()) {
-    case ET_CANCEL_MODE:
+    case ui::ET_CANCEL_MODE:
       return "CANCEL_MODE";
 
-    case ET_KEY_PRESSED:
+    case ui::ET_KEY_PRESSED:
       return "KEY_PRESSED";
 
-    case ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_DRAGGED:
       return "MOUSE_DRAGGED";
-    case ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_ENTERED:
       return "MOUSE_ENTERED";
-    case ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_MOVED:
       return "MOUSE_MOVED";
-    case ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_PRESSED:
       return "MOUSE_PRESSED";
-    case ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_RELEASED:
       return "MOUSE_RELEASED";
 
-    case ET_POINTER_DOWN:
+    case ui::ET_POINTER_DOWN:
       return "POINTER_DOWN";
-    case ET_POINTER_ENTERED:
+    case ui::ET_POINTER_ENTERED:
       return "POINTER_ENTERED";
-    case ET_POINTER_MOVED:
+    case ui::ET_POINTER_MOVED:
       return "POINTER_MOVED";
-    case ET_POINTER_UP:
+    case ui::ET_POINTER_UP:
       return "POINTER_UP";
     default:
       break;
@@ -48,7 +47,7 @@ std::string EventToEventType(const Event* event) {
   return "<unexpected-type>";
 }
 
-std::string LocatedEventToEventTypeAndLocation(const Event* event) {
+std::string LocatedEventToEventTypeAndLocation(const ui::Event* event) {
   if (!event)
     return "<null>";
   if (!event->IsLocatedEvent())
@@ -57,5 +56,4 @@ std::string LocatedEventToEventTypeAndLocation(const Event* event) {
          event->AsLocatedEvent()->location().ToString();
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
