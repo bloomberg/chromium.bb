@@ -110,7 +110,7 @@ class VdaVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*vda_, Destroy());
 
     vdavd_.reset(new VdaVideoDecoder(
-        task_runner, task_runner, &media_log_, gfx::ColorSpace(),
+        task_runner, task_runner, media_log_.Clone(), gfx::ColorSpace(),
         base::BindOnce(&VdaVideoDecoderTest::CreatePictureBufferManager,
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
