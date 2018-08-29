@@ -84,11 +84,7 @@ std::pair<int, int> GetTargetColorAlphaValues(
       target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
     case SHELF_BACKGROUND_APP_LIST:
-      if (chromeos::switches::ShouldUseShelfNewUi()) {
-        target_shelf_color_alpha = kShelfTranslucentOverAppList;
-      } else {
-        target_shelf_color_alpha = SK_AlphaTRANSPARENT;
-      }
+      target_shelf_color_alpha = SK_AlphaTRANSPARENT;
       target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
     case SHELF_BACKGROUND_SPLIT_VIEW:
