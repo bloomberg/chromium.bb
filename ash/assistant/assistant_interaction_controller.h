@@ -66,6 +66,7 @@ class AssistantInteractionController
   void OnInputModalityChanged(InputModality input_modality) override;
 
   // AssistantUiModelObserver:
+  void OnUiModeChanged(AssistantUiMode ui_mode) override;
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,
                              AssistantVisibility old_visibility,
                              AssistantSource source) override;

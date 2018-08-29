@@ -96,6 +96,19 @@ void AssistantInteractionController::OnDeepLinkReceived(
   StartTextInteraction(query.value());
 }
 
+void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
+  if (ui_mode == AssistantUiMode::kMiniUi)
+    return;
+
+  // When the Assistant is not in mini state there should not be an active
+  // metalayer session. If we were in mini state when the UI mode was changed,
+  // we need to clean up the metalayer session and reset default input modality.
+  if (assistant_interaction_model_.input_modality() == InputModality::kStylus) {
+    Shell::Get()->highlighter_controller()->AbortSession();
+    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+  }
+}
+
 void AssistantInteractionController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
