@@ -23,6 +23,8 @@ const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 // Google Chrome integrates with Google Update, so the app GUID above is used.
 const wchar_t kBinariesPathName[] = L"";
 
+const char kSafeBrowsingName[] = "googlechrome";
+
 const InstallConstants kInstallModes[] = {
     // The primary install mode for stable Google Chrome.
     {

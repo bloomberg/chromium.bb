@@ -30,8 +30,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   base::string16 GetAppDescription() override;
 
-  std::string GetSafeBrowsingName() override;
-
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.

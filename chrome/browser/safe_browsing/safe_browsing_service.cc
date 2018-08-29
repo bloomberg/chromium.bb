@@ -49,7 +49,7 @@
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 #if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
@@ -343,8 +343,7 @@ std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   // distribution classes in installer util. These classes don't yet have
   // an analog on non-Windows builds so just keep the name specified here.
 #if defined(OS_WIN)
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  client_name = dist->GetSafeBrowsingName();
+  client_name = install_static::GetSafeBrowsingName();
 #else
 #if defined(GOOGLE_CHROME_BUILD)
   client_name = "googlechrome";

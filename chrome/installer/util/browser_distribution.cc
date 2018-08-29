@@ -121,10 +121,6 @@ base::string16 BrowserDistribution::GetLongAppDescription() {
   return app_description;
 }
 
-std::string BrowserDistribution::GetSafeBrowsingName() {
-  return "chromium";
-}
-
 base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }

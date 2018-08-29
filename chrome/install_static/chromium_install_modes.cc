@@ -23,6 +23,8 @@ const wchar_t kBinariesAppGuid[] = L"";
 
 const wchar_t kBinariesPathName[] = L"Chromium Binaries";
 
+const char kSafeBrowsingName[] = "chromium";
+
 const InstallConstants kInstallModes[] = {
     // The primary (and only) install mode for Chromium.
     {
