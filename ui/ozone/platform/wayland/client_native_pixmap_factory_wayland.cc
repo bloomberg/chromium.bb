@@ -6,6 +6,7 @@
 
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
+#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
@@ -50,7 +51,11 @@ class ClientNativePixmapFactoryWayland : public gfx::ClientNativePixmapFactory {
 };
 
 gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryWayland() {
+#if defined(WAYLAND_GBM)
   return new ClientNativePixmapFactoryWayland();
+#else
+  return CreateStubClientNativePixmapFactory();
+#endif
 }
 
 }  // namespace ui

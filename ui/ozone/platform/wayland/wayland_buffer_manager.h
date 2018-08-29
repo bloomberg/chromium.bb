@@ -35,7 +35,7 @@ class WaylandBufferManager {
 
   std::string error_message() { return std::move(error_message_); }
 
-  const std::vector<gfx::BufferFormat>& supported_buffer_formats() {
+  std::vector<gfx::BufferFormat> supported_buffer_formats() {
     return supported_buffer_formats_;
   }
 

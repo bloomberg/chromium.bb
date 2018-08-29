@@ -115,7 +115,7 @@ class WaylandConnection : public PlatformEventSource,
   // Returns bound pointer to own mojo interface.
   ozone::mojom::WaylandConnectionPtr BindInterface();
 
-  const std::vector<gfx::BufferFormat>& GetSupportedBufferFormats();
+  std::vector<gfx::BufferFormat> GetSupportedBufferFormats();
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
