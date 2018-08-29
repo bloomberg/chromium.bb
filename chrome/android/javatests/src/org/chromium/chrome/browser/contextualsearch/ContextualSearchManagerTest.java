@@ -894,7 +894,12 @@ public class ContextualSearchManagerTest {
         // longpress, in turn showing the pins and preventing contextual tap
         // refinement from nearby taps. The double-tap timeout is sufficiently
         // short that this shouldn't conflict with tap refinement by the user.
-        Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
+        int doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            // Some tests are flaky on KitKat.  See https://crbug.com/878517.
+            doubleTapTimeout *= 2;
+        }
+        Thread.sleep(doubleTapTimeout);
     }
 
     /**
@@ -2516,7 +2521,7 @@ public class ContextualSearchManagerTest {
 
         waitToPreventDoubleTapRecognition();
 
-        // Simulate a new tap and make sure a new Content is created.
+        // Simulate a new tap and make sure new Content is created.
         simulateTapSearch("term");
         assertWebContentsCreatedButNeverMadeVisible();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
@@ -2525,7 +2530,7 @@ public class ContextualSearchManagerTest {
 
         waitToPreventDoubleTapRecognition();
 
-        // Simulate a new tap and make sure a new Content is created.
+        // Simulate a new tap and make sure new Content is created.
         simulateTapSearch("resolution");
         assertWebContentsCreatedButNeverMadeVisible();
         Assert.assertEquals(3, mFakeServer.getLoadedUrlCount());
