@@ -1554,7 +1554,7 @@ def GeneralTemplates(site_config, ge_build_config):
       useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
   )
 
-  # Tast is an experimental system for running integration tests.
+  # Tast is an alternate system for running integration tests.
   site_config.AddTemplate(
       'tast_vm_canary_tests',
       tast_vm_tests=[
