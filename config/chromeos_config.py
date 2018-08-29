@@ -4256,6 +4256,7 @@ def TryjobMirrors(site_config):
         active_waterfall=waterfall.WATERFALL_SWARMING,
         gs_path=config_lib.GS_PATH_DEFAULT,
         schedule=None,
+        suite_scheduling=False,
         triggered_gitiles=None,
         important=True,
     )
