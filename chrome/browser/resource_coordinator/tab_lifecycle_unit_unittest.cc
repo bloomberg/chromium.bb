@@ -675,25 +675,30 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfSharingBrowsingInstance) {
             web_contents_->GetSiteInstance()->GetRelatedActiveContentsCount());
 
   DecisionDetails decision_details;
-  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
+            decision_details.FailureReason());
+
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
+            decision_details.FailureReason());
 
   {
     GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
-        ->should_protect_tabs_sharing_browsing_instance = true;
+        ->should_protect_tabs_sharing_browsing_instance = false;
     decision_details.Clear();
-    EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
-    EXPECT_FALSE(decision_details.IsPositive());
-    EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
-              decision_details.FailureReason());
+    EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+    EXPECT_TRUE(decision_details.IsPositive());
 
     decision_details.Clear();
 
-    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
         LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-    EXPECT_FALSE(decision_details.IsPositive());
-    EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
-              decision_details.FailureReason());
+    EXPECT_TRUE(decision_details.IsPositive());
   }
 }
 
