@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -37,6 +38,14 @@ void AccessibilityHandler::RegisterMessages() {
       "showSwitchAccessSettings",
       base::BindRepeating(&AccessibilityHandler::HandleShowSwitchAccessSettings,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getStartupSoundEnabled",
+      base::BindRepeating(&AccessibilityHandler::HandleGetStartupSoundEnabled,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setStartupSoundEnabled",
+      base::BindRepeating(&AccessibilityHandler::HandleSetStartupSoundEnabled,
+                          base::Unretained(this)));
 }
 
 void AccessibilityHandler::HandleShowChromeVoxSettings(
@@ -52,6 +61,22 @@ void AccessibilityHandler::HandleShowSelectToSpeakSettings(
 void AccessibilityHandler::HandleShowSwitchAccessSettings(
     const base::ListValue* args) {
   OpenExtensionOptionsPage(extension_misc::kSwitchAccessExtensionId);
+}
+
+void AccessibilityHandler::HandleGetStartupSoundEnabled(
+    const base::ListValue* args) {
+  AllowJavascript();
+  FireWebUIListener(
+      "startup-sound-enabled-updated",
+      base::Value(AccessibilityManager::Get()->GetStartupSoundEnabled()));
+}
+
+void AccessibilityHandler::HandleSetStartupSoundEnabled(
+    const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  bool enabled;
+  args->GetBoolean(0, &enabled);
+  AccessibilityManager::Get()->SetStartupSoundEnabled(enabled);
 }
 
 void AccessibilityHandler::OpenExtensionOptionsPage(const char extension_id[]) {
