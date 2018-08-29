@@ -122,7 +122,7 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
 
   bool write_allowed = mode_ != Mode::kReadOnly;
   uintptr_t addr;
-  zx_status_t status = zx_vmar_map(
+  zx_status_t status = zx_vmar_map_old(
       zx_vmar_root_self(), 0, handle_.get(), offset, size,
       ZX_VM_FLAG_PERM_READ | (write_allowed ? ZX_VM_FLAG_PERM_WRITE : 0),
       &addr);
