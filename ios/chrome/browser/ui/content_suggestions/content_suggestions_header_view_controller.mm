@@ -66,6 +66,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 @property(nonatomic, strong) UIView<NTPHeaderViewAdapter>* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
+@property(nonatomic, strong) UIButton* accessibilityButton;
 @property(nonatomic, strong) UILabel* searchHintLabel;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
@@ -97,6 +98,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
+@synthesize accessibilityButton = _accessibilityButton;
 @synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
 @synthesize voiceTapTrailingConstraint = _voiceTapTrailingConstraint;
 @synthesize doodleHeightConstraint = _doodleHeightConstraint;
@@ -140,6 +142,10 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
+}
+
+- (void)dealloc {
+  [self.accessibilityButton removeObserver:self forKeyPath:@"highlighted"];
 }
 
 #pragma mark - Property
@@ -325,16 +331,23 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   // is taking the full width, there are few points that are not accessible and
   // allow to select the content below it.
   self.searchHintLabel.isAccessibilityElement = NO;
-  UIButton* accessibilityButton = [[UIButton alloc] init];
-  [accessibilityButton addTarget:self
-                          action:@selector(fakeOmniboxTapped:)
-                forControlEvents:UIControlEventTouchUpInside];
-  accessibilityButton.isAccessibilityElement = YES;
-  accessibilityButton.accessibilityLabel =
+  self.accessibilityButton = [[UIButton alloc] init];
+  [self.accessibilityButton addTarget:self
+                               action:@selector(fakeOmniboxTapped)
+                     forControlEvents:UIControlEventTouchUpInside];
+  // Because the visual fakebox background is implemented within
+  // ContentSuggestionsHeaderView, KVO the highlight events of
+  // |accessibilityButton| and pass them along.
+  [self.accessibilityButton addObserver:self
+                             forKeyPath:@"highlighted"
+                                options:NSKeyValueObservingOptionNew
+                                context:NULL];
+  self.accessibilityButton.isAccessibilityElement = YES;
+  self.accessibilityButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
-  [self.fakeOmnibox addSubview:accessibilityButton];
-  accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.fakeOmnibox, accessibilityButton);
+  [self.fakeOmnibox addSubview:self.accessibilityButton];
+  self.accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.fakeOmnibox, self.accessibilityButton);
 
   // Add a voice search button.
   UIButton* voiceTapTarget = [[UIButton alloc] init];
@@ -368,7 +381,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
-                    action:@selector(fakeOmniboxTapped:)
+                    action:@selector(fakeOmniboxTapped)
           forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -403,12 +416,24 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   [self.dispatcher preloadVoiceSearch];
 }
 
-- (void)fakeOmniboxTapped:(id)sender {
+- (void)fakeOmniboxTapped {
   if (IsUIRefreshPhase1Enabled()) {
     [self shiftTilesUp];
   } else {
     [self.dispatcher focusFakebox];
   }
+}
+
+// TODO(crbug.com/807330) The fakebox is currently a collection of views spread
+// between ContentSuggestionsHeaderViewController and inside
+// ContentSuggestionsHeaderView.  Post refresh this can be coalesced into one
+// control, and the KVO highlight logic below can be removed.
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  if ([@"highlighted" isEqualToString:keyPath])
+    [self.headerView setFakeboxHighlighted:[object isHighlighted]];
 }
 
 // If Google is not the default search engine, hide the logo, doodle and
