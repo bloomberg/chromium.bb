@@ -945,6 +945,19 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
     SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
     SetHasVerticalScrollbar(needs_vertical_scrollbar);
 
+    // If we change scrollbars on the layout viewport, the visual viewport
+    // needs to update paint properties to account for the correct
+    // scrollbounds.
+    if (LocalFrameView* frame_view = GetLayoutBox()->GetFrameView()) {
+      if (this == frame_view->LayoutViewport()) {
+        GetLayoutBox()
+            ->GetFrame()
+            ->GetPage()
+            ->GetVisualViewport()
+            .SetNeedsPaintPropertiesUpdate();
+      }
+    }
+
     if (HasScrollbar())
       UpdateScrollCornerStyle();
 

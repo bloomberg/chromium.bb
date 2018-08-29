@@ -70,7 +70,8 @@ VisualViewport::VisualViewport(Page& owner)
       scale_(1),
       browser_controls_adjustment_(0),
       max_page_scale_(-1),
-      track_pinch_zoom_stats_for_page_(false) {
+      track_pinch_zoom_stats_for_page_(false),
+      needs_paint_property_update_(true) {
   UniqueObjectId unique_id = NewUniqueObjectId();
   element_id_ = CompositorElementIdFromUniqueObjectId(
       unique_id, CompositorElementIdNamespace::kPrimary);
@@ -98,8 +99,13 @@ ScrollPaintPropertyNode* VisualViewport::GetScrollNode() const {
   return scroll_node_.get();
 }
 
-void VisualViewport::UpdatePaintPropertyNodes(
+void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     PaintPropertyTreeBuilderFragmentContext& context) {
+  if (!needs_paint_property_update_)
+    return;
+
+  needs_paint_property_update_ = false;
+
   auto* transform_parent = context.current.transform;
   auto* scroll_parent = context.current.scroll;
   auto* clip_parent = context.current.clip;
@@ -251,6 +257,10 @@ void VisualViewport::Trace(blink::Visitor* visitor) {
   ScrollableArea::Trace(visitor);
 }
 
+void VisualViewport::SetNeedsPaintPropertiesUpdate() {
+  needs_paint_property_update_ = true;
+}
+
 void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
   if (!MainFrame())
     return;
@@ -277,6 +287,7 @@ void VisualViewport::SetSize(const IntSize& size) {
                "height", size.Height());
   bool width_did_change = size.Width() != size_.Width();
   size_ = size;
+  needs_paint_property_update_ = true;
 
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetSize(size_);
@@ -320,6 +331,7 @@ void VisualViewport::MainFrameDidChangeSize() {
   if (inner_viewport_scroll_layer_)
     inner_viewport_scroll_layer_->SetSize(ContentsSize());
 
+  needs_paint_property_update_ = true;
   ClampToBoundaries();
 }
 
@@ -484,6 +496,8 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
   ClampToBoundaries();
 
+  needs_paint_property_update_ = true;
+
   return true;
 }
 
@@ -524,6 +538,8 @@ void VisualViewport::CreateLayerTree() {
   DCHECK(!overlay_scrollbar_horizontal_ && !overlay_scrollbar_vertical_ &&
          !overscroll_elasticity_layer_ && !page_scale_layer_ &&
          !inner_viewport_container_layer_);
+
+  needs_paint_property_update_ = true;
 
   // FIXME: The root transform layer should only be created on demand.
   root_transform_layer_ = GraphicsLayer::Create(*this);
@@ -597,6 +613,8 @@ void VisualViewport::InitializeScrollbars() {
   // Do nothing if not attached to layer tree yet - will initialize upon attach.
   if (!inner_viewport_container_layer_)
     return;
+
+  needs_paint_property_update_ = true;
 
   if (VisualViewportSuppliesScrollbars() &&
       !GetPage().GetSettings().GetHideScrollbars()) {
@@ -682,6 +700,8 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
   scrollbar_graphics_layer->SetPosition(FloatPoint(x_position, y_position));
   scrollbar_graphics_layer->SetSize(IntSize(width, height));
   scrollbar_graphics_layer->SetContentsRect(IntRect(0, 0, width, height));
+
+  needs_paint_property_update_ = true;
 }
 
 bool VisualViewport::VisualViewportSuppliesScrollbars() const {
