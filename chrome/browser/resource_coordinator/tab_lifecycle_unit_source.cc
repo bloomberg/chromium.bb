@@ -264,7 +264,11 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
   if (change_type != TabChangeType::kAll)
     return;
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
-  DCHECK(lifecycle_unit);
+  // This can be called before OnTabStripModelChanged() and |lifecycle_unit|
+  // will be null in that case. http://crbug.com/877940
+  if (!lifecycle_unit)
+    return;
+
   auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
   lifecycle_unit->SetRecentlyAudible(audible_helper->WasRecentlyAudible());
 }
