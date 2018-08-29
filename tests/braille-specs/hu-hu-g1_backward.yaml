@@ -848,7 +848,6 @@ tests:
   - # this testcase testing begcaps opcode backtranslation if a word containing both lowercase and uppercase letters
     - ⠨⠨⠏⠱⠈⠋⠤⠟⠱⠱⠑⠧⠕⠝⠈⠎⠞
     - PSZÁF-összevonást
-    - {xfail: true}
   - [⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛, pszichológusszövetség]
   - [⠏⠥⠋⠋⠁⠝⠈⠎⠱⠑⠗⠾, puffanásszerű]
   - [⠏⠥⠇⠣⠥⠎⠱⠈⠍, pulzusszám]
