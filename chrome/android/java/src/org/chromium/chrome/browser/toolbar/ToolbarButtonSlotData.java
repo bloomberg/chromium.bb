@@ -99,6 +99,7 @@ class ToolbarButtonSlotData {
                 @Override
                 public void onAnimationStart(Animator animator) {
                     if (mDrawable != null) {
+                        imageButton.setEnabled(true);
                         DrawableCompat.setTintList(mDrawable, isLight ? mLightTint : mDarkTint);
                     }
                     imageButton.setImageDrawable(mDrawable);
@@ -109,11 +110,12 @@ class ToolbarButtonSlotData {
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
-                    if (mDrawable != null) imageButton.setEnabled(true);
+                    if (mDrawable == null) imageButton.setEnabled(false);
+                    imageButton.setOnClickListener(mOnClickListener);
                 }
             });
 
-            imageButton.setEnabled(false);
+            imageButton.setOnClickListener(null);
             AnimatorSet animatorSet = new AnimatorSet();
             animatorSet.playSequentially(fadeOutAnim, fadeInAnim);
             animatorSet.start();
