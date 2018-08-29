@@ -640,8 +640,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               blink::WebURLRequest& request,
-                               base::TimeTicks input_start) override;
+                               blink::WebURLRequest& request) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(
@@ -1596,6 +1595,7 @@ class CONTENT_EXPORT RenderFrameImpl
     blink::WebSourceLocation source_location;
     blink::WebString devtools_initiator_info;
     blink::mojom::BlobURLTokenPtr blob_url_token;
+    base::TimeTicks input_start;
 
     explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
     ~PendingNavigationInfo();

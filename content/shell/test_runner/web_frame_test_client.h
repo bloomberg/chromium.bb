@@ -57,8 +57,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,
-                               blink::WebURLRequest& request,
-                               base::TimeTicks input_start) override;
+                               blink::WebURLRequest& request) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(const blink::WebHistoryItem& history_item,

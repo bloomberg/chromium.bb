@@ -106,7 +106,8 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     WebTriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
-    mojom::blink::BlobURLTokenPtr) {
+    mojom::blink::BlobURLTokenPtr,
+    base::TimeTicks) {
   return kNavigationPolicyIgnore;
 }
 

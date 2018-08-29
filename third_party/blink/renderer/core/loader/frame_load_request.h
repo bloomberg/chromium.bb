@@ -143,6 +143,12 @@ struct CORE_EXPORT FrameLoadRequest {
     return result;
   }
 
+  void SetInputStartTime(base::TimeTicks input_start_time) {
+    input_start_time_ = input_start_time;
+  }
+
+  base::TimeTicks GetInputStartTime() const { return input_start_time_; }
+
  private:
   FrameLoadRequest(Document* origin_document,
                    const ResourceRequest&,
@@ -167,6 +173,7 @@ struct CORE_EXPORT FrameLoadRequest {
   base::UnguessableToken devtools_navigation_token_;
   scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
       blob_url_token_;
+  base::TimeTicks input_start_time_;
 };
 
 }  // namespace blink

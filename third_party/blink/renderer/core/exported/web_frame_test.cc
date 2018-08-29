@@ -7776,8 +7776,7 @@ class TestHistoryChildWebFrameClient
 
   // FrameTestHelpers::TestWebFrameClient:
   void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                               WebURLRequest& request,
-                               base::TimeTicks input_start) override {
+                               WebURLRequest& request) override {
     replaces_current_history_item_ =
         document_loader->ReplacesCurrentHistoryItem();
   }
@@ -10588,9 +10587,7 @@ class CallbackOrderingWebFrameClient
     FrameTestHelpers::TestWebFrameClient::DidStartLoading(
         to_different_document);
   }
-  void DidStartProvisionalLoad(WebDocumentLoader*,
-                               WebURLRequest&,
-                               base::TimeTicks) override {
+  void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
     EXPECT_EQ(1, callback_count_++);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
