@@ -25,12 +25,6 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
   ui::AXTree* tree() { return &tree_; }
   AutomationInternalCustomBindings* owner() { return owner_; }
 
-  // The host node ID is the node ID of the parent node in the parent tree.
-  // For example, the host node ID of a web area of a child frame is the
-  // ID of the <iframe> element in its parent frame.
-  int32_t host_node_id() const { return host_node_id_; }
-  void set_host_node_id(int32_t id) { host_node_id_ = id; }
-
   // Called by AutomationInternalCustomBindings::OnAccessibilityEvents on
   // the AutomationAXTreeWrapper instance for the correct tree corresponding
   // to this event. Unserializes the tree update and calls back to
@@ -55,7 +49,6 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
   bool IsEventTypeHandledByAXEventGenerator(api::automation::EventType) const;
 
   int32_t tree_id_;
-  int32_t host_node_id_;
   ui::AXTree tree_;
   AutomationInternalCustomBindings* owner_;
   std::vector<int> deleted_node_ids_;

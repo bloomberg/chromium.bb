@@ -20,27 +20,6 @@ namespace content {
 
 namespace {
 
-// Search the tree recursively from |node| and return any node that has
-// a child tree ID of |ax_tree_id|.
-BrowserAccessibility* FindNodeWithChildTreeId(BrowserAccessibility* node,
-                                              int ax_tree_id) {
-  if (!node)
-    return nullptr;
-
-  if (node->GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId) ==
-      ax_tree_id)
-    return node;
-
-  for (unsigned int i = 0; i < node->InternalChildCount(); ++i) {
-    BrowserAccessibility* child = node->InternalGetChild(i);
-    BrowserAccessibility* result = FindNodeWithChildTreeId(child, ax_tree_id);
-    if (result)
-      return result;
-  }
-
-  return nullptr;
-}
-
 // Map from AXTreeID to BrowserAccessibilityManager
 using AXTreeIDMap = base::hash_map<ui::AXTreeIDRegistry::AXTreeID,
                                    BrowserAccessibilityManager*>;
@@ -145,7 +124,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_manager_(nullptr),
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
-      parent_node_id_from_parent_tree_(0),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false) {
   SetTree(tree_.get());
@@ -163,7 +141,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
       ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
-      parent_node_id_from_parent_tree_(0),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false) {
   SetTree(tree_.get());
@@ -286,25 +263,21 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   if (!parent_manager)
     return nullptr;
 
-  // Try to use the cached parent node from the most recent time this
-  // was called.
-  if (parent_node_id_from_parent_tree_) {
-    BrowserAccessibility* parent_node = parent_manager->GetFromID(
-        parent_node_id_from_parent_tree_);
-    if (parent_node) {
-      int parent_child_tree_id =
-          parent_node->GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId);
-      if (parent_child_tree_id == ax_tree_id_)
-        return parent_node;
-    }
-  }
+  std::set<int32_t> host_node_ids =
+      parent_manager->ax_tree()->GetNodeIdsForChildTreeId(ax_tree_id_);
 
-  // If that fails, search for it and cache it for next time.
-  BrowserAccessibility* parent_node = FindNodeWithChildTreeId(
-      parent_manager->GetRoot(), ax_tree_id_);
-  if (parent_node) {
-    parent_node_id_from_parent_tree_ = parent_node->GetId();
-    return parent_node;
+#if !defined(NDEBUG)
+  if (host_node_ids.size() > 1)
+    DLOG(WARNING) << "Multiple nodes claim the same child tree id.";
+#endif
+
+  for (int32_t host_node_id : host_node_ids) {
+    BrowserAccessibility* parent_node = parent_manager->GetFromID(host_node_id);
+    if (parent_node) {
+      DCHECK_EQ(ax_tree_id_, parent_node->GetIntAttribute(
+                                 ax::mojom::IntAttribute::kChildTreeId));
+      return parent_node;
+    }
   }
 
   return nullptr;
