@@ -135,7 +135,7 @@ class NavigationPreloadLoaderClient final
         std::vector<GURL>(response_head_.url_list_via_service_worker);
     response->status_code = response_head_.headers->response_code();
     response->status_text = response_head_.headers->GetStatusText();
-    response->response_type = response_head_.response_type_via_service_worker;
+    response->response_type = response_head_.response_type;
     response_callback_->OnResponseStream(
         std::move(response), std::move(stream_handle), base::Time::Now());
     std::move(finish_callback_)
@@ -372,8 +372,7 @@ CreateResponseInfoFromServiceWorker() {
   head->was_fetched_via_service_worker = true;
   head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
-  head->response_type_via_service_worker =
-      network::mojom::FetchResponseType::kDefault;
+  head->response_type = network::mojom::FetchResponseType::kDefault;
   head->is_in_cache_storage = false;
   head->cache_storage_cache_name = std::string();
   head->did_service_worker_navigation_preload = false;
@@ -500,8 +499,7 @@ class ServiceWorkerNavigationLoaderTest
               info.was_fallback_required_by_service_worker);
     EXPECT_EQ(expected_info.url_list_via_service_worker,
               info.url_list_via_service_worker);
-    EXPECT_EQ(expected_info.response_type_via_service_worker,
-              info.response_type_via_service_worker);
+    EXPECT_EQ(expected_info.response_type, info.response_type);
     EXPECT_FALSE(info.service_worker_start_time.is_null());
     EXPECT_FALSE(info.service_worker_ready_time.is_null());
     EXPECT_LT(info.service_worker_start_time, info.service_worker_ready_time);

@@ -410,7 +410,7 @@ void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {
 }
 
 bool ResourceResponse::IsOpaqueResponseFromServiceWorker() const {
-  switch (response_type_via_service_worker_) {
+  switch (response_type_) {
     case network::mojom::FetchResponseType::kBasic:
     case network::mojom::FetchResponseType::kCORS:
     case network::mojom::FetchResponseType::kDefault:

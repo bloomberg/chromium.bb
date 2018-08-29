@@ -856,8 +856,7 @@ void ThreadableLoader::ResponseReceived(
     // TODO(yhirano): This is probably not spec conformant. Fix it after
     // https://github.com/w3c/preload/issues/100 is addressed.
     if (fetch_request_mode_ != network::mojom::FetchRequestMode::kNoCORS &&
-        response.ResponseTypeViaServiceWorker() ==
-            network::mojom::FetchResponseType::kOpaque) {
+        response.GetType() == network::mojom::FetchResponseType::kOpaque) {
       DispatchDidFail(ResourceError(
           response.Url(), network::CORSErrorStatus(
                               network::mojom::CORSError::kInvalidResponse)));

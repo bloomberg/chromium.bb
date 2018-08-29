@@ -344,8 +344,7 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
 
   // This is vital for security! A service worker can respond with a response
   // from a different origin, so this response type is needed to detect that.
-  destination_url_data->set_has_opaque_data(
-      IsOpaqueData(response.ResponseTypeViaServiceWorker()));
+  destination_url_data->set_has_opaque_data(IsOpaqueData(response.GetType()));
 
   if (destination_url_data != url_data_) {
     // At this point, we've encountered a redirect, or found a better url data

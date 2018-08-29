@@ -607,7 +607,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // unless the initiator opted out of CORS / opted into receiving an opaque
   // response.  See also https://crbug.com/803672.
   if (response.head.was_fetched_via_service_worker) {
-    switch (response.head.response_type_via_service_worker) {
+    switch (response.head.response_type) {
       case network::mojom::FetchResponseType::kBasic:
       case network::mojom::FetchResponseType::kCORS:
       case network::mojom::FetchResponseType::kDefault:

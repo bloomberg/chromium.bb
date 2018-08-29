@@ -271,11 +271,9 @@ class SubresourceIntegrityTest : public testing::Test {
       response.SetWasFetchedViaServiceWorker(true);
 
       if (service_worker_mode == kSWOpaqueResponse) {
-        response.SetResponseTypeViaServiceWorker(
-            network::mojom::FetchResponseType::kOpaque);
+        response.SetType(network::mojom::FetchResponseType::kOpaque);
       } else {
-        response.SetResponseTypeViaServiceWorker(
-            network::mojom::FetchResponseType::kDefault);
+        response.SetType(network::mojom::FetchResponseType::kDefault);
       }
     }
 

@@ -143,8 +143,7 @@ bool MultipartImageResourceParser::ParseHeaders() {
   ResourceResponse response(original_response_.Url());
   response.SetWasFetchedViaServiceWorker(
       original_response_.WasFetchedViaServiceWorker());
-  response.SetResponseTypeViaServiceWorker(
-      original_response_.ResponseTypeViaServiceWorker());
+  response.SetType(original_response_.GetType());
   for (const auto& header : original_response_.HttpHeaderFields())
     response.AddHTTPHeaderField(header.key, header.value);
 

@@ -507,7 +507,7 @@ void FetchManager::Loader::DidReceiveResponse(
     }
   }
   if (response.WasFetchedViaServiceWorker()) {
-    switch (response.ResponseTypeViaServiceWorker()) {
+    switch (response.GetType()) {
       case FetchResponseType::kBasic:
       case FetchResponseType::kDefault:
         tainting = FetchRequestData::kBasicTainting;
