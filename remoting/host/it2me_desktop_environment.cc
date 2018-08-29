@@ -44,8 +44,9 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
 
   // Create the local input monitor.
   local_input_monitor_ = LocalInputMonitor::Create(
-      caller_task_runner, input_task_runner, ui_task_runner,
-      client_session_control);
+      caller_task_runner, input_task_runner, ui_task_runner);
+  local_input_monitor_->StartMonitoringForClientSession(client_session_control);
+
   bool enable_user_interface = options.enable_user_interface();
   // The host UI should be created on the UI thread.
 #if defined(OS_MACOSX)

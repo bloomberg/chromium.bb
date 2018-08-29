@@ -31,7 +31,7 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
   LocalMouseInputMonitorWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      MouseMoveCallback on_mouse_move,
+      LocalInputMonitor::MouseMoveCallback on_mouse_move,
       base::OnceClosure disconnect_callback);
   ~LocalMouseInputMonitorWin() override;
 
@@ -41,7 +41,7 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-         MouseMoveCallback on_mouse_move,
+         LocalInputMonitor::MouseMoveCallback on_mouse_move,
          base::OnceClosure disconnect_callback);
 
     void Start();
@@ -73,7 +73,7 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
     std::unique_ptr<base::win::MessageWindow> window_;
 
     // Points to the object receiving mouse event notifications.
-    MouseMoveCallback on_mouse_move_;
+    LocalInputMonitor::MouseMoveCallback on_mouse_move_;
 
     // Used to disconnect the current session.
     base::OnceClosure disconnect_callback_;
@@ -91,7 +91,7 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
 LocalMouseInputMonitorWin::LocalMouseInputMonitorWin(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback)
     : core_(new Core(caller_task_runner,
                      ui_task_runner,
@@ -108,7 +108,7 @@ LocalMouseInputMonitorWin::~LocalMouseInputMonitorWin() {
 LocalMouseInputMonitorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
@@ -242,7 +242,7 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorWin>(
       caller_task_runner, ui_task_runner, std::move(on_mouse_move),

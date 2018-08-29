@@ -122,13 +122,14 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
       desktop_environment_options().enable_user_interface();
 #endif
 
-  // Create the disconnect window.
   if (want_user_interface) {
     // Create the local input monitor.
     local_input_monitor_ = LocalInputMonitor::Create(
-        caller_task_runner(), input_task_runner(), ui_task_runner(),
+        caller_task_runner(), input_task_runner(), ui_task_runner());
+    local_input_monitor_->StartMonitoringForClientSession(
         client_session_control);
 
+    // Create the disconnect window.
     disconnect_window_ = HostWindow::CreateDisconnectWindow();
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner(), ui_task_runner(), std::move(disconnect_window_)));

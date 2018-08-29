@@ -10,14 +10,11 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/host/input_monitor/local_input_monitor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
-
-namespace webrtc {
-class DesktopVector;
-}  // namespace webrtc
 
 namespace remoting {
 
@@ -25,9 +22,6 @@ namespace remoting {
 // for every mouse move event received.
 class LocalMouseInputMonitor {
  public:
-  using MouseMoveCallback =
-      base::RepeatingCallback<void(const webrtc::DesktopVector&)>;
-
   virtual ~LocalMouseInputMonitor() = default;
 
   // Creates a platform-specific instance of LocalMouseInputMonitor.
@@ -38,7 +32,7 @@ class LocalMouseInputMonitor {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      MouseMoveCallback mouse_move_callback,
+      LocalInputMonitor::MouseMoveCallback mouse_move_callback,
       base::OnceClosure disconnect_callback);
 
  protected:

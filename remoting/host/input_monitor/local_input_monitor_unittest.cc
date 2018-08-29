@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -63,7 +64,7 @@ void LocalInputMonitorTest::SetUp() {
 
 // This test is really to exercise only the creation and destruction code in
 // LocalInputMonitor.
-TEST_F(LocalInputMonitorTest, Basic) {
+TEST_F(LocalInputMonitorTest, BasicWithClientSession) {
   // Ignore all callbacks.
   EXPECT_CALL(client_session_control_, client_jid())
       .Times(AnyNumber())
@@ -74,8 +75,26 @@ TEST_F(LocalInputMonitorTest, Basic) {
 
   {
     std::unique_ptr<LocalInputMonitor> local_input_monitor =
-        LocalInputMonitor::Create(task_runner_, task_runner_, task_runner_,
-                                  client_session_control_factory_.GetWeakPtr());
+        LocalInputMonitor::Create(task_runner_, task_runner_, task_runner_);
+    local_input_monitor->StartMonitoringForClientSession(
+        client_session_control_factory_.GetWeakPtr());
+    task_runner_ = nullptr;
+  }
+
+  run_loop_.Run();
+}
+
+TEST_F(LocalInputMonitorTest, BasicWithCallbacks) {
+  // Ignore all callbacks.
+  EXPECT_CALL(client_session_control_, client_jid())
+      .Times(AnyNumber())
+      .WillRepeatedly(ReturnRef(client_jid_));
+
+  {
+    std::unique_ptr<LocalInputMonitor> local_input_monitor =
+        LocalInputMonitor::Create(task_runner_, task_runner_, task_runner_);
+    local_input_monitor->StartMonitoring(base::DoNothing(), base::DoNothing(),
+                                         base::DoNothing());
     task_runner_ = nullptr;
   }
 

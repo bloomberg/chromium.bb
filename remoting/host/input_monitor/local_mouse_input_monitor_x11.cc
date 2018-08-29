@@ -30,7 +30,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
   LocalMouseInputMonitorX11(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      MouseMoveCallback on_mouse_move);
+      LocalInputMonitor::MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorX11() override;
 
  private:
@@ -39,7 +39,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-         MouseMoveCallback on_mouse_move);
+         LocalInputMonitor::MouseMoveCallback on_mouse_move);
 
     void Start();
     void Stop();
@@ -66,7 +66,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
     // Used to send mouse event notifications.
-    MouseMoveCallback on_mouse_move_;
+    LocalInputMonitor::MouseMoveCallback on_mouse_move_;
 
     // Controls watching X events.
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
@@ -89,7 +89,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
 LocalMouseInputMonitorX11::LocalMouseInputMonitorX11(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : core_(new Core(caller_task_runner,
                      input_task_runner,
                      std::move(on_mouse_move))) {
@@ -104,7 +104,7 @@ LocalMouseInputMonitorX11::~LocalMouseInputMonitorX11() {
 LocalMouseInputMonitorX11::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       on_mouse_move_(std::move(on_mouse_move)) {
@@ -261,7 +261,7 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorX11>(
       caller_task_runner, input_task_runner, std::move(on_mouse_move));

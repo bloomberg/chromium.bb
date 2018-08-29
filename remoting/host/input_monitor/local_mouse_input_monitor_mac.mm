@@ -36,7 +36,7 @@ class LocalMouseInputMonitorMac : public LocalMouseInputMonitor {
   LocalMouseInputMonitorMac(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      MouseMoveCallback on_mouse_move);
+      LocalInputMonitor::MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorMac() override;
 
  private:
@@ -133,7 +133,7 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-       MouseMoveCallback on_mouse_move);
+       LocalInputMonitor::MouseMoveCallback on_mouse_move);
 
   void Start();
   void Stop();
@@ -157,7 +157,7 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
   LocalInputMonitorManager* manager_;
 
   // Invoked in the |caller_task_runner_| thread to report local mouse events.
-  MouseMoveCallback on_mouse_move_;
+  LocalInputMonitor::MouseMoveCallback on_mouse_move_;
 
   webrtc::DesktopVector mouse_position_;
 
@@ -167,7 +167,7 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
 LocalMouseInputMonitorMac::LocalMouseInputMonitorMac(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : core_(new Core(caller_task_runner,
                      ui_task_runner,
                      std::move(on_mouse_move))) {
@@ -182,7 +182,7 @@ LocalMouseInputMonitorMac::~LocalMouseInputMonitorMac() {
 LocalMouseInputMonitorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       manager_(nil),
@@ -241,7 +241,7 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorMac>(
       caller_task_runner, ui_task_runner, std::move(on_mouse_move));
