@@ -157,9 +157,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void TransitionChanged() override;
   void TransitionEnded() override;
 
-  // Returns the size of current work area.
-  gfx::Size GetWorkAreaSize() const;
-
   // Returns the size of current display.
   gfx::Size GetDisplaySize() const;
 

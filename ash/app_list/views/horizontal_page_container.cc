@@ -43,7 +43,7 @@ gfx::Size HorizontalPageContainer::CalculatePreferredSize() const {
   if (!GetWidget())
     return gfx::Size();
 
-  return contents_view_->GetWorkAreaSize();
+  return contents_view_->GetPreferredSize();
 }
 
 void HorizontalPageContainer::Layout() {

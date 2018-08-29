@@ -201,7 +201,7 @@ void AppsContainerView::UpdateOpacity() {
 
 gfx::Size AppsContainerView::CalculatePreferredSize() const {
   if (is_new_style_launcher_enabled_)
-    return contents_view_->GetWorkAreaSize();
+    return contents_view_->GetPreferredSize();
 
   gfx::Size size = apps_grid_view_->GetPreferredSize();
   // Add padding to both side of the apps grid to keep it horizontally
@@ -364,7 +364,7 @@ views::View* AppsContainerView::GetFirstFocusableView() {
 gfx::Rect AppsContainerView::GetPageBoundsForState(
     ash::AppListState state) const {
   if (is_new_style_launcher_enabled_)
-    return gfx::Rect(contents_view_->GetWorkAreaSize());
+    return gfx::Rect(contents_view_->GetPreferredSize());
 
   if (contents_view_->app_list_view()->is_in_drag())
     return GetPageBoundsDuringDragging(state);
@@ -413,9 +413,9 @@ int AppsContainerView::GetSearchBoxFinalTopPadding() const {
       GetPreferredSize().height() + search_box_bounds.height();
 
   // Makes search box and content vertically centered in contents_view.
-  int y =
-      std::max(search_box_bounds.y(),
-               (contents_view_->GetWorkAreaSize().height() - total_height) / 2);
+  int y = std::max(
+      search_box_bounds.y(),
+      (contents_view_->GetPreferredSize().height() - total_height) / 2);
 
   // Top padding of the searchbox should not be smaller than
   // |kSearchBoxMinimumTopPadding|
@@ -453,7 +453,7 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
     float final_y =
         GetSearchBoxFinalTopPadding() + search_box::kSearchBoxPreferredHeight;
     float peeking_to_fullscreen_height =
-        contents_view_->GetWorkAreaSize().height() - peeking_height;
+        contents_view_->GetPreferredSize().height() - peeking_height;
     y = std::ceil((final_y - peeking_final_y) *
                       (drag_amount - (peeking_height - shelf_height)) /
                       peeking_to_fullscreen_height +
