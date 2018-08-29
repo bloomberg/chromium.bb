@@ -290,7 +290,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Signals that the guest view is ready.  The default implementation signals
   // immediately, but derived class can override this if they need to do
   // asynchronous setup.
-  virtual void SignalWhenReady(const base::Closure& callback);
+  virtual void SignalWhenReady(base::OnceClosure callback);
 
   // This method is called immediately before suspended resource loads have been
   // resumed on attachment to an embedder.
@@ -340,7 +340,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void WillAttach(content::WebContents* embedder_web_contents,
                   int browser_plugin_instance_id,
                   bool is_full_page_plugin,
-                  const base::Closure& completion_callback) final;
+                  base::OnceClosure completion_callback) final;
 
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
@@ -380,7 +380,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                   int element_instance_id,
                   bool is_full_page_plugin,
                   base::OnceClosure perform_attach,
-                  const base::Closure& completion_callback);
+                  base::OnceClosure completion_callback);
 
   void SendQueuedEvents();
 

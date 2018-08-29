@@ -34,7 +34,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void WillAttach(content::WebContents* embedder_web_contents,
                           int element_instance_id,
                           bool is_full_page_plugin,
-                          const base::Closure& completion_callback) {}
+                          base::OnceClosure completion_callback) {}
 
   virtual WebContents* CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);

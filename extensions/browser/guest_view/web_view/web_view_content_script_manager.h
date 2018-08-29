@@ -67,7 +67,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
   // If no, run |callback| immediately; otherwise caches the |callback|, and
   // the |callback| will be called after all the pending content scripts are
   // loaded.
-  void SignalOnScriptsLoaded(const base::Closure& callback);
+  void SignalOnScriptsLoaded(base::OnceClosure callback);
 
  private:
   using GuestMapKey = std::pair<int, int>;
@@ -96,7 +96,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
       user_script_loader_observer_;
 
   // Caches callbacks and resumes them when all the scripts are loaded.
-  std::vector<base::Closure> pending_scripts_loading_callbacks_;
+  std::vector<base::OnceClosure> pending_scripts_loading_callbacks_;
 
   content::BrowserContext* browser_context_;
 

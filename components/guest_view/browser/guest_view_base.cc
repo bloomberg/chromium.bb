@@ -516,16 +516,16 @@ void GuestViewBase::SetGuestHost(content::GuestHost* guest_host) {
 void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin,
-                               const base::Closure& completion_callback) {
+                               base::OnceClosure completion_callback) {
   WillAttach(embedder_web_contents, element_instance_id, is_full_page_plugin,
-             base::OnceClosure(), completion_callback);
+             base::OnceClosure(), std::move(completion_callback));
 }
 
 void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin,
                                base::OnceClosure perform_attach,
-                               const base::Closure& completion_callback) {
+                               base::OnceClosure completion_callback) {
   // Stop tracking the old embedder's zoom level.
   if (owner_web_contents())
     StopTrackingEmbedderZoomLevel();
@@ -551,13 +551,13 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
 
   // Completing attachment will resume suspended resource loads and then send
   // queued events.
-  SignalWhenReady(completion_callback);
+  SignalWhenReady(std::move(completion_callback));
 }
 
-void GuestViewBase::SignalWhenReady(const base::Closure& callback) {
+void GuestViewBase::SignalWhenReady(base::OnceClosure callback) {
   // The default behavior is to call the |callback| immediately. Derived classes
   // can implement an alternative signal for readiness.
-  callback.Run();
+  std::move(callback).Run();
 }
 
 int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) const {
