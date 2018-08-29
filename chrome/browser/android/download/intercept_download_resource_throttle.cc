@@ -73,9 +73,8 @@ const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
 void InterceptDownloadResourceThrottle::CheckCookiePolicy(
     const net::CookieList& cookie_list) {
   DownloadInfo info(request_);
-  if (request_->context()->network_delegate()->CanGetCookies(
-          *request_, cookie_list,
-          /*allowed_from_caller=*/true)) {
+  if (request_->context()->network_delegate()->CanGetCookies(*request_,
+                                                             cookie_list)) {
     std::string cookie = net::CanonicalCookie::BuildCookieLine(cookie_list);
     if (!cookie.empty())
       info.cookie = cookie;

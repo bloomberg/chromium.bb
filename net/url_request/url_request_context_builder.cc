@@ -119,16 +119,14 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   }
 
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list,
-                       bool allowed_from_caller) override {
-    return allowed_from_caller;
+                       const CookieList& cookie_list) override {
+    return true;
   }
 
   bool OnCanSetCookie(const URLRequest& request,
                       const CanonicalCookie& cookie,
-                      CookieOptions* options,
-                      bool allowed_from_caller) override {
-    return allowed_from_caller;
+                      CookieOptions* options) override {
+    return true;
   }
 
   bool OnCanAccessFile(const URLRequest& request,

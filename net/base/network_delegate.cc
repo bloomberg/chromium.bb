@@ -142,20 +142,18 @@ NetworkDelegate::AuthRequiredResponse NetworkDelegate::NotifyAuthRequired(
 }
 
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
-                                    const CookieList& cookie_list,
-                                    bool allowed_from_caller) {
+                                    const CookieList& cookie_list) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!(request.load_flags() & LOAD_DO_NOT_SEND_COOKIES));
-  return OnCanGetCookies(request, cookie_list, allowed_from_caller);
+  return OnCanGetCookies(request, cookie_list);
 }
 
 bool NetworkDelegate::CanSetCookie(const URLRequest& request,
-                                   const CanonicalCookie& cookie,
-                                   CookieOptions* options,
-                                   bool allowed_from_caller) {
+                                   const net::CanonicalCookie& cookie,
+                                   CookieOptions* options) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!(request.load_flags() & LOAD_DO_NOT_SAVE_COOKIES));
-  return OnCanSetCookie(request, cookie, options, allowed_from_caller);
+  return OnCanSetCookie(request, cookie, options);
 }
 
 bool NetworkDelegate::CanAccessFile(const URLRequest& request,

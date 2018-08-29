@@ -1077,9 +1077,7 @@ bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
   bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_get_cookies =
-        network_delegate_->CanGetCookies(*this, cookie_list,
-                                         /*allowed_from_caller=*/true);
+    can_get_cookies = network_delegate_->CanGetCookies(*this, cookie_list);
   }
 
   if (!can_get_cookies)
@@ -1092,9 +1090,7 @@ bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   bool can_set_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_set_cookies =
-        network_delegate_->CanSetCookie(*this, cookie, options,
-                                        /*allowed_from_caller=*/true);
+    can_set_cookies = network_delegate_->CanSetCookie(*this, cookie, options);
   }
   if (!can_set_cookies)
     net_log_.AddEvent(NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
