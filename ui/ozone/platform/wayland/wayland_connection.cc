@@ -223,10 +223,10 @@ ozone::mojom::WaylandConnectionPtr WaylandConnection::BindInterface() {
   return ptr;
 }
 
-const std::vector<gfx::BufferFormat>&
-WaylandConnection::GetSupportedBufferFormats() {
-  DCHECK(buffer_manager_);
-  return buffer_manager_->supported_buffer_formats();
+std::vector<gfx::BufferFormat> WaylandConnection::GetSupportedBufferFormats() {
+  if (buffer_manager_)
+    return buffer_manager_->supported_buffer_formats();
+  return std::vector<gfx::BufferFormat>();
 }
 
 void WaylandConnection::SetTerminateGpuCallback(

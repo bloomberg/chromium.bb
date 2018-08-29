@@ -23,6 +23,7 @@
 #if defined(WAYLAND_GBM)
 #include "ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace ui {
@@ -134,9 +135,8 @@ namespace {
 
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
-  GLOzoneEGLWayland(WaylandConnectionProxy* connection,
-                    WaylandSurfaceFactory* surface_factory)
-      : connection_(connection), surface_factory_(surface_factory) {}
+  explicit GLOzoneEGLWayland(WaylandConnectionProxy* connection)
+      : connection_(connection) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -148,8 +148,10 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
     // If there is a gbm device available, use surfaceless gl surface.
     if (!connection_->gbm_device())
       return nullptr;
-    return gl::InitializeGLSurface(
-        new GbmSurfacelessWayland(surface_factory_, window));
+    return gl::InitializeGLSurface(new GbmSurfacelessWayland(
+        static_cast<WaylandSurfaceFactory*>(
+            OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()),
+        window));
 #else
     return nullptr;
 #endif
@@ -164,7 +166,6 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
 
  private:
   WaylandConnectionProxy* connection_ = nullptr;
-  WaylandSurfaceFactory* surface_factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
 };
@@ -209,8 +210,7 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnectionProxy* connection)
     : connection_(connection) {
   if (connection_)
-    egl_implementation_ =
-        std::make_unique<GLOzoneEGLWayland>(connection_, this);
+    egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_);
 }
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
