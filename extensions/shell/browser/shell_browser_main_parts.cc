@@ -279,8 +279,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
   extension_system_ = NULL;
-  ExtensionsBrowserClient::Set(NULL);
-  extensions_browser_client_.reset();
 
   desktop_controller_.reset();
 
@@ -302,6 +300,9 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void ShellBrowserMainParts::PostDestroyThreads() {
+  extensions_browser_client_.reset();
+  ExtensionsBrowserClient::Set(nullptr);
+
 #if defined(OS_CHROMEOS)
   network_controller_.reset();
   chromeos::NetworkHandler::Shutdown();
