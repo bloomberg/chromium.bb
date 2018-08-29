@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
@@ -106,7 +107,7 @@ public class BottomToolbarCoordinator {
      *                                        switcher mode.
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
-            OnClickListener tabSwitcherListener, OnTouchListener menuButtonListener,
+            OnClickListener tabSwitcherListener, AppMenuButtonHelper menuButtonHelper,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
             WindowAndroid windowAndroid, ToolbarButtonData firstSlotTabSwitcherButtonData,
             ToolbarButtonData secondSlotTabSwitcherButtonData) {
@@ -121,7 +122,8 @@ public class BottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);
 
-        mMenuButton.setTouchListener(menuButtonListener);
+        mMenuButton.setTouchListener(menuButtonHelper);
+        mMenuButton.setAccessibilityDelegate(menuButtonHelper);
     }
 
     /**

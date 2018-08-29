@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.View.AccessibilityDelegate;
 import android.view.View.OnTouchListener;
 import android.widget.FrameLayout;
 
@@ -41,6 +42,11 @@ class MenuButton extends FrameLayout {
      */
     void setTouchListener(OnTouchListener onTouchListener) {
         mMenuTintedImageButton.setOnTouchListener(onTouchListener);
+    }
+
+    @Override
+    public void setAccessibilityDelegate(AccessibilityDelegate delegate) {
+        mMenuTintedImageButton.setAccessibilityDelegate(delegate);
     }
 
     /**
