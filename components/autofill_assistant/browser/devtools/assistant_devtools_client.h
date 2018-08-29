@@ -19,8 +19,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/autofill_assistant/browser/devtools//devtools/domains/dom.h"
-#include "components/autofill_assistant/browser/devtools//devtools/domains/page.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/dom.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/input.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/runtime.h"
 #include "components/autofill_assistant/browser/devtools/message_dispatcher.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -34,8 +35,9 @@ class AssistantDevtoolsClient : public MessageDispatcher,
       scoped_refptr<content::DevToolsAgentHost> agent_host);
   ~AssistantDevtoolsClient() override;
 
+  input::Domain* GetInput();
   dom::Domain* GetDOM();
-  page::Domain* GetPage();
+  runtime::Domain* GetRuntime();
 
   // MessageDispatcher implementation:
   void SendMessage(
@@ -92,8 +94,9 @@ class AssistantDevtoolsClient : public MessageDispatcher,
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   scoped_refptr<base::SequencedTaskRunner> browser_main_thread_;
 
+  input::ExperimentalDomain input_domain_;
   dom::ExperimentalDomain dom_domain_;
-  page::ExperimentalDomain page_domain_;
+  runtime::ExperimentalDomain runtime_domain_;
   std::unordered_map<int, Callback> pending_messages_;
   EventHandlerMap event_handlers_;
   bool renderer_crashed_;
