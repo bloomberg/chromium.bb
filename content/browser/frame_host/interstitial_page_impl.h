@@ -170,6 +170,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
+  bool PreHandleMouseEvent(const blink::WebMouseEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   TextInputManager* GetTextInputManager() override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
