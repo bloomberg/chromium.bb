@@ -55,12 +55,8 @@ const char kUnknownError[] = "An unknown error occured.";
 
 }  // namespace
 
-CBORReader::CBORReader(base::span<const uint8_t>::const_iterator begin,
-                       const base::span<const uint8_t>::const_iterator end)
-    : begin_(begin),
-      it_(begin),
-      end_(end),
-      error_code_(DecoderError::CBOR_NO_ERROR) {}
+CBORReader::CBORReader(base::span<const uint8_t> data)
+    : rest_(data), error_code_(DecoderError::CBOR_NO_ERROR) {}
 CBORReader::~CBORReader() {}
 
 // static
@@ -85,7 +81,7 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            size_t* num_bytes_consumed,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
-  CBORReader reader(data.cbegin(), data.cend());
+  CBORReader reader(data);
   base::Optional<CBORValue> decoded_cbor =
       reader.DecodeCompleteDataItem(max_nesting_level);
 
@@ -98,7 +94,7 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   if (error_code_out)
     *error_code_out = error_code;
 
-  *num_bytes_consumed = failed ? 0 : reader.num_bytes_consumed();
+  *num_bytes_consumed = failed ? 0 : data.size() - reader.num_bytes_remaining();
   return decoded_cbor;
 }
 
@@ -137,13 +133,13 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
 }
 
 base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
-  if (!CanConsume(1)) {
+  const base::Optional<uint8_t> initial_byte = ReadByte();
+  if (!initial_byte) {
     return base::nullopt;
   }
 
-  const uint8_t initial_byte = *it_++;
-  const auto major_type = GetMajorType(initial_byte);
-  const uint8_t additional_info = GetAdditionalInfo(initial_byte);
+  const auto major_type = GetMajorType(initial_byte.value());
+  const uint8_t additional_info = GetAdditionalInfo(initial_byte.value());
 
   uint64_t value;
   if (!ReadVariadicLengthInteger(additional_info, &value))
@@ -171,14 +167,16 @@ bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
     return false;
   }
 
-  if (!CanConsume(additional_bytes)) {
+  const base::Optional<base::span<const uint8_t>> bytes =
+      ReadBytes(additional_bytes);
+  if (!bytes) {
     return false;
   }
 
   uint64_t int_data = 0;
-  for (uint8_t i = 0; i < additional_bytes; ++i) {
+  for (const uint8_t b : bytes.value()) {
     int_data <<= 8;
-    int_data |= *it_++;
+    int_data |= b;
   }
 
   *value = int_data;
@@ -235,12 +233,12 @@ base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
 base::Optional<CBORValue> CBORReader::ReadStringContent(
     const CBORReader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
-  if (!CanConsume(num_bytes)) {
+  const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(num_bytes);
+  if (!bytes) {
     return base::nullopt;
   }
 
-  std::string cbor_string(it_, it_ + num_bytes);
-  it_ += num_bytes;
+  std::string cbor_string(bytes->begin(), bytes->end());
 
   return HasValidUTF8Format(cbor_string)
              ? base::make_optional<CBORValue>(CBORValue(std::move(cbor_string)))
@@ -250,13 +248,12 @@ base::Optional<CBORValue> CBORReader::ReadStringContent(
 base::Optional<CBORValue> CBORReader::ReadByteStringContent(
     const CBORReader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
-  if (!CanConsume(num_bytes)) {
+  const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(num_bytes);
+  if (!bytes) {
     return base::nullopt;
   }
 
-  std::vector<uint8_t> cbor_byte_string(it_, it_ + num_bytes);
-  it_ += num_bytes;
-
+  std::vector<uint8_t> cbor_byte_string(bytes->begin(), bytes->end());
   return CBORValue(std::move(cbor_byte_string));
 }
 
@@ -309,12 +306,20 @@ base::Optional<CBORValue> CBORReader::ReadMapContent(
   return CBORValue(std::move(cbor_map));
 }
 
-bool CBORReader::CanConsume(uint64_t bytes) {
-  if (base::checked_cast<uint64_t>(std::distance(it_, end_)) >= bytes) {
-    return true;
+base::Optional<uint8_t> CBORReader::ReadByte() {
+  const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(1);
+  return bytes ? base::make_optional(bytes.value()[0]) : base::nullopt;
+}
+
+base::Optional<base::span<const uint8_t>> CBORReader::ReadBytes(
+    uint64_t num_bytes) {
+  if (base::strict_cast<uint64_t>(rest_.size()) < num_bytes) {
+    error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
+    return base::nullopt;
   }
-  error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
-  return false;
+  const base::span<const uint8_t> ret = rest_.first(num_bytes);
+  rest_ = rest_.subspan(num_bytes);
+  return ret;
 }
 
 bool CBORReader::CheckMinimalEncoding(uint8_t additional_bytes,
