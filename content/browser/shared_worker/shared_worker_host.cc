@@ -26,6 +26,7 @@
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 #include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 
@@ -127,8 +128,9 @@ void SharedWorkerHost::Start(
     mojom::SharedWorkerFactoryPtr factory,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle) {
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        main_script_loader_factory,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AdvanceTo(Phase::kStarted);
 
@@ -171,20 +173,24 @@ void SharedWorkerHost::Start(
       mojom::kNavigation_SharedWorkerSpec, process_id_,
       mojo::MakeRequest(&interface_provider)));
 
-  // Add the network factory to the bundle to pass to the renderer. The bundle
-  // is only provided (along with |script_loader_factory|) if
-  // NetworkService/S13nServiceWorker is enabled, and default factory isn't
-  // provided if NetworkService is on but S13nServiceWorker is off.
-  DCHECK(!script_loader_factory || factory_bundle);
-  if (factory_bundle && !factory_bundle->default_factory_info()) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-    network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
-    CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
-    factory_bundle->default_factory_info() = std::move(network_factory_info);
+  // Add the network factory to the bundle for subresource loading to pass to
+  // the renderer. The bundle is only provided if
+  // NetworkService/S13nServiceWorker is enabled.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    DCHECK(subresource_loader_factories);
+    // The default factory is not provided if NetworkService is on.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      DCHECK(!subresource_loader_factories->default_factory_info());
+      network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
+      CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
+      subresource_loader_factories->default_factory_info() =
+          std::move(network_factory_info);
 
-    // TODO(falken): We might need to set the default factory to AppCache
-    // instead, as we do for frames, if requests from this shared worker are
-    // supposed to go through AppCache.
+      // TODO(falken): We might need to set the default factory to AppCache
+      // instead, as we do for frames, if requests from this shared worker are
+      // supposed to go through AppCache.
+    }
+    DCHECK(subresource_loader_factories->default_factory_info());
   }
 
   // Send the CreateSharedWorker message.
@@ -195,9 +201,9 @@ void SharedWorkerHost::Start(
       std::move(content_settings), std::move(service_worker_provider_info),
       appcache_handle_ ? appcache_handle_->appcache_host_id()
                        : kAppCacheNoHostId,
-      std::move(script_loader_factory), std::move(factory_bundle),
-      std::move(host), std::move(worker_request_),
-      std::move(interface_provider));
+      std::move(main_script_loader_factory),
+      std::move(subresource_loader_factories), std::move(host),
+      std::move(worker_request_), std::move(interface_provider));
 
   // Monitor the lifetime of the worker.
   worker_.set_connection_error_handler(base::BindOnce(

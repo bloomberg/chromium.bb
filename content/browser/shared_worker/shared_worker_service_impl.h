@@ -83,7 +83,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
                    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
                        service_worker_provider_info,
                    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-                       script_loader_factory_info,
+                       main_script_loader_factory_info,
                    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle);
 
   // Returns nullptr if there is no such host.
