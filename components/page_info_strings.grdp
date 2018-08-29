@@ -29,6 +29,11 @@
     You're viewing the source of a web page
   </message>
 
+  <!-- Viewing file strings -->
+  <message name="IDS_PAGE_INFO_FILE_PAGE" desc="Message to display in the page info bubble when the page the user has navigated to is a file:// page">
+    You're viewing a local or shared file
+  </message>
+
   <!-- Detail strings -->
   <message name="IDS_PAGE_INFO_SECURE_DETAILS" desc="A short paragraph explaining a secure site to the user.">
     Your information (for example, passwords or credit card numbers) is private when it is sent to this site.

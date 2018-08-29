@@ -315,6 +315,7 @@ class LocationBarView : public LocationBar,
   // level.
   // - For extension URLs, returns the extension name.
   // - For chrome:// URLs, returns the short product name (e.g. Chrome).
+  // - For file:// URLs, returns the text "File".
   base::string16 GetLocationIconText() const;
 
   // Returns true if a keyword is selected in the model.

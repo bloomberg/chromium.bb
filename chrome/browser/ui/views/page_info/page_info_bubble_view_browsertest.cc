@@ -127,6 +127,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kInternal[] = "Internal";
     constexpr char kInternalExtension[] = "InternalExtension";
     constexpr char kInternalViewSource[] = "InternalViewSource";
+    constexpr char kFile[] = "File";
     constexpr char kSecure[] = "Secure";
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
@@ -140,6 +141,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
     const GURL internal_url("chrome://settings");
     const GURL internal_extension_url("chrome-extension://example");
+    const GURL file_url("file:///Users/homedirname/folder/file.pdf");
     // Note the following two URLs are not really necessary to get the different
     // versions of Page Info to appear, but are here to indicate the type of
     // URL each IdentityInfo type would normally be associated with.
@@ -161,6 +163,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       url = GURL(content::kViewSourceScheme +
                  std::string(url::kStandardSchemeSeparator) +
                  embedded_test_server()->GetURL(kTestHtml).spec());
+    } else if (name == kFile) {
+      url = file_url;
     }
 
     ui_test_utils::NavigateToURL(browser(), url);
@@ -236,7 +240,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
                                                std::move(chosen_object_list));
     }
 
-    if (name != kInsecure && name.find(kInternal) == std::string::npos) {
+    if (name != kInsecure && name.find(kInternal) == std::string::npos &&
+        name != kFile) {
       // The bubble may be PageInfoBubbleView or InternalPageInfoBubbleView. The
       // latter is only used for |kInternal|, so it is safe to static_cast here.
       static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
@@ -340,15 +345,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        SiteSettingsLinkWithAboutBlankURL) {
   EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
             OpenSiteSettingsForUrl(browser(), GURL(url::kAboutBlankURL)));
-}
-
-// Test opening "Site Details" via Page Info from a file:// URL goes to "Content
-// Settings".
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       SiteSettingsLinkWithFileUrl) {
-  GURL url = GURL("file:///Users/homedirname/folder/file.pdf");
-  EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
-            OpenSiteSettingsForUrl(browser(), url));
 }
 
 // Test opening page info bubble that matches
@@ -515,6 +511,11 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   ShowAndVerifyUi();
 }
 
+// Shows the Page Info bubble for a file:// URL.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_File) {
+  ShowAndVerifyUi();
+}
+
 // Shows the Page Info bubble for a site flagged for malware by Safe Browsing.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Malware) {
   ShowAndVerifyUi();
@@ -572,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,
             PageInfoBubbleView::GetShownBubbleType());
   OpenPageInfoBubble(browser());
-  EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());
   ui_test_utils::NavigateToURL(browser(), GetSimplePageUrl());
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,
@@ -585,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,
             PageInfoBubbleView::GetShownBubbleType());
   OpenPageInfoBubble(browser());
-  EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());
   ui_test_utils::NavigateToURL(browser(), GetIframePageUrl());
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,
@@ -598,13 +599,13 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,
             PageInfoBubbleView::GetShownBubbleType());
   OpenPageInfoBubble(browser());
-  EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());
   content::NavigateIframeToURL(
       browser()->tab_strip_model()->GetActiveWebContents(), "test",
       GetSimplePageUrl());
   // Expect that the bubble is still open even after a subframe navigation has
   // happened.
-  EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());
 }

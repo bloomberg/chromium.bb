@@ -385,6 +385,8 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
     text = IDS_PAGE_INFO_EXTENSION_PAGE;
   } else if (url.SchemeIs(content::kViewSourceScheme)) {
     text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
+  } else if (url.SchemeIs(url::kFileScheme)) {
+    text = IDS_PAGE_INFO_FILE_PAGE;
   } else if (!url.SchemeIs(content::kChromeUIScheme) &&
              !url.SchemeIs(content::kChromeDevToolsScheme)) {
     NOTREACHED();
@@ -432,7 +434,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
-      url.SchemeIs(content::kViewSourceScheme)) {
+      url.SchemeIs(content::kViewSourceScheme) ||
+      url.SchemeIs(url::kFileScheme)) {
     return new InternalPageInfoBubbleView(anchor_view, anchor_rect, parent_view,
                                           web_contents, url);
   }
