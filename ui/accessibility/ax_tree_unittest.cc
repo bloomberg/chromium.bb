@@ -1435,4 +1435,51 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
 
+TEST(AXTreeTest, ChildTreeIds) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[0].child_ids.push_back(4);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                         92);
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                         93);
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                         93);
+  AXTree tree(initial_state);
+
+  auto child_tree_91_nodes = tree.GetNodeIdsForChildTreeId(91);
+  EXPECT_EQ(0U, child_tree_91_nodes.size());
+
+  auto child_tree_92_nodes = tree.GetNodeIdsForChildTreeId(92);
+  EXPECT_EQ(1U, child_tree_92_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 2));
+
+  auto child_tree_93_nodes = tree.GetNodeIdsForChildTreeId(93);
+  EXPECT_EQ(2U, child_tree_93_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_93_nodes, 3));
+  EXPECT_TRUE(base::ContainsKey(child_tree_93_nodes, 4));
+
+  AXTreeUpdate update = initial_state;
+  update.nodes[2].int_attributes.clear();
+  update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId, 92);
+  update.nodes[3].int_attributes.clear();
+
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  child_tree_92_nodes = tree.GetNodeIdsForChildTreeId(92);
+  EXPECT_EQ(2U, child_tree_92_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 2));
+  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 3));
+
+  child_tree_93_nodes = tree.GetNodeIdsForChildTreeId(93);
+  EXPECT_EQ(0U, child_tree_93_nodes.size());
+}
+
 }  // namespace ui

@@ -119,23 +119,6 @@ static gfx::Rect ComputeGlobalNodeBounds(AutomationAXTreeWrapper* tree_wrapper,
   return gfx::ToEnclosingRect(bounds);
 }
 
-ui::AXNode* FindNodeWithChildTreeId(ui::AXNode* node, int child_tree_id) {
-  int node_tree_id;
-  if (node->data().GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                                   &node_tree_id) &&
-      child_tree_id == node_tree_id)
-    return node;
-
-  for (int i = 0; i < node->child_count(); ++i) {
-    ui::AXNode* result =
-        FindNodeWithChildTreeId(node->ChildAtIndex(i), child_tree_id);
-    if (result)
-      return result;
-  }
-
-  return nullptr;
-}
-
 //
 // Helper class that helps implement bindings for a JavaScript function
 // that takes a single input argument consisting of a Tree ID. Looks up
@@ -1441,31 +1424,25 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
   if (!parent_tree_wrapper)
     return nullptr;
 
-  // Try to use the cached host node from the most recent time this
-  // was called.
-  if ((*in_out_tree_wrapper)->host_node_id() > 0) {
-    ui::AXNode* parent = parent_tree_wrapper->tree()->GetFromId(
-        (*in_out_tree_wrapper)->host_node_id());
+  std::set<int32_t> host_node_ids =
+      parent_tree_wrapper->tree()->GetNodeIdsForChildTreeId(
+          (*in_out_tree_wrapper)->tree_id());
 
-    // Not entirely clear why |parent| does not sometimes have a child tree id.
-    if (parent &&
-        parent->data().HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId)) {
-      int parent_child_tree_id =
-          parent->data().GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId);
-      if (parent_child_tree_id == (*in_out_tree_wrapper)->tree_id()) {
-        *in_out_tree_wrapper = parent_tree_wrapper;
-        return parent;
-      }
+#if !defined(NDEBUG)
+  if (host_node_ids.size() > 1)
+    DLOG(WARNING) << "Multiple nodes claim the same child tree id.";
+#endif
+
+  for (int32_t host_node_id : host_node_ids) {
+    ui::AXNode* host_node =
+        parent_tree_wrapper->tree()->GetFromId(host_node_id);
+    if (host_node) {
+      DCHECK_EQ(
+          (*in_out_tree_wrapper)->tree_id(),
+          host_node->GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+      *in_out_tree_wrapper = parent_tree_wrapper;
+      return host_node;
     }
-  }
-
-  // If that fails, search for it and cache it for next time.
-  ui::AXNode* parent = FindNodeWithChildTreeId(
-      parent_tree_wrapper->tree()->root(), (*in_out_tree_wrapper)->tree_id());
-  if (parent) {
-    (*in_out_tree_wrapper)->set_host_node_id(parent->id());
-    *in_out_tree_wrapper = parent_tree_wrapper;
-    return parent;
   }
 
   return nullptr;

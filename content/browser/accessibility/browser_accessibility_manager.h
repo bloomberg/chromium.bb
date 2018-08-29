@@ -453,11 +453,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   // The global ID of this accessibility tree.
   ui::AXTreeIDRegistry::AXTreeID ax_tree_id_;
 
-  // If this tree has a parent tree, this is the cached ID of the parent
-  // node within that parent tree. It's computed as needed and cached for
-  // speed so that it can be accessed quickly if it hasn't changed.
-  int parent_node_id_from_parent_tree_;
-
   // The device scale factor for the view associated with this frame,
   // cached each time there's any update to the accessibility tree.
   float device_scale_factor_;
