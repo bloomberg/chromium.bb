@@ -474,7 +474,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mAwInit.getLock()) {
             if (mServiceWorkerControllerAdapter == null) {
                 mServiceWorkerControllerAdapter =
-                        ApiHelperForN.createServiceWorkerControllerAdapter(mAwInit);
+                        GlueApiHelperForN.createServiceWorkerControllerAdapter(mAwInit);
             }
         }
         return (ServiceWorkerController) mServiceWorkerControllerAdapter;
@@ -545,7 +545,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // waiting for startup. Hence check the mTracingControler here to ensure
             // the singleton property.
             if (mTracingController == null) {
-                mTracingController = ApiHelperForP.createTracingControllerAdapter(this, mAwInit);
+                mTracingController =
+                        GlueApiHelperForP.createTracingControllerAdapter(this, mAwInit);
             }
         }
         return mTracingController;
