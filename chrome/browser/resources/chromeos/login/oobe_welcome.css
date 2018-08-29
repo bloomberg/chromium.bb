@@ -32,6 +32,10 @@
   border-bottom: var(--oobe-a11y-dialog-list-item-border);
 }
 
+#accessibilityScreen .scroll {
+  overflow: scroll;
+}
+
 /************* Timezone Screen **************/
 #timezoneScreen .timezone-selection-entry {
   border-top: var(--oobe-dialog-list-item-border);
