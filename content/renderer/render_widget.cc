@@ -2970,6 +2970,11 @@ void RenderWidget::StartCompositor() {
     layer_tree_view_->SetVisible(true);
 }
 
+void RenderWidget::HasPointerRawMoveEventHandlers(bool has_handlers) {
+  if (input_event_queue_)
+    input_event_queue_->HasPointerRawMoveEventHandlers(has_handlers);
+}
+
 void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   if (has_touch_handlers_ && *has_touch_handlers_ == has_handlers)
     return;

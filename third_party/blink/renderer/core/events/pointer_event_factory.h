@@ -38,10 +38,13 @@ class CORE_EXPORT PointerEventFactory {
       const int pointer_id,
       TimeTicks platfrom_time_stamp);
 
-  // For creating capture events (i.e got/lostpointercapture)
+  // For creating raw move events in chorded button case.
+  PointerEvent* CreatePointerRawMoveEvent(PointerEvent*);
+
+  // For creating capture events (i.e got/lostpointercapture).
   PointerEvent* CreatePointerCaptureEvent(PointerEvent*, const AtomicString&);
 
-  // For creating boundary events (i.e pointerout/leave/over/enter)
+  // For creating boundary events (i.e pointerout/leave/over/enter).
   PointerEvent* CreatePointerBoundaryEvent(PointerEvent*,
                                            const AtomicString&,
                                            EventTarget*);

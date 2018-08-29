@@ -144,6 +144,9 @@ class WebWidgetClient {
                              const WebFloatSize& velocity_in_viewport,
                              const cc::OverscrollBehavior& behavior) {}
 
+  // Called to update if pointerrawmove events should be sent.
+  virtual void HasPointerRawMoveEventHandlers(bool) {}
+
   // Called to update if touch events should be sent.
   virtual void HasTouchEventHandlers(bool) {}
 

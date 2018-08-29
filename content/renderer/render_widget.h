@@ -347,6 +347,7 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebPoint& image_offset) override;
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
+  void HasPointerRawMoveEventHandlers(bool has_handlers) override;
   void HasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
 

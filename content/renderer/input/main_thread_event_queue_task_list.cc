@@ -36,4 +36,14 @@ std::unique_ptr<MainThreadEventQueueTask> MainThreadEventQueueTaskList::Pop() {
   return result;
 }
 
+std::unique_ptr<MainThreadEventQueueTask> MainThreadEventQueueTaskList::remove(
+    size_t pos) {
+  std::unique_ptr<MainThreadEventQueueTask> result;
+  if (!queue_.empty()) {
+    result.reset(queue_.at(pos).release());
+    queue_.erase(queue_.begin() + pos);
+  }
+  return result;
+}
+
 }  // namespace

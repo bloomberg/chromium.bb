@@ -64,7 +64,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseReleaseEvent(event);
   }

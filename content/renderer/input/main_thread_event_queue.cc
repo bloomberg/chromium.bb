@@ -61,6 +61,14 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
   ~QueuedWebInputEvent() override {}
 
+  bool ArePointerMoveEventTypes(QueuedWebInputEvent* other_event) {
+    // There is no pointermove at this point in the queue.
+    DCHECK(event().GetType() != WebInputEvent::kPointerMove &&
+           other_event->event().GetType() != WebInputEvent::kPointerMove);
+    return event().GetType() == WebInputEvent::kPointerRawMove &&
+           other_event->event().GetType() == WebInputEvent::kPointerRawMove;
+  }
+
   FilterResult FilterNewEvent(MainThreadEventQueueTask* other_task) override {
     if (!other_task->IsWebInputEvent())
       return FilterResult::StopIterating;
@@ -75,8 +83,14 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     if (!event().IsSameEventClass(other_event->event()))
       return FilterResult::KeepIterating;
 
-    if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(*other_event))
+    if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(*other_event)) {
+      // Two pointerevents may not be able to coalesce but we should continue
+      // looking further down the queue if both of them were rawmove or move
+      // events and only their pointer_type, id, or event_type was different.
+      if (ArePointerMoveEventTypes(other_event))
+        return FilterResult::KeepIterating;
       return FilterResult::StopIterating;
+    }
 
     // If the other event was blocking store its callback to call later.
     if (other_event->callback_) {
@@ -302,6 +316,20 @@ void MainThreadEventQueue::HandleEvent(
     event_callback = std::move(callback);
   }
 
+  // TODO(nzolghadr): For now only expose raw move events for mouse.
+  // Then we'll need to extend it to touch events as well.
+  if (has_pointerrawmove_handlers_ &&
+      event->GetType() == WebInputEvent::kMouseMove) {
+    ui::WebScopedInputEvent raw_event(new blink::WebPointerEvent(
+        WebInputEvent::kPointerRawMove,
+        *(static_cast<blink::WebMouseEvent*>(event.get()))));
+    std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
+        new QueuedWebInputEvent(std::move(raw_event), latency, false,
+                                HandledEventCallback(), false));
+
+    QueueEvent(std::move(raw_queued_event));
+  }
+
   std::unique_ptr<QueuedWebInputEvent> queued_event(new QueuedWebInputEvent(
       std::move(event), latency, originally_cancelable,
       std::move(event_callback), IsForwardedAndSchedulerKnown(ack_result)));
@@ -343,6 +371,7 @@ void MainThreadEventQueue::PossiblyScheduleMainFrame() {
 
 void MainThreadEventQueue::DispatchEvents() {
   size_t events_to_process;
+  size_t queue_size;
 
   // Record the queue size so that we only process
   // that maximum number of events.
@@ -353,7 +382,7 @@ void MainThreadEventQueue::DispatchEvents() {
 
     // Don't process rAF aligned events at tail of queue.
     while (events_to_process > 0 &&
-           IsRafAlignedEvent(shared_state_.events_.at(events_to_process - 1))) {
+           !ShouldFlushQueue(shared_state_.events_.at(events_to_process - 1))) {
       --events_to_process;
     }
   }
@@ -371,6 +400,45 @@ void MainThreadEventQueue::DispatchEvents() {
     // Dispatching the event is outside of critical section.
     task->Dispatch(this);
   }
+
+  // Dispatch all raw move events as well regardless of where they are in the
+  // queue
+  {
+    base::AutoLock lock(shared_state_lock_);
+    queue_size = shared_state_.events_.size();
+  }
+
+  for (size_t current_task_index = 0; current_task_index < queue_size;
+       ++current_task_index) {
+    std::unique_ptr<MainThreadEventQueueTask> task;
+    {
+      base::AutoLock lock(shared_state_lock_);
+      while (current_task_index < queue_size &&
+             current_task_index < shared_state_.events_.size()) {
+        if (!IsRafAlignedEvent(shared_state_.events_.at(current_task_index)))
+          break;
+        current_task_index++;
+      }
+      if (current_task_index >= queue_size ||
+          current_task_index >= shared_state_.events_.size())
+        break;
+      if (IsRawMoveEvent(shared_state_.events_.at(current_task_index))) {
+        task = shared_state_.events_.remove(current_task_index);
+        --queue_size;
+        --current_task_index;
+      } else if (!IsRafAlignedEvent(
+                     shared_state_.events_.at(current_task_index))) {
+        // Do not pass a non-rAF-aligned event to avoid delivering raw move
+        // events and down/up events out of order to js.
+        break;
+      }
+    }
+
+    // Dispatching the event is outside of critical section.
+    if (task)
+      task->Dispatch(this);
+  }
+
   PossiblyScheduleMainFrame();
 }
 
@@ -467,6 +535,21 @@ void MainThreadEventQueue::QueueEvent(
     SetNeedsMainFrame();
 }
 
+bool MainThreadEventQueue::IsRawMoveEvent(
+    const std::unique_ptr<MainThreadEventQueueTask>& item) const {
+  return item->IsWebInputEvent() &&
+         static_cast<const QueuedWebInputEvent*>(item.get())
+                 ->event()
+                 .GetType() == blink::WebInputEvent::kPointerRawMove;
+}
+
+bool MainThreadEventQueue::ShouldFlushQueue(
+    const std::unique_ptr<MainThreadEventQueueTask>& item) const {
+  if (IsRawMoveEvent(item))
+    return false;
+  return !IsRafAlignedEvent(item);
+}
+
 bool MainThreadEventQueue::IsRafAlignedEvent(
     const std::unique_ptr<MainThreadEventQueueTask>& item) const {
   if (!item->IsWebInputEvent())
@@ -543,6 +626,10 @@ void MainThreadEventQueue::ClearClient() {
 
 void MainThreadEventQueue::SetNeedsLowLatency(bool low_latency) {
   needs_low_latency_ = low_latency;
+}
+
+void MainThreadEventQueue::HasPointerRawMoveEventHandlers(bool has_handlers) {
+  has_pointerrawmove_handlers_ = has_handlers;
 }
 
 void MainThreadEventQueue::RequestUnbufferedInputEvents() {

@@ -31,6 +31,8 @@ class MainThreadEventQueueTaskList {
     return queue_.at(pos);
   }
 
+  std::unique_ptr<MainThreadEventQueueTask> remove(size_t pos);
+
   bool empty() const { return queue_.empty(); }
 
   size_t size() const { return queue_.size(); }

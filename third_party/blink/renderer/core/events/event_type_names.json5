@@ -208,6 +208,7 @@
     "pointermove",
     "pointerout",
     "pointerover",
+    "pointerrawmove",
     "pointerup",
     "popstate",
     "progress",
