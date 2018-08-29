@@ -8,6 +8,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
@@ -139,7 +141,13 @@ OverlayWindowViews::OverlayWindowViews(
       controls_scrim_view_(new views::View()),
       controls_parent_view_(new views::View()),
       close_controls_view_(new views::CloseImageButton(this)),
-      play_pause_controls_view_(new views::ToggleImageButton(this)) {
+      play_pause_controls_view_(new views::ToggleImageButton(this)),
+      hide_controls_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
+          base::BindRepeating(&OverlayWindowViews::UpdateControlsVisibility,
+                              base::Unretained(this),
+                              false /* is_visible */)) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateWindowBounds();
@@ -632,12 +640,20 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       break;
   }
 
+  // If the user interacts with the window using a mouse, stop the timer to
+  // automatically hide the controls.
+  hide_controls_timer_.Stop();
+
   views::Widget::OnMouseEvent(event);
 }
 
 void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;
+
+  // Every time a user taps on the window, restart the timer to automatically
+  // hide the controls.
+  hide_controls_timer_.Reset();
 
   // If the controls were not shown, make them visible. All controls related
   // layers are expected to have the same visibility.
