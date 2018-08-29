@@ -63,17 +63,19 @@ class ScopedStyleResolver final
 
   void AppendActiveStyleSheets(unsigned index, const ActiveStyleSheetVector&);
   void CollectMatchingAuthorRules(ElementRuleCollector&,
-                                  CascadeOrder = kIgnoreCascadeOrder);
-  void CollectMatchingShadowHostRules(ElementRuleCollector&,
-                                      CascadeOrder = kIgnoreCascadeOrder);
+                                  ShadowV0CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingShadowHostRules(
+      ElementRuleCollector&,
+      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
   void CollectMatchingSlottedRules(ElementRuleCollector&,
-                                   CascadeOrder = kIgnoreCascadeOrder);
+                                   ShadowV0CascadeOrder = kIgnoreCascadeOrder);
   void CollectMatchingTreeBoundaryCrossingRules(
       ElementRuleCollector&,
-      CascadeOrder = kIgnoreCascadeOrder);
-  void CollectMatchingPartPseudoRules(ElementRuleCollector&,
-                                      PartNames& part_names,
-                                      CascadeOrder = kIgnoreCascadeOrder);
+      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingPartPseudoRules(
+      ElementRuleCollector&,
+      PartNames& part_names,
+      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
   void MatchPageRules(PageRuleCollector&);
   void CollectFeaturesTo(RuleFeatureSet&,
                          HeapHashSet<Member<const StyleSheetContents>>&

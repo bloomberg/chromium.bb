@@ -43,11 +43,11 @@ class SelectorFilter;
 class StaticCSSRuleList;
 class StyleRuleUsageTracker;
 
-// TODO(kochi): CascadeOrder is used only for Shadow DOM V0 bug-compatible
-// cascading order. Once Shadow DOM V0 implementation is gone, remove this
-// completely.
-using CascadeOrder = unsigned;
-const CascadeOrder kIgnoreCascadeOrder = 0;
+// TODO(kochi): ShadowV0CascadeOrder is used only for Shadow DOM V0
+// bug-compatible cascading order. Once Shadow DOM V0 implementation is gone,
+// remove this completely.
+using ShadowV0CascadeOrder = unsigned;
+const ShadowV0CascadeOrder kIgnoreCascadeOrder = 0;
 
 class MatchedRule {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -55,7 +55,7 @@ class MatchedRule {
  public:
   MatchedRule(const RuleData* rule_data,
               unsigned specificity,
-              CascadeOrder cascade_order,
+              ShadowV0CascadeOrder cascade_order,
               unsigned style_sheet_index,
               const CSSStyleSheet* parent_style_sheet)
       : rule_data_(rule_data),
@@ -129,13 +129,15 @@ class ElementRuleCollector {
   CSSRuleList* MatchedCSSRuleList();
 
   void CollectMatchingRules(const MatchRequest&,
-                            CascadeOrder = kIgnoreCascadeOrder,
+                            ShadowV0CascadeOrder = kIgnoreCascadeOrder,
                             bool matching_tree_boundary_rules = false);
-  void CollectMatchingShadowHostRules(const MatchRequest&,
-                                      CascadeOrder = kIgnoreCascadeOrder);
-  void CollectMatchingPartPseudoRules(const MatchRequest&,
-                                      PartNames&,
-                                      CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingShadowHostRules(
+      const MatchRequest&,
+      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingPartPseudoRules(
+      const MatchRequest&,
+      PartNames&,
+      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
   void SortAndTransferMatchedRules();
   void ClearMatchedRules();
   void AddElementStyleProperties(const CSSPropertyValueSet*,
@@ -158,13 +160,13 @@ class ElementRuleCollector {
  private:
   template <typename RuleDataListType>
   void CollectMatchingRulesForList(const RuleDataListType*,
-                                   CascadeOrder,
+                                   ShadowV0CascadeOrder,
                                    const MatchRequest&,
                                    PartNames* = nullptr);
 
   void DidMatchRule(const RuleData&,
                     const SelectorChecker::MatchResult&,
-                    CascadeOrder,
+                    ShadowV0CascadeOrder,
                     const MatchRequest&);
 
   template <class CSSRuleCollection>

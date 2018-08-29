@@ -403,7 +403,7 @@ void StyleResolver::MatchAuthorRulesV0(const Element& element,
                                        ElementRuleCollector& collector) {
   collector.ClearMatchedRules();
 
-  CascadeOrder cascade_order = 0;
+  ShadowV0CascadeOrder cascade_order = 0;
   HeapVector<Member<ScopedStyleResolver>, 8> resolvers_in_shadow_tree;
   CollectScopedResolversForHostedShadowTrees(element, resolvers_in_shadow_tree);
 
@@ -527,9 +527,11 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
     return;
 
   // When comparing rules declared in outer treescopes, outer's rules win.
-  CascadeOrder outer_cascade_order = tree_boundary_crossing_scopes.size() * 2;
+  ShadowV0CascadeOrder outer_cascade_order =
+      tree_boundary_crossing_scopes.size() * 2;
   // When comparing rules declared in inner treescopes, inner's rules win.
-  CascadeOrder inner_cascade_order = tree_boundary_crossing_scopes.size();
+  ShadowV0CascadeOrder inner_cascade_order =
+      tree_boundary_crossing_scopes.size();
 
   for (const auto& scoping_node : tree_boundary_crossing_scopes) {
     // Skip rule collection for element when tree boundary crossing rules of
@@ -540,7 +542,7 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
     if (!ShouldCheckScope(element, *scoping_node, is_inner_tree_scope))
       continue;
 
-    CascadeOrder cascade_order =
+    ShadowV0CascadeOrder cascade_order =
         is_inner_tree_scope ? inner_cascade_order : outer_cascade_order;
     scoping_node->GetTreeScope()
         .GetScopedStyleResolver()

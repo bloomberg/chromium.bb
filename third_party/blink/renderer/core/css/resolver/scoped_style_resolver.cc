@@ -216,7 +216,7 @@ void ScopedStyleResolver::KeyframesRulesAdded(const TreeScope& tree_scope) {
 
 void ScopedStyleResolver::CollectMatchingAuthorRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
     if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
@@ -229,7 +229,7 @@ void ScopedStyleResolver::CollectMatchingAuthorRules(
 
 void ScopedStyleResolver::CollectMatchingShadowHostRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
     if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
@@ -242,7 +242,7 @@ void ScopedStyleResolver::CollectMatchingShadowHostRules(
 
 void ScopedStyleResolver::CollectMatchingSlottedRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   if (!slotted_rule_set_)
     return;
 
@@ -255,7 +255,7 @@ void ScopedStyleResolver::CollectMatchingSlottedRules(
 
 void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   if (!tree_boundary_crossing_rule_set_)
     return;
 
@@ -269,7 +269,7 @@ void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
 void ScopedStyleResolver::CollectMatchingPartPseudoRules(
     ElementRuleCollector& collector,
     PartNames& part_names,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
   size_t sheet_index = 0;
