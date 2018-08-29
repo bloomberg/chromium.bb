@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NUX_GOOGLE_APPS_CONSTANTS_H_
-#define COMPONENTS_NUX_GOOGLE_APPS_CONSTANTS_H_
+#ifndef COMPONENTS_NUX_CONSTANTS_H_
+#define COMPONENTS_NUX_CONSTANTS_H_
 
 namespace base {
 struct Feature;
@@ -11,9 +11,11 @@ struct Feature;
 
 namespace nux {
 
+extern const base::Feature kNuxEmailFeature;
 extern const base::Feature kNuxGoogleAppsFeature;
+extern const char kNuxEmailUrl[];
 extern const char kNuxGoogleAppsUrl[];
 
 }  // namespace nux
 
-#endif  // COMPONENTS_NUX_GOOGLE_APPS_CONSTANTS_H_
+#endif  // COMPONENTS_NUX_CONSTANTS_H_

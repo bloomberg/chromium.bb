@@ -28,7 +28,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "components/nux/google_apps/constants.h"
+#include "components/nux/constants.h"
 #include "components/nux/google_apps/google_apps_handler.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 

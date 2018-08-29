@@ -14,7 +14,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/nux/google_apps/constants.h"
 #include "components/nux/show_promo_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"

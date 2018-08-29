@@ -25,9 +25,8 @@
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "components/nux/email/constants.h"
+#include "components/nux/constants.h"
 #include "components/nux/email/email_handler.h"
-#include "components/nux/google_apps/constants.h"
 #include "components/nux/google_apps/google_apps_handler.h"
 #include "components/nux/show_promo_delegate.h"
 #include "content/public/browser/web_contents.h"
