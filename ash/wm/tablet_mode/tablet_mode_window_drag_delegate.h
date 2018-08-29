@@ -26,6 +26,10 @@ class SplitViewDragIndicators;
 // backdrop, interacts with overview and splitview, etc.
 class TabletModeWindowDragDelegate {
  public:
+  // The threshold to compute the end position of the dragged window to drop it
+  // into overview.
+  static constexpr float kDragPositionToOverviewRatio = 0.5f;
+
   enum class UpdateDraggedWindowType {
     UPDATE_BOUNDS,
     UPDATE_TRANSFORM,
@@ -87,6 +91,13 @@ class TabletModeWindowDragDelegate {
 
   // Update the dragged window's transform during dragging.
   void UpdateDraggedWindowTransform(const gfx::Point& location_in_screen);
+
+  // Returns true if |dragged_window_| has been dragged more than half of the
+  // distance from top of the display to the top of the new selector item in
+  // overview, except that preview area is shown or splitview is active.
+  bool ShouldDropWindowIntoOverviewOnDragPosition(
+      SplitViewController::SnapPosition snap_position,
+      int end_y_position_in_screen) const;
 
   SplitViewController* const split_view_controller_;
 

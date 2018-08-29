@@ -138,7 +138,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                              const gfx::Point& location_in_screen,
                              IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
-                         const gfx::Point& location_in_screen);
+                         const gfx::Point& location_in_screen,
+                         bool should_drop_window_into_overview);
 
   // Returns true if |window| is the placeholder window from the new selector
   // item.
@@ -294,6 +295,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Returns the window selector item iterator that contains |window|.
   std::vector<std::unique_ptr<WindowSelectorItem>>::iterator
   GetWindowSelectorItemIterContainingWindow(aura::Window* window);
+
+  // Adds the |dragged_window| into overview on drag ended. Might need to update
+  // the window's bounds if it has been resized.
+  void AddDraggedWindowIntoOverviewOnDragEnd(aura::Window* dragged_window);
 
   // Root window the grid is in.
   aura::Window* root_window_;

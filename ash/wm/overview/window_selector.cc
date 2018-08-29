@@ -667,12 +667,14 @@ void WindowSelector::OnWindowDragContinued(aura::Window* dragged_window,
                                      indicator_state);
 }
 void WindowSelector::OnWindowDragEnded(aura::Window* dragged_window,
-                                       const gfx::Point& location_in_screen) {
+                                       const gfx::Point& location_in_screen,
+                                       bool should_drop_window_into_overview) {
   WindowGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
-  target_grid->OnWindowDragEnded(dragged_window, location_in_screen);
+  target_grid->OnWindowDragEnded(dragged_window, location_in_screen,
+                                 should_drop_window_into_overview);
 }
 
 void WindowSelector::PositionWindows(bool animate,

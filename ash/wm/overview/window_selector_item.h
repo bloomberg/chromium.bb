@@ -108,6 +108,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // descendants of the window returned by GetWindow()).
   gfx::Rect GetTargetBoundsInScreen() const;
 
+  // Returns the transformed bound of |transform_window_|.
+  gfx::Rect GetTransformedBounds() const;
+
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.
