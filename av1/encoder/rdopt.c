@@ -5679,7 +5679,12 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_init_rd_stats(rd_stats);
 
-  if (x->skip_chroma_rd) return is_cost_valid;
+  if (x->skip_chroma_rd) {
+    if (!is_cost_valid) av1_invalid_rd_stats(rd_stats);
+
+    return is_cost_valid;
+  }
+
   const BLOCK_SIZE bsizec = scale_chroma_bsize(
       bsize, xd->plane[1].subsampling_x, xd->plane[1].subsampling_y);
 
