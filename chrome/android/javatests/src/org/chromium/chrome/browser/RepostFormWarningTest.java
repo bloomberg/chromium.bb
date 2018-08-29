@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
@@ -83,6 +84,7 @@ public class RepostFormWarningTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
+    @DisabledTest(message = "crbug.com/878651")
     public void testFormResubmissionContinue() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
