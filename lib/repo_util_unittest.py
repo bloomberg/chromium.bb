@@ -227,6 +227,13 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaises(repo_util.ProjectNotFoundError):
       self.repo.List(['foobar'])
 
+  def testManifest(self):
+    """Test Repository.Manifest."""
+    output = '<manifest></manifest>'
+    self.AddRepoResult(['manifest'], output=output)
+    manifest = self.repo.Manifest()
+    self.assertIsNotNone(manifest)
+
   def testCopy(self):
     """Test Repository.Copy."""
     copy_root = os.path.join(self.tempdir, 'copy')
@@ -316,6 +323,13 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
     self.repo.StartBranch('my-branch')
     project_branch = git.GetCurrentBranch(self.project_path)
     self.assertEqual(project_branch, 'my-branch')
+
+  @tests.append
+  def testManifest(self):
+    """Test Repository.Manifest includes project."""
+    manifest = self.repo.Manifest()
+    project = manifest.GetUniqueProject(self.PROJECT)
+    self.assertEqual(project.path, self.PROJECT_DIR)
 
   @tests.append
   def testCopy(self):

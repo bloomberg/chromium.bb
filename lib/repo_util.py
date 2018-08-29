@@ -16,6 +16,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import repo_manifest
 
 
 # Match `repo` error: "error: project <name> not found"
@@ -214,7 +215,7 @@ class Repository(object):
   def List(self, projects=None, cwd=None):
     """Run `repo list` and returns a list of ProjectInfos for synced projects.
 
-    Note that this may produce a different list than parsing the manifest file
+    Note that this may produce a different list than Manifest().Projects()
     due to partial project syncing (e.g. `repo init -g minilayout`).
 
     Args:
@@ -240,6 +241,23 @@ class Repository(object):
       path, name = line.rsplit(' : ', 1)
       infos.append(ProjectInfo(name=name, path=path))
     return infos
+
+  def Manifest(self, revision_locked=False):
+    """Run `repo manifest` and return a repo_manifest.Manifest.
+
+    Args:
+      revision_locked: If True, create a "revision locked" manifest with each
+      project's revision set to that project's current HEAD.
+
+    Raises:
+      RunCommandError: if `repo list` otherwise failed.
+      repo_manifest.Error: if the output couldn't be parsed into a Manifest.
+    """
+    cmd = ['manifest']
+    if revision_locked:
+      cmd += ['--revision-as-HEAD']
+    result = self._Run(cmd, capture_output=True)
+    return repo_manifest.Manifest.FromString(result.output)
 
   def Copy(self, dest_root):
     """Efficiently `cp` the .repo directory, using hardlinks if possible.
