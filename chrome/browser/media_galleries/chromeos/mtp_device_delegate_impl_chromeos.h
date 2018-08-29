@@ -11,6 +11,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
@@ -18,6 +20,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -456,27 +459,26 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Fills the file cache using the results from NextUncachedPathComponent().
   void FillFileCache(const base::FilePath& uncached_path);
 
-  // Given a full path, if it exists in the cache, writes the file's id to |id|
-  // and return true.
-  bool CachedPathToId(const base::FilePath& path, uint32_t* id) const;
+  // Given a full path, if it exists in the cache, return the id.
+  base::Optional<uint32_t> CachedPathToId(const base::FilePath& path) const;
 
   // Evict the cache of |id|.
-  void EvictCachedPathToId(const uint32_t id);
+  void EvictCachedPathToId(uint32_t id);
 
   // MTP device initialization state.
-  InitializationState init_state_;
+  InitializationState init_state_ = UNINITIALIZED;
 
   // Used to make sure only one task is in progress at any time.
   // Otherwise the browser will try to send too many requests at once and
   // overload the device.
-  bool task_in_progress_;
+  bool task_in_progress_ = false;
 
   // Registered file system device path. This path does not
   // correspond to a real device path (e.g. "/usb:2,2:81282").
   const base::FilePath device_path_;
 
   // MTP device storage name (e.g. "usb:2,2:81282").
-  std::string storage_name_;
+  const std::string storage_name_;
 
   // Mode for opening storage.
   const bool read_only_;
@@ -505,7 +507,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // The root node of a tree-structure that caches the directory structure of
   // the MTP device.
-  std::unique_ptr<MTPFileNode> root_node_;
+  const std::unique_ptr<MTPFileNode> root_node_;
 
   // A list of child nodes encountered while a ReadDirectory operation, which
   // can return results over multiple callbacks, is in progress.
