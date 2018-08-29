@@ -38,7 +38,8 @@ print_preview.LocalDestinationInfo;
  *   documentHasSelection: boolean,
  *   shouldPrintSelectionOnly: boolean,
  *   printerName: string,
- *   forceEnableHeaderFooter: ?boolean,
+ *   headerFooter: ?boolean,
+ *   isHeaderFooterManaged: boolean,
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
  * }}

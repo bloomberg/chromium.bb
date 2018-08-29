@@ -12,8 +12,7 @@ namespace printing {
 // static
 void PolicySettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kPrintHeaderFooter,
-                                HeaderFooterEnforcement::kNotEnforced);
+  registry->RegisterBooleanPref(prefs::kPrintHeaderFooter, true);
 }
 
 }  // namespace printing

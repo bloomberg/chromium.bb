@@ -1133,9 +1133,8 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
 
-// A pref holding a policy that can force 'Headers and footers' checkbox to be
-// checked/unchecked, in Print Preview. It is a |HeaderFooterEnforcement| enum
-// value.
+// The default value for the 'Headers and footers' checkbox, in Print Preview.
+// Takes priority over kPrintPreviewStickySettings if set.
 const char kPrintHeaderFooter[] = "printing.print_header_footer";
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

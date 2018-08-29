@@ -147,11 +147,9 @@ class PrintPreviewHandler
   friend class PrintPreviewHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, InitialSettingsSimple);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           InitialSettingsDontEnforceHeaderFooter);
+                           InitialSettingsEnableHeaderFooter);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           InitialSettingsForceHeaderFooter);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           InitialSettingsForceNoHeaderFooter);
+                           InitialSettingsDisableHeaderFooter);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinters);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinterCapabilities);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, Print);

@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
@@ -326,13 +327,13 @@ class PrintPreviewHandlerTest : public testing::Test {
   // chrome/browser/resources/print_preview/native_layer.js. Checks that:
   //   - |default_printer_name| is the printer name returned
   //   - |initiator_title| is the initiator title returned
-  //   - |policy| is the header/footer policy returned
+  //   - |expected_header_footer| is the header/footer state returned, if any
   // Also validates that delimeters are correct for "en" locale (set in
   // Initialize()).  Assumes "test-callback-id-0" was used as the callback id.
   void ValidateInitialSettings(const content::TestWebUI::CallData& data,
                                const std::string& default_printer_name,
                                const std::string& initiator_title,
-                               printing::HeaderFooterEnforcement policy) {
+                               base::Optional<bool> expected_header_footer) {
     CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings->FindKeyOfType("isInKioskAutoPrintMode",
@@ -366,21 +367,11 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_TRUE(printer);
     EXPECT_EQ(default_printer_name, printer->GetString());
 
-    const base::Value* force = settings->FindKeyOfType(
-        "forceEnableHeaderFooter", base::Value::Type::BOOLEAN);
-    switch (policy) {
-      case printing::HeaderFooterEnforcement::kNotEnforced:
-        EXPECT_FALSE(force);
-        break;
-      case printing::HeaderFooterEnforcement::kForceEnable:
-        ASSERT_TRUE(force);
-        EXPECT_TRUE(force->GetBool());
-        break;
-      case printing::HeaderFooterEnforcement::kForceDisable:
-        ASSERT_TRUE(force);
-        EXPECT_FALSE(force->GetBool());
-        break;
-    }
+    const base::Value* header_footer =
+        settings->FindKeyOfType("headerFooter", base::Value::Type::BOOLEAN);
+    EXPECT_EQ(bool(expected_header_footer), bool(header_footer));
+    if (expected_header_footer)
+      EXPECT_EQ(*expected_header_footer, header_footer->GetBool());
   }
 
   IPC::TestSink& initiator_sink() {
@@ -434,44 +425,28 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(),
                           printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName,
-                          printing::HeaderFooterEnforcement::kNotEnforced);
+                          printing::kDummyInitiatorName, base::nullopt);
 
   // Check that the use-cloud-print event got sent
   AssertWebUIEventFired(*web_ui()->call_data().front(), "use-cloud-print");
 }
 
-TEST_F(PrintPreviewHandlerTest, InitialSettingsDontEnforceHeaderFooter) {
-  // Set a policy that should take priority over StickySettings.
-  prefs()->SetInteger(prefs::kPrintHeaderFooter,
-                      printing::HeaderFooterEnforcement::kNotEnforced);
+TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetBoolean(prefs::kPrintHeaderFooter, true);
   Initialize();
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName,
-                          printing::HeaderFooterEnforcement::kNotEnforced);
+  ValidateInitialSettings(
+      *web_ui()->call_data().back(), printing::kDummyPrinterName,
+      printing::kDummyInitiatorName, base::Optional<bool>(true));
 }
 
-TEST_F(PrintPreviewHandlerTest, InitialSettingsForceHeaderFooter) {
-  // Set a policy that should take priority over StickySettings.
-  prefs()->SetInteger(prefs::kPrintHeaderFooter,
-                      printing::HeaderFooterEnforcement::kForceEnable);
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableHeaderFooter) {
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetBoolean(prefs::kPrintHeaderFooter, false);
   Initialize();
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName,
-                          printing::HeaderFooterEnforcement::kForceEnable);
-}
-
-TEST_F(PrintPreviewHandlerTest, InitialSettingsForceNoHeaderFooter) {
-  // Set a policy that should take priority over StickySettings.
-  prefs()->SetInteger(prefs::kPrintHeaderFooter,
-                      printing::HeaderFooterEnforcement::kForceDisable);
-  Initialize();
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName,
-                          printing::HeaderFooterEnforcement::kForceDisable);
+  ValidateInitialSettings(
+      *web_ui()->call_data().back(), printing::kDummyPrinterName,
+      printing::kDummyInitiatorName, base::Optional<bool>(false));
 }
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {

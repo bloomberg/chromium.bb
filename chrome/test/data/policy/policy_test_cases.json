@@ -292,6 +292,14 @@
     ]
   },
 
+  "PrintHeaderFooter": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "PrintHeaderFooter": true },
+    "pref_mappings": [
+      { "pref": "printing.print_header_footer" }
+    ]
+  },
+
   "CloudPrintProxyEnabled": {
     "os": [],
     "test_policy": { "CloudPrintProxyEnabled": true },

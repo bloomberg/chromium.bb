@@ -31,6 +31,21 @@ cr.exportPath('print_preview_new');
 print_preview_new.SerializedSettings;
 
 /**
+ * @typedef {{
+ *  value: *,
+ *  managed: boolean
+ * }}
+ */
+print_preview_new.PolicyEntry;
+
+/**
+ * @typedef {{
+ *   headerFooter: print_preview_new.PolicyEntry
+ * }}
+ */
+print_preview_new.PolicySettings;
+
+/**
  * Constant values matching printing::DuplexMode enum.
  * @enum {number}
  */
@@ -309,6 +324,9 @@ Polymer({
   /** @private {?print_preview_new.SerializedSettings} */
   stickySettings_: null,
 
+  /** @private {?print_preview_new.PolicySettings} */
+  policySettings_: null,
+
   /** @private {?print_preview.Cdd} */
   lastDestinationCapabilities_: null,
 
@@ -578,18 +596,6 @@ Polymer({
   },
 
   /**
-   * @param {string} settingName
-   * @param {*} value
-   * @private
-   */
-  setPolicy_: function(settingName, value) {
-    if (value === undefined)
-      return;
-    this.setSetting(settingName, value);
-    this.set(`settings.${settingName}.setByPolicy`, true);
-  },
-
-  /**
    * Caches the sticky settings and sets up the recent destinations. Sticky
    * settings will be applied when destinaton capabilities have been retrieved.
    * @param {?string} savedSettingsStr The sticky settings from native layer
@@ -623,11 +629,18 @@ Polymer({
   /**
    * Sets settings in accordance to policies from native code, and prevents
    * those settings from being changed via other means.
-   * @param {?boolean} forceEnableHeaderFooter Whether to force the
-   *     header/footer to display, or undefined if there is no policy.
+   * @param {boolean|undefined} headerFooter Value of
+   *     printing.print_header_footer, if set in prefs (or undefined, if not).
+   * @param {boolean} isHeaderFooterManaged true if the header/footer UI state
+   *     is managed by a policy.
    */
-  setPolicySettings: function(forceEnableHeaderFooter) {
-    this.setPolicy_('headerFooter', forceEnableHeaderFooter);
+  setPolicySettings: function(headerFooter, isHeaderFooterManaged) {
+    this.policySettings_ = {
+      headerFooter: {
+        value: headerFooter,
+        managed: isHeaderFooterManaged,
+      },
+    };
   },
 
   applyStickySettings: function() {
@@ -638,6 +651,15 @@ Polymer({
         if (value != undefined)
           this.setSetting(settingName, value);
       });
+    }
+    if (this.policySettings_) {
+      for (const [settingName, policy] of Object.entries(
+               this.policySettings_)) {
+        if (policy.value !== undefined)
+          this.setSetting(settingName, policy.value);
+        if (policy.managed)
+          this.set(`settings.${settingName}.setByPolicy`, true);
+      }
     }
     this.initialized_ = true;
     this.stickySettings_ = null;
