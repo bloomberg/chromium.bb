@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -20,7 +21,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
-class PrimaryAccountAccessTokenFetcher;
+class AccessTokenFetcher;
 }
 
 namespace syncer {
@@ -30,12 +31,24 @@ class SyncPrefs;
 
 namespace browser_sync {
 
-// SyncAuthManager tracks the primary (i.e. blessed-for-sync) account and its
-// authentication state.
+// SyncAuthManager tracks the account to be used for Sync and its authentication
+// state. Note that this account may or may not be the primary account (as per
+// IdentityManager::GetPrimaryAccountInfo() etc).
 class SyncAuthManager : public identity::IdentityManager::Observer {
  public:
-  // Called when the existence of an authenticated account changes. Call
-  // GetAuthenticatedAccountInfo to get the new state.
+  struct SyncAccountInfo {
+    SyncAccountInfo();
+    SyncAccountInfo(const AccountInfo& account_info, bool is_primary);
+
+    AccountInfo account_info;
+    bool is_primary = false;
+  };
+
+  // Called when the existence of an authenticated account changes. It's
+  // guaranteed that this is only called for going from "no account" to "have
+  // account" or vice versa, i.e. SyncAuthManager will never directly switch
+  // from one account to a different one. Call GetActiveAccountInfo to get the
+  // new state.
   using AccountStateChangedCallback = base::RepeatingClosure;
   // Called when the credential state changes, i.e. an access token was
   // added/changed/removed. Call GetCredentials to get the new state.
@@ -52,12 +65,14 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Tells the tracker to start listening for changes to the account/sign-in
   // status. This gets called during SyncService initialization, except in the
-  // case of local Sync.
+  // case of local Sync. Before this is called, GetActiveAccountInfo will always
+  // return an empty AccountInfo. Note that this will *not* trigger any
+  // callbacks, even if there is an active account afterwards.
   void RegisterForAuthNotifications();
 
-  // Returns the AccountInfo for the primary (i.e. blessed-for-sync) account, or
-  // an empty AccountInfo if there isn't one.
-  AccountInfo GetAuthenticatedAccountInfo() const;
+  // Returns the account which should be used when communicating with the Sync
+  // server. Note that this account may not be blessed for Sync-the-feature.
+  SyncAccountInfo GetActiveAccountInfo() const;
 
   const GoogleServiceAuthError& GetLastAuthError() const {
     return last_auth_error_;
@@ -88,12 +103,24 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
                                        bool is_valid) override;
   void OnRefreshTokenRemovedForAccount(
       const AccountInfo& account_info) override;
+  void OnAccountsInCookieUpdated(
+      const std::vector<AccountInfo>& accounts) override;
 
   // Test-only methods for inspecting/modifying internal state.
   bool IsRetryingAccessTokenFetchForTest() const;
   void ResetRequestAccessTokenBackoffForTest();
 
  private:
+  // Determines which account should be used for Sync and returns the
+  // corresponding AccountInfo.
+  SyncAccountInfo DetermineAccountToUse() const;
+
+  // Updates |sync_account_| to the appropriate account (i.e.
+  // DetermineAccountToUse) if necessary, and notifies observers of any changes
+  // (sign-in/sign-out/"primary" bit change). Note that changing from one
+  // account to another is exposed to observers as a sign-out + sign-in.
+  bool UpdateSyncAccountIfNecessary();
+
   void ClearAccessTokenAndRequest();
 
   void RequestAccessToken();
@@ -107,7 +134,18 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   const AccountStateChangedCallback account_state_changed_callback_;
   const CredentialsChangedCallback credentials_changed_callback_;
 
-  bool registered_for_auth_notifications_;
+  bool registered_for_auth_notifications_ = false;
+
+  // The account which we are using to sync. If this is non-empty, that does
+  // *not* necessarily imply that Sync is actually running, e.g. because of
+  // delayed startup.
+  SyncAccountInfo sync_account_;
+
+  // Whether we're currently switching the active account, or its |is_primary|
+  // bit. During this time, |sync_account_| won't necessarily match
+  // |DetermineAccountToUse()|. This is set while we're updating the observers
+  // of an account change during UpdateSyncAccountIfNecessary.
+  bool currently_switching_account_ = false;
 
   // This is a cache of the last authentication response we received either
   // from the sync server or from Chrome's identity/token management system.
@@ -125,8 +163,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Pending request for an access token. Non-null iff there is a request
   // ongoing.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      ongoing_access_token_fetch_;
+  std::unique_ptr<identity::AccessTokenFetcher> ongoing_access_token_fetch_;
 
   // If RequestAccessToken fails with transient error then retry requesting
   // access token with exponential backoff.

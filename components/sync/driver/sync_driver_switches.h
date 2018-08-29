@@ -22,6 +22,7 @@ extern const char kSyncShortNudgeDelayForTest[];
 
 extern const base::Feature kSyncClearDataOnPassphraseEncryption;
 extern const base::Feature kSyncStandaloneTransport;
+extern const base::Feature kSyncSupportSecondaryAccount;
 extern const base::Feature kSyncUserEvents;
 extern const base::Feature kSyncUserFieldTrialEvents;
 extern const base::Feature kSyncUserConsentEvents;

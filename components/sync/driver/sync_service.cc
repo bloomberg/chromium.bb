@@ -14,7 +14,11 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
 }
 
 bool SyncService::IsSyncFeatureEnabled() const {
-  return GetDisableReasons() == DISABLE_REASON_NONE && IsFirstSetupComplete();
+  // Note: IsFirstSetupComplete() shouldn't usually be true if we don't have a
+  // primary account, but it could happen if the account changes from primary to
+  // secondary.
+  return GetDisableReasons() == DISABLE_REASON_NONE && IsFirstSetupComplete() &&
+         IsAuthenticatedAccountPrimary();
 }
 
 bool SyncService::CanSyncStart() const {

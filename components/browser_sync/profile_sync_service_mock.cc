@@ -24,6 +24,10 @@ ProfileSyncServiceMock::GetOpenTabsUIDelegate() {
                        : ProfileSyncService::GetOpenTabsUIDelegate();
 }
 
+bool ProfileSyncServiceMock::IsAuthenticatedAccountPrimary() const {
+  return true;
+}
+
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncServiceMock::GetSetupInProgressHandleConcrete() {
   return browser_sync::ProfileSyncService::GetSetupInProgressHandle();
