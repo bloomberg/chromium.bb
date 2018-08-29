@@ -139,8 +139,6 @@ OomInterventionConfig::OomInterventionConfig()
     is_intervention_enabled_ = false;
     status = OomInterventionBrowserMonitorStatus::kDisabledWithInvalidParam;
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.OomIntervention.BrowserMonitorStatus", status);
 }
 
 // static
