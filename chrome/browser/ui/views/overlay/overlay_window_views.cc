@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
@@ -612,6 +613,17 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     TogglePlayPause();
     event->SetHandled();
   }
+
+// On Windows, the Alt+F4 keyboard combination closes the window. Only handle
+// closure on key press so Close() is not called a second time when the key
+// is released.
+#if defined(OS_WIN)
+  if (event->type() == ui::ET_KEY_PRESSED && event->IsAltDown() &&
+      event->key_code() == ui::VKEY_F4) {
+    controller_->Close(true /* should_pause_video */);
+    event->SetHandled();
+  }
+#endif  // OS_WIN
 
   views::Widget::OnKeyEvent(event);
 }
