@@ -7,12 +7,17 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace webrtc {
+class DesktopVector;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -22,15 +27,33 @@ class ClientSessionControl;
 // keyboard shortcuts when they are detected.
 class LocalInputMonitor {
  public:
+  using MouseMoveCallback =
+      base::RepeatingCallback<void(const webrtc::DesktopVector&)>;
+
   virtual ~LocalInputMonitor() = default;
 
   // Creates a platform-specific instance of LocalInputMonitor.
-  // |client_session_control| is called on the |caller_task_runner| thread.
+  // |caller_task_runner| is used for all callbacks and notifications.
   static std::unique_ptr<LocalInputMonitor> Create(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+
+  // Start monitoring and notify using |client_session_control|.  In this mode
+  // the LocalInputMonitor will listen for session disconnect hotkeys and mouse
+  // events for input filtering.
+  virtual void StartMonitoringForClientSession(
+      base::WeakPtr<ClientSessionControl> client_session_control) = 0;
+
+  // Start monitoring and notify using the callbacks specified.
+  // Monitors are only started if the respective callback is provided.  This
+  // means that callbacks are optional, but at least one must be valid.
+  // |on_mouse_input| is called for each mouse movement detected.
+  // |on_keyboard_input| is called for each keypress detected.
+  // |on_error| is called if any of the child input monitors fail.
+  virtual void StartMonitoring(MouseMoveCallback on_mouse_input,
+                               base::RepeatingClosure on_keyboard_input,
+                               base::RepeatingClosure on_error) = 0;
 
  protected:
   LocalInputMonitor() = default;

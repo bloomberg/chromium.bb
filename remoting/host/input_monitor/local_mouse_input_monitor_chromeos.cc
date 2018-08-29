@@ -27,14 +27,14 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
   LocalMouseInputMonitorChromeos(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      MouseMoveCallback on_mouse_move);
+      LocalInputMonitor::MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorChromeos() override;
 
  private:
   class Core : ui::PlatformEventObserver {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-         MouseMoveCallback on_mouse_move);
+         LocalInputMonitor::MouseMoveCallback on_mouse_move);
     ~Core() override;
 
     void Start();
@@ -50,7 +50,7 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
 
     // Used to send mouse event notifications.
     // Must be called on the |caller_task_runner_|.
-    MouseMoveCallback on_mouse_move_;
+    LocalInputMonitor::MouseMoveCallback on_mouse_move_;
 
     // Used to rotate the local mouse positions appropriately based on the
     // current display rotation settings.
@@ -69,7 +69,7 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
 LocalMouseInputMonitorChromeos::LocalMouseInputMonitorChromeos(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : input_task_runner_(input_task_runner),
       core_(new Core(caller_task_runner, std::move(on_mouse_move))) {
   input_task_runner_->PostTask(
@@ -82,7 +82,7 @@ LocalMouseInputMonitorChromeos::~LocalMouseInputMonitorChromeos() {
 
 LocalMouseInputMonitorChromeos::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    MouseMoveCallback on_mouse_move)
+    LocalInputMonitor::MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
       on_mouse_move_(std::move(on_mouse_move)) {}
 
@@ -130,7 +130,7 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    MouseMoveCallback on_mouse_move,
+    LocalInputMonitor::MouseMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorChromeos>(
       caller_task_runner, input_task_runner, std::move(on_mouse_move));
