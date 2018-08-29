@@ -38,6 +38,7 @@ enum ErrorType {
   ERROR_DBUS_PARSE_FAILED = 50;
   ERROR_COPY_PENDING = 51;
   ERROR_COPY_FAILED = 52;
+  ERROR_SMB1_UNSUPPORTED = 53;
 }
 
 message DirectoryEntryProto {
