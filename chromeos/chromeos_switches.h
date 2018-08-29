@@ -152,7 +152,6 @@ CHROMEOS_EXPORT extern const char kOobeTimerInterval[];
 CHROMEOS_EXPORT extern const char kProfileRequiresPolicy[];
 CHROMEOS_EXPORT extern const char kRlzPingDelay[];
 CHROMEOS_EXPORT extern const char kShelfHoverPreviews[];
-CHROMEOS_EXPORT extern const char kShelfNewUi[];
 CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kFilesAppDisableMyFilesNavigation[];
 CHROMEOS_EXPORT extern const char kShowLoginDevOverlay[];
@@ -165,6 +164,9 @@ CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 
 // Controls whether to enable Chrome OS Account Manager.
 CHROMEOS_EXPORT extern const base::Feature kAccountManager;
+
+// Controls whether to enable the new shelf UI.
+CHROMEOS_EXPORT extern const base::Feature kEnableShelfNewUi;
 
 // Controls whether to enable Google Assistant feature.
 CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;

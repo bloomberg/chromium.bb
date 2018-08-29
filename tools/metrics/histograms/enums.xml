@@ -28098,6 +28098,7 @@ from previous Chrome versions.
   <int value="-1874141108" label="NewOmniboxAnswerTypes:enabled"/>
   <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1872867546" label="EnumerateAudioDevices:disabled"/>
+  <int value="-1872205507" label="ShelfNewUi:enabled"/>
   <int value="-1871185948" label="VrLaunchIntents:disabled"/>
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1869845022" label="force-show-update-menu-item"/>
@@ -29997,6 +29998,7 @@ from previous Chrome versions.
   <int value="1915178511" label="disable-blink-features"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
+  <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
