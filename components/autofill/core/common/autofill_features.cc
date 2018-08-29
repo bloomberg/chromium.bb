@@ -76,6 +76,10 @@ const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{
     "AutofillDontOfferServerCardsOnAuthError",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, no local copy of server card will be saved when upload
+// succeeds.
+const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
+    "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.

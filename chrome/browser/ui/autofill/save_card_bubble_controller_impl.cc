@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -207,14 +208,28 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
   if (current_bubble_type_ == BubbleType::UPLOAD_SAVE) {
+    bool offer_to_save_on_device_message =
+        OfferStoreUnmaskedCards() &&
+        !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
     if (should_request_name_from_user_) {
       return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
+          offer_to_save_on_device_message
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME_AND_DEVICE
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
     }
-    return l10n_util::GetStringUTF16(
-        features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
-            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3
-            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
+
+    if (features::
+            IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
+      return l10n_util::GetStringUTF16(
+          offer_to_save_on_device_message
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
+    } else {
+      return l10n_util::GetStringUTF16(
+          offer_to_save_on_device_message
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2_WITH_DEVICE
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
+    }
   }
   return base::string16();
 }

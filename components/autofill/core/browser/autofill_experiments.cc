@@ -51,6 +51,70 @@ const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
 const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
 #endif  // !defined(OS_ANDROID)
 
+bool IsInAutofillSuggestionsDisabledExperiment() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillEnabled");
+  return group_name == "Disabled";
+}
+
+bool IsAutofillCreditCardAssistEnabled() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(features::kAutofillCreditCardAssist);
+#endif
+}
+
+features::LocalCardMigrationExperimentalFlag
+GetLocalCardMigrationExperimentalFlag() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardLocalCardMigration))
+    return features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      features::kAutofillCreditCardLocalCardMigration,
+      features::kAutofillCreditCardLocalCardMigrationParameterName);
+
+  if (param ==
+      features::
+          kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
+    return features::LocalCardMigrationExperimentalFlag::
+        kMigrationWithoutSettingsPage;
+  }
+  return features::LocalCardMigrationExperimentalFlag::
+      kMigrationIncludeSettingsPage;
+}
+
+bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillNoLocalSaveOnUploadSuccess);
+}
+
+bool OfferStoreUnmaskedCards() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The checkbox can be forced on with a flag, but by default we don't store
+  // on Linux due to lack of system keychain integration. See crbug.com/162735
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOfferStoreUnmaskedWalletCards);
+#else
+  // Query the field trial before checking command line flags to ensure UMA
+  // reports the correct group.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("OfferStoreUnmaskedWalletCards");
+
+  // The checkbox can be forced on or off with flags.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOfferStoreUnmaskedWalletCards))
+    return true;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOfferStoreUnmaskedWalletCards))
+    return false;
+
+  // Otherwise use the field trial to show the checkbox or not.
+  return group_name != "Disabled";
+#endif
+}
+
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
@@ -95,37 +159,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return base::FeatureList::IsEnabled(features::kAutofillUpstream);
-}
-
-bool IsInAutofillSuggestionsDisabledExperiment() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillEnabled");
-  return group_name == "Disabled";
-}
-
-bool OfferStoreUnmaskedCards() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The checkbox can be forced on with a flag, but by default we don't store
-  // on Linux due to lack of system keychain integration. See crbug.com/162735
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOfferStoreUnmaskedWalletCards);
-#else
-  // Query the field trial before checking command line flags to ensure UMA
-  // reports the correct group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("OfferStoreUnmaskedWalletCards");
-
-  // The checkbox can be forced on or off with flags.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOfferStoreUnmaskedWalletCards))
-    return true;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOfferStoreUnmaskedWalletCards))
-    return false;
-
-  // Otherwise use the field trial to show the checkbox or not.
-  return group_name != "Disabled";
-#endif
 }
 
 #if !defined(OS_ANDROID)

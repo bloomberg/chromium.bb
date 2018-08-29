@@ -90,6 +90,9 @@ extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 
+extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
+extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
+
 extern const char kAutofillPrefilledFieldsName[];
 extern const char kAutofillPrefilledFieldsDescription[];
 
