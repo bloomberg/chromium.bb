@@ -94,10 +94,8 @@ NGLineBreaker::~NGLineBreaker() = default;
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
                                                   unsigned end_offset) {
   DCHECK_LE(end_offset, item.EndOffset());
-  item_results_->push_back(
-      NGInlineItemResult(&item, item_index_, offset_, end_offset,
-                         ShouldCreateLineBox(*item_results_)));
-  return &item_results_->back();
+  return &item_results_->emplace_back(&item, item_index_, offset_, end_offset,
+                                      ShouldCreateLineBox(*item_results_));
 }
 
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item) {
