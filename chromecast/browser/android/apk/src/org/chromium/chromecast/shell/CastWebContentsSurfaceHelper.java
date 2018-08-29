@@ -41,20 +41,14 @@ class CastWebContentsSurfaceHelper {
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
+    // Activated between constructor and onDestroy().
     private final Controller<Unit> mCreatedState = new Controller<>();
-    // Activated when we have an instance URI, from which the instance ID is derived.
-    // Is (re)activated when new StartParams are received, and deactivated in onDestroy().
-    private final Controller<Uri> mHasUriState = new Controller<>();
     // Activated when we have WebContents to display.
-    private final Controller<WebContents> mWebContentsState = new Controller<>();
-
-    private final Consumer<Uri> mFinishCallback;
-    private final Handler mHandler;
+    private final Controller<StartParams> mStartParamsState = new Controller<>();
 
     private String mInstanceId;
     private MediaSessionGetter mMediaSessionGetter;
 
-    private boolean mIsRemoteControlMode = false;
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
     private boolean mTouchInputEnabled = false;
 
@@ -115,24 +109,27 @@ class CastWebContentsSurfaceHelper {
      */
     CastWebContentsSurfaceHelper(Activity hostActivity, Observer<WebContents> webContentsView,
             Consumer<Uri> finishCallback) {
-        mFinishCallback = finishCallback;
-        mHandler = new Handler();
+        Handler handler = new Handler();
 
         mMediaSessionGetter =
                 (WebContents webContents) -> MediaSessionImpl.fromWebContents(webContents);
 
+        Observable<Uri> uriState = mStartParamsState.map(params -> params.uri);
+        Observable<WebContents> webContentsState =
+                mStartParamsState.map(params -> params.webContents);
+
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
-        mHasUriState.subscribe((Uri uri) -> {
+        uriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_SCREEN_OFF);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
-                mWebContentsState.reset();
-                maybeFinishLater(uri);
+                mStartParamsState.reset();
+                maybeFinishLater(handler, () -> finishCallback.accept(uri));
             });
         });
 
         // Receive broadcasts requesting to tear down this app while we have a valid URI.
-        mHasUriState.subscribe((Uri uri) -> {
+        uriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -142,14 +139,14 @@ class CastWebContentsSurfaceHelper {
                     Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
                     return;
                 }
-                mWebContentsState.reset();
-                maybeFinishLater(uri);
+                mStartParamsState.reset();
+                maybeFinishLater(handler, () -> finishCallback.accept(uri));
             });
         });
 
         // Receive broadcasts indicating that touch input should be enabled.
         // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as well.
-        mHasUriState.subscribe((Uri uri) -> {
+        uriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -164,51 +161,51 @@ class CastWebContentsSurfaceHelper {
         });
 
         // webContentsView is responsible for displaying each new WebContents.
-        mWebContentsState.subscribe(webContentsView);
+        webContentsState.subscribe(webContentsView);
+
+        // Take audio focus when receiving new WebContents if not the remote control app.
+        mStartParamsState.filter(params -> !params.isRemoteControlMode)
+                .map(params -> mMediaSessionGetter.get(params.webContents))
+                .subscribe(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
 
         // Miscellaneous actions responding to WebContents lifecycle.
-        mWebContentsState.subscribe((WebContents webContents) -> {
+        webContentsState.subscribe((WebContents webContents) -> {
             // Whenever our app is visible, volume controls should modify the music stream.
             // For more information read:
             // http://developer.android.com/training/managing-audio/volume-playback.html
             hostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-            // Take audio focus when receiving new WebContents if not the remote control app.
-            if (!mIsRemoteControlMode) {
-                mMediaSessionGetter.get(webContents).requestSystemAudioFocus();
-            }
             // Notify CastWebContentsComponent when closed.
             return () -> CastWebContentsComponent.onComponentClosed(mInstanceId);
         });
 
         // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
-        mHasUriState.andThen(Observable.not(mCreatedState))
+        uriState.andThen(Observable.not(mCreatedState))
                 .map(Both::getFirst)
                 .subscribe(Observers.onEnter((Uri uri) -> {
                     Log.d(TAG, "onDestroy: " + uri);
-                    mWebContentsState.reset();
-                    mHasUriState.reset();
+                    mStartParamsState.reset();
                 }));
+
+        // Cache relevant fields from StartParams in instance variables.
+        mStartParamsState.subscribe(Observers.onEnter(params -> {
+            mTouchInputEnabled = params.touchInputEnabled;
+            mInstanceId = params.uri.getPath();
+        }));
 
         mCreatedState.set(Unit.unit());
     }
 
     void onNewStartParams(final StartParams params) {
-        mIsRemoteControlMode = params.isRemoteControlMode;
-        mTouchInputEnabled = params.touchInputEnabled;
-        Log.d(TAG, "content_uri=" + params.uri);
-        mHasUriState.set(params.uri);
-        mWebContentsState.set(params.webContents);
-        // Mutate instance ID cache only after observers have reacted to new web contents.
-        mInstanceId = params.uri.getPath();
+        Log.d(TAG, "onNewStartParams: content_uri=" + params.uri);
+        mStartParamsState.set(params);
     }
 
     // Closes this activity if a new WebContents is not being displayed.
-    private void maybeFinishLater(Uri uri) {
-        Log.d(TAG, "maybeFinishLater: " + uri);
+    private void maybeFinishLater(Handler handler, Runnable callback) {
         final String currentInstanceId = mInstanceId;
-        mHandler.postDelayed(() -> {
+        handler.postDelayed(() -> {
             if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
-                mFinishCallback.accept(uri);
+                callback.run();
             }
         }, TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS);
     }
