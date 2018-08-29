@@ -204,12 +204,21 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
   void SetMediaDownloadInProductHelpEnabled(bool) override;
   void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) override;
+
+  // TODO(rajendrant): Remove these lazyload distance threshold settings for
+  // frames and images, once the values are finalized from the experiment.
   void SetLazyFrameLoadingDistanceThresholdPxUnknown(int) override;
   void SetLazyFrameLoadingDistanceThresholdPxOffline(int) override;
   void SetLazyFrameLoadingDistanceThresholdPxSlow2G(int) override;
   void SetLazyFrameLoadingDistanceThresholdPx2G(int) override;
   void SetLazyFrameLoadingDistanceThresholdPx3G(int) override;
   void SetLazyFrameLoadingDistanceThresholdPx4G(int) override;
+  void SetLazyImageLoadingDistanceThresholdPxUnknown(int) override;
+  void SetLazyImageLoadingDistanceThresholdPxOffline(int) override;
+  void SetLazyImageLoadingDistanceThresholdPxSlow2G(int) override;
+  void SetLazyImageLoadingDistanceThresholdPx2G(int) override;
+  void SetLazyImageLoadingDistanceThresholdPx3G(int) override;
+  void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
 
   bool ShowFPSCounter() const { return show_fps_counter_; }
   bool ShowPaintRects() const { return show_paint_rects_; }

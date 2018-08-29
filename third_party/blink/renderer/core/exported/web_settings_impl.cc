@@ -746,6 +746,36 @@ void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPx4G(
   settings_->SetLazyFrameLoadingDistanceThresholdPx4G(distance_px);
 }
 
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPxUnknown(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPxUnknown(distance_px);
+}
+
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPxOffline(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPxOffline(distance_px);
+}
+
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPxSlow2G(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPxSlow2G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx2G(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPx2G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx3G(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPx3G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx4G(
+    int distance_px) {
+  settings_->SetLazyImageLoadingDistanceThresholdPx4G(distance_px);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,

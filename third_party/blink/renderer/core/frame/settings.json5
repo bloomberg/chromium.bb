@@ -976,5 +976,39 @@
       initial: 800,
       type: "int",
     },
+
+    //
+    // Lazy image loading distance-from-viewport thresholds for different effective connection types.
+    //
+    {
+      name: "lazyImageLoadingDistanceThresholdPxUnknown",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyImageLoadingDistanceThresholdPxOffline",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyImageLoadingDistanceThresholdPxSlow2G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyImageLoadingDistanceThresholdPx2G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyImageLoadingDistanceThresholdPx3G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyImageLoadingDistanceThresholdPx4G",
+      initial: 800,
+      type: "int",
+    },
   ],
 }

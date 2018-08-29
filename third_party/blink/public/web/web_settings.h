@@ -303,6 +303,12 @@ class WebSettings {
   virtual void SetLazyFrameLoadingDistanceThresholdPx2G(int) = 0;
   virtual void SetLazyFrameLoadingDistanceThresholdPx3G(int) = 0;
   virtual void SetLazyFrameLoadingDistanceThresholdPx4G(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPxUnknown(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPxOffline(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPxSlow2G(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPx2G(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPx3G(int) = 0;
+  virtual void SetLazyImageLoadingDistanceThresholdPx4G(int) = 0;
 
  protected:
   ~WebSettings() = default;

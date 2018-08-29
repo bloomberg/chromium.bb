@@ -28,10 +28,6 @@ class LazyLoadImageObserver final
   void Trace(Visitor*);
 
  private:
-  // TODO(rajendrant): Make the root margins configurable via field trial params
-  // instead of just hardcoding the value here.
-  static constexpr int kLazyLoadRootMarginPx = 800;
-
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);
 
   // The intersection observer responsible for loading the image once it's near

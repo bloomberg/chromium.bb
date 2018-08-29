@@ -3159,6 +3159,30 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
+  if (base::FeatureList::IsEnabled(features::kLazyImageLoading)) {
+    const char* param_name =
+        web_prefs->data_saver_enabled
+            ? "lazy_image_loading_distance_thresholds_px_by_ect"
+            : "lazy_image_loading_distance_thresholds_px_by_ect_with_data_"
+              "saver_enabled";
+
+    base::StringPairs pairs;
+    base::SplitStringIntoKeyValuePairs(
+        base::GetFieldTrialParamValueByFeature(features::kLazyImageLoading,
+                                               param_name),
+        ':', ',', &pairs);
+
+    for (const auto& pair : pairs) {
+      base::Optional<net::EffectiveConnectionType> effective_connection_type =
+          net::GetEffectiveConnectionTypeForName(pair.first);
+      int value = 0;
+      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
+        web_prefs->lazy_image_loading_distance_thresholds_px
+            [effective_connection_type.value()] = value;
+      }
+    }
+  }
+
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
