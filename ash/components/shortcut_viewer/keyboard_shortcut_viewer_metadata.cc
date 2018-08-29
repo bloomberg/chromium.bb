@@ -1229,13 +1229,6 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
 
       {// |categories|
-       {ShortcutCategory::kAccessibility},
-       IDS_KSV_DESCRIPTION_TOGGLE_DICTATION,
-       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
-       // |accelerator_ids|
-       {{ui::VKEY_D, ui::EF_COMMAND_DOWN}}},
-
-      {// |categories|
        {ShortcutCategory::kSystemAndDisplay},
        IDS_KSV_DESCRIPTION_EXIT,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
