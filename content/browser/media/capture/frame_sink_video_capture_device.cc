@@ -21,7 +21,6 @@
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "mojo/public/cpp/system/buffer.h"
 
 namespace content {
 
@@ -179,8 +178,7 @@ void FrameSinkVideoCaptureDevice::OnUtilizationReport(int frame_feedback_id,
 }
 
 void FrameSinkVideoCaptureDevice::OnFrameCaptured(
-    mojo::ScopedSharedBufferHandle buffer,
-    uint32_t buffer_size,
+    base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
@@ -188,7 +186,7 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callbacks);
 
-  if (!receiver_ || !buffer.is_valid()) {
+  if (!receiver_ || !data.IsValid()) {
     callbacks->Done();
     return;
   }
@@ -223,10 +221,9 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   // Pass the video frame to the VideoFrameReceiver. This is done by first
   // passing the shared memory buffer handle and then notifying it that a new
   // frame is ready to be read from the buffer.
-  media::mojom::VideoBufferHandlePtr buffer_handle =
-      media::mojom::VideoBufferHandle::New();
-  buffer_handle->set_shared_buffer_handle(std::move(buffer));
-  receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+  receiver_->OnNewBuffer(
+      buffer_id,
+      media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(std::move(data)));
   receiver_->OnFrameReadyInBuffer(
       buffer_id, buffer_id,
       std::make_unique<ScopedFrameDoneHelper>(

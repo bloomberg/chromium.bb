@@ -7,6 +7,7 @@ module viz.mojom;
 import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -31,8 +32,9 @@ interface FrameSinkVideoConsumerFrameCallbacks {
 // capture of the source content. An instance that implements this interface is
 // provided to FrameSinkVideoCapturer.Start().
 interface FrameSinkVideoConsumer {
-  // Called to deliver each frame to the consumer. |buffer| and |buffer_size|
-  // are provided to access the video data. |info| is used to interpret the
+  // Called to deliver each frame to the consumer. |data| contains the video
+  // frame's image data, and is valid for reading until the consumer notifies
+  // the service that it is Done(). |info| is used to interpret the
   // format/layout of the data, and also contains the frame timestamps and other
   // metadata (the following media::VideoFrameMetadata keys are set:
   // CAPTURE_BEGIN_TIME, CAPTURE_END_TIME, COLOR_SPACE, FRAME_DURATION,
@@ -40,8 +42,7 @@ interface FrameSinkVideoConsumer {
   // frame that has changed since the last frame. |content_rect| is the region
   // of the frame that contains the captured content, with the rest of the frame
   // having been letterboxed to adhere to resolution constraints.
-  OnFrameCaptured(handle<shared_buffer> buffer,
-                  uint32 buffer_size,
+  OnFrameCaptured(mojo_base.mojom.ReadOnlySharedMemoryRegion data,
                   media.mojom.VideoFrameInfo info,
                   gfx.mojom.Rect update_rect,
                   gfx.mojom.Rect content_rect,

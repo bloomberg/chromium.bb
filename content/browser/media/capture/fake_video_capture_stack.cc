@@ -48,29 +48,28 @@ class FakeVideoCaptureStack::Receiver : public media::VideoFrameReceiver {
       media::mojom::VideoFrameInfoPtr frame_info) final {
     const auto it = buffers_.find(buffer_id);
     CHECK(it != buffers_.end());
-    CHECK(it->second->is_shared_buffer_handle());
-    mojo::ScopedSharedBufferHandle& buffer =
-        it->second->get_shared_buffer_handle();
 
-    const size_t mapped_size =
-        media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
-                                  frame_info->pixel_format)
-            .ImageAllocationSize();
-    mojo::ScopedSharedBufferMapping mapping = buffer->Map(mapped_size);
-    CHECK(mapping.get());
+    CHECK(it->second->is_read_only_shmem_region());
+    base::ReadOnlySharedMemoryMapping mapping =
+        it->second->get_read_only_shmem_region().Map();
+    CHECK(mapping.IsValid());
+    CHECK_LE(media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
+                                       frame_info->pixel_format)
+                 .ImageAllocationSize(),
+             mapping.size());
 
     auto frame = media::VideoFrame::WrapExternalData(
         frame_info->pixel_format, frame_info->coded_size,
         frame_info->visible_rect, frame_info->visible_rect.size(),
-        reinterpret_cast<uint8_t*>(mapping.get()), mapped_size,
-        frame_info->timestamp);
+        const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
+        mapping.size(), frame_info->timestamp);
     CHECK(frame);
     frame->metadata()->MergeInternalValuesFrom(frame_info->metadata);
     // This destruction observer will unmap the shared memory when the
     // VideoFrame goes out-of-scope.
-    frame->AddDestructionObserver(
-        base::BindOnce(base::DoNothing::Once<mojo::ScopedSharedBufferMapping>(),
-                       std::move(mapping)));
+    frame->AddDestructionObserver(base::BindOnce(
+        base::DoNothing::Once<base::ReadOnlySharedMemoryMapping>(),
+        std::move(mapping)));
     // This destruction observer will notify the video capture device once all
     // downstream code is done using the VideoFrame.
     frame->AddDestructionObserver(base::BindOnce(

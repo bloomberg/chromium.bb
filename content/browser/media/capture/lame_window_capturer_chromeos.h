@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "content/browser/media/capture/lame_capture_overlay_chromeos.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -114,8 +114,7 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
   base::RepeatingTimer timer_;
 
   // A pool of shared memory buffers for re-use.
-  using BufferAndSize = std::pair<mojo::ScopedSharedBufferHandle, size_t>;
-  std::vector<BufferAndSize> buffer_pool_;
+  std::vector<base::MappedReadOnlyRegion> buffer_pool_;
 
   // The current number of frames in-flight. If incrementing this would be
   // exceed kMaxInFlightFrames, frame capture is not attempted.

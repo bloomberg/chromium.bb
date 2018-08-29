@@ -145,16 +145,15 @@ ClientFrameSinkVideoCapturer::ResolutionConstraints::ResolutionConstraints(
       use_fixed_aspect_ratio(use_fixed_aspect_ratio) {}
 
 void ClientFrameSinkVideoCapturer::OnFrameCaptured(
-    mojo::ScopedSharedBufferHandle buffer,
-    uint32_t buffer_size,
+    base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
-                             update_rect, content_rect, std::move(callbacks));
+  consumer_->OnFrameCaptured(std::move(data), std::move(info), update_rect,
+                             content_rect, std::move(callbacks));
 }
 
 void ClientFrameSinkVideoCapturer::OnStopped() {
