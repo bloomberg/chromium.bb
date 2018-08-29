@@ -15,17 +15,22 @@ import org.chromium.base.annotations.DoNotInline;
 
 /**
  * Utility class to use new APIs that were added in O (API level 26). These need to exist in a
- * separate class so that Android framework can successfully verify WebView classes without
- * encountering the new APIs.
+ * separate class so that Android framework can successfully verify glue layer classes without
+ * encountering the new APIs. Note that GlueApiHelper is only for APIs that cannot go to ApiHelper
+ * in base/, for reasons such as using system APIs or instantiating an adapter class that is
+ * specific to glue layer.
  */
 @DoNotInline
 @TargetApi(Build.VERSION_CODES.O)
-public final class ApiHelperForO {
-    private ApiHelperForO() {}
+public final class GlueApiHelperForO {
+    private GlueApiHelperForO() {}
 
     /**
      * See {@link WebViewClient#onRenderProcessGone(WebView, RenderProcessGoneDetail)}, which was
      * added in O.
+     *
+     * Note that we are calling into AwRenderProcessGoneDetail so leaving it here. Potentially,
+     * we might hide RenderProcessGoneDetail's constructor.
      */
     public static boolean onRenderProcessGone(
             WebViewClient webViewClient, WebView webView, AwRenderProcessGoneDetail detail) {

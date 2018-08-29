@@ -374,7 +374,7 @@ public class WebViewChromiumAwInit {
     public TokenBindingService getTokenBindingService() {
         synchronized (mLock) {
             if (mTokenBindingManager == null) {
-                mTokenBindingManager = ApiHelperForN.createTokenBindingManagerAdapter(mFactory);
+                mTokenBindingManager = GlueApiHelperForN.createTokenBindingManagerAdapter(mFactory);
             }
         }
         return (TokenBindingService) mTokenBindingManager;

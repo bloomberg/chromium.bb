@@ -56,6 +56,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.support_lib_boundary.util.Features;
 import org.chromium.support_lib_callback_glue.SupportLibWebViewContentsClientAdapter;
 
@@ -298,7 +300,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 result = mSupportLibClient.shouldOverrideUrlLoading(
                         mWebView, new WebResourceRequestAdapter(request));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                result = ApiHelperForN.shouldOverrideUrlLoading(mWebViewClient, mWebView, request);
+                result = ApiHelperForN.shouldOverrideUrlLoading(
+                        mWebViewClient, mWebView, new WebResourceRequestAdapter(request));
             } else {
                 result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
             }
@@ -583,7 +586,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 mSupportLibClient.onReceivedError(
                         mWebView, new WebResourceRequestAdapter(request), error);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ApiHelperForM.onReceivedError(mWebViewClient, mWebView, request, error);
+                GlueApiHelperForM.onReceivedError(mWebViewClient, mWebView, request, error);
             }
             // Otherwise, this is handled by {@link #onReceivedError}.
         } finally {
@@ -600,8 +603,9 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 mSupportLibClient.onSafeBrowsingHit(
                         mWebView, new WebResourceRequestAdapter(request), threatType, callback);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                ApiHelperForOMR1.onSafeBrowsingHit(
+                GlueApiHelperForOMR1.onSafeBrowsingHit(
                         mWebViewClient, mWebView, request, threatType, callback);
+
             } else {
                 callback.onResult(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                         /* reporting */ true));
@@ -625,7 +629,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                                 response.getStatusCode(), response.getReasonPhrase(),
                                 response.getResponseHeaders(), response.getData()));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ApiHelperForM.onReceivedHttpError(mWebViewClient, mWebView, request, response);
+                GlueApiHelperForM.onReceivedHttpError(mWebViewClient, mWebView, request, response);
             }
             // Otherwise, the API does not exist, so do nothing.
         } finally {
@@ -1209,7 +1213,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onRenderProcessGone");
-            return ApiHelperForO.onRenderProcessGone(mWebViewClient, mWebView, detail);
+            return GlueApiHelperForO.onRenderProcessGone(mWebViewClient, mWebView, detail);
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onRenderProcessGone");
         }

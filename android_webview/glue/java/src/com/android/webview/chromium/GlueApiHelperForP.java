@@ -11,13 +11,15 @@ import org.chromium.base.annotations.DoNotInline;
 
 /**
  * Utility class to use new APIs that were added in P (API level 28). These need to exist in a
- * separate class so that Android framework can successfully verify WebView classes without
- * encountering the new APIs.
+ * separate class so that Android framework can successfully verify glue layer classes without
+ * encountering the new APIs. Note that GlueApiHelper is only for APIs that cannot go to ApiHelper
+ * in base/, for reasons such as using system APIs or instantiating an adapter class that is
+ * specific to glue layer.
  */
 @DoNotInline
 @TargetApi(Build.VERSION_CODES.P)
-public final class ApiHelperForP {
-    private ApiHelperForP() {}
+public final class GlueApiHelperForP {
+    private GlueApiHelperForP() {}
 
     /**
      * See {@link
