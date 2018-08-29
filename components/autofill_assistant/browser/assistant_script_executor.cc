@@ -95,7 +95,7 @@ void AssistantScriptExecutor::OnGetAssistantActions(
   processed_actions_.clear();
   actions_.clear();
 
-  bool parse_result = AssistantProtocolUtils::ParseAssistantActions(
+  bool parse_result = AssistantProtocolUtils::ParseActions(
       response, &last_server_payload_, &actions_);
   if (!parse_result) {
     std::move(callback_).Run(false);
@@ -117,7 +117,7 @@ void AssistantScriptExecutor::ProcessNextAction() {
     return;
   }
 
-  std::unique_ptr<AssistantAction> action = std::move(actions_.front());
+  std::unique_ptr<Action> action = std::move(actions_.front());
   actions_.pop_front();
   int delay_ms = action->proto().action_delay_ms();
   if (delay_ms > 0) {
@@ -131,10 +131,8 @@ void AssistantScriptExecutor::ProcessNextAction() {
   }
 }
 
-void AssistantScriptExecutor::ProcessAction(
-    std::unique_ptr<AssistantAction> action) {
-  AssistantAction* action_ptr = action.get();
-  action_ptr->ProcessAction(
+void AssistantScriptExecutor::ProcessAction(std::unique_ptr<Action> action) {
+  action->ProcessAction(
       this, base::BindOnce(&AssistantScriptExecutor::OnProcessedAction,
                            weak_ptr_factory_.GetWeakPtr(), std::move(action)));
 }
@@ -146,9 +144,8 @@ void AssistantScriptExecutor::GetNextAssistantActions() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AssistantScriptExecutor::OnProcessedAction(
-    std::unique_ptr<AssistantAction> action,
-    bool success) {
+void AssistantScriptExecutor::OnProcessedAction(std::unique_ptr<Action> action,
+                                                bool success) {
   processed_actions_.emplace_back();
   ProcessedActionProto* proto = &processed_actions_.back();
   proto->mutable_action()->MergeFrom(action->proto());

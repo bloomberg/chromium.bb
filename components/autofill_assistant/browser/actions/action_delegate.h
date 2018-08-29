@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_DELEGATE_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_DELEGATE_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -13,12 +13,12 @@
 namespace autofill_assistant {
 struct ClientMemory;
 
-// Assistant action delegate called when processing assistant actions.
-class AssistantActionDelegate {
+// Action delegate called when processing actions.
+class ActionDelegate {
  public:
-  virtual ~AssistantActionDelegate() = default;
+  virtual ~ActionDelegate() = default;
 
-  // Show status message on the assistant bottom bar.
+  // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 
   // Click the element given by |selectors| on the web page.
@@ -57,7 +57,7 @@ class AssistantActionDelegate {
   virtual ClientMemory* GetClientMemory() = 0;
 
  protected:
-  AssistantActionDelegate() = default;
+  ActionDelegate() = default;
 };
 }  // namespace autofill_assistant.
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_DELEGATE_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_
