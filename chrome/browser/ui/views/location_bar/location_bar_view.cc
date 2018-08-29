@@ -71,6 +71,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_state/core/security_state.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/toolbar/vector_icons.h"
 #include "components/translate/core/browser/language_state.h"
@@ -967,6 +968,9 @@ base::string16 LocationBarView::GetLocationIconText() const {
   if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 
+  if (GetToolbarModel()->GetURL().SchemeIs(url::kFileScheme))
+    return l10n_util::GetStringUTF16(IDS_OMNIBOX_FILE);
+
   if (delegate_->GetWebContents()) {
     // On ChromeOS, this can be called using web_contents from
     // SimpleWebViewDialog::GetWebContents() which always returns null.
@@ -989,12 +993,16 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowLocationIconText() const {
-  if (!GetToolbarModel()->input_in_progress() &&
-      (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme) ||
-       GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme)))
-    return true;
+  const auto* toolbar_model = GetToolbarModel();
+  if (!toolbar_model->input_in_progress()) {
+    const GURL& url = toolbar_model->GetURL();
+    if (url.SchemeIs(content::kChromeUIScheme) ||
+        url.SchemeIs(extensions::kExtensionScheme) ||
+        url.SchemeIs(url::kFileScheme))
+      return true;
+  }
 
-  return !GetToolbarModel()->GetSecureVerboseText().empty();
+  return !toolbar_model->GetSecureVerboseText().empty();
 }
 
 bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
