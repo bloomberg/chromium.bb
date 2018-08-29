@@ -93,6 +93,7 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//media",
+    "//media/webrtc",
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/sandbox:sandbox",

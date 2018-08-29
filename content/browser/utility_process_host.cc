@@ -30,6 +30,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/base/media_switches.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -313,6 +314,8 @@ bool UtilityProcessHost::StartProcess() {
       switches::kFailAudioStreamCreation,
       switches::kMuteAudio,
       switches::kUseFileForFakeAudioCapture,
+      switches::kAecRefinedAdaptiveFilter,
+      switches::kAgcStartupMinVolume,
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
       switches::kAlsaInputDevice,
       switches::kAlsaOutputDevice,

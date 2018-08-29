@@ -537,21 +537,6 @@ const base::Feature kExperimentalProductivityFeatures{
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that echo path loss is
-// bounded.
-const base::Feature kWebRtcAecBoundedErlSetup{
-    "WebRtcAecBoundedErlSetup", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that the playout and
-// capture is done using different clocks.
-const base::Feature kWebRtcAecClockDriftSetup{
-    "WebRtcAecClockDriftSetup", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Informs the WebRTC Acoustic Echo Canceler (AEC) that the feature providing
-// echo canceller transparency to render noise should be used.
-const base::Feature kWebRtcAecNoiseTransparency{
-    "WebRtcAecNoiseTransparency", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",

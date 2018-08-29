@@ -12,7 +12,12 @@
 
 namespace media {
 
-enum class AutomaticGainControlType { kDisabled, kDefault, kExperimental };
+enum class AutomaticGainControlType {
+  kDisabled,
+  kDefault,
+  kExperimental,
+  kHybridExperimental
+};
 enum class EchoCancellationType { kDisabled, kAec2, kAec3, kSystemAec };
 enum class NoiseSuppressionType { kDisabled, kDefault, kExperimental };
 
