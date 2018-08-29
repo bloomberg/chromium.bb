@@ -3244,6 +3244,35 @@ TEST_F(NetworkContextTest, CloseAllConnections) {
   EXPECT_EQ(num_sockets, 0);
 }
 
+TEST_F(NetworkContextTest, QueryHSTS) {
+  const char kTestDomain[] = "example.com";
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  bool result = false, got_result = false;
+  network_context->IsHSTSActiveForHost(
+      kTestDomain, base::BindLambdaForTesting([&](bool is_hsts) {
+        result = is_hsts;
+        got_result = true;
+      }));
+  EXPECT_TRUE(got_result);
+  EXPECT_FALSE(result);
+
+  network_context->AddHSTSForTesting(
+      kTestDomain, base::Time::Now() + base::TimeDelta::FromDays(1000),
+      false /*include_subdomains*/, base::DoNothing());
+
+  bool result2 = false, got_result2 = false;
+  network_context->IsHSTSActiveForHost(
+      kTestDomain, base::BindLambdaForTesting([&](bool is_hsts) {
+        result2 = is_hsts;
+        got_result2 = true;
+      }));
+  EXPECT_TRUE(got_result2);
+  EXPECT_TRUE(result2);
+}
+
 }  // namespace
 
 }  // namespace network

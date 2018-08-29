@@ -14,13 +14,18 @@ include_rules = [
   "+crypto",
   "+google_apis",
   "+grit",
+  "+mojo/public/cpp/bindings",
   "+net",
   "+services/metrics/public/cpp",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+services/network/test",
 ]
 
 specific_include_rules = {
+  "hsts_query_unittest\.cc": [
+    "+services/network",
+  ],
   "password_autofill_manager_unittest\.cc": [
     "+components/ukm",
   ],
@@ -35,5 +40,8 @@ specific_include_rules = {
   ],
   "password_manager_unittest\.cc": [
     "+components/ukm",
+  ],
+  "password_manager_util_unittest\.cc": [
+    "+services/network",
   ],
 }

@@ -19,8 +19,10 @@ struct PasswordForm;
 class AutofillClient;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
 }
 
 namespace password_manager {
@@ -97,9 +99,12 @@ void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
 
 // Report metrics about HTTP to HTTPS migration process. This function cannot be
 // used on iOS platform because the HSTS query is not supported.
+// |network_context_getter| should return nullptr if it can't get the network
+// context because whatever owns it is dead.
 void ReportHttpMigrationMetrics(
     scoped_refptr<password_manager::PasswordStore> store,
-    scoped_refptr<net::URLRequestContextGetter> request_context);
+    base::RepeatingCallback<network::mojom::NetworkContext*()>
+        network_context_getter);
 
 // Given all non-blacklisted |matches|, finds and populates
 // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.

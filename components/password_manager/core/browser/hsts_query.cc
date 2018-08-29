@@ -5,40 +5,62 @@
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task_runner_util.h"
-#include "net/url_request/url_request_context.h"
+#include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 namespace password_manager {
 
 namespace {
 
-bool IsHSTSActiveForHostAndRequestContext(
-    const GURL& origin,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
-  if (!origin.is_valid())
-    return false;
+// Helper since a once-callback may need to be called from two paths.
+class HSTSCallbackHelper : public base::RefCounted<HSTSCallbackHelper> {
+ public:
+  HSTSCallbackHelper(HSTSCallback user_callback)
+      : user_callback_(std::move(user_callback)) {}
 
-  net::TransportSecurityState* security_state =
-      request_context->GetURLRequestContext()->transport_security_state();
+  void ReportResult(bool result) {
+    std::move(user_callback_).Run(result ? HSTSResult::kYes : HSTSResult::kNo);
+  }
 
-  if (!security_state)
-    return false;
+  void ReportError() { std::move(user_callback_).Run(HSTSResult::kError); }
 
-  return security_state->ShouldUpgradeToSSL(origin.host());
-}
+ private:
+  friend class base::RefCounted<HSTSCallbackHelper>;
+  ~HSTSCallbackHelper() = default;
+
+  HSTSCallback user_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(HSTSCallbackHelper);
+};
 
 }  // namespace
 
-void PostHSTSQueryForHostAndRequestContext(
+void PostHSTSQueryForHostAndNetworkContext(
     const GURL& origin,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const HSTSCallback& callback) {
-  base::PostTaskAndReplyWithResult(
-      request_context->GetNetworkTaskRunner().get(), FROM_HERE,
-      base::Bind(&IsHSTSActiveForHostAndRequestContext, origin,
-                 request_context),
-      callback);
+    network::mojom::NetworkContext* network_context,
+    HSTSCallback callback) {
+  if (!origin.is_valid()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), HSTSResult::kNo));
+    return;
+  }
+
+  if (!network_context) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), HSTSResult::kError));
+    return;
+  }
+
+  scoped_refptr<HSTSCallbackHelper> callback_helper =
+      base::MakeRefCounted<HSTSCallbackHelper>(std::move(callback));
+  network_context->IsHSTSActiveForHost(
+      origin.host(),
+      mojo::WrapCallbackWithDropHandler(
+          base::BindOnce(&HSTSCallbackHelper::ReportResult, callback_helper),
+          base::BindOnce(&HSTSCallbackHelper::ReportError, callback_helper)));
 }
 
 }  // namespace password_manager

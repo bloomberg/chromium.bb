@@ -19,10 +19,9 @@ bool PasswordManagerClient::IsFillingFallbackEnabledForCurrentPage() const {
   return true;
 }
 
-void PasswordManagerClient::PostHSTSQueryForHost(
-    const GURL& origin,
-    const HSTSCallback& callback) const {
-  callback.Run(false);
+void PasswordManagerClient::PostHSTSQueryForHost(const GURL& origin,
+                                                 HSTSCallback callback) const {
+  std::move(callback).Run(HSTSResult::kError);
 }
 
 bool PasswordManagerClient::OnCredentialManagerUsed() {

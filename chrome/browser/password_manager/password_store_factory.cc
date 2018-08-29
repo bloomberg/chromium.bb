@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -290,10 +291,18 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   password_manager_util::DeleteBlacklistedDuplicates(ps.get(),
                                                      profile->GetPrefs(), 60);
+  auto network_context_getter = base::BindRepeating(
+      [](Profile* profile) -> network::mojom::NetworkContext* {
+        if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+          return nullptr;
+        return content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetNetworkContext();
+      },
+      profile);
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&password_manager_util::ReportHttpMigrationMetrics, ps,
-                     base::WrapRefCounted(profile->GetRequestContext())),
+                     network_context_getter),
       base::TimeDelta::FromSeconds(60));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

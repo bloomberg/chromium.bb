@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
+#include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -52,7 +53,6 @@ enum SyncState {
 // environment.
 class PasswordManagerClient {
  public:
-  using HSTSCallback = base::Callback<void(bool)>;
   using CredentialsCallback =
       base::Callback<void(const autofill::PasswordForm*)>;
 
@@ -75,7 +75,7 @@ class PasswordManagerClient {
   // active for the host of the given origin. Notifies |callback| with the
   // result on the calling thread.
   virtual void PostHSTSQueryForHost(const GURL& origin,
-                                    const HSTSCallback& callback) const;
+                                    HSTSCallback callback) const;
 
   // Checks if the Credential Manager API is allowed to run on the page. It's
   // not allowed while prerendering and the pre-rendered WebContents will be

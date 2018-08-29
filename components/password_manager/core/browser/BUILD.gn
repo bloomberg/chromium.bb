@@ -454,6 +454,7 @@ source_set("unit_tests") {
     "//google_apis:google_apis",
     "//net:test_support",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network:network_service",
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//sql:test_support",

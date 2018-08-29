@@ -59,6 +59,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
@@ -68,6 +69,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
@@ -306,9 +308,12 @@ bool ChromePasswordManagerClient::IsFillingFallbackEnabledForCurrentPage()
 
 void ChromePasswordManagerClient::PostHSTSQueryForHost(
     const GURL& origin,
-    const HSTSCallback& callback) const {
-  password_manager::PostHSTSQueryForHostAndRequestContext(
-      origin, base::WrapRefCounted(profile_->GetRequestContext()), callback);
+    password_manager::HSTSCallback callback) const {
+  password_manager::PostHSTSQueryForHostAndNetworkContext(
+      origin,
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetNetworkContext(),
+      std::move(callback));
 }
 
 bool ChromePasswordManagerClient::OnCredentialManagerUsed() {

@@ -6,22 +6,30 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HSTS_QUERY_H_
 
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class GURL;
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
+
 namespace password_manager {
 
-using HSTSCallback = base::Callback<void(bool)>;
+enum class HSTSResult { kNo, kYes, kError };
+
+using HSTSCallback = base::OnceCallback<void(HSTSResult)>;
 
 // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is active
-// for the host of the given origin for a given request context.  Notifies
-// |callback| with the result on the calling thread.
-void PostHSTSQueryForHostAndRequestContext(
+// for the host of the given origin for a given network context.  Notifies
+// |callback| with the result on the calling thread. Should be called from the
+// thread the network context lives on (in things based on content/ the UI
+// thread).
+void PostHSTSQueryForHostAndNetworkContext(
     const GURL& origin,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const HSTSCallback& callback);
+    network::mojom::NetworkContext* network_context,
+    HSTSCallback callback);
 
 }  // namespace password_manager
 

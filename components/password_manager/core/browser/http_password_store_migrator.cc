@@ -20,7 +20,7 @@ namespace {
 // obtained via |GetWeakPtr|. This is not possible otherwise.
 void OnHSTSQueryResultHelper(
     const base::WeakPtr<PasswordStoreConsumer>& migrator,
-    bool is_hsts) {
+    HSTSResult is_hsts) {
   if (migrator) {
     static_cast<HttpPasswordStoreMigrator*>(migrator.get())
         ->OnHSTSQueryResult(is_hsts);
@@ -61,12 +61,13 @@ void HttpPasswordStoreMigrator::OnGetPasswordStoreResults(
     ProcessPasswordStoreResults();
 }
 
-void HttpPasswordStoreMigrator::OnHSTSQueryResult(bool is_hsts) {
+void HttpPasswordStoreMigrator::OnHSTSQueryResult(HSTSResult is_hsts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  mode_ = is_hsts ? MigrationMode::MOVE : MigrationMode::COPY;
+  mode_ =
+      (is_hsts == HSTSResult::kYes) ? MigrationMode::MOVE : MigrationMode::COPY;
   got_hsts_query_result_ = true;
 
-  if (is_hsts)
+  if (is_hsts == HSTSResult::kYes)
     client_->GetPasswordStore()->RemoveSiteStats(http_origin_domain_);
 
   if (got_password_store_results_)
