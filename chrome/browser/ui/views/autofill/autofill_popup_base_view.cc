@@ -314,7 +314,12 @@ void AutofillPopupBaseView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kMenu;
+  // TODO(aleventhal) The correct role spec-wise to use here is kMenu, however
+  // as of NVDA 2018.2.1, firing a menu event with kMenu breaks left/right
+  // arrow editing feedback in text field. If NVDA addresses this we should
+  // consider returning to using kMenu, so that users are notified that a
+  // menu popup has been shown.
+  node_data->role = ax::mojom::Role::kPane;
   node_data->SetName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
