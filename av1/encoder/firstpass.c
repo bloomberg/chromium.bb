@@ -2198,20 +2198,27 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       // BIPRED_UPDATE frames need to be further adjusted.
       gf_group->bit_allocation[frame_index] = target_frame_size;
 #if USE_SYMM_MULTI_LAYER
-    } else if (cpi->new_bwdref_update_rule == 1 &&
+    } else if (cpi->new_bwdref_update_rule &&
                gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
       int arf_pos = gf_group->arf_pos_in_gf[frame_index];
       gf_group->bit_allocation[frame_index] = 0;
 
-      // Tried boosting up the allocated bits on backward reference frame
-      // by (target_frame_size >> 2) as in the original setting. However it
-      // does not bring gains for pyramid structure with GF length = 16.
       gf_group->bit_allocation[arf_pos] = target_frame_size;
-#endif
+#if MULTI_LVL_BOOST_VBR_CQ
+      if (gf_group->pyramid_level[arf_pos] == (gf_group->pyramid_height - 1))
+        gf_group->bit_allocation[arf_pos] += target_frame_size;
+      else
+        gf_group->bit_allocation[arf_pos] += (target_frame_size >> 1);
+#endif  // MULTI_LVL_BOOST_VBR_CQ
+#endif  // USE_SYMM_MULTI_LAYER
     } else {
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
+#if MULTI_LVL_BOOST_VBR_CQ
+      if (cpi->new_bwdref_update_rule)
+        gf_group->bit_allocation[frame_index] -= (target_frame_size >> 1);
+#endif
     }
 
     ++frame_index;

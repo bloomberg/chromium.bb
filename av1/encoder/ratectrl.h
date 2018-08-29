@@ -25,6 +25,7 @@ extern "C" {
 #define BPER_MB_NORMBITS 9
 
 #define CUSTOMIZED_GF 1
+#define MULTI_LVL_BOOST_VBR_CQ 1
 
 #if CONFIG_FIX_GF_LENGTH
 #define FIXED_GF_LENGTH 16
