@@ -31,6 +31,15 @@
         color: var(--cr-secondary-text-color);
         margin-inline-start: 16px;
       }
+
+      #migrateCreditCards {
+        border-bottom: var(--settings-separator-line);
+        border-top: none;
+      }
+
+      #migrateCreditCardsButton {
+        margin: 0 auto;
+      }
     </style>
     <settings-toggle-button id="autofillCreditCardToggle"
         class="settings-box first"
@@ -48,6 +57,22 @@
                            prefs.autofill.credit_card_enabled.value)]]">
         $i18n{add}
       </paper-button>
+    </div>
+    <div class="settings-box two-line" id="migrateCreditCards"
+        hidden="[[!checkIfMigratable_(syncStatus, creditCards,
+                      prefs.autofill.enabled.value,
+                      prefs.autofill.credit_card_enabled.value)]]"
+        on-click="onMigrateCreditCardsClick_" actionable>
+      <div class="start">
+        [[migrateCreditCardsLabel_]]
+          <div class="secondary">
+            [[migratableCreditCardsInfo_]]
+          </div>
+      </div>
+      <paper-icon-button-light id="migrateCreditCardsButton"
+          class="subpage-arrow">
+        <button aria-label="[[migrateCreditCardsLabel_]]"></button>
+      </paper-icon-button-light>
     </div>
     <div class="list-frame">
       <div id="creditCardsHeading" class="list-item column-header"
