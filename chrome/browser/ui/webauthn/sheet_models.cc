@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webauthn/other_transports_menu_model.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -97,7 +97,7 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
 // AuthenticatorWelcomeSheetModel ---------------------------------------------
 
 gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
@@ -130,7 +130,7 @@ void AuthenticatorWelcomeSheetModel::OnAccept() {
 
 gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
@@ -169,7 +169,7 @@ bool AuthenticatorInsertAndActivateUsbSheetModel::IsActivityIndicatorVisible()
 
 gfx::ImageSkia*
 AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB);
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
@@ -191,7 +191,7 @@ AuthenticatorInsertAndActivateUsbSheetModel::GetOtherTransportsMenuModel() {
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
 
 gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
@@ -215,7 +215,7 @@ AuthenticatorNoAvailableTransportsErrorModel::GetCancelButtonLabel() const {
 
 gfx::ImageSkia*
 AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNoAvailableTransportsErrorModel::GetStepTitle()
@@ -233,7 +233,7 @@ AuthenticatorNoAvailableTransportsErrorModel::GetStepDescription() const {
 
 gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNotRegisteredErrorModel::GetStepTitle() const {
@@ -266,7 +266,7 @@ void AuthenticatorNotRegisteredErrorModel::OnAccept() {}
 
 gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepTitle() const {
@@ -299,7 +299,7 @@ void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {}
 
 gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
@@ -330,7 +330,7 @@ base::string16 AuthenticatorBlePowerOnManualSheetModel::GetAcceptButtonLabel()
 
 gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepTitle() const {
@@ -359,7 +359,7 @@ base::string16 AuthenticatorBlePairingBeginSheetModel::GetAcceptButtonLabel()
 
 gfx::ImageSkia*
 AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
@@ -382,7 +382,7 @@ bool AuthenticatorBleDeviceSelectionSheetModel::IsActivityIndicatorVisible()
 
 gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME);
 }
 
 base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepTitle() const {
@@ -399,7 +399,7 @@ base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepDescription()
 
 gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
@@ -432,7 +432,7 @@ bool AuthenticatorBleVerifyingSheetModel::IsActivityIndicatorVisible() const {
 
 gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleVerifyingSheetModel::GetStepTitle() const {
@@ -461,7 +461,7 @@ bool AuthenticatorBleActivateSheetModel::IsActivityIndicatorVisible() const {
 
 gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration()
     const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP);
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
@@ -501,7 +501,7 @@ bool AuthenticatorTouchIdSheetModel::IsBackButtonVisible() const {
 
 gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
 #if defined(OS_MACOSX)
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID);
 #else
   // Avoid bundling the PNG on platforms where it's not needed.
   return nullptr;
@@ -545,7 +545,7 @@ bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
 }
 
 gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PHONE_1X);
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PHONE);
 }
 
 base::string16 AuthenticatorPaaskSheetModel::GetStepTitle() const {
