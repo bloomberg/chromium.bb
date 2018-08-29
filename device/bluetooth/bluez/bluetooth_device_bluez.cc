@@ -504,7 +504,21 @@ void BluetoothDeviceBlueZ::Connect(
 
   if (IsPaired() || !pairing_delegate) {
     // No need to pair, or unable to, skip straight to connection.
-    ConnectInternal(false, callback, error_callback);
+    bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->PauseDiscovery(
+        adapter()->object_path(),
+        base::Bind(&BluetoothDeviceBlueZ::ConnectInternal,
+                   weak_ptr_factory_.GetWeakPtr(), false, callback,
+                   error_callback),
+        base::Bind(
+            [](base::WeakPtr<BluetoothDeviceBlueZ> weak_ptr,
+               const base::Closure& callback,
+               const ConnectErrorCallback& error_callback,
+               const std::string& error_name,
+               const std::string& error_message) {
+              if (weak_ptr)
+                weak_ptr->ConnectInternal(false, callback, error_callback);
+            },
+            weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
   } else {
     // Initiate high-security connection with pairing.
     BeginPairing(pairing_delegate);
@@ -923,6 +937,8 @@ void BluetoothDeviceBlueZ::ConnectInternal(
 
 void BluetoothDeviceBlueZ::OnConnect(bool after_pairing,
                                      const base::Closure& callback) {
+  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->UnpauseDiscovery(
+      adapter()->object_path(), base::DoNothing(), base::DoNothing());
   if (--num_connecting_calls_ == 0)
     adapter()->NotifyDeviceChanged(this);
 
@@ -952,6 +968,8 @@ void BluetoothDeviceBlueZ::OnConnectError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
+  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->UnpauseDiscovery(
+      adapter()->object_path(), base::DoNothing(), base::DoNothing());
   if (--num_connecting_calls_ == 0)
     adapter()->NotifyDeviceChanged(this);
 

@@ -39,6 +39,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   FakeBluetoothAdapterClient();
   ~FakeBluetoothAdapterClient() override;
+  int GetPauseCount() { return pause_count_; }
+  int GetUnpauseCount() { return unpause_count_; }
 
   // BluetoothAdapterClient overrides
   void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
@@ -52,6 +54,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      const base::Closure& callback,
                      ErrorCallback error_callback) override;
+  void PauseDiscovery(const dbus::ObjectPath& object_path,
+                      const base::Closure& callback,
+                      ErrorCallback error_callback) override;
+  void UnpauseDiscovery(const dbus::ObjectPath& object_path,
+                        const base::Closure& callback,
+                        ErrorCallback error_callback) override;
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,
                     const base::Closure& callback,
@@ -119,6 +127,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // Number of times we've been asked to discover.
   int discovering_count_;
+
+  // Number of times we've been asked to pause discovery.
+  int pause_count_;
+
+  // Number of times we've been asked to unpause discovery.
+  int unpause_count_;
 
   // Current discovery filter
   std::unique_ptr<DiscoveryFilter> discovery_filter_;
