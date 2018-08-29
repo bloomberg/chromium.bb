@@ -132,8 +132,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                bool content_initiated) {}
   virtual void DispatchWillCommitProvisionalLoad() = 0;
   virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                               ResourceRequest&,
-                                               base::TimeTicks input_start) = 0;
+                                               ResourceRequest&) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
@@ -159,7 +158,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy,
-      mojom::blink::BlobURLTokenPtr) = 0;
+      mojom::blink::BlobURLTokenPtr,
+      base::TimeTicks input_start_time) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
   virtual void DispatchWillSubmitForm(HTMLFormElement*) = 0;

@@ -760,8 +760,7 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type,
-                                  NavigationPolicy policy,
-                                  base::TimeTicks input_start) {
+                                  NavigationPolicy policy) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
@@ -904,7 +903,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
-      request.GetBlobURLToken());
+      request.GetBlobURLToken(), request.GetInputStartTime());
 
   // 'beforeunload' can be fired above, which can detach this frame from inside
   // the event handler.
@@ -935,7 +934,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // We should get rid of the dependency on the DocumentLoader in consumers of
   // the DidStartProvisionalLoad() notification.
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request, input_start);
+                                            resource_request);
   DCHECK(provisional_document_loader_);
 
   // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
@@ -1043,8 +1042,7 @@ void FrameLoader::CommitNavigation(
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request,
-                                            /*input_start=*/base::TimeTicks());
+                                            resource_request);
 
   provisional_document_loader_->StartLoading();
   probe::frameClearedScheduledClientNavigation(frame_);

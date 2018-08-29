@@ -68,8 +68,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
                        cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               blink::WebURLRequest& request,
-                               base::TimeTicks input_start) override;
+                               blink::WebURLRequest& request) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(

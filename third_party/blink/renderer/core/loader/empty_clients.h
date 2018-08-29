@@ -252,8 +252,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidHandleOnloadEvents() override {}
   void DispatchWillCommitProvisionalLoad() override {}
   void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                       ResourceRequest&,
-                                       base::TimeTicks input_start) override {}
+                                       ResourceRequest&) override {}
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}
   void DispatchDidCommitLoad(HistoryItem*,
@@ -267,18 +266,18 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidFinishLoad() override {}
   void DispatchDidChangeThemeColor() override {}
 
-  NavigationPolicy DecidePolicyForNavigation(
-      const ResourceRequest&,
-      Document* origin_document,
-      DocumentLoader*,
-      WebNavigationType,
-      NavigationPolicy,
-      bool,
-      bool,
-      WebTriggeringEventInfo,
-      HTMLFormElement*,
-      ContentSecurityPolicyDisposition,
-      mojom::blink::BlobURLTokenPtr) override;
+  NavigationPolicy DecidePolicyForNavigation(const ResourceRequest&,
+                                             Document* origin_document,
+                                             DocumentLoader*,
+                                             WebNavigationType,
+                                             NavigationPolicy,
+                                             bool,
+                                             bool,
+                                             WebTriggeringEventInfo,
+                                             HTMLFormElement*,
+                                             ContentSecurityPolicyDisposition,
+                                             mojom::blink::BlobURLTokenPtr,
+                                             base::TimeTicks) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;

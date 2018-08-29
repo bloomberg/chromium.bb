@@ -442,13 +442,11 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader,
-    ResourceRequest& request,
-    base::TimeTicks input_start) {
+    ResourceRequest& request) {
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request,
-        input_start);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
@@ -527,7 +525,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     HTMLFormElement* form,
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,
-    mojom::blink::BlobURLTokenPtr blob_url_token) {
+    mojom::blink::BlobURLTokenPtr blob_url_token,
+    base::TimeTicks input_start_time) {
   if (!web_frame_->Client())
     return kNavigationPolicyIgnore;
 
@@ -550,6 +549,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
           ? kWebContentSecurityPolicyDispositionCheck
           : kWebContentSecurityPolicyDispositionDoNotCheck;
   navigation_info.blob_url_token = blob_url_token.PassInterface().PassHandle();
+  navigation_info.input_start = input_start_time;
 
   // Can be null.
   LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);

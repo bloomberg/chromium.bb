@@ -98,8 +98,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
   void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                       ResourceRequest&,
-                                       base::TimeTicks input_start) override;
+                                       ResourceRequest&) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,
@@ -123,7 +122,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
-      mojom::blink::BlobURLTokenPtr) override;
+      mojom::blink::BlobURLTokenPtr,
+      base::TimeTicks input_start_time) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;
   void DidStartLoading(LoadStartType) override;

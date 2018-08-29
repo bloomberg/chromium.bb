@@ -4145,8 +4145,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 
 void RenderFrameImpl::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request,
-    base::TimeTicks input_start) {
+    blink::WebURLRequest& request) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!document_loader)
@@ -4174,7 +4173,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
         pending_navigation_info_->devtools_initiator_info;
     info.blob_url_token =
         pending_navigation_info_->blob_url_token.PassInterface().PassHandle();
-    info.input_start = input_start;
+    info.input_start = pending_navigation_info_->input_start;
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info);
@@ -7321,7 +7320,8 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       form(info.form),
       source_location(info.source_location),
       devtools_initiator_info(info.devtools_initiator_info),
-      blob_url_token(CloneBlobURLToken(info.blob_url_token.get())) {}
+      blob_url_token(CloneBlobURLToken(info.blob_url_token.get())),
+      input_start(info.input_start) {}
 
 RenderFrameImpl::PendingNavigationInfo::~PendingNavigationInfo() = default;
 

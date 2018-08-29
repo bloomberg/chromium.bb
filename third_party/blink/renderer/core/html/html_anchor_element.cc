@@ -400,11 +400,11 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   frame_request.SetTriggeringEventInfo(
       event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                         : WebTriggeringEventInfo::kFromUntrustedEvent);
+  frame_request.SetInputStartTime(event.PlatformTimeStamp());
   // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
   // Why doesn't this go through NavigationScheduler?
   frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                                  NavigationPolicyFromEvent(&event),
-                                  event.PlatformTimeStamp());
+                                  NavigationPolicyFromEvent(&event));
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {
