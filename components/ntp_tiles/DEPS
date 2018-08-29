@@ -6,6 +6,7 @@ include_rules = [
   "+components/grit",
   "+components/image_fetcher",
   "+components/history/core/browser",
+  "+components/history/core/test",
   "+components/pref_registry",
   "+components/prefs",
   "+components/rappor",

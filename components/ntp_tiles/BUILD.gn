@@ -102,6 +102,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/favicon/core",
     "//components/favicon_base",
+    "//components/history/core/test",
     "//components/image_fetcher/core",
     "//components/image_fetcher/core:test_support",
     "//components/pref_registry:pref_registry",

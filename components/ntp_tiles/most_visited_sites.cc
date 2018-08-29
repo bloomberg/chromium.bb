@@ -184,6 +184,12 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
     top_sites_observer_.Add(top_sites_.get());
   }
 
+  if (custom_links_) {
+    custom_links_subscription_ =
+        custom_links_->RegisterCallbackForOnChanged(base::BindRepeating(
+            &MostVisitedSites::OnCustomLinksChanged, base::Unretained(this)));
+  }
+
   suggestions_subscription_ = suggestions_service_->AddCallback(base::Bind(
       &MostVisitedSites::OnSuggestionsProfileChanged, base::Unretained(this)));
 
@@ -609,6 +615,12 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
     new_tiles.insert(new_tiles.begin(), std::move(homepage_tile));
   }
   return new_tiles;
+}
+
+void MostVisitedSites::OnCustomLinksChanged() {
+  DCHECK(custom_links_);
+  DCHECK(custom_links_->IsInitialized());
+  BuildCustomLinks(custom_links_->GetLinks());
 }
 
 void MostVisitedSites::BuildCustomLinks(

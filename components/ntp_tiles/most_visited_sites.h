@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -258,6 +259,9 @@ class MostVisitedSites : public history::TopSitesObserver,
       const std::set<std::string>& hosts_to_skip,
       size_t num_max_tiles);
 
+  // Callback for when an update is reported by CustomLinksManager.
+  void OnCustomLinksChanged();
+
   // Creates tiles for |links| up to |max_num_sites_|. |links| will never exceed
   // a certain maximum.
   void BuildCustomLinks(const std::vector<CustomLinksManager::Link>& links);
@@ -322,6 +326,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   ScopedObserver<history::TopSites, history::TopSitesObserver>
       top_sites_observer_;
+
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      custom_links_subscription_;
 
   // The main source of personal tiles - either TOP_SITES or SUGGESTIONS_SEVICE.
   TileSource mv_source_;
