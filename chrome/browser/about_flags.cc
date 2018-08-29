@@ -4400,6 +4400,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
 #endif  // !defined(OS_ANDROID)
 
+    {"enable-service-worker-imported-script-update-check",
+     flag_descriptions::kServiceWorkerImportedScriptUpdateCheckName,
+     flag_descriptions::kServiceWorkerImportedScriptUpdateCheckDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         blink::features::kServiceWorkerImportedScriptUpdateCheck)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

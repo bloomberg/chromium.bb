@@ -982,6 +982,9 @@ extern const char kSavePreviousDocumentResourcesUntilOnLoad[];
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 
+extern const char kServiceWorkerImportedScriptUpdateCheckName[];
+extern const char kServiceWorkerImportedScriptUpdateCheckDescription[];
+
 extern const char kServiceWorkerServicificationName[];
 extern const char kServiceWorkerServicificationDescription[];
 

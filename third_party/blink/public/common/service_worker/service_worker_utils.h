@@ -15,6 +15,8 @@ class ServiceWorkerUtils {
   // the NetworkService or ServiceWorkerServicification feature is enabled).
   // TODO(crbug.com/715640): Remove this after non-NetS13nSW is removed.
   static bool BLINK_COMMON_EXPORT IsServicificationEnabled();
+
+  static bool BLINK_COMMON_EXPORT IsImportedScriptUpdateCheckEnabled();
 };
 
 }  // namespace blink
