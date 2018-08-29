@@ -226,7 +226,10 @@ public abstract class ContentUriUtils {
             String displayName = getDisplayName(uri, ContextUtils.getApplicationContext(),
                     MediaStore.MediaColumns.DISPLAY_NAME);
             return TextUtils.isEmpty(displayName) ? null : displayName;
-        } catch (SecurityException e) {
+        } catch (Exception e) {
+            // There are a few Exceptions we can hit here (e.g. SecurityException), but we don't
+            // particularly care what kind of Exception we hit. If we hit one, just don't return a
+            // display name.
             Log.w(TAG, "Cannot open content uri: " + uriString, e);
         }
 
