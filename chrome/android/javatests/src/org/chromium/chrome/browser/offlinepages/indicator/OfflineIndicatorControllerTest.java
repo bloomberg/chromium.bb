@@ -55,6 +55,7 @@ public class OfflineIndicatorControllerTest {
                 NetworkChangeNotifier.init();
             }
             NetworkChangeNotifier.forceConnectivityState(true);
+            OfflineIndicatorController.initialize();
         });
     }
 
@@ -161,8 +162,13 @@ public class OfflineIndicatorControllerTest {
 
     private void setNetworkConnectivity(boolean connected) {
         mIsConnected = connected;
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { NetworkChangeNotifier.forceConnectivityState(connected); });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            OfflineIndicatorController.getInstance()
+                    .getConnectivityDetectorForTesting()
+                    .updateConnectionState(connected
+                                    ? ConnectivityDetector.ConnectionState.VALIDATED
+                                    : ConnectivityDetector.ConnectionState.DISCONNECTED);
+        });
     }
 
     private void loadPage(String pageUrl) throws Exception {
