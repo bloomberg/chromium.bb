@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
@@ -23,6 +24,15 @@ bool IsEnterpriseManaged() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->IsEnterpriseManaged();
+}
+
+// Returns the duration in minutes, capped at |max_duration| and rounded down to
+// the nearest |bucket_size| minutes.
+int GetMinutesToReport(base::TimeDelta duration,
+                       int bucket_size,
+                       base::TimeDelta max_duration) {
+  int minutes = std::min(duration.InMinutes(), max_duration.InMinutes());
+  return minutes / bucket_size * bucket_size;
 }
 
 }  // namespace
@@ -50,7 +60,7 @@ void RecordSignInEvent(const UserContext& user_context, bool is_auto_login) {
   if (session_type == user_manager::USER_TYPE_REGULAR) {
     RecordSignInEvent(SignInEventType::REGULAR_USER);
   } else if (session_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    RecordSignInEvent(is_auto_login ? SignInEventType::AUTOMATIC_PUBLIC_SESSSION
+    RecordSignInEvent(is_auto_login ? SignInEventType::AUTOMATIC_PUBLIC_SESSION
                                     : SignInEventType::MANUAL_PUBLIC_SESSION);
   }
 
@@ -111,10 +121,17 @@ void RecordStoredSessionLength() {
   // Report session duration for the first 24 hours, split into 144 buckets
   // (i.e. every 10 minute). Note that sparse histogram is used here. It is
   // important to limit the number of buckets to something reasonable.
-  const int floored = std::min(session_length.InMinutes(),
-                               base::TimeDelta::FromHours(24).InMinutes()) /
-                      10 * 10;
-  base::UmaHistogramSparse(metric_name, floored);
+  base::UmaHistogramSparse(
+      metric_name,
+      GetMinutesToReport(session_length, 10, base::TimeDelta::FromHours(24)));
+
+  if (chromeos::DemoSession::IsDeviceInDemoMode()) {
+    // Demo mode sessions will have shorter durations. Report session length
+    // rounded down to the nearest minute, up to two hours.
+    base::UmaHistogramSparse(
+        "DemoMode.SessionLength",
+        GetMinutesToReport(session_length, 1, base::TimeDelta::FromHours(2)));
+  }
 }
 
 }  // namespace enterprise_user_session_metrics

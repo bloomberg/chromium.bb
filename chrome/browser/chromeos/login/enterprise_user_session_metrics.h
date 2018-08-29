@@ -23,7 +23,7 @@ enum class SignInEventType {
   // Manually started public session.
   MANUAL_PUBLIC_SESSION = 1,
   // Automatically started public session.
-  AUTOMATIC_PUBLIC_SESSSION = 2,
+  AUTOMATIC_PUBLIC_SESSION = 2,
   // Manually started kiosk session.
   MANUAL_KIOSK = 3,
   // Automatically started kiosk session.
