@@ -292,6 +292,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 refreshSelectedTab();
                 updateTabCount();
+                if (mBottomToolbarCoordinator != null) {
+                    mBottomToolbarCoordinator.setIncognito(newModel.isIncognito());
+                }
             }
 
             @Override
@@ -1337,10 +1340,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mCurrentThemeColor = color;
         mToolbarModel.setPrimaryColor(color);
         mToolbarProvider.whenLoaded((toolbar) -> toolbar.onPrimaryColorChanged(shouldAnimate));
-
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.setPrimaryColor(color);
-        }
     }
 
     /**
