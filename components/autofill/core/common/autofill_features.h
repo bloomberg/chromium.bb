@@ -41,6 +41,7 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillPreferServerNamePredictions;
+extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillPrefilledFields;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillRationalizeRepeatedServerPredictions;
