@@ -46,6 +46,7 @@
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/test/mock_overscroll_controller_delegate_aura.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/event_rewriter.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -648,6 +649,34 @@ class SetMouseCaptureInterceptor
   DISALLOW_COPY_AND_ASSIGN(SetMouseCaptureInterceptor);
 };
 
+#if defined(USE_AURA)
+// A class to allow intercepting and discarding of system-level mouse events
+// that might otherwise cause unpredictable behaviour in tests.
+class MouseEventRewriter : public ui::EventRewriter {
+ public:
+  MouseEventRewriter() = default;
+  ~MouseEventRewriter() override {}
+
+ private:
+  ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* new_event) override {
+    if (event.IsMouseEvent())
+      return ui::EVENT_REWRITE_DISCARD;
+    return ui::EVENT_REWRITE_CONTINUE;
+  }
+
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* new_event) override {
+    NOTREACHED();
+    return ui::EVENT_REWRITE_CONTINUE;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MouseEventRewriter);
+};
+#endif
+
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
@@ -655,6 +684,19 @@ class SitePerProcessHitTestBrowserTest
       public SitePerProcessBrowserTest {
  public:
   SitePerProcessHitTestBrowserTest() {}
+
+#if defined(USE_AURA)
+  void PreRunTestOnMainThread() override {
+    SitePerProcessBrowserTest::PreRunTestOnMainThread();
+    // Disable system mouse events, which can interfere with tests.
+    shell()->window()->GetHost()->AddEventRewriter(&event_rewriter);
+  }
+
+  void PostRunTestOnMainThread() override {
+    shell()->window()->GetHost()->RemoveEventRewriter(&event_rewriter);
+    SitePerProcessBrowserTest::PostRunTestOnMainThread();
+  }
+#endif
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -671,6 +713,9 @@ class SitePerProcessHitTestBrowserTest
   }
 
   base::test::ScopedFeatureList feature_list_;
+#if defined(USE_AURA)
+  MouseEventRewriter event_rewriter;
+#endif
 };
 
 //
