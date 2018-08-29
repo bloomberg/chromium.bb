@@ -2445,6 +2445,11 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   views::Widget* new_selector_widget =
       current_grid->new_selector_item_widget_for_testing();
   EXPECT_TRUE(new_selector_widget);
+  EXPECT_EQ(new_selector_widget->GetNativeWindow()->bounds(),
+            window1->bounds());
+  EXPECT_EQ(
+      new_selector_widget->GetNativeWindow()->bounds(),
+      split_view_controller()->GetDisplayWorkAreaBoundsInParent(window1.get()));
   EXPECT_TRUE(new_selector_widget->IsVisible());
 
   // Now drag |window1| to the left preview split area.
@@ -2492,6 +2497,11 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   new_selector_widget = current_grid->new_selector_item_widget_for_testing();
   EXPECT_TRUE(new_selector_widget);
   EXPECT_TRUE(new_selector_widget->IsVisible());
+  EXPECT_EQ(new_selector_widget->GetNativeWindow()->bounds(),
+            window1->bounds());
+  EXPECT_EQ(new_selector_widget->GetNativeWindow()->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInParent(
+                window1.get(), SplitViewController::RIGHT));
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window1.get(), SplitViewController::RIGHT));
@@ -2513,6 +2523,31 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
                 window1.get(), SplitViewController::RIGHT));
   EXPECT_TRUE(new_selector_widget->IsVisible());
 
+  CompleteDrag(std::move(resizer));
+
+  // |window1| should now snap to left. |window2| is put back in overview.
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_TRUE(selector_controller->IsSelecting());
+  EXPECT_TRUE(selector_controller->window_selector()->IsWindowInOverview(
+      window2.get()));
+
+  // Now drag |window1| again.
+  resizer = StartDrag(window1.get(), window1.get());
+  // Splitview should end now, but overview should still active.
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(selector_controller->IsSelecting());
+  // The new selector item size should still be the same as the dragged window's
+  // size.
+  current_grid = selector_controller->window_selector()->GetGridWithRootWindow(
+      window1->GetRootWindow());
+  new_selector_widget = current_grid->new_selector_item_widget_for_testing();
+  EXPECT_TRUE(new_selector_widget);
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+  EXPECT_EQ(new_selector_widget->GetNativeWindow()->bounds(),
+            window1->bounds());
+  EXPECT_EQ(new_selector_widget->GetNativeWindow()->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInParent(
+                window1.get(), SplitViewController::LEFT));
   CompleteDrag(std::move(resizer));
 }
 

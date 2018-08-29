@@ -189,9 +189,7 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
   params.parent = dragged_window->parent();
-  params.bounds = display::Screen::GetScreen()
-                      ->GetDisplayNearestWindow(dragged_window)
-                      .work_area();
+  params.bounds = dragged_window->bounds();
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
   widget->Init(params);
