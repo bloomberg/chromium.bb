@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
+#include "content/public/browser/notification_source.h"
 
 namespace web_app {
 
@@ -29,6 +31,9 @@ WebAppProvider::WebAppProvider(Profile* profile)
         profile->GetPrefs(), pending_app_manager_.get());
   }
 
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::Source<Profile>(profile));
+
   web_app::ScanForExternalWebApps(
       profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -43,11 +48,23 @@ void WebAppProvider::RegisterProfilePrefs(
   WebAppPolicyManager::RegisterProfilePrefs(registry);
 }
 
-void WebAppProvider::Shutdown() {
+void WebAppProvider::Reset() {
   // PendingAppManager is used by WebAppPolicyManager and therefore should be
   // deleted after it.
   web_app_policy_manager_.reset();
   pending_app_manager_.reset();
+}
+
+void WebAppProvider::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& detals) {
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+
+  // KeyedService::Shutdown() gets called when the profile is being destroyed,
+  // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
+  // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
+  // DCHECK so we use that to clean up RenderProcessHosts instead.
+  Reset();
 }
 
 void WebAppProvider::OnScanForExternalWebApps(
