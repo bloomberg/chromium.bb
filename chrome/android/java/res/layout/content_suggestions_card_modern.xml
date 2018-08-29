@@ -101,8 +101,7 @@
                     android:maxLines="1"
                     android:singleLine="true"
                     android:ellipsize="end"
-                    android:textSize="12sp"
-                    android:textColor="@color/snippets_publisher_name_color"
+                    android:textAppearance="@style/BlackCaption"
                     android:textDirection="locale"
                     tools:text="chromium.org"/>
                 <TextView
@@ -110,8 +109,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxLines="1"
-                    android:textSize="12sp"
-                    android:textColor="@color/snippets_publisher_name_color"
+                    android:textAppearance="@style/BlackCaption"
                     android:textDirection="locale"
                     tools:text=" - 3 hours ago" />
 
@@ -127,7 +125,7 @@
                     android:src="@drawable/offline_pin_round"
                     android:contentDescription="@string/accessibility_ntp_offline_badge"
                     android:visibility="gone"
-                    tools:tint="@color/black_alpha_54" />
+                    tools:tint="@color/default_icon_color" />
             </LinearLayout>
         </LinearLayout>
     </RelativeLayout>

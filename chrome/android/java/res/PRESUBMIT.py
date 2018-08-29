@@ -141,7 +141,7 @@ def _CheckDuplicateColors(input_api, output_api):
 
     This is banned, please reference the existing color resource from colors.xml
     using @color/... and if needed, give the existing color resource a more
-    general name (e.g. google_grey_100).
+    general name (e.g. modern_grey_100).
 
     See https://crbug.com/775198 for more information.
   ''',

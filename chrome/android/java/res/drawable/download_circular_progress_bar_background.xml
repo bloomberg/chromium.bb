@@ -7,7 +7,7 @@
     <item android:id="@android:id/background">
         <shape
             android:shape="oval">
-            <solid android:color="@color/google_grey_300"  />
+            <solid android:color="@color/modern_grey_300"  />
         </shape>
     </item>
 </layer-list>

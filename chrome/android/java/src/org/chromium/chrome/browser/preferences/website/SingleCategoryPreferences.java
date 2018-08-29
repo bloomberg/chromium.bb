@@ -251,7 +251,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // Gray out the total count of items.
-        int gray = ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_54);
+        int gray = ApiCompatibilityUtils.getColor(
+                getResources(), R.color.default_text_color_secondary);
         spannable.setSpan(new ForegroundColorSpan(gray), spannable.length() - prefCount.length(),
                 spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannable;

@@ -36,7 +36,7 @@
             android:textAppearance="@style/BlackCaption"
             app:drawableHeight="20sp"
             app:drawableWidth="20sp"
-            app:chromeDrawableTint="@color/black_alpha_54"  />
+            app:chromeDrawableTint="@color/default_icon_color"  />
     </FrameLayout>
 
     <FrameLayout
@@ -60,6 +60,6 @@
             android:textAppearance="@style/BlackCaption"
             app:drawableHeight="20sp"
             app:drawableWidth="20sp"
-            app:chromeDrawableTint="@color/black_alpha_54"  />
+            app:chromeDrawableTint="@color/default_icon_color"  />
     </FrameLayout>
 </LinearLayout>

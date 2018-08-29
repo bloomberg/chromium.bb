@@ -53,7 +53,6 @@
         android:gravity="center_horizontal"
         android:lines="2"
         android:lineSpacingMultiplier="1.17"
-        android:textColor="@color/tile_view_text"
-        android:textSize="12sp" />
+        android:textAppearance="@style/BlackCaption" />
 
 </org.chromium.chrome.browser.suggestions.TileView>

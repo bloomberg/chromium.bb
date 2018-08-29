@@ -497,7 +497,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         if (mUseStatusBarColorAsBackground) {
             if (isDefaultTheme) color = Color.BLACK;
             setForegroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.white_alpha_70));
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_grey_400));
             setBackgroundColor(ColorUtils.getDarkenedColorForStatusBar(color));
             return;
         }

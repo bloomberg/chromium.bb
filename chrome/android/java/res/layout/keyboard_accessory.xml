@@ -8,7 +8,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/keyboard_accessory"
     android:layout_gravity="start|bottom"
-    android:background="@color/modern_light_grey"
+    android:background="@color/modern_grey_100"
     android:contentDescription="@string/autofill_keyboard_accessory_content_description"
     android:fillViewport="true"
     android:scrollbars="none"

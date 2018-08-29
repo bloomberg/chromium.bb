@@ -34,7 +34,7 @@
             android:layout_height="2dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            app:colorBackground="@color/google_grey_300"
+            app:colorBackground="@color/modern_grey_300"
             app:colorProgress="@color/modern_blue_600_alpha_38_opaque"
             app:colorSecondaryProgress="@color/modern_blue_600" />
 

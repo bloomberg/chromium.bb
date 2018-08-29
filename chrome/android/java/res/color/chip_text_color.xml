@@ -6,6 +6,5 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:color="@color/default_text_color_link" android:state_selected="true" />
-    <item android:color="@color/google_grey_600" android:state_enabled="true" />
-    <item android:color="@color/google_grey_400" />
+    <item android:color="@color/default_text_color_secondary" />
 </selector>

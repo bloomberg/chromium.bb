@@ -15,7 +15,7 @@
             android:viewportHeight="88">
             <!-- Background fill -->
             <path
-                android:fillColor="#F8F9FA"
+                android:fillColor="@color/signin_header_animation_background"
                 android:pathData="M0,0h360v88h-360z"/>
             <!-- White and blue curves on the left side -->
             <path

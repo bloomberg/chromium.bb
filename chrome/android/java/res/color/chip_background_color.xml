@@ -7,5 +7,5 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:color="@color/google_blue_50" android:state_selected="true" />
     <item android:color="@android:color/white" android:state_enabled="true" />
-    <item android:color="@color/google_grey_100" />
+    <item android:color="@color/modern_grey_100" />
 </selector>

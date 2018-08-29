@@ -71,7 +71,7 @@
                     android:layout_toStartOf="@+id/pause_button"
                     app:colorBackground="@color/downloads_progress_bar_background_blue"
                     app:colorProgress="@color/light_active_color"
-                    app:colorSecondaryProgress="@color/google_grey_600" />
+                    app:colorSecondaryProgress="@color/modern_grey_600" />
 
             <TextView
                     android:id="@+id/status_view"

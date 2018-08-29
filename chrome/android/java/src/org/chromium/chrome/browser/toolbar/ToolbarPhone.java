@@ -435,8 +435,7 @@ public class ToolbarPhone extends ToolbarLayout
         Drawable drawable = ApiCompatibilityUtils.getDrawable(
                 resources, R.drawable.modern_toolbar_background_white);
         drawable.mutate();
-        drawable.setColorFilter(
-                ApiCompatibilityUtils.getColor(resources, R.color.modern_light_grey),
+        drawable.setColorFilter(ApiCompatibilityUtils.getColor(resources, R.color.modern_grey_100),
                 PorterDuff.Mode.SRC_IN);
         return drawable;
     }
@@ -2611,7 +2610,7 @@ public class ToolbarPhone extends ToolbarLayout
         DrawableCompat.setTint(mLocationBarBackground,
                 isIncognito() ? Color.WHITE
                               : ApiCompatibilityUtils.getColor(
-                                        getResources(), R.color.modern_light_grey));
+                                        getResources(), R.color.modern_grey_100));
     }
 
     @Override

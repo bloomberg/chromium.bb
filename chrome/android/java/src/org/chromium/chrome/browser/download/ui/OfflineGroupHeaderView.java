@@ -49,7 +49,7 @@ public class OfflineGroupHeaderView
         super(context, attrs);
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
         mIconBackgroundColorSelected =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.google_grey_600);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_grey_600);
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
 

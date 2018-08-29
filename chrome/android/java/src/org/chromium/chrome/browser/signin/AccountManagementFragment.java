@@ -341,7 +341,7 @@ public class AccountManagementFragment extends PreferenceFragment
             Drawable newIcon = ApiCompatibilityUtils.getDrawable(
                     getResources(), R.drawable.ic_drive_site_white_24dp);
             newIcon.mutate().setColorFilter(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.google_grey_600),
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color),
                     PorterDuff.Mode.SRC_IN);
             childContent.setIcon(newIcon);
         } else {

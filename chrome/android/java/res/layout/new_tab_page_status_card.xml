@@ -28,8 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textSize="14sp"
-        android:textColor="@color/snippets_text_color"
+        android:textAppearance="@style/BlackBody"
         app:leading="20dp"
         tools:text="Status card body can be over multiple lines and quite wide" />
 
