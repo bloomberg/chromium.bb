@@ -34,7 +34,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -88,6 +90,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_SYNC_PASSWORDS = "sync_passwords";
     private static final String PREF_SYNC_RECENT_TABS = "sync_recent_tabs";
     private static final String PREF_SYNC_SETTINGS = "sync_settings";
+    private static final String PREF_SYNC_ACTIVITY_AND_INTERACTIONS =
+            "sync_activity_and_interactions";
+    private static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     private static final String PREF_ENCRYPTION = "encryption";
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
@@ -136,9 +141,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private CheckBoxPreference mSyncPasswords;
     private CheckBoxPreference mSyncRecentTabs;
     private CheckBoxPreference mSyncSettings;
+    private CheckBoxPreference mSyncActivityAndInteractions;
     // Contains preferences for all sync data types.
     private CheckBoxPreference[] mSyncAllTypes;
 
+    private Preference mGoogleActivityControls;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private Preference mSyncErrorCard;
@@ -191,7 +198,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncPasswords = (CheckBoxPreference) findPreference(PREF_SYNC_PASSWORDS);
         mSyncRecentTabs = (CheckBoxPreference) findPreference(PREF_SYNC_RECENT_TABS);
         mSyncSettings = (CheckBoxPreference) findPreference(PREF_SYNC_SETTINGS);
+        mSyncActivityAndInteractions =
+                (CheckBoxPreference) findPreference(PREF_SYNC_ACTIVITY_AND_INTERACTIONS);
 
+        mGoogleActivityControls = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
         mSyncEncryption = findPreference(PREF_ENCRYPTION);
         mSyncEncryption.setOnPreferenceClickListener(
                 toOnClickListener(this::onSyncEncryptionClicked));
@@ -202,9 +212,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncErrorCard.setOnPreferenceClickListener(
                 toOnClickListener(this::onSyncErrorCardClicked));
 
-        mSyncAllTypes =
-                new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks, mSyncPaymentsIntegration,
-                        mSyncHistory, mSyncPasswords, mSyncRecentTabs, mSyncSettings};
+        mSyncAllTypes = new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks,
+                mSyncPaymentsIntegration, mSyncHistory, mSyncPasswords, mSyncRecentTabs,
+                mSyncSettings, mSyncActivityAndInteractions};
         for (CheckBoxPreference type : mSyncAllTypes) {
             type.setOnPreferenceChangeListener(this);
         }
@@ -245,6 +255,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (!ContextualSearchFieldTrial.isEnabled()) {
             removePreference(mNonpersonalizedServices, mContextualSearch);
             mContextualSearch = null;
+        }
+
+        if (Profile.getLastUsedProfile().isChild()) {
+            mGoogleActivityControls.setSummary(
+                    R.string.sign_in_google_activity_controls_message_child_account);
         }
 
         updatePreferences();
@@ -501,6 +516,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORDS);
         if (mSyncRecentTabs.isChecked()) types.add(ModelType.PROXY_TABS);
         if (mSyncSettings.isChecked()) types.add(ModelType.PREFERENCES);
+        if (mSyncActivityAndInteractions.isChecked()) types.add(ModelType.USER_EVENTS);
         return types;
     }
 
@@ -602,6 +618,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         displayCustomPassphraseDialog();
     }
 
+    private void onGoogleActivityControlsClicked(String signedInAccountName) {
+        AppHooks.get().createGoogleActivityController().openWebAndAppActivitySettings(
+                getActivity(), signedInAccountName);
+        RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
+    }
+
     private void onSyncEncryptionClicked() {
         if (!mProfileSyncService.isEngineInitialized()) return;
 
@@ -659,6 +681,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                     passwordSyncConfigurable && syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
             mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
+            mSyncActivityAndInteractions.setChecked(syncTypes.contains(ModelType.USER_EVENTS));
         }
     }
 
@@ -794,6 +817,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
             mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
             mSyncGroup.setEnabled(true);
+
+            mGoogleActivityControls.setOnPreferenceClickListener(
+                    toOnClickListener(() -> onGoogleActivityControlsClicked(signedInAccountName)));
         } else {
             getPreferenceScreen().addPreference(mSigninPreference);
             getPreferenceScreen().removePreference(mUseSyncAndAllServices);

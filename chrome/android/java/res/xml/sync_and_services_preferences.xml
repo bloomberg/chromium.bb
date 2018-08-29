@@ -61,8 +61,8 @@
             android:summary="@string/sync_activity_and_interactions_summary"/>
         <org.chromium.chrome.browser.preferences.ChromeBasePreference
             android:key="google_activity_controls"
-            android:title="@string/sign_in_google_activity_controls"
-            android:summary="@string/sign_in_google_activity_controls_message"/>
+            android:title="@string/sign_in_google_activity_controls_title"
+            android:summary="@string/sign_in_google_activity_controls_summary"/>
         <org.chromium.chrome.browser.preferences.ChromeBasePreference
             android:key="encryption"
             android:title="@string/sync_encryption"/>
