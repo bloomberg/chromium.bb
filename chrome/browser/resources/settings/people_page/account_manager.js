@@ -27,6 +27,12 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * The targeted account for menu operations.
+     * @private {?settings.Account}
+     */
+    actionMenuAccount_: Object,
   },
 
   /** @private {?settings.AccountManagerBrowserProxy} */
@@ -68,4 +74,34 @@ Polymer({
       this.set('accounts_', accounts);
     });
   },
+
+  /**
+   * Opens the Account actions menu.
+   * @param {!{model: !{item: settings.Account}, target: !Element}} event
+   * @private
+   */
+  onAccountActionsMenuButtonTap_: function(event) {
+    this.actionMenuAccount_ = event.model.item;
+    /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
+        .showAt(event.target);
+  },
+
+  /**
+   * Closes action menu and resets action menu model.
+   * @private
+   */
+  closeActionMenu_: function() {
+    this.$$('cr-action-menu').close();
+    this.actionMenuAccount_ = null;
+  },
+
+  /**
+   * Removes the account being pointed to by |this.actionMenuAccount_|.
+   * @private
+   */
+  onRemoveAccountTap_: function() {
+    this.browserProxy_.removeAccount(
+        /** @type {?settings.Account} */ (this.actionMenuAccount_));
+    this.closeActionMenu_();
+  }
 });

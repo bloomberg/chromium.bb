@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -51,6 +52,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "addAccount" message callback.
   void HandleAddAccount(const base::ListValue* args);
 
+  // WebUI "removeAccount" message callback.
+  void HandleRemoveAccount(const base::ListValue* args);
+
   // |AccountManager::GetAccounts| callback.
   void GetAccountsCallbackHandler(
       base::Value callback_id,
@@ -64,6 +68,8 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
 
   // A non-owning pointer to |AccountTrackerService|.
   AccountTrackerService* const account_tracker_service_;
+
+  chromeos::AccountMapperUtil account_mapper_util_;
 
   base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);
