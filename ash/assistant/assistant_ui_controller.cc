@@ -289,10 +289,20 @@ void AssistantUiController::CloseUi(AssistantSource source) {
 }
 
 void AssistantUiController::ToggleUi(AssistantSource source) {
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
-    CloseUi(source);
-  else
+  // When not visible, toggling will show the UI.
+  if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible) {
     ShowUi(source);
+    return;
+  }
+
+  // When in mini state, toggling will restore the main UI.
+  if (assistant_ui_model_.ui_mode() == AssistantUiMode::kMiniUi) {
+    UpdateUiMode(AssistantUiMode::kMainUi);
+    return;
+  }
+
+  // In all other cases, toggling closes the UI.
+  CloseUi(source);
 }
 
 void AssistantUiController::UpdateUiMode(
