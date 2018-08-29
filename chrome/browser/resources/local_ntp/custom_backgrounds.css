@@ -68,9 +68,13 @@ html[dir=rtl] #edit-bg {
   bottom: 44px;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
   left: auto;
-  padding: 0 0 16px 0;
+  padding: 0;
   position: fixed;
   right: 16px;
+}
+
+#edit-bg-menu {
+  padding: 0 0 16px 0;
   width: 325px;
 }
 
@@ -212,7 +216,7 @@ html[dir=rtl] .bg-option-text {
 /* The width is decided by the longest text length plus 16px margin on the
 right, so that every text can stay on its row even on the smallest window */
 @media (max-width: 356px) {
-  #edit-bg-dialog {
+  #edit-bg-menu {
     width: 232px;
   }
 }
