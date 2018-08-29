@@ -483,7 +483,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-blo
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash Timeout ]
 crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Pass Crash Timeout ]
 
-crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/multicol-becomes-paged-fixed-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-auto-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-fixed-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/regular-block-becomes-multicol.html [ Failure ]
@@ -492,10 +491,6 @@ crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regula
 ### 1px diff with ref files.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
-
-### Will be fixed by crrev.com/c/1131562
-crbug.com/635619 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-gap-percentage-001.html [ Failure ]
-crbug.com/635619 virtual/layout_ng_experimental/fast/multicol/span/preferred-widths.html [ Failure ]
 
 ### Missing refs, these are also skipped for existing layout.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
@@ -705,7 +700,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-inner-m
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-opacity-2nd-and-3rd-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-clipped.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-in-clipped.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-resize.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
@@ -724,9 +718,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-blo
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-block-before-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-block-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-block-into-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-block-into-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-float-after-content-in-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-float-before-content-in-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-after-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-before-content.html [ Failure ]
@@ -768,7 +759,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/fixedpos-child-bec
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox-starts-at-column-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox-starts-at-column-boundary-with-block.html [ Failure ]
-crbug.com/864156 virtual/layout_ng_experimental/fast/multicol/flexbox-with-overflow-auto-child-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flipped-blocks-border-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flipped-blocks-hit-test.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-after-break-after.html [ Failure ]
@@ -863,7 +853,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/hide-b
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/list-item.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/orphans-and-widows-balance.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/table-cell.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/orphans-relayout.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/outlines-at-column-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/out-of-flow/abspos-auto-position.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/out-of-flow/abspos-auto-position-on-line-at-boundary.html [ Failure ]
@@ -970,7 +959,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/table-margin-colla
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-float2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/three-inner-rows.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/unbreakable-block-too-tall-to-fit.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/unbreakable-content-taller-than-height-crash.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
