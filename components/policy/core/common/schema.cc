@@ -83,28 +83,139 @@ constexpr char kSensitiveValueMask[] = "********";
 // pointer.
 const int kInvalid = -1;
 
-bool SchemaTypeToValueType(const std::string& type_string,
-                           base::Value::Type* type) {
-  // Note: "any" is not an accepted type.
-  static const struct {
-    const char* schema_type;
-    base::Value::Type value_type;
-  } kSchemaToValueTypeMap[] = {
-    { schema::kArray,        base::Value::Type::LIST       },
-    { schema::kBoolean,      base::Value::Type::BOOLEAN    },
-    { schema::kInteger,      base::Value::Type::INTEGER    },
-    { schema::kNull,         base::Value::Type::NONE       },
-    { schema::kNumber,       base::Value::Type::DOUBLE     },
-    { schema::kObject,       base::Value::Type::DICTIONARY },
-    { schema::kString,       base::Value::Type::STRING     },
-  };
-  for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
-    if (kSchemaToValueTypeMap[i].schema_type == type_string) {
-      *type = kSchemaToValueTypeMap[i].value_type;
-      return true;
-    }
-  }
-  return false;
+// Maps a schema key to the corresponding base::Value::Type
+struct SchemaKeyToValueType {
+  const char* key;
+  base::Value::Type type;
+};
+
+// Allowed types and their base::Value::Type equivalent. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kSchemaTypesToValueTypes[] = {
+    {schema::kArray, base::Value::Type::LIST},
+    {schema::kBoolean, base::Value::Type::BOOLEAN},
+    {schema::kInteger, base::Value::Type::INTEGER},
+    {schema::kNumber, base::Value::Type::DOUBLE},
+    {schema::kObject, base::Value::Type::DICTIONARY},
+    {schema::kString, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kSchemaTypesToValueTypesEnd =
+    kSchemaTypesToValueTypes + base::size(kSchemaTypesToValueTypes);
+
+// Allowed attributes and types for type 'array'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForArray[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kItems, base::Value::Type::DICTIONARY},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForArrayEnd =
+    kAttributesAndTypesForArray + base::size(kAttributesAndTypesForArray);
+
+// Allowed attributes and types for type 'boolean'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForBoolean[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForBooleanEnd =
+    kAttributesAndTypesForBoolean + base::size(kAttributesAndTypesForBoolean);
+
+// Allowed attributes and types for type 'integer'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForInteger[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kEnum, base::Value::Type::LIST},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kMaximum, base::Value::Type::DOUBLE},
+    {schema::kMinimum, base::Value::Type::DOUBLE},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForIntegerEnd =
+    kAttributesAndTypesForInteger + base::size(kAttributesAndTypesForInteger);
+
+// Allowed attributes and types for type 'number'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForNumber[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForNumberEnd =
+    kAttributesAndTypesForNumber + base::size(kAttributesAndTypesForNumber);
+
+// Allowed attributes and types for type 'object'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForObject[] = {
+    {schema::kAdditionalProperties, base::Value::Type::DICTIONARY},
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kPatternProperties, base::Value::Type::DICTIONARY},
+    {schema::kProperties, base::Value::Type::DICTIONARY},
+    {schema::kRequired, base::Value::Type::LIST},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForObjectEnd =
+    kAttributesAndTypesForObject + base::size(kAttributesAndTypesForObject);
+
+// Allowed attributes and types for $ref. These are ordered alphabetically to
+// perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForRef[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kRef, base::Value::Type::STRING},
+    {schema::kTitle, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForRefEnd =
+    kAttributesAndTypesForRef + base::size(kAttributesAndTypesForRef);
+
+// Allowed attributes and types for type 'string'. These are ordered
+// alphabetically to perform binary search.
+const SchemaKeyToValueType kAttributesAndTypesForString[] = {
+    {schema::kDescription, base::Value::Type::STRING},
+    {schema::kEnum, base::Value::Type::LIST},
+    {schema::kId, base::Value::Type::STRING},
+    {schema::kPattern, base::Value::Type::STRING},
+    {schema::kTitle, base::Value::Type::STRING},
+    {schema::kType, base::Value::Type::STRING},
+};
+const SchemaKeyToValueType* kAttributesAndTypesForStringEnd =
+    kAttributesAndTypesForString + base::size(kAttributesAndTypesForString);
+
+// Helper for std::lower_bound.
+bool CompareToString(const SchemaKeyToValueType& entry,
+                     const std::string& key) {
+  return entry.key < key;
+}
+
+// Returns true if a SchemaKeyToValueType with key==|schema_key| can be found in
+// the array represented by |begin| and |end|. If so, |value_type| will be set
+// to the SchemaKeyToValueType value type.
+bool MapSchemaKeyToValueType(const std::string& schema_key,
+                             const SchemaKeyToValueType* begin,
+                             const SchemaKeyToValueType* end,
+                             base::Value::Type* value_type) {
+  const SchemaKeyToValueType* entry =
+      std::lower_bound(begin, end, schema_key, CompareToString);
+  if (entry == end || entry->key != schema_key)
+    return false;
+  if (value_type)
+    *value_type = entry->type;
+  return true;
+}
+
+// Shorthand method for |SchemaTypeToValueType()| with
+// |kSchemaTypesToValueTypes|.
+bool SchemaTypeToValueType(const std::string& schema_type,
+                           base::Value::Type* value_type) {
+  return MapSchemaKeyToValueType(schema_type, kSchemaTypesToValueTypes,
+                                 kSchemaTypesToValueTypesEnd, value_type);
 }
 
 bool StrategyAllowInvalidOnTopLevel(SchemaOnErrorStrategy strategy) {
@@ -155,278 +266,226 @@ void AddDictKeyPrefixToPath(const std::string& key, std::string* path) {
   }
 }
 
+bool IgnoreUnknownAttributes(int options) {
+  return (options & kSchemaOptionsIgnoreUnknownAttributes);
+}
+
+// Check that the value's type and the expected type are equal. We also allow
+// integers when expecting doubles.
+bool CheckType(const base::Value* value, base::Value::Type expected_type) {
+  return value->type() == expected_type ||
+         (value->is_int() && expected_type == base::Value::Type::DOUBLE);
+}
+
+// Returns true if |type| is supported as schema's 'type' value.
 bool IsValidType(const std::string& type) {
-  static const char* kValidTypes[] = {
-      schema::kAny,  schema::kArray,  schema::kBoolean, schema::kInteger,
-      schema::kNull, schema::kNumber, schema::kObject,  schema::kString,
-  };
-  const char** end = kValidTypes + base::size(kValidTypes);
-  return std::find(kValidTypes, end, type) != end;
+  return MapSchemaKeyToValueType(type, kSchemaTypesToValueTypes,
+                                 kSchemaTypesToValueTypesEnd, nullptr);
 }
 
-// Maps a schema attribute name to its expected type.
-struct ExpectedType {
-  const char* key;
-  base::Value::Type type;
-};
-
-// Helper for std::lower_bound.
-bool CompareToString(const ExpectedType& entry, const std::string& key) {
-  return entry.key < key;
-}
-
-// If |value| is a dictionary, returns the "name" attribute of |value| or NULL
-// if |value| does not contain a "name" attribute. Otherwise, returns |value|.
-const base::Value* ExtractNameFromDictionary(const base::Value* value) {
-  const base::DictionaryValue* value_dict = nullptr;
-  const base::Value* name_value = nullptr;
-  if (value->GetAsDictionary(&value_dict)) {
-    value_dict->Get("name", &name_value);
-    return name_value;
+// Validate that |dict| only contains attributes that are allowed for the
+// corresponding value of 'type'. Also ensure that all of those attributes are
+// of the expected type. |options| can be used to ignore unknown attributes.
+bool ValidateAttributesAndTypes(const base::DictionaryValue* dict,
+                                const std::string& type,
+                                int options,
+                                std::string* error) {
+  const SchemaKeyToValueType* begin = nullptr;
+  const SchemaKeyToValueType* end = nullptr;
+  if (type == schema::kArray) {
+    begin = kAttributesAndTypesForArray;
+    end = kAttributesAndTypesForArrayEnd;
+  } else if (type == schema::kBoolean) {
+    begin = kAttributesAndTypesForBoolean;
+    end = kAttributesAndTypesForBooleanEnd;
+  } else if (type == schema::kInteger) {
+    begin = kAttributesAndTypesForInteger;
+    end = kAttributesAndTypesForIntegerEnd;
+  } else if (type == schema::kNumber) {
+    begin = kAttributesAndTypesForNumber;
+    end = kAttributesAndTypesForNumberEnd;
+  } else if (type == schema::kObject) {
+    begin = kAttributesAndTypesForObject;
+    end = kAttributesAndTypesForObjectEnd;
+  } else if (type == schema::kRef) {
+    begin = kAttributesAndTypesForRef;
+    end = kAttributesAndTypesForRefEnd;
+  } else if (type == schema::kString) {
+    begin = kAttributesAndTypesForString;
+    end = kAttributesAndTypesForStringEnd;
+  } else {
+    NOTREACHED() << "Type should be a valid schema type or '$ref'.";
   }
-  return value;
+
+  base::Value::Type expected_type = base::Value::Type::NONE;
+  for (const auto& it : dict->DictItems()) {
+    if (MapSchemaKeyToValueType(it.first, begin, end, &expected_type)) {
+      if (!CheckType(&it.second, expected_type)) {
+        *error = base::StringPrintf("Invalid type for attribute '%s'",
+                                    it.first.c_str());
+        return false;
+      }
+    } else if (!IgnoreUnknownAttributes(options)) {
+      *error = base::StringPrintf("Unknown attribute '%s'", it.first.c_str());
+      return false;
+    }
+  }
+  return true;
 }
 
+// Validates that |enum_value| is a list and its items are all of type |type|.
+bool ValidateEnum(const base::Value* enum_value,
+                  const std::string& type,
+                  std::string* error) {
+  if (enum_value->type() != base::Value::Type::LIST ||
+      enum_value->GetList().empty()) {
+    *error = "Attribute 'enum' must be a non-empty list.";
+    return false;
+  }
+  base::Value::Type expected_item_type = base::Value::Type::NONE;
+  MapSchemaKeyToValueType(type, kSchemaTypesToValueTypes,
+                          kSchemaTypesToValueTypesEnd, &expected_item_type);
+  for (const base::Value& item : enum_value->GetList()) {
+    if (item.type() != expected_item_type) {
+      *error = base::StringPrintf(
+          "Attribute 'enum' for type '%s' contains items with invalid types",
+          type.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+// Forward declaration (used in ValidateProperties).
+bool IsValidSchema(const base::DictionaryValue* dict,
+                   int options,
+                   std::string* error);
+
+// Validates that the values in the |properties| dict are valid schemas.
+bool ValidateProperties(const base::Value* properties,
+                        int options,
+                        std::string* error) {
+  for (const auto& dict_it : properties->DictItems()) {
+    if (dict_it.second.type() != base::Value::Type::DICTIONARY) {
+      *error = base::StringPrintf("Schema for property '%s' must be a dict.",
+                                  dict_it.first.c_str());
+      return false;
+    }
+    const base::DictionaryValue* property_schema_dict;
+    dict_it.second.GetAsDictionary(&property_schema_dict);
+    if (!IsValidSchema(property_schema_dict, options, error))
+      return false;
+  }
+  return true;
+}
+
+// Checks whether the passed dict is a valid schema. See
+// |kAllowedAttributesAndTypes| for a list of supported types, supported
+// attributes and their expected types. Values for 'minimum' and 'maximum' for
+// type 'integer' can be of type int or double. Referenced IDs ($ref) are not
+// checked for existence and IDs are not checked for duplicates. The 'pattern'
+// attribute and keys for 'patternProperties' are not checked for valid regulax
+// expression syntax. Invalid regular expressions will cause a value validation
+// error.
 bool IsValidSchema(const base::DictionaryValue* dict,
                    int options,
                    std::string* error) {
-  // This array must be sorted, so that std::lower_bound can perform a
-  // binary search.
-  static const ExpectedType kExpectedTypes[] = {
-      // Note: kRef == "$ref", kSchema == "$schema"
-      {schema::kRef, base::Value::Type::STRING},
-      {schema::kSchema, base::Value::Type::STRING},
+  // Validate '$ref'.
+  const base::Value* ref_id = dict->FindKey(schema::kRef);
+  if (ref_id)
+    return ValidateAttributesAndTypes(dict, schema::kRef, options, error);
 
-      {schema::kAdditionalProperties, base::Value::Type::DICTIONARY},
-      {schema::kChoices, base::Value::Type::LIST},
-      {schema::kDescription, base::Value::Type::STRING},
-      {schema::kEnum, base::Value::Type::LIST},
-      {schema::kId, base::Value::Type::STRING},
-      {schema::kMaxItems, base::Value::Type::INTEGER},
-      {schema::kMaxLength, base::Value::Type::INTEGER},
-      {schema::kMaximum, base::Value::Type::DOUBLE},
-      {schema::kMinItems, base::Value::Type::INTEGER},
-      {schema::kMinLength, base::Value::Type::INTEGER},
-      {schema::kMinimum, base::Value::Type::DOUBLE},
-      {schema::kOptional, base::Value::Type::BOOLEAN},
-      {schema::kPattern, base::Value::Type::STRING},
-      {schema::kPatternProperties, base::Value::Type::DICTIONARY},
-      {schema::kProperties, base::Value::Type::DICTIONARY},
-      {schema::kRequired, base::Value::Type::LIST},
-      {schema::kTitle, base::Value::Type::STRING},
-  };
-
-  bool has_type_or_ref = false;
-  const base::ListValue* list_value = nullptr;
-  const base::DictionaryValue* dictionary_value = nullptr;
-  std::string string_value;
-
-  const base::ListValue* required_properties_value = nullptr;
-  const base::DictionaryValue* properties_value = nullptr;
-
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    // Validate the "type" attribute, which may be a string or a list.
-    if (it.key() == schema::kType) {
-      switch (it.value().type()) {
-        case base::Value::Type::STRING:
-          it.value().GetAsString(&string_value);
-          if (!IsValidType(string_value)) {
-            *error = "Invalid value for type attribute";
-            return false;
-          }
-          break;
-        case base::Value::Type::LIST:
-          it.value().GetAsList(&list_value);
-          for (size_t i = 0; i < list_value->GetSize(); ++i) {
-            if (!list_value->GetString(i, &string_value) ||
-                !IsValidType(string_value)) {
-              *error = "Invalid value for type attribute";
-              return false;
-            }
-          }
-          break;
-        default:
-          *error = "Invalid value for type attribute";
-          return false;
-      }
-      has_type_or_ref = true;
-      continue;
-    }
-
-    // Validate the "items" attribute, which is a schema or a list of schemas.
-    if (it.key() == schema::kItems) {
-      if (it.value().GetAsDictionary(&dictionary_value)) {
-        if (!IsValidSchema(dictionary_value, options, error)) {
-          DCHECK(!error->empty());
-          return false;
-        }
-      } else if (it.value().GetAsList(&list_value)) {
-        for (size_t i = 0; i < list_value->GetSize(); ++i) {
-          if (!list_value->GetDictionary(i, &dictionary_value)) {
-            *error = base::StringPrintf(
-                "Invalid entry in items attribute at index %d",
-                static_cast<int>(i));
-            return false;
-          }
-          if (!IsValidSchema(dictionary_value, options, error)) {
-            DCHECK(!error->empty());
-            return false;
-          }
-        }
-      } else {
-        *error = "Invalid value for items attribute";
-        return false;
-      }
-      continue;
-    }
-
-    // All the other attributes have a single valid type.
-    const ExpectedType* end = kExpectedTypes + base::size(kExpectedTypes);
-    const ExpectedType* entry =
-        std::lower_bound(kExpectedTypes, end, it.key(), CompareToString);
-    if (entry == end || entry->key != it.key()) {
-      if (options & Schema::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES)
-        continue;
-      *error = base::StringPrintf("Invalid attribute %s", it.key().c_str());
-      return false;
-    }
-
-    // Integer can be converted to double.
-    if (!(it.value().type() == entry->type ||
-          (it.value().is_int() && entry->type == base::Value::Type::DOUBLE))) {
-      *error = base::StringPrintf("Invalid value for %s attribute",
-                                  it.key().c_str());
-      return false;
-    }
-
-    // base::Value::Type::INTEGER attributes must be >= 0.
-    // This applies to "minItems", "maxItems", "minLength" and "maxLength".
-    if (it.value().is_int()) {
-      int integer_value;
-      it.value().GetAsInteger(&integer_value);
-      if (integer_value < 0) {
-        *error = base::StringPrintf("Value of %s must be >= 0, got %d",
-                                    it.key().c_str(), integer_value);
-        return false;
-      }
-    }
-
-    // Validate the "properties" attribute. Each entry maps a key to a schema.
-    if (it.key() == schema::kProperties) {
-      it.value().GetAsDictionary(&properties_value);
-      for (base::DictionaryValue::Iterator iter(*properties_value);
-           !iter.IsAtEnd(); iter.Advance()) {
-        if (!iter.value().GetAsDictionary(&dictionary_value)) {
-          *error = "properties must be a dictionary";
-          return false;
-        }
-        if (!IsValidSchema(dictionary_value, options, error)) {
-          DCHECK(!error->empty());
-          return false;
-        }
-      }
-    }
-
-    // Validate the "patternProperties" attribute. Each entry maps a regular
-    // expression to a schema. The validity of the regular expression expression
-    // won't be checked here for performance reasons. Instead, invalid regular
-    // expressions will be caught as validation errors in Validate().
-    if (it.key() == schema::kPatternProperties) {
-      it.value().GetAsDictionary(&dictionary_value);
-      for (base::DictionaryValue::Iterator iter(*dictionary_value);
-           !iter.IsAtEnd(); iter.Advance()) {
-        if (!iter.value().GetAsDictionary(&dictionary_value)) {
-          *error = "patternProperties must be a dictionary";
-          return false;
-        }
-        if (!IsValidSchema(dictionary_value, options, error)) {
-          DCHECK(!error->empty());
-          return false;
-        }
-      }
-    }
-
-    // Validate "additionalProperties" attribute, which is a schema.
-    if (it.key() == schema::kAdditionalProperties) {
-      it.value().GetAsDictionary(&dictionary_value);
-      if (!IsValidSchema(dictionary_value, options, error)) {
-        DCHECK(!error->empty());
-        return false;
-      }
-    }
-
-    // Validate "required" attribute.
-    if (it.key() == schema::kRequired) {
-      it.value().GetAsList(&required_properties_value);
-      for (const base::Value& value : *required_properties_value) {
-        if (value.type() != base::Value::Type::STRING) {
-          *error = "Invalid value in 'required' attribute";
-          return false;
-        }
-      }
-    }
-
-    // Validate the values contained in an "enum" attribute.
-    if (it.key() == schema::kEnum) {
-      it.value().GetAsList(&list_value);
-      for (size_t i = 0; i < list_value->GetSize(); ++i) {
-        const base::Value* value = nullptr;
-        list_value->Get(i, &value);
-        // Sometimes the enum declaration is a dictionary with the enum value
-        // under "name".
-        value = ExtractNameFromDictionary(value);
-        if (!value) {
-          *error = "Invalid value in enum attribute";
-          return false;
-        }
-        switch (value->type()) {
-          case base::Value::Type::NONE:
-          case base::Value::Type::BOOLEAN:
-          case base::Value::Type::INTEGER:
-          case base::Value::Type::DOUBLE:
-          case base::Value::Type::STRING:
-            break;
-          default:
-            *error = "Invalid value in enum attribute";
-            return false;
-        }
-      }
-    }
-
-    // Validate the schemas contained in a "choices" attribute.
-    if (it.key() == schema::kChoices) {
-      it.value().GetAsList(&list_value);
-      for (size_t i = 0; i < list_value->GetSize(); ++i) {
-        if (!list_value->GetDictionary(i, &dictionary_value)) {
-          *error = "Invalid choices attribute";
-          return false;
-        }
-        if (!IsValidSchema(dictionary_value, options, error)) {
-          DCHECK(!error->empty());
-          return false;
-        }
-      }
-    }
-
-    if (it.key() == schema::kRef)
-      has_type_or_ref = true;
-  }
-
-  // Check that properties in'required' are in the 'properties' object.
-  if (required_properties_value) {
-    for (const base::Value& value : required_properties_value->GetList()) {
-      const std::string& name = value.GetString();
-      if (!properties_value || !properties_value->HasKey(name)) {
-        *error = "Property '" + name +
-                 "' was listed in 'required', but not defined in 'properties'.";
-        return false;
-      }
-    }
-  }
-
-  if (!has_type_or_ref) {
-    *error = "Schema must have a type or a $ref attribute";
+  // Validate 'type'.
+  const base::Value* type = dict->FindKey(schema::kType);
+  if (!type) {
+    *error = "Each schema must have a 'type' or '$ref'.";
     return false;
+  }
+  if (type->type() != base::Value::Type::STRING) {
+    *error = "Attribute 'type' must be a string.";
+    return false;
+  }
+  const std::string type_string = type->GetString();
+  if (!IsValidType(type_string)) {
+    *error = base::StringPrintf("Unknown type '%s'.", type_string.c_str());
+    return false;
+  }
+
+  // Validate attributes and expected types.
+  if (!ValidateAttributesAndTypes(dict, type_string, options, error))
+    return false;
+
+  // Validate 'enum' attribute.
+  if (type_string == schema::kString || type_string == schema::kInteger) {
+    const base::Value* enum_list = dict->FindKey(schema::kEnum);
+    if (enum_list && !ValidateEnum(enum_list, type_string, error))
+      return false;
+  }
+
+  if (type_string == schema::kInteger) {
+    // Validate 'minimum' > 'maximum'.
+    const base::Value* minimum_value = dict->FindKey(schema::kMinimum);
+    const base::Value* maximum_value = dict->FindKey(schema::kMaximum);
+    if (minimum_value && maximum_value) {
+      double minimum = minimum_value->is_int() ? minimum_value->GetInt()
+                                               : minimum_value->GetDouble();
+      double maximum = maximum_value->is_int() ? maximum_value->GetInt()
+                                               : maximum_value->GetDouble();
+      if (minimum > maximum) {
+        *error = base::StringPrintf("Invalid range specified [%f;%f].", minimum,
+                                    maximum);
+        return false;
+      }
+    }
+  } else if (type_string == schema::kArray) {
+    // Validate type 'array'.
+    const base::Value* items_value = dict->FindKey(schema::kItems);
+    if (!items_value) {
+      *error = "Schema of type 'array' must have a schema in 'items'.";
+      return false;
+    }
+    const base::DictionaryValue* items_dict;
+    items_value->GetAsDictionary(&items_dict);
+    if (!IsValidSchema(items_dict, options, error))
+      return false;
+  } else if (type_string == schema::kObject) {
+    // Validate type 'object'.
+    const base::Value* properties = dict->FindKey(schema::kProperties);
+    if (properties && !ValidateProperties(properties, options, error))
+      return false;
+
+    const base::Value* pattern_properties =
+        dict->FindKey(schema::kPatternProperties);
+    if (pattern_properties &&
+        !ValidateProperties(pattern_properties, options, error)) {
+      return false;
+    }
+
+    const base::Value* additional_properties =
+        dict->FindKey(schema::kAdditionalProperties);
+    if (additional_properties) {
+      const base::DictionaryValue* additional_properties_dict;
+      additional_properties->GetAsDictionary(&additional_properties_dict);
+      if (!IsValidSchema(additional_properties_dict, options, error))
+        return false;
+    }
+
+    const base::Value* required = dict->FindKey(schema::kRequired);
+    if (required) {
+      for (const base::Value& item : required->GetList()) {
+        if (!item.is_string()) {
+          *error = "Attribute 'required' may only contain strings.";
+          return false;
+        }
+        const std::string property_name = item.GetString();
+        if (!properties || !properties->FindKey(property_name)) {
+          *error = base::StringPrintf(
+              "Attribute 'required' contains unknown property '%s'.",
+              property_name.c_str());
+          return false;
+        }
+      }
+    }
   }
 
   return true;
@@ -1366,8 +1425,8 @@ void Schema::MaskSensitiveValues(base::Value* value) const {
 Schema Schema::Parse(const std::string& content, std::string* error) {
   // Validate as a generic JSON schema, and ignore unknown attributes; they
   // may become used in a future version of the schema format.
-  std::unique_ptr<base::DictionaryValue> dict =
-      IsValidSchema(content, Schema::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES, error);
+  std::unique_ptr<base::DictionaryValue> dict = Schema::ParseToDictAndValidate(
+      content, kSchemaOptionsIgnoreUnknownAttributes, error);
   if (!dict)
     return Schema();
 
@@ -1396,14 +1455,7 @@ Schema Schema::Parse(const std::string& content, std::string* error) {
 }
 
 // static
-std::unique_ptr<base::DictionaryValue> Schema::IsValidSchema(
-    const std::string& schema,
-    std::string* error) {
-  return Schema::IsValidSchema(schema, 0, error);
-}
-
-// static
-std::unique_ptr<base::DictionaryValue> Schema::IsValidSchema(
+std::unique_ptr<base::DictionaryValue> Schema::ParseToDictAndValidate(
     const std::string& schema,
     int validator_options,
     std::string* error) {
@@ -1418,7 +1470,7 @@ std::unique_ptr<base::DictionaryValue> Schema::IsValidSchema(
     *error = "Schema must be a JSON object";
     return nullptr;
   }
-  if (!policy::IsValidSchema(dict.get(), validator_options, error))
+  if (!IsValidSchema(dict.get(), validator_options, error))
     return nullptr;
   return dict;
 }

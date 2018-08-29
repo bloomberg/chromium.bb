@@ -26,21 +26,20 @@ class PolicyConverterTest : public testing::Test {
  public:
   void SetUp() override {
     const char kSchemaTemplate[] =
-        "{"
-        "  \"type\": \"object\","
-        "  \"properties\": {"
-        "    \"null\": { \"type\": \"null\" },"
-        "    \"bool\": { \"type\": \"boolean\" },"
-        "    \"int\": { \"type\": \"integer\" },"
-        "    \"double\": { \"type\": \"number\" },"
-        "    \"string\": { \"type\": \"string\" },"
-        "    \"list\": {"
-        "      \"type\": \"array\","
-        "      \"items\": { \"type\": \"string\"}"
-        "    },"
-        "    \"dict\": { \"type\": \"object\" }"
-        "  }"
-        "}";
+        R"({
+        "type": "object",
+        "properties": {
+          "string": { "type": "string" },
+          "int": { "type": "integer" },
+          "bool": { "type": "boolean" },
+          "double": { "type": "number" },
+          "list": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dict": { "type": "object" }
+        }
+      })";
 
     std::string error;
     schema_ = Schema::Parse(kSchemaTemplate, &error);
@@ -93,13 +92,6 @@ class PolicyConverterTest : public testing::Test {
 
   Schema schema_;
 };
-
-TEST_F(PolicyConverterTest, ConvertToNullValue) {
-  Schema null_schema = schema_.GetKnownProperty("null");
-  ASSERT_TRUE(null_schema.valid());
-
-  EXPECT_EQ("null", Convert(new Value("foo"), null_schema));
-}
 
 TEST_F(PolicyConverterTest, ConvertToBoolValue) {
   Schema bool_schema = schema_.GetKnownProperty("bool");
