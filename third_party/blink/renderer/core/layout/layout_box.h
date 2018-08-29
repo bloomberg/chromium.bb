@@ -1462,6 +1462,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
  protected:
+  ~LayoutBox() override;
+
   virtual bool ComputeShouldClipOverflow() const;
   virtual LayoutRect ControlClipRect(const LayoutPoint&) const {
     return LayoutRect();
@@ -1733,7 +1735,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     // The first fragment of the inline box containing this LayoutBox, for
     // atomic inline elements. Valid only when
     // IsInLayoutNGInlineFormattingContext().
-    NGPaintFragment* first_paint_fragment_;
+    scoped_refptr<NGPaintFragment> first_paint_fragment_;
   };
 
   std::unique_ptr<LayoutBoxRareData> rare_data_;
@@ -1817,7 +1819,7 @@ inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
 }
 
 inline NGPaintFragment* LayoutBox::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_.get()
                                                : nullptr;
 }
 

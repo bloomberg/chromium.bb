@@ -34,12 +34,13 @@ struct PaintInfo;
 //   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
 // - image (<img>, svg <image>) or video (<video>) elements that are
 //   placeholders for displaying them.
-class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
+class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
+                                    public DisplayItemClient,
                                     public ImageResourceObserver {
  public:
   NGPaintFragment(scoped_refptr<const NGPhysicalFragment>, NGPaintFragment*);
   ~NGPaintFragment() override;
-  static std::unique_ptr<NGPaintFragment> Create(
+  static scoped_refptr<NGPaintFragment> Create(
       scoped_refptr<const NGPhysicalFragment>);
 
   const NGPhysicalFragment& PhysicalFragment() const {
@@ -51,7 +52,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
   // Next/last fragment for  when this is fragmented.
   NGPaintFragment* Next() { return next_fragmented_.get(); }
-  void SetNext(std::unique_ptr<NGPaintFragment>);
+  void SetNext(scoped_refptr<NGPaintFragment>);
   NGPaintFragment* Last();
   NGPaintFragment* Last(const NGBreakToken&);
 
@@ -59,7 +60,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.
   NGPaintFragment* Parent() const { return parent_; }
-  const Vector<std::unique_ptr<NGPaintFragment>>& Children() const {
+  const Vector<scoped_refptr<NGPaintFragment>>& Children() const {
     return children_;
   }
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
@@ -177,7 +178,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
       NGPaintFragment* operator->() const { return current_; }
       iterator& operator++() {
         CHECK(current_);
-        current_ = current_->next_fragment_;
+        current_ = current_->next_fragment_.get();
         return *this;
       }
       bool operator==(const iterator& other) const {
@@ -200,9 +201,13 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
     // Returns the last |NGPaintFragment| in |FragmentRange| as STL container.
     // It is error to call |back()| for empty range.
-    // Note: The complicity of |back()| is O(n) where n is number of elements
+    // Note: The complexity of |back()| is O(n) where n is number of elements
     // in this |FragmentRange|.
     NGPaintFragment& back() const;
+
+    // Returns number of fragments in this range. The complexity is O(n) where n
+    // is number of elements.
+    wtf_size_t size() const;
 
    private:
     NGPaintFragment* first_;
@@ -220,6 +225,10 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
+
+  // Reset a range of NGPaintFragment in an inline formatting context that are
+  // for a LayoutObject.
+  static void ResetInlineFragmentsFor(const LayoutObject*);
 
   // Computes LocalVisualRect for an inline LayoutObject in the
   // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with
@@ -251,12 +260,12 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
 
   NGPaintFragment* parent_;
-  Vector<std::unique_ptr<NGPaintFragment>> children_;
+  Vector<scoped_refptr<NGPaintFragment>> children_;
 
   // The next fragment for when this is fragmented.
-  std::unique_ptr<NGPaintFragment> next_fragmented_;
+  scoped_refptr<NGPaintFragment> next_fragmented_;
 
-  NGPaintFragment* next_fragment_ = nullptr;
+  scoped_refptr<NGPaintFragment> next_fragment_;
   NGPhysicalOffset inline_offset_to_container_box_;
 
   //

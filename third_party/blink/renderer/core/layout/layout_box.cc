@@ -111,6 +111,13 @@ LayoutBox::LayoutBox(ContainerNode* node)
   SetIsBox();
 }
 
+LayoutBox::~LayoutBox() {
+#if DCHECK_IS_ON()
+  if (IsInLayoutNGInlineFormattingContext())
+    DCHECK(!first_paint_fragment_);
+#endif
+}
+
 PaintLayerType LayoutBox::LayerTypeRequired() const {
   // hasAutoZIndex only returns true if the element is positioned or a flex-item
   // since position:static elements that are not flex-items get their z-index
@@ -2193,7 +2200,7 @@ InlineBox* LayoutBox::CreateInlineBox() {
 
 void LayoutBox::DirtyLineBoxes(bool full_layout) {
   if (IsInLayoutNGInlineFormattingContext()) {
-    first_paint_fragment_ = nullptr;
+    SetFirstInlineFragment(nullptr);
   } else if (inline_box_wrapper_) {
     if (full_layout) {
       inline_box_wrapper_->Destroy();
@@ -2206,6 +2213,7 @@ void LayoutBox::DirtyLineBoxes(bool full_layout) {
 
 void LayoutBox::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
+  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = fragment;
 }
 
@@ -2266,7 +2274,7 @@ void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
 
 void LayoutBox::DeleteLineBoxWrapper() {
   if (IsInLayoutNGInlineFormattingContext()) {
-    first_paint_fragment_ = nullptr;
+    SetFirstInlineFragment(nullptr);
   } else if (inline_box_wrapper_) {
     if (!DocumentBeingDestroyed())
       inline_box_wrapper_->Remove();

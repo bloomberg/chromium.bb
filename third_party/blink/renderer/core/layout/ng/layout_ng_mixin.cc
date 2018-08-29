@@ -262,7 +262,7 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     NGPaintFragment* last_paint_fragment,
-    std::unique_ptr<NGPaintFragment> paint_fragment) {
+    scoped_refptr<NGPaintFragment> paint_fragment) {
   if (paint_fragment) {
     // When paint fragment is replaced, the subtree needs paint invalidation to
     // re-compute paint properties in NGPaintFragment.
