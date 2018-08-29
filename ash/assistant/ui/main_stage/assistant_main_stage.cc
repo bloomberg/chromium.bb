@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 
+#include <algorithm>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -646,6 +648,9 @@ void AssistantMainStage::UpdateFooter() {
   // When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;
 
+  // Reset visibility to enable animation.
+  footer_->SetVisible(true);
+
   if (visible) {
     // The footer will animate up into position so we need to set an initial
     // offset transformation from which to animate.
@@ -697,8 +702,9 @@ bool AssistantMainStage::OnFooterAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   // The footer should only process events when visible. It is only visible when
   // there is no committed or pending query view.
-  footer_->set_can_process_events_within_subtree(!committed_query_view_ &&
-                                                 !pending_query_view_);
+  bool visible = !committed_query_view_ && !pending_query_view_;
+  footer_->set_can_process_events_within_subtree(visible);
+  footer_->SetVisible(visible);
 
   // Return false so that the observer does not destroy itself.
   return false;
