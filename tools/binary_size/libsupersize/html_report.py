@@ -307,8 +307,13 @@ def Run(args, parser):
       all_symbols=args.all_symbols
     )
 
-  logging.warning('Report saved to %s', args.output_report_file)
+  msg = [
+      'Done!',
+      'View using a local server via: ',
+      '    %s start_server %s',
+      'or upload to the hosted version here:',
+      '    https://storage.googleapis.com/chrome-supersize/index.html'
+      ]
   supersize_path = os.path.relpath(os.path.join(
       path_util.SRC_ROOT, 'tools', 'binary_size', 'supersize'))
-  logging.warning('Open server by running: \n    %s start_server %s',
-                  supersize_path, args.output_report_file)
+  logging.warning('\n'.join(msg),  supersize_path, args.output_report_file)
