@@ -57,8 +57,9 @@ TestUrlRequestCallback::UrlResponseInfo::UrlResponseInfo(
 
 TestUrlRequestCallback::UrlResponseInfo::~UrlResponseInfo() = default;
 
-TestUrlRequestCallback::TestUrlRequestCallback()
-    : done_(base::WaitableEvent::ResetPolicy::MANUAL,
+TestUrlRequestCallback::TestUrlRequestCallback(bool direct_executor)
+    : direct_executor_(direct_executor),
+      done_(base::WaitableEvent::ResetPolicy::MANUAL,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
       step_block_(base::WaitableEvent::ResetPolicy::MANUAL,
                   base::WaitableEvent::InitialState::NOT_SIGNALED) {}
@@ -67,13 +68,10 @@ TestUrlRequestCallback::~TestUrlRequestCallback() {
   ShutdownExecutor();
 }
 
-Cronet_ExecutorPtr TestUrlRequestCallback::GetExecutor(bool direct) {
-  if (executor_) {
-    CHECK(direct == allow_direct_executor_);
+Cronet_ExecutorPtr TestUrlRequestCallback::GetExecutor() {
+  if (executor_)
     return executor_;
-  }
-  allow_direct_executor_ = direct;
-  if (direct) {
+  if (direct_executor_) {
     executor_ =
         Cronet_Executor_CreateWith(TestUrlRequestCallback::ExecuteDirect);
   } else {
@@ -228,7 +226,7 @@ void TestUrlRequestCallback::ShutdownExecutor() {
 
 void TestUrlRequestCallback::CheckExecutorThread() {
   base::AutoLock lock(executor_lock_);
-  if (executor_thread_ && !allow_direct_executor_)
+  if (executor_thread_ && !direct_executor_)
     CHECK(executor_thread_->task_runner()->BelongsToCurrentThread());
 }
 
@@ -247,10 +245,14 @@ bool TestUrlRequestCallback::MaybeCancelOrPause(Cronet_UrlRequestPtr request) {
   }
   if (failure_type_ == CANCEL_ASYNC ||
       failure_type_ == CANCEL_ASYNC_WITHOUT_PAUSE) {
-    base::AutoLock lock(executor_lock_);
-    CHECK(executor_thread_);
-    executor_thread_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&Cronet_UrlRequest_Cancel, request));
+    if (direct_executor_) {
+      Cronet_UrlRequest_Cancel(request);
+    } else {
+      base::AutoLock lock(executor_lock_);
+      CHECK(executor_thread_);
+      executor_thread_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&Cronet_UrlRequest_Cancel, request));
+    }
   }
   return failure_type_ != CANCEL_ASYNC_WITHOUT_PAUSE;
 }
