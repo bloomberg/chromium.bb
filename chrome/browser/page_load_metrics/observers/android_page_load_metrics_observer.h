@@ -9,11 +9,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "net/nqe/network_quality_estimator.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace network {
+class NetworkQualityTracker;
+}
 
 class GURL;
 
@@ -42,10 +45,9 @@ class AndroidPageLoadMetricsObserver
  protected:
   AndroidPageLoadMetricsObserver(
       content::WebContents* web_contents,
-      net::NetworkQualityEstimator::NetworkQualityProvider*
-          network_quality_provider)
+      network::NetworkQualityTracker* network_quality_tracker)
       : web_contents_(web_contents),
-        network_quality_provider_(network_quality_provider) {}
+        network_quality_tracker_(network_quality_tracker) {}
 
   virtual void ReportNewNavigation();
 
@@ -77,8 +79,7 @@ class AndroidPageLoadMetricsObserver
   bool did_dispatch_on_main_resource_ = false;
   int64_t navigation_id_ = -1;
 
-  net::NetworkQualityEstimator::NetworkQualityProvider*
-      network_quality_provider_ = nullptr;
+  network::NetworkQualityTracker* network_quality_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidPageLoadMetricsObserver);
 };

@@ -4,25 +4,25 @@
 
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
 using testing::Return;
 
-class MockNetworkQualityProvider : public net::NetworkQualityProvider {
+class MockNetworkQualityTracker : public network::NetworkQualityTracker {
  public:
   MOCK_CONST_METHOD0(GetEffectiveConnectionType,
                      net::EffectiveConnectionType());
-  MOCK_CONST_METHOD0(GetHttpRTT, base::Optional<base::TimeDelta>());
-  MOCK_CONST_METHOD0(GetTransportRTT, base::Optional<base::TimeDelta>());
-  MOCK_CONST_METHOD0(GetDownstreamThroughputKbps, base::Optional<int32_t>());
+  MOCK_CONST_METHOD0(GetHttpRTT, base::TimeDelta());
+  MOCK_CONST_METHOD0(GetTransportRTT, base::TimeDelta());
+  MOCK_CONST_METHOD0(GetDownstreamThroughputKbps, int32_t());
 };
 
 class TestAndroidPageLoadMetricsObserver
@@ -30,10 +30,8 @@ class TestAndroidPageLoadMetricsObserver
  public:
   TestAndroidPageLoadMetricsObserver(
       content::WebContents* web_contents,
-      net::NetworkQualityEstimator::NetworkQualityProvider*
-          network_quality_provider)
-      : AndroidPageLoadMetricsObserver(web_contents, network_quality_provider) {
-  }
+      network::NetworkQualityTracker* network_quality_tracker)
+      : AndroidPageLoadMetricsObserver(web_contents, network_quality_tracker) {}
 
   net::EffectiveConnectionType reported_connection_type() const {
     return reported_connection_type_;
@@ -117,7 +115,7 @@ class AndroidPageLoadMetricsObserverTest
     // Save observer_ptr_ so we can query for test results, while the
     // PageLoadTracker owns it.
     observer_ptr_ = new TestAndroidPageLoadMetricsObserver(
-        web_contents(), &mock_network_quality_provider_);
+        web_contents(), &mock_network_quality_tracker_);
     observer_ = base::WrapUnique<page_load_metrics::PageLoadMetricsObserver>(
         observer_ptr_);
   }
@@ -129,26 +127,19 @@ class AndroidPageLoadMetricsObserverTest
   }
 
   void SetNetworkQualityMock() {
-    EXPECT_CALL(mock_network_quality_provider(), GetEffectiveConnectionType())
+    EXPECT_CALL(mock_network_quality_tracker(), GetEffectiveConnectionType())
         .Times(AnyNumber())
         .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_3G));
-    EXPECT_CALL(mock_network_quality_provider(), GetHttpRTT())
+    EXPECT_CALL(mock_network_quality_tracker(), GetHttpRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::Optional<base::TimeDelta>(
-            base::TimeDelta::FromMilliseconds(3))));
-    EXPECT_CALL(mock_network_quality_provider(), GetTransportRTT())
+        .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(3)));
+    EXPECT_CALL(mock_network_quality_tracker(), GetTransportRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::Optional<base::TimeDelta>(
-            base::TimeDelta::FromMilliseconds(4))));
+        .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(4)));
   }
 
-  MockNetworkQualityProvider& mock_network_quality_provider() {
-    return mock_network_quality_provider_;
-  }
-
-  UINetworkQualityEstimatorService* GetNetworkQualityEstimator() {
-    return UINetworkQualityEstimatorServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  MockNetworkQualityTracker& mock_network_quality_tracker() {
+    return mock_network_quality_tracker_;
   }
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
@@ -159,7 +150,7 @@ class AndroidPageLoadMetricsObserverTest
  private:
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> observer_;
   TestAndroidPageLoadMetricsObserver* observer_ptr_;
-  MockNetworkQualityProvider mock_network_quality_provider_;
+  MockNetworkQualityTracker mock_network_quality_tracker_;
   base::TimeTicks navigation_start_;
 };
 
@@ -173,15 +164,15 @@ TEST_F(AndroidPageLoadMetricsObserverTest, NetworkQualityEstimate) {
 }
 
 TEST_F(AndroidPageLoadMetricsObserverTest, MissingNetworkQualityEstimate) {
-  EXPECT_CALL(mock_network_quality_provider(), GetEffectiveConnectionType())
+  EXPECT_CALL(mock_network_quality_tracker(), GetEffectiveConnectionType())
       .Times(AnyNumber())
       .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN));
-  EXPECT_CALL(mock_network_quality_provider(), GetHttpRTT())
+  EXPECT_CALL(mock_network_quality_tracker(), GetHttpRTT())
       .Times(AnyNumber())
-      .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
-  EXPECT_CALL(mock_network_quality_provider(), GetTransportRTT())
+      .WillRepeatedly(Return(base::TimeDelta()));
+  EXPECT_CALL(mock_network_quality_tracker(), GetTransportRTT())
       .Times(AnyNumber())
-      .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
+      .WillRepeatedly(Return(base::TimeDelta()));
   NavigateAndCommit(GURL("https://www.example.com"));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             observer()->reported_connection_type());
