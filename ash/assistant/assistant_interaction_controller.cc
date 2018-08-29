@@ -119,10 +119,11 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      // TODO(dmblack): When the UI becomes visible, we may need to immediately
-      // start a voice interaction depending on |source| and user preference.
-      if (source == AssistantSource::kStylus)
+      if (source == AssistantSource::kLongPressLauncher) {
+        StartVoiceInteraction();
+      } else if (source == AssistantSource::kStylus) {
         assistant_interaction_model_.SetInputModality(InputModality::kStylus);
+      }
       break;
   }
 }
