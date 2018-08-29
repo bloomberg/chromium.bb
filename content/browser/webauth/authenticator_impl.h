@@ -140,6 +140,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
       base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
       device::FidoTransportProtocol transport_used);
 
+  void FailWithNotAllowedErrorAndCleanup();
+
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
   // Runs when the user cancels WebAuthN request via UI dialog.

@@ -29,8 +29,20 @@ namespace content {
 class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     : public device::FidoRequestHandlerBase::TransportAvailabilityObserver {
  public:
+  // Failure reasons that might be of interest to the user, so the embedder may
+  // decide to inform the user.
+  enum class InterestingFailureReason {
+    kTimeout,
+    kKeyNotRegistered,
+    kKeyAlreadyRegistered,
+  };
+
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
+
+  // Called when the request fails for the given |reason|, just before this
+  // delegate is destroyed.
+  virtual void DidFailWithInterestingReason(InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: initiate BLE pairing process, cancel WebAuthN request, and
