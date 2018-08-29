@@ -1072,6 +1072,22 @@ TEST_F(TouchActionFilterTest,
   EXPECT_FALSE(ScrollingTouchAction().has_value());
 }
 
+TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedAfterTouchStart) {
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ScrollingTouchAction().has_value());
+  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
+
+  // Receive a touch start ack, set the touch action.
+  filter_.OnSetTouchAction(cc::kTouchActionPanY);
+  filter_.SetActiveTouchInProgress(true);
+  filter_.OnHasTouchEventHandlers(false);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPanY);
+  EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPanY);
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPanY);
+  EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPanY);
+}
+
 // If the renderer is busy, the gesture event might have come before the
 // OnHasTouchEventHanlders IPC is received. In this case, we should allow all
 // the gestures.

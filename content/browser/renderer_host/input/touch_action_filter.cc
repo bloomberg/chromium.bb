@@ -237,6 +237,11 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   scrolling_touch_action_ = allowed_touch_action_;
 }
 
+void TouchActionFilter::SetActiveTouchInProgress(
+    bool active_touch_in_progress) {
+  active_touch_in_progress_ = active_touch_in_progress;
+}
+
 void TouchActionFilter::ReportAndResetTouchAction() {
   if (has_touch_event_handler_)
     gesture_sequence_.append("R1");
@@ -349,14 +354,14 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
     gesture_sequence_.append("L1");
   else
     gesture_sequence_.append("L0");
-  ResetTouchAction();
-  // If a page has a touch event handler, this function can be called twice with
-  // has_handlers = false first and then true later. When it is true, we need to
-  // reset the |scrolling_touch_action_|. However, we do not want to reset it if
-  // there is an active gesture sequence in progress. For example, the
-  // OnHasTouchEventHandlers(true) can be received after a GestureTapDown.
-  if (has_touch_event_handler_ && !gesture_sequence_in_progress_)
-    scrolling_touch_action_.reset();
+  // We have set the associated touch action if the touch start already happened
+  // or there is a gesture in progress. In these cases, we should not reset the
+  // associated touch action.
+  if (!gesture_sequence_in_progress_ && !active_touch_in_progress_) {
+    ResetTouchAction();
+    if (has_touch_event_handler_)
+      scrolling_touch_action_.reset();
+  }
 }
 
 }  // namespace content
