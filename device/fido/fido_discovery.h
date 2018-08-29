@@ -43,7 +43,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
     virtual ~Observer();
 
     // It is guaranteed that this is never invoked synchronously from Start().
-    virtual void DiscoveryStarted(FidoDiscovery* discovery, bool success) = 0;
+    virtual void DiscoveryAvailable(FidoDiscovery* discovery,
+                                    bool is_available) = 0;
+    virtual void DiscoveryStarted(FidoDiscovery* discovery, bool success) {}
 
     // It is guaranteed that DeviceAdded/DeviceRemoved() will not be invoked
     // before the client of FidoDiscovery calls FidoDiscovery::Start(). However,
@@ -92,6 +94,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
  protected:
   FidoDiscovery(FidoTransportProtocol transport);
 
+  void NotifyDiscoveryAvailable(bool is_available);
   void NotifyDiscoveryStarted(bool success);
   void NotifyDeviceAdded(FidoDevice* device);
   void NotifyDeviceRemoved(FidoDevice* device);

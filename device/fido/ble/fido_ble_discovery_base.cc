@@ -54,6 +54,7 @@ void FidoBleDiscoveryBase::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
   if (!adapter->IsPresent()) {
     DVLOG(2) << "bluetooth adapter is not available in current system.";
+    NotifyDiscoveryAvailable(false);
     NotifyDiscoveryStarted(false);
     return;
   }
@@ -64,6 +65,7 @@ void FidoBleDiscoveryBase::OnGetAdapter(
   DVLOG(2) << "Got adapter " << adapter_->GetAddress();
 
   adapter_->AddObserver(this);
+  NotifyDiscoveryAvailable(true);
   if (adapter_->IsPowered()) {
     OnSetPowered();
   } else {

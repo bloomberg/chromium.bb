@@ -558,7 +558,7 @@ TEST_F(FidoRequestHandlerTest, BleTransportDisallowedIfDiscoveryFails) {
 
   discovery()->WaitForCallToStartAndSimulateSuccess();
   ble_discovery()->WaitForCallToStart();
-  ble_discovery()->SimulateStarted(false /* success */);
+  ble_discovery()->SimulateDiscoveryAvailable(false /* is_available */);
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kUsbHumanInterfaceDevice});

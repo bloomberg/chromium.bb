@@ -72,6 +72,9 @@ class FakeFidoDiscovery : public FidoDiscovery,
   // Blocks until start is requested.
   void WaitForCallToStart();
 
+  // Simulates that the discovery availability has been confirmed.
+  void SimulateDiscoveryAvailable(bool is_available);
+
   // Simulates the discovery actually starting.
   void SimulateStarted(bool success);
 

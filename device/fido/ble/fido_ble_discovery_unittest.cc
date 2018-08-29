@@ -51,9 +51,9 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, false))
+    EXPECT_CALL(observer, DiscoveryAvailable(&discovery, false))
         .WillOnce(ReturnFromAsyncCall(quit));
-
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
     discovery.Start();
     run_loop.Run();
   }
@@ -68,6 +68,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
   // We don't expect any calls to the notification methods.
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
+  EXPECT_CALL(observer, DiscoveryAvailable(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);
