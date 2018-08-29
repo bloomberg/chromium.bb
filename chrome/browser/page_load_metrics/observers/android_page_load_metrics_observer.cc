@@ -10,24 +10,19 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/time/time.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PageLoadMetrics_jni.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "url/gurl.h"
 
 AndroidPageLoadMetricsObserver::AndroidPageLoadMetricsObserver(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile) {
-    network_quality_provider_ =
-        UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
-  }
+  network_quality_tracker_ = g_browser_process->network_quality_tracker();
+  DCHECK(network_quality_tracker_);
 }
 
 AndroidPageLoadMetricsObserver::ObservePolicy
@@ -37,21 +32,13 @@ AndroidPageLoadMetricsObserver::OnStart(
     bool started_in_foreground) {
   navigation_id_ = navigation_handle->GetNavigationId();
   ReportNewNavigation();
-  if (network_quality_provider_) {
-    int64_t http_rtt =
-        network_quality_provider_->GetHttpRTT().has_value()
-            ? network_quality_provider_->GetHttpRTT()->InMilliseconds()
-            : 0;
-    int64_t transport_rtt =
-        network_quality_provider_->GetTransportRTT().has_value()
-            ? network_quality_provider_->GetTransportRTT()->InMilliseconds()
-            : 0;
-    ReportNetworkQualityEstimate(
-        network_quality_provider_->GetEffectiveConnectionType(), http_rtt,
-        transport_rtt);
-  } else {
-    ReportNetworkQualityEstimate(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, 0, 0);
-  }
+  int64_t http_rtt = network_quality_tracker_->GetHttpRTT().InMilliseconds();
+  int64_t transport_rtt =
+      network_quality_tracker_->GetTransportRTT().InMilliseconds();
+  ReportNetworkQualityEstimate(
+      network_quality_tracker_->GetEffectiveConnectionType(), http_rtt,
+      transport_rtt);
+
   return CONTINUE_OBSERVING;
 }
 
