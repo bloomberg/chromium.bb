@@ -101,7 +101,7 @@ def _CreateParser():
   parser.add_option('--git-revision')
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')
-  parser.add_option('--service-account-file')
+  parser.add_option('--service-account-file', default=None)
   return parser
 
 
@@ -115,7 +115,7 @@ def main(args):
   if not options.configuration_name or not options.results_url:
     parser.error('configuration_name and results_url are required.')
 
-  service_account_file = options.service_account_file or None
+  service_account_file = options.service_account_file
 
   if not options.perf_dashboard_machine_group:
     print 'Error: Invalid perf dashboard machine group'

@@ -52,8 +52,12 @@ class SendResultsFatalException(SendResultException):
 def LuciAuthTokenGeneratorCallback(
   service_account_file, token_expiration_in_minutes):
   args = ['luci-auth', 'token',
-          '-service-account-json', service_account_file,
           '-lifetime', '%im' % token_expiration_in_minutes]
+  if service_account_file:
+    args += ['-service-account-json', service_account_file]
+  else:
+    print ('service_account_file is not set. '
+           'Use LUCI swarming task service account')
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if p.wait() == 0:
     return p.stdout.read()
@@ -78,7 +82,9 @@ def SendResults(data, data_label, url, send_as_histograms=False,
     url: Performance Dashboard URL (including schema).
     send_as_histograms: True if result is to be sent to /add_histograms.
     service_account_file: string; path to service account file which is used
-      for authenticating when upload data to perf dashboard.
+      for authenticating when upload data to perf dashboard. This can be None
+      for the case of LUCI builder, which means the task service account of the
+      builder will be used.
     token_generator_callback: a callback for generating the authentication token
       to upload to perf dashboard.
       This callback takes two parameters
@@ -89,11 +95,6 @@ def SendResults(data, data_label, url, send_as_histograms=False,
     num_retries: Number of times to retry uploading to the perf dashboard upon
       recoverable error.
   """
-  if send_as_histograms and not service_account_file:
-    raise ValueError(
-        'Must set a valid service_account_file for uploading histogram set '
-        'data')
-
   start = time.time()
   errors = []
   all_data_uploaded = False
