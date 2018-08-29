@@ -95,7 +95,7 @@ UIColor* DimColorIncognito() {
 }
 
 - (BOOL)hasAnswer {
-  return _match.answer.get() != nullptr;
+  return _match.answer.has_value();
 }
 
 - (BOOL)hasImage {

@@ -17,15 +17,15 @@
 
 namespace {
 
-std::unique_ptr<SuggestionAnswer> ParseAnswer(const std::string& answer_json) {
+bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(answer_json);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
-    return nullptr;
+    return false;
 
   // ParseAnswer previously did not change the default answer type of -1, so
   // here we keep the same behavior by explicitly supplying default value.
-  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"));
+  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"), answer);
 }
 
 }  // namespace
@@ -49,9 +49,9 @@ TEST(SuggestionAnswerTest, CopiesAreEqual) {
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }] } } "
       "] }";
-  answer2 = ParseAnswer(json);
-  ASSERT_TRUE(answer2);
-  EXPECT_TRUE(answer2->Equals(SuggestionAnswer(*answer2)));
+  SuggestionAnswer answer3;
+  ASSERT_TRUE(ParseAnswer(json, &answer3));
+  EXPECT_TRUE(answer3.Equals(SuggestionAnswer(answer3)));
 }
 
 TEST(SuggestionAnswerTest, DifferentValuesAreUnequal) {
@@ -64,84 +64,87 @@ TEST(SuggestionAnswerTest, DifferentValuesAreUnequal) {
       "              \"at\": { \"t\": \"slatfatf\", \"tt\": 42 }, "
       "              \"st\": { \"t\": \"oh hi, Mark\", \"tt\": 729347 } } } "
       "] }";
-  std::unique_ptr<SuggestionAnswer> answer1 = ParseAnswer(json);
-  ASSERT_TRUE(answer1);
+  SuggestionAnswer answer1;
+  ASSERT_TRUE(ParseAnswer(json, &answer1));
 
   // Same but with a different answer type.
-  std::unique_ptr<SuggestionAnswer> answer2 =
-      SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->set_type(44);
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  SuggestionAnswer answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.set_type(44);
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with a different type for one of the text fields.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->first_line_.text_fields_[1].type_ = 1;
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.first_line_.text_fields_[1].type_ = 1;
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with different text for one of the text fields.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->first_line_.text_fields_[0].text_ = base::UTF8ToUTF16("some text");
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.first_line_.text_fields_[0].text_ = base::UTF8ToUTF16("some text");
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with a new URL on the second line.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->second_line_.image_url_ = GURL("http://foo.com/bar.png");
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.second_line_.image_url_ = GURL("http://foo.com/bar.png");
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with the additional text removed from the second line.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->second_line_.additional_text_.reset();
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.second_line_.additional_text_.reset();
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with the status text removed from the second line.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->second_line_.status_text_.reset();
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer2.second_line_.status_text_.reset();
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with the status text removed from the second line of the first
   // answer.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer1->second_line_.status_text_.reset();
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer1.second_line_.status_text_.reset();
+  EXPECT_FALSE(answer1.Equals(answer2));
 
   // Same but with the additional text removed from the second line of the first
   // answer.
-  answer2 = SuggestionAnswer::copy(answer1.get());
-  EXPECT_TRUE(answer1->Equals(*answer2));
-  answer1->second_line_.additional_text_.reset();
-  EXPECT_FALSE(answer1->Equals(*answer2));
+  answer2 = answer1;
+  EXPECT_TRUE(answer1.Equals(answer2));
+  answer1.second_line_.additional_text_.reset();
+  EXPECT_FALSE(answer1.Equals(answer2));
 }
 
 TEST(SuggestionAnswerTest, EmptyJsonIsInvalid) {
-  ASSERT_FALSE(ParseAnswer(""));
+  SuggestionAnswer answer;
+  ASSERT_FALSE(ParseAnswer("", &answer));
 }
 
 TEST(SuggestionAnswerTest, MalformedJsonIsInvalid) {
-  ASSERT_FALSE(ParseAnswer("} malformed json {"));
+  SuggestionAnswer answer;
+  ASSERT_FALSE(ParseAnswer("} malformed json {", &answer));
 }
 
 TEST(SuggestionAnswerTest, TextFieldsRequireBothTextAndType) {
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\" }] } }, "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 
   json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"tt\": 8 }] } }, "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 }
 
 TEST(SuggestionAnswerTest, ImageLinesMustContainAtLeastOneTextField) {
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }, "
@@ -151,22 +154,23 @@ TEST(SuggestionAnswerTest, ImageLinesMustContainAtLeastOneTextField) {
       "              \"at\": { \"t\": \"slatfatf\", \"tt\": 42 }, "
       "              \"st\": { \"t\": \"oh hi, Mark\", \"tt\": 729347 } } } "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 }
 
 TEST(SuggestionAnswerTest, ExactlyTwoLinesRequired) {
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 
   json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }] } } "
       "] }";
-  ASSERT_TRUE(ParseAnswer(json));
+  ASSERT_TRUE(ParseAnswer(json, &answer));
 
   json =
       "{ \"l\": ["
@@ -174,17 +178,18 @@ TEST(SuggestionAnswerTest, ExactlyTwoLinesRequired) {
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }] } } "
       "  { \"il\": { \"t\": [{ \"t\": \"yet more text\", \"tt\": 13 }] } } "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 }
 
 TEST(SuggestionAnswerTest, URLPresent) {
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }], "
       "              \"i\": { \"d\": \"\" } } } "
       "] }";
-  ASSERT_FALSE(ParseAnswer(json));
+  ASSERT_FALSE(ParseAnswer(json, &answer));
 
   json =
       "{ \"l\": ["
@@ -192,7 +197,7 @@ TEST(SuggestionAnswerTest, URLPresent) {
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }], "
       "              \"i\": { \"d\": \"https://example.com/foo.jpg\" } } } "
       "] }";
-  ASSERT_TRUE(ParseAnswer(json));
+  ASSERT_TRUE(ParseAnswer(json, &answer));
 
   json =
       "{ \"l\": ["
@@ -200,10 +205,11 @@ TEST(SuggestionAnswerTest, URLPresent) {
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }], "
       "              \"i\": { \"d\": \"//example.com/foo.jpg\" } } } "
       "] }";
-  ASSERT_TRUE(ParseAnswer(json));
+  ASSERT_TRUE(ParseAnswer(json, &answer));
 }
 
 TEST(SuggestionAnswerTest, ValidPropertyValues) {
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }, "
@@ -213,12 +219,11 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
       "              \"at\": { \"t\": \"slatfatf\", \"tt\": 42 }, "
       "              \"st\": { \"t\": \"oh hi, Mark\", \"tt\": 729347 } } } "
       "] }";
-  std::unique_ptr<SuggestionAnswer> answer = ParseAnswer(json);
-  ASSERT_TRUE(answer);
-  answer->set_type(420527);
-  EXPECT_EQ(420527, answer->type());
+  ASSERT_TRUE(ParseAnswer(json, &answer));
+  answer.set_type(420527);
+  EXPECT_EQ(420527, answer.type());
 
-  const SuggestionAnswer::ImageLine& first_line = answer->first_line();
+  const SuggestionAnswer::ImageLine& first_line = answer.first_line();
   EXPECT_EQ(2U, first_line.text_fields().size());
   EXPECT_EQ(base::UTF8ToUTF16("text"), first_line.text_fields()[0].text());
   EXPECT_EQ(8, first_line.text_fields()[0].type());
@@ -233,7 +238,7 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
   EXPECT_TRUE(first_line.image_url().is_valid());
   EXPECT_EQ(GURL("https://example.com/foo.jpg"), first_line.image_url());
 
-  const SuggestionAnswer::ImageLine& second_line = answer->second_line();
+  const SuggestionAnswer::ImageLine& second_line = answer.second_line();
   EXPECT_EQ(1U, second_line.text_fields().size());
   EXPECT_EQ(
       base::UTF8ToUTF16("other text"), second_line.text_fields()[0].text());
@@ -257,13 +262,13 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
 
 TEST(SuggestionAnswerTest, AddImageURLsTo) {
   SuggestionAnswer::URLs urls;
+  SuggestionAnswer answer;
   std::string json =
       "{ \"l\": ["
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }] } }] }";
-  std::unique_ptr<SuggestionAnswer> answer = ParseAnswer(json);
-  ASSERT_TRUE(answer);
-  answer->AddImageURLsTo(&urls);
+  ASSERT_TRUE(ParseAnswer(json, &answer));
+  answer.AddImageURLsTo(&urls);
   ASSERT_EQ(0U, urls.size());
 
   {
@@ -275,9 +280,8 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
         "    { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
         "    { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }] } }"
         "  ]}";
-    answer = ParseAnswer(json);
-    ASSERT_TRUE(answer);
-    answer->AddImageURLsTo(&urls);
+    ASSERT_TRUE(ParseAnswer(json, &answer));
+    answer.AddImageURLsTo(&urls);
     ASSERT_EQ(1U, urls.size());
     EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
     urls.clear();
@@ -288,9 +292,8 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }],"
       "              \"i\": { \"d\": \"//gstatic.com/foo.png\", \"t\": 3 }}}]}";
-  answer = ParseAnswer(json);
-  ASSERT_TRUE(answer);
-  answer->AddImageURLsTo(&urls);
+  ASSERT_TRUE(ParseAnswer(json, &answer));
+  answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
   EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
   urls.clear();
@@ -302,9 +305,8 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
       "    { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }],"
       "              \"i\": { \"d\": \"//gstatic.com/bar.png\", \"t\": 3 }}}"
       "  ]}";
-  answer = ParseAnswer(json);
-  ASSERT_TRUE(answer);
-  answer->AddImageURLsTo(&urls);
+  ASSERT_TRUE(ParseAnswer(json, &answer));
+  answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
   EXPECT_EQ(GURL("https://gstatic.com/bar.png"), urls[0]);
   urls.clear();
@@ -315,9 +317,8 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
       "              \"i\": { \"d\": \"//gstatic.com/foo.png\" } } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }],"
       "              \"i\": { \"d\": \"//gstatic.com/bar.jpg\", \"t\": 3 }}}]}";
-  answer = ParseAnswer(json);
-  ASSERT_TRUE(answer);
-  answer->AddImageURLsTo(&urls);
+  ASSERT_TRUE(ParseAnswer(json, &answer));
+  answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
   // Note: first_line_.image_url() is not used in practice (so it's ignored).
   EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[0]);

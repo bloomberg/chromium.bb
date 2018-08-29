@@ -43,15 +43,15 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelSearch) {
 
 namespace {
 
-std::unique_ptr<SuggestionAnswer> ParseAnswer(const std::string& answer_json) {
+bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(answer_json);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
-    return nullptr;
+    return false;
 
   // ParseAnswer previously did not change the default answer type of -1, so
   // here we keep the same behavior by explicitly supplying default value.
-  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"));
+  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"), answer);
 }
 
 }  // namespace
@@ -68,7 +68,9 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelAnswer) {
       "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }] } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"sunny with a chance of hail\", \"tt\": "
       "5 }] } }] }";
-  match.answer = ParseAnswer(answer_json);
+  SuggestionAnswer answer;
+  ASSERT_TRUE(ParseAnswer(answer_json, &answer));
+  match.answer = answer;
 
   EXPECT_EQ(kSearch + base::UTF8ToUTF16(
                           ", answer, sunny with a chance of hail, 4 of 6"),

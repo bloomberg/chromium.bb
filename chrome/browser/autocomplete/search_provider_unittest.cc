@@ -3586,13 +3586,13 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
 
   ACMatches matches;
   AutocompleteMatch match1, match2, match3, match4, match5;
-  match1.answer = SuggestionAnswer::copy(&answer1);
+  match1.answer = answer1;
   match1.answer_contents = base::ASCIIToUTF16("the answer");
   match1.answer_type = base::ASCIIToUTF16("42");
-  match3.answer = SuggestionAnswer::copy(&answer2);
+  match3.answer = answer2;
   match3.answer_contents = base::ASCIIToUTF16("not to play");
   match3.answer_type = base::ASCIIToUTF16("1983");
-  match5.answer = SuggestionAnswer::copy(&answer3);
+  match5.answer = answer3;
   match5.answer_contents = base::ASCIIToUTF16("a person");
   match5.answer_type = base::ASCIIToUTF16("423");
 

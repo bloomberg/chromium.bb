@@ -78,10 +78,11 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
   base::DictionaryValue* dictionary;
   root->GetAsDictionary(&dictionary);
   ASSERT_NE(dictionary, nullptr);
+  SuggestionAnswer answer;
+  EXPECT_TRUE(SuggestionAnswer::ParseAnswer(dictionary,
+                                            base::ASCIIToUTF16("-1"), &answer));
   AutocompleteMatch match;
-  match.answer =
-      SuggestionAnswer::ParseAnswer(dictionary, base::ASCIIToUTF16("-1"));
-  EXPECT_TRUE(match.answer);
+  match.answer = answer;
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                         image:nil
                                                   answerImage:nil
@@ -135,10 +136,11 @@ TEST_F(OmniboxPopupCellTest, DefinitionAnswerStyle) {
   base::DictionaryValue* dictionary;
   root->GetAsDictionary(&dictionary);
   ASSERT_NE(dictionary, nullptr);
+  SuggestionAnswer answer;
+  EXPECT_TRUE(SuggestionAnswer::ParseAnswer(dictionary,
+                                            base::ASCIIToUTF16("-1"), &answer));
   AutocompleteMatch match;
-  match.answer =
-      SuggestionAnswer::ParseAnswer(dictionary, base::ASCIIToUTF16("-1"));
-  EXPECT_TRUE(match.answer);
+  match.answer = answer;
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                         image:nil
                                                   answerImage:nil

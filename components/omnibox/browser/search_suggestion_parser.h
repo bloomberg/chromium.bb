@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -159,10 +160,10 @@ class SearchSuggestionParser {
 
     void SetAnswer(const base::string16& answer_contents,
                    const base::string16& answer_type,
-                   std::unique_ptr<SuggestionAnswer> answer);
+                   const SuggestionAnswer& answer);
     const base::string16& answer_contents() const { return answer_contents_; }
     const base::string16& answer_type() const { return answer_type_; }
-    const SuggestionAnswer* answer() const { return answer_.get(); }
+    const base::Optional<SuggestionAnswer>& answer() const { return answer_; }
 
     const std::string& image_dominant_color() const {
       return image_dominant_color_;
@@ -209,7 +210,7 @@ class SearchSuggestionParser {
     base::string16 answer_type_;
 
     // Optional short answer to the input that produced this suggestion.
-    std::unique_ptr<SuggestionAnswer> answer_;
+    base::Optional<SuggestionAnswer> answer_;
 
     // Optional image information. Used for entity suggestions. The dominant
     // color can be used to paint the image placeholder while fetching the

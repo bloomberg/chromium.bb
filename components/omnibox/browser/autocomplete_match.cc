@@ -134,7 +134,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       swap_contents_and_description(match.swap_contents_and_description),
       answer_contents(match.answer_contents),
       answer_type(match.answer_type),
-      answer(SuggestionAnswer::copy(match.answer.get())),
+      answer(match.answer),
       transition(match.transition),
       type(match.type),
       has_tab_match(match.has_tab_match),
@@ -178,7 +178,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   swap_contents_and_description = match.swap_contents_and_description;
   answer_contents = match.answer_contents;
   answer_type = match.answer_type;
-  answer = SuggestionAnswer::copy(match.answer.get());
+  answer = match.answer;
   transition = match.transition;
   type = match.type;
   has_tab_match = match.has_tab_match;
@@ -783,7 +783,11 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(description_class);
   res += base::trace_event::EstimateMemoryUsage(answer_contents);
   res += base::trace_event::EstimateMemoryUsage(answer_type);
-  res += base::trace_event::EstimateMemoryUsage(answer);
+  res += sizeof(int);
+  if (answer)
+    res += base::trace_event::EstimateMemoryUsage(answer.value());
+  else
+    res += sizeof(SuggestionAnswer);
   res += base::trace_event::EstimateMemoryUsage(associated_keyword);
   res += base::trace_event::EstimateMemoryUsage(keyword);
   res += base::trace_event::EstimateMemoryUsage(search_terms_args);

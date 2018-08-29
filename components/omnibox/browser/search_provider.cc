@@ -989,7 +989,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // verbatim, and if so, copy over answer contents.
     base::string16 answer_contents;
     base::string16 answer_type;
-    std::unique_ptr<SuggestionAnswer> answer;
+    SuggestionAnswer answer;
+    bool has_answer = false;
     base::string16 trimmed_verbatim_lower =
         base::i18n::ToLower(trimmed_verbatim);
     for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
@@ -998,7 +999,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
           base::i18n::ToLower(it->fill_into_edit) == trimmed_verbatim_lower) {
         answer_contents = it->answer_contents;
         answer_type = it->answer_type;
-        answer = SuggestionAnswer::copy(it->answer.get());
+        answer = *it->answer;
+        has_answer = true;
         break;
       }
     }
@@ -1009,7 +1011,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
         verbatim_relevance, relevance_from_server,
         /*input_text=*/trimmed_verbatim);
-    verbatim.SetAnswer(answer_contents, answer_type, std::move(answer));
+    if (has_answer)
+      verbatim.SetAnswer(answer_contents, answer_type, answer);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != nullptr, &map);
   }
@@ -1585,9 +1588,8 @@ void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
     if (!image_url.empty())
       prefetch_image_urls.push_back(GURL(image_url));
 
-    const SuggestionAnswer* answer = suggestion.answer();
-    if (answer)
-      answer->AddImageURLsTo(&prefetch_image_urls);
+    if (suggestion.answer())
+      suggestion.answer()->AddImageURLsTo(&prefetch_image_urls);
   }
 
   for (const GURL& url : prefetch_image_urls)
