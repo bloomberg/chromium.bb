@@ -38,7 +38,6 @@
 #include "base/win/shlwapi.h"  // For PathIsUNC()
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/core/common/policy_map.h"
@@ -47,8 +46,6 @@
 #include "components/policy/core/common/registry_dict.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
-
-namespace schema = json_schema_constants;
 
 namespace policy {
 

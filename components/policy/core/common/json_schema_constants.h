@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_JSON_SCHEMA_JSON_SCHEMA_CONSTANTS_H_
-#define COMPONENTS_JSON_SCHEMA_JSON_SCHEMA_CONSTANTS_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_JSON_SCHEMA_CONSTANTS_H_
+#define COMPONENTS_POLICY_CORE_COMMON_JSON_SCHEMA_CONSTANTS_H_
 
 // These constants are shared by code that uses JSON schemas.
 namespace json_schema_constants {
@@ -40,4 +40,4 @@ extern const char kType[];
 
 }  // namespace json_schema_constants
 
-#endif  // COMPONENTS_JSON_SCHEMA_JSON_SCHEMA_CONSTANTS_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_JSON_SCHEMA_CONSTANTS_H_
