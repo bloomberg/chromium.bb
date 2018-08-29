@@ -108,7 +108,6 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -305,6 +304,9 @@ void ResetKeyboardOverscrollOverride() {
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 
+// Workaround for graphical glitches with animated user avatars due to a race
+// between GPU process cleanup for the closing WebContents versus compositor
+// draw of new animation frames. https://crbug.com/759148
 class CloseAfterCommit : public ui::CompositorObserver,
                          public views::WidgetObserver {
  public:
@@ -352,10 +354,6 @@ bool CanPlayStartupSound() {
 }
 
 bool ShouldInitializeWebUIHidden() {
-  // Not supported under mash.
-  if (features::IsUsingWindowService())
-    return false;
-
   // Always postpone WebUI initialization on first boot, otherwise we miss
   // initial animation.
   if (!StartupUtils::IsOobeCompleted())
@@ -397,43 +395,6 @@ class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenOobeKeyHandler);
 };
 
-// A login implementation of WidgetDelegate.
-class LoginDisplayHostWebUI::LoginWidgetDelegate
-    : public views::WidgetDelegate {
- public:
-  LoginWidgetDelegate(views::Widget* widget, LoginDisplayHostWebUI* host)
-      : widget_(widget), login_display_host_(host) {
-    DCHECK(widget_);
-    DCHECK(login_display_host_);
-  }
-  ~LoginWidgetDelegate() override {}
-
-  void LoginDisplayHostDestroyed() { login_display_host_ = nullptr; }
-
-  // Overridden from WidgetDelegate:
-  void WindowClosing() override {
-    // Reset the cached Widget and View pointers. The Widget may close due to:
-    // * Login completion
-    // * Ash crash at the login screen on mustash
-    // In the latter case the mash root process will trigger a clean restart
-    // of content_browser.
-    if (features::IsUsingWindowService() && login_display_host_)
-      login_display_host_->ResetLoginWindowAndView();
-  }
-  void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
-  bool CanActivate() const override { return true; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
-
- private:
-  views::Widget* widget_;
-  // Set to null if LoginDisplayHostWebUI is destroyed before us.
-  LoginDisplayHostWebUI* login_display_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginWidgetDelegate);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, public
 
@@ -441,11 +402,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
     : initialize_webui_hidden_(ShouldInitializeWebUIHidden()),
       oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
       weak_factory_(this) {
-  if (features::IsUsingWindowService()) {
-    // Animation is not currently supported for Mash.
-    finalize_animation_type_ = ANIMATION_NONE;
-  }
-
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
@@ -458,10 +414,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
                  content::NotificationService::AllSources());
 
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
-  // Mash always runs login screen with zero delay
-  if (features::IsUsingWindowService())
-    zero_delay_enabled = true;
-
   waiting_for_wallpaper_load_ = !zero_delay_enabled;
 
   if (waiting_for_wallpaper_load_) {
@@ -499,9 +451,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
-
-  if (login_window_delegate_)
-    login_window_delegate_->LoginDisplayHostDestroyed();
 
   MultiUserWindowManager* window_manager =
       MultiUserWindowManager::GetInstance();
@@ -550,9 +499,7 @@ void LoginDisplayHostWebUI::OnFinalize() {
       ShutdownDisplayHost();
       break;
     case ANIMATION_WORKSPACE:
-      if (ash::Shell::HasInstance())
-        ScheduleWorkspaceAnimation();
-
+      ScheduleWorkspaceAnimation();
       ShutdownDisplayHost();
       break;
     case ANIMATION_FADE_OUT:
@@ -566,8 +513,6 @@ void LoginDisplayHostWebUI::OnFinalize() {
       // This is to guarantee OnUserSwitchAnimationFinished() is called before
       // LoginDisplayHost deletes itself.
       // See crbug.com/541864.
-      break;
-    default:
       break;
   }
 }
@@ -616,9 +561,12 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
-  // Animation is not supported in Mash
+  // TODO(crbug.com/875111): MultiUserWindowManager support for mash.
   if (!features::IsUsingWindowService())
     finalize_animation_type_ = ANIMATION_ADD_USER;
+  else
+    finalize_animation_type_ = ANIMATION_NONE;
+
   // Observe the user switch animation and defer the deletion of itself only
   // after the animation is finished.
   MultiUserWindowManager* window_manager =
@@ -633,7 +581,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   // We should emit this signal only at login screen (after reboot or sign out).
   login_view_->set_should_emit_login_prompt_visible(false);
 
-  if (!features::IsUsingWindowService()) {
+  if (!features::IsMultiProcessMash()) {
     // Lock container can be transparent after lock screen animation.
     aura::Window* lock_container = ash::Shell::GetContainer(
         ash::Shell::GetPrimaryRootWindow(),
@@ -673,9 +621,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
 
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
-  // Animation is not supported in Mash
-  if (!features::IsUsingWindowService())
-    finalize_animation_type_ = ANIMATION_WORKSPACE;
+  finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
     VLOG(1) << "Login WebUI >> sign in postponed";
@@ -722,9 +668,7 @@ void LoginDisplayHostWebUI::OnPreferencesChanged() {
 }
 
 void LoginDisplayHostWebUI::OnStartAppLaunch() {
-  // Animation is not supported in Mash.
-  if (!features::IsUsingWindowService())
-    finalize_animation_type_ = ANIMATION_FADE_OUT;
+  finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_)
     LoadURL(GURL(kAppLaunchSplashURL));
 
@@ -732,9 +676,7 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
 }
 
 void LoginDisplayHostWebUI::OnStartArcKiosk() {
-  // Animation is not supported in Mash.
-  if (!features::IsUsingWindowService())
-    finalize_animation_type_ = ANIMATION_FADE_OUT;
+  finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_) {
     LoadURL(GURL(kAppLaunchSplashURL));
     LoadURL(GURL(kArcKioskSplashURL));
@@ -910,7 +852,9 @@ void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
 // LoginDisplayHostWebUI, private
 
 void LoginDisplayHostWebUI::ScheduleWorkspaceAnimation() {
-  if (features::IsUsingWindowService()) {
+  // TODO(mash): Support finalize animations without reaching directly into
+  // ash::Shell.
+  if (features::IsMultiProcessMash()) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1030,8 +974,6 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
         mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(container));
   }
   login_window_ = new views::Widget;
-  params.delegate = login_window_delegate_ =
-      new LoginWidgetDelegate(login_window_, this);
   login_window_->Init(params);
 
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
@@ -1039,9 +981,8 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
 
-  // Animations are not available in Mash.
   // For voice interaction OOBE, we do not want the animation here.
-  if (!features::IsUsingWindowService() && !is_voice_interaction_oobe_) {
+  if (!is_voice_interaction_oobe_) {
     login_window_->SetVisibilityAnimationDuration(
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
     login_window_->SetVisibilityAnimationTransition(
@@ -1075,6 +1016,8 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
 
   if (login_window_) {
     if (features::IsUsingWindowService()) {
+      // TODO(mash): CompositorObserver::OnCompositingDidCommit() doesn't fire
+      // for either SingleProcessMash or MultiProcessMash.
       login_window_->Close();
     } else {
       login_window_->Hide();
@@ -1084,7 +1027,6 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
     }
     login_window_->RemoveRemovalsObserver(this);
     login_window_ = nullptr;
-    login_window_delegate_ = nullptr;
   }
 
   // Release wizard controller with the webui and hosting window so that it
