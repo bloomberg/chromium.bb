@@ -36,7 +36,8 @@ OverrideLanguageModel GetOverrideLanguageModel();
 
 // Returns true if kOverrideTranslateTriggerInIndia is enabled, false otherwise.
 // It should be interpreted as a signal to trigger translate UI on English
-// pages, even when the UI language is English.
+// pages, even when the UI language is English. This function also records
+// whether the backoff threshold was reached in UMA.
 bool ShouldForceTriggerTranslateOnEnglishPages(int force_trigger_count);
 
 // Returns true if kOverrideTranslateTriggerInIndia is enabled and the current
