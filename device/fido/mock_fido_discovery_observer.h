@@ -19,6 +19,7 @@ class MockFidoDiscoveryObserver : public FidoDiscovery::Observer {
   MockFidoDiscoveryObserver();
   ~MockFidoDiscoveryObserver() override;
 
+  MOCK_METHOD2(DiscoveryAvailable, void(FidoDiscovery*, bool));
   MOCK_METHOD2(DiscoveryStarted, void(FidoDiscovery*, bool));
   MOCK_METHOD2(DiscoveryStopped, void(FidoDiscovery*, bool));
   MOCK_METHOD2(DeviceAdded, void(FidoDiscovery*, FidoDevice*));

@@ -146,23 +146,6 @@ void FidoRequestHandlerBase::Start() {
     discovery->Start();
 }
 
-void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
-                                              bool success) {
-  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy ||
-      discovery->transport() ==
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
-    // For FidoBleDiscovery and FidoCableDiscovery, discovery is started with
-    // |success| set to false if no BluetoothAdapter is present in the system.
-    if (!success) {
-      transport_availability_info_.available_transports.erase(
-          discovery->transport());
-    }
-
-    DCHECK(notify_observer_callback_);
-    notify_observer_callback_.Run();
-  }
-}
-
 void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
                                          FidoDevice* device) {
   DCHECK(!base::ContainsKey(active_authenticators(), device->GetId()));
@@ -193,6 +176,23 @@ void FidoRequestHandlerBase::BluetoothAdapterPowerChanged(bool is_powered_on) {
     return;
 
   observer_->BluetoothAdapterPowerChanged(is_powered_on);
+}
+
+void FidoRequestHandlerBase::DiscoveryAvailable(FidoDiscovery* discovery,
+                                                bool is_available) {
+  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy ||
+      discovery->transport() ==
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
+    // For FidoBleDiscovery and FidoCableDiscovery, discovery is available when
+    // BluetoothAdapter is present in the system.
+    if (!is_available) {
+      transport_availability_info_.available_transports.erase(
+          discovery->transport());
+    }
+
+    DCHECK(notify_observer_callback_);
+    notify_observer_callback_.Run();
+  }
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(

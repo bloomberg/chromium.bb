@@ -85,6 +85,7 @@ TEST_F(FidoHidDiscoveryTest, TestAddRemoveDevice) {
 
   fake_hid_manager_->AddDevice(MakeFidoHidDevice("known"));
 
+  EXPECT_CALL(observer, DiscoveryAvailable(&discovery, true));
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
   discovery.set_observer(&observer);
   discovery.Start();

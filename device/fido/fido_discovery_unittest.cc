@@ -35,6 +35,7 @@ class ConcreteFidoDiscovery : public FidoDiscovery {
   using FidoDiscovery::AddDevice;
   using FidoDiscovery::RemoveDevice;
 
+  using FidoDiscovery::NotifyDiscoveryAvailable;
   using FidoDiscovery::NotifyDiscoveryStarted;
   using FidoDiscovery::NotifyDeviceAdded;
   using FidoDiscovery::NotifyDeviceRemoved;
@@ -72,6 +73,29 @@ TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
   ::testing::Mock::VerifyAndClearExpectations(&discovery);
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
+  discovery.NotifyDiscoveryStarted(true);
+  EXPECT_TRUE(discovery.is_start_requested());
+  EXPECT_TRUE(discovery.is_running());
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST(FidoDiscoveryTest, TestNotificationsOnDiscoveryAvailabilityDetermined) {
+  ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+
+  EXPECT_FALSE(discovery.is_start_requested());
+  EXPECT_FALSE(discovery.is_running());
+
+  EXPECT_CALL(discovery, StartInternal());
+  discovery.Start();
+  EXPECT_TRUE(discovery.is_start_requested());
+  EXPECT_FALSE(discovery.is_running());
+  ::testing::Mock::VerifyAndClearExpectations(&discovery);
+
+  EXPECT_CALL(observer, DiscoveryAvailable(&discovery, true));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
+  discovery.NotifyDiscoveryAvailable(true);
   discovery.NotifyDiscoveryStarted(true);
   EXPECT_TRUE(discovery.is_start_requested());
   EXPECT_TRUE(discovery.is_running());

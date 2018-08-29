@@ -55,8 +55,10 @@ void FidoHidDiscovery::DeviceRemoved(
 
 void FidoHidDiscovery::OnGetDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> device_infos) {
+  NotifyDiscoveryAvailable(true);
   for (auto& device_info : device_infos)
     DeviceAdded(std::move(device_info));
+
   NotifyDiscoveryStarted(true);
 }
 
