@@ -2129,6 +2129,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/explore_sites_bridge.h",
       "android/explore_sites/explore_sites_feature.cc",
       "android/explore_sites/explore_sites_feature.h",
+      "android/explore_sites/explore_sites_schema.cc",
+      "android/explore_sites/explore_sites_schema.h",
       "android/explore_sites/explore_sites_service.h",
       "android/explore_sites/explore_sites_service_factory.cc",
       "android/explore_sites/explore_sites_service_factory.h",
