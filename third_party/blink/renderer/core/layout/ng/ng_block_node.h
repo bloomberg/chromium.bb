@@ -97,6 +97,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   String ToString() const;
 
  private:
+  void PrepareForLayout();
+
   void FinishLayout(const NGConstraintSpace&,
                     NGBreakToken*,
                     scoped_refptr<NGLayoutResult>);
