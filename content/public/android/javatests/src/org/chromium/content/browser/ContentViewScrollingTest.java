@@ -23,6 +23,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
@@ -160,7 +161,7 @@ public class ContentViewScrollingTest {
         mActivityTestRule.launchContentShellWithUrl(LARGE_PAGE);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         mCoordinates = mActivityTestRule.getRenderCoordinates();
-        mActivityTestRule.reportAllFrameSubmissions(true);
+        WebContentsUtils.reportAllFrameSubmissions(mActivityTestRule.getWebContents(), true);
         waitForViewportInitialization();
 
         Assert.assertEquals(0, mCoordinates.getScrollXPixInt());

@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.test.util;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -21,7 +22,8 @@ public class WebContentsUtils {
      * @param enabled Whether to report all frame submissions.
      */
     public static void reportAllFrameSubmissions(final WebContents webContents, boolean enabled) {
-        nativeReportAllFrameSubmissions(webContents, enabled);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { nativeReportAllFrameSubmissions(webContents, enabled); });
     }
 
     /**
