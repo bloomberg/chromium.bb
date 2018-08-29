@@ -129,6 +129,12 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void RecommitAllForEncryption(std::unordered_set<std::string> already_updated,
                                 MetadataChangeList* metadata_changes);
 
+  // Validates the update specified by the input parameters and returns whether
+  // it should get further processed. If the update is incorrect, this function
+  // also reports an error.
+  bool ValidateUpdate(const sync_pb::ModelTypeState& model_type_state,
+                      const UpdateResponseDataList& updates);
+
   // Handle the first update received from the server after being enabled. If
   // the data type does not support incremental updates, this will be called for
   // any server update.
