@@ -42,8 +42,7 @@ void ServiceWorkerResponseInfo::GetExtraResponseInfo(
   response_info->was_fallback_required_by_service_worker =
       was_fallback_required_;
   response_info->url_list_via_service_worker = url_list_via_service_worker_;
-  response_info->response_type_via_service_worker =
-      response_type_via_service_worker_;
+  response_info->response_type = response_type_via_service_worker_;
   response_info->service_worker_start_time = service_worker_start_time_;
   response_info->service_worker_ready_time = service_worker_ready_time_;
   response_info->is_in_cache_storage = response_is_in_cache_storage_;

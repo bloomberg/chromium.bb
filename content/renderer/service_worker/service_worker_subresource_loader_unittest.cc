@@ -392,8 +392,7 @@ CreateResponseInfoFromServiceWorker() {
   head->was_fetched_via_service_worker = true;
   head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
-  head->response_type_via_service_worker =
-      network::mojom::FetchResponseType::kDefault;
+  head->response_type = network::mojom::FetchResponseType::kDefault;
   head->is_in_cache_storage = false;
   head->cache_storage_cache_name = std::string();
   head->did_service_worker_navigation_preload = false;
@@ -463,8 +462,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
               info.was_fallback_required_by_service_worker);
     EXPECT_EQ(expected_info.url_list_via_service_worker,
               info.url_list_via_service_worker);
-    EXPECT_EQ(expected_info.response_type_via_service_worker,
-              info.response_type_via_service_worker);
+    EXPECT_EQ(expected_info.response_type, info.response_type);
     EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
     EXPECT_EQ(expected_info.cache_storage_cache_name,
               info.cache_storage_cache_name);
@@ -1023,8 +1021,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
 
   const network::ResourceResponseHead& info = client->response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
-            info.response_type_via_service_worker);
+  EXPECT_EQ(network::mojom::FetchResponseType::kDefault, info.response_type);
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;

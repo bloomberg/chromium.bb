@@ -774,8 +774,7 @@ bool Resource::CanReuse(
   // not no-cors. https://crbug.com/625575
   // TODO(yhirano): Remove this.
   if (GetResponse().WasFetchedViaServiceWorker() &&
-      GetResponse().ResponseTypeViaServiceWorker() ==
-          network::mojom::FetchResponseType::kOpaque &&
+      GetResponse().GetType() == network::mojom::FetchResponseType::kOpaque &&
       new_request.GetFetchRequestMode() !=
           network::mojom::FetchRequestMode::kNoCORS) {
     return false;

@@ -637,8 +637,7 @@ void ImageResource::OnePartInMultipartReceived(
   if (!GetResponse().IsNull()) {
     CHECK_EQ(GetResponse().WasFetchedViaServiceWorker(),
              response.WasFetchedViaServiceWorker());
-    CHECK_EQ(GetResponse().ResponseTypeViaServiceWorker(),
-             response.ResponseTypeViaServiceWorker());
+    CHECK_EQ(GetResponse().GetType(), response.GetType());
   }
 
   SetResponse(response);

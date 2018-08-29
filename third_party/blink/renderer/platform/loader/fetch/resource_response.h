@@ -296,12 +296,9 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fallback_required_by_service_worker_ = value;
   }
 
-  network::mojom::FetchResponseType ResponseTypeViaServiceWorker() const {
-    return response_type_via_service_worker_;
-  }
-  void SetResponseTypeViaServiceWorker(
-      network::mojom::FetchResponseType value) {
-    response_type_via_service_worker_ = value;
+  network::mojom::FetchResponseType GetType() const { return response_type_; }
+  void SetType(network::mojom::FetchResponseType value) {
+    response_type_ = value;
   }
   bool IsOpaqueResponseFromServiceWorker() const;
 
@@ -470,8 +467,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
   bool async_revalidation_requested_ = false;
 
-  // The type of the response which was returned by the ServiceWorker.
-  network::mojom::FetchResponseType response_type_via_service_worker_ =
+  // https://fetch.spec.whatwg.org/#concept-response-type
+  network::mojom::FetchResponseType response_type_ =
       network::mojom::FetchResponseType::kDefault;
 
   // HTTP version used in the response, if known.

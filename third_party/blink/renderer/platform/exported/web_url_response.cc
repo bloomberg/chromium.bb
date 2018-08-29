@@ -326,14 +326,12 @@ void WebURLResponse::SetWasFallbackRequiredByServiceWorker(bool value) {
   resource_response_->SetWasFallbackRequiredByServiceWorker(value);
 }
 
-void WebURLResponse::SetResponseTypeViaServiceWorker(
-    network::mojom::FetchResponseType value) {
-  resource_response_->SetResponseTypeViaServiceWorker(value);
+void WebURLResponse::SetType(network::mojom::FetchResponseType value) {
+  resource_response_->SetType(value);
 }
 
-network::mojom::FetchResponseType WebURLResponse::ResponseTypeViaServiceWorker()
-    const {
-  return resource_response_->ResponseTypeViaServiceWorker();
+network::mojom::FetchResponseType WebURLResponse::GetType() const {
+  return resource_response_->GetType();
 }
 
 void WebURLResponse::SetURLListViaServiceWorker(
