@@ -72,7 +72,6 @@ class DeviceEventRouter : public VolumeManagerObserver,
 
  private:
   void StartupDelayed();
-  void OnDeviceAddedDelayed(const std::string& device_path);
   void SuspendDoneDelayed();
 
   // Obtains device state of the device having |device_path|.

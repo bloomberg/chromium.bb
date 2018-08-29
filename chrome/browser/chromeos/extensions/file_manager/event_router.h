@@ -191,27 +191,6 @@ class EventRouter : public KeyedService,
       chromeos::MountError error,
       const Volume& volume);
 
-  // If needed, opens a file manager window for the removable device mounted at
-  // |mount_path|. Disk.mount_path() is empty, since it is being filled out
-  // after calling notifying observers by DiskMountManager.
-  void ShowRemovableDeviceInFileManager(VolumeType type,
-                                        const base::FilePath& mount_path);
-
-  // Sends onFileTransferUpdate event right now if |immediate| is set. Otherwise
-  // it refrains from sending for a short while, and after that it sends the
-  // most recently scheduled event once.
-  // The delay is for waiting subsequent 'added' events to come after the first
-  // one when multiple tasks are added. This way, we can avoid frequent UI
-  // update caused by differences between singular and plural cases.
-  void ScheduleDriveFileTransferEvent(const drive::JobInfo& job_info,
-                                      const std::string& status,
-                                      bool immediate);
-
-  // Sends the most recently scheduled onFileTransferUpdated event to
-  // extensions.
-  // This is used for implementing ScheduledDriveFileTransferEvent().
-  void SendDriveFileTransferEvent();
-
   base::Time last_copy_progress_event_;
 
   std::map<base::FilePath, std::unique_ptr<FileWatcher>> file_watchers_;

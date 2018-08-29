@@ -124,9 +124,6 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   void Init(system::StatisticsProvider* provider);
 
-  // If |attr| exists in machine stat, assign it to |value|.
-  void InitFromMachineStatistic(const char* attr, std::string* value);
-
   std::string initial_locale_;
   std::vector<std::string> configured_locales_;
   std::string initial_timezone_;
