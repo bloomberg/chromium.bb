@@ -97,8 +97,7 @@ class CBOR_EXPORT CBORReader {
   static const char* ErrorCodeToString(DecoderError error_code);
 
  private:
-  CBORReader(base::span<const uint8_t>::const_iterator it,
-             const base::span<const uint8_t>::const_iterator end);
+  explicit CBORReader(base::span<const uint8_t> data);
 
   // Encapsulates information extracted from the header of a CBOR data item,
   // which consists of the initial byte, and a variable-length-encoded integer
@@ -127,18 +126,17 @@ class CBOR_EXPORT CBORReader {
                                              int max_nesting_level);
   base::Optional<CBORValue> ReadMapContent(const DataItemHeader& header,
                                            int max_nesting_level);
-  bool CanConsume(uint64_t bytes);
+  base::Optional<uint8_t> ReadByte();
+  base::Optional<base::span<const uint8_t>> ReadBytes(uint64_t num_bytes);
   bool HasValidUTF8Format(const std::string& string_data);
   bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool CheckMinimalEncoding(uint8_t additional_bytes, uint64_t uint_data);
 
   DecoderError GetErrorCode();
 
-  size_t num_bytes_consumed() const { return it_ - begin_; }
+  size_t num_bytes_remaining() const { return rest_.size(); }
 
-  const base::span<const uint8_t>::const_iterator begin_;
-  base::span<const uint8_t>::const_iterator it_;
-  const base::span<const uint8_t>::const_iterator end_;
+  base::span<const uint8_t> rest_;
   DecoderError error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(CBORReader);
