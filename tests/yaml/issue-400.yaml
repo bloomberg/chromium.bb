@@ -156,7 +156,7 @@ tests:
   - - ",abc-abc"
     - "ABC-ABC"
 
-# numericmodechars vs. midnumericmodechars
+# numericmodechars vs. midendnumericmodechars
 table: |
   display , 6
   display # 3456

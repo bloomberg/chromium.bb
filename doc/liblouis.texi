@@ -781,7 +781,7 @@ encountered.
 
 You can define characters or strings to be part of a number by using
 the @opcoderef{midnum} opcode, the @opcoderef{numericmodechars} opcode
-or the @opcoderef{midnumericmodechars} opcode.
+or the @opcoderef{midendnumericmodechars} opcode.
 
 Example:
 
@@ -807,7 +807,7 @@ numericnocontchars abcdefghij
 
 @opcode{numericmodechars, characters}
 
-@opcode{midnumericmodechars, characters}
+@opcode{midendnumericmodechars, characters}
 
 Any of these characters can appear within a number without terminating
 the effect of the number sign (see the @opcoderef{numsign} opcode). In
@@ -827,7 +827,7 @@ Example:
 
 @example
 numericmodechars .,
-midnumericmodechars -/
+midendnumericmodechars -/
 @end example
 
 @end table
