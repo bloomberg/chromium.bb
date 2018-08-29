@@ -24,7 +24,6 @@
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_sessions/local_session_event_router.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -266,9 +265,7 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
       identity_manager_(&signin_manager_,
                         &auth_service_,
                         &account_tracker_,
-                        &gaia_cookie_manager_service_),
-      url_request_context_(new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())) {
+                        &gaia_cookie_manager_service_) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
   account_tracker_.Initialize(&pref_service_, base::FilePath());
@@ -292,7 +289,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
   init_params.network_time_update_callback = base::DoNothing();
-  init_params.url_request_context = url_request_context();
   init_params.url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_);

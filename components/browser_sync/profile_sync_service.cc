@@ -68,7 +68,6 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using syncer::DataTypeController;
@@ -190,7 +189,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           init_params.signin_scoped_device_id_callback),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
-      url_request_context_(init_params.url_request_context),
       url_loader_factory_(std::move(init_params.url_loader_factory)),
       is_first_time_sync_configure_(false),
       engine_initialized_(false),

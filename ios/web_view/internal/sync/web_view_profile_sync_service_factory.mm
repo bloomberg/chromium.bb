@@ -92,7 +92,6 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<SigninManagerWrapper>(identity_manager, signin);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::make_unique<WebViewSyncClient>(browser_state);
-  init_params.url_request_context = browser_state->GetRequestContext();
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   // ios/web_view has no need to update network time.
   init_params.network_time_update_callback = base::DoNothing();
