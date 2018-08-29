@@ -177,7 +177,11 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
       ybf->y_buffer_8bit = (uint8_t *)aom_memalign(32, (size_t)yplane_size);
       if (!ybf->y_buffer_8bit) return -1;
     } else {
-      assert(!ybf->y_buffer_8bit);
+      if (ybf->y_buffer_8bit) {
+        aom_free(ybf->y_buffer_8bit);
+        ybf->y_buffer_8bit = NULL;
+        ybf->buf_8bit_valid = 0;
+      }
     }
 
     ybf->corrupted = 0; /* assume not corrupted by errors */
