@@ -597,7 +597,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   }
 
   // Set up the chrome://theme/ source.
-  content::URLDataSource::Add(profile, new ThemeSource(profile));
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
   g_print_preview_request_id_map.Get().Set(id_, -1);
 }

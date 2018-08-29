@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/theme_handler.h"
 
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,8 +51,7 @@ void ThemeHandler::Observe(int type,
 
 void ThemeHandler::InitializeCSSCaches() {
   Profile* profile = GetProfile();
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 }
 
 Profile* ThemeHandler::GetProfile() const {

@@ -157,8 +157,7 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
   content::WebUIDataSource::Add(profile, source);
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 }
 
 // static

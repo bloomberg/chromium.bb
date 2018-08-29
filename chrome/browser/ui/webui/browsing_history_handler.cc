@@ -245,7 +245,8 @@ void BrowsingHistoryHandler::RegisterMessages() {
       this, local_history, sync_service);
 
   // Create our favicon data source.
-  content::URLDataSource::Add(profile, new FaviconSource(profile));
+  content::URLDataSource::Add(profile,
+                              std::make_unique<FaviconSource>(profile));
 
   web_ui()->RegisterMessageCallback(
       "queryHistory",

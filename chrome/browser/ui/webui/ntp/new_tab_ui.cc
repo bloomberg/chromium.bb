@@ -58,8 +58,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
     web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
 
   // content::URLDataSource assumes the ownership of the html source.
-  content::URLDataSource::Add(
-      profile, new NewTabHTMLSource(profile->GetOriginalProfile()));
+  content::URLDataSource::Add(profile, std::make_unique<NewTabHTMLSource>(
+                                           profile->GetOriginalProfile()));
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,

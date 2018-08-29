@@ -743,7 +743,8 @@ void ProfileImpl::DoFinalInit() {
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
-  content::URLDataSource::Add(this, new PrefsInternalsSource(this));
+  content::URLDataSource::Add(this,
+                              std::make_unique<PrefsInternalsSource>(this));
 
   ScheduleUpdateCTPolicy();
 }
