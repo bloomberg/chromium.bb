@@ -21,6 +21,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "jni/CrashDumpManager_jni.h"
@@ -63,7 +64,7 @@ CrashDumpManager::~CrashDumpManager() {}
 
 base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
     int process_host_id) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath minidump_path;
   if (!base::CreateTemporaryFile(&minidump_path)) {
     LOG(ERROR) << "Failed to create temporary file, crash won't be reported.";
@@ -97,7 +98,6 @@ CrashDumpManager::CrashDumpStatus
 CrashDumpManager::ProcessMinidumpFileFromChildInternal(
     base::FilePath crash_dump_dir,
     const crash_reporter::ChildExitObserver::TerminationInfo& info) {
-  base::AssertBlockingAllowed();
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
   // processed, then there is no more work to do.
@@ -107,6 +107,7 @@ CrashDumpManager::ProcessMinidumpFileFromChildInternal(
 
   int64_t file_size = 0;
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(minidump_path)) {
     LOG(ERROR) << "minidump does not exist " << minidump_path.value();
     return CrashDumpStatus::kMissingDump;
