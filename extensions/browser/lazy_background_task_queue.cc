@@ -46,7 +46,8 @@ void PendingTaskAdapter(LazyContextTaskQueue::PendingTask original_task,
 // Attempts to create a background host for a lazy background page. Returns true
 // if the background host is created.
 bool CreateLazyBackgroundHost(ProcessManager* pm, const Extension* extension) {
-  pm->IncrementLazyKeepaliveCount(extension);
+  pm->IncrementLazyKeepaliveCount(extension, Activity::LIFECYCLE_MANAGEMENT,
+                                  Activity::kCreatePage);
   // Creating the background host may fail, e.g. if the extension isn't enabled
   // in incognito mode.
   return pm->CreateBackgroundHost(extension,
@@ -168,7 +169,8 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
   // a failure to load, because the keepalive count is reset in that case.
   if (host && BackgroundInfo::HasLazyBackgroundPage(extension)) {
     ProcessManager::Get(browser_context)
-        ->DecrementLazyKeepaliveCount(extension);
+        ->DecrementLazyKeepaliveCount(extension, Activity::LIFECYCLE_MANAGEMENT,
+                                      Activity::kCreatePage);
   }
 }
 

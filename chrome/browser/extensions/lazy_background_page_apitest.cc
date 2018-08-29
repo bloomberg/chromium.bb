@@ -250,12 +250,22 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   // With the dialog open the background page is still alive.
   EXPECT_TRUE(IsBackgroundPageAlive(extension->id()));
 
-  // Close the dialog. The keep alive count is decremented.
+  // Close the dialog. The keep alive count is decremented. Check for the
+  // presence of the MODAL_DIALOG activity and that it goes away when
+  // the dialog is closed.
+  const auto dialog_box_activity =
+      std::make_pair(Activity::MODAL_DIALOG,
+                     dialog->web_contents()->GetLastCommittedURL().spec());
   ProcessManager* pm = ProcessManager::Get(browser()->profile());
   int previous_keep_alive_count = pm->GetLazyKeepaliveCount(extension);
+  ProcessManager::ActivitiesMultiset activities =
+      pm->GetLazyKeepaliveActivities(extension);
+  EXPECT_EQ(1u, activities.count(dialog_box_activity));
   dialog->CloseModalDialog();
   EXPECT_EQ(previous_keep_alive_count - 1,
             pm->GetLazyKeepaliveCount(extension));
+  activities = pm->GetLazyKeepaliveActivities(extension);
+  EXPECT_EQ(0u, activities.count(dialog_box_activity));
 
   // The background page closes now that the dialog is gone.
   background_observer.WaitUntilClosed();

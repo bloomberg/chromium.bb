@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
+#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -200,7 +200,8 @@ class ExtensionHost : public DeferredStartRenderHost,
   GURL initial_url_;
 
   // Messages sent out to the renderer that have not been acknowledged yet.
-  std::set<int> unacked_messages_;
+  // Maps event ID to event name.
+  std::unordered_map<int, std::string> unacked_messages_;
 
   // The type of view being hosted.
   ViewType extension_host_type_;

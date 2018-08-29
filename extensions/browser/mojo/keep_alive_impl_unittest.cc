@@ -17,7 +17,7 @@ namespace extensions {
 
 class KeepAliveTest : public ExtensionsTest {
  public:
-  KeepAliveTest() {}
+  KeepAliveTest() : mojo_activity_(Activity::MOJO, "") {}
   ~KeepAliveTest() override {}
 
   void SetUp() override {
@@ -62,6 +62,15 @@ class KeepAliveTest : public ExtensionsTest {
         ->GetLazyKeepaliveCount(extension());
   }
 
+  using ActivitiesMultiset = ProcessManager::ActivitiesMultiset;
+
+  const std::pair<Activity::Type, std::string> mojo_activity_;
+
+  ActivitiesMultiset GetActivities() {
+    return ProcessManager::Get(browser_context())
+        ->GetLazyKeepaliveActivities(extension());
+  }
+
  private:
   scoped_refptr<const Extension> extension_;
 
@@ -72,34 +81,41 @@ TEST_F(KeepAliveTest, Basic) {
   mojo::InterfacePtr<KeepAlive> keep_alive;
   CreateKeepAlive(mojo::MakeRequest(&keep_alive));
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   keep_alive.reset();
   WaitUntilLazyKeepAliveChanges();
   EXPECT_EQ(0, GetKeepAliveCount());
+  EXPECT_EQ(0u, GetActivities().count(mojo_activity_));
 }
 
 TEST_F(KeepAliveTest, TwoKeepAlives) {
   mojo::InterfacePtr<KeepAlive> keep_alive;
   CreateKeepAlive(mojo::MakeRequest(&keep_alive));
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   mojo::InterfacePtr<KeepAlive> other_keep_alive;
   CreateKeepAlive(mojo::MakeRequest(&other_keep_alive));
   EXPECT_EQ(2, GetKeepAliveCount());
+  EXPECT_EQ(2u, GetActivities().count(mojo_activity_));
 
   keep_alive.reset();
   WaitUntilLazyKeepAliveChanges();
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   other_keep_alive.reset();
   WaitUntilLazyKeepAliveChanges();
   EXPECT_EQ(0, GetKeepAliveCount());
+  EXPECT_EQ(0u, GetActivities().count(mojo_activity_));
 }
 
 TEST_F(KeepAliveTest, UnloadExtension) {
   mojo::InterfacePtr<KeepAlive> keep_alive;
   CreateKeepAlive(mojo::MakeRequest(&keep_alive));
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   scoped_refptr<const Extension> other_extension =
       ExtensionBuilder()
@@ -125,6 +141,7 @@ TEST_F(KeepAliveTest, UnloadExtension) {
       ->TriggerOnUnloaded(other_extension.get(),
                           UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   ExtensionRegistry::Get(browser_context())
       ->TriggerOnUnloaded(extension(), UnloadedExtensionReason::DISABLE);
@@ -132,6 +149,7 @@ TEST_F(KeepAliveTest, UnloadExtension) {
   // keep-alive count for its extension. However, ProcessManager resets its
   // keep-alive count for an unloaded extension.
   EXPECT_EQ(0, GetKeepAliveCount());
+  EXPECT_EQ(0u, GetActivities().count(mojo_activity_));
 
   // Wait for |keep_alive| to disconnect.
   base::RunLoop run_loop;
@@ -143,11 +161,13 @@ TEST_F(KeepAliveTest, Shutdown) {
   mojo::InterfacePtr<KeepAlive> keep_alive;
   CreateKeepAlive(mojo::MakeRequest(&keep_alive));
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   ExtensionRegistry::Get(browser_context())->Shutdown();
   // After a shutdown event, the KeepAliveImpl should not access its
   // ProcessManager and so the keep-alive count should remain unchanged.
   EXPECT_EQ(1, GetKeepAliveCount());
+  EXPECT_EQ(1u, GetActivities().count(mojo_activity_));
 
   // Wait for |keep_alive| to disconnect.
   base::RunLoop run_loop;

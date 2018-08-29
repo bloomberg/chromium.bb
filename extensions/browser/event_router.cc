@@ -722,14 +722,15 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
     ProcessManager* pm = ProcessManager::Get(context);
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host) {
-      pm->IncrementLazyKeepaliveCount(extension);
+      pm->IncrementLazyKeepaliveCount(extension, Activity::EVENT, event_name);
       host->OnBackgroundEventDispatched(event_name, event_id);
     }
   }
 }
 
 void EventRouter::OnEventAck(BrowserContext* context,
-                             const std::string& extension_id) {
+                             const std::string& extension_id,
+                             const std::string& event_name) {
   ProcessManager* pm = ProcessManager::Get(context);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be
@@ -739,7 +740,8 @@ void EventRouter::OnEventAck(BrowserContext* context,
   // HasLazyBackgroundPage is true. Find out why we're getting it anyway.
   if (host->extension() &&
       BackgroundInfo::HasLazyBackgroundPage(host->extension()))
-    pm->DecrementLazyKeepaliveCount(host->extension());
+    pm->DecrementLazyKeepaliveCount(host->extension(), Activity::EVENT,
+                                    event_name);
 }
 
 bool EventRouter::HasRegisteredEvents(const ExtensionId& extension_id) const {

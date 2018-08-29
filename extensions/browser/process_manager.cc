@@ -5,7 +5,7 @@
 #include "extensions/browser/process_manager.h"
 
 #include <memory>
-#include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
@@ -122,6 +123,8 @@ void PropagateExtensionWakeResult(const base::Callback<void(bool)>& callback,
 
 struct ProcessManager::BackgroundPageData {
   // The count of things keeping the lazy background page alive.
+  // TODO(crbug.com://695711): Work on a plan to remove this and rely
+  // on activities.size() instead.
   int lazy_keepalive_count = 0;
 
   // True if the page responded to the ShouldSuspend message and is currently
@@ -139,6 +142,8 @@ struct ProcessManager::BackgroundPageData {
 
   // Keeps track of when this page was last suspended. Used for perf metrics.
   std::unique_ptr<base::ElapsedTimer> since_suspended;
+
+  ActivitiesMultiset activities;
 };
 
 // Data of a RenderFrameHost associated with an extension.
@@ -482,17 +487,32 @@ int ProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   return background_page_data_[extension->id()].lazy_keepalive_count;
 }
 
-void ProcessManager::IncrementLazyKeepaliveCount(const Extension* extension) {
+void ProcessManager::IncrementLazyKeepaliveCount(
+    const Extension* extension,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
   if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    int& count = background_page_data_[extension->id()].lazy_keepalive_count;
-    if (++count == 1)
+    BackgroundPageData& data = background_page_data_[extension->id()];
+    if (++data.lazy_keepalive_count == 1)
       OnLazyBackgroundPageActive(extension->id());
+    data.activities.insert(std::make_pair(activity_type, extra_data));
   }
 }
 
-void ProcessManager::DecrementLazyKeepaliveCount(const Extension* extension) {
+void ProcessManager::DecrementLazyKeepaliveCount(
+    const Extension* extension,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
   if (BackgroundInfo::HasLazyBackgroundPage(extension))
-    DecrementLazyKeepaliveCount(extension->id());
+    DecrementLazyKeepaliveCount(extension->id(), activity_type, extra_data);
+}
+
+ProcessManager::ActivitiesMultiset ProcessManager::GetLazyKeepaliveActivities(
+    const Extension* extension) {
+  ProcessManager::ActivitiesMultiset result;
+  if (BackgroundInfo::HasLazyBackgroundPage(extension))
+    result = background_page_data_[extension->id()].activities;
+  return result;
 }
 
 void ProcessManager::OnShouldSuspendAck(const std::string& extension_id,
@@ -526,7 +546,8 @@ void ProcessManager::OnNetworkRequestStarted(
       pending_network_requests_.insert(std::make_pair(request_id, host));
   DCHECK(result.second) << "Duplicate network request IDs.";
 
-  IncrementLazyKeepaliveCount(host->extension());
+  IncrementLazyKeepaliveCount(host->extension(), Activity::NETWORK,
+                              base::NumberToString(request_id));
   host->OnNetworkRequestStarted(request_id);
 }
 
@@ -549,7 +570,8 @@ void ProcessManager::OnNetworkRequestDone(
   DCHECK(IsFrameInExtensionHost(host, render_frame_host));
 
   host->OnNetworkRequestDone(request_id);
-  DecrementLazyKeepaliveCount(host->extension());
+  DecrementLazyKeepaliveCount(host->extension(), Activity::NETWORK,
+                              base::NumberToString(request_id));
 }
 
 void ProcessManager::CancelSuspend(const Extension* extension) {
@@ -563,8 +585,10 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
     // has the effect of invalidating close_sequence_id, preventing any in
     // progress closes from completing and starting a new close process if
     // necessary.
-    IncrementLazyKeepaliveCount(extension);
-    DecrementLazyKeepaliveCount(extension);
+    IncrementLazyKeepaliveCount(extension, Activity::PROCESS_MANAGER,
+                                Activity::kCancelSuspend);
+    DecrementLazyKeepaliveCount(extension, Activity::PROCESS_MANAGER,
+                                Activity::kCancelSuspend);
   }
 }
 
@@ -699,7 +723,8 @@ void ProcessManager::AcquireLazyKeepaliveCountForFrame(
     const Extension* extension =
         GetExtensionForRenderFrameHost(render_frame_host);
     if (extension) {
-      IncrementLazyKeepaliveCount(extension);
+      IncrementLazyKeepaliveCount(extension, Activity::PROCESS_MANAGER,
+                                  Activity::kRenderFrame);
       data.has_keepalive = true;
     }
   }
@@ -717,30 +742,44 @@ void ProcessManager::ReleaseLazyKeepaliveCountForFrame(
     const Extension* extension =
         GetExtensionForRenderFrameHost(render_frame_host);
     if (extension) {
-      DecrementLazyKeepaliveCount(extension);
+      DecrementLazyKeepaliveCount(extension, Activity::PROCESS_MANAGER,
+                                  Activity::kRenderFrame);
       data.has_keepalive = false;
     }
   }
 }
 
 void ProcessManager::DecrementLazyKeepaliveCount(
-    const std::string& extension_id) {
-  int& count = background_page_data_[extension_id].lazy_keepalive_count;
-  DCHECK(count > 0 ||
+    const std::string& extension_id,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
+  BackgroundPageData& data = background_page_data_[extension_id];
+
+  DCHECK(data.lazy_keepalive_count > 0 ||
          !extension_registry_->enabled_extensions().Contains(extension_id));
+  --data.lazy_keepalive_count;
+  const auto it =
+      data.activities.find(std::make_pair(activity_type, extra_data));
+  if (it != data.activities.end()) {
+    data.activities.erase(it);
+  }
 
   // If we reach a zero keepalive count when the lazy background page is about
   // to be closed, incrementing close_sequence_id will cancel the close
   // sequence and cause the background page to linger. So check is_closing
   // before initiating another close sequence.
-  if (--count == 0 && !background_page_data_[extension_id].is_closing) {
-    background_page_data_[extension_id].close_sequence_id =
-        ++last_background_close_sequence_id_;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
-                              weak_ptr_factory_.GetWeakPtr(), extension_id,
-                              last_background_close_sequence_id_),
-        base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
+  if (data.lazy_keepalive_count == 0) {
+    // Clear any leftover activities.
+    data.activities.clear();
+    if (!background_page_data_[extension_id].is_closing) {
+      data.close_sequence_id = ++last_background_close_sequence_id_;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id,
+                     last_background_close_sequence_id_),
+          base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
+    }
   }
 }
 
@@ -822,14 +861,14 @@ void ProcessManager::DevToolsAgentHostAttached(
   if (const Extension* extension = GetExtensionForAgentHost(agent_host)) {
     // Keep the lazy background page alive while it's being inspected.
     CancelSuspend(extension);
-    IncrementLazyKeepaliveCount(extension);
+    IncrementLazyKeepaliveCount(extension, Activity::DEV_TOOLS, std::string());
   }
 }
 
 void ProcessManager::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
   if (const Extension* extension = GetExtensionForAgentHost(agent_host))
-    DecrementLazyKeepaliveCount(extension);
+    DecrementLazyKeepaliveCount(extension, Activity::DEV_TOOLS, "");
 }
 
 void ProcessManager::UnregisterExtension(const std::string& extension_id) {
@@ -867,7 +906,8 @@ void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
       const Extension* extension =
           GetExtensionForRenderFrameHost(key_value.first);
       if (extension)
-        IncrementLazyKeepaliveCount(extension);
+        IncrementLazyKeepaliveCount(extension, Activity::PROCESS_MANAGER,
+                                    Activity::kRenderFrame);
     }
   }
 }

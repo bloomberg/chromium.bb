@@ -231,7 +231,8 @@ class EventRouter : public KeyedService,
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
   void OnEventAck(content::BrowserContext* context,
-                  const std::string& extension_id);
+                  const std::string& extension_id,
+                  const std::string& event_name);
 
   // Returns whether or not the given extension has any registered events.
   bool HasRegisteredEvents(const ExtensionId& extension_id) const;

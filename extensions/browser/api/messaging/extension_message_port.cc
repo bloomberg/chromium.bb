@@ -5,6 +5,7 @@
 #include "extensions/browser/api/messaging/extension_message_port.h"
 
 #include "base/scoped_observer.h"
+#include "base/strings/strcat.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_handle.h"
@@ -18,6 +19,15 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+
+namespace {
+
+std::string PortIdToString(const extensions::PortId& port_id) {
+  return base::StrCat({port_id.GetChannelId().first.ToString(), ":",
+                       base::NumberToString(port_id.GetChannelId().second)});
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -232,7 +242,8 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
   ProcessManager* pm = ProcessManager::Get(browser_context_);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension()))
-    pm->IncrementLazyKeepaliveCount(host->extension());
+    pm->IncrementLazyKeepaliveCount(host->extension(), Activity::MESSAGE_PORT,
+                                    PortIdToString(port_id_));
 
   // Keep track of the background host, so when we decrement, we only do so if
   // the host hasn't reloaded.
@@ -243,7 +254,8 @@ void ExtensionMessagePort::DecrementLazyKeepaliveCount() {
   ProcessManager* pm = ProcessManager::Get(browser_context_);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && host == background_host_ptr_)
-    pm->DecrementLazyKeepaliveCount(host->extension());
+    pm->DecrementLazyKeepaliveCount(host->extension(), Activity::MESSAGE_PORT,
+                                    PortIdToString(port_id_));
 }
 
 void ExtensionMessagePort::OpenPort(int process_id, int routing_id) {

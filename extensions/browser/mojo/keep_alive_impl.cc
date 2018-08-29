@@ -29,7 +29,8 @@ KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
       extension_(extension),
       extension_registry_observer_(this),
       binding_(this, std::move(request)) {
-  ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(extension_);
+  ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(
+      extension_, Activity::MOJO, std::string());
   binding_.set_connection_error_handler(
       base::Bind(&KeepAliveImpl::OnDisconnected, base::Unretained(this)));
   extension_registry_observer_.Add(ExtensionRegistry::Get(context_));
@@ -50,7 +51,8 @@ void KeepAliveImpl::OnShutdown(ExtensionRegistry* registry) {
 }
 
 void KeepAliveImpl::OnDisconnected() {
-  ProcessManager::Get(context_)->DecrementLazyKeepaliveCount(extension_);
+  ProcessManager::Get(context_)->DecrementLazyKeepaliveCount(
+      extension_, Activity::MOJO, std::string());
   delete this;
 }
 
