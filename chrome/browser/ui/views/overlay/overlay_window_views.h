@@ -173,6 +173,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
 
+  // Automatically hides the controls a few seconds after user tap gesture.
+  base::RetainingOneShotTimer hide_controls_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };
 
