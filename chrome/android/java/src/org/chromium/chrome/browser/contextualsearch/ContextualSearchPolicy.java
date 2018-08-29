@@ -145,7 +145,9 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        return isPromoAvailable() || mContextualSearchPreferenceHelper.canThrottle()
+        return (isPromoAvailable()
+                       || (mContextualSearchPreferenceHelper != null
+                                  && mContextualSearchPreferenceHelper.canThrottle()))
                 ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl())
                 : true;
     }
