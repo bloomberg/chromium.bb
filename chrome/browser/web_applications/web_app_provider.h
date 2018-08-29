@@ -12,6 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -27,7 +29,8 @@ class WebAppPolicyManager;
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
 // Profile-linked KeyedService) and their associated PrefService.
-class WebAppProvider : public KeyedService {
+class WebAppProvider : public KeyedService,
+                       public content::NotificationObserver {
  public:
   static WebAppProvider* Get(Profile* profile);
 
@@ -41,8 +44,12 @@ class WebAppProvider : public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // KeyedService
-  void Shutdown() override;
+  void Reset();
+
+  // content::NotificationObserver
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void OnScanForExternalWebApps(
@@ -50,6 +57,8 @@ class WebAppProvider : public KeyedService {
 
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 

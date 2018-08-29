@@ -50,4 +50,25 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   EXPECT_EQ("Manifest test app", app->name());
 }
 
+// Tests that the browser doesn't crash if it gets shutdown with a pending
+// installation.
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
+                       ShutdownWithPendingInstallation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Start an installation but don't wait for it to finish.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->pending_app_manager()
+      .Install(web_app::PendingAppManager::AppInfo::Create(
+                   embedded_test_server()->GetURL(
+                       "/banners/manifest_test_page.html"),
+                   web_app::PendingAppManager::LaunchContainer::kWindow,
+                   false /* create_shortcuts */),  // Avoid creating real
+                                                   // shortcuts in tests.
+               base::DoNothing());
+
+  // The browser should shutdown cleanly even if there is a pending
+  // installation.
+}
+
 }  // namespace extensions
