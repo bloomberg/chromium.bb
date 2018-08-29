@@ -32,11 +32,11 @@ html[dir=rtl] #edit-bg {
 }
 
 #edit-bg:hover {
-  background-color: rgb(241, 243, 244);
+  background-color: rgba(32, 33, 36, .1);
 }
 
-.non-white-bg #edit-bg:hover {
-  background-color: rgba(255, 255, 255, .1);
+#edit-bg:active {
+  background-color: rgba(32, 33, 36, .16);
 }
 
 .using-mouse-nav .bg-option:focus {
