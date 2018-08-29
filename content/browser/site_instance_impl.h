@@ -116,10 +116,28 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // May be empty if this SiteInstance does not have a |site_|.
   const GURL& original_url() { return original_url_; }
 
+  // Returns the URL which should be used in a LockToOrigin call for this
+  // SiteInstance's process.
+  const GURL& lock_url() { return lock_url_; }
+
   // True if |url| resolves to an effective URL that is different from |url|.
   // See GetEffectiveURL().  This will be true for hosted apps as well as NTP
   // URLs.
   static bool HasEffectiveURL(BrowserContext* browser_context, const GURL& url);
+
+  // Returns the site for the given URL, which includes only the scheme and
+  // registered domain.  Returns an empty GURL if the URL has no host.
+  // |use_effective_urls| specifies whether to resolve |url| to an effective
+  // URL (via ContentBrowserClient::GetEffectiveURL()) before determining the
+  // site.
+  static GURL GetSiteForURL(BrowserContext* context,
+                            const GURL& url,
+                            bool use_effective_urls);
+
+  // Returns the URL to which a process should be locked for the given URL.
+  // This is computed similarly to the site URL (see GetSiteForURL), but
+  // without resolving effective URLs.
+  static GURL DetermineProcessLockURL(BrowserContext* context, const GURL& url);
 
   // Returns the SiteInstance, related to this one, that should be used
   // for subframes when an oopif is required, but a dedicated process is not.
@@ -274,6 +292,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // The URL which was used to set the |site_| for this SiteInstance.
   GURL original_url_;
+
+  // The URL to use when locking a process to this SiteInstance's site via
+  // LockToOrigin().  This is the same as |site_| except for cases involving
+  // effective URLs, such as hosted apps.  In those cases, this URL is a site
+  // URL that is computed without the use of effective URLs.
+  GURL lock_url_;
 
   // The ProcessReusePolicy to use when creating a RenderProcessHost for this
   // SiteInstance.
