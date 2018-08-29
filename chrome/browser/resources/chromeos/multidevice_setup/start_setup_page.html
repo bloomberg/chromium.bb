@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="icons.html">
@@ -10,22 +11,13 @@
 
 <dom-module id="start-setup-page">
   <template>
-    <style include="iron-flex multidevice-setup-shared">
+    <style include="iron-flex multidevice-setup-shared md-select">
       #selector-and-details-container {
         @apply(--layout-horizontal);
         color: rgb(33, 33, 36);
         font-family: Roboto-Regular, Roboto, sans-serif;
         font-size: 13px;
         padding: 8px 8px 8px 0;
-      }
-
-      /* TODO(jordynass): Switch this to the new standard WebUI select format.
-       * It should be available in M69. */
-      #deviceDropdown {
-        background-color: rgb(42, 49, 70, .1);
-        border-radius: 4px;
-        height: 32px;
-        width: 240px;
       }
 
       #page-icon-container {
@@ -79,6 +71,7 @@
             </div>
             <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
               <select id="deviceDropdown"
+                  class="md-select"
                   on-change="onDeviceDropdownSelectionChanged_">
                 <template is="dom-repeat" items="[[devices]]">
                   <option value$="[[item.deviceId]]">
