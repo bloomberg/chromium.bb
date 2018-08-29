@@ -82,7 +82,6 @@ TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
   EXPECT_FALSE(score.ShouldConsiderUpdating());
 
   // Make it old. Then, it's no longer new enough.
-  score.time_at_snapshot -=
-      base::TimeDelta::FromDays(ThumbnailScore::kUpdateThumbnailTimeDays);
+  score.time_at_snapshot -= ThumbnailScore::kUpdateThumbnailTime;
   EXPECT_TRUE(score.ShouldConsiderUpdating());
 }
