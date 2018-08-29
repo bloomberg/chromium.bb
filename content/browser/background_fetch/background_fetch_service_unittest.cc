@@ -186,6 +186,24 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     run_loop.Run();
   }
 
+  // Calls BackgroundFetchServiceImpl::MatchRequests() to retrieve all settled
+  // fetches.
+  void MatchAllRequests(int64_t service_worker_registration_id,
+                        const std::string& developer_id,
+                        const std::string& unique_id,
+                        std::vector<BackgroundFetchSettledFetch>* out_fetches) {
+    DCHECK(out_fetches);
+    base::RunLoop run_loop;
+    service_->MatchRequests(
+        service_worker_registration_id, developer_id, unique_id,
+        base::nullopt /* request_to_match*/, nullptr /* cache_query_params*/,
+        true /* match_all */,
+        base::BindOnce(&BackgroundFetchServiceTest::DidMatchAllRequests,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_fetches));
+    run_loop.Run();
+  }
+
   // Synchronous wrapper for BackgroundFetchServiceImpl::UpdateUI().
   void UpdateUI(int64_t service_worker_registration_id,
                 const std::string& developer_id,
@@ -345,6 +363,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     *out_error = error;
     *out_developer_ids = developer_ids;
 
+    std::move(quit_closure).Run();
+  }
+
+  void DidMatchAllRequests(
+      base::OnceClosure quit_closure,
+      std::vector<BackgroundFetchSettledFetch>* out_fetches,
+      const std::vector<BackgroundFetchSettledFetch>& fetches) {
+    *out_fetches = fetches;
     std::move(quit_closure).Run();
   }
 
@@ -515,11 +541,10 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
+  BackgroundFetchRegistration registration;
   {
     BackgroundFetchOptions options;
-
     blink::mojom::BackgroundFetchError error;
-    BackgroundFetchRegistration registration;
 
     // Create the first registration. This must succeed.
     Fetch(service_worker_registration_id, kExampleDeveloperId, requests,
@@ -531,13 +556,12 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   event_dispatched_loop.Run();
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
-
-  std::vector<BackgroundFetchSettledFetch> fetches =
-      embedded_worker_test_helper()->last_fetches().value();
+  // Get all the settled fetches and test properties.
+  std::vector<BackgroundFetchSettledFetch> fetches;
+  MatchAllRequests(service_worker_registration_id, registration.developer_id,
+                   registration.unique_id, &fetches);
   ASSERT_EQ(fetches.size(), requests.size());
 
   for (size_t i = 0; i < fetches.size(); ++i) {
@@ -618,11 +642,12 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
+  BackgroundFetchRegistration registration;
+
   {
     BackgroundFetchOptions options;
 
     blink::mojom::BackgroundFetchError error;
-    BackgroundFetchRegistration registration;
 
     // Create the first registration. This must succeed.
     Fetch(service_worker_registration_id, kExampleDeveloperId, requests,
@@ -634,13 +659,12 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   event_dispatched_loop.Run();
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
-
-  std::vector<BackgroundFetchSettledFetch> fetches =
-      embedded_worker_test_helper()->last_fetches().value();
+  // Get all the settled fetches and test properties.
+  std::vector<BackgroundFetchSettledFetch> fetches;
+  MatchAllRequests(service_worker_registration_id, registration.developer_id,
+                   registration.unique_id, &fetches);
   ASSERT_EQ(fetches.size(), requests.size());
 
   for (size_t i = 0; i < fetches.size(); ++i) {

@@ -89,12 +89,10 @@ class ServiceWorkerGlobalScopeProxy final
       const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration,
-      const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration,
-      const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchCookieChangeEvent(
       int event_id,
       const WebCanonicalCookie& cookie,
