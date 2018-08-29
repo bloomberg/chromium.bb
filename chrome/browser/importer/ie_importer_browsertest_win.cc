@@ -43,9 +43,7 @@
 #include "chrome/common/importer/importer_test_registry_overrider_win.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "components/os_crypt/ie7_password_win.h"
 #include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -222,21 +220,13 @@ bool CreateUrlFile(const base::FilePath& file, const base::string16& url) {
 class TestObserver : public ProfileWriter,
                      public importer::ImporterProgressObserver {
  public:
-  enum TestIEVersion {
-    IE6,
-    IE7,
-  };
-
-  explicit TestObserver(uint16_t importer_items, TestIEVersion ie_version)
+  explicit TestObserver(uint16_t importer_items)
       : ProfileWriter(NULL),
         bookmark_count_(0),
         history_count_(0),
-        password_count_(0),
         favicon_count_(0),
         homepage_count_(0),
-        ie7_password_count_(0),
-        importer_items_(importer_items),
-        ie_version_(ie_version) {}
+        importer_items_(importer_items) {}
 
   // importer::ImporterProgressObserver:
   void ImportStarted() override {}
@@ -252,11 +242,6 @@ class TestObserver : public ProfileWriter,
       EXPECT_EQ(2u, history_count_);
     if (importer_items_ & importer::HOME_PAGE)
       EXPECT_EQ(1u, homepage_count_);
-    if ((importer_items_ & importer::PASSWORDS) && (ie_version_ == IE7))
-      EXPECT_EQ(1u, ie7_password_count_);
-    // We need to test the IE6 password importer code.
-    // https://crbug.com/257100
-    // EXPECT_EQ(1, password_count_);
   }
 
   // ProfileWriter:
@@ -267,18 +252,6 @@ class TestObserver : public ProfileWriter,
 
   bool TemplateURLServiceIsLoaded() const override {
     return true;
-  }
-
-  void AddPasswordForm(const autofill::PasswordForm& form) override {
-    // Importer should obtain this password form only.
-    EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
-    EXPECT_EQ("http://localhost:8080/", form.signon_realm);
-    EXPECT_EQ(L"user", form.username_element);
-    EXPECT_EQ(L"1", form.username_value);
-    EXPECT_EQ(L"", form.password_element);
-    EXPECT_EQ(L"2", form.password_value);
-    EXPECT_EQ("", form.action.spec());
-    ++password_count_;
   }
 
   void AddHistoryPage(const history::URLRows& page,
@@ -342,16 +315,6 @@ class TestObserver : public ProfileWriter,
     favicon_count_ += usage.size();
   }
 
-  void AddIE7PasswordInfo(const IE7PasswordInfo& info) override {
-    // This function also gets called for the IEImporter test. Ignore.
-    if (ie_version_ == IE7) {
-      EXPECT_EQ(L"Test1", info.url_hash);
-      EXPECT_EQ(1, info.encrypted_data[0]);
-      EXPECT_EQ(4u, info.encrypted_data.size());
-      ++ie7_password_count_;
-    }
-  }
-
   void AddHomepage(const GURL& homepage) override {
     EXPECT_EQ(homepage.spec(), "http://www.test.com/");
     ++homepage_count_;
@@ -362,12 +325,9 @@ class TestObserver : public ProfileWriter,
 
   size_t bookmark_count_;
   size_t history_count_;
-  size_t password_count_;
   size_t favicon_count_;
   size_t homepage_count_;
-  size_t ie7_password_count_;
   uint16_t importer_items_;
-  TestIEVersion ie_version_;
 };
 
 class MalformedFavoritesRegistryTestObserver
@@ -391,7 +351,6 @@ class MalformedFavoritesRegistryTestObserver
   bool BookmarkModelIsLoaded() const override { return true; }
   bool TemplateURLServiceIsLoaded() const override { return true; }
 
-  void AddPasswordForm(const autofill::PasswordForm& form) override {}
   void AddHistoryPage(const history::URLRows& page,
                       history::VisitSource visit_source) override {}
   void AddKeywords(TemplateURLService::OwnedTemplateURLVector template_urls,
@@ -502,20 +461,16 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   // Starts to import the above settings.
   // Deletes itself.
   ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
-  TestObserver* observer = new TestObserver(
-      importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
-      TestObserver::IE6);
+  TestObserver* observer =
+      new TestObserver(importer::HISTORY | importer::FAVORITES);
   host->set_observer(observer);
 
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_IE;
   source_profile.source_path = temp_dir_.GetPath();
 
-  host->StartImportSettings(
-      source_profile,
-      browser()->profile(),
-      importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
-      observer);
+  host->StartImportSettings(source_profile, browser()->profile(),
+                            importer::HISTORY | importer::FAVORITES, observer);
   base::RunLoop().Run();
 
   // Cleans up.
@@ -598,38 +553,11 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IE7ImporterPasswordsTest) {
-  // Starts to import the IE7 passwords.
-  // Deletes itself.
-  ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
-  TestObserver* observer = new TestObserver(importer::PASSWORDS,
-                                            TestObserver::IE7);
-  host->set_observer(observer);
-
-  base::string16 key_path(importer::GetIE7PasswordsKey());
-  base::win::RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_CURRENT_USER, key_path.c_str(), KEY_WRITE));
-  key.WriteValue(L"Test1", 1);
-
-  importer::SourceProfile source_profile;
-  source_profile.importer_type = importer::TYPE_IE;
-  source_profile.source_path = temp_dir_.GetPath();
-
-  host->StartImportSettings(
-      source_profile,
-      browser()->profile(),
-      importer::PASSWORDS,
-      observer);
-  base::RunLoop().Run();
-}
-
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporterHomePageTest) {
   // Starts to import the IE home page.
   // Deletes itself.
   ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
-  TestObserver* observer = new TestObserver(importer::HOME_PAGE,
-                                            TestObserver::IE6);
+  TestObserver* observer = new TestObserver(importer::HOME_PAGE);
   host->set_observer(observer);
 
   base::string16 key_path(importer::GetIESettingsKey());
