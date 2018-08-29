@@ -139,6 +139,9 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     // TODO(crbug.com/808089): report across OOPIFs.
     if (interactive_detector)
       interactive_detector->HandleForInputDelay(event);
+
+    if (LocalFrameView* view = document->View())
+      view->GetJankTracker().NotifyInput(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&

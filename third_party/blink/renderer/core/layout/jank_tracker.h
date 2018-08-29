@@ -17,6 +17,7 @@ class LayoutRect;
 class LocalFrameView;
 class PaintLayer;
 class TracedValue;
+class WebInputEvent;
 
 // Tracks "jank" from layout objects changing their visual location between
 // animation frames.
@@ -30,13 +31,14 @@ class CORE_EXPORT JankTracker {
                             const LayoutRect& old_visual_rect,
                             const PaintLayer& painting_layer);
   void NotifyPrePaintFinished();
+  void NotifyInput(const WebInputEvent&);
   bool IsActive();
   double Score() const { return score_; }
   float MaxDistance() const { return max_distance_; }
   void Dispose() { timer_.Stop(); }
 
  private:
-  void TimerFired(TimerBase*);
+  void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(
       double jank_fraction,
       double granularity_scale) const;
@@ -50,9 +52,8 @@ class CORE_EXPORT JankTracker {
   // The per-frame jank region.
   Region region_;
 
-  // Timer that fires the first time we've had no layout jank for a few seconds.
+  // Tracks the short period after an input event during which we ignore jank.
   TaskRunnerTimer<JankTracker> timer_;
-  bool has_fired_;
 
   // The maximum distance any layout object has moved in any frame.
   float max_distance_;

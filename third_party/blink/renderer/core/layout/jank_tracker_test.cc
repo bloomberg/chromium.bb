@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
@@ -12,6 +13,13 @@ class JankTrackerTest : public RenderingTest {
  protected:
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
   JankTracker& GetJankTracker() { return GetFrameView().GetJankTracker(); }
+
+  void SimulateInput() {
+    GetJankTracker().NotifyInput(WebMouseEvent(
+        WebInputEvent::kMouseDown, WebFloatPoint(), WebFloatPoint(),
+        WebPointerProperties::Button::kLeft, 0,
+        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks()));
+  }
 };
 
 TEST_F(JankTrackerTest, SimpleBlockMovement) {
@@ -102,6 +110,20 @@ TEST_F(JankTrackerTest, SmallMovementIgnoredWithZoom) {
   )HTML");
   GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
                                                   AtomicString("top: 2px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  EXPECT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, IgnoreAfterInput) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #j { position: relative; width: 300px; height: 100px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+  GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
+                                                  AtomicString("top: 60px"));
+  SimulateInput();
   GetFrameView().UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
 }
