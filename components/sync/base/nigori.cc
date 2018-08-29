@@ -107,8 +107,7 @@ bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& hostname,
 bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& password) {
   const size_t kCostParameter = 8192;  // 2^13.
   const size_t kBlockSize = 8;
-  // TODO(vitaliii): Set this parameter to the proper value.
-  const size_t kParallelizationParameter = 1;
+  const size_t kParallelizationParameter = 11;
   // TODO(davidovic): Do not use a constant salt here.
   const char kConstantSalt[] = "ScryptConstantSalt";
   const size_t kMaxMemoryBytes = 32 * 1024 * 1024;  // 32 MiB.
