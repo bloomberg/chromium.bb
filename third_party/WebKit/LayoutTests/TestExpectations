@@ -5063,3 +5063,5 @@ crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?3001-4
 crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?4001-5000 [ Timeout Pass Failure ]
 crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?5001-6000 [ Timeout Pass Failure ]
 crbug.com/877104 [ Mac Win7 ] external/wpt/editing/run/forwarddelete.html?6001-last [ Timeout Pass Failure ]
+
+crbug.com/878535 media/avtrack/video-track-selected.html [ Pass Crash ]
