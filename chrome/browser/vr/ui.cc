@@ -579,6 +579,8 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
   model_->create_tabs_view = ui_initial_state.create_tabs_view;
+  model_->use_new_incognito_strings =
+      ui_initial_state.use_new_incognito_strings;
 }
 
 void Ui::AcceptDoffPromptForTesting() {

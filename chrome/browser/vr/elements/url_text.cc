@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
-#include "components/url_formatter/url_formatter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"

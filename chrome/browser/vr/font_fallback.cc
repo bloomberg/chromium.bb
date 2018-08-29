@@ -41,7 +41,7 @@ class CachedFont {
     // character based. This also limits the cache size to the number of Unicode
     // scripts (174 at the time of writing).
     UErrorCode err = UErrorCode::U_ZERO_ERROR;
-    UScriptCode script = ui_support::UScriptGetScript(character, &err);
+    UScriptCode script = UScriptGetScript(character, &err);
     if (!U_SUCCESS(err) || script == UScriptCode::USCRIPT_INVALID_CODE)
       return false;
     auto& supported = supported_scripts_[script];

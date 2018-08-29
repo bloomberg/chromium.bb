@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_VR_UI_SUPPORT_H_
 
 #include "chrome/browser/vr/vr_export.h"
+#include "components/url_formatter/url_formatter.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
+#include "url/gurl.h"
 
 namespace vr {
-namespace ui_support {
 
 // Methods in this module are wrappers around methods that the UI should not
 // utilitize directly.  If UI code is split to a feature module, then libraries
@@ -21,7 +22,9 @@ namespace ui_support {
 
 VR_EXPORT UScriptCode UScriptGetScript(UChar32 codepoint, UErrorCode* err);
 
-}  // namespace ui_support
+VR_EXPORT base::string16 FormatUrlForVr(const GURL& gurl,
+                                        url::Parsed* new_parsed);
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SUPPORT_H_

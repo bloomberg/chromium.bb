@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/model/color_scheme.h"
+#include "chrome/browser/vr/ui_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/render_text_test_api.h"
@@ -87,9 +88,7 @@ TEST_P(ElisionTest, ProperOffsetAndFading) {
   GURL gurl(base::UTF8ToUTF16(GetParam().url_string));
   ASSERT_TRUE(gurl.is_valid());
   url::Parsed parsed;
-  const base::string16 text = url_formatter::FormatUrl(
-      gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed, nullptr,
-      nullptr);
+  const base::string16 text = FormatUrlForVr(gurl, &parsed);
 
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetFontList(font_list);
@@ -147,9 +146,7 @@ TextFormatting CreateTextUrlFormatting(const std::string& url_string,
                                        const std::string& expected_string) {
   GURL url(base::UTF8ToUTF16(url_string));
   url::Parsed parsed;
-  const base::string16 formatted_url = url_formatter::FormatUrl(
-      url, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed, nullptr,
-      nullptr);
+  const base::string16 formatted_url = FormatUrlForVr(url, &parsed);
   EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
   return CreateUrlFormatting(formatted_url, parsed, kEmphasizedColor,
                              kDeemphasizedColor);

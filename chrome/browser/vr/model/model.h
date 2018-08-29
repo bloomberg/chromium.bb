@@ -60,6 +60,7 @@ struct VR_UI_EXPORT Model {
   bool incognito_tabs_view_selected = false;
   bool create_tabs_view = false;
   float floor_height = 0.0f;
+  bool use_new_incognito_strings = false;
 
   // WebVR state.
   WebVrModel web_vr;

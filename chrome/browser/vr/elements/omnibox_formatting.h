@@ -9,6 +9,7 @@
 
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/model/color_scheme.h"
+#include "chrome/browser/vr/ui_support.h"
 #include "chrome/browser/vr/vr_ui_export.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
@@ -23,11 +24,6 @@ VR_UI_EXPORT TextFormatting
 ConvertClassification(const ACMatchClassifications& classifications,
                       size_t text_length,
                       const ColorScheme& color_scheme);
-
-VR_UI_EXPORT url_formatter::FormatUrlTypes GetVrFormatUrlTypes();
-
-VR_UI_EXPORT base::string16 FormatUrlForVr(const GURL& gurl,
-                                           url::Parsed* new_parsed);
 
 struct ElisionParameters {
   // The horizontal pixel offset to be applied to URL text, such that the right
