@@ -515,6 +515,16 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
     logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
   }
 
+  if (gaia::IsGaiaSignonRealm(GURL(password_form.signon_realm)) &&
+      password_form.submission_event ==
+          PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
+    // A Gaia form may disappear from DOM without a submission. For example it
+    // happens when the user chooses another account. So Gaia forms with
+    // DOM_MUTATION_AFTER_XHR submission type are not acctually submitted. Skip
+    // it.
+    return;
+  }
+
   if (is_new_form_parsing_for_saving_enabled_)
     ProcessSubmittedForm(password_form.form_data, driver);
 
