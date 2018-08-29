@@ -35,7 +35,7 @@ public class FeedJournalStorage implements JournalStorage {
         }
     }
 
-    private static class ReadCallback implements Callback<List<String>> {
+    private static class ReadCallback implements Callback<String[]> {
         private final Consumer < Result < List<byte[]>>> mConsumer;
 
         public ReadCallback(Consumer < Result < List<byte[]>>> consumer) {
@@ -43,7 +43,7 @@ public class FeedJournalStorage implements JournalStorage {
         }
 
         @Override
-        public void onResult(List<String> entries) {
+        public void onResult(String[] entries) {
             // TODO(gangwu): Need to handle failure case.
             List<byte[]> journal = new ArrayList<byte[]>();
             for (String entry : entries) {

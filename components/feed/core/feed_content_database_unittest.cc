@@ -9,14 +9,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/feed/core/feed_content_mutation.h"
 #include "components/feed/core/proto/content_storage.pb.h"
-#include "components/feed/core/time_serialization.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using leveldb_proto::test::FakeDB;
-using testing::Mock;
-using testing::NotNull;
 using testing::_;
 
 namespace feed {

@@ -8,13 +8,11 @@ option optimize_for = LITE_RUNTIME;
 
 package feed;
 
-message FeedStorageProto {
-  // original key for data.
+// Used for storing journal data in journal storage.
+message JournalStorageProto {
+  // Original key for data.
   optional string key = 1;
 
-  // Content data.
-  optional bytes content_data = 2;
-
   // Journal data.
-  repeated bytes journal_data = 3;
+  repeated bytes journal_data = 2;
 }

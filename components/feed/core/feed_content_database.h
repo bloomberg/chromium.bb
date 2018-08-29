@@ -80,8 +80,6 @@ class FeedContentDatabase {
                              ConfirmationCallback callback);
 
  private:
-  friend class FeedContentDatabaseTest;
-
   // These methods work with |CommitContentMutation|. They process
   // |ContentOperation| in |ContentMutation| which is passed to
   // |PerformNextOperation| by |CommitContentMutation|.

@@ -8,6 +8,6 @@ proto_library("proto") {
   sources = [
     "cached_image.proto",
     "content_storage.proto",
-    "feed_storage.proto",
+    "journal_storage.proto",
   ]
 }
