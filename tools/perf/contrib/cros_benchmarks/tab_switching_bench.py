@@ -6,10 +6,11 @@ import os
 
 from core import perf_benchmark
 
-from contrib.cros_benchmarks import tab_switching_measure
 from contrib.cros_benchmarks import tab_switching_stories
 from telemetry import benchmark
 from telemetry import story
+from telemetry.timeline import chrome_trace_category_filter
+from telemetry.web_perf import timeline_based_measurement
 
 
 @benchmark.Info(emails=['vovoy@chromium.org'],
@@ -25,11 +26,11 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   Benchmark specific option:
     --tabset-repeat=N: Duplicate tab set for N times.
     --pause-after-creation=N: Pauses N secs after tab creation.
+    --pause-after-switch=N: Pauses N secs after each tab switch.
   The following usage example opens 120 tabs.
   $ ./run_benchmark --browser=cros-chrome --remote=DUT_IP
   cros_tab_switching.typical_24 --tabset-repeat=5
   """
-  test = tab_switching_measure.CrosTabSwitchingMeasurement
   SUPPORTED_PLATFORMS = [story.expectations.ALL_CHROMEOS]
 
 
@@ -39,6 +40,8 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
                       help='repeat tab page set')
     parser.add_option('--pause-after-creation', type='int', default=0,
                       help='pause between tab creation and tab switch')
+    parser.add_option('--pause-after-switch', type='int', default=3,
+                      help='pause between each tab switch')
 
   def CreateStorySet(self, options):
     # When running this test with test_that, fetch_benchmark_deps.py would
@@ -49,12 +52,17 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
         archive_data_file='data/tab_switching.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         cloud_storage_bucket=story.PARTNER_BUCKET)
-    # May not have pause_after_creation attribute in presubmit check.
-    pause_after_creation = getattr(options, 'pause_after_creation', 0)
     story_set.AddStory(tab_switching_stories.CrosMultiTabTypical24Story(
         story_set, cros_remote, options.tabset_repeat,
-        pause_after_creation))
+        options.pause_after_creation, options.pause_after_switch))
     return story_set
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+    category_filter.AddIncludedCategory('latency')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics(['tabsMetric'])
+    return options
 
   @classmethod
   def Name(cls):
