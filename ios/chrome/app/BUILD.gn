@@ -245,8 +245,6 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/testing/perf:startup",
     "//ios/third_party/material_roboto_font_loader_ios",
-    "//ios/web",
-    "//ios/web/public/app",
     "//mojo/core/embedder",
     "//net",
     "//skia",
