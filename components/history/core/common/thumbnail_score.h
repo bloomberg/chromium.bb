@@ -84,14 +84,10 @@ struct ThumbnailScore {
   // How bad a thumbnail needs to be before we completely ignore it.
   static const double kThumbnailMaximumBoringness;
 
-  // We consider a thumbnail interesting enough if the boring score is
-  // lower than this.
-  static const double kThumbnailInterestingEnoughBoringness;
-
   // Time before we take a worse thumbnail (subject to
   // kThumbnailMaximumBoringness) over what's currently in the database
   // for freshness.
-  static const int64_t kUpdateThumbnailTimeDays;
+  static const base::TimeDelta kUpdateThumbnailTime;
 
   // Penalty of how much more boring a thumbnail should be per hour.
   static const double kThumbnailDegradePerHour;
