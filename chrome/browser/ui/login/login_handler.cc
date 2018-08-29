@@ -98,7 +98,6 @@ LoginHandler::LoginHandler(
     LoginAuthRequiredCallback auth_required_callback)
     : handled_auth_(false),
       auth_info_(auth_info),
-      password_manager_(NULL),
       web_contents_getter_(web_contents_getter),
       login_model_(NULL),
       auth_required_callback_(std::move(auth_required_callback)),
@@ -144,7 +143,6 @@ void LoginHandler::BuildViewWithPasswordManager(
     const base::string16& explanation,
     password_manager::PasswordManager* password_manager,
     const autofill::PasswordForm& observed_form) {
-  password_manager_ = password_manager;
   password_form_ = observed_form;
   LoginHandler::LoginModelData model_data(password_manager, observed_form);
   has_shown_login_handler_ = true;
@@ -173,11 +171,13 @@ void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  password_manager::PasswordManager* password_manager =
+      GetPasswordManagerForLogin();
   std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_ &&
-      password_manager_->client()->GetLogManager()->IsLoggingActive()) {
+  if (password_manager &&
+      password_manager->client()->GetLogManager()->IsLoggingActive()) {
     logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
-        password_manager_->client()->GetLogManager()));
+        password_manager->client()->GetLogManager()));
     logger->LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SET_AUTH_METHOD);
   }
@@ -192,10 +192,10 @@ void LoginHandler::SetAuth(const base::string16& username,
     return;
 
   // Tell the password manager the credentials were submitted / accepted.
-  if (password_manager_) {
+  if (password_manager) {
     password_form_.username_value = username;
     password_form_.password_value = password;
-    password_manager_->ProvisionallySavePassword(password_form_, nullptr);
+    password_manager->ProvisionallySavePassword(password_form_, nullptr);
     if (logger) {
       logger->LogPasswordForm(
           autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
