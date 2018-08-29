@@ -352,12 +352,14 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     touch_action_filter_.AppendToGestureSequenceForDebugging("T");
     // Touch action must be auto when there is no consumer
     touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+    touch_action_filter_.SetActiveTouchInProgress(true);
     UpdateTouchAckTimeoutEnabled();
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
     touch_action_filter_.ReportAndResetTouchAction();
+    touch_action_filter_.SetActiveTouchInProgress(false);
     UpdateTouchAckTimeoutEnabled();
   }
 }
@@ -613,6 +615,7 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+  touch_action_filter_.SetActiveTouchInProgress(true);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
@@ -632,6 +635,7 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   touch_action_filter_.AppendToGestureSequenceForDebugging(
       std::to_string(touch_action).c_str());
   touch_action_filter_.OnSetTouchAction(touch_action);
+  touch_action_filter_.SetActiveTouchInProgress(true);
 
   // kTouchActionNone should disable the touch ack timeout.
   UpdateTouchAckTimeoutEnabled();

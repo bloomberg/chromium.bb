@@ -67,6 +67,8 @@ class CONTENT_EXPORT TouchActionFilter {
 
   void OnHasTouchEventHandlers(bool has_handlers);
 
+  void SetActiveTouchInProgress(bool active_touch_in_progress);
+
   // Debugging only.
   void AppendToGestureSequenceForDebugging(const char* str);
 
@@ -104,6 +106,9 @@ class CONTENT_EXPORT TouchActionFilter {
   // True if an active gesture sequence is in progress. i.e. after GTD and
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
+
+  // True at touch start and false at touch end.
+  bool active_touch_in_progress_ = false;
 
   // What touch actions are currently permitted.
   base::Optional<cc::TouchAction> allowed_touch_action_;
