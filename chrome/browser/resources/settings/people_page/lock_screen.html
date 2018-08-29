@@ -154,31 +154,22 @@
       </template>
 
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
-        <div id="fingerprintDiv">
-          <settings-toggle-button class="continuation"
-              pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
-              label="$i18n{lockScreenFingerprintEnable}">
-          </settings-toggle-button>
-          <iron-collapse
-              opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
-            <div class="settings-box continuation">
-              <div class="start">
-                $i18n{lockScreenEditFingerprints}
-                <div class="secondary" id="lockScreenEditFingerprintsSecondary">
-                  [[getDescriptionText_(numFingerprints_)]]
-                </div>
-              </div>
-              <div class="separator"></div>
-              <div class="secondary-action">
-                <paper-button class="secondary-button"
-                    on-click="onEditFingerprints_"
-                    aria-label="$i18n{lockScreenEditFingerprints}"
-                    aria-descibedby="lockScreenEditFingerprintsSecondary">
-                  $i18n{lockScreenSetupFingerprintButton}
-                </paper-button>
-              </div>
+        <div id="fingerprintDiv" class="settings-box two-line">
+          <div class="start">
+            $i18n{lockScreenEditFingerprints}
+            <div class="secondary" id="lockScreenEditFingerprintsSecondary">
+              [[getDescriptionText_(numFingerprints_)]]
             </div>
-          </iron-collapse>
+          </div>
+          <div class="separator"></div>
+          <div class="secondary-action">
+            <paper-button class="secondary-button"
+                on-click="onEditFingerprints_"
+                aria-label="$i18n{lockScreenEditFingerprints}"
+                aria-descibedby="lockScreenEditFingerprintsSecondary">
+              $i18n{lockScreenSetupFingerprintButton}
+            </paper-button>
+          </div>
         </div>
       </template>
 

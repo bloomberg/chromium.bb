@@ -803,10 +803,6 @@ const char kPinUnlockMaximumLength[] = "pin_unlock_maximum_length";
 // Boolean pref indicating whether users are allowed to set easy pins.
 const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
 
-// Boolean pref indicating whether fingerprint unlock is enabled.
-const char kEnableQuickUnlockFingerprint[] =
-    "settings.enable_quick_unlock_fingerprint";
-
 // Boolean pref indicating whether this device supports BLE advertising.
 const char kInstantTetheringBleAdvertisingSupported[] =
     "tether.ble_advertising_supported";
