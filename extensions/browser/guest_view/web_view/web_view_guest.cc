@@ -1003,9 +1003,9 @@ void WebViewGuest::RequestPointerLockPermission(
       callback);
 }
 
-void WebViewGuest::SignalWhenReady(const base::Closure& callback) {
+void WebViewGuest::SignalWhenReady(base::OnceClosure callback) {
   auto* manager = WebViewContentScriptManager::Get(browser_context());
-  manager->SignalOnScriptsLoaded(callback);
+  manager->SignalOnScriptsLoaded(std::move(callback));
 }
 
 void WebViewGuest::WillAttachToEmbedder() {

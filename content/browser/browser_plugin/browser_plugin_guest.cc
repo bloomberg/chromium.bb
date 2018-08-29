@@ -770,11 +770,12 @@ void BrowserPluginGuest::Attach(
   // change embedders before attach completes. If the embedder goes away,
   // so does the guest and so we will never call WillAttachComplete because
   // we have a weak ptr.
-  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id,
-                        params.is_full_page_plugin,
-                        base::Bind(&BrowserPluginGuest::OnWillAttachComplete,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   embedder_web_contents, params));
+  delegate_->WillAttach(
+      embedder_web_contents, browser_plugin_instance_id,
+      params.is_full_page_plugin,
+      base::BindOnce(&BrowserPluginGuest::OnWillAttachComplete,
+                     weak_ptr_factory_.GetWeakPtr(), embedder_web_contents,
+                     params));
 }
 
 void BrowserPluginGuest::OnWillAttachComplete(

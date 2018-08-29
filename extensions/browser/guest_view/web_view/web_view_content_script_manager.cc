@@ -222,12 +222,12 @@ std::set<int> WebViewContentScriptManager::GetContentScriptIDSet(
 }
 
 void WebViewContentScriptManager::SignalOnScriptsLoaded(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   if (!user_script_loader_observer_.IsObservingSources()) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
-  pending_scripts_loading_callbacks_.push_back(callback);
+  pending_scripts_loading_callbacks_.push_back(std::move(callback));
 }
 
 void WebViewContentScriptManager::OnScriptsLoaded(UserScriptLoader* loader) {
@@ -245,7 +245,7 @@ void WebViewContentScriptManager::RunCallbacksIfReady() {
   if (user_script_loader_observer_.IsObservingSources())
     return;
   for (auto& callback : pending_scripts_loading_callbacks_)
-    callback.Run();
+    std::move(callback).Run();
   pending_scripts_loading_callbacks_.clear();
 }
 

@@ -196,7 +196,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void GuestViewDidStopLoading() final;
   void GuestZoomChanged(double old_zoom_level, double new_zoom_level) final;
   bool IsAutoSizeSupported() const final;
-  void SignalWhenReady(const base::Closure& callback) final;
+  void SignalWhenReady(base::OnceClosure callback) final;
   void WillAttachToEmbedder() final;
   void WillDestroy() final;
 
