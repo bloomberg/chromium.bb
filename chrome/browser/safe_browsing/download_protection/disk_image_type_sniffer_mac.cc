@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/download_protection/disk_image_type_sniffer_mac.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
@@ -20,7 +20,7 @@ DiskImageTypeSnifferMac::DiskImageTypeSnifferMac() {}
 
 // static
 bool DiskImageTypeSnifferMac::IsAppleDiskImage(const base::FilePath& dmg_file) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::File file(dmg_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
