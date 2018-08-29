@@ -671,7 +671,8 @@ void FFmpegDemuxerStream::SetEndOfStream() {
 
 void FFmpegDemuxerStream::FlushBuffers(bool preserve_packet_position) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(read_cb_.is_null()) << "There should be no pending read";
+  DCHECK(preserve_packet_position || read_cb_.is_null())
+      << "There should be no pending read";
 
   // H264 and AAC require that we resend the header after flush.
   // Reset bitstream for converter to do so.
