@@ -1283,13 +1283,13 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_PRIOR:
-      if (control || alt || shift)
+      if (control || alt || shift || read_only())
         return false;
       model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
       return true;
 
     case ui::VKEY_NEXT:
-      if (control || alt || shift)
+      if (control || alt || shift || read_only())
         return false;
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
@@ -1377,8 +1377,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_SPACE:
-      if (!(control || alt || shift))
-      {
+      if (!(control || alt || shift)) {
         size_t start, end;
         GetSelectionBounds(&start, &end);
         end = std::max(start, end);
@@ -1464,8 +1463,8 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
   if (data.HasURL(ui::OSExchangeData::CONVERT_FILENAMES)) {
     GURL url;
     base::string16 title;
-    if (data.GetURLAndTitle(
-            ui::OSExchangeData::CONVERT_FILENAMES, &url, &title)) {
+    if (data.GetURLAndTitle(ui::OSExchangeData::CONVERT_FILENAMES, &url,
+                            &title)) {
       text = StripJavascriptSchemas(base::UTF8ToUTF16(url.spec()));
     }
   } else if (data.HasString() && data.GetString(&text)) {
@@ -1494,7 +1493,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // is using IDS_ for all its command ids. This is because views cannot depend
   // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
-      IDS_EDIT_SEARCH_ENGINES);
+                                     IDS_EDIT_SEARCH_ENGINES);
 }
 
 void OmniboxViewViews::OnCompositingDidCommit(ui::Compositor* compositor) {
