@@ -867,7 +867,7 @@ public class ChromeTabbedActivity
 
             mLayoutManager.hideOverview(false);
 
-            mScreenshotMonitor = ScreenshotMonitor.create(ChromeTabbedActivity.this);
+            mScreenshotMonitor = new ScreenshotMonitor(ChromeTabbedActivity.this);
 
             if (!CommandLine.getInstance().hasSwitch(
                         ChromeSwitches.ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS)) {
