@@ -43,8 +43,6 @@ class API_AVAILABLE(macosx(10.12.2))
   const std::string& RpId() const override;
   void PromptTouchIdDone(bool success) override;
 
-  base::Optional<Credential> credential_;
-
   DISALLOW_COPY_AND_ASSIGN(GetAssertionOperation);
 };
 
