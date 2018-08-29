@@ -46,7 +46,6 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
         base::sequence_manager::SequenceManagerForTest::Create(
             &message_loop_, message_loop_.task_runner(), &clock_),
         base::nullopt));
-    default_task_runner_ = scheduler_->DefaultTaskRunner();
     thread_ = scheduler_->CreateMainThread();
   }
 
@@ -63,7 +62,6 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::SimpleTestTickClock clock_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   std::unique_ptr<blink::WebThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForRendererSchedulerTest);
