@@ -10,6 +10,8 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 
 namespace device {
@@ -42,9 +44,27 @@ class FakeRadioWinrt
   IFACEMETHODIMP get_Kind(
       ABI::Windows::Devices::Radios::RadioKind* value) override;
 
+  void SimulateAdapterPowerFailure();
+  void SimulateAdapterPoweredOn();
+  void SimulateAdapterPoweredOff();
+
  private:
   ABI::Windows::Devices::Radios::RadioState state_ =
       ABI::Windows::Devices::Radios::RadioState_On;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Radios::Radio*,
+      IInspectable*>>
+      state_changed_handler_;
+
+  base::OnceCallback<void(ABI::Windows::Devices::Radios::RadioAccessStatus)>
+      set_state_callback_;
+
+  // This is needed to be able respond to SimulateAdapterPowerFailure() while
+  // |set_state_callback_| is in a pending state.
+  // TODO(https://crbug.com/878680): Implement SimulateAdapterPowerSuccess() and
+  // clean this up.
+  base::CancelableOnceClosure cancelable_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRadioWinrt);
 };

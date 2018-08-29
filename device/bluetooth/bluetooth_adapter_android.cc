@@ -150,7 +150,7 @@ void BluetoothAdapterAndroid::OnAdapterStateChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,
     const bool powered) {
-  DidChangePoweredState();
+  RunPendingPowerCallbacks();
   NotifyAdapterPoweredChanged(powered);
 }
 

@@ -172,6 +172,13 @@ class BluetoothTestBase : public testing::Test {
   // devices.  Returns false if the current platform always has permission.
   virtual bool DenyPermission();
 
+  // Simulates a failure during a pending BluetoothAdapter::SetPowered()
+  // operation.
+  virtual void SimulateAdapterPowerFailure() {}
+
+  // Simulates the Adapter being switched on.
+  virtual void SimulateAdapterPoweredOn() {}
+
   // Simulates the Adapter being switched off.
   virtual void SimulateAdapterPoweredOff() {}
 

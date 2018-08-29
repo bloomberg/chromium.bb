@@ -586,12 +586,12 @@ void BluetoothTestMac::SetMockControllerPowerState(int powered) {
             [mock_central_manager.delegate
                 centralManagerDidUpdateState:adapter_mac->GetCentralManager()];
             // On real devices, the Bluetooth classic code will call
-            // DidChangePoweredState() and dispatch the AdapterPoweredChanged
+            // RunPendingPowerCallbacks() and dispatch the AdapterPoweredChanged
             // event. Test code does not fake Bluetooth classic behavior so we
             // call the method and dispatch the event directly.
             // BT classic code related to powering the adapter is tested in
             // BluetoothAdapterMacTest.PollAndChangePower.
-            adapter_mac->DidChangePoweredState();
+            adapter_mac->RunPendingPowerCallbacks();
             adapter_mac->NotifyAdapterPoweredChanged(powered);
           },
           adapter_mac_->weak_ptr_factory_.GetWeakPtr(), powered));

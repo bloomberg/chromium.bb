@@ -330,13 +330,12 @@ BluetoothAdapter::~BluetoothAdapter() {
   }
 }
 
-void BluetoothAdapter::DidChangePoweredState() {
+void BluetoothAdapter::RunPendingPowerCallbacks() {
   if (set_powered_callbacks_) {
     // Move into a local variable to clear out both callbacks at the end of the
     // scope and to allow scheduling another SetPowered() call in either of the
     // callbacks.
-    std::unique_ptr<SetPoweredCallbacks> callbacks =
-        std::move(set_powered_callbacks_);
+    auto callbacks = std::move(set_powered_callbacks_);
     callbacks->powered == IsPowered() ? std::move(callbacks->callback).Run()
                                       : callbacks->error_callback.Run();
   }
