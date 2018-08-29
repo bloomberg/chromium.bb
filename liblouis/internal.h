@@ -135,6 +135,7 @@ typedef enum {
 	CTC_EndOfInput = 0x8000000,  // only used by pattern matcher
 	CTC_EmpMatch = 0x10000000,   // only used in TranslationTableRule->before and
 								 // TranslationTableRule->after
+	CTC_MidEndNumericMode = 0x20000000,
 } TranslationTableCharacterAttribute;
 
 typedef enum {
@@ -242,6 +243,7 @@ typedef enum { /* Op codes */
 	CTO_NoLetsignAfter,
 	CTO_NumberSign,
 	CTO_NumericModeChars,
+	CTO_MidEndNumericModeChars,
 	CTO_NumericNoContractChars,
 	CTO_SeqDelimiter,
 	CTO_SeqBeforeChars,

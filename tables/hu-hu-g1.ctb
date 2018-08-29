@@ -71,6 +71,7 @@ endnum . 3
 always • 6-35
 # literary forms of the decimal digits
 include litdigits6Dots.uti
+midendnumericmodechars ,:.-
 
 #Special letter replacements
 always cs 146	General need replacing cs letters with a combined dot combination

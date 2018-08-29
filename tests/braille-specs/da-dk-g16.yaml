@@ -434,8 +434,8 @@ tests:
 #caps and mixed case
   - ["⠨⠋⠕⠕⠃⠁⠗", "Foobar"]
   - ["⠸⠋⠕⠕⠃⠁⠗", "FOOBAR"]
-  - ["⠸⠋⠕⠕⢠⢠⠃⠁⠗", "FOObar"]
-  - ["⠸⠋⠕⠕⠤⠃⠁⠗⠋⠸⠕⠕⢠⢠⠃⠁⠗", "FOO-barfOObar"]
+  - ["⠸⠋⠕⠕⠠⠃⠁⠗", "FOObar"]
+  - ["⠸⠋⠕⠕⠤⠃⠁⠗⠋⠸⠕⠕⠠⠃⠁⠗", "FOO-barfOObar"]
 
 # Percent and permille
 

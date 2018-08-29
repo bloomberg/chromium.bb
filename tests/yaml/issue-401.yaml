@@ -21,18 +21,15 @@ tests:
   # ";" must also work as nocontractsign and cancel number mode
   - - "abc#abc;abc"
     - "abc123abc"
-    - {xfail: true} # does not work as nocontractsign
+#    - {xfail: true} # does not work as nocontractsign
   - - "#abc;abc"
     - "123abc"
-    - {xfail: true} # does not work as nocontractsign
   # nocontractsign is not necessary below, as "k" it not in numericmodechars
   - - "#abckabc"
     - "123kabc"
-    - {xfail: true} # character outside numericnocontchars does not cancel numeric mode (issue #400)
   # it shouldn't cause issues though
   - - "#abc;kabc"
     - "123kabc"
-    - {xfail: true} # character outside numericnocontchars does not cancel numeric mode (issue #400)
 
 table: |
   display | 456
@@ -62,7 +59,6 @@ tests:
   # nocontractsign is not necessary below, as "k" it not in numericmodechars
   - - "#abckabc"
     - "123kabc"
-    - {xfail: true} # character outside numericnocontchars does not cancel numeric mode (issue #400)
   # it shouldn't cause issues though
   - - "#abc;kabc"
     - "123kabc"

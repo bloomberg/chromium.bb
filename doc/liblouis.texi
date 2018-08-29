@@ -662,7 +662,15 @@ capsletter 6
 
 @opcode{begcapsword, dots}
 The dot pattern which begins a block of capital letters at the
-beginning or within a word. For example:
+beginning or within a word. The block is automatically terminated
+by any character that is not a capital letter, e.g. small letters,
+punctuation, numbers etc.
+
+Apart from capital letters, you can define a list of characters that
+can appear within a word in capitals without terminating the block.
+Do this by using the @opcoderef{capsmodechars} opcode.
+
+Example:
 
 @example
 begcapsword 6-6
@@ -670,19 +678,43 @@ begcapsword 6-6
 
 @opcode{endcapsword, dots}
 The dot pattern which ends a block of capital letters within a word.
+It is used in cases where the block is not terminated automatically
+by a word boundary, a number or punctuation. A common case is when
+an uppercase block is followed directly by a lowercase letter.
+
 For example:
 
 @example
 endcapsword 6-3
 @end example
 
-@opcode{begcaps, dots}
-The dot pattern which begins a block of capital letters defined by the
-provided @code{typeform} without regard for any other rules. For
-example:
+@opcode{capsmodechars, characters}
+
+Normally, any character other than a capital letter will cancel the
+@opcoderef{begcapsword} indicator. However, by using the
+@code{capsmodechars} opcode, you can specify a list of characters
+that are legal within a capitalized word. In some Braille codes,
+this might be the case for the hyphen character, @samp{-}.
+
+Example:
 
 @example
-begcaps 6-6
+capsmodechars -
+@end example
+
+@opcode{begcaps, dots}
+The dot pattern which begins a block of capital letters defined by the
+provided @code{typeform} without regard for any other rules.
+This construct is sometimes also called a capsphrase. It is used
+in some Braille codes to mark a whole phrase or sentence as capital
+letters. The block can contain capital letters as well as
+none-alphabetic characters, punctuation, numbers etc. The
+block is terminated when a small letter is encountered or at the end of the input string.
+
+Example:
+
+@example
+begcaps 6-6-6
 @end example
 
 @opcode{endcaps, dots}
@@ -743,10 +775,59 @@ similar to the @opcoderef{letsign}.
 @opcode{numsign, dots}
 The translator inserts this indicator before numbers made up of digits
 defined with the @opcoderef{litdigit} to show that they are a number
-and not letters or some other symbols. For example:
+and not letters or some other symbols. A number is terminated when a
+space, a letter or any other none-@opcoderef{litdigit} character is
+encountered.
+
+You can define characters or strings to be part of a number by using
+the @opcoderef{midnum} opcode, the @opcoderef{numericmodechars} opcode
+or the @opcoderef{midendnumericmodechars} opcode.
+
+Example:
 
 @example
 numsign 3456
+@end example
+
+@opcode{numericnocontchars, characters}
+
+This opcode specifies the characters that require a
+@opcoderef{nocontractsign} if they appear after a number with no
+intervening space, e.g. @samp{1a} or @samp{2-B}.
+
+These characters will typically be the letters a-j, which usually
+constitute the literary digits (see @opcoderef{litdigit}). However,
+in some Braille codes, all letters fall in this category.
+
+Example:
+
+@example
+numericnocontchars abcdefghij
+@end example
+
+@opcode{numericmodechars, characters}
+
+@opcode{midendnumericmodechars, characters}
+
+Any of these characters can appear within a number without terminating
+the effect of the number sign (@pxref{numsign
+opcode,numsign,@code{numsign}}). In other words, they don't cancel
+numeric mode.
+
+The difference between the two opcodes is that
+@opcoderef{numericmodechars} characters can appear anywhere in a
+number whereas @opcoderef{midendnumericmodechars} characters can
+appear only in the middle or at the end of a number. Like
+@code{midendnumericmodechars}, @code{numericmodechars} characters keep
+numeric mode active, but in addition they activate numeric mode
+immediately when at least one digit follows, and the number sign will
+precede the @code{numericmodechars} character in this case.
+
+Example:
+
+@example
+numericmodechars .,
+midendnumericmodechars -/
 @end example
 
 @end table

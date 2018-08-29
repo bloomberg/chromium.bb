@@ -703,7 +703,7 @@ back_selectRule(const TranslationTableHeader *table, int pos, int mode,
 						// nocontractsign is inserted either when in numeric mode and the
 						// next
 						// character is not numeric (CTC_Digit | CTC_LitDigit |
-						// CTC_NumericMode),
+						// CTC_NumericMode | CTC_MidEndNumericMode),
 						// or when a "contraction" rule is matched and the characters are
 						// preceded and followed by space or punctuation (CTC_Space |
 						// CTC_Punctuation).
@@ -1099,6 +1099,18 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 		int passIC; /* Instruction counter */
 		PassRuleMatch patternMatch;
 		back_setBefore(table, output, &beforeAttributes);
+		if ((allUpper == 1) && (beforeAttributes & CTC_UpperCase))
+			// Capsword in progress
+			allUpper = 2;
+		else if ((allUpper == 2) && !(beforeAttributes & CTC_UpperCase) &&
+				!(beforeAttributes & CTC_CapsMode))
+			// terminate capsword
+			allUpper = 0;
+		if ((itsANumber == 2) && output->length > 0 &&
+				!(beforeAttributes & CTC_LitDigit) &&
+				!(beforeAttributes & CTC_NumericMode) &&
+				!(beforeAttributes & CTC_MidEndNumericMode))
+			itsANumber = 0;
 		back_selectRule(table, pos, mode, input, output, itsANumber, itsALetter,
 				&currentDotslen, &currentOpcode, &currentRule, previousOpcode,
 				&doingMultind, &multindRule, beforeAttributes, &passInstructions, &passIC,
@@ -1107,9 +1119,6 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 			appliedRules[(*appliedRulesCount)++] = currentRule;
 		/* processing before replacement */
 		switch (currentOpcode) {
-		case CTO_Hyphen:
-			itsANumber = 0;
-			break;
 		case CTO_LargeSign:
 			if (previousOpcode == CTO_LargeSign)
 				if (!insertSpace(table, pos, input, output, spacebuf, posMapping,
@@ -1119,26 +1128,32 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 			break;
 		case CTO_CapsLetterRule:
 			nextUpper = 1;
+			allUpper = 0;
+			itsANumber = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
 		case CTO_BegCapsWordRule:
 			allUpper = 1;
+			itsANumber = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
 		case CTO_BegCapsRule:
 			allUpperPhrase = 1;
+			itsANumber = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
 		case CTO_EndCapsWordRule:
 			allUpper = 0;
+			itsANumber = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
 		case CTO_EndCapsRule:
 			allUpperPhrase = 0;
+			itsANumber = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
@@ -1150,17 +1165,22 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 			continue;
 			break;
 		case CTO_NumberRule:
-			itsANumber = 1;
+			itsANumber = 1;  // Starting number
+			allUpper = 0;
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
 			break;
+		case CTO_LitDigit:
+			itsANumber = 2;  // In the middle of a number
+			break;
+		case CTO_BegCompRule:
+			itsANumber = 0;
 		case CTO_BegEmph1Rule:
 		case CTO_BegEmph2Rule:
 		case CTO_BegEmph3Rule:
 		case CTO_EndEmph1Rule:
 		case CTO_EndEmph2Rule:
 		case CTO_EndEmph3Rule:
-		case CTO_BegCompRule:
 		case CTO_EndCompRule:
 			while (currentDotslen-- > 0) posMapping[pos++] = output->length;
 			continue;
