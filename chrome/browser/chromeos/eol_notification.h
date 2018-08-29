@@ -34,9 +34,6 @@ class EolNotification final {
   // Create or updates the notfication.
   void Update();
 
-  // Returns messages that applys to this eol status.
-  base::string16 GetEolMessage();
-
   // Profile which is associated with the EndOfLife notification.
   Profile* const profile_;
 

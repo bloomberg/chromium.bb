@@ -76,16 +76,12 @@ class ArcActiveDirectoryEnrollmentTokenFetcher
       const enterprise_management::DeviceManagementResponse& response);
 
   // Sends |auth_redirect_url| to the ArcSupportHost instance, which displays
-  // it in a web view and checks whether authentication succeeded. Passes
-  // OnSamlFlowFinished as callback for when the SAML flow ends. Calls
+  // it in a web view and checks whether authentication succeeded. Calls
   // CancelSamlFlow() if the url is invalid.
   void InitiateSamlFlow(const std::string& auth_redirect_url);
 
   // Calls callback_ with an error status and resets state.
   void CancelSamlFlow();
-
-  // Callback called from ArcSupportHost when the SAML flow is finished.
-  void OnSamlFlowFinished(bool result);
 
   ArcSupportHost* const support_host_ = nullptr;  // Not owned.
 
