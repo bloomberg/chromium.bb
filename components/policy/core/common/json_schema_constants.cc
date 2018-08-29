@@ -23,6 +23,7 @@ const char kPatternProperties[] = "patternProperties";
 const char kProperties[] = "properties";
 const char kRef[] = "$ref";
 const char kRequired[] = "required";
+const char kSensitiveValue[] = "sensitiveValue";
 const char kString[] = "string";
 const char kTitle[] = "title";
 const char kType[] = "type";

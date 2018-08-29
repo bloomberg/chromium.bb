@@ -70,10 +70,6 @@ struct StorageSizes {
   size_t string_enums;
 };
 
-// A policy-specific extension to schema. If a schema contains this key and the
-// value is true, the policy value should not be displayed on the UI.
-constexpr char kSensitiveValue[] = "sensitiveValue";
-
 // |Schema::MaskSensitiveValues| will replace sensitive values with this string.
 // It should be consistent with the mask |NetworkConfigurationPolicyHandler|
 // uses for network credential fields.
@@ -108,6 +104,7 @@ const SchemaKeyToValueType kAttributesAndTypesForArray[] = {
     {schema::kDescription, base::Value::Type::STRING},
     {schema::kId, base::Value::Type::STRING},
     {schema::kItems, base::Value::Type::DICTIONARY},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -119,6 +116,7 @@ const SchemaKeyToValueType* kAttributesAndTypesForArrayEnd =
 const SchemaKeyToValueType kAttributesAndTypesForBoolean[] = {
     {schema::kDescription, base::Value::Type::STRING},
     {schema::kId, base::Value::Type::STRING},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -133,6 +131,7 @@ const SchemaKeyToValueType kAttributesAndTypesForInteger[] = {
     {schema::kId, base::Value::Type::STRING},
     {schema::kMaximum, base::Value::Type::DOUBLE},
     {schema::kMinimum, base::Value::Type::DOUBLE},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -144,6 +143,7 @@ const SchemaKeyToValueType* kAttributesAndTypesForIntegerEnd =
 const SchemaKeyToValueType kAttributesAndTypesForNumber[] = {
     {schema::kDescription, base::Value::Type::STRING},
     {schema::kId, base::Value::Type::STRING},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -159,6 +159,7 @@ const SchemaKeyToValueType kAttributesAndTypesForObject[] = {
     {schema::kPatternProperties, base::Value::Type::DICTIONARY},
     {schema::kProperties, base::Value::Type::DICTIONARY},
     {schema::kRequired, base::Value::Type::LIST},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -182,6 +183,7 @@ const SchemaKeyToValueType kAttributesAndTypesForString[] = {
     {schema::kEnum, base::Value::Type::LIST},
     {schema::kId, base::Value::Type::STRING},
     {schema::kPattern, base::Value::Type::STRING},
+    {schema::kSensitiveValue, base::Value::Type::BOOLEAN},
     {schema::kTitle, base::Value::Type::STRING},
     {schema::kType, base::Value::Type::STRING},
 };
@@ -912,7 +914,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   }
 
   bool is_sensitive_value = false;
-  if (schema.GetBoolean(kSensitiveValue, &is_sensitive_value))
+  if (schema.GetBoolean(schema::kSensitiveValue, &is_sensitive_value))
     schema_node_metadata->is_sensitive_value = is_sensitive_value;
 
   return true;
