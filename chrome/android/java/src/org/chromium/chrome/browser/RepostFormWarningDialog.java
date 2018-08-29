@@ -109,12 +109,14 @@ public class RepostFormWarningDialog extends DialogFragment {
 
     @Override
     public void dismiss() {
+        handleDimissCleanup();
         if (getFragmentManager() == null) return;
         super.dismiss();
     }
 
     @Override
     public void dismissAllowingStateLoss() {
+        handleDimissCleanup();
         if (getFragmentManager() == null) return;
         super.dismissAllowingStateLoss();
     }
@@ -122,6 +124,10 @@ public class RepostFormWarningDialog extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
+        handleDimissCleanup();
+    }
+
+    private void handleDimissCleanup() {
         setCurrentDialogForTesting(null);
 
         if (mTab != null && mTabObserver != null) {
