@@ -22,7 +22,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
     : public FidoDiscovery,
       public BluetoothAdapter::Observer {
  public:
-  FidoBleDiscoveryBase();
+  explicit FidoBleDiscoveryBase(FidoTransportProtocol transport);
   ~FidoBleDiscoveryBase() override;
 
  protected:

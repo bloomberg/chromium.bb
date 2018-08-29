@@ -121,7 +121,10 @@ FidoCableDiscovery::CableDiscoveryData::~CableDiscoveryData() = default;
 
 FidoCableDiscovery::FidoCableDiscovery(
     std::vector<CableDiscoveryData> discovery_data)
-    : discovery_data_(std::move(discovery_data)), weak_factory_(this) {}
+    : FidoBleDiscoveryBase(
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy),
+      discovery_data_(std::move(discovery_data)),
+      weak_factory_(this) {}
 
 // This is a workaround for https://crbug.com/846522
 FidoCableDiscovery::~FidoCableDiscovery() {
