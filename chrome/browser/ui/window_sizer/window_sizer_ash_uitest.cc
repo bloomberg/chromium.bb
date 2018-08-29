@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -71,8 +72,16 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   ChromeLauncherController::instance()->FlushForTesting();
 
   // Move the cursor up to the "New window" menu option - assumes menu content.
-  generator.MoveMouseBy(
-      0, -3 * views::MenuConfig::instance().touchable_menu_height);
+  const int offset =
+      // Top half of the button we just clicked on.
+      ash::ShelfConstants::button_size() / 2 +
+      // Space between shelf top and menu bottom. Here we get this menu with
+      // a right-click but long-pressing yields the same result. All menus
+      // here use a touchable layout.
+      views::MenuConfig::instance().touchable_anchor_offset +
+      // 2 menu items we don't want, and go over part of the one we want.
+      2.2 * views::MenuConfig::instance().touchable_menu_height;
+  generator.MoveMouseBy(0, -offset);
   generator.ReleaseRightButton();
 
   // Ash notifies Chrome's ShelfItemDelegate that the menu item was selected.
