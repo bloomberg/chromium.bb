@@ -199,6 +199,12 @@ Service* SmbService::GetProviderService() const {
 }
 
 SmbProviderClient* SmbService::GetSmbProviderClient() const {
+  // If the DBusThreadManager or the SmbProviderClient aren't available,
+  // there isn't much we can do. This should only happen when running tests.
+  if (!chromeos::DBusThreadManager::IsInitialized() ||
+      !chromeos::DBusThreadManager::Get()) {
+    return nullptr;
+  }
   return chromeos::DBusThreadManager::Get()->GetSmbProviderClient();
 }
 
@@ -263,6 +269,11 @@ void SmbService::StartSetup() {
   if (!user) {
     // An instance of SmbService is created on the lockscreen. When this
     // instance is created, no setup will run.
+    return;
+  }
+
+  SmbProviderClient* client = GetSmbProviderClient();
+  if (!client) {
     return;
   }
 
