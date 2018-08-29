@@ -1828,6 +1828,29 @@
             ]
         }
     ],
+    "GamepadPollingInterval": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGamepadPolling250Hz",
+                    "params": {
+                        "interval-ms": "4"
+                    },
+                    "enable_features": [
+                        "GamepadPollingInterval"
+                    ]
+                }
+            ]
+        }
+    ],
     "GoogleBrandedContextMenu": [
         {
             "platforms": [
