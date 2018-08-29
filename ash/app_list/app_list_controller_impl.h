@@ -125,7 +125,6 @@ class ASH_EXPORT AppListControllerImpl
   void OnAppListItemUpdated(app_list::AppListItem* item) override;
 
   // SessionObserver:
-  void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   // Methods used in ash:

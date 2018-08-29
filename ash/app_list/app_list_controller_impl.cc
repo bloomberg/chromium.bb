@@ -386,31 +386,21 @@ void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
     client_->OnPageBreakItemAdded(item->id(), item->position());
 }
 
-void AppListControllerImpl::OnSessionStateChanged(
-    session_manager::SessionState state) {
-  if (!IsHomeLauncherEnabledInTabletMode() ||
-      !display::Display::HasInternalDisplay() ||
-      state != session_manager::SessionState::ACTIVE) {
-    return;
-  }
-
-  // Show the app list after signing in in tablet mode.
-  Show(display::Display::InternalDisplayId(),
-       app_list::AppListShowSource::kTabletMode, base::TimeTicks());
-}
-
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
-    PrefService* pref_service) {
+    PrefService* /* pref_service */) {
   if (!IsHomeLauncherEnabledInTabletMode() ||
       !display::Display::HasInternalDisplay()) {
     DismissAppList();
     return;
   }
 
+  // Show the app list after signing in in tablet mode.
+  Show(display::Display::InternalDisplayId(),
+       app_list::AppListShowSource::kTabletMode, base::TimeTicks());
+
   // The app list is not dismissed before switching user, suggestion chips will
   // not be shown. So reset app list state and trigger an initial search here to
   // update the suggestion results.
-  DCHECK(presenter_.GetTargetVisibility());
   presenter_.GetView()->CloseOpenedPage();
   presenter_.GetView()->search_box_view()->ClearSearch();
 }
