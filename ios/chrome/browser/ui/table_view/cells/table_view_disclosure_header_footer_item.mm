@@ -80,10 +80,14 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 @property(strong, nonatomic) UIViewPropertyAnimator* cellAnimator;
 // ImageView that holds the disclosure accessory icon.
 @property(strong, nonatomic) UIImageView* disclosureImageView;
+// The cell's default color at the moment of starting the highlight animation,
+// if no color is set defaults to clearColor.
+@property(strong, nonatomic) UIColor* cellDefaultBackgroundColor;
 @end
 
 @implementation TableViewDisclosureHeaderFooterView
 @synthesize cellAnimator = _cellAnimator;
+@synthesize cellDefaultBackgroundColor = _cellDefaultBackgroundColor;
 @synthesize disclosureDirection = disclosureDirection;
 @synthesize disclosureImageView = _disclosureImageView;
 @synthesize highlightColor = _highlightColor;
@@ -172,6 +176,7 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  self.cellDefaultBackgroundColor = nil;
   if (self.cellAnimator.isRunning)
     [self.cellAnimator stopAnimation:YES];
 }
@@ -208,7 +213,7 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 #pragma mark - internal methods
 
 - (void)addAnimationHighlightToAnimator {
-  UIColor* originalBackgroundColor = self.contentView.backgroundColor;
+  UIColor* originalBackgroundColor = self.cellDefaultBackgroundColor;
   self.cellAnimator = [[UIViewPropertyAnimator alloc]
       initWithDuration:kTableViewCellSelectionAnimationDuration
                  curve:UIViewAnimationCurveLinear
@@ -250,6 +255,15 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
           CGAffineTransformRotate(CGAffineTransformIdentity, angle);
     }
   }
+}
+
+- (UIColor*)cellDefaultBackgroundColor {
+  if (!_cellDefaultBackgroundColor) {
+    _cellDefaultBackgroundColor = self.contentView.backgroundColor
+                                      ? self.contentView.backgroundColor
+                                      : [UIColor clearColor];
+  }
+  return _cellDefaultBackgroundColor;
 }
 
 #pragma mark - Accessibility
