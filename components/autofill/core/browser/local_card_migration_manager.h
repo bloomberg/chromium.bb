@@ -18,6 +18,13 @@ namespace autofill {
 class CreditCard;
 class PersonalDataManager;
 
+// Server-side response can return SUCCESS, TEMPORARY_FAILURE, or
+// PERMANENT_FAILURE (see SaveResult enum). Use these to extract migration
+// result.
+const char kMigrationResultPermanentFailure[] = "PERMANENT_FAILURE";
+const char kMigrationResultTemporaryFailure[] = "TEMPORARY_FAILURE";
+const char kMigrationResultSuccess[] = "SUCCESS";
+
 // MigratableCreditCard class is used as a data structure to work as an
 // intermediary between the UI side and the migration manager. Besides the basic
 // credit card information, it also includes a boolean that represents whether
@@ -27,6 +34,16 @@ class PersonalDataManager;
 // whether the card is successfully uploaded or failure on uploading.
 class MigratableCreditCard {
  public:
+  // Possible states for the migratable local card.
+  enum MigrationStatus {
+    // Set if the migratable card have not been uploaded.
+    UNKNOWN,
+    // Set if the migratable card was successfully uploaded to the server.
+    SUCCESS_ON_UPLOAD,
+    // Set if the migratable card encountered a failure during upload.
+    FAILURE_ON_UPLOAD,
+  };
+
   MigratableCreditCard(const CreditCard& credit_card);
   ~MigratableCreditCard();
 
@@ -35,6 +52,11 @@ class MigratableCreditCard {
   bool is_chosen() const { return is_chosen_; }
   void ToggleChosen() { is_chosen_ = !is_chosen(); }
 
+  MigrationStatus migration_status() const { return migration_status_; }
+  void set_migration_status(MigrationStatus migration_status) {
+    migration_status_ = migration_status;
+  }
+
  private:
   // The main card information of the current migratable card.
   CreditCard credit_card_;
@@ -42,6 +64,9 @@ class MigratableCreditCard {
   // Whether the user has decided to migrate the this card; shown as a checkbox
   // in the UI.
   bool is_chosen_ = true;
+
+  // Migration status for this card.
+  MigrationStatus migration_status_ = MigrationStatus::UNKNOWN;
 };
 
 // Manages logic for determining whether migration of locally saved credit cards
@@ -99,6 +124,15 @@ class LocalCardMigrationManager {
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message);
 
+  // Callback after successfully getting the migration save results. Map
+  // migration save result to each card depending on the |save_result|. Will
+  // trigger a window showing the migration result together with display text to
+  // the user.
+  void OnDidMigrateLocalCards(
+      AutofillClient::PaymentsRpcResult result,
+      std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+      const std::string& display_text);
+
   AutofillClient* const client_;
 
   // Handles Payments service requests.
@@ -106,6 +140,13 @@ class LocalCardMigrationManager {
   payments::PaymentsClient* payments_client_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_MigrationPermanentFailure);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_MigrationTemporaryFailure);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_MigrationSuccess);
+
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
 
@@ -127,8 +168,8 @@ class LocalCardMigrationManager {
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
 
-  // Collected information about a pending upload request.
-  payments::PaymentsClient::UploadRequestDetails upload_request_;
+  // Collected information about a pending migration request.
+  payments::PaymentsClient::MigrationRequestDetails migration_request_;
 
   // The local credit cards to be uploaded.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
@@ -136,8 +177,6 @@ class LocalCardMigrationManager {
   // |true| if the user has accepted migrating their local cards to Google Pay
   // on the main dialog.
   bool user_accepted_main_migration_dialog_ = false;
-
-  std::string migration_risk_data_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

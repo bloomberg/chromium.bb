@@ -75,21 +75,21 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
   // Abort the migration if |payments_client_| is nullptr.
   if (!payments_client_)
     return;
-  upload_request_ = payments::PaymentsClient::UploadRequestDetails();
+  migration_request_ = payments::PaymentsClient::MigrationRequestDetails();
+  std::vector<const char*> active_experiments;
 
   // Payments server determines which version of the legal message to show based
   // on the existence of this experiment flag.
   if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
+    active_experiments.push_back(
         features::kAutofillUpstreamUpdatePromptExplanation.name);
   }
 
   // Don't send pan_first_six, as potentially migrating multiple local cards at
   // once will negate its usefulness.
   payments_client_->GetUploadDetails(
-      upload_request_.profiles, GetDetectedValues(),
-      /*pan_first_six=*/std::string(), upload_request_.active_experiments,
-      app_locale_,
+      std::vector<AutofillProfile>(), GetDetectedValues(),
+      /*pan_first_six=*/std::string(), active_experiments, app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
       payments::kMigrateCardsBillableServiceNumber);
@@ -109,7 +109,7 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
   // asynchronously. If |migration_risk_data_| has already been loaded, send the
   // migrate local cards request. Otherwise, continue to wait and let
   // OnDidGetUploadRiskData handle it.
-  if (!migration_risk_data_.empty())
+  if (!migration_request_.risk_data.empty())
     SendMigrateLocalCardsRequest();
 }
 
@@ -135,9 +135,9 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
   if (result == AutofillClient::SUCCESS) {
-    upload_request_.context_token = context_token;
+    migration_request_.context_token = context_token;
     legal_message_ = std::move(legal_message);
-    migration_risk_data_.clear();
+    migration_request_.risk_data.clear();
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog. If triggered from settings page, we pop-up the main prompt
     // directly. If not, we pop up the intermediate bubble.
@@ -157,9 +157,41 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
   }
 }
 
+void LocalCardMigrationManager::OnDidMigrateLocalCards(
+    AutofillClient::PaymentsRpcResult result,
+    std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+    const std::string& display_text) {
+  if (!save_result)
+    return;
+
+  // Traverse the migratable credit cards to update each migrated card status.
+  for (MigratableCreditCard& card : migratable_credit_cards_) {
+    // Not every card exists in the |save_result| since some cards are unchecked
+    // by the user and not migrated.
+    auto it = save_result->find(card.credit_card().guid());
+    // If current card exists in the |save_result|, update its migration status.
+    if (it != save_result->end()) {
+      // Server-side response can return SUCCESS, TEMPORARY_FAILURE, or
+      // PERMANENT_FAILURE (see SaveResult enum). Branch here depending on which
+      // is received.
+      if (it->second == kMigrationResultPermanentFailure ||
+          it->second == kMigrationResultTemporaryFailure) {
+        card.set_migration_status(
+            autofill::MigratableCreditCard::FAILURE_ON_UPLOAD);
+      } else if (it->second == kMigrationResultSuccess) {
+        card.set_migration_status(
+            autofill::MigratableCreditCard::SUCCESS_ON_UPLOAD);
+      } else {
+        NOTREACHED();
+      }
+    }
+  }
+  // TODO(crbug.com/852904): Trigger the show result window.
+}
+
 void LocalCardMigrationManager::OnDidGetMigrationRiskData(
     const std::string& risk_data) {
-  migration_risk_data_ = risk_data;
+  migration_request_.risk_data = risk_data;
   // Populating risk data and offering migration two-round pop-ups occur
   // asynchronously. If the main migration dialog has already been accepted,
   // send the migrate local cards request. Otherwise, continue to wait for the
@@ -168,10 +200,15 @@ void LocalCardMigrationManager::OnDidGetMigrationRiskData(
     SendMigrateLocalCardsRequest();
 }
 
-// TODO(crbug.com/852904): Send the migration request. Will call payments_client
-// to create a new PaymentsRequest. Also create a new callback function
-// OnDidMigrateLocalCards.
-void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {}
+// Send the migration request. Will call payments_client to create a new
+// PaymentsRequest. Also create a new callback function OnDidMigrateLocalCards.
+void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
+  migration_request_.app_locale = app_locale_;
+  payments_client_->MigrateCards(
+      migration_request_, migratable_credit_cards_,
+      base::BindOnce(&LocalCardMigrationManager::OnDidMigrateLocalCards,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 // Pops up a larger, modal dialog showing the local cards to be uploaded. Pass
 // the reference of vector<MigratableCreditCard> and the callback function is
