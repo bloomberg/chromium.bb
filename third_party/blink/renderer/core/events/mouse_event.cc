@@ -508,9 +508,9 @@ void MouseEvent::ComputeRelativePosition() {
     if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
       layer_location_ = view->DocumentToFrame(scaled_page_location);
 
-    // FIXME: This logic is a wrong implementation of convertToLayerCoords.
+    // FIXME: Does this differ from PaintLayer::ConvertToLayerCoords?
     for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
-         layer = layer->Parent()) {
+         layer = layer->ContainingLayer()) {
       layer_location_ -= DoubleSize(layer->Location().X().ToDouble(),
                                     layer->Location().Y().ToDouble());
     }
