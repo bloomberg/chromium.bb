@@ -18,7 +18,7 @@ class CrosMultiTabStory(page_module.Page):
   """Base class for multi-tab stories."""
 
   def __init__(self, story_set, cros_remote, tabset_repeat=1,
-               pause_after_creation=0):
+               pause_after_creation=0, pause_after_switch=3):
     super(CrosMultiTabStory, self).__init__(
         shared_page_state_class=shared_page_state.SharedPageState,
         page_set=story_set, name=self.NAME, url=self.URL)
@@ -26,6 +26,7 @@ class CrosMultiTabStory(page_module.Page):
     self._cros_remote = cros_remote
     self._tabset_repeat = tabset_repeat
     self._pause_after_creation = pause_after_creation
+    self._pause_after_switch = pause_after_switch
 
   def RunNavigateSteps(self, action_runner):
     """Opening tabs and waiting for them to load."""
@@ -46,7 +47,10 @@ class CrosMultiTabStory(page_module.Page):
       action_runner.Navigate(url_list[0])
     for i, url in enumerate(url_list[1:]):
       new_tab = tabs.New()
-      new_tab.action_runner.Navigate(url)
+      try:
+        new_tab.action_runner.Navigate(url)
+      except exceptions.DevtoolsTargetCrashException:
+        logging.info('Navigate: devtools context lost')
       if i % 10 == 0:
         print 'opening tab:', i
 
@@ -58,25 +62,24 @@ class CrosMultiTabStory(page_module.Page):
         logging.info('WaitForNetworkQuiescence() timeout, url[%d]: %s',
                      i, url)
       except exceptions.DevtoolsTargetCrashException:
-        logging.info('RunNavigateSteps: devtools context lost')
+        logging.info('WaitForNetworkQuiescence: devtools context lost')
 
   def RunPageInteractions(self, action_runner):
     """Tab switching to each tabs."""
-    time.sleep(self._pause_after_creation)
     url_list = self.URL_LIST * self._tabset_repeat
     browser = action_runner.tab.browser
-
     total_tab_count = len(url_list)
     live_tab_count = len(browser.tabs)
     if live_tab_count != total_tab_count:
       logging.warning('live tab: %d, tab discarded: %d',
                       live_tab_count, total_tab_count - live_tab_count)
 
+    time.sleep(self._pause_after_creation)
+
     with cros_utils.KeyboardEmulator(self._cros_remote) as keyboard:
       for i in range(total_tab_count):
-        prev_histogram = cros_utils.GetTabSwitchHistogramRetry(browser)
         keyboard.SwitchTab()
-        cros_utils.WaitTabSwitching(browser, prev_histogram)
+        time.sleep(self._pause_after_switch)
 
         if i % 10 == 0:
           print 'switching tab:', i
