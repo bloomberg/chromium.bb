@@ -210,6 +210,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // If user enabled history syncing.
   bool IsHistorySyncEnabled() override;
 
+  // If user is under advanced protection.
+  bool IsUnderAdvancedProtection() override;
+
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 

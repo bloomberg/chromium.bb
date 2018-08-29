@@ -167,6 +167,7 @@ class CheckClientDownloadRequest
   bool skipped_certificate_whitelist_;
   bool is_extended_reporting_;
   bool is_incognito_;
+  bool is_under_advanced_protection_;
   // This task tracker is used for posting the URL whitelist check to the IO
   // thread. The posted task will be cancelled if DownloadItem gets destroyed.
   base::CancelableTaskTracker cancelable_task_tracker_;

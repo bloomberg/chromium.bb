@@ -271,6 +271,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsHistorySyncEnabled() = 0;
 
+  virtual bool IsUnderAdvancedProtection() = 0;
+
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType

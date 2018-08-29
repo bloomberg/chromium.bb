@@ -59,6 +59,9 @@ message ChromeUserPopulation {
   }
   optional ProfileManagementStatus profile_management_status = 5
       [default = UNKNOWN];
+
+  // Indicates if user opted in advanced protection program (a.k.a Titanium).
+  optional bool is_under_advanced_protection = 6;
 }
 
 message ClientPhishingRequest {
