@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
@@ -142,7 +143,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 std::string CompressAndSaveBitmap(const std::string& dir,
                                   const SkBitmap& bitmap) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 
   std::vector<unsigned char> data;
   if (!gfx::JPEGCodec::Encode(bitmap, 85, &data)) {
