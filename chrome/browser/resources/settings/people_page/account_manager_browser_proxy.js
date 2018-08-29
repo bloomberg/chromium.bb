@@ -12,6 +12,9 @@ cr.exportPath('settings');
 /**
  * Information for an account managed by Chrome OS AccountManager.
  * @typedef {{
+ *   id: string,
+ *   accountType: number,
+ *   isDeviceAccount: boolean,
  *   fullName: string,
  *   email: string,
  *   pic: string,
@@ -32,6 +35,12 @@ cr.define('settings', function() {
      * Triggers the 'Add account' flow.
      */
     addAccount() {}
+
+    /**
+     * Removes |account| from Account Manager.
+     * @param {?settings.Account} account
+     */
+    removeAccount(account) {}
   }
 
   /**
@@ -46,6 +55,11 @@ cr.define('settings', function() {
     /** @override */
     addAccount() {
       chrome.send('addAccount');
+    }
+
+    /** @override */
+    removeAccount(account) {
+      chrome.send('removeAccount', [account]);
     }
   }
 
