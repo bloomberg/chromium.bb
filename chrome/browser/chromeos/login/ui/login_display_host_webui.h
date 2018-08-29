@@ -128,8 +128,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnUserSwitchAnimationFinished() override;
 
  private:
-  class LoginWidgetDelegate;
-
   // Way to restore if renderer have crashed.
   enum RestorePath {
     RESTORE_UNKNOWN,
@@ -200,9 +198,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // Container of the screen we are displaying.
   views::Widget* login_window_ = nullptr;
-
-  // The delegate of |login_window_|; owned by |login_window_|.
-  LoginWidgetDelegate* login_window_delegate_ = nullptr;
 
   // Container of the view we are displaying.
   WebUILoginView* login_view_ = nullptr;
