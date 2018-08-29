@@ -841,7 +841,7 @@ void ScrollingCoordinator::Reset(LocalFrame* frame) {
 // (although that's not yet implemented - crbug.com/261307).
 void ScrollingCoordinator::SetTouchEventTargetRects(
     LocalFrame* frame,
-    LayerHitTestRects& layer_rects) {
+    const LayerHitTestRects& layer_rects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
 
   DCHECK(!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
