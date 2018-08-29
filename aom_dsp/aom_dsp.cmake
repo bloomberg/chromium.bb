@@ -164,7 +164,6 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/variance.h")
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSE2
-              "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_impl_sse2.asm"
               "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
               "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
               "${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
@@ -178,7 +177,6 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_impl_sse2.h"
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
-              "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c"
