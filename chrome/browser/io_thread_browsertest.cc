@@ -34,26 +34,70 @@
 #include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
-// Runs a task on the IOThread and waits for it to complete.
-void RunOnIOThreadBlocking(base::OnceClosure task) {
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                           FROM_HERE, std::move(task),
-                                           run_loop.QuitClosure());
-  run_loop.Run();
-}
+class TestNetworkQualityObserver
+    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
+ public:
+  explicit TestNetworkQualityObserver(network::NetworkQualityTracker* tracker)
+      : run_loop_wait_effective_connection_type_(
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        tracker_(tracker),
+        effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    tracker_->AddEffectiveConnectionTypeObserver(this);
+  }
 
-void CheckEffectiveConnectionType(IOThread* io_thread,
-                                  net::EffectiveConnectionType expected) {
-  EXPECT_EQ(expected, io_thread->globals()
-                          ->system_request_context->network_quality_estimator()
-                          ->GetEffectiveConnectionType());
+  ~TestNetworkQualityObserver() override {
+    tracker_->RemoveEffectiveConnectionTypeObserver(this);
+  }
+
+  // NetworkQualityTracker::EffectiveConnectionTypeObserver implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    net::EffectiveConnectionType queried_type =
+        tracker_->GetEffectiveConnectionType();
+    EXPECT_EQ(type, queried_type);
+
+    effective_connection_type_ = type;
+    if (effective_connection_type_ != run_loop_wait_effective_connection_type_)
+      return;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void WaitForNotification(
+      net::EffectiveConnectionType run_loop_wait_effective_connection_type) {
+    if (effective_connection_type_ == run_loop_wait_effective_connection_type)
+      return;
+    ASSERT_NE(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+              run_loop_wait_effective_connection_type);
+    run_loop_.reset(new base::RunLoop());
+    run_loop_wait_effective_connection_type_ =
+        run_loop_wait_effective_connection_type;
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+ private:
+  net::EffectiveConnectionType run_loop_wait_effective_connection_type_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  network::NetworkQualityTracker* tracker_;
+  net::EffectiveConnectionType effective_connection_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityObserver);
+};
+
+void CheckEffectiveConnectionType(net::EffectiveConnectionType expected) {
+  TestNetworkQualityObserver network_quality_observer(
+      g_browser_process->network_quality_tracker());
+  network_quality_observer.WaitForNotification(expected);
 }
 
 class IOThreadBrowserTest : public InProcessBrowserTest {
@@ -92,10 +136,7 @@ class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IOThreadEctCommandLineBrowserTest,
                        ForceECTFromCommandLine) {
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckEffectiveConnectionType,
-                 base::Unretained(g_browser_process->io_thread()),
-                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
+  CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 class IOThreadEctFieldTrialBrowserTest : public IOThreadBrowserTest {
@@ -116,10 +157,7 @@ class IOThreadEctFieldTrialBrowserTest : public IOThreadBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IOThreadEctFieldTrialBrowserTest,
                        ForceECTUsingFieldTrial) {
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckEffectiveConnectionType,
-                 base::Unretained(g_browser_process->io_thread()),
-                 net::EFFECTIVE_CONNECTION_TYPE_2G));
+  CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
 class IOThreadEctFieldTrialAndCommandLineBrowserTest
@@ -137,10 +175,7 @@ class IOThreadEctFieldTrialAndCommandLineBrowserTest
 
 IN_PROC_BROWSER_TEST_F(IOThreadEctFieldTrialAndCommandLineBrowserTest,
                        ECTFromCommandLineOverridesFieldTrial) {
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckEffectiveConnectionType,
-                 base::Unretained(g_browser_process->io_thread()),
-                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
+  CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 class IOThreadBrowserTestWithHangingPacRequest : public IOThreadBrowserTest {

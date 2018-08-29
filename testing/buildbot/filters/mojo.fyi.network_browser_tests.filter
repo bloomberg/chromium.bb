@@ -137,14 +137,6 @@
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 
-# Tests check state of NQE in the browser process, but need to be updated to
-# watch NQE in the renderer process.
-# https://crbug.com/819244
--IOThreadEctCommandLineBrowserTest.ForceECTFromCommandLine
--IOThreadEctFieldTrialAndCommandLineBrowserTest.ECTFromCommandLineOverridesFieldTrial
--IOThreadEctFieldTrialBrowserTest.ForceECTUsingFieldTrial
-
-
 # Channel ID is not hooked up to the network service yet.
 # https://crbug.com/840412
 -JavaScriptBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
