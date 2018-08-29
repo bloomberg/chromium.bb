@@ -292,6 +292,12 @@ public class SignInPreference
                     ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, true);
             update();
         });
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            View divider = view.findViewById(R.id.divider);
+            assert divider != null;
+            divider.setVisibility(View.GONE);
+        }
     }
 
     // ProfileSyncServiceListener implementation.
