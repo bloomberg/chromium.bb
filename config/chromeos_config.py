@@ -3523,11 +3523,28 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   _release_experimental_boards = frozenset([
       'nyan_blaze',
+      'reef',
   ])
 
   _release_enable_skylab_hwtest = frozenset([
       'nyan_blaze',
+      'reef',
   ])
+
+  def _get_skylab_settings(board_name):
+    """Get skylab settings for release builder.
+
+    Args:
+      board_name: A string board name.
+
+    Returns:
+      enable_skylab_hw_tests: a boolean var to indicate whether this
+        board is moved to skylab.
+    """
+    if board_name in _release_enable_skylab_hwtest:
+      return True
+
+    return False
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
@@ -3583,13 +3600,21 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
     pool = constants.HWTEST_MACH_POOL
     config_name = '%s-release' % reference_board_name
+
+    # Move unibuild to skylab.
+    important = not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL]
+    if reference_board_name in _release_experimental_boards:
+      important = False
+
+    enable_skylab_hw_tests = _get_skylab_settings(reference_board_name)
     site_config.AddForBoards(
         config_lib.CONFIG_TYPE_RELEASE,
         [reference_board_name],
         board_configs,
         site_config.templates.release,
         models=models,
-        important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
+        important=important,
+        enable_skylab_hw_tests=enable_skylab_hw_tests,
         active_waterfall=waterfall.WATERFALL_SWARMING,
         hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
                   hw_test_list.CtsGtsQualTests()),
@@ -3612,14 +3637,12 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   def _GetConfigValues(board):
     """Get and return config values from template and user definitions."""
     important = not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL]
-    enable_skylab_hw_tests = False
-
-    if board['name'] in _release_enable_skylab_hwtest:
-      enable_skylab_hw_tests = True
-
     if board['name'] in _release_experimental_boards:
       important = False
 
+    enable_skylab_hw_tests = _get_skylab_settings(board['name'])
+
+    # Move non-unibuild to skylab.
     config_values = {
         'important': important,
         'active_waterfall': waterfall.WATERFALL_SWARMING,
