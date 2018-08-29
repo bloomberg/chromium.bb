@@ -12,6 +12,8 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_aura_utils.h"
@@ -297,6 +299,38 @@ void BridgedNativeWidgetHostImpl::OnGestureEvent(
   root_view_->GetWidget()->OnGestureEvent(&event);
 }
 
+void BridgedNativeWidgetHostImpl::DispatchKeyEvent(
+    const ui::KeyEvent& const_event,
+    bool* event_handled) {
+  ui::KeyEvent event = const_event;
+  ignore_result(
+      root_view_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event));
+  *event_handled = event.handled();
+}
+
+void BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
+    const ui::KeyEvent& const_event,
+    bool* event_swallowed,
+    bool* event_handled) {
+  ui::KeyEvent event = const_event;
+  MenuController* menu_controller = MenuController::GetActiveInstance();
+  if (menu_controller && root_view_ &&
+      menu_controller->owner() == root_view_->GetWidget()) {
+    *event_swallowed = menu_controller->OnWillDispatchKeyEvent(&event) ==
+                       ui::POST_DISPATCH_NONE;
+  } else {
+    *event_swallowed = false;
+  }
+  *event_handled = event.handled();
+}
+
+void BridgedNativeWidgetHostImpl::GetHasMenuController(
+    bool* has_menu_controller) {
+  MenuController* menu_controller = MenuController::GetActiveInstance();
+  *has_menu_controller = menu_controller && root_view_ &&
+                         menu_controller->owner() == root_view_->GetWidget();
+}
+
 void BridgedNativeWidgetHostImpl::SetViewSize(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
 }
@@ -374,6 +408,14 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
 
 void BridgedNativeWidgetHostImpl::GetWidgetIsModal(bool* widget_is_modal) {
   *widget_is_modal = native_widget_mac_->GetWidget()->IsModal();
+}
+
+void BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
+  views::FocusManager* focus_manager =
+      root_view_ ? root_view_->GetWidget()->GetFocusManager() : nullptr;
+  *is_textual = focus_manager && focus_manager->GetFocusedView() &&
+                focus_manager->GetFocusedView()->GetClassName() ==
+                    views::Label::kViewClassName;
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
