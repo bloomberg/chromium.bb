@@ -279,7 +279,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
-  base::Callback<bool(const GURL& url)> filter =
+  base::RepeatingCallback<bool(const GURL& url)> filter =
       filter_builder.BuildGeneralFilter();
 
   //////////////////////////////////////////////////////////////////////////////
@@ -432,7 +432,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
           delete_begin, delete_end,
           filter_builder.IsEmptyBlacklist()
               ? base::Callback<bool(const GURL&)>()
-              : std::move(filter),
+              : filter,
           CreatePendingTaskCompletionClosureForMojo());
     }
 
