@@ -51,7 +51,7 @@ UserEventSpecifics::UserConsent::Feature FeatureToUserEventProtoEnum(
     case consent_auditor::Feature::CHROME_UNIFIED_CONSENT:
       return UserEventSpecifics::UserConsent::CHROME_UNIFIED_CONSENT;
     case consent_auditor::Feature::ASSISTANT_ACTIVITY_CONTROL:
-      return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
+      return UserEventSpecifics::UserConsent::ASSISTANT_ACTIVITY_CONTROL;
   }
   NOTREACHED();
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
@@ -315,7 +315,22 @@ void ConsentAuditorImpl::RecordAssistantActivityControlConsent(
 
     consent_sync_bridge_->RecordConsent(std::move(specifics));
   } else {
-    // TODO(markusheintz): Implement the fallback.
+    // TODO(markusheintz): This code was only added in case we have to fallback
+    // to the deprecated way of recording user consents via the
+    // UserEventSpecifics. Remove if not needed.
+    std::vector<int> description_grd_ids;
+    const std::string& ui_audit_key = consent.ui_audit_key();
+    description_grd_ids.push_back(ui_audit_key.length());
+    for (size_t i = 0; i < ui_audit_key.length(); i++) {
+      description_grd_ids.push_back(ui_audit_key[i]);
+    }
+    std::unique_ptr<sync_pb::UserEventSpecifics> user_event_specifics =
+        ConstructUserEventSpecifics(account_id,
+                                    Feature::ASSISTANT_ACTIVITY_CONTROL,
+                                    description_grd_ids,
+                                    0,  // No confirmation grd id recorded.
+                                    ConvertConsentStatus(consent.status()));
+    user_event_service_->RecordUserEvent(std::move(user_event_specifics));
   }
 }
 
