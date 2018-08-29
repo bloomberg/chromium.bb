@@ -314,6 +314,8 @@ void WindowState::DisableAlwaysOnTop(aura::Window* window_on_top) {
 }
 
 void WindowState::RestoreAlwaysOnTop() {
+  if (delegate() && delegate()->RestoreAlwaysOnTop(this))
+    return;
   if (cached_always_on_top_) {
     cached_always_on_top_ = false;
     window_->SetProperty(aura::client::kAlwaysOnTopKey, true);

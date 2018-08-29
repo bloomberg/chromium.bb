@@ -28,7 +28,6 @@ class FrameCaptionButtonContainerView;
 class HeaderView;
 class ImmersiveFullscreenController;
 class ImmersiveFullscreenControllerDelegate;
-class NonClientFrameViewAshImmersiveHelper;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
@@ -43,7 +42,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Internal class name.
   static const char kViewClassName[];
 
-  // |control_immersive| controls whether ImmersiveFullscreenController is
+  // |enable_immersive| controls whether ImmersiveFullscreenController is
   // created for the NonClientFrameViewAsh; if true and a WindowStateDelegate
   // has not been set on the WindowState associated with |frame|, then an
   // ImmersiveFullscreenController is created.
@@ -52,7 +51,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   explicit NonClientFrameViewAsh(
       views::Widget* frame,
       ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
-      bool control_immersive = true,
+      bool enable_immersive = true,
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
       std::unique_ptr<CaptionButtonModel> model = nullptr);
   ~NonClientFrameViewAsh() override;
@@ -165,8 +164,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Shell::Get()->window_selector_controller()->IsSelecting() because the later
   // actually may be still be false after overview mode has started.
   bool in_overview_mode_ = false;
-
-  std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAsh);
 };
