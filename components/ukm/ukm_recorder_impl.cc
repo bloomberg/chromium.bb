@@ -400,6 +400,8 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
   if (!ShouldRecordUrl(source_id, sanitized_url))
     return;
 
+  // TODO(csharrison): These checks can probably move to ShouldRecordUrl.
+
   if (base::ContainsKey(recordings_.sources, source_id))
     return;
 
@@ -407,8 +409,7 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
     RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
-  recordings_.sources.emplace(
-      source_id, std::make_unique<UkmSource>(source_id, sanitized_url));
+  RecordSource(std::make_unique<UkmSource>(source_id, sanitized_url));
 }
 
 void UkmRecorderImpl::UpdateAppURL(SourceId source_id, const GURL& url) {
@@ -440,18 +441,18 @@ void UkmRecorderImpl::RecordNavigation(
 
   UkmSource::NavigationData sanitized_navigation_data =
       unsanitized_navigation_data.CopyWithSanitizedUrls(urls);
+  // TODO(csharrison): This check can probably move to ShouldRecordUrl.
   DCHECK(!base::ContainsKey(recordings_.sources, source_id));
   if (recordings_.sources.size() >= GetMaxSources()) {
     RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
-  recordings_.sources.emplace(
-      source_id,
+  RecordSource(
       std::make_unique<UkmSource>(source_id, sanitized_navigation_data));
 }
 
 bool UkmRecorderImpl::ShouldRecordUrl(SourceId source_id,
-                                      const GURL& sanitized_url) {
+                                      const GURL& sanitized_url) const {
   if (!recording_enabled_) {
     RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
     return false;
@@ -467,15 +468,6 @@ bool UkmRecorderImpl::ShouldRecordUrl(SourceId source_id,
     RecordDroppedSource(DroppedDataReason::EMPTY_URL);
     return false;
   }
-
-  recordings_.source_counts.observed++;
-
-  // TODO(csharrison): Move this to RecordNavigation. It would be a behavior
-  // change though, since we would only record _once_ per navigation, and we
-  // wouldn't track e.g. unsupported schemes or other cases where we drop after
-  // this point.
-  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID)
-    recordings_.source_counts.navigation_sources++;
 
   if (!HasSupportedScheme(sanitized_url)) {
     RecordDroppedSource(DroppedDataReason::UNSUPPORTED_URL_SCHEME);
@@ -498,6 +490,14 @@ bool UkmRecorderImpl::ShouldRecordUrl(SourceId source_id,
     }
   }
   return true;
+}
+
+void UkmRecorderImpl::RecordSource(std::unique_ptr<UkmSource> source) {
+  SourceId source_id = source->id();
+  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID)
+    recordings_.source_counts.navigation_sources++;
+  recordings_.source_counts.observed++;
+  recordings_.sources.emplace(source_id, std::move(source));
 }
 
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
