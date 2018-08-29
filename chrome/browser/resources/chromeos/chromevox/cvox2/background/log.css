@@ -40,7 +40,7 @@ body {
   margin: 2px;
 }
 
-/* Log Type tags */
+/* Log tags */
 
 .log-type-tag {
   border: 1px solid;
@@ -51,4 +51,15 @@ body {
   margin-top: 2px;
   padding: 0 4px 2px 4px;
   width: 50px;
+}
+
+.log-time-tag {
+  border: 1px solid;
+  border-radius: 2px;
+  float: left;
+  height: 14px;
+  margin-inline-end: 5px;
+  margin-top: 2px;
+  padding: 0 4px 2px 4px;
+  width: 100px;
 }

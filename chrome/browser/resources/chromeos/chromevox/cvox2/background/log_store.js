@@ -24,6 +24,11 @@ Log = function(logStr, logType) {
    * @type {!string}
    */
   this.logType = logType;
+
+  /**
+   * @type {!Date}
+   */
+  this.date = new Date();
 };
 
 /**
