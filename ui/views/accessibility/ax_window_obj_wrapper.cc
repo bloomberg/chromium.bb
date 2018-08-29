@@ -161,4 +161,12 @@ void AXWindowObjWrapper::OnWindowVisibilityChanged(aura::Window* window,
                                            ax::mojom::Event::kStateChanged);
 }
 
+void AXWindowObjWrapper::OnWindowTransformed(aura::Window* window,
+                                             ui::PropertyChangeReason reason) {
+  if (window != window_)
+    return;
+
+  FireLocationChanges(window_);
+}
+
 }  // namespace views
