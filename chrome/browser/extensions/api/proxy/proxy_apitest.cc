@@ -410,4 +410,11 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEventsParseError) {
       RunExtensionSubtest("proxy/events", "parse_error.html")) << message_;
 }
 
+// Tests that chrome.proxy.onProxyError is NOT called in the case of a
+// non-proxy error.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEventsOtherError) {
+  ASSERT_TRUE(RunExtensionSubtest("proxy/events", "other_error.html"))
+      << message_;
+}
+
 }  // namespace extensions
