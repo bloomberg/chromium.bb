@@ -1336,6 +1336,12 @@ TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
   }
 }
 
+TEST_F(MediaControlsImplTest, isConnected) {
+  EXPECT_TRUE(MediaControls().isConnected());
+  MediaControls().MediaElement().remove();
+  EXPECT_FALSE(MediaControls().isConnected());
+}
+
 class ModernMediaControlsImplTest : public MediaControlsImplTest {
  public:
   void SetUp() override {
