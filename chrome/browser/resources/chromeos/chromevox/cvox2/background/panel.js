@@ -824,27 +824,20 @@ Panel.getCallbackForCurrentItem = function() {
 Panel.closeMenusAndRestoreFocus = function() {
   var bkgnd = chrome.extension.getBackgroundPage();
   bkgnd.chrome.automation.getDesktop(function(desktop) {
-    // Watch for a blur on the panel, then a focus on the page.
-    var onFocus = function(evt) {
-      desktop.removeEventListener(
-          chrome.automation.EventType.FOCUS, onFocus, true);
-      if (Panel.pendingCallback_) {
-        // Clear it before calling it, in case the callback itself triggers
-        // another pending callback.
-        var pendingCallback = Panel.pendingCallback_;
-        Panel.pendingCallback_ = null;
-        pendingCallback();
-      }
-    };
-
+    // Watch for a blur on the panel.
+    var pendingCallback = Panel.pendingCallback_;
+    Panel.pendingCallback_ = null;
     var onBlur = function(evt) {
       if (evt.target.docUrl != location.href)
         return;
 
       desktop.removeEventListener(
           chrome.automation.EventType.BLUR, onBlur, true);
-      desktop.addEventListener(
-          chrome.automation.EventType.FOCUS, onFocus, true);
+
+      setTimeout(function() {
+        if (pendingCallback)
+          pendingCallback();
+      }, 0);
     };
 
     desktop.addEventListener(chrome.automation.EventType.BLUR, onBlur, true);
