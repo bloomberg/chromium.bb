@@ -83,10 +83,6 @@ Polymer({
   },
 
   onBeforeShow: function() {
-    // TODO(katie): Remove this when launching STS in OOBE screen.
-    if (!this.a11yStatus.enableExperimentalA11yFeatures)
-      this.$.selectToSpeakOobeOption.setAttribute('hidden', true);
-
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);

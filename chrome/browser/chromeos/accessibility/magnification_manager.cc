@@ -64,6 +64,20 @@ void MagnificationManager::SetMagnifierEnabled(bool enabled) {
   prefs->CommitPendingWrite();
 }
 
+bool MagnificationManager::IsDockedMagnifierEnabled() const {
+  return ash::features::IsDockedMagnifierEnabled() && profile_ &&
+         profile_->GetPrefs()->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
+}
+
+void MagnificationManager::SetDockedMagnifierEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(ash::prefs::kDockedMagnifierEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
 void MagnificationManager::SaveScreenMagnifierScale(double scale) {
   if (!profile_)
     return;
@@ -169,10 +183,16 @@ void MagnificationManager::SetProfile(Profile* profile) {
         ash::prefs::kAccessibilityScreenMagnifierScale,
         base::BindRepeating(&MagnificationManager::UpdateMagnifierFromPrefs,
                             base::Unretained(this)));
+    pref_change_registrar_->Add(
+        ash::prefs::kDockedMagnifierEnabled,
+        base::BindRepeating(
+            &MagnificationManager::UpdateDockedMagnifierFromPrefs,
+            base::Unretained(this)));
   }
 
   profile_ = profile;
   UpdateMagnifierFromPrefs();
+  UpdateDockedMagnifierFromPrefs();
 }
 
 void MagnificationManager::SetMagnifierEnabledInternal(bool enabled) {
@@ -242,11 +262,23 @@ void MagnificationManager::UpdateMagnifierFromPrefs() {
     ash::Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
+void MagnificationManager::UpdateDockedMagnifierFromPrefs() {
+  if (!profile_)
+    return;
+
+  PrefService* prefs = profile_->GetPrefs();
+  const bool enabled = prefs->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_DOCKED_MAGNIFIER,
+                                          enabled);
+
+  if (!AccessibilityManager::Get())
+    return;
+  AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
+}
+
 void MagnificationManager::HandleFocusChangedInPage(
     const content::NotificationDetails& details) {
-  const bool docked_magnifier_enabled =
-      ash::features::IsDockedMagnifierEnabled() && profile_ &&
-      profile_->GetPrefs()->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
+  const bool docked_magnifier_enabled = IsDockedMagnifierEnabled();
   if (!fullscreen_magnifier_enabled_ && !docked_magnifier_enabled)
     return;
 

@@ -131,6 +131,7 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
+  builder->Add("dockedMagnifierOption", IDS_OOBE_DOCKED_MAGNIFIER_OPTION);
   builder->Add("virtualKeyboardOption", IDS_OOBE_VIRTUAL_KEYBOARD_OPTION);
   builder->Add("closeAccessibilityMenu", IDS_OOBE_CLOSE_ACCESSIBILITY_MENU);
 
@@ -202,6 +203,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableSpokenFeedback);
   AddCallback("enableSelectToSpeak",
               &CoreOobeHandler::HandleEnableSelectToSpeak);
+  AddCallback("enableDockedMagnifier",
+              &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
   AddCallback("screenAssetsLoaded", &CoreOobeHandler::HandleScreenAssetsLoaded);
@@ -351,7 +354,6 @@ void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
-  // TODO(nkostylev): Add support for partial screen magnifier.
   DCHECK(MagnificationManager::Get());
   MagnificationManager::Get()->SetMagnifierEnabled(enabled);
 }
@@ -368,6 +370,13 @@ void CoreOobeHandler::HandleEnableSelectToSpeak(bool /* enabled */) {
   // setting is changed so just toggle Select to Speak here.
   AccessibilityManager::Get()->SetSelectToSpeakEnabled(
       !AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+}
+
+void CoreOobeHandler::HandleEnableDockedMagnifier(bool enabled) {
+  // Checkbox is initialized on page init and updates when the docked magnifier
+  // setting is changed so just toggle Select to Speak here.
+  DCHECK(MagnificationManager::Get());
+  MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(
@@ -501,6 +510,9 @@ void CoreOobeHandler::UpdateA11yState() {
     DCHECK(MagnificationManager::Get());
     a11y_info.SetBoolean("screenMagnifierEnabled",
                          MagnificationManager::Get()->IsMagnifierEnabled());
+    a11y_info.SetBoolean(
+        "dockedMagnifierEnabled",
+        MagnificationManager::Get()->IsDockedMagnifierEnabled());
   } else {
     // TODO: get MagnificationManager working with mash.
     // https://crbug.com/817157
