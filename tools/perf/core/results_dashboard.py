@@ -493,5 +493,7 @@ def _SendHistogramJson(url, histogramset_json,
     elif response.status != 200:
       raise SendResultsFatalException('HTTP Response %d: %s' % (
           response.status, response.reason))
+  except httplib.ResponseNotReady:
+    raise SendResultsRetryException(traceback.format_exc())
   except httplib2.HttpLib2Error:
     raise SendResultsRetryException(traceback.format_exc())
