@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 
 // This test verifies that ImageCapture can be created (or not) with different
@@ -31,7 +31,9 @@ function makeAsyncTest(modifyTrack, message) {
     });
 
     const onError = test.unreached_func('Error creating MediaStream.');
-    navigator.webkitGetUserMedia({ video : true }, gotStream, onError);
+    navigator.mediaDevices.getUserMedia({video: true})
+    .then(gotStream)
+    .catch(onError);
 
   }, message);
 }
@@ -52,8 +54,10 @@ var stopTrack = function(videoTrack) {
 makeAsyncTest(disableTrack, 'grabFrame() of a disabled Track');
 makeAsyncTest(stopTrack, 'grabFrame() of an ended Track');
 
+
 var testAudio = async_test(function() {
-  navigator.webkitGetUserMedia({audio:true},
+  navigator.mediaDevices.getUserMedia({audio:true})
+  .then(
     this.step_func(function(stream) {
       assert_equals(stream.getAudioTracks().length, 1);
       assert_equals(stream.getVideoTracks().length, 0);
@@ -64,7 +68,8 @@ var testAudio = async_test(function() {
                     'an ImageCapturer can only be created from a video track');
 
       this.done();
-    }),
+    }))
+    .catch(
     this.unreached_func('Error creating MediaStream.'));
 }, 'verifies that an ImageCapture cannot be created out of an Audio Track');
 

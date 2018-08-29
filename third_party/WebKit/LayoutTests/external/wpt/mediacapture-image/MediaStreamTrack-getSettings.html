@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/media/capture/mojom/image_capture.mojom.js"></script>
-<script src="resources/imagecapture-helpers.js"></script>
-<script src="resources/mock-imagecapture.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/mediacapture-image/resources/imagecapture-helpers.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
 </body>
@@ -16,13 +13,13 @@ const meteringModeNames = ['none', 'manual', 'single-shot', 'continuous'];
 // implementation are the same as those returned by the corresponding
 // MediaStreamTrack.getSettings().
 
-promise_test(async function() {
+image_capture_test(async (t, imageCaptureTest) => {
   let canvas = document.getElementById('canvas');
   let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
-  let mockSettings = mockImageCapture.state();
+  let mockSettings = imageCaptureTest.mockImageCapture().state();
 
   // |stream| must be created _after_ |mock| is constructed to give the
   // latter time to override the bindings.
@@ -32,7 +29,7 @@ promise_test(async function() {
   // |videoTrack|s settings retrieval, just like the actual capture, is a
   // process kicked right after creation, we introduce a small delay to
   // allow for those to be collected.
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => step_timeout(resolve, 100));
 
   let settings = videoTrack.getSettings();
   assert_equals(typeof settings, 'object');
