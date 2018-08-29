@@ -174,13 +174,16 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureTapDown:
-      gesture_sequence_.append("O");
       gesture_sequence_in_progress_ = true;
       // If the gesture is hitting a region that has a non-blocking (such as a
       // passive) event listener.
       if (gesture_event->is_source_touch_event_set_non_blocking)
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
+      if (scrolling_touch_action_.has_value())
+        gesture_sequence_.append("O1");
+      else
+        gesture_sequence_.append("O2");
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
