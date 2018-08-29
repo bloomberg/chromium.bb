@@ -32,6 +32,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.RenderCoordinates;
 
 import java.util.concurrent.Callable;
@@ -56,6 +57,10 @@ public class VrBrowserControllerInputTest {
 
     @Before
     public void setUp() throws Exception {
+        // Ensure that all frame updates are delivered to the browser so we can monitor for
+        // scroll changes.
+        WebContentsUtils.reportAllFrameSubmissions(mVrTestRule.getWebContents(), true);
+
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mController = new EmulatedVrController(mVrTestRule.getActivity());
