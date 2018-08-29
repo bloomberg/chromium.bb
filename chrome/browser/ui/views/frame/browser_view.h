@@ -99,7 +99,8 @@ class BrowserView : public BrowserWindow,
                     public LoadCompleteListener::Delegate,
                     public ExclusiveAccessContext,
                     public ExclusiveAccessBubbleViewsContext,
-                    public extensions::ExtensionKeybindingRegistry::Delegate {
+                    public extensions::ExtensionKeybindingRegistry::Delegate,
+                    public ImmersiveModeController::Observer {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -445,6 +446,7 @@ class BrowserView : public BrowserWindow,
                                ui::WindowShowState* show_state) const override;
   views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
+  views::View* CreateOverlayView() override;
   void OnWindowBeginUserBoundsChange() override;
   void OnWindowEndUserBoundsChange() override;
   void OnWidgetMove() override;
@@ -502,6 +504,12 @@ class BrowserView : public BrowserWindow,
   // extension::ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
       override;
+
+  // ImmersiveModeController::Observer:
+  void OnImmersiveRevealStarted() override;
+  void OnImmersiveRevealEnded() override;
+  void OnImmersiveFullscreenExited() override;
+  void OnImmersiveModeControllerDestroyed() override;
 
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of
@@ -643,6 +651,10 @@ class BrowserView : public BrowserWindow,
   // overlaps with the bookmark bar.
   int GetBottomInsetOfLocationBarWithinToolbar() const;
 
+  // Reparents |top_container_| to be a child of |this| instead of
+  // |overlay_view_|.
+  void ReparentTopContainerForEndOfImmersive();
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 
@@ -689,6 +701,11 @@ class BrowserView : public BrowserWindow,
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_ = nullptr;
+
+  // The OverlayView for the widget, which is used to host |top_container_|
+  // during immersive reveal.
+  std::unique_ptr<views::ViewTargeterDelegate> overlay_view_targeter_;
+  views::View* overlay_view_ = nullptr;
 
   // The Bookmark Bar View for this window. Lazily created. May be null for
   // non-tabbed browsers like popups. May not be visible.

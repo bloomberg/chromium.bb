@@ -293,6 +293,31 @@ bool GetGestureCommand(ui::GestureEvent* event, int* command) {
   return false;
 }
 
+// A view targeter for the overlay view, which makes sure the overlay view
+// itself is never a target for events, but its children (i.e. top_container)
+// may be.
+class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
+ public:
+  OverlayViewTargeterDelegate() = default;
+  ~OverlayViewTargeterDelegate() override = default;
+
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override {
+    for (int i = 0; i < target->child_count(); ++i) {
+      gfx::RectF child_rect(rect);
+      views::View::ConvertRectToTarget(target, target->child_at(i),
+                                       &child_rect);
+      if (target->child_at(i)->HitTestRect(gfx::ToEnclosingRect(child_rect)))
+        return true;
+    }
+
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverlayViewTargeterDelegate);
+};
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1802,6 +1827,12 @@ int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
          2;
 }
 
+void BrowserView::ReparentTopContainerForEndOfImmersive() {
+  overlay_view_->SetVisible(false);
+  top_container()->DestroyLayer();
+  AddChildViewAt(top_container(), GetIndexOf(contents_container_) + 1);
+}
+
 views::View* BrowserView::GetInitiallyFocusedView() {
   return nullptr;
 }
@@ -1942,6 +1973,15 @@ views::View* BrowserView::GetContentsView() {
 
 views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
   return this;
+}
+
+views::View* BrowserView::CreateOverlayView() {
+  overlay_view_ = new views::View();
+  overlay_view_->SetVisible(false);
+  overlay_view_targeter_ = std::make_unique<OverlayViewTargeterDelegate>();
+  overlay_view_->SetEventTargeter(
+      std::make_unique<views::ViewTargeter>(overlay_view_targeter_.get()));
+  return overlay_view_;
 }
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
@@ -2328,6 +2368,7 @@ void BrowserView::InitViews() {
   AddChildView(find_bar_host_view_);
 
   immersive_mode_controller_->Init(this);
+  immersive_mode_controller_->AddObserver(this);
 
   auto browser_view_layout = std::make_unique<BrowserViewLayout>();
   browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),
@@ -2451,13 +2492,8 @@ void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
   if (new_parent == this) {
     // BookmarkBarView is detached.
     views::View* target_view = top_container_;
-#if !defined(OS_CHROMEOS)
-    // CrOS immersive mode needs to show the rest of the top chrome
-    // in front of the detached bookmark bar, since the detached
-    // bar is styled to look like it's part of the NTP web content.
     if (ui::MaterialDesignController::IsRefreshUi())
       target_view = infobar_container_;
-#endif
     const int target_index = GetIndexOf(target_view);
     DCHECK_GE(target_index, 0);
     // |top_container_| contains the toolbar, so putting the bookmark bar ahead
@@ -2946,4 +2982,29 @@ BrowserView::GetActiveTabPermissionGranter() {
     return nullptr;
   return extensions::TabHelper::FromWebContents(web_contents)
       ->active_tab_permission_granter();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, ImmersiveModeController::Observer implementation:
+void BrowserView::OnImmersiveRevealStarted() {
+  top_container()->SetPaintToLayer();
+  top_container()->layer()->SetFillsBoundsOpaquely(false);
+  overlay_view_->AddChildView(top_container());
+  overlay_view_->SetVisible(true);
+  InvalidateLayout();
+  GetWidget()->GetRootView()->Layout();
+}
+
+void BrowserView::OnImmersiveRevealEnded() {
+  ReparentTopContainerForEndOfImmersive();
+  InvalidateLayout();
+  GetWidget()->GetRootView()->Layout();
+}
+
+void BrowserView::OnImmersiveFullscreenExited() {
+  OnImmersiveRevealEnded();
+}
+
+void BrowserView::OnImmersiveModeControllerDestroyed() {
+  ReparentTopContainerForEndOfImmersive();
 }

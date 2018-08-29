@@ -526,18 +526,22 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
   // Otherwise, claim |rect| only if it is above the bottom of the tabstrip in
   // a non-tab portion.
   TabStrip* tabstrip = browser_view_->tabstrip();
-  gfx::RectF rect_in_tabstrip_coords_f(rect);
-  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
-  gfx::Rect rect_in_tabstrip_coords =
-      gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
-  if (rect_in_tabstrip_coords.y() >= tabstrip->GetLocalBounds().bottom()) {
-    // |rect| is below the tabstrip.
-    return false;
-  }
+  // The tabstrip may not be in a Widget (e.g. when switching into immersive
+  // reveal).
+  if (tabstrip->GetWidget()) {
+    gfx::RectF rect_in_tabstrip_coords_f(rect);
+    View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
+    gfx::Rect rect_in_tabstrip_coords =
+        gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
+    if (rect_in_tabstrip_coords.y() >= tabstrip->GetLocalBounds().bottom()) {
+      // |rect| is below the tabstrip.
+      return false;
+    }
 
-  if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
-    // Claim |rect| if it is in a non-tab portion of the tabstrip.
-    return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
+    if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
+      // Claim |rect| if it is in a non-tab portion of the tabstrip.
+      return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
+    }
   }
 
   // We claim |rect| because it is above the bottom of the tabstrip, but
