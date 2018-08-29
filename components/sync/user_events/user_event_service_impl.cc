@@ -41,6 +41,8 @@ NavigationPresence GetNavigationPresence(
       return kCannotHave;
     case UserEventSpecifics::kGaiaPasswordReuseEvent:
       return kMustHave;
+    case UserEventSpecifics::kGaiaPasswordCapturedEvent:
+      return kCannotHave;
     case UserEventSpecifics::EVENT_NOT_SET:
       break;
   }
