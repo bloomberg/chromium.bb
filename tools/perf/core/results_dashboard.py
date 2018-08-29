@@ -34,7 +34,6 @@ psutil = external_modules.ImportOptionalModule('psutil')
 # The paths in the results dashboard URLs for sending results.
 SEND_RESULTS_PATH = '/add_point'
 SEND_HISTOGRAMS_PATH = '/add_histograms'
-DEFAULT_TOKEN_TIMEOUT_IN_MINUTES = 30
 
 
 class SendResultException(Exception):
@@ -49,10 +48,8 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def LuciAuthTokenGeneratorCallback(
-  service_account_file, token_expiration_in_minutes):
-  args = ['luci-auth', 'token',
-          '-lifetime', '%im' % token_expiration_in_minutes]
+def LuciAuthTokenGeneratorCallback(service_account_file):
+  args = ['luci-auth', 'token']
   if service_account_file:
     args += ['-service-account-json', service_account_file]
   else:
@@ -87,8 +84,7 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       builder will be used.
     token_generator_callback: a callback for generating the authentication token
       to upload to perf dashboard.
-      This callback takes two parameters
-      (service_account_file, token_expiration_in_minutes) and returns the token
+      This callback takes |service_account_file| and returns the token
       string.
       If |token_generator_callback| is not specified, it's default to
       LuciAuthTokenGeneratorCallback.
@@ -470,8 +466,7 @@ def _SendHistogramJson(url, histogramset_json,
     None if successful, or an error string if there were errors.
   """
   try:
-    oauth_token = token_generator_callback(
-        service_account_file, DEFAULT_TOKEN_TIMEOUT_IN_MINUTES)
+    oauth_token = token_generator_callback(service_account_file)
 
     data = zlib.compress(histogramset_json)
     headers = {
