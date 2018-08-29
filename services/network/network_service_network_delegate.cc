@@ -4,6 +4,7 @@
 
 #include "services/network/network_service_network_delegate.h"
 
+#include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -39,31 +40,35 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
 
 bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list,
-    bool allowed_from_caller) {
+    const net::CookieList& cookie_list) {
+  bool allow =
+      network_context_->cookie_manager()
+          ->cookie_settings()
+          .IsCookieAccessAllowed(request.url(), request.site_for_cookies());
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader && network_context_->network_service()->client()) {
     network_context_->network_service()->client()->OnCookiesRead(
         url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
-        request.url(), request.site_for_cookies(), cookie_list,
-        !allowed_from_caller);
+        request.url(), request.site_for_cookies(), cookie_list, !allow);
   }
-  return allowed_from_caller;
+  return allow;
 }
 
 bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options,
-    bool allowed_from_caller) {
+    net::CookieOptions* options) {
+  bool allow =
+      network_context_->cookie_manager()
+          ->cookie_settings()
+          .IsCookieAccessAllowed(request.url(), request.site_for_cookies());
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader && network_context_->network_service()->client()) {
     network_context_->network_service()->client()->OnCookieChange(
         url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
-        request.url(), request.site_for_cookies(), cookie,
-        !allowed_from_caller);
+        request.url(), request.site_for_cookies(), cookie, !allow);
   }
-  return allowed_from_caller;
+  return allow;
 }
 
 bool NetworkServiceNetworkDelegate::OnCanAccessFile(
@@ -141,6 +146,14 @@ void NetworkServiceNetworkDelegate::FinishedClearSiteData(
     net::CompletionOnceCallback callback) {
   if (request)
     std::move(callback).Run(net::OK);
+}
+
+bool NetworkServiceNetworkDelegate::OnCanEnablePrivacyMode(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  return !network_context_->cookie_manager()
+              ->cookie_settings()
+              .IsCookieAccessAllowed(url, site_for_cookies);
 }
 
 }  // namespace network

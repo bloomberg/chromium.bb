@@ -72,16 +72,14 @@ NetworkDelegate::AuthRequiredResponse NetworkDelegateImpl::OnAuthRequired(
 }
 
 bool NetworkDelegateImpl::OnCanGetCookies(const URLRequest& request,
-                                          const CookieList& cookie_list,
-                                          bool allowed_from_caller) {
-  return allowed_from_caller;
+                                          const CookieList& cookie_list) {
+  return true;
 }
 
 bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
                                          const net::CanonicalCookie& cookie,
-                                         CookieOptions* options,
-                                         bool allowed_from_caller) {
-  return allowed_from_caller;
+                                         CookieOptions* options) {
+  return true;
 }
 
 bool NetworkDelegateImpl::OnCanAccessFile(

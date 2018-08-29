@@ -34,26 +34,24 @@ void ShellNetworkDelegate::SetCancelURLRequestWithPolicyViolatingReferrerHeader(
 }
 
 bool ShellNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
-                                           const net::CookieList& cookie_list,
-                                           bool allowed_from_caller) {
+                                           const net::CookieList& cookie_list) {
   net::StaticCookiePolicy::Type policy_type = g_block_third_party_cookies ?
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
       net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
   net::StaticCookiePolicy policy(policy_type);
   int rv = policy.CanAccessCookies(request.url(), request.site_for_cookies());
-  return allowed_from_caller && rv == net::OK;
+  return rv == net::OK;
 }
 
 bool ShellNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                           const net::CanonicalCookie& cookie,
-                                          net::CookieOptions* options,
-                                          bool allowed_from_caller) {
+                                          net::CookieOptions* options) {
   net::StaticCookiePolicy::Type policy_type = g_block_third_party_cookies ?
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
       net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
   net::StaticCookiePolicy policy(policy_type);
   int rv = policy.CanAccessCookies(request.url(), request.site_for_cookies());
-  return allowed_from_caller && rv == net::OK;
+  return rv == net::OK;
 }
 
 bool ShellNetworkDelegate::OnCanAccessFile(

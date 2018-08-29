@@ -111,16 +111,14 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  private:
   // net::NetworkDelegate implementation.
   bool OnCanGetCookies(const net::URLRequest& request,
-                       const net::CookieList& cookie_list,
-                       bool allowed_from_caller) override {
+                       const net::CookieList& cookie_list) override {
     // Disallow sending cookies by default.
     return false;
   }
 
   bool OnCanSetCookie(const net::URLRequest& request,
                       const net::CanonicalCookie& cookie,
-                      net::CookieOptions* options,
-                      bool allowed_from_caller) override {
+                      net::CookieOptions* options) override {
     // Disallow saving cookies by default.
     return false;
   }

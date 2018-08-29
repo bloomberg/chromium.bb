@@ -182,36 +182,26 @@ void LayeredNetworkDelegate::OnAuthRequiredInternal(
     AuthCredentials* credentials) {}
 
 bool LayeredNetworkDelegate::OnCanGetCookies(const URLRequest& request,
-                                             const CookieList& cookie_list,
-                                             bool allowed_from_caller) {
-  return nested_network_delegate_->CanGetCookies(
-      request, cookie_list,
-      OnCanGetCookiesInternal(request, cookie_list, allowed_from_caller));
+                                             const CookieList& cookie_list) {
+  OnCanGetCookiesInternal(request, cookie_list);
+  return nested_network_delegate_->CanGetCookies(request, cookie_list);
 }
 
-bool LayeredNetworkDelegate::OnCanGetCookiesInternal(
+void LayeredNetworkDelegate::OnCanGetCookiesInternal(
     const URLRequest& request,
-    const CookieList& cookie_list,
-    bool allowed_from_caller) {
-  return allowed_from_caller;
-}
+    const CookieList& cookie_list) {}
 
 bool LayeredNetworkDelegate::OnCanSetCookie(const URLRequest& request,
                                             const net::CanonicalCookie& cookie,
-                                            CookieOptions* options,
-                                            bool allowed_from_caller) {
-  return nested_network_delegate_->CanSetCookie(
-      request, cookie, options,
-      OnCanSetCookieInternal(request, cookie, options, allowed_from_caller));
+                                            CookieOptions* options) {
+  OnCanSetCookieInternal(request, cookie, options);
+  return nested_network_delegate_->CanSetCookie(request, cookie, options);
 }
 
-bool LayeredNetworkDelegate::OnCanSetCookieInternal(
+void LayeredNetworkDelegate::OnCanSetCookieInternal(
     const URLRequest& request,
     const net::CanonicalCookie& cookie,
-    CookieOptions* options,
-    bool allowed_from_caller) {
-  return allowed_from_caller;
-}
+    CookieOptions* options) {}
 
 bool LayeredNetworkDelegate::OnCanAccessFile(
     const URLRequest& request,
@@ -230,15 +220,13 @@ void LayeredNetworkDelegate::OnCanAccessFileInternal(
 bool LayeredNetworkDelegate::OnCanEnablePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies) const {
-  return OnCanEnablePrivacyModeInternal(url, site_for_cookies) ||
-         nested_network_delegate_->CanEnablePrivacyMode(url, site_for_cookies);
+  OnCanEnablePrivacyModeInternal(url, site_for_cookies);
+  return nested_network_delegate_->CanEnablePrivacyMode(url, site_for_cookies);
 }
 
-bool LayeredNetworkDelegate::OnCanEnablePrivacyModeInternal(
+void LayeredNetworkDelegate::OnCanEnablePrivacyModeInternal(
     const GURL& url,
-    const GURL& site_for_cookies) const {
-  return false;
-}
+    const GURL& site_for_cookies) const {}
 
 bool LayeredNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   OnAreExperimentalCookieFeaturesEnabledInternal();
