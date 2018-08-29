@@ -55,6 +55,53 @@ struct StructTraits<arc::mojom::VideoEncodeProfileDataView,
   }
 };
 
+template <>
+struct StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
+                    media::VideoEncodeAccelerator::Config> {
+  static media::VideoPixelFormat input_format(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.input_format;
+  }
+
+  static const gfx::Size& input_visible_size(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.input_visible_size;
+  }
+
+  static media::VideoCodecProfile output_profile(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.output_profile;
+  }
+
+  static uint32_t initial_bitrate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_bitrate;
+  }
+
+  static uint32_t initial_framerate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_framerate.value_or(0);
+  }
+
+  static bool has_initial_framerate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_framerate.has_value();
+  }
+
+  static uint8_t h264_output_level(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.h264_output_level.value_or(0);
+  }
+
+  static bool has_h264_output_level(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.h264_output_level.has_value();
+  }
+
+  static bool Read(arc::mojom::VideoEncodeAcceleratorConfigDataView input,
+                   media::VideoEncodeAccelerator::Config* output);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_ARC_COMMON_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_

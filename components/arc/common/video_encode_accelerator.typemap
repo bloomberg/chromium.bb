@@ -5,6 +5,7 @@
 mojom = "//components/arc/common/video_encode_accelerator.mojom"
 public_headers = [ "//media/video/video_encode_accelerator.h" ]
 public_deps = [
+  "//base",
   "//media/gpu",
 ]
 traits_headers =
@@ -12,8 +13,12 @@ traits_headers =
 sources = [
   "//components/arc/common/video_encode_accelerator_struct_traits.cc",
 ]
+deps = [
+  "//base",
+]
 type_mappings = [
   "arc.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",
   "arc.mojom.VideoPixelFormat=media::VideoPixelFormat",
   "arc.mojom.VideoEncodeProfile=media::VideoEncodeAccelerator::SupportedProfile",
+  "arc.mojom.VideoEncodeAcceleratorConfig=media::VideoEncodeAccelerator::Config",
 ]

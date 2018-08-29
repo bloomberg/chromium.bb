@@ -24,9 +24,31 @@ struct VideoEncodeProfile {
   uint32 max_framerate_denominator;
 };
 
+// The encoder parameter set which matches to
+// media::VideoEncodeAccelerator::Config.
+//  |input_format| is the pixel format of the input frames.
+//  |input_visible_size| is the resolution of the input frames.
+//  |output_profile| is the codec profile of the encoded output stream.
+//  |initial_bitrate| is the initial bitrate of the encoded output stream,
+//  in bits per second.
+//  |initial_framerate| is the initial requested framerate. It is optional, only
+//  valid when |has_initial_framerate| is true.
+//  |h264_output_level| is H264 level of encoded output stream. It is optional,
+//  only valid when |has_h264_output_level| is true.
+struct VideoEncodeAcceleratorConfig {
+  VideoPixelFormat input_format;
+  Size input_visible_size;
+  VideoCodecProfile output_profile;
+  uint32 initial_bitrate;
+  uint32 initial_framerate;
+  bool has_initial_framerate;
+  uint8 h264_output_level;
+  bool has_h264_output_level;
+};
+
 // Video encoder IPC interface.
 // Next MinVersion: 1
-// Next Method ID: 6
+// Next Method ID: 7
 interface VideoEncodeAccelerator {
 
   // The input buffer storage type.
@@ -69,11 +91,25 @@ interface VideoEncodeAccelerator {
   // Callback:
   //  Called with true iff initialization is successful. The client should not
   //  invoke any other methods before the callback.
-  Initialize@1(VideoPixelFormat input_format,
-               Size visible_size,
+  InitializeDeprecated@1(VideoPixelFormat input_format,
+                         Size visible_size,
+                         StorageType input_storage,
+                         VideoCodecProfile output_profile,
+                         uint32 initial_bitrate,
+                         VideoEncodeClient client) => (bool success);
+
+  // Initializes the video encoder with specific configuration.  Called once per
+  // encoder construction.
+  // Parameters:
+  //  |config| is the parameter set for encoder initialization.
+  //  |input_storage| the type of the input buffer.
+  //  |client| is the client of this video encoder. The client must be valid
+  //  during the lifetime of this accelerator.
+  // Callback:
+  //  Called with true iff initialization is successful. The client should not
+  //  invoke any other methods before the callback.
+  Initialize@6(VideoEncodeAcceleratorConfig config,
                StorageType input_storage,
-               VideoCodecProfile output_profile,
-               uint32 initial_bitrate,
                VideoEncodeClient client) => (bool success);
 
   // Encodes the given frame.
