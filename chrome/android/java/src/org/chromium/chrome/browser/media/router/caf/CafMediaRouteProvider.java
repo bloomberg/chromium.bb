@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
+import static org.chromium.chrome.browser.media.router.caf.CastUtils.isSameOrigin;
+
 import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 
@@ -99,7 +101,15 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     @Override
     public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
-        // Not implemented.
+        Log.d(TAG, "Received message from client: %s", message);
+
+        if (!mRoutes.containsKey(routeId)) {
+            mManager.onMessageSentResult(false, nativeCallbackId);
+            return;
+        }
+
+        mManager.onMessageSentResult(
+                mMessageHandler.handleMessageFromClient(message), nativeCallbackId);
     }
 
     @Override
@@ -119,6 +129,15 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
         Log.d(TAG, "Sending message to client %s: %s", clientId, message);
         mManager.onMessage(clientRecord.routeId, message);
+    }
+
+    /** Flushes all pending messages in record to a client. */
+    public void flushPendingMessagesToClient(ClientRecord clientRecord) {
+        for (String message : clientRecord.pendingMessages) {
+            Log.d(TAG, "Deqeueing message for client %s: %s", clientRecord.clientId, message);
+            mManager.onMessage(clientRecord.routeId, message);
+        }
+        clientRecord.pendingMessages.clear();
     }
 
     @Override
@@ -216,19 +235,5 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         }
 
         return false;
-    }
-
-    /**
-     * Compares two origins. Empty origin strings correspond to unique origins in
-     * url::Origin.
-     *
-     * @param originA A URL origin.
-     * @param originB A URL origin.
-     * @return True if originA and originB represent the same origin, false otherwise.
-     */
-    private static final boolean isSameOrigin(String originA, String originB) {
-        if (originA == null || originA.isEmpty() || originB == null || originB.isEmpty())
-            return false;
-        return originA.equals(originB);
     }
 }

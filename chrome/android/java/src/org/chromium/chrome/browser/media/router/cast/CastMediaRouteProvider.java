@@ -207,6 +207,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         removeClient(getClientRecordByRouteId(routeId));
     }
 
+    // Migrated to CafMessageHandler. See https://crbug.com/711860.
     @Override
     public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
         Log.d(TAG, "Received message from client: %s", message);
@@ -241,6 +242,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         mManager.onMessageSentResult(success, nativeCallbackId);
     }
 
+    // Migrated to CafMessageHandler. See https://crbug.com/711860.
     private boolean handleClientConnectMessage(JSONObject jsonMessage) throws JSONException {
         String clientId = jsonMessage.getString("clientId");
         if (clientId == null) return false;
@@ -261,6 +263,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         return true;
     }
 
+    // Migrated to CafMessageHandler. See https://crbug.com/711860.
     private boolean handleClientDisconnectMessage(JSONObject jsonMessage) throws JSONException {
         String clientId = jsonMessage.getString("clientId");
         if (clientId == null) return false;
@@ -276,6 +279,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         return true;
     }
 
+    // Migrated to CafMessageHandler. See https://crbug.com/711860.
     private boolean handleLeaveSessionMessage(JSONObject jsonMessage) throws JSONException {
         String clientId = jsonMessage.getString("clientId");
         if (clientId == null || mSession == null) return false;
@@ -305,6 +309,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         return true;
     }
 
+    // Migrated to CafMessageHandler. See https://crbug.com/711860.
     private String buildInternalMessage(
             String type, int sequenceNumber, String clientId, String message) throws JSONException {
         JSONObject jsonMessage = new JSONObject();

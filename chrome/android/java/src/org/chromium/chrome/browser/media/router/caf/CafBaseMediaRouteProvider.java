@@ -248,7 +248,7 @@ public abstract class CafBaseMediaRouteProvider
     }
 
     protected boolean hasSession() {
-        return mSessionController != null && mSessionController.isConnected();
+        return mSessionController.isConnected();
     }
 
     protected CastSessionController sessionController() {
