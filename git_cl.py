@@ -5142,6 +5142,13 @@ def CMDsplit(parser, args):
                     default=False,
                     help="List the files and reviewers for each CL that would "
                          "be created, but don't create branches or CLs.")
+  parser.add_option("--cq-dry-run", action='store_true',
+                    help="If set, will do a cq dry run for each uploaded CL. "
+                         "Please be careful when doing this; more than ~10 CLs "
+                         "has the potential to overload our build "
+                         "infrastructure. Try to upload these not during high "
+                         "load times (usually 11-3 Mountain View time). Email "
+                         "infra-dev@chromium.org with any questions.")
   options, _ = parser.parse_args(args)
 
   if not options.description_file:
@@ -5151,7 +5158,8 @@ def CMDsplit(parser, args):
     return CMDupload(OptionParser(), args)
 
   return split_cl.SplitCl(options.description_file, options.comment_file,
-                          Changelist, WrappedCMDupload, options.dry_run)
+                          Changelist, WrappedCMDupload, options.dry_run,
+                          options.cq_dry_run)
 
 
 @subcommand.usage('DEPRECATED')
