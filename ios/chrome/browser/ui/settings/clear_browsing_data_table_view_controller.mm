@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -246,6 +248,8 @@ class ChromeBrowserState;
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock {
+  base::RecordAction(
+      base::UserMetricsAction("MobileClearBrowsingDataTriggeredFromUIRefresh"));
   [self.dispatcher removeBrowsingDataForBrowserState:browserState
                                           timePeriod:timePeriod
                                           removeMask:removeMask
