@@ -767,7 +767,8 @@ GpuProcessHost::~GpuProcessHost() {
 
   std::string message;
   bool block_offscreen_contexts = true;
-  if (!in_process_ && process_launched_) {
+  if (!in_process_ && process_launched_ &&
+      kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
     UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus2",
