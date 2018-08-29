@@ -32,8 +32,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -136,7 +136,8 @@ class ChromeOSTermsHandler
   }
 
   void LoadOemEulaFileAsync() {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
 
     const chromeos::StartupCustomizationDocument* customization =
         chromeos::StartupCustomizationDocument::GetInstance();
@@ -153,7 +154,8 @@ class ChromeOSTermsHandler
   }
 
   void LoadEulaFileAsync() {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
 
     std::string file_path =
         base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
