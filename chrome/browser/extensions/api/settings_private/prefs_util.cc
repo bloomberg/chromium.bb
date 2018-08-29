@@ -293,8 +293,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // kEnableAutoScreenLock is read-only.
   (*s_whitelist)[ash::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kEnableQuickUnlockFingerprint] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[proximity_auth::prefs::kEasyUnlockProximityThreshold] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
