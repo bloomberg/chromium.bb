@@ -460,7 +460,7 @@ class RunIsolatedTest(unittest.TestCase):
     now = time.time() - 2
     cmd = [
         '--named-cache-root', self._named_cache_dir,
-        '--named-cache', 'cache1', 'a',
+        '--named-cache', 'cache1', 'a', '100',
         '--raw-cmd',
         '--',
         sys.executable,

@@ -684,10 +684,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cmd = [
       '--no-log',
       '--leak-temp-dir',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'), '100',
       '--named-cache-root', nc,
-      '--named-cache', 'cache_foo', 'foo',
-      '--named-cache', 'cache_bar', 'bar',
+      '--named-cache', 'cache_foo', 'foo', '100',
+      '--named-cache', 'cache_bar', 'bar', '100',
       '--raw-cmd',
       '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
