@@ -202,6 +202,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
+  base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteEntry"));
   [self deleteItemsAtIndexPaths:@[ indexPath ]];
 }
 
@@ -401,6 +402,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 }
 
 - (void)deleteSelectedReadingListItems {
+  base::RecordAction(
+      base::UserMetricsAction("MobileReadingListDeleteSelected"));
   [self deleteItemsAtIndexPaths:self.tableView.indexPathsForSelectedRows];
   [self exitEditingModeAnimated:YES];
 }

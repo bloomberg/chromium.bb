@@ -11439,11 +11439,25 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileReadingListDeleteEntry">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User deleted a single entry from the ReadingList using swipe to delete.
+  </description>
+</action>
+
 <action name="MobileReadingListDeleteRead">
   <owner>gambard@chromium.org</owner>
   <description>
     User deleted all the read entries of the ReadingList using 'Delete All
     Read'.
+  </description>
+</action>
+
+<action name="MobileReadingListDeleteSelected">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User deleted the selected entries from the ReadingList.
   </description>
 </action>
 
