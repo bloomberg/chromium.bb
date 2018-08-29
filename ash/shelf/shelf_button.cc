@@ -213,7 +213,6 @@ class ShelfButton::AppStatusIndicatorView
     const float dsf = canvas->UndoDeviceScaleFactor();
     const int kStrokeWidthPx = 1;
     gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
-    center.Scale(dsf);
     cc::PaintFlags flags;
     if (chromeos::switches::ShouldUseShelfNewUi()) {
       // Active and running indicators look a little different in the new UI.
@@ -238,6 +237,8 @@ class ShelfButton::AppStatusIndicatorView
               dsf),
           flags);
     } else {
+      // This branch of the code expects an already scaled center point.
+      center.Scale(dsf);
       DCHECK_EQ(width(), height());
       DCHECK_EQ(kStatusIndicatorMaxSize, width() / 2);
 
