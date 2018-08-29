@@ -382,6 +382,11 @@ enforce that the input data is valid. Common ones to watch out for:
     `mojo_base.mojom.TimeTicks` / `mojo_base.mojom.Time`, not `int64` /
     `uint64` / `double` / et cetera.
 *   URLs: use `url.mojom.Url`, not `string`.
+*   `array<uint8>` or `string` and `memcpy()`: use a Mojo struct and statically
+    define the serialized fields. While `memcpy()` may be tempting for its
+    simplicity, it can leak info in padding. Even worse, `memcpy()` can easily
+    copy [undocumented fields][serialize-struct-tm-safely] or newly introduced
+    fields that were never evaluated for safety by the developer or reviewer.
 
 **_Good_**
 
@@ -402,9 +407,9 @@ interface ReportingService {
 };
 ```
 
-Another anti-pattern to avoid is parallel arrays of data: this requires the
-receiver to validate that all the arrays have the same length. Instead, prefer
-to pass the data so that it is impossible to have a mismatch.
+Avoid parallel arrays of data that require the receiver to validate that the
+arrays have matching lengths. Instead, bundle the data together in a struct so
+it is impossible to have a mismatch:
 
 **_Good_**
 
@@ -774,3 +779,4 @@ safe, vulnerabilities could arise.
 [security-tips-for-ipc]: https://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc
 [NfcTypeConverter.java]: https://chromium.googlesource.com/chromium/src/+/e97442ee6e8c4cf6bcf7f5623c6fb2cc8cce92ac/services/device/nfc/android/java/src/org/chromium/device/nfc/NfcTypeConverter.java
 [mojo-doc-process-crashes]: https://chromium.googlesource.com/chromium/src/+/master/mojo/public/cpp/bindings#Best-practices-for-dealing-with-process-crashes-and-callbacks
+[serialize-struct-tm-safely]: https://chromium-review.googlesource.com/c/chromium/src/+/679441
