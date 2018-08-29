@@ -67,21 +67,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          NGPhysicalSize size,
                          NGLineOrientation line_orientation,
                          NGTextEndEffect end_effect,
-                         scoped_refptr<const ShapeResult> shape_result)
-      : NGPhysicalFragment(layout_object,
-                           style,
-                           style_variant,
-                           size,
-                           kFragmentText,
-                           text_type),
-        text_(text),
-        start_offset_(start_offset),
-        end_offset_(end_offset),
-        shape_result_(shape_result),
-        line_orientation_(static_cast<unsigned>(line_orientation)),
-        end_effect_(static_cast<unsigned>(end_effect)) {
-    DCHECK(shape_result_ || IsFlowControl()) << ToString();
-  }
+                         scoped_refptr<const ShapeResult> shape_result);
 
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // True if this is a generated text.
@@ -144,7 +130,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // Returns true if the text is generated (from, e.g., list marker,
   // pseudo-element, ...) instead of from a DOM text node.
-  bool IsAnonymousText() const;
+  bool IsAnonymousText() const { return is_anonymous_text_; }
 
   // Returns the text offset in the fragment placed closest to the given point.
   unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
@@ -178,6 +164,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   unsigned line_orientation_ : 2;  // NGLineOrientation
   unsigned end_effect_ : 1;        // NGTextEndEffect
+  unsigned is_anonymous_text_ : 1;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
