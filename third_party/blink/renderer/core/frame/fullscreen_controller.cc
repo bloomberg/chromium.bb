@@ -75,8 +75,6 @@ void FullscreenController::DidEnterFullscreen() {
 
   UpdatePageScaleConstraints(false);
   web_view_base_->SetPageScaleFactor(1.0f);
-  if (web_view_base_->MainFrame()->IsWebLocalFrame())
-    web_view_base_->MainFrame()->ToWebLocalFrame()->SetScrollOffset(WebSize());
   web_view_base_->SetVisualViewportOffset(FloatPoint());
 
   state_ = State::kFullscreen;
@@ -152,6 +150,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   // restore a previous set. This can happen if we exit and quickly reenter
   // fullscreen without performing a layout.
   if (state_ == State::kInitial) {
+    // TODO(dtapuska): Remove these fields https://crbug.com/878773
     initial_page_scale_factor_ = web_view_base_->PageScaleFactor();
     initial_scroll_offset_ =
         web_view_base_->MainFrame()->IsWebLocalFrame()
