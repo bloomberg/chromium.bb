@@ -21,7 +21,7 @@ void TestExecutor_Execute(Cronet_ExecutorPtr self,
   CHECK(self);
   DVLOG(1) << "Post Task";
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(Cronet_Runnable_Run, runnable));
+      FROM_HERE, cronet::test::RunnableWrapper::CreateOnceClosure(runnable));
 }
 }  // namespace
 
@@ -61,6 +61,13 @@ Cronet_EnginePtr CreateTestEngine(int quic_server_port) {
 
 Cronet_ExecutorPtr CreateTestExecutor() {
   return Cronet_Executor_CreateWith(TestExecutor_Execute);
+}
+
+// static
+base::OnceClosure RunnableWrapper::CreateOnceClosure(
+    Cronet_RunnablePtr runnable) {
+  return base::BindOnce(&RunnableWrapper::Run,
+                        std::make_unique<RunnableWrapper>(runnable));
 }
 
 }  // namespace test

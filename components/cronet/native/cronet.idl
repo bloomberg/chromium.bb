@@ -174,7 +174,7 @@ interface Runnable {
 interface Executor {
   /**
    * Takes ownership of |command| and runs it synchronously or asynchronously.
-   * Destroys the |command| after execution.
+   * Destroys the |command| after execution, or if executor is shutting down.
    */
   Execute(Runnable command);
 };

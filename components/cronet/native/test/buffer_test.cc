@@ -133,7 +133,6 @@ TEST_F(BufferTest, TestCronetBufferAsync) {
   ASSERT_TRUE(on_destroy_called());
   Cronet_Executor_Destroy(executor);
   Cronet_BufferCallback_Destroy(buffer_callback);
-  Cronet_Runnable_Destroy(runnable);
 }
 
 }  // namespace
