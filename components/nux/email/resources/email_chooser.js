@@ -54,11 +54,6 @@ Polymer({
             icon: 'news',
             url: 'https://gmail.com',
           },
-          {
-            name: 'Chrome Web Store',
-            icon: 'chrome_store',
-            url: 'https://gmail.com',
-          },
         ];
       },
     },
@@ -66,6 +61,7 @@ Polymer({
     /** @private {nux_email.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,
+      value: () => null,
       observer: 'onSelectedEmailProviderChange_',
     },
   },
@@ -90,6 +86,22 @@ Polymer({
       this.selectedEmailProvider_ = null;
     else
       this.selectedEmailProvider_ = e.model.item;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEmailPointerDown_: function(e) {
+    e.currentTarget.classList.remove('keyboard-focused');
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEmailKeyUp_: function(e) {
+    e.currentTarget.classList.add('keyboard-focused');
   },
 
   /** @private */
