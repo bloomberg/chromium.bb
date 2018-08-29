@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
@@ -77,7 +78,7 @@ class ThirdPartyRegistryKeyObserver {
 
 class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
  protected:
-  ThirdPartyBlockingBrowserTest() = default;
+  ThirdPartyBlockingBrowserTest() : scoped_domain_(false) {}
 
   ~ThirdPartyBlockingBrowserTest() override = default;
 
@@ -131,6 +132,9 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
               base::WriteFile(*module_list_path, contents.data(),
                               static_cast<int>(contents.size())));
   }
+
+  // The feature is always disabled on domain-joined machines.
+  base::win::ScopedDomainStateForTesting scoped_domain_;
 
   // Enables the ThirdPartyModulesBlocking feature.
   base::test::ScopedFeatureList scoped_feature_list_;
