@@ -77,6 +77,11 @@ crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-r
 # Sheriff 2018-08-27
 crbug.com/878032 [ Linux ] svg/animations/additive-type-by-animation.html [ Pass Leak ]
 
+# Sheriff 2018-08-29
+crbug.com/878724 [ Linux ] editing/selection/modify_extend/extend_by_character.html [ Pass Leak ]
+crbug.com/878724 [ Linux ] editing/selection/modify_move/move_right_word_09_ltr_multi_line.html [ Pass Leak ]
+crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
