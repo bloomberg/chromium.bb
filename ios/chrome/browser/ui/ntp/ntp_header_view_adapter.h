@@ -40,6 +40,9 @@ class ReadingListModel;
 // Adds views necessary to customize the NTP search box.
 - (void)addViewsToSearchField:(UIView*)searchField;
 
+// Highlight the fake omnibox.
+- (void)setFakeboxHighlighted:(BOOL)highlighted;
+
 // TODO(crbug.com/807330) Remove post UI refresh.
 // Animates legacy header view's |_shadow|'s alpha to 0.
 - (void)fadeOutShadow;
