@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -279,6 +280,10 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == decodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
+  } else if (name == intrinsicsizeAttr &&
+             RuntimeEnabledFeatures::
+                 ExperimentalProductivityFeaturesEnabled()) {
+    ParseIntrinsicSizeAttribute(params.new_value);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -477,9 +482,12 @@ unsigned HTMLImageElement::height() {
 }
 
 LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
+  if (!overridden_intrinsic_size_.IsEmpty())
+    return LayoutSize(overridden_intrinsic_size_);
   ImageResourceContent* image_resource = GetImageLoader().GetContent();
   if (!image_resource || !image_resource->HasImage())
     return LayoutSize();
+
   float pixel_density = image_device_pixel_ratio_;
   if (image_resource->HasDevicePixelRatioHeaderValue() &&
       image_resource->DevicePixelRatioHeaderValue() > 0)
@@ -487,6 +495,7 @@ LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
 
   RespectImageOrientationEnum respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject());
+
   LayoutSize natural_size(
       image_resource->IntrinsicSize(respect_image_orientation));
   natural_size.Scale(pixel_density);
@@ -556,6 +565,35 @@ bool HTMLImageElement::draggable() const {
 
 void HTMLImageElement::setHeight(unsigned value) {
   SetUnsignedIntegralAttribute(heightAttr, value);
+}
+
+IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
+  return overridden_intrinsic_size_;
+}
+
+void HTMLImageElement::ParseIntrinsicSizeAttribute(const String& value) {
+  unsigned new_width = 0, new_height = 0;
+  Vector<String> size;
+  value.Split('x', size);
+  if (!value.IsEmpty() &&
+      (size.size() != 2 ||
+       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
+       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
+    GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
+                               "Unable to parse intrinsicsize: expected "
+                               "[unsigned] x [unsigned], got " +
+                                   value));
+    new_width = 0;
+    new_height = 0;
+  }
+
+  IntSize new_size(new_width, new_height);
+  if (overridden_intrinsic_size_ != new_size) {
+    overridden_intrinsic_size_ = new_size;
+    if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage())
+      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
+  }
 }
 
 KURL HTMLImageElement::Src() const {

@@ -182,7 +182,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
   if (!did_increment_visually_non_empty_pixel_count_) {
     // At a zoom level of 1 the image is guaranteed to have an integer size.
     View()->GetFrameView()->IncrementVisuallyNonEmptyPixelCount(
-        FlooredIntSize(image_resource_->ImageSize(1.0f)));
+        FlooredIntSize(ImageSizeOverriddenByIntrinsicSize(1.0f)));
     did_increment_visually_non_empty_pixel_count_ = true;
   }
 
@@ -201,8 +201,9 @@ void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
 void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
-  LayoutSize new_intrinsic_size =
-      RoundedLayoutSize(image_resource_->ImageSize(StyleRef().EffectiveZoom()));
+
+  LayoutSize new_intrinsic_size = RoundedLayoutSize(
+      ImageSizeOverriddenByIntrinsicSize(StyleRef().EffectiveZoom()));
   UpdateIntrinsicSizeIfNeeded(new_intrinsic_size);
 
   // In the case of generated image content using :before/:after/content, we
@@ -368,36 +369,78 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
   return inside;
 }
 
-void LayoutImage::ComputeIntrinsicSizingInfo(
-    IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (SVGImage* svg_image = EmbeddedSVGImage()) {
-    svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
+IntSize LayoutImage::GetOverriddenIntrinsicSize() const {
+  if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+      return image_element->GetOverriddenIntrinsicSize();
+  }
+  return IntSize();
+}
 
-    // Handle zoom & vertical writing modes here, as the embedded SVG document
-    // doesn't know about them.
-    intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
-    if (StyleRef().GetObjectFit() != EObjectFit::kScaleDown)
-      intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
+FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
+    float multiplier) const {
+  FloatSize overridden_intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
+  if (overridden_intrinsic_size.IsEmpty())
+    return image_resource_->ImageSize(multiplier);
 
-    if (!IsHorizontalWritingMode())
-      intrinsic_sizing_info.Transpose();
-    return;
+  if (multiplier != 1) {
+    overridden_intrinsic_size.Scale(multiplier);
+    if (overridden_intrinsic_size.Width() < 1.0f)
+      overridden_intrinsic_size.SetWidth(1.0f);
+    if (overridden_intrinsic_size.Height() < 1.0f)
+      overridden_intrinsic_size.SetHeight(1.0f);
   }
 
-  LayoutReplaced::ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+  return overridden_intrinsic_size;
+}
 
-  // Our intrinsicSize is empty if we're laying out generated images with
-  // relative width/height. Figure out the right intrinsic size to use.
-  if (intrinsic_sizing_info.size.IsEmpty() &&
-      image_resource_->ImageHasRelativeSize() && !IsLayoutNGListMarkerImage()) {
-    LayoutObject* containing_block =
-        IsOutOfFlowPositioned() ? Container() : ContainingBlock();
-    if (containing_block->IsBox()) {
-      LayoutBox* box = ToLayoutBox(containing_block);
-      intrinsic_sizing_info.size.SetWidth(
-          box->AvailableLogicalWidth().ToFloat());
-      intrinsic_sizing_info.size.SetHeight(
-          box->AvailableLogicalHeight(kIncludeMarginBorderPadding).ToFloat());
+bool LayoutImage::OverrideIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  IntSize overridden_intrinsic_size = GetOverriddenIntrinsicSize();
+  if (overridden_intrinsic_size.IsEmpty())
+    return false;
+
+  intrinsic_sizing_info.size = FloatSize(overridden_intrinsic_size);
+  intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
+  if (!IsHorizontalWritingMode())
+    intrinsic_sizing_info.Transpose();
+
+  return true;
+}
+
+void LayoutImage::ComputeIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  if (!OverrideIntrinsicSizingInfo(intrinsic_sizing_info)) {
+    if (SVGImage* svg_image = EmbeddedSVGImage()) {
+      svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
+
+      // Handle zoom & vertical writing modes here, as the embedded SVG document
+      // doesn't know about them.
+      intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+      if (StyleRef().GetObjectFit() != EObjectFit::kScaleDown)
+        intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
+
+      if (!IsHorizontalWritingMode())
+        intrinsic_sizing_info.Transpose();
+      return;
+    }
+
+    LayoutReplaced::ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+
+    // Our intrinsicSize is empty if we're laying out generated images with
+    // relative width/height. Figure out the right intrinsic size to use.
+    if (intrinsic_sizing_info.size.IsEmpty() &&
+        image_resource_->ImageHasRelativeSize() &&
+        !IsLayoutNGListMarkerImage()) {
+      LayoutObject* containing_block =
+          IsOutOfFlowPositioned() ? Container() : ContainingBlock();
+      if (containing_block->IsBox()) {
+        LayoutBox* box = ToLayoutBox(containing_block);
+        intrinsic_sizing_info.size.SetWidth(
+            box->AvailableLogicalWidth().ToFloat());
+        intrinsic_sizing_info.size.SetHeight(
+            box->AvailableLogicalHeight(kIncludeMarginBorderPadding).ToFloat());
+      }
     }
   }
   // Don't compute an intrinsic ratio to preserve historical WebKit behavior if

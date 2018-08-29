@@ -647,6 +647,7 @@ html element img
     property height
     property hspace
     property importance
+    property intrinsicSize
     property isMap
     property longDesc
     property lowsrc

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_associated.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_image_loader.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -103,6 +104,8 @@ class CORE_EXPORT HTMLImageElement final
   void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);
 
   void setWidth(unsigned);
+
+  IntSize GetOverriddenIntrinsicSize() const;
 
   int x() const;
   int y() const;
@@ -206,6 +209,8 @@ class CORE_EXPORT HTMLImageElement final
   void NotifyViewportChanged();
   void CreateMediaQueryListIfDoesNotExist();
 
+  void ParseIntrinsicSizeAttribute(const String& value);
+
   Member<HTMLImageLoader> image_loader_;
   Member<ViewportChangeListener> listener_;
   Member<HTMLFormElement> form_;
@@ -219,6 +224,8 @@ class CORE_EXPORT HTMLImageElement final
   bool should_invert_color_;
 
   ReferrerPolicy referrer_policy_;
+
+  IntSize overridden_intrinsic_size_;
 };
 
 }  // namespace blink
