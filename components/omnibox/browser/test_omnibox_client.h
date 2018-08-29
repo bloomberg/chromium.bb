@@ -39,6 +39,7 @@ class TestOmniboxClient : public OmniboxClient {
   const SessionID& GetSessionID() const override;
   void SetBookmarkModel(bookmarks::BookmarkModel* bookmark_model);
   bookmarks::BookmarkModel* GetBookmarkModel() override;
+  TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
@@ -53,6 +54,7 @@ class TestOmniboxClient : public OmniboxClient {
   AutocompleteMatch alternate_nav_match_;
   SessionID session_id_;
   bookmarks::BookmarkModel* bookmark_model_;
+  TemplateURLService* template_url_service_;
   TestSchemeClassifier scheme_classifier_;
   AutocompleteClassifier autocomplete_classifier_;
   GURL page_url_for_last_favicon_request_;

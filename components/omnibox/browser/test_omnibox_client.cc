@@ -48,6 +48,10 @@ TestOmniboxClient::CreateAutocompleteProviderClient() {
           nullptr, std::unique_ptr<SearchTermsData>(new SearchTermsData),
           nullptr, std::unique_ptr<TemplateURLServiceClient>(), nullptr,
           nullptr, base::Closure()));
+
+  // Save a reference to the created TemplateURLService for test use.
+  template_url_service_ = template_url_service.get();
+
   provider_client->set_template_url_service(std::move(template_url_service));
 
   return std::move(provider_client);
@@ -77,6 +81,11 @@ void TestOmniboxClient::SetBookmarkModel(
 
 bookmarks::BookmarkModel* TestOmniboxClient::GetBookmarkModel() {
   return bookmark_model_;
+}
+
+TemplateURLService* TestOmniboxClient::GetTemplateURLService() {
+  DCHECK(template_url_service_);
+  return template_url_service_;
 }
 
 const AutocompleteSchemeClassifier& TestOmniboxClient::GetSchemeClassifier()

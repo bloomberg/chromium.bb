@@ -15,6 +15,7 @@ include_rules = [
   "+components/query_parser",
   "+components/search",
   "+components/search_engines",
+  "+components/security_state",
   "+components/sessions",
   "+components/sync",
   "+components/strings/grit/components_strings.h",
