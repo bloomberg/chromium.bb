@@ -780,9 +780,9 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
       idx = 3;
     if (idx === 4)
       idx = 0;
-  } while (entries[idx].hidden ||
+  } while (idx !== current_index && (entries[idx].hidden ||
            entries[idx].classList.contains(
-               customBackgrounds.CLASSES.OPTION_DISABLED));
+               customBackgrounds.CLASSES.OPTION_DISABLED)));
   return entries[idx];
 };
 
