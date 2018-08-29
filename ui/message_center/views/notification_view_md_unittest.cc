@@ -92,8 +92,10 @@ class NotificationTestDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(NotificationTestDelegate);
 };
 
-class NotificationViewMDTest : public views::ViewsTestBase,
-                               public views::ViewObserver {
+class NotificationViewMDTest
+    : public views::ViewsTestBase,
+      public views::ViewObserver,
+      public message_center::MessageView::SlideObserver {
  public:
   NotificationViewMDTest();
   ~NotificationViewMDTest() override;
@@ -112,6 +114,9 @@ class NotificationViewMDTest : public views::ViewsTestBase,
     DCHECK_EQ(widget_, notification_view()->GetWidget());
     return widget_;
   }
+
+  // Overridden from message_center::MessageView::Observer:
+  void OnSlideChanged(const std::string& notification_id) override {}
 
  protected:
   const gfx::Image CreateTestImage(int width, int height) const;

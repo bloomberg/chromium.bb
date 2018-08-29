@@ -14,6 +14,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/scroll_view.h"
@@ -24,6 +25,7 @@ class Layer;
 }
 
 namespace message_center {
+class SlidableMessageView;
 class MessageView;
 class Notification;
 }  // namespace message_center
@@ -33,8 +35,10 @@ namespace ash {
 // Displays a list of messages for rich notifications. Functions as an array of
 // MessageViews and animates them on transitions. It also supports
 // repositioning.
-class ASH_EXPORT MessageListView : public views::View,
-                                   public views::BoundsAnimatorObserver {
+class ASH_EXPORT MessageListView
+    : public views::View,
+      public views::BoundsAnimatorObserver,
+      public message_center::MessageView::SlideObserver {
  public:
   class Observer {
    public:
@@ -44,9 +48,9 @@ class ASH_EXPORT MessageListView : public views::View,
   MessageListView();
   ~MessageListView() override;
 
-  void AddNotificationAt(message_center::MessageView* view, int i);
-  void RemoveNotification(message_center::MessageView* view);
-  void UpdateNotification(message_center::MessageView* view,
+  void AddNotificationAt(message_center::MessageView* message_view, int i);
+  void RemoveNotification(message_center::MessageView* message_view);
+  void UpdateNotification(message_center::MessageView* message_view,
                           const message_center::Notification& notification);
   std::pair<int, message_center::MessageView*> GetNotificationById(
       const std::string& id);
@@ -81,6 +85,9 @@ class ASH_EXPORT MessageListView : public views::View,
     use_fixed_height_ = use_fixed_height;
   }
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
+
+  // Overridden from MessageView::SlideObserver
+  void OnSlideChanged(const std::string& notification_id) override;
 
  protected:
   // Overridden from views::View.
@@ -121,7 +128,7 @@ class ASH_EXPORT MessageListView : public views::View,
 
   // Schedules animation for a child to the specified position. Returns false
   // if |child| will disappear after the animation.
-  bool AnimateChild(views::View* child,
+  bool AnimateChild(views::View* child,  // message_center::SlidableMessageView
                     int top,
                     int height,
                     bool animate_even_on_move);
