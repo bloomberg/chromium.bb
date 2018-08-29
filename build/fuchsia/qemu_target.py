@@ -71,9 +71,7 @@ class QemuTarget(target.Target):
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
         '-nographic',
-        '-kernel', EnsurePathExists(
-            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                    'zircon.bin')),
+        '-kernel', EnsurePathExists(self._GetTargetKernelPath()),
         '-initrd', EnsurePathExists(
             boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                     'bootdata-blob.bin')),
@@ -165,3 +163,10 @@ class QemuTarget(target.Target):
 
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
+
+  def _GetTargetKernelPath(self):
+    kernel_name = 'zircon.bin'
+    if self._GetTargetSdkArch() == 'arm64':
+      kernel_name = 'qemu-zircon.bin'
+    return boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                   kernel_name)
