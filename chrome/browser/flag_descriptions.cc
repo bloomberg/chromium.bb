@@ -1616,6 +1616,12 @@ const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
 
+const char kServiceWorkerImportedScriptUpdateCheckName[] =
+    "Enable update check for service worker importScripts() resources";
+const char kServiceWorkerImportedScriptUpdateCheckDescription[] =
+    "Extend byte-for-byte update check for scripts that are imported by the "
+    "service worker script via importScripts().";
+
 extern const char kServiceWorkerServicificationName[] =
     "Servicified service workers";
 extern const char kServiceWorkerServicificationDescription[] =

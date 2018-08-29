@@ -17,4 +17,9 @@ bool ServiceWorkerUtils::IsServicificationEnabled() {
              blink::features::kServiceWorkerServicification);
 }
 
+bool ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled() {
+  return base::FeatureList::IsEnabled(
+      blink::features::kServiceWorkerImportedScriptUpdateCheck);
+}
+
 }  // namespace blink
