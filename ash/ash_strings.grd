@@ -1746,7 +1746,7 @@ This file contains the strings for ash.
         <ph name="UNLOCK_MORE_FEATURES">$1<ex>Unlock more Assistant features.</ex></ph>  <ph name="GET_STARTED">$2<ex>Get Started</ex></ph>
       </message>
       <message name="IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS" desc="Message shown in Assistant UI when we have detected hotword but are answering on another device.">
-        Answering on another device
+        Answering on another device.
       </message>
       <message name="IDS_ASH_ASSISTANT_CHIP_IM_BORED" desc="Message shown on suggestion chip in Assistant UI to initiate a query for something amusing, a joke for example.">
         I'm bored

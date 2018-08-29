@@ -233,6 +233,24 @@ void AssistantInteractionController::OnInteractionFinished(
     return;
   }
 
+  // In normal interaction flows the pending query has already been committed.
+  // In some irregular cases, however, it has not. This happens during multi-
+  // device hotword loss, for example, but can also occur if the interaction
+  // errors out. In these cases we still need to commit the pending query as
+  // this is a prerequisite step to being able to finalize the pending response.
+  if (assistant_interaction_model_.pending_query().type() !=
+      AssistantQueryType::kNull) {
+    assistant_interaction_model_.CommitPendingQuery();
+  }
+
+  // If the interaction was finished due to multi-device hotword loss, we want
+  // to show an appropriate message to the user.
+  if (resolution == AssistantInteractionResolution::kMultiDeviceHotwordLoss) {
+    assistant_interaction_model_.pending_response()->AddUiElement(
+        std::make_unique<AssistantTextElement>(l10n_util::GetStringUTF8(
+            IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS)));
+  }
+
   // The interaction has finished, so we finalize the pending response if it
   // hasn't already been finalized.
   if (assistant_interaction_model_.pending_response())

@@ -766,9 +766,13 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
             mojom::AssistantInteractionResolution::kError);
       });
       break;
-    // The device was not elected to produce a response.
+    // Interaction ended because the device was not selected to produce a
+    // response. This occurs due to multi-device hotword loss.
     case Resolution::DEVICE_NOT_SELECTED:
-      // TODO(b/112952143): handle this case appropriately.
+      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
+        ptr->OnInteractionFinished(
+            mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
+      });
       break;
   }
 }

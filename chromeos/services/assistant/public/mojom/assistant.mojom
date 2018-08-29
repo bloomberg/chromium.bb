@@ -173,6 +173,8 @@ enum AssistantInteractionResolution {
   kError,
   // Assistant interaction completed due to mic timeout.
   kMicTimeout,
+  // Assistant interaction completed due to multi-device hotword loss.
+  kMultiDeviceHotwordLoss,
 };
 
 // Models an Assistant suggestion.
