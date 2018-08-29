@@ -431,6 +431,10 @@ const wchar_t* GetSandboxSidPrefix() {
   return InstallDetails::Get().mode().sandbox_sid_prefix;
 }
 
+std::string GetSafeBrowsingName() {
+  return kSafeBrowsingName;
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

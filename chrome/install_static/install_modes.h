@@ -69,6 +69,9 @@ extern const wchar_t kBinariesAppGuid[];
 // multi-install. Must be empty if the brand integrates with Google Update.
 extern const wchar_t kBinariesPathName[];
 
+// The brand-specific safe browsing client name.
+extern const char kSafeBrowsingName[];
+
 // A brand's collection of install modes.
 extern const InstallConstants kInstallModes[];
 
