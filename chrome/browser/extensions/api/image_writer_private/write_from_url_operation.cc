@@ -61,14 +61,14 @@ void WriteFromUrlOperation::GetDownloadTarget(base::OnceClosure continuation) {
   }
 
   if (url_.ExtractFileName().empty()) {
-    if (!base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_path_)) {
+    if (!base::CreateTemporaryFileInDir(temp_dir_->GetPath(), &image_path_)) {
       Error(error::kTempFileError);
       return;
     }
   } else {
     base::FilePath file_name =
         base::FilePath::FromUTF8Unsafe(url_.ExtractFileName());
-    image_path_ = temp_dir_.GetPath().Append(file_name);
+    image_path_ = temp_dir_->GetPath().Append(file_name);
   }
 
   PostTask(std::move(continuation));

@@ -34,7 +34,7 @@ DestroyPartitionsOperation::~DestroyPartitionsOperation() {}
 
 void DestroyPartitionsOperation::StartImpl() {
   DCHECK(IsRunningInCorrectSequence());
-  if (!base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_path_)) {
+  if (!base::CreateTemporaryFileInDir(temp_dir_->GetPath(), &image_path_)) {
     Error(error::kTempFileError);
     return;
   }
