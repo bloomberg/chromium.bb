@@ -89,12 +89,14 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   // created by the animation.
   HTMLDivElement* mask1 =
       MediaControlElementsHelper::CreateDivWithId("spinner-mask-1", layer);
-  mask1_background_ = MediaControlElementsHelper::CreateDivWithId(
-      "spinner-mask-1-background", mask1);
+  mask1_background_ = MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-loading-panel-spinner-mask-1-background",
+      mask1);
   HTMLDivElement* mask2 =
       MediaControlElementsHelper::CreateDivWithId("spinner-mask-2", layer);
-  mask2_background_ = MediaControlElementsHelper::CreateDivWithId(
-      "spinner-mask-2-background", mask2);
+  mask2_background_ = MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-loading-panel-spinner-mask-2-background",
+      mask2);
 
   event_listener_ = new MediaControlAnimationEventListener(this);
 }
