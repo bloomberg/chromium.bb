@@ -581,6 +581,20 @@ KeyboardEventProcessingResult InterstitialPageImpl::PreHandleKeyboardEvent(
   return render_widget_host_delegate_->PreHandleKeyboardEvent(event);
 }
 
+bool InterstitialPageImpl::PreHandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  if (!enabled())
+    return false;
+
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseUp &&
+      event.button == blink::WebPointerProperties::Button::kBack &&
+      controller_->CanGoBack()) {
+    controller_->GoBack();
+    return true;
+  }
+  return false;
+}
+
 void InterstitialPageImpl::HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) {
   if (enabled())
