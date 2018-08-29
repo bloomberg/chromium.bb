@@ -599,6 +599,12 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     UpdateControlsVisibility(true);
   }
 
+  if (event->type() == ui::ET_KEY_PRESSED &&
+      event->key_code() == ui::VKEY_SPACE) {
+    TogglePlayPause();
+    event->SetHandled();
+  }
+
   views::Widget::OnKeyEvent(event);
 }
 
