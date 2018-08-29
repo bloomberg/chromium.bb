@@ -128,8 +128,7 @@ public class OfflineIndicatorController
     private void showOfflineIndicator(Activity activity, SnackbarManager snackbarManager) {
         if (mIsShowingOfflineIndicator || !canShowOfflineIndicator(activity)) return;
 
-        Drawable icon =
-                AppCompatResources.getDrawable(activity, R.drawable.ic_offline_pin_blue_white);
+        Drawable icon = AppCompatResources.getDrawable(activity, R.drawable.ic_offline_pin_white);
         Snackbar snackbar =
                 Snackbar.make(activity.getString(R.string.offline_indicator_offline_title), this,
                                 Snackbar.TYPE_ACTION, Snackbar.UMA_OFFLINE_INDICATOR)
