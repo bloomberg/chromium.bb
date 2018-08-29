@@ -810,8 +810,9 @@ numericnocontchars abcdefghij
 @opcode{midendnumericmodechars, characters}
 
 Any of these characters can appear within a number without terminating
-the effect of the number sign (see the @opcoderef{numsign} opcode). In
-other words, they don't cancel numeric mode.
+the effect of the number sign (@pxref{numsign
+opcode,numsign,@code{numsign}}). In other words, they don't cancel
+numeric mode.
 
 The difference between the two opcodes is that
 @opcoderef{numericmodechars} characters can appear anywhere in a
