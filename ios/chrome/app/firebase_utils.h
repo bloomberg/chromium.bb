@@ -8,13 +8,27 @@
 // Name of histogram to log whether Firebase SDK is initialized.
 extern const char kFirebaseConfiguredHistogramName[];
 
+// Number of days for Ad Conversion Attribution Window. In order to consider
+// a first_open event to be associated with a marketing event (e.g. ad_click),
+// the first_open event must have happened within this conversion attribution
+// window.
+extern const int kConversionAttributionWindowInDays;
+
 // Firebase SDK may not be initialized, or initialized during First Run or not
 // during First Run.
 enum class FirebaseConfiguredState {
+  // Firebase is not initialized because application is not built with the
+  // SDK.
   kDisabled = 0,
+  // Firebase is initialized at the app's first session (First Run).
   kEnabledFirstRun,
+  // Firebase is initialized at the app's second or subsequent session.
   kEnabledNotFirstRun,
-  kMaxValue = kEnabledNotFirstRun,
+  // Firebase Analytics is for installation reporting only. Once a user has
+  // passed the conversion attribution window, there is nothing to report.
+  kDisabledConversionWindow,
+  // Count of enum values. Must be equal to the last value above.
+  kMaxValue = kDisabledConversionWindow,
 };
 
 // Initializes Firebase SDK if configured and necessary.

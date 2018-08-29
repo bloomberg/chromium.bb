@@ -8,7 +8,11 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 #import "ios/chrome/app/firebase_buildflags.h"
+#include "ios/chrome/browser/application_context.h"
 #if BUILDFLAG(FIREBASE_ENABLED)
 #import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRApp.h"
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
@@ -20,15 +24,24 @@
 const char kFirebaseConfiguredHistogramName[] =
     "FirstRun.IOSFirebaseConfigured";
 
+const int kConversionAttributionWindowInDays = 90;
+
 void InitializeFirebase(bool is_first_run) {
 #if BUILDFLAG(FIREBASE_ENABLED)
-  // TODO(crbug.com/848115): Continue to initialize Firebase until either:
-  //   - first_open event has been uploaded, or
-  //   - ad click conversion attribution period is over.
-  [FIRApp configure];
-  FirebaseConfiguredState enabled_state =
-      is_first_run ? FirebaseConfiguredState::kEnabledFirstRun
-                   : FirebaseConfiguredState::kEnabledNotFirstRun;
+  PrefService* prefs = GetApplicationContext()->GetLocalState();
+  const int64_t install_date = prefs->GetInt64(metrics::prefs::kInstallDate);
+  base::TimeDelta installed_delta =
+      base::TimeDelta::FromSeconds(base::Time::Now().ToTimeT() - install_date);
+  // Initialize Firebase SDK to allow first_open event to be uploaded until
+  // Attribution Window has passed.
+  FirebaseConfiguredState enabled_state;
+  if (installed_delta.InDaysFloored() >= kConversionAttributionWindowInDays) {
+    enabled_state = FirebaseConfiguredState::kDisabledConversionWindow;
+  } else {
+    [FIRApp configure];
+    enabled_state = is_first_run ? FirebaseConfiguredState::kEnabledFirstRun
+                                 : FirebaseConfiguredState::kEnabledNotFirstRun;
+  }
   UMA_HISTOGRAM_ENUMERATION(kFirebaseConfiguredHistogramName, enabled_state);
 #else
   // FIRApp class should not exist if Firebase is not enabled.

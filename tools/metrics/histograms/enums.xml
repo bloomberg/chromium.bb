@@ -20952,6 +20952,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled, at First Run"/>
   <int value="2" label="Enabled, not at First Run"/>
+  <int value="3" label="Disabled, Conversion Window expired"/>
 </enum>
 
 <enum name="FirstMeaningfulPaintOrdering">
