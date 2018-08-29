@@ -4655,9 +4655,6 @@ crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-r
 
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
 
-# Sheriff 2018-05-30
-crbug.com/848334 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Pass Timeout ]
-
 # Sheriff 2018-05-31
 crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/848398 http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout Failure ]
