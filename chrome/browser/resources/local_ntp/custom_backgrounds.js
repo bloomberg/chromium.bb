@@ -833,9 +833,11 @@ customBackgrounds.init = function(showErrorNotification) {
     }
   };
 
-  $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
+  $(customBackgrounds.IDS.EDIT_BG).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
         event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      // no default behavior for ENTER
+      event.preventDefault();
       editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
       editBackgroundInteraction();
       findFirstMenuOption();
