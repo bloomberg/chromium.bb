@@ -45,6 +45,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
+  children_inline_ = layout_object && layout_object->ChildrenInline();
 
   // Compute visual contribution from descendant outlines.
   NGOutlineUtils::FragmentMap anchor_fragment_map;
@@ -76,12 +77,6 @@ bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
   DCHECK(layout_object);
   DCHECK(layout_object->IsBoxModelObject());
   return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer();
-}
-
-bool NGPhysicalBoxFragment::ChildrenInline() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->ChildrenInline();
 }
 
 bool NGPhysicalBoxFragment::HasOverflowClip() const {

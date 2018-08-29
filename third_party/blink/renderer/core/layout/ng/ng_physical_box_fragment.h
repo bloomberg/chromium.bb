@@ -42,7 +42,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   bool HasSelfPaintingLayer() const;
-  bool ChildrenInline() const;
+  bool ChildrenInline() const { return children_inline_; }
 
   // True if overflow != 'visible', except for certain boxes that do not allow
   // overflow clip; i.e., AllowOverflowClip() returns false.

@@ -249,6 +249,10 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned style_variant_ : 2;  // NGStyleVariant
   unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment
 
+  // The following bitfield is only to be used by NGPhysicalBoxFragment (it's
+  // defined here to save memory, since that class has no bitfields).
+  unsigned children_inline_ : 1;
+
  private:
   friend struct NGPhysicalFragmentTraits;
   void Destroy() const;
