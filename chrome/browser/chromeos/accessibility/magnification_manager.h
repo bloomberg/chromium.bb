@@ -47,6 +47,12 @@ class MagnificationManager
   // Enables the Fullscreen magnifier.
   void SetMagnifierEnabled(bool enabled);
 
+  // Returns if the Docked magnifier is enabled.
+  bool IsDockedMagnifierEnabled() const;
+
+  // Enables the Docked magnifier.
+  void SetDockedMagnifierEnabled(bool enabled);
+
   // Saves the Fullscreen magnifier scale to the pref.
   void SaveScreenMagnifierScale(double scale);
 
@@ -73,6 +79,7 @@ class MagnificationManager
   void SetMagnifierKeepFocusCenteredInternal(bool keep_focus_centered);
   void SetMagnifierScaleInternal(double scale);
   void UpdateMagnifierFromPrefs();
+  void UpdateDockedMagnifierFromPrefs();
 
   // Called when received content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE.
   void HandleFocusChangedInPage(const content::NotificationDetails& details);

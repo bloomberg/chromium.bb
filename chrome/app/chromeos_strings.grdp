@@ -1794,10 +1794,13 @@
   <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
     Screen magnifier
   </message>
-  <message name="IDS_SCREEN_MAGNIFIER_OPTION_OFF" desc="A value for Screen Magnifier Option accessibility option when it is off.">
+  <message name="IDS_OOBE_DOCKED_MAGNIFIER_OPTION" desc="Docked magnifier option shown on OOBE screens accessibility menu.">
+    Docked magnifier
+  </message>
+  <message name="IDS_SCREEN_MAGNIFIER_OPTION_OFF" desc="A value for Screen or Docked Magnifier Option accessibility option when it is off.">
     Off
   </message>
-  <message name="IDS_SCREEN_MAGNIFIER_OPTION_ON" desc="A value for Screen Magnifier Option accessibility option when it is on.">
+  <message name="IDS_SCREEN_MAGNIFIER_OPTION_ON" desc="A value for Screen or Docked Magnifier Option accessibility option when it is on.">
     On
   </message>
   <message name="IDS_OOBE_VIRTUAL_KEYBOARD_OPTION" desc="Virtual keyboard option shown on the OOBE screens accessibility menu.">

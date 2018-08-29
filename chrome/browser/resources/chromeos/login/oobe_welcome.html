@@ -180,7 +180,8 @@
             on-change="onA11yOptionChanged_"
             chrome-message="enableSelectToSpeak"
             label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
-            id="selectToSpeakOobeOption">
+            id="selectToSpeakOobeOption"
+            hidden="[[!a11yStatus.enableExperimentalA11yFeatures]]">
           <span slot="title">
             [[i18nDynamic(locale, 'selectToSpeakOption')]]
           </span>
@@ -189,6 +190,22 @@
           </span>
           <span slot="unchecked-value">
             [[i18nDynamic(locale, 'selectToSpeakOptionOff')]]
+          </span>
+        </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.dockedMagnifierEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableDockedMagnifier"
+            label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]"
+            id="dockedMagnifierOobeOption"
+            hidden="[[!a11yStatus.enableExperimentalA11yFeatures]]">
+          <span slot="title">
+            [[i18nDynamic(locale, 'dockedMagnifierOption')]]
+          </span>
+          <span slot="checked-value">
+            [[i18nDynamic(locale, 'screenMagnifierOptionOn')]]
+          </span>
+          <span slot="unchecked-value">
+            [[i18nDynamic(locale, 'screenMagnifierOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
