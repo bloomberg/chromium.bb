@@ -80,7 +80,7 @@ void GpuArcVideoEncodeAccelerator::GetSupportedProfiles(
           gpu_preferences_));
 }
 
-void GpuArcVideoEncodeAccelerator::Initialize(
+void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
     VideoPixelFormat input_format,
     const gfx::Size& visible_size,
     VideoEncodeAccelerator::StorageType input_storage,
@@ -95,6 +95,26 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   visible_size_ = visible_size;
   const media::VideoEncodeAccelerator::Config config(
       input_pixel_format_, visible_size_, output_profile, initial_bitrate);
+  accelerator_ = media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
+      config, this, gpu_preferences_);
+  if (accelerator_ == nullptr) {
+    DLOG(ERROR) << "Failed to create a VideoEncodeAccelerator.";
+    std::move(callback).Run(false);
+    return;
+  }
+  client_ = std::move(client);
+  std::move(callback).Run(true);
+}
+
+void GpuArcVideoEncodeAccelerator::Initialize(
+    const media::VideoEncodeAccelerator::Config& config,
+    VideoEncodeAccelerator::StorageType input_storage,
+    VideoEncodeClientPtr client,
+    InitializeCallback callback) {
+  DVLOGF(2) << config.AsHumanReadableString();
+
+  input_pixel_format_ = config.input_format;
+  visible_size_ = config.input_visible_size;
   accelerator_ = media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
       config, this, gpu_preferences_);
   if (accelerator_ == nullptr) {
