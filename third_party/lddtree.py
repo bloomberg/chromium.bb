@@ -136,13 +136,13 @@ def GenerateLdsoWrapper(root, path, interp, libpaths=(), elfsubdir=None):
                                                      os.path.basename(wrappath))
   else:
     elf_wrappath = wrappath + '.elf'
-    # Keep path relativeness of argv0. This allows to remove absolute path from
-    # build output and leads directory independent cache sharing in distributed
-    # build system.
-    replacements['elf_path'] = '$(dirname "$0")/$(basename "${base}").elf'
+    replacements['elf_path'] = '${base}.elf'
 
+  # Keep path relativeness of argv0. This allows to remove absolute path from
+  # build output and leads directory independent cache sharing in distributed
+  # build system.
   wrapper = """#!/bin/sh
-if ! base=$(realpath "$0" 2>/dev/null); then
+if ! base=$(dirname "$0")/$(readlink "$0" 2>/dev/null); then
   case $0 in
   /*) base=$0;;
   *)  base=${PWD:-`pwd`}/$0;;
