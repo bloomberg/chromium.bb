@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -82,6 +83,9 @@ void KioskAppMenuUpdater::SendKioskApps() {
   }
 
   LoginScreenClient::Get()->login_screen()->SetKioskApps(std::move(output));
+
+  // Clear any old pending Kiosk launch errors
+  KioskAppLaunchError::RecordMetricAndClear();
 }
 
 }  // namespace chromeos
