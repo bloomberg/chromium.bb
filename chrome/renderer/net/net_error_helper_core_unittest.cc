@@ -2623,6 +2623,11 @@ class FakeAvailableOfflineContentProvider
     }
   }
 
+  void Summarize(SummarizeCallback callback) override {
+    std::move(callback).Run(
+        chrome::mojom::AvailableOfflineContentSummary::New());
+  }
+
   MOCK_METHOD2(LaunchItem,
                void(const std::string& item_ID, const std::string& name_space));
   MOCK_METHOD0(LaunchDownloadsPage, void());
