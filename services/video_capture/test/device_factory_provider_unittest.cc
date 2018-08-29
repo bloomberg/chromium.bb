@@ -35,7 +35,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
 }
 
 TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
-       FakeDeviceFactoryEnumeratesOneDevice) {
+       FakeDeviceFactoryEnumeratesThreeDevices) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -49,7 +49,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
 
   factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
-  ASSERT_EQ(1u, num_devices_enumerated);
+  ASSERT_EQ(3u, num_devices_enumerated);
 }
 
 // Tests that an added virtual device will be returned in the callback

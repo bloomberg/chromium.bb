@@ -25,7 +25,7 @@ namespace video_capture {
 // TODO(rockot/chfremer): Consider just renaming the type.
 using FakeVideoCaptureDeviceTest = FakeDeviceTest;
 
-TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArrive) {
+TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromI420Device) {
   base::RunLoop wait_loop;
   // Constants must be static as a workaround
   // for a MSVC++ bug about lambda captures, see the discussion at
@@ -43,7 +43,34 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArrive) {
         }
       }));
 
-  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
+  i420_fake_device_proxy_->Start(requestable_settings_,
+                                 std::move(receiver_proxy));
+  wait_loop.Run();
+}
+
+// Tests that the service successfully decodes a MJPEG frames even if
+// DeviceFactoryProvider.InjectGpuDependencies() has not been called.
+TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromMjpegDevice) {
+  base::RunLoop wait_loop;
+  // Constants must be static as a workaround
+  // for a MSVC++ bug about lambda captures, see the discussion at
+  // https://social.msdn.microsoft.com/Forums/SqlServer/4abf18bd-4ae4-4c72-ba3e-3b13e7909d5f
+  static const int kNumFramesToWaitFor = 3;
+  int num_frames_arrived = 0;
+  mojom::ReceiverPtr receiver_proxy;
+  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
+  EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillRepeatedly(InvokeWithoutArgs([&wait_loop, &num_frames_arrived]() {
+        num_frames_arrived += 1;
+        if (num_frames_arrived >= kNumFramesToWaitFor) {
+          wait_loop.Quit();
+        }
+      }));
+  EXPECT_CALL(receiver, OnStartedUsingGpuDecode()).Times(0);
+
+  mjpeg_fake_device_proxy_->Start(requestable_settings_,
+                                  std::move(receiver_proxy));
   wait_loop.Run();
 }
 
@@ -71,7 +98,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
         }
       }));
 
-  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
+  i420_fake_device_proxy_->Start(requestable_settings_,
+                                 std::move(receiver_proxy));
   wait_loop.Run();
 
   ASSERT_LT(num_buffers_created, num_frames_arrived);
@@ -101,7 +129,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
             }
           }));
 
-  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
+  i420_fake_device_proxy_->Start(requestable_settings_,
+                                 std::move(receiver_proxy));
   wait_for_frames_loop.Run();
 
   base::RunLoop wait_for_buffers_retired_loop;
@@ -119,7 +148,7 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
           }));
 
   // Stop the device
-  fake_device_proxy_.reset();
+  i420_fake_device_proxy_.reset();
   wait_for_buffers_retired_loop.Run();
 }
 
@@ -187,7 +216,8 @@ TEST_F(FakeVideoCaptureDeviceTest,
   media::VideoCaptureParams settings_to_request = requestable_settings_;
   settings_to_request.buffer_type =
       media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor;
-  fake_device_proxy_->Start(settings_to_request, std::move(receiver_proxy));
+  i420_fake_device_proxy_->Start(settings_to_request,
+                                 std::move(receiver_proxy));
   wait_loop.Run();
   EXPECT_FALSE(found_unexpected_all_zero_frame);
 }

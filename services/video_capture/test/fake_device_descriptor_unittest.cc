@@ -30,7 +30,8 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest,
   mojom::DevicePtr device_proxy;
   MockCreateDeviceProxyCallback create_device_proxy_callback;
   factory_->CreateDevice(
-      fake_device_info_.descriptor.device_id, mojo::MakeRequest(&device_proxy),
+      i420_fake_device_info_.descriptor.device_id,
+      mojo::MakeRequest(&device_proxy),
       base::BindOnce(&MockCreateDeviceProxyCallback::Run,
                      base::Unretained(&create_device_proxy_callback)));
 
@@ -55,7 +56,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
               Run(mojom::DeviceAccessResultCode::SUCCESS))
       .Times(1);
   factory_->CreateDevice(
-      fake_device_info_.descriptor.device_id,
+      i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_1),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback_1)));
@@ -75,7 +76,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
   factory_->CreateDevice(
-      fake_device_info_.descriptor.device_id,
+      i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_2),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback_2)));
@@ -91,13 +92,13 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
 // Tests that a second proxy requested for a device can be used successfully.
 TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   mojom::DevicePtr device_proxy_1;
-  factory_->CreateDevice(fake_device_info_.descriptor.device_id,
+  factory_->CreateDevice(i420_fake_device_info_.descriptor.device_id,
                          mojo::MakeRequest(&device_proxy_1), base::DoNothing());
 
   base::RunLoop wait_loop;
   mojom::DevicePtr device_proxy_2;
   factory_->CreateDevice(
-      fake_device_info_.descriptor.device_id,
+      i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_2),
       base::Bind(
           [](base::RunLoop* wait_loop,

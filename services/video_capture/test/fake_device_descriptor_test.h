@@ -19,7 +19,8 @@ class FakeDeviceDescriptorTest : public DeviceFactoryProviderTest {
   void SetUp() override;
 
  protected:
-  media::VideoCaptureDeviceInfo fake_device_info_;
+  media::VideoCaptureDeviceInfo i420_fake_device_info_;
+  media::VideoCaptureDeviceInfo mjpeg_fake_device_info_;
 };
 
 }  // namespace video_capture

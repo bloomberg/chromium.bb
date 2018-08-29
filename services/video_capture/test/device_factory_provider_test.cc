@@ -19,11 +19,17 @@ DeviceFactoryProviderTest::~DeviceFactoryProviderTest() = default;
 
 void DeviceFactoryProviderTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseFakeDeviceForMediaStream);
+      switches::kUseFakeJpegDecodeAccelerator);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseFakeDeviceForMediaStream, "device-count=3");
 
   service_manager::test::ServiceTest::SetUp();
 
   connector()->BindInterface(mojom::kServiceName, &factory_provider_);
+  // Note, that we explicitly do *not* call
+  // |factory_provider_->InjectGpuDependencies()| here. Test case
+  // |FakeMjpegVideoCaptureDeviceTest.
+  //  CanDecodeMjpegWithoutInjectedGpuDependencies| depends on this assumption.
   factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
 }
 

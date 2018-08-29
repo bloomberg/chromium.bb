@@ -23,7 +23,8 @@ class FakeDeviceTest : public FakeDeviceDescriptorTest {
  protected:
   media::VideoCaptureFormat fake_device_first_supported_format_;
   media::VideoCaptureParams requestable_settings_;
-  mojom::DevicePtr fake_device_proxy_;
+  mojom::DevicePtr i420_fake_device_proxy_;
+  mojom::DevicePtr mjpeg_fake_device_proxy_;
 };
 
 }  // namespace video_capture

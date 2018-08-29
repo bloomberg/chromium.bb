@@ -16,6 +16,11 @@ interface AcceleratorFactory {
 // The factory provides access to the capture devices connected to the system.
 // By using command-line switches, it is possible to replace this with a "fake"
 // factory, which provides access to fake devices that generates test frames.
+// The video capture supports gpu accelerated decoding of MJPEG frames
+// delivered by camera devices, but to do it requires InjectGpuDependencies()
+// to be called once before any call to ConnectToDeviceFactory() is made.
+// Calling InjectGpuDependencies() is optional. If it is not called, MJPEG
+// decoding will be performed without gpu acceleration.
 interface DeviceFactoryProvider  {
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
 

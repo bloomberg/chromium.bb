@@ -18,8 +18,9 @@ FakeDeviceTest::~FakeDeviceTest() = default;
 void FakeDeviceTest::SetUp() {
   FakeDeviceDescriptorTest::SetUp();
 
-  ASSERT_LE(1u, fake_device_info_.supported_formats.size());
-  fake_device_first_supported_format_ = fake_device_info_.supported_formats[0];
+  ASSERT_LE(1u, i420_fake_device_info_.supported_formats.size());
+  fake_device_first_supported_format_ =
+      i420_fake_device_info_.supported_formats[0];
 
   requestable_settings_.requested_format = fake_device_first_supported_format_;
   requestable_settings_.resolution_change_policy =
@@ -28,9 +29,16 @@ void FakeDeviceTest::SetUp() {
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   factory_->CreateDevice(
-      std::move(fake_device_info_.descriptor.device_id),
-      mojo::MakeRequest(&fake_device_proxy_),
-      base::Bind([](mojom::DeviceAccessResultCode result_code) {
+      std::move(i420_fake_device_info_.descriptor.device_id),
+      mojo::MakeRequest(&i420_fake_device_proxy_),
+      base::BindOnce([](mojom::DeviceAccessResultCode result_code) {
+        ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
+      }));
+
+  factory_->CreateDevice(
+      std::move(mjpeg_fake_device_info_.descriptor.device_id),
+      mojo::MakeRequest(&mjpeg_fake_device_proxy_),
+      base::BindOnce([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));
 }
