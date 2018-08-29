@@ -8,6 +8,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -54,11 +55,11 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSignInEvent1) {
     base::HistogramTester histogram_tester;
     enterprise_user_session_metrics::RecordSignInEvent(
         enterprise_user_session_metrics::SignInEventType::
-            AUTOMATIC_PUBLIC_SESSSION);
+            AUTOMATIC_PUBLIC_SESSION);
     histogram_tester.ExpectUniqueSample(
         "Enterprise.UserSession.Logins",
         static_cast<int>(enterprise_user_session_metrics::SignInEventType::
-                             AUTOMATIC_PUBLIC_SESSSION),
+                             AUTOMATIC_PUBLIC_SESSION),
         1);
   }
   {
@@ -120,7 +121,7 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSignInEvent2) {
     histogram_tester.ExpectUniqueSample(
         "Enterprise.UserSession.Logins",
         static_cast<int>(enterprise_user_session_metrics::SignInEventType::
-                             AUTOMATIC_PUBLIC_SESSSION),
+                             AUTOMATIC_PUBLIC_SESSION),
         1);
   }
 }
@@ -142,6 +143,7 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSessionLength) {
     // No other session length metrics are recorded.
     histogram_tester.ExpectTotalCount(
         "Enterprise.RegularUserSession.SessionLength", 0);
+    histogram_tester.ExpectTotalCount("DemoMode.SessionLength", 0);
   }
   {
     SCOPED_TRACE("");
@@ -157,6 +159,7 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSessionLength) {
     // No other session length metrics are recorded.
     histogram_tester.ExpectTotalCount("Enterprise.PublicSession.SessionLength",
                                       0);
+    histogram_tester.ExpectTotalCount("DemoMode.SessionLength", 0);
   }
   {
     SCOPED_TRACE("");
@@ -174,6 +177,7 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSessionLength) {
     // No other session length metrics are recorded.
     histogram_tester.ExpectTotalCount("Enterprise.PublicSession.SessionLength",
                                       0);
+    histogram_tester.ExpectTotalCount("DemoMode.SessionLength", 0);
   }
   {
     SCOPED_TRACE("");
@@ -185,6 +189,58 @@ TEST_F(EnterpriseUserSessionMetricsTest, RecordSessionLength) {
                                       0);
     histogram_tester.ExpectTotalCount(
         "Enterprise.RegularUserSession.SessionLength", 0);
+    histogram_tester.ExpectTotalCount("DemoMode.SessionLength", 0);
+  }
+}
+
+// Tests recording session length in demo sessions, which includes an additional
+// metric with tighter bucket spacing.
+TEST_F(EnterpriseUserSessionMetricsTest, RecordDemoSessionLength) {
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
+  {
+    SCOPED_TRACE("");
+    base::HistogramTester histogram_tester;
+    enterprise_user_session_metrics::StoreSessionLength(
+        user_manager::UserType::USER_TYPE_PUBLIC_ACCOUNT,
+        base::TimeDelta::FromSeconds(25 * 60 + 59));
+    enterprise_user_session_metrics::RecordStoredSessionLength();
+
+    // Time is rounded down to the nearest 10 minutes.
+    histogram_tester.ExpectUniqueSample(
+        "Enterprise.PublicSession.SessionLength", 20, 1);
+
+    // The demo mode session length metric is rounded down to the nearest
+    // minute.
+    histogram_tester.ExpectUniqueSample("DemoMode.SessionLength", 25, 1);
+  }
+  {
+    SCOPED_TRACE("");
+    base::HistogramTester histogram_tester;
+    enterprise_user_session_metrics::StoreSessionLength(
+        user_manager::UserType::USER_TYPE_PUBLIC_ACCOUNT,
+        base::TimeDelta::FromDays(10));
+    enterprise_user_session_metrics::RecordStoredSessionLength();
+
+    // Reported length is capped at 24 hours.
+    histogram_tester.ExpectUniqueSample(
+        "Enterprise.PublicSession.SessionLength",
+        base::TimeDelta::FromHours(24).InMinutes(), 1);
+
+    // Demo session length is capped at 2 hours because demo sessions are short.
+    histogram_tester.ExpectUniqueSample(
+        "DemoMode.SessionLength", base::TimeDelta::FromHours(2).InMinutes(), 1);
+  }
+  {
+    SCOPED_TRACE("");
+    // Test with no session. This verifies the same metric isn't recorded twice
+    // if something goes wrong.
+    base::HistogramTester histogram_tester;
+    enterprise_user_session_metrics::RecordStoredSessionLength();
+    histogram_tester.ExpectTotalCount("Enterprise.PublicSession.SessionLength",
+                                      0);
+    histogram_tester.ExpectTotalCount(
+        "Enterprise.RegularUserSession.SessionLength", 0);
+    histogram_tester.ExpectTotalCount("DemoMode.SessionLength", 0);
   }
 }
 
