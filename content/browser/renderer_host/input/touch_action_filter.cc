@@ -243,9 +243,6 @@ void TouchActionFilter::ReportAndResetTouchAction() {
 }
 
 void TouchActionFilter::ReportTouchAction() {
-  // TODO(https://crbug.com/851644): make sure the value is properly set.
-  if (!scrolling_touch_action_.has_value())
-    SetTouchAction(cc::kTouchActionAuto);
   // Report the effective touch action computed by blink such as
   // kTouchActionNone, kTouchActionPanX, etc.
   // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
