@@ -15,7 +15,7 @@
 
 namespace blink {
 
-static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(3);
+static constexpr TimeDelta kTimerDelay = TimeDelta::FromMilliseconds(500);
 static const float kRegionGranularitySteps = 60.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
 
@@ -80,7 +80,6 @@ JankTracker::JankTracker(LocalFrameView* frame_view)
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
-      has_fired_(false),
       max_distance_(0.0) {}
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
@@ -154,14 +153,8 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
 }
 
 void JankTracker::NotifyPrePaintFinished() {
-  if (!IsActive())
+  if (!IsActive() || region_.IsEmpty())
     return;
-
-  if (region_.IsEmpty()) {
-    if (!timer_.IsActive() && !has_fired_)
-      timer_.StartOneShot(kTimerDelay, FROM_HERE);
-    return;
-  }
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
   double granularity_scale = RegionGranularityScale(viewport);
@@ -180,17 +173,33 @@ void JankTracker::NotifyPrePaintFinished() {
                        "frame", ToTraceValue(&frame_view_->GetFrame()));
 
   region_ = Region();
+}
 
-  if (!has_fired_) {
-    // This cancels any previously scheduled task from the same timer.
-    timer_.StartOneShot(kTimerDelay, FROM_HERE);
-  }
+void JankTracker::NotifyInput(const WebInputEvent& event) {
+  bool event_is_meaningful =
+      event.GetType() == WebInputEvent::kMouseDown ||
+      event.GetType() == WebInputEvent::kKeyDown ||
+      event.GetType() == WebInputEvent::kRawKeyDown ||
+      // We need to explicitly include tap, as if there are no listeners, we
+      // won't receive the pointer events.
+      event.GetType() == WebInputEvent::kGestureTap ||
+      // Ignore kPointerDown, since it might be a scroll.
+      event.GetType() == WebInputEvent::kPointerUp;
+
+  if (!event_is_meaningful)
+    return;
+
+  // This cancels any previously scheduled task from the same timer.
+  timer_.StartOneShot(kTimerDelay, FROM_HERE);
 }
 
 bool JankTracker::IsActive() {
   // This eliminates noise from the private Page object created by
   // SVGImage::DataChanged.
   if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
+    return false;
+
+  if (timer_.IsActive())
     return false;
 
   return true;
@@ -213,11 +222,6 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
 
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
-}
-
-void JankTracker::TimerFired(TimerBase* timer) {
-  has_fired_ = true;
-  // TODO: Repurpose timer for ignoring jank after user input.
 }
 
 }  // namespace blink
