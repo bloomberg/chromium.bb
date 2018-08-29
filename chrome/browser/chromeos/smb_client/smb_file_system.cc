@@ -372,10 +372,9 @@ AbortCallback SmbFileSystem::WriteFile(
 
   const std::vector<uint8_t> data(buffer->data(), buffer->data() + length);
   if (!temp_file_manager_) {
-    SmbTask task =
-        base::BindOnce(base::IgnoreResult(&SmbFileSystem::CallWriteFile),
-                       base::Unretained(this), file_handle, std::move(data),
-                       offset, length, std::move(callback));
+    SmbTask task = base::BindOnce(
+        base::IgnoreResult(&SmbFileSystem::CallWriteFile), AsWeakPtr(),
+        file_handle, std::move(data), offset, length, std::move(callback));
     InitTempFileManagerAndExecuteTask(std::move(task));
     // The call to init temp_file_manager_ will not be abortable since it is
     // asynchronous.
