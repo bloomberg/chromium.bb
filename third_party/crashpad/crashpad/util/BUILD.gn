@@ -13,13 +13,10 @@
 # limitations under the License.
 
 import("../build/crashpad_buildconfig.gni")
+import("net/tls.gni")
 
 if (crashpad_is_in_chromium) {
   import("//build/config/sanitizers/sanitizers.gni")
-}
-
-declare_args() {
-  use_boringssl_for_http_transport_socket = crashpad_is_fuchsia
 }
 
 if (crashpad_is_mac) {
@@ -258,7 +255,7 @@ static_library("util") {
 
   if (crashpad_is_linux || crashpad_is_fuchsia) {
     sources += [ "net/http_transport_socket.cc" ]
-    if (use_boringssl_for_http_transport_socket) {
+    if (crashpad_use_boringssl_for_http_transport_socket) {
       defines = [ "CRASHPAD_USE_BORINGSSL" ]
 
       if (crashpad_is_in_fuchsia) {
@@ -464,7 +461,7 @@ static_library("util") {
   }
 }
 
-if (use_boringssl_for_http_transport_socket) {
+if (crashpad_use_boringssl_for_http_transport_socket) {
   action("generate_test_server_key") {
     script = "net/generate_test_server_key.py"
     outputs = [
@@ -498,7 +495,7 @@ if (!crashpad_is_android) {
       libs = [ "ws2_32.lib" ]
     }
 
-    if (use_boringssl_for_http_transport_socket) {
+    if (crashpad_use_boringssl_for_http_transport_socket) {
       data_deps = [
         ":generate_test_server_key",
       ]
@@ -653,6 +650,14 @@ source_set("util_test") {
     }
   }
 
+
+  if (crashpad_is_in_chromium) {
+    if (is_asan && is_component_build) {
+      # TODO(crbug.com/856174): Re-enable these once Windows ASan is fixed.
+      sources -= [ "stdlib/string_number_conversion_test.cc" ]
+    }
+  }
+
   data = [
     "net/testdata/",
   ]
@@ -673,7 +678,7 @@ source_set("util_test") {
       ":http_transport_test_server",
     ]
 
-    if (use_boringssl_for_http_transport_socket) {
+    if (crashpad_use_boringssl_for_http_transport_socket) {
       defines = [ "CRASHPAD_USE_BORINGSSL" ]
     }
   }
