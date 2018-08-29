@@ -3039,7 +3039,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <message name="IDS_OFFLINE_INDICATOR_VIEW_OFFLINE_CONTENT" desc="A text label on the snackbar widget to bring up the list of offline content.">
-        View offline content
+        See downloads
       </message>
 
       <!-- Find in page -->
