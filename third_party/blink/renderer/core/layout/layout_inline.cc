@@ -75,14 +75,14 @@ LayoutInline::LayoutInline(Element* element)
   SetChildrenInline(true);
 }
 
-#if DCHECK_IS_ON()
 LayoutInline::~LayoutInline() {
+#if DCHECK_IS_ON()
   if (IsInLayoutNGInlineFormattingContext())
     DCHECK(!first_paint_fragment_);
   else
     line_boxes_.AssertIsEmpty();
-}
 #endif
+}
 
 LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   LayoutInline* layout_inline = new LayoutInline(nullptr);
@@ -136,13 +136,14 @@ void LayoutInline::WillBeDestroyed() {
 
 void LayoutInline::DeleteLineBoxes() {
   if (IsInLayoutNGInlineFormattingContext())
-    first_paint_fragment_ = nullptr;
+    SetFirstInlineFragment(nullptr);
   else
     MutableLineBoxes()->DeleteLineBoxes();
 }
 
 void LayoutInline::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext());
+  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = fragment;
 }
 

@@ -27,7 +27,7 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
     root_fragment_ = layout_block_flow_->PaintFragment();
   }
 
-  const Vector<std::unique_ptr<NGPaintFragment>>& RootChildren() const {
+  const Vector<scoped_refptr<NGPaintFragment>>& RootChildren() const {
     return root_fragment_->Children();
   }
 

@@ -74,14 +74,14 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintAllPhasesAtomically(const PaintInfo&,
                                 bool is_self_painting);
   void PaintBlockChildren(const PaintInfo&);
-  void PaintLineBoxChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
+  void PaintLineBoxChildren(const Vector<scoped_refptr<NGPaintFragment>>&,
                             const PaintInfo&,
                             const LayoutPoint& paint_offset);
-  void PaintInlineChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
+  void PaintInlineChildren(const Vector<scoped_refptr<NGPaintFragment>>&,
                            const PaintInfo&,
                            const LayoutPoint& paint_offset);
   void PaintInlineChildrenOutlines(
-      const Vector<std::unique_ptr<NGPaintFragment>>&,
+      const Vector<scoped_refptr<NGPaintFragment>>&,
       const PaintInfo&,
       const LayoutPoint& paint_offset);
   void PaintInlineChildBoxUsingLegacyFallback(const NGPhysicalFragment&,
@@ -95,7 +95,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
                       const LayoutPoint& paint_offset);
-  void PaintFloatingChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
+  void PaintFloatingChildren(const Vector<scoped_refptr<NGPaintFragment>>&,
                              const PaintInfo&);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
@@ -120,7 +120,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // box in paint layer. Note that this includes scrolling offset when the
   // container has 'overflow: scroll'.
   bool HitTestChildren(HitTestResult&,
-                       const Vector<std::unique_ptr<NGPaintFragment>>&,
+                       const Vector<scoped_refptr<NGPaintFragment>>&,
                        const HitTestLocation& location_in_container,
                        const LayoutPoint& physical_offset,
                        HitTestAction);
