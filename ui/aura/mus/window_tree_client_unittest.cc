@@ -151,6 +151,11 @@ class TestScreenPositionClient : public client::ScreenPositionClient {
   DISALLOW_COPY_AND_ASSIGN(TestScreenPositionClient);
 };
 
+void OnWindowMoveDone(int* call_count, bool* last_result, bool result) {
+  (*call_count)++;
+  *last_result = result;
+}
+
 }  // namespace
 
 class WindowTreeClientTest : public test::AuraMusClientTestBase {
@@ -2705,6 +2710,49 @@ TEST_F(WindowTreeClientTest, ChangeFocusInEmbedRootWindow) {
       .CallOnEmbedFromToken(embed_root.get());
   ASSERT_TRUE(embed_root->window());
   window_tree_client()->OnWindowFocused(server_id(embed_root->window()));
+}
+
+TEST_F(WindowTreeClientTest, PerformWindowMove) {
+  int call_count = 0;
+  bool last_result = false;
+
+  WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
+  host_mus->PerformWindowMove(
+      ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      base::Bind(&OnWindowMoveDone, &call_count, &last_result));
+  EXPECT_EQ(0, call_count);
+
+  window_tree()->AckAllChanges();
+  EXPECT_EQ(1, call_count);
+  EXPECT_TRUE(last_result);
+
+  host_mus->PerformWindowMove(
+      ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      base::Bind(&OnWindowMoveDone, &call_count, &last_result));
+  window_tree()->AckAllChangesOfType(WindowTreeChangeType::OTHER, false);
+  EXPECT_EQ(2, call_count);
+  EXPECT_FALSE(last_result);
+}
+
+TEST_F(WindowTreeClientTest, PerformWindowMoveDoneAfterDelete) {
+  int call_count = 0;
+  bool last_result = false;
+
+  auto host_mus = std::make_unique<WindowTreeHostMus>(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  host_mus->InitHost();
+  window_tree()->AckAllChanges();
+
+  host_mus->PerformWindowMove(
+      ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      base::Bind(&OnWindowMoveDone, &call_count, &last_result));
+  EXPECT_EQ(0, call_count);
+
+  host_mus.reset();
+  window_tree()->AckAllChanges();
+
+  EXPECT_EQ(1, call_count);
+  EXPECT_TRUE(last_result);
 }
 
 }  // namespace aura

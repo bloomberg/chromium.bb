@@ -1496,6 +1496,15 @@ void WindowTreeClient::OnTopmostWindowChanged(
 void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   std::unique_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
+
+  // |change| might not exist if OnChangeCompleted is called after the window
+  // is deleted, but still we want to invoke the finished callback.
+  if (change_id == current_move_loop_change_) {
+    current_move_loop_change_ = 0;
+    on_current_move_finished_.Run(success);
+    on_current_move_finished_.Reset();
+  }
+
   if (!change)
     return;
 
@@ -1514,12 +1523,6 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
       next_change->SetRevertValueFrom(*change);
   } else if (!success) {
     change->Revert();
-  }
-
-  if (change_id == current_move_loop_change_) {
-    current_move_loop_change_ = 0;
-    on_current_move_finished_.Run(success);
-    on_current_move_finished_.Reset();
   }
 }
 
