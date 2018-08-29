@@ -42,7 +42,9 @@ net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
     redirect_info.new_url = new_url;
   }
   redirect_info.new_method = "GET";
-  redirect_info.status_code = 302;
+  // https://wicg.github.io/webpackage/loading.html#mp-http-fetch
+  // Step 3. Set actualResponse's status to 303. [spec text]
+  redirect_info.status_code = 303;
   redirect_info.new_site_for_cookies = redirect_info.new_url;
   return redirect_info;
 }
@@ -65,7 +67,7 @@ class SignedExchangeLoader::ResponseTimingInfo {
   network::ResourceResponseHead CreateRedirectResponseHead() const {
     network::ResourceResponseHead response_head;
     response_head.encoded_data_length = 0;
-    std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", 302, "Found"));
+    std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other"));
     response_head.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
     response_head.encoded_data_length = 0;

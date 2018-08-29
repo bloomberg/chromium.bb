@@ -44,30 +44,24 @@ namespace {
 
 const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
 
-class NavigationFailureObserver : public WebContentsObserver {
+class RedirectObserver : public WebContentsObserver {
  public:
-  explicit NavigationFailureObserver(WebContents* web_contents)
+  explicit RedirectObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
-  ~NavigationFailureObserver() override = default;
+  ~RedirectObserver() override = default;
 
-  void DidStartNavigation(NavigationHandle* handle) override {
-    auto throttle = std::make_unique<TestNavigationThrottle>(handle);
-    throttle->SetCallback(
-        TestNavigationThrottle::WILL_FAIL_REQUEST,
-        base::BindRepeating(&NavigationFailureObserver::OnWillFailRequestCalled,
-                            base::Unretained(this)));
-    handle->RegisterThrottleForTesting(
-        std::unique_ptr<TestNavigationThrottle>(std::move(throttle)));
+  void DidRedirectNavigation(NavigationHandle* handle) override {
+    const net::HttpResponseHeaders* response = handle->GetResponseHeaders();
+    if (response)
+      response_code_ = response->response_code();
   }
 
-  bool did_fail() const { return did_fail_; }
+  const base::Optional<int>& response_code() const { return response_code_; }
 
  private:
-  void OnWillFailRequestCalled() { did_fail_ = true; }
+  base::Optional<int> response_code_;
 
-  bool did_fail_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationFailureObserver);
+  DISALLOW_COPY_AND_ASSIGN(RedirectObserver);
 };
 
 }  // namespace
@@ -183,8 +177,11 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
+  RedirectObserver redirect_observer(shell()->web_contents());
+
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(303, redirect_observer.response_code());
 
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
@@ -232,8 +229,10 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
+  RedirectObserver redirect_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(303, redirect_observer.response_code());
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
