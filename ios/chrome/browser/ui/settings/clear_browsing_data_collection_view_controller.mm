@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
@@ -232,6 +234,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock {
+  base::RecordAction(
+      base::UserMetricsAction("MobileClearBrowsingDataTriggeredFromLegacyUI"));
   [self.dispatcher removeBrowsingDataForBrowserState:browserState
                                           timePeriod:timePeriod
                                           removeMask:removeMask

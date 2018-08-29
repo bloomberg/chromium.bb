@@ -10551,6 +10551,21 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileClearBrowsingDataTriggeredFromLegacyUI">
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Clear browsing data button was tapped on the legacy Clear browsing data UI.
+  </description>
+</action>
+
+<action name="MobileClearBrowsingDataTriggeredFromUIRefresh">
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Clear browsing data button was tapped on the UI Refresh Clear browsing data
+    UI.
+  </description>
+</action>
+
 <action name="MobileClipboardChanged">
   <owner>jif@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
