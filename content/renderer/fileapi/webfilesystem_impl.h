@@ -87,6 +87,9 @@ class WebFileSystemImpl : public blink::WebFileSystem,
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) override;
 
+  void ChooseEntry(blink::WebFrame* frame,
+                   std::unique_ptr<ChooseEntryCallbacks>) override;
+
   int RegisterCallbacks(const blink::WebFileSystemCallbacks& callbacks);
   blink::WebFileSystemCallbacks GetCallbacks(int callbacks_id);
   void UnregisterCallbacks(int callbacks_id);

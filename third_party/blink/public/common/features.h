@@ -25,6 +25,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsVisible;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
+BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentBgColorParameterName[];

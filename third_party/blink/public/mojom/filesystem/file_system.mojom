@@ -25,6 +25,14 @@ struct FileSystemInfo {
   FileSystemType mount_type = kTemporary;
 };
 
+// Entries as returned by the ChooseEntry method below. Each entry is
+// represented by the ID of the isolated filesystem containing the entry and
+// the name of the file in that filesystem.
+struct FileSystemEntry {
+  string file_system_id;
+  string base_name;
+};
+
 // Interface for renderers to cancel running file system operations. A
 // FileSystemCancellableOperationRequest is passed as a parameter for any
 // operation that can be cancelled.
@@ -205,4 +213,15 @@ interface FileSystemManager {
   CreateWriter(url.mojom.Url file_path) =>
       (mojo_base.mojom.FileError result,
        blink.mojom.FileWriter? writer);
+
+  // Prompts the user to select a file from the native filesystem. Returns an
+  // error code if something failed, or a list of the selected entries on
+  // success.
+  // TODO(https://crbug.com/878581): Add more options to this method to support
+  //     multiple files, directories, "open" vs "save" dialogs, etc.
+  // TODO(https://crbug.com/873661): Make interface per frame/worker and remove
+  //     |render_frame_id|.
+  ChooseEntry(int32 render_frame_id) =>
+      (mojo_base.mojom.FileError error_code,
+       array<FileSystemEntry> entries);
 };

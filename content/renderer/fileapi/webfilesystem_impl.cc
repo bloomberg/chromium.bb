@@ -18,6 +18,7 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "content/renderer/fileapi/webfilewriter_impl.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/public/platform/web_file_system_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "url/gurl.h"
 
 using blink::WebFileInfo;
@@ -447,6 +449,13 @@ void WebFileSystemImpl::CreateSnapshotFileAndReadMetadata(
           GURL(path),
           base::BindRepeating(&CreateSnapshotFileCallbackAdapter, callbacks_id),
           base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
+}
+
+void WebFileSystemImpl::ChooseEntry(
+    blink::WebFrame* frame,
+    std::unique_ptr<ChooseEntryCallbacks> callbacks) {
+  file_system_dispatcher_.ChooseEntry(
+      RenderFrame::GetRoutingIdForWebFrame(frame), std::move(callbacks));
 }
 
 int WebFileSystemImpl::RegisterCallbacks(

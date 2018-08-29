@@ -31,14 +31,21 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 
 #include <memory>
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/content_setting_callbacks.h"
@@ -102,6 +109,70 @@ void LocalFileSystem::RequestFileSystem(
       WTF::Bind(&LocalFileSystem::FileSystemNotAllowedInternal,
                 WrapCrossThreadPersistent(this), WrapPersistent(context),
                 WrapPersistent(wrapper)));
+}
+
+namespace {
+
+class ChooseEntryCallbacks : public WebFileSystem::ChooseEntryCallbacks {
+ public:
+  ChooseEntryCallbacks(ScriptPromiseResolver* resolver, bool return_multiple)
+      : resolver_(resolver), return_multiple_(return_multiple) {}
+
+  void OnSuccess(WebVector<WebFileSystem::FileSystemEntry> entries) override {
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    if (return_multiple_) {
+      Vector<ScriptPromise> result;
+      result.ReserveInitialCapacity(entries.size());
+      for (const auto& entry : entries)
+        result.emplace_back(CreateFileHandle(entry));
+      resolver_->Resolve(ScriptPromise::All(resolver_->GetScriptState(), result)
+                             .GetScriptValue());
+    } else {
+      DCHECK_EQ(1u, entries.size());
+      resolver_->Resolve(CreateFileHandle(entries[0]).GetScriptValue());
+    }
+  }
+
+  void OnError(base::File::Error error) override {
+    resolver_->Reject(FileError::CreateDOMException(error));
+  }
+
+ private:
+  ScriptPromise CreateFileHandle(const WebFileSystem::FileSystemEntry& entry) {
+    auto* new_resolver =
+        ScriptPromiseResolver::Create(resolver_->GetScriptState());
+    ScriptPromise result = new_resolver->Promise();
+    auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
+        resolver_->GetExecutionContext(), entry.file_system_id);
+    // TODO(mek): Try to create handle directly rather than having to do more
+    // IPCs to get the actual entries.
+    fs->GetFile(fs->root(), entry.base_name, FileSystemFlags(),
+                new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
+                new PromiseErrorCallback(new_resolver));
+    return result;
+  }
+
+  Persistent<ScriptPromiseResolver> resolver_;
+  bool return_multiple_;
+};
+
+}  // namespace
+
+void LocalFileSystem::ChooseEntry(ScriptPromiseResolver* resolver) {
+  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+    resolver->Reject(FileError::CreateDOMException(FileError::kAbortErr));
+    return;
+  }
+
+  WebFileSystem* file_system = GetFileSystem();
+  if (!file_system) {
+    resolver->Reject(FileError::CreateDOMException(FileError::kAbortErr));
+    return;
+  }
+
+  file_system->ChooseEntry(
+      Supplement<LocalFrame>::GetSupplementable()->Client()->GetWebFrame(),
+      std::make_unique<ChooseEntryCallbacks>(resolver, false));
 }
 
 WebFileSystem* LocalFileSystem::GetFileSystem() const {

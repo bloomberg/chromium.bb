@@ -795,6 +795,8 @@ jumbo_source_set("browser") {
     "file_url_loader_factory.h",
     "fileapi/browser_file_system_helper.cc",
     "fileapi/browser_file_system_helper.h",
+    "fileapi/file_system_chooser.cc",
+    "fileapi/file_system_chooser.h",
     "fileapi/file_system_manager_impl.cc",
     "fileapi/file_system_manager_impl.h",
     "fileapi/file_system_url_loader_factory.cc",

@@ -43,6 +43,7 @@ namespace blink {
 
 class WebFileWriter;
 class WebFileWriterClient;
+class WebFrame;
 
 class WebFileSystem {
  public:
@@ -197,6 +198,19 @@ class WebFileSystem {
   // WebFileSystemCallbacks::DidFail() must be called otherwise.
   virtual void CreateSnapshotFileAndReadMetadata(const WebURL& path,
                                                  WebFileSystemCallbacks) = 0;
+
+  struct FileSystemEntry {
+    WebString file_system_id;
+    WebString base_name;
+  };
+
+  // Prompts the user to select a file from the native filesystem. Returns an
+  // error code if something failed, or a list of the selected entries on
+  // success.
+  using ChooseEntryCallbacks =
+      WebCallbacks<WebVector<FileSystemEntry>, base::File::Error>;
+  virtual void ChooseEntry(WebFrame* frame,
+                           std::unique_ptr<ChooseEntryCallbacks>) = 0;
 
  protected:
   virtual ~WebFileSystem() = default;

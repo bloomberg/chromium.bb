@@ -68,6 +68,10 @@ const base::Feature kStopInBackground {
 const base::Feature kStopNonTimersInBackground{
     "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Writable files and native filesystem access. https://crbug.com/853326
+const base::Feature kWritableFilesAPI{"WritableFilesAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
