@@ -465,15 +465,6 @@ void SurfaceAggregator::EmitDefaultBackgroundColorQuad(
   // surface specified so create a SolidColorDrawQuad with the default
   // background color.
   SkColor background_color = surface_quad->default_background_color;
-#if DCHECK_IS_ON()
-  // If a fallback surface is specified but unavaialble then pick a very bright
-  // and obvious color for the SolidColorDrawQuad so developers notice there's
-  // an error when debugging.
-  if (surface_quad->surface_range.start() &&
-      surface_quad->surface_range.start()->is_valid()) {
-    background_color = SK_ColorMAGENTA;
-  }
-#endif
   auto* shared_quad_state = CopySharedQuadState(
       surface_quad->shared_quad_state, target_transform, clip_rect, dest_pass);
   auto* solid_color_quad =

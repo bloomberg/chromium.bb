@@ -1636,11 +1636,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ValidFallbackWithNoFrame) {
                         root_local_surface_id_, device_scale_factor);
 
   Quad expected_quads[] = {
-#if DCHECK_IS_ON()
-    Quad::SolidColorQuad(SK_ColorMAGENTA, gfx::Rect(5, 5)),
-#else
     Quad::SolidColorQuad(SK_ColorYELLOW, gfx::Rect(5, 5)),
-#endif
   };
   Pass expected_passes[] = {
       Pass(expected_quads, base::size(expected_quads), SurfaceSize())};
