@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/cronet/native/test/test_url_request_callback.h"
+
 #include "base/bind.h"
+#include "components/cronet/native/test/test_util.h"
 
 namespace cronet {
 namespace test {
@@ -323,7 +325,7 @@ void TestUrlRequestCallback::Execute(Cronet_ExecutorPtr self,
   CHECK(callback->executor_thread_);
   // Post |runnable| onto executor thread.
   callback->executor_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(Cronet_Runnable_Run, runnable));
+      FROM_HERE, RunnableWrapper::CreateOnceClosure(runnable));
 }
 
 /* static */
@@ -331,6 +333,7 @@ void TestUrlRequestCallback::ExecuteDirect(Cronet_ExecutorPtr self,
                                            Cronet_RunnablePtr runnable) {
   // Run |runnable| directly.
   Cronet_Runnable_Run(runnable);
+  Cronet_Runnable_Destroy(runnable);
 }
 
 }  // namespace test

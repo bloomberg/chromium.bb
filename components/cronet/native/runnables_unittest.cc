@@ -62,8 +62,6 @@ class OnRedirectReceived_Runnable : public Cronet_Runnable {
     Cronet_UrlRequestCallback_OnRedirectReceived(
         callback_, /* request = */ nullptr, /* response_info = */ nullptr,
         new_location_url_.c_str());
-    // Self-Destroy after running.
-    delete this;
   }
 
  private:

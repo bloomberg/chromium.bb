@@ -47,7 +47,6 @@ void TestRunnable::Run(Cronet_RunnablePtr self) {
   CHECK(runnable);
   std::move(runnable->task_).Run();
   delete runnable;
-  Cronet_Runnable_Destroy(self);
 }
 
 }  // namespace

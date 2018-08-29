@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRONET_NATIVE_TEST_TEST_UTIL_H_
 #define COMPONENTS_CRONET_NATIVE_TEST_TEST_UTIL_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "cronet_c.h"
 
@@ -17,6 +18,25 @@ Cronet_EnginePtr CreateTestEngine(int quic_server_port);
 
 // Create an executor that runs tasks on different background thread.
 Cronet_ExecutorPtr CreateTestExecutor();
+
+// Class to wrap Cronet_Runnable into a base::OnceClosure.
+class RunnableWrapper {
+ public:
+  ~RunnableWrapper() { Cronet_Runnable_Destroy(runnable_); }
+
+  // Wrap a Cronet_Runnable into a base::OnceClosure.
+  static base::OnceClosure CreateOnceClosure(Cronet_RunnablePtr runnable);
+
+ private:
+  friend std::unique_ptr<RunnableWrapper> std::make_unique<RunnableWrapper>(
+      Cronet_RunnablePtr&);
+
+  explicit RunnableWrapper(Cronet_RunnablePtr runnable) : runnable_(runnable) {}
+
+  void Run() { Cronet_Runnable_Run(runnable_); }
+
+  const Cronet_RunnablePtr runnable_;
+};
 
 }  // namespace test
 }  // namespace cronet

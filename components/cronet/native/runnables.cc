@@ -15,14 +15,6 @@ OnceClosureRunnable::~OnceClosureRunnable() = default;
 
 void OnceClosureRunnable::Run() {
   std::move(task_).Run();
-  // Runnable destroys itself after execution.
-
-  // TODO(https://crbug.com/812334):
-  // If an executor (which is implemented by a client)
-  // decides to stop processing runnables, the runnables will never
-  // be deleted causing a memory leak.
-  // This issue should be addressed.
-  delete this;
 }
 
 }  // namespace cronet
