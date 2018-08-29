@@ -45,7 +45,7 @@ int GetNextRequestId() {
 void InvokeNewPresentationCallbackWithError(
     PresentationServiceImpl::NewPresentationCallback callback) {
   std::move(callback).Run(
-      PresentationInfoPtr(),
+      /** PresentationConnectionResultPtr */ nullptr,
       PresentationError::New(
           PresentationErrorType::PREVIOUS_START_IN_PROGRESS,
           "There is already an unsettled Promise from a previous call "
@@ -210,7 +210,7 @@ void PresentationServiceImpl::StartPresentation(
   DVLOG(2) << "StartPresentation";
   if (!controller_delegate_) {
     std::move(callback).Run(
-        PresentationInfoPtr(),
+        /** PresentationConnectionResultPtr */ nullptr,
         PresentationError::New(PresentationErrorType::NO_AVAILABLE_SCREENS,
                                "No screens found."));
     return;
@@ -246,7 +246,7 @@ void PresentationServiceImpl::ReconnectPresentation(
   DVLOG(2) << "ReconnectPresentation";
   if (!controller_delegate_) {
     std::move(callback).Run(
-        PresentationInfoPtr(),
+        /** PresentationConnectionResultPtr */ nullptr,
         PresentationError::New(PresentationErrorType::NO_PRESENTATION_FOUND,
                                "Error joining route: No matching route"));
     return;
@@ -295,14 +295,15 @@ void PresentationServiceImpl::ListenForConnectionStateChange(
 
 void PresentationServiceImpl::OnStartPresentationSucceeded(
     int request_id,
-    const PresentationInfo& presentation_info) {
+    blink::mojom::PresentationConnectionResultPtr result) {
   if (request_id != start_presentation_request_id_)
     return;
 
-  CHECK(pending_start_presentation_cb_.get());
+  auto presentation_info = *result->presentation_info;
+  DCHECK(pending_start_presentation_cb_.get());
   DCHECK(presentation_info.id.length() <= kMaxPresentationIdLength);
-  pending_start_presentation_cb_->Run(PresentationInfo::New(presentation_info),
-                                      PresentationErrorPtr());
+  pending_start_presentation_cb_->Run(std::move(result),
+                                      /** PresentationErrorPtr */ nullptr);
   ListenForConnectionStateChange(presentation_info);
   pending_start_presentation_cb_.reset();
   start_presentation_request_id_ = kInvalidRequestId;
@@ -315,19 +316,19 @@ void PresentationServiceImpl::OnStartPresentationError(
     return;
 
   CHECK(pending_start_presentation_cb_.get());
-  pending_start_presentation_cb_->Run(PresentationInfoPtr(),
-                                      PresentationError::New(error));
+  pending_start_presentation_cb_->Run(
+      /** PresentationConnectionResultPtr */ nullptr,
+      PresentationError::New(error));
   pending_start_presentation_cb_.reset();
   start_presentation_request_id_ = kInvalidRequestId;
 }
 
 void PresentationServiceImpl::OnReconnectPresentationSucceeded(
     int request_id,
-    const PresentationInfo& presentation_info) {
-  DCHECK(presentation_info.id.length() <= kMaxPresentationIdLength);
+    blink::mojom::PresentationConnectionResultPtr result) {
+  auto presentation_info = *result->presentation_info;
   if (RunAndEraseReconnectPresentationMojoCallback(
-          request_id, PresentationInfo::New(presentation_info),
-          PresentationErrorPtr())) {
+          request_id, std::move(result), /** PresentationErrorPtr */ nullptr)) {
     ListenForConnectionStateChange(presentation_info);
   }
 }
@@ -336,19 +337,20 @@ void PresentationServiceImpl::OnReconnectPresentationError(
     int request_id,
     const blink::mojom::PresentationError& error) {
   RunAndEraseReconnectPresentationMojoCallback(
-      request_id, PresentationInfoPtr(), PresentationError::New(error));
+      request_id, blink::mojom::PresentationConnectionResultPtr(),
+      PresentationError::New(error));
 }
 
 bool PresentationServiceImpl::RunAndEraseReconnectPresentationMojoCallback(
     int request_id,
-    PresentationInfoPtr presentation_info,
-    PresentationErrorPtr error) {
+    blink::mojom::PresentationConnectionResultPtr result,
+    blink::mojom::PresentationErrorPtr error) {
   auto it = pending_reconnect_presentation_cbs_.find(request_id);
   if (it == pending_reconnect_presentation_cbs_.end())
     return false;
 
   DCHECK(it->second.get());
-  it->second->Run(std::move(presentation_info), std::move(error));
+  it->second->Run(std::move(result), std::move(error));
   pending_reconnect_presentation_cbs_.erase(it);
   return true;
 }
@@ -427,21 +429,7 @@ PresentationServiceImpl::GetPresentationServiceDelegate() {
              : static_cast<PresentationServiceDelegate*>(controller_delegate_);
 }
 
-void PresentationServiceImpl::SetPresentationConnection(
-    PresentationInfoPtr presentation_info,
-    blink::mojom::PresentationConnectionPtr controller_connection_ptr,
-    blink::mojom::PresentationConnectionRequest receiver_connection_request) {
-  DVLOG(2) << "SetPresentationConnection";
-
-  if (!controller_delegate_)
-    return;
-
-  controller_delegate_->ConnectToPresentation(
-      render_process_id_, render_frame_id_, *presentation_info,
-      std::move(controller_connection_ptr),
-      std::move(receiver_connection_request));
-}
-
+// TODO(btolsch): Convert to PresentationConnectionResultPtr.
 void PresentationServiceImpl::OnReceiverConnectionAvailable(
     PresentationInfoPtr presentation_info,
     PresentationConnectionPtr controller_connection_ptr,
@@ -502,12 +490,14 @@ void PresentationServiceImpl::OnDelegateDestroyed() {
 }
 
 void PresentationServiceImpl::OnDefaultPresentationStarted(
-    const PresentationInfo& connection) {
+    blink::mojom::PresentationConnectionResultPtr result) {
+  auto presentation_info = *result->presentation_info;
   if (controller_)
-    controller_->OnDefaultPresentationStarted(
-        PresentationInfo::New(connection));
+    controller_->OnDefaultPresentationStarted(std::move(result));
 
-  ListenForConnectionStateChange(connection);
+  // TODO(btolsch): Remove the state-change API in favor of direct
+  // PresentationConnection state use.
+  ListenForConnectionStateChange(presentation_info);
 }
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl::
@@ -542,7 +532,7 @@ PresentationServiceImpl::NewPresentationCallbackWrapper::
     ~NewPresentationCallbackWrapper() {
   if (!callback_.is_null()) {
     std::move(callback_).Run(
-        PresentationInfoPtr(),
+        /** PresentationConnectionResultPtr */ nullptr,
         PresentationError::New(
             PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
             "The frame is navigating or being destroyed."));
@@ -550,10 +540,10 @@ PresentationServiceImpl::NewPresentationCallbackWrapper::
 }
 
 void PresentationServiceImpl::NewPresentationCallbackWrapper::Run(
-    PresentationInfoPtr presentation_info,
-    PresentationErrorPtr error) {
+    blink::mojom::PresentationConnectionResultPtr result,
+    blink::mojom::PresentationErrorPtr error) {
   DCHECK(!callback_.is_null());
-  std::move(callback_).Run(std::move(presentation_info), std::move(error));
+  std::move(callback_).Run(std::move(result), std::move(error));
 }
 
 }  // namespace content

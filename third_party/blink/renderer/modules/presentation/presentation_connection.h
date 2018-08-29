@@ -174,7 +174,8 @@ class ControllerPresentationConnection final : public PresentationConnection {
   void Trace(blink::Visitor*) override;
 
   // Initializes Mojo message pipes and registers with the PresentationService.
-  void Init();
+  void Init(mojom::blink::PresentationConnectionPtr connection_ptr,
+            mojom::blink::PresentationConnectionRequest connection_request);
 
  private:
   // PresentationConnection implementation.

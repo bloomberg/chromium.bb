@@ -30,8 +30,9 @@ namespace {
 
 class MockCallback {
  public:
-  MOCK_METHOD3(CreateRoute,
+  MOCK_METHOD4(CreateRoute,
                void(const base::Optional<MediaRoute>& route,
+                    mojom::RoutePresentationConnectionPtr connection,
                     const base::Optional<std::string>& error,
                     RouteRequestResult::ResultCode result));
   MOCK_METHOD2(TerminateRoute,
@@ -310,7 +311,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   base::RunLoop().RunUntilIdle();
 
   // Create a route for |presentation_id|.
-  EXPECT_CALL(callback, CreateRoute(_, base::Optional<std::string>(),
+  EXPECT_CALL(callback, CreateRoute(_, _, base::Optional<std::string>(),
                                     RouteRequestResult::OK))
       .WillOnce(WithArg<0>(
           Invoke([&presentation_id](const base::Optional<MediaRoute>& route) {

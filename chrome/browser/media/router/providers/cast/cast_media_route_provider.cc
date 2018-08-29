@@ -82,7 +82,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
                                          CreateRouteCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(
-      base::nullopt, std::string("Not implemented"),
+      base::nullopt, nullptr, std::string("Not implemented"),
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 
@@ -95,7 +95,7 @@ void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
                                        JoinRouteCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(
-      base::nullopt, std::string("Not implemented"),
+      base::nullopt, nullptr, std::string("Not implemented"),
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 
@@ -110,7 +110,7 @@ void CastMediaRouteProvider::ConnectRouteByRouteId(
     ConnectRouteByRouteIdCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(
-      base::nullopt, std::string("Not implemented"),
+      base::nullopt, nullptr, std::string("Not implemented"),
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 

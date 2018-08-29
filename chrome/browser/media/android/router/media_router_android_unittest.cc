@@ -83,8 +83,7 @@ TEST_F(MediaRouterAndroidTest, DetachRoute) {
       .WillOnce(Return());
 
   router_->CreateRoute("source", "sink", url::Origin(), nullptr,
-                       std::vector<MediaRouteResponseCallback>(),
-                       base::TimeDelta(), false);
+                       base::DoNothing(), base::TimeDelta(), false);
   router_->OnRouteCreated("route", "sink", 1, false);
 
   EXPECT_NE(nullptr, router_->FindRouteBySource("source"));
@@ -109,8 +108,7 @@ TEST_F(MediaRouterAndroidTest, OnRouteClosed) {
           .WillOnce(Return());
 
   router_->CreateRoute("source", "sink", url::Origin(), nullptr,
-                       std::vector<MediaRouteResponseCallback>(),
-                       base::TimeDelta(), false);
+                       base::DoNothing(), base::TimeDelta(), false);
   router_->OnRouteCreated("route", "sink", 1, false);
 
   EXPECT_NE(nullptr, router_->FindRouteBySource("source"));

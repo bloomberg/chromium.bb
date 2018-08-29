@@ -37,17 +37,6 @@ class MockPresentationService : public mojom::blink::PresentationService {
                     const String& presentation_id,
                     ReconnectPresentationCallback&));
 
-  void SetPresentationConnection(
-      mojom::blink::PresentationInfoPtr presentation_info,
-      mojom::blink::PresentationConnectionPtr controller_conn_ptr,
-      mojom::blink::PresentationConnectionRequest receiver_conn_request)
-      override {
-    SetPresentationConnection(*presentation_info, controller_conn_ptr.get());
-  }
-  MOCK_METHOD2(SetPresentationConnection,
-               void(const mojom::blink::PresentationInfo&,
-                    mojom::blink::PresentationConnection*));
-
   MOCK_METHOD2(CloseConnection, void(const KURL&, const String&));
   MOCK_METHOD2(Terminate, void(const KURL&, const String&));
 };

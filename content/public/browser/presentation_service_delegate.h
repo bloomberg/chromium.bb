@@ -21,11 +21,11 @@ struct PresentationRequest;
 class PresentationScreenAvailabilityListener;
 
 using PresentationConnectionCallback =
-    base::OnceCallback<void(const blink::mojom::PresentationInfo&)>;
+    base::OnceCallback<void(blink::mojom::PresentationConnectionResultPtr)>;
 using PresentationConnectionErrorCallback =
     base::OnceCallback<void(const blink::mojom::PresentationError&)>;
-using DefaultPresentationConnectionCallback =
-    base::RepeatingCallback<void(const blink::mojom::PresentationInfo&)>;
+using DefaultPresentationConnectionCallback = base::RepeatingCallback<void(
+    blink::mojom::PresentationConnectionResultPtr)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
@@ -189,20 +189,6 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
       int render_frame_id,
       const blink::mojom::PresentationInfo& connection,
       const PresentationConnectionStateChangedCallback& state_changed_cb) = 0;
-
-  // Connect |controller_connection| owned by the controlling frame to the
-  // local presentation represented by |presentation_info|.
-  // |render_process_id|, |render_frame_id|: ID of originating frame.
-  // |controller_connection|: Pointer to controller's presentation connection,
-  // ownership passed from controlling frame to the local presentation.
-  // |receiver_connection_request|: Mojo InterfaceRequest to be bind to receiver
-  // page's presentation connection.
-  virtual void ConnectToPresentation(
-      int render_process_id,
-      int render_frame_id,
-      const blink::mojom::PresentationInfo& presentation_info,
-      PresentationConnectionPtr controller_connection_ptr,
-      PresentationConnectionRequest receiver_connection_request) = 0;
 };
 
 // An interface implemented by embedders to handle

@@ -45,13 +45,6 @@ namespace media_router {
 
 namespace {
 
-void RunRouteRequestCallbacks(
-    std::unique_ptr<RouteRequestResult> result,
-    std::vector<MediaRouteResponseCallback> callbacks) {
-  for (MediaRouteResponseCallback& callback : callbacks)
-    std::move(callback).Run(*result);
-}
-
 // TODO(crbug.com/831416): Delete temporary code once we can use
 // presentation.mojom types here.
 blink::mojom::PresentationConnectionCloseReason
@@ -210,16 +203,20 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     MediaRouteProviderId provider_id,
     bool is_incognito,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    MediaRouteResponseCallback callback,
     bool is_join,
     const base::Optional<MediaRoute>& media_route,
+    mojom::RoutePresentationConnectionPtr connection,
     const base::Optional<std::string>& error_text,
     RouteRequestResult::ResultCode result_code) {
+  DCHECK(!connection ||
+         (connection->connection_ptr && connection->connection_request));
   std::unique_ptr<RouteRequestResult> result;
   if (!media_route) {
     // An error occurred.
     const std::string& error = (error_text && !error_text->empty())
-        ? *error_text : std::string("Unknown error.");
+                                   ? *error_text
+                                   : std::string("Unknown error.");
     result = RouteRequestResult::FromError(error, result_code);
   } else if (media_route->is_incognito() != is_incognito) {
     std::string error = base::StringPrintf(
@@ -240,17 +237,16 @@ void MediaRouterMojoImpl::RouteResponseReceived(
                                                         result->result_code());
   }
 
-  RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+  std::move(callback).Run(std::move(connection), *result);
 }
 
-void MediaRouterMojoImpl::CreateRoute(
-    const MediaSource::Id& source_id,
-    const MediaSink::Id& sink_id,
-    const url::Origin& origin,
-    content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
-    base::TimeDelta timeout,
-    bool incognito) {
+void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
+                                      const MediaSink::Id& sink_id,
+                                      const url::Origin& origin,
+                                      content::WebContents* web_contents,
+                                      MediaRouteResponseCallback callback,
+                                      base::TimeDelta timeout,
+                                      bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const MediaSink* sink = GetSinkById(sink_id);
   if (!sink) {
@@ -258,7 +254,7 @@ void MediaRouterMojoImpl::CreateRoute(
         "Sink not found", RouteRequestResult::SINK_NOT_FOUND);
     MediaRouterMojoMetrics::RecordCreateRouteResultCode(
         MediaRouteProviderId::UNKNOWN, result->result_code());
-    RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+    std::move(callback).Run(nullptr, *result);
     return;
   }
 
@@ -286,22 +282,21 @@ void MediaRouterMojoImpl::CreateRoute(
 
   int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
-  auto callback = base::BindOnce(
+  auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, provider_id, incognito, std::move(callbacks), false);
+      presentation_id, provider_id, incognito, std::move(callback), false);
   media_route_providers_[provider_id]->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
-      std::move(callback));
+      std::move(mr_callback));
 }
 
-void MediaRouterMojoImpl::JoinRoute(
-    const MediaSource::Id& source_id,
-    const std::string& presentation_id,
-    const url::Origin& origin,
-    content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
-    base::TimeDelta timeout,
-    bool incognito) {
+void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
+                                    const std::string& presentation_id,
+                                    const url::Origin& origin,
+                                    content::WebContents* web_contents,
+                                    MediaRouteResponseCallback callback,
+                                    base::TimeDelta timeout,
+                                    bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForPresentation(presentation_id);
@@ -313,17 +308,19 @@ void MediaRouterMojoImpl::JoinRoute(
     MediaRouterMojoMetrics::RecordJoinRouteResultCode(
         provider_id.value_or(MediaRouteProviderId::UNKNOWN),
         result->result_code());
-    RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+    // TODO(btolsch): This should really move |result| now that there's only a
+    // single callback.
+    std::move(callback).Run(nullptr, *result);
     return;
   }
 
   int tab_id = SessionTabHelper::IdForTab(web_contents).id();
-  auto callback = base::BindOnce(
+  auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, std::move(callbacks), true);
+      presentation_id, *provider_id, incognito, std::move(callback), true);
   media_route_providers_[*provider_id]->JoinRoute(
       source_id, presentation_id, origin, tab_id, timeout, incognito,
-      std::move(callback));
+      std::move(mr_callback));
 }
 
 void MediaRouterMojoImpl::ConnectRouteByRouteId(
@@ -331,7 +328,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    MediaRouteResponseCallback callback,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -340,18 +337,18 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
   if (!provider_id) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
-    RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+    std::move(callback).Run(nullptr, *result);
     return;
   }
 
   int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
-  auto callback = base::BindOnce(
+  auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, std::move(callbacks), true);
+      presentation_id, *provider_id, incognito, std::move(callback), true);
   media_route_providers_[*provider_id]->ConnectRouteByRouteId(
       source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
-      std::move(callback));
+      std::move(mr_callback));
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
@@ -940,8 +937,7 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider(
     provider->StartListeningForRouteMessages(it.first);
 }
 
-void MediaRouterMojoImpl::UpdateMediaSinks(
-    const MediaSource::Id& source_id) {
+void MediaRouterMojoImpl::UpdateMediaSinks(const MediaSource::Id& source_id) {
   for (const auto& provider : media_route_providers_)
     provider.second->UpdateMediaSinks(source_id);
 }

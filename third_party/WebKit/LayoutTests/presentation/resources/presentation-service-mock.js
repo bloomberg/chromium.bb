@@ -48,16 +48,32 @@ class PresentationServiceMock {
   }
 
   async startPresentation(urls) {
+    const controller_ptr = new blink.mojom.PresentationConnectionPtr();
+    const receiver_ptr = new blink.mojom.PresentationConnectionPtr();
+    this.controllerConnectionPtr_ = controller_ptr;
+    this.receiverConnectionRequest_ = mojo.makeRequest(receiver_ptr);
     return {
-        presentationInfo: { url: urls[0], id: 'fakePresentationId' },
-        error: null,
+      result: {
+        presentationInfo: {url: urls[0], id: 'fakePresentationId'},
+        connectionPtr: receiver_ptr,
+        connectionRequest: mojo.makeRequest(controller_ptr),
+      },
+      error: null,
     };
   }
 
   async reconnectPresentation(urls) {
+    const controller_ptr = new blink.mojom.PresentationConnectionPtr();
+    const receiver_ptr = new blink.mojom.PresentationConnectionPtr();
+    this.controllerConnectionPtr_ = controller_ptr;
+    this.receiverConnectionRequest_ = mojo.makeRequest(receiver_ptr);
     return {
-        presentationInfo: { url: urls[0], id: 'fakePresentationId' },
-        error: null,
+      result: {
+        presentationInfo: {url: urls[0], id: 'fakePresentationId'},
+        connectionPtr: receiver_ptr,
+        connectionRequest: mojo.makeRequest(controller_ptr),
+      },
+      error: null,
     };
   }
 
@@ -65,17 +81,6 @@ class PresentationServiceMock {
     this.controller_.onConnectionStateChanged(
         { url: presentationUrl, id: presentationId },
         blink.mojom.PresentationConnectionState.TERMINATED);
-  }
-
-  setPresentationConnection(
-      presentation_info, controllerConnectionPtr,
-      receiverConnectionRequest) {
-    console.log('setPresentationConnection');
-    this.controllerConnectionPtr_ = controllerConnectionPtr;
-    this.receiverConnectionRequest_ = receiverConnectionRequest;
-    this.controller_.onConnectionStateChanged(
-        presentation_info,
-        blink.mojom.PresentationConnectionState.CONNECTED);
   }
 
   onReceiverConnectionAvailable(

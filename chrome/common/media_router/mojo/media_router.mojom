@@ -11,6 +11,7 @@ import "media/mojo/interfaces/mirror_service_remoting.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/ip_address.mojom";
 import "net/interfaces/ip_endpoint.mojom";
+import "third_party/blink/public/mojom/presentation/presentation.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -242,6 +243,18 @@ struct MediaRouteProviderConfig {
   bool use_mirroring_service;
 };
 
+// Used to pass a pair of PresentationConnection pipes as part of a route
+// result.  An MRP may return this as part of any route creation callback to
+// allow direct communication with the controlling page.
+struct RoutePresentationConnection {
+  // Interface pointer to send messages to the MRP.
+  blink.mojom.PresentationConnection connection_ptr;
+
+  // Interface request which the controlling page should bind to receive
+  // messages from the MRP.
+  blink.mojom.PresentationConnection& connection_request;
+};
+
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 //
@@ -279,12 +292,14 @@ interface MediaRouteProvider {
   //
   // If |incognito| is true, the request was made by an incognito profile.
   //
-  // If the operation was successful, |route| will be defined and
-  //     |error_text| will be null.
-  // If the operation failed, |route| will be null and |error_text|
-  //     will be set.
-  // |result| will be set to OK if successful, or an error code if an error
+  // If the operation was successful, |route| will be defined and |error_text|
+  // will be null.  If the operation failed, |route| will be null and
+  // |error_text| will be set.  If |connection| is set, it should be returned to
+  // the presentation controller for communication with the MRP/receiver.
+  //
+  // |result_code| will be set to OK if successful, or an error code if an error
   // occurred.
+  // TODO(btolsch): Consolidate result params into struct.
   CreateRoute(string media_source,
               string sink_id,
               string original_presentation_id,
@@ -293,6 +308,7 @@ interface MediaRouteProvider {
               mojo_base.mojom.TimeDelta timeout,
               bool incognito) =>
                   (MediaRoute? route,
+                   RoutePresentationConnection? connection,
                    string? error_text,
                    RouteRequestResultCode result_code);
 
@@ -308,11 +324,12 @@ interface MediaRouteProvider {
   // If the route request was created by an incognito profile,
   // |incognito| must be true.
   //
-  // If the operation was successful, |route| will be defined and
-  //     |error_text| will be null.
-  // If the operation failed, |route| will be null and |error_text|
-  //     will be set.
-  // |result| will be set to OK if successful, or an error code if an error
+  // If the operation was successful, |route| will be defined and |error_text|
+  // will be null.  If the operation failed, |route| will be null and
+  // |error_text| will be set.  If |connection| is set, it should be returned to
+  // the presentation controller for communication with the MRP/receiver.
+  //
+  // |result_code| will be set to OK if successful, or an error code if an error
   // occurred.
   JoinRoute(string media_source,
             string presentation_id,
@@ -321,6 +338,7 @@ interface MediaRouteProvider {
             mojo_base.mojom.TimeDelta timeout,
             bool incognito) =>
                 (MediaRoute? route,
+                 RoutePresentationConnection? connection,
                  string? error_text,
                  RouteRequestResultCode result_code);
 
@@ -342,21 +360,25 @@ interface MediaRouteProvider {
   // |incognito| must be true.
   //
   // If the operation was successful, |route| will be defined and
-  // |error_text| will be null. If the operation failed, |route| will be null
-  // and |error_text| will be set.
+  // |error_text| will be null.  If the operation failed, |route| will be null
+  // and |error_text| will be set.  If |connection| is set, it should be
+  // returned to the presentation controller for communication with the
+  // MRP/receiver.
   //
-  // |result| will be set to OK if successful, or an error code if an error
+  // |result_code| will be set to OK if successful, or an error code if an error
   // occurred.
-  ConnectRouteByRouteId(string media_source,
-                        string route_id,
-                        string presentation_id,
-                        url.mojom.Origin origin,
-                        int32 tab_id,
-                        mojo_base.mojom.TimeDelta timeout,
-                        bool incognito) =>
-                            (MediaRoute? route,
-                             string? error_text,
-                             RouteRequestResultCode result_code);
+  ConnectRouteByRouteId(
+      string media_source,
+      string route_id,
+      string presentation_id,
+      url.mojom.Origin origin,
+      int32 tab_id,
+      mojo_base.mojom.TimeDelta timeout,
+      bool incognito) =>
+          (MediaRoute? route,
+           RoutePresentationConnection? connection,
+           string? error_text,
+           RouteRequestResultCode result_code);
 
   // Terminates the route specified by |route_id|.  If the route was terminated
   // successfully, |result_code| is set to OK and |error_text| is null.

@@ -38,11 +38,14 @@
 #include "components/prefs/pref_service.h"
 #endif
 
-using content::RenderFrameHost;
+using blink::mojom::PresentationConnectionPtr;
+using blink::mojom::PresentationConnectionPtrInfo;
+using blink::mojom::PresentationConnectionRequest;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorType;
 using blink::mojom::PresentationInfo;
 using blink::mojom::ScreenAvailability;
+using content::RenderFrameHost;
 
 namespace media_router {
 
@@ -105,8 +108,8 @@ class PresentationFrame {
                        const MediaRoute& route);
   void ConnectToPresentation(
       const PresentationInfo& presentation_info,
-      content::PresentationConnectionPtr controller_connection_ptr,
-      content::PresentationConnectionRequest receiver_connection_request);
+      PresentationConnectionPtr controller_connection_ptr,
+      PresentationConnectionRequest receiver_connection_request);
   void RemovePresentation(const std::string& presentation_id);
 
  private:
@@ -220,8 +223,8 @@ void PresentationFrame::AddPresentation(
 
 void PresentationFrame::ConnectToPresentation(
     const PresentationInfo& presentation_info,
-    content::PresentationConnectionPtr controller_connection_ptr,
-    content::PresentationConnectionRequest receiver_connection_request) {
+    PresentationConnectionPtr controller_connection_ptr,
+    PresentationConnectionRequest receiver_connection_request) {
   const auto pid_route_it =
       presentation_id_to_route_.find(presentation_info.id);
 
@@ -399,6 +402,7 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     const std::string& presentation_id,
     content::PresentationConnectionCallback success_cb,
     content::PresentationConnectionErrorCallback error_cb,
+    mojom::RoutePresentationConnectionPtr connection,
     const RouteRequestResult& result) {
   if (!result.route()) {
     std::move(error_cb).Run(PresentationError(
@@ -412,7 +416,12 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     PresentationInfo presentation_info(presentation_url,
                                        result.presentation_id());
     AddPresentation(render_frame_host_id, presentation_info, *result.route());
-    std::move(success_cb).Run(presentation_info);
+    EnsurePresentationConnection(render_frame_host_id, presentation_info,
+                                 &connection);
+    std::move(success_cb)
+        .Run(blink::mojom::PresentationConnectionResult::New(
+            presentation_info.Clone(), std::move(connection->connection_ptr),
+            std::move(connection->connection_request)));
   }
 }
 
@@ -420,13 +429,19 @@ void PresentationServiceDelegateImpl::OnStartPresentationSucceeded(
     const content::GlobalFrameRoutingId& render_frame_host_id,
     content::PresentationConnectionCallback success_cb,
     const PresentationInfo& new_presentation_info,
+    mojom::RoutePresentationConnectionPtr connection,
     const MediaRoute& route) {
   DVLOG(1) << "OnStartPresentationSucceeded: "
            << "route_id: " << route.media_route_id()
            << ", presentation URL: " << new_presentation_info.url
            << ", presentation ID: " << new_presentation_info.id;
   AddPresentation(render_frame_host_id, new_presentation_info, route);
-  std::move(success_cb).Run(new_presentation_info);
+  EnsurePresentationConnection(render_frame_host_id, new_presentation_info,
+                               &connection);
+  std::move(success_cb)
+      .Run(blink::mojom::PresentationConnectionResult::New(
+          new_presentation_info.Clone(), std::move(connection->connection_ptr),
+          std::move(connection->connection_request)));
 }
 
 void PresentationServiceDelegateImpl::AddPresentation(
@@ -526,20 +541,20 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
     auto result = RouteRequestResult::FromSuccess(*route, presentation_id);
     OnJoinRouteResponse(render_frame_host_id, presentation_urls[0],
                         presentation_id, std::move(success_cb),
-                        std::move(error_cb), *result);
+                        std::move(error_cb),
+                        mojom::RoutePresentationConnectionPtr(), *result);
   } else {
     // TODO(crbug.com/627655): Handle multiple URLs.
     const GURL& presentation_url = presentation_urls[0];
     bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
-    std::vector<MediaRouteResponseCallback> route_response_callbacks;
-    route_response_callbacks.push_back(base::BindOnce(
-        &PresentationServiceDelegateImpl::OnJoinRouteResponse, GetWeakPtr(),
-        render_frame_host_id, presentation_url, presentation_id,
-        std::move(success_cb), std::move(error_cb)));
-    router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
-                       presentation_id, request.frame_origin, web_contents_,
-                       std::move(route_response_callbacks), base::TimeDelta(),
-                       incognito);
+    router_->JoinRoute(
+        MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
+        request.frame_origin, web_contents_,
+        base::BindOnce(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
+                       GetWeakPtr(), render_frame_host_id, presentation_url,
+                       presentation_id, std::move(success_cb),
+                       std::move(error_cb)),
+        base::TimeDelta(), incognito);
   }
 }
 
@@ -598,22 +613,9 @@ void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
     it->second->ListenForConnectionStateChange(connection, state_changed_cb);
 }
 
-void PresentationServiceDelegateImpl::ConnectToPresentation(
-    int render_process_id,
-    int render_frame_id,
-    const PresentationInfo& presentation_info,
-    content::PresentationConnectionPtr controller_connection_ptr,
-    content::PresentationConnectionRequest receiver_connection_request) {
-  content::GlobalFrameRoutingId render_frame_host_id(render_process_id,
-                                                     render_frame_id);
-  auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
-  presentation_frame->ConnectToPresentation(
-      presentation_info, std::move(controller_connection_ptr),
-      std::move(receiver_connection_request));
-}
-
 void PresentationServiceDelegateImpl::OnRouteResponse(
     const content::PresentationRequest& presentation_request,
+    mojom::RoutePresentationConnectionPtr connection,
     const RouteRequestResult& result) {
   if (!result.route() ||
       !base::ContainsValue(presentation_request.presentation_urls,
@@ -628,7 +630,14 @@ void PresentationServiceDelegateImpl::OnRouteResponse(
   if (default_presentation_request_ &&
       ArePresentationRequestsEqual(*default_presentation_request_,
                                    presentation_request)) {
-    default_presentation_started_callback_.Run(presentation_info);
+    EnsurePresentationConnection(presentation_request.render_frame_host_id,
+                                 presentation_info, &connection);
+    default_presentation_started_callback_.Run(
+        blink::mojom::PresentationConnectionResult::New(
+            presentation_info.Clone(), std::move(connection->connection_ptr),
+            std::move(connection->connection_request)));
+  } else {
+    DCHECK(!connection);
   }
 }
 
@@ -713,5 +722,25 @@ bool PresentationServiceDelegateImpl::ShouldCancelAutoJoinForOrigin(
          origins->Find(base::Value(origin.Serialize())) != origins->end();
 }
 #endif  // !defined(OS_ANDROID)
+
+void PresentationServiceDelegateImpl::EnsurePresentationConnection(
+    const content::GlobalFrameRoutingId& render_frame_host_id,
+    const PresentationInfo& presentation_info,
+    mojom::RoutePresentationConnectionPtr* connection) {
+  // This is where we ensure we have a valid Mojo pipe pair when starting or
+  // joining a presentation.  If the MRP chose not return a pair of pipes
+  // directly, we need to provide a BrowserPresentationConnectionProxy here or
+  // connect to the LocalPresentationManager, as necessary.
+  if (!*connection) {
+    PresentationConnectionPtr controller_ptr;
+    PresentationConnectionPtrInfo receiver_ptr_info;
+    *connection = mojom::RoutePresentationConnection::New(
+        std::move(receiver_ptr_info), mojo::MakeRequest(&controller_ptr));
+    auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
+    presentation_frame->ConnectToPresentation(
+        presentation_info, std::move(controller_ptr),
+        mojo::MakeRequest(&(*connection)->connection_ptr));
+  }
+}
 
 }  // namespace media_router

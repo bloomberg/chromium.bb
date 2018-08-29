@@ -21,14 +21,12 @@ async_test(t => {
           assert_equals(connection.state, "terminated");
           controllerConnectionTerminated = true;
         };
-        connection.onconnect = () => {
-          // Open a receiver page and pass controller connection's
-          // controllerConnectionPtr and receiverConnectionRequest to it.
-          var w = window.open(
-              "resources/presentation-receiver-postmessage.html");
-          w.controllerConnectionPtr = presentationServiceMock.getControllerConnectionPtr();
-          w.receiverConnectionRequest = presentationServiceMock.getReceiverConnectionRequest();
-        };
+        // Open a receiver page and pass controller connection's
+        // controllerConnectionPtr and receiverConnectionRequest to it.
+        var w = window.open(
+            "resources/presentation-receiver-postmessage.html");
+        w.controllerConnectionPtr = presentationServiceMock.getControllerConnectionPtr();
+        w.receiverConnectionRequest = presentationServiceMock.getReceiverConnectionRequest();
       });
   }, button);
 

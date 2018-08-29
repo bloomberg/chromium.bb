@@ -28,11 +28,14 @@ class PresentationConnectionCallbacks final {
                                   ControllerPresentationConnection*);
   ~PresentationConnectionCallbacks() = default;
 
-  void HandlePresentationResponse(mojom::blink::PresentationInfoPtr,
+  void HandlePresentationResponse(mojom::blink::PresentationConnectionResultPtr,
                                   mojom::blink::PresentationErrorPtr);
 
  private:
-  void OnSuccess(const mojom::blink::PresentationInfo&);
+  void OnSuccess(
+      const mojom::blink::PresentationInfo&,
+      mojom::blink::PresentationConnectionPtr connection_ptr,
+      mojom::blink::PresentationConnectionRequest connection_request);
   void OnError(const mojom::blink::PresentationError&);
 
   Persistent<ScriptPromiseResolver> resolver_;

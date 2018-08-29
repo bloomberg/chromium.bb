@@ -19,6 +19,10 @@ void OnMessageReceivedByRenderer(bool success) {
       << "Renderer PresentationConnection failed to process message!";
 }
 
+void LogMojoPipeError() {
+  DVLOG(1) << "BrowserPresentationConnectionProxy mojo pipe error!";
+}
+
 }  // namespace
 
 BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
@@ -37,6 +41,12 @@ BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
   binding_.Bind(std::move(receiver_connection_request));
   target_connection_ptr_->DidChangeState(
       blink::mojom::PresentationConnectionState::CONNECTED);
+  // TODO(btolsch): These pipes may need proper mojo error handlers.  They
+  // probably need to be plumbed up to PSDImpl so the PresentationFrame knows
+  // about the error.
+  binding_.set_connection_error_handler(base::BindOnce(LogMojoPipeError));
+  target_connection_ptr_.set_connection_error_handler(
+      base::BindOnce(LogMojoPipeError));
 }
 
 BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}

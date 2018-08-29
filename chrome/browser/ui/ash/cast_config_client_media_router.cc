@@ -223,8 +223,7 @@ void CastConfigClientMediaRouter::CastToSink(ash::mojom::CastSinkPtr sink) {
   GetMediaRouter()->CreateRoute(
       media_router::MediaSourceForDesktop().id(), sink->id,
       url::Origin::Create(GURL("http://cros-cast-origin/")), nullptr,
-      std::vector<media_router::MediaRouteResponseCallback>(),
-      base::TimeDelta(), false);
+      media_router::MediaRouteResponseCallback(), base::TimeDelta(), false);
 }
 
 void CastConfigClientMediaRouter::StopCasting(ash::mojom::CastRoutePtr route) {

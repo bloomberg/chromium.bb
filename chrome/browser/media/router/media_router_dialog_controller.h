@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,14 +32,14 @@ class StartPresentationContext {
  public:
   using PresentationConnectionCallback =
       base::OnceCallback<void(const blink::mojom::PresentationInfo&,
+                              mojom::RoutePresentationConnectionPtr,
                               const MediaRoute&)>;
   using PresentationConnectionErrorCallback =
       content::PresentationConnectionErrorCallback;
 
   // Handle route creation/joining response by invoking the right callback.
-  static void HandleRouteResponse(
-      std::unique_ptr<StartPresentationContext> presentation_request,
-      const RouteRequestResult& result);
+  void HandleRouteResponse(mojom::RoutePresentationConnectionPtr connection,
+                           const RouteRequestResult& result);
 
   StartPresentationContext(
       const content::PresentationRequest& presentation_request,
@@ -53,14 +54,14 @@ class StartPresentationContext {
   // Invokes |success_cb_| or |error_cb_| with the given arguments.
   void InvokeSuccessCallback(const std::string& presentation_id,
                              const GURL& presentation_url,
-                             const MediaRoute& route);
+                             const MediaRoute& route,
+                             mojom::RoutePresentationConnectionPtr connection);
   void InvokeErrorCallback(const blink::mojom::PresentationError& error);
 
  private:
   content::PresentationRequest presentation_request_;
   PresentationConnectionCallback success_cb_;
   PresentationConnectionErrorCallback error_cb_;
-  bool cb_invoked_ = false;
 };
 
 // An abstract base class for Media Router dialog controllers. Tied to a

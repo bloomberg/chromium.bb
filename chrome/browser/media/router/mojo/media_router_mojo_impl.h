@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
 class BrowserContext;
@@ -40,8 +41,7 @@ namespace media_router {
 enum class MediaRouteProviderWakeReason;
 
 // MediaRouter implementation that delegates calls to a MediaRouteProvider.
-class MediaRouterMojoImpl : public MediaRouterBase,
-                            public mojom::MediaRouter {
+class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
  public:
   ~MediaRouterMojoImpl() override;
 
@@ -50,21 +50,21 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const MediaSink::Id& sink_id,
                    const url::Origin& origin,
                    content::WebContents* web_contents,
-                   std::vector<MediaRouteResponseCallback> callbacks,
+                   MediaRouteResponseCallback callback,
                    base::TimeDelta timeout,
                    bool incognito) final;
   void JoinRoute(const MediaSource::Id& source_id,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  content::WebContents* web_contents,
-                 std::vector<MediaRouteResponseCallback> callbacks,
+                 MediaRouteResponseCallback callback,
                  base::TimeDelta timeout,
                  bool incognito) final;
   void ConnectRouteByRouteId(const MediaSource::Id& source,
                              const MediaRoute::Id& route_id,
                              const url::Origin& origin,
                              content::WebContents* web_contents,
-                             std::vector<MediaRouteResponseCallback> callbacks,
+                             MediaRouteResponseCallback callback,
                              base::TimeDelta timeout,
                              bool incognito) final;
   void TerminateRoute(const MediaRoute::Id& route_id) final;
@@ -386,9 +386,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void RouteResponseReceived(const std::string& presentation_id,
                              MediaRouteProviderId provider_id,
                              bool is_incognito,
-                             std::vector<MediaRouteResponseCallback> callbacks,
+                             MediaRouteResponseCallback callback,
                              bool is_join,
                              const base::Optional<MediaRoute>& media_route,
+                             mojom::RoutePresentationConnectionPtr connection,
                              const base::Optional<std::string>& error_text,
                              RouteRequestResult::ResultCode result_code);
 

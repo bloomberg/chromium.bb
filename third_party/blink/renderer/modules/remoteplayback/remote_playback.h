@@ -100,9 +100,9 @@ class MODULES_EXPORT RemotePlayback final
   const Vector<KURL>& Urls() const override;
 
   // Handles the response from PresentationService::StartPresentation.
-  void HandlePresentationResponse(mojom::blink::PresentationInfoPtr,
+  void HandlePresentationResponse(mojom::blink::PresentationConnectionResultPtr,
                                   mojom::blink::PresentationErrorPtr);
-  void OnConnectionSuccess(const mojom::blink::PresentationInfo&);
+  void OnConnectionSuccess(mojom::blink::PresentationConnectionResultPtr);
   void OnConnectionError(const mojom::blink::PresentationError&);
 
   // mojom::blink::PresentationConnection implementation.

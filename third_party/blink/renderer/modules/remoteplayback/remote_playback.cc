@@ -227,6 +227,7 @@ bool RemotePlayback::HasPendingActivity() const {
 }
 
 void RemotePlayback::ContextDestroyed(ExecutionContext*) {
+  target_presentation_connection_.reset();
   presentation_connection_binding_.Close();
 }
 
@@ -503,10 +504,10 @@ const Vector<KURL>& RemotePlayback::Urls() const {
 }
 
 void RemotePlayback::OnConnectionSuccess(
-    const mojom::blink::PresentationInfo& presentation_info) {
+    mojom::blink::PresentationConnectionResultPtr result) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
-  presentation_id_ = presentation_info.id;
-  presentation_url_ = presentation_info.url;
+  presentation_id_ = std::move(result->presentation_info->id);
+  presentation_url_ = std::move(result->presentation_info->url);
 
   StateChanged(WebRemotePlaybackState::kConnecting);
 
@@ -517,12 +518,9 @@ void RemotePlayback::OnConnectionSuccess(
   if (!presentation_controller)
     return;
 
-  mojom::blink::PresentationConnectionPtr connection_ptr;
-  presentation_connection_binding_.Bind(mojo::MakeRequest(&connection_ptr));
-  presentation_controller->GetPresentationService()->SetPresentationConnection(
-      mojom::blink::PresentationInfo::New(presentation_url_, presentation_id_),
-      std::move(connection_ptr),
-      mojo::MakeRequest(&target_presentation_connection_));
+  // Note: Messages on |connection_request| are ignored.
+  target_presentation_connection_.Bind(std::move(result->connection_ptr));
+  presentation_connection_binding_.Bind(std::move(result->connection_request));
 }
 
 void RemotePlayback::OnConnectionError(
@@ -540,12 +538,13 @@ void RemotePlayback::OnConnectionError(
 }
 
 void RemotePlayback::HandlePresentationResponse(
-    mojom::blink::PresentationInfoPtr presentation_info,
+    mojom::blink::PresentationConnectionResultPtr result,
     mojom::blink::PresentationErrorPtr error) {
-  if (presentation_info)
-    OnConnectionSuccess(*presentation_info);
-  else
+  if (result) {
+    OnConnectionSuccess(std::move(result));
+  } else {
     OnConnectionError(*error);
+  }
 }
 
 void RemotePlayback::OnMessage(
