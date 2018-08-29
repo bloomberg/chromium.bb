@@ -44,7 +44,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "Caret",
           "rect": [3, 1003, 1, 13],
           "reason": "chunk appeared"
         }

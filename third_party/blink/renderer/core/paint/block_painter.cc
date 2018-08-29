@@ -60,6 +60,14 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     layout_block_.PaintObject(local_paint_info, paint_offset);
   }
 
+  // Carets are painted in the foreground phase, outside of the contents
+  // properties block. Note that caret painting does not seem to correspond to
+  // any painting order steps within the CSS spec.
+  if (original_phase == PaintPhase::kForeground &&
+      layout_block_.ShouldPaintCarets()) {
+    PaintCarets(paint_info, paint_offset);
+  }
+
   if (ShouldPaintSelfOutline(original_phase)) {
     local_paint_info.phase = PaintPhase::kSelfOutlineOnly;
     layout_block_.PaintObject(local_paint_info, paint_offset);
@@ -231,16 +239,12 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
       paint_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       paint_phase != PaintPhase::kMask) {
     // Handle scrolling translation.
-    base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     base::Optional<PaintInfo> scrolled_paint_info;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
           object_properties ? object_properties->ScrollTranslation() : nullptr;
       if (scroll_translation) {
-        scoped_scroll_property.emplace(
-            paint_info.context.GetPaintController(), scroll_translation,
-            layout_block_, DisplayItem::PaintPhaseToScrollType(paint_phase));
         scrolled_paint_info.emplace(paint_info);
         if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
           scrolled_paint_info->UpdateCullRectForScrollingContents(
@@ -275,15 +279,6 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (paint_phase == PaintPhase::kMask &&
       layout_block_.StyleRef().Visibility() == EVisibility::kVisible) {
     layout_block_.PaintMask(paint_info, paint_offset);
-  }
-
-  // If the caret's node's layout object's containing block is this block, and
-  // the paint action is PaintPhaseForeground, then paint the caret (cursor or
-  // drag caret). (This does not correspond to any painting order steps within
-  // the CSS spec.)
-  if (paint_phase == PaintPhase::kForeground &&
-      layout_block_.ShouldPaintCarets()) {
-    PaintCarets(paint_info, paint_offset);
   }
 }
 
