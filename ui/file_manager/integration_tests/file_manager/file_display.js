@@ -76,17 +76,22 @@ testcase.fileDisplayDriveOffline = function() {
     function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], driveFiles);
     },
-    // Retrieve all file list entries that are rendered 'offline'.
+    // Retrieve all file list entries that could be rendered 'offline'.
     function(result) {
       appId = result.windowId;
-      const renderedOffline = ['#file-list .table-row.file.dim-offline'];
+      const offlineEntry = '#file-list .table-row.file.dim-offline';
       remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, renderedOffline, this.next);
+          'queryAllElements', appId, [offlineEntry, ['opacity']], this.next);
     },
-    // Check: hello.txt file only should be rendered 'offline'.
+    // Check: the hello.txt file only should be rendered 'offline'.
     function(elements) {
       chrome.test.assertEq(1, elements.length);
       chrome.test.assertEq(0, elements[0].text.indexOf('hello.txt'));
+      this.next(elements[0].styles);
+    },
+    // Check: hello.txt must have 'offline' CSS render style (opacity).
+    function(style) {
+      chrome.test.assertEq('0.4', style.opacity);
       this.next();
     },
     function() {
