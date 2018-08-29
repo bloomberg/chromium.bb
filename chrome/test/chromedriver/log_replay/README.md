@@ -13,7 +13,7 @@ tests from chromedriver/test/run_py_tests.py:
 # Generate the log
 test/run_py_tests.py --log-path=<desired path to log> --replayable=true
 # Replay the log
-./client_replay.py <chromedriver binary> <chrome binary> --devtools-replay=true
+./client_replay.py <chromedriver binary> <path to log> --devtools-replay=true
 ```
 For more usage information, run `./client_replay.py --help`.
 
