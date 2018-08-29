@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+#include "base/win/win_util.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #endif
@@ -302,7 +303,10 @@ void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
     third_party_features_status_ = kFeatureDisabled;
   }
 
-  // The above 2 cases are the only possible reasons why the manager wouldn't
+  if (base::win::IsEnterpriseManaged())
+    third_party_features_status_ = kEnterpriseManaged;
+
+  // The above 3 cases are the only possible reasons why the manager wouldn't
   // exist.
   DCHECK(third_party_features_status_.has_value());
 #else  // defined(GOOGLE_CHROME_BUILD)
@@ -366,6 +370,9 @@ std::string ConflictsHandler::GetThirdPartyFeaturesStatusString(
     case ThirdPartyFeaturesStatus::kNonGoogleChromeBuild:
       return "The third-party features are not available in non-Google Chrome "
              "builds.";
+    case ThirdPartyFeaturesStatus::kEnterpriseManaged:
+      return "The third-party features are temporarily disabled for clients on "
+             "domain-joined machines.";
     case ThirdPartyFeaturesStatus::kPolicyDisabled:
       return "The ThirdPartyBlockingEnabled group policy is disabled.";
     case ThirdPartyFeaturesStatus::kFeatureDisabled:
