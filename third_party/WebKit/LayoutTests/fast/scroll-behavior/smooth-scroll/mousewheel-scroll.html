@@ -28,8 +28,8 @@
 
     // 40px per tick.
     await waitFor( () => {
-        return approx_equals(document.scrollingElement.scrollTop, 40, 2) &&
-            approx_equals(document.scrollingElement.scrollLeft, 40, 2);
+        return approx_equals(document.scrollingElement.scrollTop, 40, 4) &&
+            approx_equals(document.scrollingElement.scrollLeft, 40, 4);
     });
 
     // Undo the last tick in each direction to reset the scroll state before
@@ -37,8 +37,8 @@
     await smoothScroll(1 * px_per_tick, x, y, source, 'upleft',
         SPEED_INSTANT);
     await waitFor( () => {
-        return approx_equals(document.scrollingElement.scrollTop, 0, 2) &&
-            approx_equals(document.scrollingElement.scrollLeft, 0, 2);
+        return approx_equals(document.scrollingElement.scrollTop, 0, 4) &&
+            approx_equals(document.scrollingElement.scrollLeft, 0, 4);
     });
 
   }, "This test ensures that consecutive mouse wheel ticks diagonally " +
