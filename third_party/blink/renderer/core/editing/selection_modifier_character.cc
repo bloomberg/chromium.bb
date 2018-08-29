@@ -346,29 +346,43 @@ template <typename Strategy, typename Traversal>
 static PositionTemplate<Strategy> TraverseInternalAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  const PositionTemplate<Strategy> deep_position =
-      visible_position.DeepEquivalent();
-  PositionTemplate<Strategy> p = deep_position;
-
-  if (p.IsNull())
+  if (visible_position.IsNull())
     return PositionTemplate<Strategy>();
 
+  const PositionTemplate<Strategy> deep_position =
+      visible_position.DeepEquivalent();
   const PositionTemplate<Strategy> downstream_start =
-      MostForwardCaretPosition(p);
-  const TextDirection line_direction = PrimaryDirectionOf(*p.AnchorNode());
+      MostForwardCaretPosition(deep_position);
+  const TextDirection line_direction =
+      PrimaryDirectionOf(*deep_position.AnchorNode());
   const TextAffinity affinity = visible_position.Affinity();
 
-  while (true) {
-    InlineBoxPosition box_position = ComputeInlineBoxPosition(
-        PositionWithAffinityTemplate<Strategy>(p, affinity));
-    const InlineBox* box = box_position.inline_box;
-    int offset = box_position.offset_in_box;
+  // Conceptually, starting from the given caret position, traverse each leaf
+  // inline box and each caret position in the box (skipping CSS generated
+  // content) until we have:
+  // - crossed a grapheme boundary, or
+  // - reached the line boundary, or
+  // - reached an atomic inline.
+  // TODO(xiaochengh): Refactor the code to make it closer to the above.
+  // TODO(xiaochengh): Simplify loop termination conditions. Find and fix any
+  // possibility of infinite iterations.
+  for (InlineBoxPosition box_position =
+           ComputeInlineBoxPosition(visible_position.ToPositionWithAffinity());
+       ;) {
+    const InlineBox* const box = box_position.inline_box;
+    const int offset = box_position.offset_in_box;
     if (!box) {
       return Traversal::ForwardVisuallyDistinctCandidateOf(line_direction,
                                                            deep_position);
     }
 
-    while (true) {
+    const InlineBox* next_box = nullptr;
+    int next_offset = 0;
+    bool can_create_position = false;
+
+    // TODO(xiaochengh): The loop below iterates for exactly once. Merge it into
+    // the outer loop and clean up the code.
+    do {
       if (IsBeforeAtomicInlineOrLineBreak<Traversal>(*box, offset)) {
         return Traversal::ForwardVisuallyDistinctCandidateOf(box->Direction(),
                                                              deep_position);
@@ -376,26 +390,33 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
       const LineLayoutItem line_layout_item = box->GetLineLayoutItem();
 
+      // Skip generated content.
       if (!line_layout_item.GetNode()) {
-        box = Traversal::ForwardLeafChildOf(*box);
-        if (!box) {
+        next_box = Traversal::ForwardLeafChildOf(*box);
+        if (!next_box) {
           return Traversal::ForwardVisuallyDistinctCandidateOf(line_direction,
                                                                deep_position);
         }
-        offset = Traversal::CaretBackwardOffsetOf(*box);
+        next_offset = Traversal::CaretBackwardOffsetOf(*next_box);
         continue;
       }
 
-      offset = Traversal::ForwardGraphemeBoundaryOf(
-          box->Direction(), *line_layout_item.GetNode(), offset);
+      const int forward_grapheme_boundary =
+          Traversal::ForwardGraphemeBoundaryOf(
+              box->Direction(), *line_layout_item.GetNode(), offset);
 
       const int caret_min_offset = box->CaretMinOffset();
       const int caret_max_offset = box->CaretMaxOffset();
 
-      if (offset > caret_min_offset && offset < caret_max_offset)
+      if (forward_grapheme_boundary > caret_min_offset &&
+          forward_grapheme_boundary < caret_max_offset) {
+        next_box = box;
+        next_offset = forward_grapheme_boundary;
+        can_create_position = true;
         break;
+      }
 
-      if (Traversal::IsOvershot(offset, *box)) {
+      if (Traversal::IsOvershot(forward_grapheme_boundary, *box)) {
         // Overshot forwardly.
         const InlineBox* const forward_box =
             Traversal::ForwardLeafChildIgnoringLineBreakOf(*box);
@@ -418,27 +439,41 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
         // Reposition at the other logical position corresponding to our
         // edge's visual position and go for another round.
-        box = forward_box;
-        offset = Traversal::CaretBackwardOffsetOf(*forward_box);
+        next_box = forward_box;
+        next_offset = Traversal::CaretBackwardOffsetOf(*forward_box);
         continue;
       }
 
-      DCHECK_EQ(offset, Traversal::CaretForwardOffsetOf(*box));
-      const bool should_break = FindForwardBoxInPossiblyBidiContext<Traversal>(
-          box, offset, line_direction);
-      if (should_break)
-        break;
+      DCHECK_EQ(forward_grapheme_boundary,
+                Traversal::CaretForwardOffsetOf(*box));
+      next_box = box;
+      next_offset = forward_grapheme_boundary;
+      // We may be at a bidi boundary, in which case the visual caret position
+      // doesn't match its DOM position, and certain adjustment is needed.
+      can_create_position = FindForwardBoxInPossiblyBidiContext<Traversal>(
+          next_box, next_offset, line_direction);
+    } while (false);
+
+    if (!can_create_position) {
+      box_position = InlineBoxPosition(next_box, next_offset);
+      continue;
     }
 
-    p = PositionTemplate<Strategy>::EditingPositionOf(
-        box->GetLineLayoutItem().GetNode(), offset);
+    // TODO(xiaochengh): Eliminate single-char variable name.
+    const PositionTemplate<Strategy> p =
+        PositionTemplate<Strategy>::EditingPositionOf(
+            next_box->GetLineLayoutItem().GetNode(), next_offset);
 
     if ((IsVisuallyEquivalentCandidate(p) &&
          MostForwardCaretPosition(p) != downstream_start) ||
         p.AtStartOfTree() || p.AtEndOfTree())
       return p;
 
+    // TODO(xiaochengh): This detour to |p| seems unnecessary. Investigate if we
+    // can simply use |InlineBoxPosition(next_box, next_offset)|.
     DCHECK_NE(p, deep_position);
+    box_position = ComputeInlineBoxPosition(
+        PositionWithAffinityTemplate<Strategy>(p, affinity));
   }
 }
 

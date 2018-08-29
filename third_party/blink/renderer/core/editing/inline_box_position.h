@@ -44,8 +44,8 @@ struct InlineBoxPosition {
   STACK_ALLOCATED();
 
  public:
-  const InlineBox* const inline_box;
-  const int offset_in_box;
+  const InlineBox* inline_box;
+  int offset_in_box;
 
   InlineBoxPosition() : inline_box(nullptr), offset_in_box(0) {}
 
