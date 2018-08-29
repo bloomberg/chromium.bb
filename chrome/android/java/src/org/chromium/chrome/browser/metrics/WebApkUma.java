@@ -17,7 +17,7 @@ import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.chrome.browser.webapps.WebApkInfo;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -193,17 +193,31 @@ public class WebApkUma {
     }
 
     /** Records the duration of a WebAPK session (from launch/foreground to background). */
-    public static void recordWebApkSessionDuration(long duration) {
+    public static void recordWebApkSessionDuration(
+            @WebApkInfo.WebApkDistributor int distributor, long duration) {
         RecordHistogram.recordLongTimesHistogram(
-                "WebApk.Session.TotalDuration", duration, TimeUnit.MILLISECONDS);
+                "WebApk.Session.TotalDuration2." + getWebApkDistributorUmaSuffix(distributor),
+                duration, TimeUnit.MILLISECONDS);
     }
 
     /** Records the current Shell APK version. */
-    public static void recordShellApkVersion(int shellApkVersion, String packageName) {
-        String name = packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)
-                ? "WebApk.ShellApkVersion.BrowserApk"
-                : "WebApk.ShellApkVersion.UnboundApk";
-        RecordHistogram.recordSparseSlowlyHistogram(name, shellApkVersion);
+    public static void recordShellApkVersion(
+            int shellApkVersion, @WebApkInfo.WebApkDistributor int distributor) {
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "WebApk.ShellApkVersion2." + getWebApkDistributorUmaSuffix(distributor),
+                shellApkVersion);
+    }
+
+    private static String getWebApkDistributorUmaSuffix(
+            @WebApkInfo.WebApkDistributor int distributor) {
+        switch (distributor) {
+            case WebApkInfo.WebApkDistributor.BROWSER:
+                return "Browser";
+            case WebApkInfo.WebApkDistributor.DEVICE_POLICY:
+                return "DevicePolicy";
+            default:
+                return "Other";
+        }
     }
 
     /**

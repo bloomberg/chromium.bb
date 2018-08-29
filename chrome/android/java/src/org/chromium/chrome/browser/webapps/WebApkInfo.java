@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
@@ -26,6 +27,8 @@ import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +40,14 @@ public class WebApkInfo extends WebappInfo {
     public static final String RESOURCE_SHORT_NAME = "short_name";
     public static final String RESOURCE_STRING_TYPE = "string";
 
+    @IntDef({WebApkDistributor.BROWSER, WebApkDistributor.DEVICE_POLICY, WebApkDistributor.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface WebApkDistributor {
+        int BROWSER = 0;
+        int DEVICE_POLICY = 1;
+        int OTHER = 2;
+    }
+
     private static final String TAG = "WebApkInfo";
 
     private Icon mBadgeIcon;
@@ -45,6 +56,7 @@ public class WebApkInfo extends WebappInfo {
     private int mShellApkVersion;
     private String mManifestUrl;
     private String mManifestStartUrl;
+    private @WebApkDistributor int mDistributor;
     private Map<String, String> mIconUrlToMurmur2HashMap;
 
     public static WebApkInfo createEmpty() {
@@ -80,6 +92,22 @@ public class WebApkInfo extends WebappInfo {
                 intent, ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
 
         return create(webApkPackageName, url, source, forceNavigation);
+    }
+
+    private static @WebApkDistributor int getDistributor(Bundle bundle, String packageName) {
+        String distributor = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.DISTRIBUTOR);
+        if (!TextUtils.isEmpty(distributor)) {
+            if (TextUtils.equals(distributor, "browser")) {
+                return WebApkDistributor.BROWSER;
+            }
+            if (TextUtils.equals(distributor, "device_policy")) {
+                return WebApkDistributor.DEVICE_POLICY;
+            }
+            return WebApkDistributor.OTHER;
+        }
+        return packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)
+                ? WebApkDistributor.BROWSER
+                : WebApkDistributor.OTHER;
     }
 
     /**
@@ -141,6 +169,9 @@ public class WebApkInfo extends WebappInfo {
         String manifestStartUrl = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.START_URL);
         Map<String, String> iconUrlToMurmur2HashMap = getIconUrlAndIconMurmur2HashMap(bundle);
 
+        @WebApkDistributor
+        int distributor = getDistributor(bundle, webApkPackageName);
+
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
         Bitmap primaryIcon = decodeBitmapFromDrawable(res, primaryIconId);
 
@@ -152,8 +183,8 @@ public class WebApkInfo extends WebappInfo {
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
                 new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
                 displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
-                forceNavigation);
+                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
+                iconUrlToMurmur2HashMap, forceNavigation);
     }
 
     /**
@@ -178,6 +209,7 @@ public class WebApkInfo extends WebappInfo {
      * @param manifestStartUrl        URL that the WebAPK should navigate to when launched from the
      *                                homescreen. Different from the {@link url} parameter if the
      *                                WebAPK is launched from a deep link.
+     * @param distributor             The source from where the WebAPK is installed.
      * @param iconUrlToMurmur2HashMap Map of the WebAPK's icon URLs to Murmur2 hashes of the
      *                                icon untransformed bytes.
      * @param forceNavigation         Whether the WebAPK should navigate to {@link url} if the
@@ -187,8 +219,8 @@ public class WebApkInfo extends WebappInfo {
             Icon badgeIcon, Icon splashIcon, String name, String shortName,
             @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
             long backgroundColor, String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap,
-            boolean forceNavigation) {
+            String manifestStartUrl, @WebApkDistributor int distributor,
+            Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
         if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG,
                     "Incomplete data provided: " + id + ", " + url + ", " + manifestStartUrl + ", "
@@ -205,16 +237,16 @@ public class WebApkInfo extends WebappInfo {
 
         return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, splashIcon, name, shortName,
                 displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
-                forceNavigation);
+                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
+                iconUrlToMurmur2HashMap, forceNavigation);
     }
 
     protected WebApkInfo(String id, String url, String scope, Icon primaryIcon, Icon badgeIcon,
             Icon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
             int orientation, int source, long themeColor, long backgroundColor,
             String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap,
-            boolean forceNavigation) {
+            String manifestStartUrl, @WebApkDistributor int distributor,
+            Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
                 themeColor, backgroundColor, null /* splash_screen_url */,
                 false /* isIconGenerated */, forceNavigation);
@@ -224,6 +256,7 @@ public class WebApkInfo extends WebappInfo {
         mShellApkVersion = shellApkVersion;
         mManifestUrl = manifestUrl;
         mManifestStartUrl = manifestStartUrl;
+        mDistributor = distributor;
         mIconUrlToMurmur2HashMap = iconUrlToMurmur2HashMap;
     }
 
@@ -258,6 +291,10 @@ public class WebApkInfo extends WebappInfo {
 
     public String manifestStartUrl() {
         return mManifestStartUrl;
+    }
+
+    public @WebApkDistributor int distributor() {
+        return mDistributor;
     }
 
     public Map<String, String> iconUrlToMurmur2HashMap() {

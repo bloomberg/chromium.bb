@@ -104,7 +104,7 @@ public class WebApkActivity extends WebappActivity {
         super.onDeferredStartupWithStorage(storage);
 
         WebApkInfo info = (WebApkInfo) getWebappInfo();
-        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.apkPackageName());
+        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.distributor());
 
         mUpdateManager = new WebApkUpdateManager(storage);
         mUpdateManager.updateIfNeeded(getActivityTab(), info);
@@ -120,7 +120,9 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public void onPauseWithNative() {
-        WebApkUma.recordWebApkSessionDuration(SystemClock.elapsedRealtime() - mStartTime);
+        WebApkInfo info = (WebApkInfo) getWebappInfo();
+        WebApkUma.recordWebApkSessionDuration(
+                info.distributor(), SystemClock.elapsedRealtime() - mStartTime);
         super.onPauseWithNative();
     }
 

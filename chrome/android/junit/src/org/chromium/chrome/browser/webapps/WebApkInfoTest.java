@@ -36,6 +36,7 @@ import java.util.Map;
 @Config(manifest = Config.NONE)
 public class WebApkInfoTest {
     private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
+    private static final String UNBOUND_WEBAPK_PACKAGE_NAME = "unbound.webapk";
 
     // Android Manifest meta data for {@link PACKAGE_NAME}.
     private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
@@ -139,6 +140,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());
+        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
 
         Assert.assertEquals(1, info.iconUrlToMurmur2HashMap().size());
         Assert.assertTrue(info.iconUrlToMurmur2HashMap().containsKey(ICON_URL));
@@ -386,5 +388,31 @@ public class WebApkInfoTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
         Assert.assertEquals(ShortcutSource.EXTERNAL_INTENT, info.source());
+    }
+
+    /**
+     * Test when a distributor is not specified, the default distributor value for a WebAPK
+     * installed by Chrome is |WebApkInfo.WebApkDistributor.BROWSER|, while for an Unbound WebAPK is
+     * |WebApkInfo.WebApkDistributor.Other|.
+     */
+    @Test
+    public void testWebApkDistributorDefaultValue() {
+        // Test Case: Bound WebAPK
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
+
+        // Test Case: Unbound WebAPK
+        WebApkTestHelper.registerWebApkWithMetaData(UNBOUND_WEBAPK_PACKAGE_NAME, bundle);
+        intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, UNBOUND_WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        info = WebApkInfo.create(intent);
+        Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
     }
 }
