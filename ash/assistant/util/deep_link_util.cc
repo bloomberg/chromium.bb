@@ -35,25 +35,11 @@ constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
-// TODO(dmblack): Wire up actual Assistant Reminders URL.
-constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
-  <html>
-    <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
-      <h3>Google Assistant Reminders</h3>
-      <p>Please use your phone to access Reminders.</p>
-    </body>
-  </html>
-)";
-
-// TODO(dmblack): Wire up actual Assistant Settings URL.
-constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
-  <html>
-    <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
-      <h3>Google Assistant Settings</h3>
-      <p>Please use your phone to access Settings.</p>
-    </body>
-  </html>
-)";
+// TODO(b/113357196): Make these URLs configurable for development purposes.
+constexpr char kAssistantRemindersWebUrl[] =
+    "https://assistant.google.com/reminders/mainview";
+constexpr char kAssistantSettingsWebUrl[] =
+    "https://assistant.google.com/settings/mainpage";
 
 }  // namespace
 
