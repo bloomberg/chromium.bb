@@ -184,20 +184,6 @@ const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
   return views::Widget::GetNativeTheme();
 }
 
-void BrowserFrame::SchedulePaintInRect(const gfx::Rect& rect) {
-  views::Widget::SchedulePaintInRect(rect);
-
-  // Paint the frame caption area and window controls during immersive reveal.
-  if (browser_view_ &&
-      browser_view_->immersive_mode_controller()->IsRevealed()) {
-    // This function should not be reentrant because the TopContainerView
-    // paints to a layer for the duration of the immersive reveal.
-    views::View* top_container = browser_view_->top_container();
-    CHECK(top_container->layer());
-    top_container->SchedulePaintInRect(rect);
-  }
-}
-
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
 #if defined(USE_X11)
