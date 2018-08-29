@@ -517,26 +517,23 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   // Create a dictionary with all the types that can be stored encoded in a
   // string.
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "string");
-  ASSERT_TRUE(RegisterSchema(
-      ns,
-      "{"
-      "  \"type\": \"object\","
-      "  \"id\": \"MainType\","
-      "  \"properties\": {"
-      "    \"null\": { \"type\": \"null\" },"
-      "    \"bool\": { \"type\": \"boolean\" },"
-      "    \"int\": { \"type\": \"integer\" },"
-      "    \"double\": { \"type\": \"number\" },"
-      "    \"list\": {"
-      "      \"type\": \"array\","
-      "      \"items\": { \"$ref\": \"MainType\" }"
-      "    },"
-      "    \"dict\": { \"$ref\": \"MainType\" }"
-      "  }"
-      "}"));
+  ASSERT_TRUE(RegisterSchema(ns,
+                             R"({
+        "type": "object",
+        "id": "MainType",
+        "properties": {
+          "bool": { "type": "boolean" },
+          "int": { "type": "integer" },
+          "double": { "type": "number" },
+          "list": {
+            "type": "array",
+            "items": { "$ref": "MainType" }
+          },
+          "dict": { "$ref": "MainType" }
+        }
+      })"));
 
   base::DictionaryValue policy;
-  policy.Set("null", std::make_unique<base::Value>());
   policy.SetBoolean("bool", true);
   policy.SetInteger("int", -123);
   policy.SetDouble("double", 456.78e9);
@@ -553,7 +550,6 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   base::JSONWriter::Write(list, &encoded_list);
   ASSERT_FALSE(encoded_list.empty());
   base::DictionaryValue encoded_policy;
-  encoded_policy.SetString("null", "");
   encoded_policy.SetString("bool", "1");
   encoded_policy.SetString("int", "-123");
   encoded_policy.SetString("double", "456.78e9");

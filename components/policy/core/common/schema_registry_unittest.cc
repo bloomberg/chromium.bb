@@ -21,27 +21,26 @@ namespace policy {
 namespace {
 
 const char kTestSchema[] =
-    "{"
-    "  \"type\": \"object\","
-    "  \"properties\": {"
-    "    \"string\": { \"type\": \"string\" },"
-    "    \"integer\": { \"type\": \"integer\" },"
-    "    \"boolean\": { \"type\": \"boolean\" },"
-    "    \"null\": { \"type\": \"null\" },"
-    "    \"double\": { \"type\": \"number\" },"
-    "    \"list\": {"
-    "      \"type\": \"array\","
-    "      \"items\": { \"type\": \"string\" }"
-    "    },"
-    "    \"object\": {"
-    "      \"type\": \"object\","
-    "      \"properties\": {"
-    "        \"a\": { \"type\": \"string\" },"
-    "        \"b\": { \"type\": \"integer\" }"
-    "      }"
-    "    }"
-    "  }"
-    "}";
+    R"({
+      "type": "object",
+      "properties": {
+        "string": { "type": "string" },
+        "integer": { "type": "integer" },
+        "boolean": { "type": "boolean" },
+        "double": { "type": "number" },
+        "list": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "a": { "type": "string" },
+            "b": { "type": "integer" }
+          }
+        }
+      }
+    })";
 
 class MockSchemaRegistryObserver : public SchemaRegistry::Observer {
  public:
