@@ -353,6 +353,22 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Info(emails=['dmazzoni@chromium.org'],
+                documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfAccessibility(_BlinkPerfBenchmark):
+  tag = 'accessibility'
+  subdir = 'accessibility'
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.accessibility'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--force-renderer-accessibility',
+    ])
+
+
 @benchmark.Info(
     emails=['jbroman@chromium.org', 'yukishiino@chromium.org',
             'haraken@chromium.org'],

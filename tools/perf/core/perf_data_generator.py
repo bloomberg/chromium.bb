@@ -37,6 +37,7 @@ from py_utils import discover
 _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.android.coldish',
   'experimental.startup.mobile',
+  'blink_perf.accessibility',
   ])
 
 # Additional compile targets to add to builders.
