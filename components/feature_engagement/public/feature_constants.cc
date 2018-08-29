@@ -51,6 +51,8 @@ const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature{
     "IPH_DownloadInfoBarDownloadsAreFaster", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomePageButtonFeature{
     "IPH_HomePageButton", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHHomepageTileFeature{"IPH_HomepageTile",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabPageButtonFeature{
     "IPH_NewTabPageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)

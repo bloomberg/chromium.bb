@@ -22,9 +22,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +125,14 @@ public class TileRenderer {
     }
 
     /**
+     * Record that the homepage tile was clicked for IPH reasons.
+     */
+    private void recordHomepageTileClickedForIPH() {
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        tracker.notifyEvent(EventConstants.HOMEPAGE_TILE_CLICKED);
+    }
+
+    /**
      * Inflates a new tile view, initializes it, and loads an icon for it.
      * @param tile The tile that holds the data to populate the new tile view.
      * @param parentView The parent of the new tile view.
@@ -139,6 +151,10 @@ public class TileRenderer {
         fetchIcon(tile.getData(), setupDelegate.createIconLoadCallback(tile));
 
         TileGroup.TileInteractionDelegate delegate = setupDelegate.createInteractionDelegate(tile);
+        if (tile.getSource() == TileSource.HOMEPAGE) {
+            delegate.setOnClickRunnable(this ::recordHomepageTileClickedForIPH);
+        }
+
         tileView.setOnClickListener(delegate);
         tileView.setOnCreateContextMenuListener(delegate);
 

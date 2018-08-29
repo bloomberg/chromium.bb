@@ -3687,6 +3687,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_IPH_NTP_BUTTON_TEXT_CHROME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility message to tap on the home button to navigate to the new tab page on the current tab.">
         Tap the home button to get to the new tab page in your current tab
       </message>
+      <message name="IDS_IPH_HOMEPAGE_TILE_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile.">
+        Your favorite pages are here
+      </message>
 
       <!-- Password Accessory Strings -->
       <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
