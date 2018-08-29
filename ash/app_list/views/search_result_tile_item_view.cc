@@ -472,6 +472,7 @@ void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
 
 void SearchResultTileItemView::SetTitle(const base::string16& title) {
   title_->SetText(title);
+  title_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void SearchResultTileItemView::SetRating(float rating) {
