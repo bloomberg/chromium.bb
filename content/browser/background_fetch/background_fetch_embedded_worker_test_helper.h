@@ -15,9 +15,6 @@
 
 namespace content {
 
-struct BackgroundFetchRegistration;
-struct BackgroundFetchSettledFetch;
-
 // Extension of the EmbeddedWorkerTestHelper that enables instrumentation of the
 // events related to the Background Fetch API. Storage for these tests will
 // always be kept in memory, as data persistence is tested elsewhere.
@@ -51,11 +48,6 @@ class BackgroundFetchEmbeddedWorkerTestHelper
     return last_registration_;
   }
 
-  const base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches()
-      const {
-    return last_fetches_;
-  }
-
  protected:
   // EmbeddedWorkerTestHelper overrides:
   void OnBackgroundFetchAbortEvent(
@@ -68,12 +60,10 @@ class BackgroundFetchEmbeddedWorkerTestHelper
       override;
   void OnBackgroundFetchFailEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback)
       override;
   void OnBackgroundFetchSuccessEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback) override;
 
@@ -89,7 +79,6 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   base::Closure fetched_event_closure_;
 
   base::Optional<BackgroundFetchRegistration> last_registration_;
-  base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEmbeddedWorkerTestHelper);
 };

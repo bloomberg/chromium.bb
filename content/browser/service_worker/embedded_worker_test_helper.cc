@@ -229,21 +229,18 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void DispatchBackgroundFetchFailEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override {
     if (!helper_)
       return;
-    helper_->OnBackgroundFetchFailEventStub(registration, fetches,
-                                            std::move(callback));
+    helper_->OnBackgroundFetchFailEventStub(registration, std::move(callback));
   }
 
   void DispatchBackgroundFetchSuccessEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchSuccessEventCallback callback) override {
     if (!helper_)
       return;
-    helper_->OnBackgroundFetchSuccessEventStub(registration, fetches,
+    helper_->OnBackgroundFetchSuccessEventStub(registration,
                                                std::move(callback));
   }
 
@@ -603,7 +600,6 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                           base::Time::Now());
@@ -611,7 +607,6 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
@@ -880,23 +875,21 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEventStub(
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEventStub(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent,
-                     AsWeakPtr(), registration, fetches, std::move(callback)));
+                     AsWeakPtr(), registration, std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEventStub(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent,
-                     AsWeakPtr(), registration, fetches, std::move(callback)));
+                     AsWeakPtr(), registration, std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnCookieChangeEventStub(

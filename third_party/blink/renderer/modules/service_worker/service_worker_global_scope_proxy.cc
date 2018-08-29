@@ -159,8 +159,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration,
-    const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
+    const WebBackgroundFetchRegistration& registration) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchFail, event_id);
@@ -186,8 +185,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration,
-    const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
+    const WebBackgroundFetchRegistration& registration) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchSuccess,

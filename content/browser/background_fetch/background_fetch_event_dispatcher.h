@@ -18,7 +18,6 @@
 namespace content {
 
 class BackgroundFetchRegistrationId;
-struct BackgroundFetchSettledFetch;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
@@ -56,21 +55,17 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchfail` event, which indicates that a
-  // background fetch has finished with one or more failed fetches. The request-
-  // response pairs are included.
+  // background fetch has finished with one or more failed fetches.
   void DispatchBackgroundFetchFailEvent(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchsuccess` event, which indicates that a
-  // background fetch has successfully completed. The request-response pairs are
-  // included.
+  // background fetch has successfully completed.
   void DispatchBackgroundFetchSuccessEvent(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       base::OnceClosure finished_closure);
 
  private:
@@ -126,12 +121,10 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       int request_id);
   static void DoDispatchBackgroundFetchFailEvent(
       std::unique_ptr<BackgroundFetchRegistration> registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
   static void DoDispatchBackgroundFetchSuccessEvent(
       std::unique_ptr<BackgroundFetchRegistration> registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
 

@@ -36,7 +36,6 @@ class GURL;
 namespace content {
 
 struct BackgroundFetchRegistration;
-struct BackgroundFetchSettledFetch;
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
@@ -175,11 +174,9 @@ class EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   virtual void OnBackgroundFetchSuccessEvent(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   virtual void OnCookieChangeEvent(
@@ -271,11 +268,9 @@ class EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   void OnBackgroundFetchSuccessEventStub(
       const BackgroundFetchRegistration& registration,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   void OnCookieChangeEventStub(

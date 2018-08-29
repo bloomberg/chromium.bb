@@ -438,8 +438,10 @@ void BackgroundFetchContext::DidMarkForDeletion(
     case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
     case BackgroundFetchReasonToAbort::NONE:
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
-      // TODO(crbug.com/699957): Get rid of this once matchAll() is implemented
-      // on BackgroundFetchRegistration.
+      // We still need this to figure out which event to send.
+      // TODO(crbug.com/699957, crbug.com/874092): Add a method to only return
+      // the information needed to dispatch these events, instead of settled
+      // fetches.
       data_manager_->GetSettledFetchesForRegistration(
           registration_id,
           std::make_unique<BackgroundFetchRequestMatchParams>(),
@@ -480,7 +482,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   if (background_fetch_succeeded) {
     registration->state = blink::mojom::BackgroundFetchState::SUCCESS;
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
-        registration_id, std::move(registration), std::move(settled_fetches),
+        registration_id, std::move(registration),
         base::BindOnce(
             &BackgroundFetchContext::CleanupRegistration,
             weak_factory_.GetWeakPtr(), registration_id,
@@ -493,7 +495,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   } else {
     registration->state = blink::mojom::BackgroundFetchState::FAILURE;
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
-        registration_id, std::move(registration), std::move(settled_fetches),
+        registration_id, std::move(registration),
         base::BindOnce(
             &BackgroundFetchContext::CleanupRegistration,
             weak_factory_.GetWeakPtr(), registration_id,

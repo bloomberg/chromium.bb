@@ -31,7 +31,6 @@
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
-#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
@@ -93,16 +92,12 @@ class MockWebServiceWorkerContextProxy
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration,
-      const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
-      override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration,
-      const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
-      override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchCookieChangeEvent(

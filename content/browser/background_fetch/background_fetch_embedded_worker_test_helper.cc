@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
@@ -55,10 +54,8 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
   last_registration_ = registration;
-  last_fetches_ = fetches;
 
   if (fail_fetch_fail_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -74,11 +71,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
     const BackgroundFetchRegistration& registration,
-    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
   last_registration_ = registration;
-  last_fetches_ = fetches;
 
   if (fail_fetched_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,

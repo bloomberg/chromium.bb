@@ -7,7 +7,6 @@ module content.mojom;
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
-import "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/platform/modules/notifications/notification.mojom";
 import "third_party/blink/public/platform/modules/payments/payment_app.mojom";
@@ -96,13 +95,11 @@ interface ServiceWorker {
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
  DispatchBackgroundFetchFailEvent(
-      blink.mojom.BackgroundFetchRegistration registration,
-      array<blink.mojom.BackgroundFetchSettledFetch> fetches)
+      blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchSuccessEvent(
-      blink.mojom.BackgroundFetchRegistration registration,
-      array<blink.mojom.BackgroundFetchSettledFetch> fetches)
+      blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
 
