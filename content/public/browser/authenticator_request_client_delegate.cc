@@ -16,6 +16,9 @@ AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
 AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
+void AuthenticatorRequestClientDelegate::DidFailWithInterestingReason(
+    InterestingFailureReason reason) {}
+
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback) {}

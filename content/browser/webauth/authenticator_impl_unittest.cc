@@ -73,6 +73,11 @@ using cbor::CBORReader;
 
 namespace {
 
+using InterestingFailureReason =
+    ::content::AuthenticatorRequestClientDelegate::InterestingFailureReason;
+using FailureReasonCallbackReceiver =
+    ::device::test::TestCallbackReceiver<InterestingFailureReason>;
+
 typedef struct {
   const char* origin;
   // Either a relying party ID or a U2F AppID.
@@ -1814,14 +1819,25 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
 class MockAuthenticatorRequestDelegateObserver
     : public TestAuthenticatorRequestDelegate {
  public:
-  MockAuthenticatorRequestDelegateObserver()
+  using InterestingFailureReasonCallback =
+      base::OnceCallback<void(InterestingFailureReason)>;
+
+  MockAuthenticatorRequestDelegateObserver(
+      InterestingFailureReasonCallback failure_reasons_callback =
+          base::DoNothing())
       : TestAuthenticatorRequestDelegate(
             nullptr /* render_frame_host */,
             base::DoNothing() /* did_start_request_callback */,
             IndividualAttestation::NOT_REQUESTED,
             AttestationConsent::DENIED,
-            true /* is_focused */) {}
+            true /* is_focused */),
+        failure_reasons_callback_(std::move(failure_reasons_callback)) {}
   ~MockAuthenticatorRequestDelegateObserver() override = default;
+
+  void DidFailWithInterestingReason(InterestingFailureReason reason) override {
+    ASSERT_TRUE(failure_reasons_callback_);
+    std::move(failure_reasons_callback_).Run(reason);
+  }
 
   MOCK_METHOD1(
       OnTransportAvailabilityEnumerated,
@@ -1832,6 +1848,8 @@ class MockAuthenticatorRequestDelegateObserver
   MOCK_METHOD1(FidoAuthenticatorRemoved, void(base::StringPiece));
 
  private:
+  InterestingFailureReasonCallback failure_reasons_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockAuthenticatorRequestDelegateObserver);
 };
 
@@ -1957,6 +1975,96 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 
   fake_ble_discovery->RemoveDevice(device_id);
   ble_device_lost_done.Run();
+}
+
+TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  FailureReasonCallbackReceiver failure_reason_receiver;
+  auto mock_delegate = std::make_unique<
+      ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
+      failure_reason_receiver.callback());
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructFakeAuthenticatorWithTimer(
+      std::move(mock_delegate), task_runner);
+
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
+                              callback_receiver.callback());
+
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+
+  ASSERT_TRUE(failure_reason_receiver.was_called());
+  EXPECT_EQ(content::AuthenticatorRequestClientDelegate::
+                InterestingFailureReason::kTimeout,
+            std::get<0>(*failure_reason_receiver.result()));
+}
+
+TEST_F(AuthenticatorImplRequestDelegateTest,
+       FailureReasonForDuplicateRegistration) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  FailureReasonCallbackReceiver failure_reason_receiver;
+  auto mock_delegate = std::make_unique<
+      ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
+      failure_reason_receiver.callback());
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructFakeAuthenticatorWithTimer(
+      std::move(mock_delegate), task_runner);
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->exclude_credentials = GetTestAllowCredentials();
+  ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+      options->exclude_credentials[0]->id, kTestRelyingPartyId));
+
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_EXCLUDED,
+            callback_receiver.status());
+
+  ASSERT_TRUE(failure_reason_receiver.was_called());
+  EXPECT_EQ(content::AuthenticatorRequestClientDelegate::
+                InterestingFailureReason::kKeyAlreadyRegistered,
+            std::get<0>(*failure_reason_receiver.result()));
+}
+
+TEST_F(AuthenticatorImplRequestDelegateTest,
+       FailureReasonForMissingRegistration) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  FailureReasonCallbackReceiver failure_reason_receiver;
+  auto mock_delegate = std::make_unique<
+      ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
+      failure_reason_receiver.callback());
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructFakeAuthenticatorWithTimer(
+      std::move(mock_delegate), task_runner);
+
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
+                              callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+            callback_receiver.status());
+
+  ASSERT_TRUE(failure_reason_receiver.was_called());
+  EXPECT_EQ(content::AuthenticatorRequestClientDelegate::
+                InterestingFailureReason::kKeyNotRegistered,
+            std::get<0>(*failure_reason_receiver.result()));
 }
 
 }  // namespace content

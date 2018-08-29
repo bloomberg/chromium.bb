@@ -655,6 +655,10 @@ void AuthenticatorImpl::OnRegisterResponse(
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
+      DCHECK(request_delegate_);
+      request_delegate_->DidFailWithInterestingReason(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyAlreadyRegistered);
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
@@ -768,6 +772,10 @@ void AuthenticatorImpl::OnSignResponse(
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       // No authenticators contained the credential.
+      DCHECK(request_delegate_);
+      request_delegate_->DidFailWithInterestingReason(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyNotRegistered);
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
@@ -808,9 +816,7 @@ void AuthenticatorImpl::OnSignResponse(
   NOTREACHED();
 }
 
-void AuthenticatorImpl::OnTimeout() {
-  // TODO(crbug.com/814418): Add layout tests to verify timeouts are
-  // indistinguishable from NOT_ALLOWED_ERROR cases.
+void AuthenticatorImpl::FailWithNotAllowedErrorAndCleanup() {
   DCHECK(make_credential_response_callback_ ||
          get_assertion_response_callback_);
   if (make_credential_response_callback_) {
@@ -825,14 +831,22 @@ void AuthenticatorImpl::OnTimeout() {
   }
 }
 
+void AuthenticatorImpl::OnTimeout() {
+  DCHECK(request_delegate_);
+  request_delegate_->DidFailWithInterestingReason(
+      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
+
+  // TODO(crbug.com/814418): Add layout tests to verify timeouts are
+  // indistinguishable from NOT_ALLOWED_ERROR cases.
+  FailWithNotAllowedErrorAndCleanup();
+}
+
 void AuthenticatorImpl::Cancel() {
   // If response callback is invoked already, then ignore cancel request.
   if (!make_credential_response_callback_ && !get_assertion_response_callback_)
     return;
 
-  // Response from user cancellation is indistinguishable from error due to
-  // timeout.
-  OnTimeout();
+  FailWithNotAllowedErrorAndCleanup();
 }
 
 void AuthenticatorImpl::InvokeCallbackAndCleanup(
