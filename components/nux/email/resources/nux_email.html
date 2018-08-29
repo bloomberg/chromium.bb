@@ -25,40 +25,43 @@
 
         .email-ask {
           text-align: center;
-          width: 800;
+          width: 800px;
         }
 
         .email-logo {
           background: red; /* TODO(scottchen): replace with logo. */
-          height: 40px;
+          height: 36px;
           margin: auto;
-          margin-bottom: 36px;
-          width: 40px;
+          margin-bottom: 16px;
+          width: 36px;
         }
 
         h1 {
           color: #202124;
-          font-size: 28px;
-          opacity: .8;
-          margin-bottom: 16px;
+          font-weight: 500;
+          font-size: 1.5rem;
+          line-height: 2.5rem;
+          margin: 0;
         }
 
-        .description {
-          color: #5f6368;
-          font-size: 16px;
-          margin-bottom: 24px;
+        h2 {
+          color: #202124;
+          font-weight: unset;
+          font-size: 1.125rem;
+          line-height: 2rem;
+          margin: 0;
+          margin-bottom: 48px;
         }
 
         #emailChooser {
           color: #202124;
-          font-size: 14px;
           margin-bottom: 48px;
         }
       </style>
       <div class="email-ask">
         <div class="email-logo"></div>
         <h1>TODO_HEADER</h1>
-        <div class="description">TODO_DESCRIPTION</div>
+        <h2>TODO_SUBHEADER</h2>
         <email-chooser id="emailChooser"></email-chooser>
       </div>
     </template>
