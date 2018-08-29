@@ -6200,7 +6200,8 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
     return true;
   }
   if (!frame_ ||
-      frame_->IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentWrite)) {
+      frame_->IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentWrite,
+                               ReportOptions::kReportOnFailure)) {
     return true;
   }
 
