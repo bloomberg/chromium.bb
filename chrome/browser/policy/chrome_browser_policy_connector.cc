@@ -27,6 +27,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
@@ -44,12 +45,29 @@
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #endif
 
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_policy_migrator.h"
+#endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #endif
 
 namespace policy {
+
+namespace {
+
+void AddMigrators(ConfigurationPolicyProvider* provider) {
+  DCHECK(provider);
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+  provider->AddMigrator(
+      std::make_unique<extensions::enterprise_reporting::
+                           EnterpriseReportingPolicyMigrator>());
+#endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+}  // namespace
 
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
     : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
@@ -111,8 +129,8 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
   auto providers = BrowserPolicyConnector::CreatePolicyProviders();
   std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
       CreatePlatformProvider();
-  // TODO(crbug/869958): Add migrators here.
   if (platform_provider) {
+    AddMigrators(platform_provider.get());
     platform_provider_ = platform_provider.get();
     // PlatformProvider should be before all other providers (highest priority).
     providers.insert(providers.begin(), std::move(platform_provider));
@@ -122,8 +140,8 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
           MachineLevelUserCloudPolicyController::CreatePolicyManager();
-  // TODO(crbug/869958): Add migrators here.
   if (machine_level_user_cloud_policy_manager) {
+    AddMigrators(machine_level_user_cloud_policy_manager.get());
     machine_level_user_cloud_policy_manager_ =
         machine_level_user_cloud_policy_manager.get();
     providers.push_back(std::move(machine_level_user_cloud_policy_manager));
