@@ -115,7 +115,7 @@ static bool RulesApplicableInCurrentTreeScope(
 template <typename RuleDataListType>
 void ElementRuleCollector::CollectMatchingRulesForList(
     const RuleDataListType* rules,
-    CascadeOrder cascade_order,
+    ShadowV0CascadeOrder cascade_order,
     const MatchRequest& match_request,
     PartNames* part_names) {
   if (!rules)
@@ -188,7 +188,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
 DISABLE_CFI_PERF
 void ElementRuleCollector::CollectMatchingRules(
     const MatchRequest& match_request,
-    CascadeOrder cascade_order,
+    ShadowV0CascadeOrder cascade_order,
     bool matching_tree_boundary_rules) {
   DCHECK(match_request.rule_set);
   DCHECK(context_.GetElement());
@@ -244,7 +244,7 @@ void ElementRuleCollector::CollectMatchingRules(
 
 void ElementRuleCollector::CollectMatchingShadowHostRules(
     const MatchRequest& match_request,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   CollectMatchingRulesForList(match_request.rule_set->ShadowHostRules(),
                               cascade_order, match_request);
 }
@@ -252,7 +252,7 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
 void ElementRuleCollector::CollectMatchingPartPseudoRules(
     const MatchRequest& match_request,
     PartNames& part_names,
-    CascadeOrder cascade_order) {
+    ShadowV0CascadeOrder cascade_order) {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
   CollectMatchingRulesForList(match_request.rule_set->PartPseudoRules(),
@@ -330,7 +330,7 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
 void ElementRuleCollector::DidMatchRule(
     const RuleData& rule_data,
     const SelectorChecker::MatchResult& result,
-    CascadeOrder cascade_order,
+    ShadowV0CascadeOrder cascade_order,
     const MatchRequest& match_request) {
   PseudoId dynamic_pseudo = result.dynamic_pseudo;
   // If we're matching normal rules, set a pseudo bit if we really just matched
