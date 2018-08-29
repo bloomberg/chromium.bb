@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/input_monitor/local_hotkey_input_monitor.h"
+#include "remoting/host/input_monitor/local_keyboard_input_monitor.h"
 #include "remoting/host/input_monitor/local_mouse_input_monitor.h"
 
 namespace remoting {
@@ -40,6 +41,7 @@ class LocalInputMonitorImpl : public LocalInputMonitor {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   std::unique_ptr<LocalHotkeyInputMonitor> hotkey_input_monitor_;
+  std::unique_ptr<LocalKeyboardInputMonitor> keyboard_input_monitor_;
   std::unique_ptr<LocalMouseInputMonitor> mouse_input_monitor_;
 
   // Indicates whether the instance is actively monitoring local input.
@@ -81,16 +83,19 @@ void LocalInputMonitorImpl::StartMonitoring(
     MouseMoveCallback on_mouse_input,
     base::RepeatingClosure on_keyboard_input,
     base::RepeatingClosure on_error) {
+  DCHECK(!monitoring_);
+  DCHECK(on_error);
   DCHECK(on_mouse_input || on_keyboard_input);
 
   if (on_mouse_input) {
     mouse_input_monitor_ = LocalMouseInputMonitor::Create(
         caller_task_runner_, input_task_runner_, ui_task_runner_,
-        std::move(on_mouse_input), std::move(on_error));
+        std::move(on_mouse_input), base::BindOnce(on_error));
   }
   if (on_keyboard_input) {
-    // TODO(joedow): Implement this and hook it into the disconnect window.
-    NOTIMPLEMENTED();
+    keyboard_input_monitor_ = LocalKeyboardInputMonitor::Create(
+        caller_task_runner_, input_task_runner_, ui_task_runner_,
+        std::move(on_keyboard_input), base::BindOnce(on_error));
   }
 
   OnMonitoringStarted();

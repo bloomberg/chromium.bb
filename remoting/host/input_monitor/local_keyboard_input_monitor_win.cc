@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/input_monitor/local_mouse_input_monitor.h"
+#include "remoting/host/input_monitor/local_keyboard_input_monitor.h"
 
 #include <utility>
 
@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/input_monitor/local_input_monitor_win.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -19,16 +18,17 @@ namespace {
 
 // From the HID Usage Tables specification.
 const USHORT kGenericDesktopPage = 1;
-const USHORT kMouseUsage = 2;
+const USHORT kKeyboardUsage = 6;
 
-class MouseRawInputHandlerWin : public LocalInputMonitorWin::RawInputHandler {
+class KeyboardRawInputHandlerWin
+    : public LocalInputMonitorWin::RawInputHandler {
  public:
-  MouseRawInputHandlerWin(
+  KeyboardRawInputHandlerWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      LocalInputMonitor::MouseMoveCallback on_mouse_move,
+      base::RepeatingClosure on_key_event_callback,
       base::OnceClosure disconnect_callback);
-  ~MouseRawInputHandlerWin() override;
+  ~KeyboardRawInputHandlerWin() override;
 
   // LocalInputMonitorWin::RawInputHandler implementation.
   bool Register(HWND hwnd) override;
@@ -39,37 +39,37 @@ class MouseRawInputHandlerWin : public LocalInputMonitorWin::RawInputHandler {
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  LocalInputMonitor::MouseMoveCallback on_mouse_move_;
+  base::RepeatingClosure on_key_event_callback_;
   base::OnceClosure disconnect_callback_;
 
   // Tracks whether the instance is registered to receive raw input events.
   bool registered_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(MouseRawInputHandlerWin);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardRawInputHandlerWin);
 };
 
-MouseRawInputHandlerWin::MouseRawInputHandlerWin(
+KeyboardRawInputHandlerWin::KeyboardRawInputHandlerWin(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    LocalInputMonitor::MouseMoveCallback on_mouse_move,
+    base::RepeatingClosure on_key_event_callback,
     base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
-      on_mouse_move_(std::move(on_mouse_move)),
+      on_key_event_callback_(std::move(on_key_event_callback)),
       disconnect_callback_(std::move(disconnect_callback)) {}
 
-MouseRawInputHandlerWin::~MouseRawInputHandlerWin() {
+KeyboardRawInputHandlerWin::~KeyboardRawInputHandlerWin() {
   DCHECK(!registered_);
 }
 
-bool MouseRawInputHandlerWin::Register(HWND hwnd) {
+bool KeyboardRawInputHandlerWin::Register(HWND hwnd) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Register to receive raw keyboard input.
   RAWINPUTDEVICE device = {0};
   device.dwFlags = RIDEV_INPUTSINK;
   device.usUsagePage = kGenericDesktopPage;
-  device.usUsage = kMouseUsage;
+  device.usUsage = kKeyboardUsage;
   device.hwndTarget = hwnd;
   if (!RegisterRawInputDevices(&device, 1, sizeof(device))) {
     PLOG(ERROR) << "RegisterRawInputDevices() failed";
@@ -80,13 +80,13 @@ bool MouseRawInputHandlerWin::Register(HWND hwnd) {
   return true;
 }
 
-void MouseRawInputHandlerWin::Unregister() {
+void KeyboardRawInputHandlerWin::Unregister() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   RAWINPUTDEVICE device = {0};
   device.dwFlags = RIDEV_REMOVE;
   device.usUsagePage = kGenericDesktopPage;
-  device.usUsage = kMouseUsage;
+  device.usUsage = kKeyboardUsage;
   device.hwndTarget = nullptr;
 
   // The error is harmless, ignore it.
@@ -94,26 +94,16 @@ void MouseRawInputHandlerWin::Unregister() {
   registered_ = false;
 }
 
-void MouseRawInputHandlerWin::OnInputEvent(const RAWINPUT* input) {
+void KeyboardRawInputHandlerWin::OnInputEvent(const RAWINPUT* input) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  // Notify the observer about mouse events generated locally. Remote (injected)
-  // mouse events do not specify a device handle (based on observed behavior).
-  if (input->header.dwType == RIM_TYPEMOUSE &&
+  if (input->header.dwType == RIM_TYPEKEYBOARD &&
       input->header.hDevice != nullptr) {
-    POINT position;
-    if (!GetCursorPos(&position)) {
-      position.x = 0;
-      position.y = 0;
-    }
-
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(on_mouse_move_, webrtc::DesktopVector(
-                                                      position.x, position.y)));
+    caller_task_runner_->PostTask(FROM_HERE, on_key_event_callback_);
   }
 }
 
-void MouseRawInputHandlerWin::OnError() {
+void KeyboardRawInputHandlerWin::OnError() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (disconnect_callback_) {
@@ -121,35 +111,35 @@ void MouseRawInputHandlerWin::OnError() {
   }
 }
 
-class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
+class LocalKeyboardInputMonitorWin : public LocalKeyboardInputMonitor {
  public:
-  explicit LocalMouseInputMonitorWin(
+  explicit LocalKeyboardInputMonitorWin(
       std::unique_ptr<LocalInputMonitorWin> local_input_monitor);
-  ~LocalMouseInputMonitorWin() override;
+  ~LocalKeyboardInputMonitorWin() override;
 
  private:
   std::unique_ptr<LocalInputMonitorWin> local_input_monitor_;
 };
 
-LocalMouseInputMonitorWin::LocalMouseInputMonitorWin(
+LocalKeyboardInputMonitorWin::LocalKeyboardInputMonitorWin(
     std::unique_ptr<LocalInputMonitorWin> local_input_monitor)
     : local_input_monitor_(std::move(local_input_monitor)) {}
 
-LocalMouseInputMonitorWin::~LocalMouseInputMonitorWin() = default;
+LocalKeyboardInputMonitorWin::~LocalKeyboardInputMonitorWin() = default;
 
 }  // namespace
 
-std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
+std::unique_ptr<LocalKeyboardInputMonitor> LocalKeyboardInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    LocalInputMonitor::MouseMoveCallback on_mouse_move,
+    base::RepeatingClosure on_key_event_callback,
     base::OnceClosure disconnect_callback) {
-  auto raw_input_handler = std::make_unique<MouseRawInputHandlerWin>(
-      caller_task_runner, ui_task_runner, std::move(on_mouse_move),
+  auto raw_input_handler = std::make_unique<KeyboardRawInputHandlerWin>(
+      caller_task_runner, ui_task_runner, std::move(on_key_event_callback),
       std::move(disconnect_callback));
 
-  return std::make_unique<LocalMouseInputMonitorWin>(
+  return std::make_unique<LocalKeyboardInputMonitorWin>(
       LocalInputMonitorWin::Create(caller_task_runner, ui_task_runner,
                                    std::move(raw_input_handler)));
 }
