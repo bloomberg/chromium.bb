@@ -815,13 +815,12 @@ other words, they don't cancel numeric mode.
 
 The difference between the two opcodes is that
 @opcoderef{numericmodechars} characters can appear anywhere in a
-number whereas @opcoderef{numericmodechars} characters can appear only
-in the middle or at the end of a number. Like
-@opcoderef{midnumericmodechars}, @opcoderef{numericmodechars}
-characters keep numeric mode active, but in addition they activate
-numeric mode immediately when at least one digit follows, and the
-number sign will precede the @opcoderef{numericmodechars} character in
-this case.
+number whereas @opcoderef{midendnumericmodechars} characters can
+appear only in the middle or at the end of a number. Like
+@code{midendnumericmodechars}, @code{numericmodechars} characters keep
+numeric mode active, but in addition they activate numeric mode
+immediately when at least one digit follows, and the number sign will
+precede the @code{numericmodechars} character in this case.
 
 Example:
 
