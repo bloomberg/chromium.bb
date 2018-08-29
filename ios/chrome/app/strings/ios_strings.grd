@@ -993,14 +993,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPTIONS_DATA_USAGE_ONLY_WIFI" desc="Title for the option to only send usage data and/or preload webpages when on wifi. [Length: 20em] [iOS only]">
         Only on Wi-Fi
       </message>
-      <message name="IDS_IOS_OPTIONS_DO_NOT_TRACK_MOBILE" desc="Title for opening the setting for the 'Do Not Track' header. [Length: 15em]">
-        ‘Do Not Track’
-      </message>
-      <message name="IDS_IOS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TEXT_MOBILE" desc="The text of a confirmation dialog that confirms that the user want to send the 'Do Not Track' header">
-        Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
-
-For example, some websites may respond to this request by showing you ads that aren't based on other websites you've visited. Many websites will still collect and use your browsing data - for example to improve security, to provide content, services, ads and recommendations on their websites, and to generate reporting statistics. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
-      </message>
       <message name="IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES" desc="Title for the option to enable Handoff. [Length: 20em] [iOS only]">
         Handoff
       </message>

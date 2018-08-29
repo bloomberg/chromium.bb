@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/do_not_track_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -41,7 +40,6 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#include "ios/web/public/web_capabilities.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -69,7 +67,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebServicesFooter,
   ItemTypeWebServicesShowSuggestions,
   ItemTypeWebServicesSendUsageData,
-  ItemTypeWebServicesDoNotTrack,
   ItemTypeCanMakePaymentSwitch,
   ItemTypeClearBrowsingDataClear,
 };
@@ -101,7 +98,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)clearBrowsingDetailItem;
 - (CollectionViewItem*)canMakePaymentItem;
 - (CollectionViewItem*)sendUsageDetailItem;
-- (CollectionViewItem*)doNotTrackDetailItem;
 
 @end
 
@@ -171,10 +167,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierOtherDevices];
 
-  if (!IsUnifiedConsentEnabled() || web::IsDoNotTrackSupported()) {
-    // Add "Web services" section only if "Do not track" feature, metrics
-    // reporting feature and show suggestions feature are available.
-    // Web Services Section
+  if (!IsUnifiedConsentEnabled()) {
+    // Add "Web services" section only if the unified consent is disabled.
+    // Otherwise the metrics reporting and show suggestions feature are
+    // available in the Google services settings.
     [model addSectionWithIdentifier:SectionIdentifierWebServices];
     SettingsTextItem* webServicesHeader =
         [[SettingsTextItem alloc] initWithType:ItemTypeWebServicesHeader];
@@ -183,12 +179,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     webServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:webServicesHeader
         forSectionWithIdentifier:SectionIdentifierWebServices];
-    // Footer Section
-    [model addSectionWithIdentifier:SectionIdentifierWebServicesFooter];
-    [model addItem:[self showSuggestionsFooterItem]
-        toSectionWithIdentifier:SectionIdentifierWebServicesFooter];
-  }
-  if (!IsUnifiedConsentEnabled()) {
     // When unified consent flag is enabled, the show suggestions feature and
     // metrics reporting feature are available in the "Google Services and sync"
     // settings.
@@ -197,10 +187,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierWebServices];
     [model addItem:[self sendUsageDetailItem]
         toSectionWithIdentifier:SectionIdentifierWebServices];
-  }
-  if (web::IsDoNotTrackSupported()) {
-    [model addItem:[self doNotTrackDetailItem]
-        toSectionWithIdentifier:SectionIdentifierWebServices];
+    // Footer Section
+    [model addSectionWithIdentifier:SectionIdentifierWebServicesFooter];
+    [model addItem:[self showSuggestionsFooterItem]
+        toSectionWithIdentifier:SectionIdentifierWebServicesFooter];
   }
 
   // CanMakePayment Section
@@ -291,16 +281,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _sendUsageDetailItem;
 }
 
-- (CollectionViewItem*)doNotTrackDetailItem {
-  NSString* detailText =
-      _browserState->GetPrefs()->GetBoolean(prefs::kEnableDoNotTrack)
-          ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-          : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  return [self detailItemWithType:ItemTypeWebServicesDoNotTrack
-                          titleId:IDS_IOS_OPTIONS_DO_NOT_TRACK_MOBILE
-                       detailText:detailText];
-}
-
 - (SettingsDetailItem*)detailItemWithType:(NSInteger)type
                                   titleId:(NSInteger)titleId
                                detailText:(NSString*)detailText {
@@ -363,10 +343,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                wifiPref:prefs::kMetricsReportingWifiOnly
                   title:l10n_util::GetNSString(
                             IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
-      break;
-    case ItemTypeWebServicesDoNotTrack:
-      controller = [[DoNotTrackCollectionViewController alloc]
-          initWithPrefs:_browserState->GetPrefs()];
       break;
     case ItemTypeClearBrowsingDataClear:
       controller = [[ClearBrowsingDataCollectionViewController alloc]
