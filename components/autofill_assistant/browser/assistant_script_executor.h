@@ -12,15 +12,15 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill_assistant/browser/actions/assistant_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
+#include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 // Class to execute an assistant script.
-class AssistantScriptExecutor : public AssistantActionDelegate {
+class AssistantScriptExecutor : public ActionDelegate {
  public:
   // |script| and |delegate| should outlive this object and should not be
   // nullptr.
@@ -31,7 +31,7 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
   using RunScriptCallback = base::OnceCallback<void(bool)>;
   void Run(RunScriptCallback callback);
 
-  // Override AssistantActionDelegate:
+  // Override ActionDelegate:
   void ShowStatusMessage(const std::string& message) override;
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
@@ -52,15 +52,15 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
   void ProcessNextAction();
-  void ProcessAction(std::unique_ptr<AssistantAction> action);
+  void ProcessAction(std::unique_ptr<Action> action);
   void GetNextAssistantActions();
-  void OnProcessedAction(std::unique_ptr<AssistantAction> action, bool status);
+  void OnProcessedAction(std::unique_ptr<Action> action, bool status);
 
   AssistantScript* script_;
   AssistantScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
 
-  std::deque<std::unique_ptr<AssistantAction>> actions_;
+  std::deque<std::unique_ptr<Action>> actions_;
   std::vector<ProcessedActionProto> processed_actions_;
   std::string last_server_payload_;
 

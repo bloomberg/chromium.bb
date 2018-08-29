@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_use_address_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_use_card_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_wait_for_dom_action.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/tell_action.h"
+#include "components/autofill_assistant/browser/actions/use_address_action.h"
+#include "components/autofill_assistant/browser/actions/use_card_action.h"
+#include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/version_info/version_info.h"
 #include "url/gurl.h"
@@ -113,10 +113,10 @@ std::string AssistantProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-bool AssistantProtocolUtils::ParseAssistantActions(
+bool AssistantProtocolUtils::ParseActions(
     const std::string& response,
     std::string* return_server_payload,
-    std::deque<std::unique_ptr<AssistantAction>>* assistant_actions) {
+    std::deque<std::unique_ptr<Action>>* assistant_actions) {
   DCHECK(assistant_actions);
 
   ActionsResponseProto response_proto;
@@ -132,32 +132,30 @@ bool AssistantProtocolUtils::ParseAssistantActions(
   for (const auto& action : response_proto.actions()) {
     switch (action.action_info_case()) {
       case ActionProto::ActionInfoCase::kClick: {
-        assistant_actions->emplace_back(
-            std::make_unique<AssistantClickAction>(action));
+        assistant_actions->emplace_back(std::make_unique<ClickAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kTell: {
-        assistant_actions->emplace_back(
-            std::make_unique<AssistantTellAction>(action));
+        assistant_actions->emplace_back(std::make_unique<TellAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress: {
         assistant_actions->emplace_back(
-            std::make_unique<AssistantUseAddressAction>(action));
+            std::make_unique<UseAddressAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kUseCard: {
         assistant_actions->emplace_back(
-            std::make_unique<AssistantUseCardAction>(action));
+            std::make_unique<UseCardAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
         assistant_actions->emplace_back(
-            std::make_unique<AssistantUseCardAction>(action));
+            std::make_unique<UseCardAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        LOG(ERROR) << "Unknown or unspported assistant action.";
+        LOG(ERROR) << "Unknown or unspported action.";
         break;
       }
     }
