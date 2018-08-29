@@ -318,17 +318,12 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
 }
 
 class ChromeRenderProcessHostBackgroundingTest
-    : public ChromeRenderProcessHostTest,
-      public testing::WithParamInterface<std::string> {
+    : public ChromeRenderProcessHostTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeRenderProcessHostTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitch(switches::kProcessPerTab);
-
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        "BoostRendererPriorityForPendingViews/" + GetParam());
   }
 
   void SetUpOnMainThread() override {
@@ -336,7 +331,7 @@ class ChromeRenderProcessHostBackgroundingTest
   }
 };
 
-IN_PROC_BROWSER_TEST_P(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
   // This test is invalid on platforms that can't background.
   if (!base::Process::CanBackgroundProcesses())
     return;
@@ -384,25 +379,16 @@ IN_PROC_BROWSER_TEST_P(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
 #if defined(OS_MACOSX)
   EXPECT_TRUE(process1.IsProcessBackgrounded(port_provider));
   EXPECT_FALSE(process2.IsProcessBackgrounded(port_provider));
-  // TODO(gab): The new background tab should be backgrounded but it currently
-  // only is under an experiment.
-  EXPECT_EQ(process3.IsProcessBackgrounded(port_provider),
-            GetParam() == "Enabled");
+  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
-
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
   EXPECT_TRUE(process2.IsProcessBackgrounded(port_provider));
-  // TODO(gab): Same as above.
-  EXPECT_EQ(process3.IsProcessBackgrounded(port_provider),
-            GetParam() == "Enabled");
+  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
 
-  // TODO(gab): Remove this when https://crbug.com/560446 is fixed, but for now
-  // confirm that the correct state is at least achieved, regardless of the
-  // experiment state, when tab #3 is explicitly foregrounded and
-  // re-backgrounded.
+  // Confirm that |process3| remains backgrounded after being shown/hidden.
   EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
@@ -411,23 +397,16 @@ IN_PROC_BROWSER_TEST_P(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
 #else
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
-  // TODO(gab): The new background tab should be backgrounded but it currently
-  // only is under an experiment.
-  EXPECT_EQ(process3.IsProcessBackgrounded(), GetParam() == "Enabled");
+  EXPECT_TRUE(process3.IsProcessBackgrounded());
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
-
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded());
   EXPECT_TRUE(process2.IsProcessBackgrounded());
-  // TODO(gab): Same as above.
-  EXPECT_EQ(process3.IsProcessBackgrounded(), GetParam() == "Enabled");
+  EXPECT_TRUE(process3.IsProcessBackgrounded());
 
-  // TODO(gab): Remove this when https://crbug.com/560446 is fixed, but for now
-  // confirm that the correct state is at least achieved, regardless of the
-  // experiment state, when tab #3 is explicitly foregrounded and
-  // re-backgrounded.
+  // Confirm that |process3| remains backgrounded after being shown/hidden.
   EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded());
@@ -485,7 +464,7 @@ class AssertForegroundHelper {
 // widget). TODO(gab): This test should move to
 // content/browser/renderer_host/render_process_host_browsertest.cc after the
 // experiment (there's nothing chrome specific about it really).
-IN_PROC_BROWSER_TEST_P(ChromeRenderProcessHostBackgroundingTest,
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
                        ForegroundNavigationIsNeverBackgrounded) {
 #if defined(OS_MACOSX)
   base::PortProvider* port_provider =
@@ -544,10 +523,6 @@ IN_PROC_BROWSER_TEST_P(ChromeRenderProcessHostBackgroundingTest,
   ASSERT_FALSE(renderer_process.IsProcessBackgrounded());
 #endif
 }
-
-INSTANTIATE_TEST_CASE_P(BoostRendererPriorityForPendingViews,
-                        ChromeRenderProcessHostBackgroundingTest,
-                        testing::Values("Enabled", "Default"));
 
 // TODO(nasko): crbug.com/173137
 // Disable on Windows and Mac due to ongoing flakiness. (crbug.com/442785)

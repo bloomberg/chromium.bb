@@ -1207,9 +1207,9 @@ bool ShouldBoostPriorityForPendingViews() {
   // TODO(gab): End the experiment and turn ShouldBoostPriorityForPendingViews()
   // into a constant when results are in.
   static bool should_boost_for_pending_views =
-      base::StartsWith(base::FieldTrialList::FindFullName(
-                           "BoostRendererPriorityForPendingViews"),
-                       "Enabled", base::CompareCase::SENSITIVE);
+      !base::StartsWith(base::FieldTrialList::FindFullName(
+                            "BoostRendererPriorityForPendingViews"),
+                        "Disabled", base::CompareCase::SENSITIVE);
   return should_boost_for_pending_views;
 #endif
 }
