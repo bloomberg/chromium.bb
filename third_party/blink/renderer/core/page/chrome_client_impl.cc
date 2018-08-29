@@ -917,6 +917,9 @@ void ChromeClientImpl::SetEventListenerProperties(
           tree_view->EventListenerProperties(
               cc::EventListenerClass::kTouchStartOrMove) !=
               cc::EventListenerProperties::kNone);
+    } else if (event_class == cc::EventListenerClass::kPointerRawMove) {
+      client->HasPointerRawMoveEventHandlers(
+          properties != cc::EventListenerProperties::kNone);
     }
   } else {
     client->HasTouchEventHandlers(true);

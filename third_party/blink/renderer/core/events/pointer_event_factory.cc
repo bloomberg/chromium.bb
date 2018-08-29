@@ -63,6 +63,8 @@ const AtomicString& PointerEventNameForEventType(WebInputEvent::Type type) {
       return EventTypeNames::pointerup;
     case WebInputEvent::kPointerMove:
       return EventTypeNames::pointermove;
+    case WebInputEvent::kPointerRawMove:
+      return EventTypeNames::pointerrawmove;
     case WebInputEvent::kPointerCancel:
       return EventTypeNames::pointercancel;
     default:
@@ -171,6 +173,7 @@ void PointerEventFactory::SetEventSpecificFields(
   pointer_event_init.setCancelable(type != EventTypeNames::pointerenter &&
                                    type != EventTypeNames::pointerleave &&
                                    type != EventTypeNames::pointercancel &&
+                                   type != EventTypeNames::pointerrawmove &&
                                    type != EventTypeNames::gotpointercapture &&
                                    type != EventTypeNames::lostpointercapture);
 
@@ -186,6 +189,7 @@ PointerEvent* PointerEventFactory::Create(
   DCHECK(event_type == WebInputEvent::kPointerDown ||
          event_type == WebInputEvent::kPointerUp ||
          event_type == WebInputEvent::kPointerMove ||
+         event_type == WebInputEvent::kPointerRawMove ||
          event_type == WebInputEvent::kPointerCancel);
 
   PointerEventInit pointer_event_init;
@@ -224,7 +228,8 @@ PointerEvent* PointerEventFactory::Create(
 
   SetEventSpecificFields(pointer_event_init, type);
 
-  if (type == EventTypeNames::pointermove) {
+  if (type == EventTypeNames::pointermove ||
+      type == EventTypeNames::pointerrawmove) {
     HeapVector<Member<PointerEvent>> coalesced_pointer_events;
     for (const auto& coalesced_event : coalesced_events) {
       DCHECK_EQ(web_pointer_event.id, coalesced_event.id);
@@ -306,6 +311,21 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
 
   return PointerEvent::Create(type, pointer_event_init,
                               pointer_event->PlatformTimeStamp());
+}
+
+PointerEvent* PointerEventFactory::CreatePointerRawMoveEvent(
+    PointerEvent* pointer_event) {
+  // This function is for creating pointerrawmove event from a pointerdown/up
+  // event that caused by chorded buttons and hence its type is changed to
+  // pointermove.
+  DCHECK(pointer_event->type() == EventTypeNames::pointermove &&
+         (pointer_event->buttons() &
+          ~ButtonToButtonsBitfield(static_cast<WebPointerProperties::Button>(
+              pointer_event->button()))) != 0 &&
+         pointer_event->button() != 0);
+
+  return CreatePointerEventFrom(pointer_event, EventTypeNames::pointerrawmove,
+                                pointer_event->relatedTarget());
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCaptureEvent(

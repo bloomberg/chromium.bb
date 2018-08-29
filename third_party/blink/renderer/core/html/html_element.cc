@@ -412,6 +412,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
       {onpointermoveAttr, kNoWebFeature, EventTypeNames::pointermove, nullptr},
       {onpointeroutAttr, kNoWebFeature, EventTypeNames::pointerout, nullptr},
       {onpointeroverAttr, kNoWebFeature, EventTypeNames::pointerover, nullptr},
+      {onpointerrawmoveAttr, kNoWebFeature, EventTypeNames::pointerrawmove,
+       nullptr},
       {onpointerupAttr, kNoWebFeature, EventTypeNames::pointerup, nullptr},
       {onprogressAttr, kNoWebFeature, EventTypeNames::progress, nullptr},
       {onratechangeAttr, kNoWebFeature, EventTypeNames::ratechange, nullptr},

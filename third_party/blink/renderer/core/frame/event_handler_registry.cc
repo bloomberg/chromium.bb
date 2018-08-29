@@ -69,6 +69,11 @@ bool EventHandlerRegistry::EventTypeToClass(
              event_type == EventTypeNames::touchmove) {
     *result = options.passive() ? kTouchStartOrMoveEventPassive
                                 : kTouchStartOrMoveEventBlocking;
+  } else if (event_type == EventTypeNames::pointerrawmove) {
+    // This will be used to avoid waking up the main thread to
+    // process pointerrawmove events and hit-test them when
+    // there is no listener on the page.
+    *result = kPointerRawMoveEvent;
   } else if (EventUtil::IsPointerEventType(event_type)) {
     // The pointer events never block scrolling and the compositor
     // only needs to know about the touch listeners.
@@ -270,6 +275,12 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
                   HasEventHandlers(kTouchStartOrMoveEventBlockingLowLatency),
               HasEventHandlers(kTouchStartOrMoveEventPassive) ||
                   HasEventHandlers(kPointerEvent)));
+      break;
+    case kPointerRawMoveEvent:
+      GetPage()->GetChromeClient().SetEventListenerProperties(
+          frame, cc::EventListenerClass::kPointerRawMove,
+          GetEventListenerProperties(false,
+                                     HasEventHandlers(kPointerRawMoveEvent)));
       break;
     case kTouchEndOrCancelEventBlocking:
     case kTouchEndOrCancelEventPassive:

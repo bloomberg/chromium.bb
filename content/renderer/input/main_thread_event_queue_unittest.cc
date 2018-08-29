@@ -1314,6 +1314,31 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
   EXPECT_FALSE(needs_main_frame_);
 }
 
+TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  EXPECT_CALL(renderer_scheduler_,
+              DidHandleInputEventOnMainThread(testing::_, testing::_))
+      .Times(0);
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_FALSE(needs_main_frame_);
+
+  queue_->HasPointerRawMoveEventHandlers(true);
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(2u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_FALSE(needs_main_frame_);
+}
+
 TEST_F(MainThreadEventQueueTest, UnbufferedDispatchMouseEvent) {
   WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseDown, 10, 10, 0);

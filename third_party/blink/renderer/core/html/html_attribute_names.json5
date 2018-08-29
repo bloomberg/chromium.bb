@@ -217,6 +217,7 @@
     "onpointermove",
     "onpointerout",
     "onpointerover",
+    "onpointerrawmove",
     "onpointerup",
     "onpopstate",
     "onprogress",

@@ -32,7 +32,8 @@ size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
 }
 bool HasPointerEventListener(const EventHandlerRegistry& registry) {
-  return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent);
+  return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent) ||
+         registry.HasEventHandlers(EventHandlerRegistry::kPointerRawMoveEvent);
 }
 
 const AtomicString& MouseEventNameForPointerEventInputType(
@@ -147,9 +148,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   if (!target)
     return WebInputEventResult::kNotHandled;
 
-  // Set whether node under pointer has received pointerover or not.
   const int pointer_id = pointer_event->pointerId();
-
   const AtomicString& event_type = pointer_event->type();
 
   if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
@@ -477,6 +476,20 @@ WebInputEventResult PointerEventManager::FlushEvents() {
 WebInputEventResult PointerEventManager::HandlePointerEvent(
     const WebPointerEvent& event,
     const Vector<WebPointerEvent>& coalesced_events) {
+  if (event.GetType() == WebInputEvent::Type::kPointerRawMove) {
+    if (!RuntimeEnabledFeatures::PointerRawMoveEnabled() ||
+        !frame_->GetEventHandlerRegistry().HasEventHandlers(
+            EventHandlerRegistry::kPointerRawMoveEvent))
+      return WebInputEventResult::kHandledSystem;
+
+    EventHandlingUtil::PointerEventTarget target =
+        ComputePointerEventTarget(event);
+    PointerEvent* pointer_event = pointer_event_factory_.Create(
+        event, coalesced_events, frame_->GetDocument()->domWindow());
+    DispatchPointerEvent(target.target_node, pointer_event);
+    return WebInputEventResult::kHandledSystem;
+  }
+
   if (event.GetType() == WebInputEvent::Type::kPointerCausedUaAction) {
     HandlePointerInterruption(event);
     return WebInputEventResult::kHandledSystem;
@@ -568,6 +581,18 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   EventTarget* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
 
+  if ((event_type == WebInputEvent::kPointerDown ||
+       event_type == WebInputEvent::kPointerUp) &&
+      pointer_event->type() == EventTypeNames::pointermove &&
+      RuntimeEnabledFeatures::PointerRawMoveEnabled() &&
+      frame_->GetEventHandlerRegistry().HasEventHandlers(
+          EventHandlerRegistry::kPointerRawMoveEvent)) {
+    // This is a chorded button move event. We need to also send a
+    // pointerrawmove for it.
+    DispatchPointerEvent(
+        effective_target,
+        pointer_event_factory_.CreatePointerRawMoveEvent(pointer_event));
+  }
   WebInputEventResult result =
       DispatchPointerEvent(effective_target, pointer_event);
 

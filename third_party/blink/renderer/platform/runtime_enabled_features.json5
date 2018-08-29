@@ -944,6 +944,10 @@
       status: "experimental",
     },
     {
+      name: "PointerRawMove",
+      status: "experimental",
+    },
+    {
       name: "Portals",
       status: "test",
     },

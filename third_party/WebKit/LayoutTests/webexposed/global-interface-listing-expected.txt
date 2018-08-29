@@ -1559,6 +1559,7 @@ interface Document : Node
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawmove
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -1749,6 +1750,7 @@ interface Document : Node
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawmove
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -2589,6 +2591,7 @@ interface HTMLElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawmove
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -2686,6 +2689,7 @@ interface HTMLElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawmove
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -5921,6 +5925,7 @@ interface SVGElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawmove
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -6005,6 +6010,7 @@ interface SVGElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawmove
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -10481,6 +10487,7 @@ interface webkitURL
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawmove
     getter onpointerup
     getter onpopstate
     getter onprogress
@@ -10667,6 +10674,7 @@ interface webkitURL
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawmove
     setter onpointerup
     setter onpopstate
     setter onprogress
