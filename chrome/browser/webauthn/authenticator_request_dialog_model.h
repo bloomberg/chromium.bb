@@ -38,6 +38,7 @@ class AuthenticatorRequestDialogModel {
     kErrorNoAvailableTransports,
     kErrorKeyNotRegistered,
     kErrorKeyAlreadyRegistered,
+    kErrorInternalUnrecognized,
     kCompleted,
 
     // Universal Serial Bus (USB).
@@ -164,7 +165,7 @@ class AuthenticatorRequestDialogModel {
   // the user told us to.
   //
   // Valid action when at step: kTouchId.
-  void TryTouchId();
+  void StartTouchIdFlow();
 
   // Cancels the flow as a result of the user clicking `Cancel` on the UI.
   //

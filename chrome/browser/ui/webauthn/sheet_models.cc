@@ -295,6 +295,26 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetAcceptButtonLabel()
 
 void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {}
 
+// AuthenticatorInternalUnrecognizedErrorSheetModel
+// -----------------------------------
+
+gfx::ImageSkia*
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+}
+
+base::string16 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepTitle()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_TITLE);
+}
+
+base::string16
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_DESCRIPTION);
+}
+
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
 
 gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
