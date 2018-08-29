@@ -135,42 +135,12 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
 }
 
 SearchSuggestionParser::SuggestResult::SuggestResult(
-    const SuggestResult& result)
-    : Result(result),
-      suggestion_(result.suggestion_),
-      match_contents_prefix_(result.match_contents_prefix_),
-      annotation_(result.annotation_),
-      suggest_query_params_(result.suggest_query_params_),
-      answer_contents_(result.answer_contents_),
-      answer_type_(result.answer_type_),
-      answer_(SuggestionAnswer::copy(result.answer_.get())),
-      image_dominant_color_(result.image_dominant_color_),
-      image_url_(result.image_url_),
-      should_prefetch_(result.should_prefetch_) {}
+    const SuggestResult& result) = default;
 
 SearchSuggestionParser::SuggestResult::~SuggestResult() {}
 
-SearchSuggestionParser::SuggestResult&
-    SearchSuggestionParser::SuggestResult::operator=(const SuggestResult& rhs) {
-  if (this == &rhs)
-    return *this;
-
-  // Assign via parent class first.
-  Result::operator=(rhs);
-
-  suggestion_ = rhs.suggestion_;
-  match_contents_prefix_ = rhs.match_contents_prefix_;
-  annotation_ = rhs.annotation_;
-  suggest_query_params_ = rhs.suggest_query_params_;
-  answer_contents_ = rhs.answer_contents_;
-  answer_type_ = rhs.answer_type_;
-  answer_ = SuggestionAnswer::copy(rhs.answer_.get());
-  image_dominant_color_ = rhs.image_dominant_color_;
-  image_url_ = rhs.image_url_;
-  should_prefetch_ = rhs.should_prefetch_;
-
-  return *this;
-}
+SearchSuggestionParser::SuggestResult& SearchSuggestionParser::SuggestResult::
+operator=(const SuggestResult& rhs) = default;
 
 void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
@@ -247,10 +217,10 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
 void SearchSuggestionParser::SuggestResult::SetAnswer(
     const base::string16& answer_contents,
     const base::string16& answer_type,
-    std::unique_ptr<SuggestionAnswer> answer) {
+    const SuggestionAnswer& answer) {
   answer_contents_ = answer_contents;
   answer_type_ = answer_type;
-  answer_ = std::move(answer);
+  answer_ = answer;
 }
 
 int SearchSuggestionParser::SuggestResult::CalculateRelevance(
@@ -581,7 +551,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 match_contents_prefix;
       base::string16 answer_contents;
       base::string16 answer_type;
-      std::unique_ptr<SuggestionAnswer> answer;
+      SuggestionAnswer answer;
+      bool answer_parsed_successfully = false;
       std::string image_dominant_color;
       std::string image_url;
       std::string suggest_query_params;
@@ -603,17 +574,19 @@ bool SearchSuggestionParser::ParseSuggestResults(
           const base::DictionaryValue* answer_json = nullptr;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
-            answer = SuggestionAnswer::ParseAnswer(answer_json, answer_type);
-            if (answer) {
+            if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
+                                              &answer)) {
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
-                                       answer->type());
+                                       answer.type());
+              answer_parsed_successfully = true;
               std::string contents;
               base::JSONWriter::Write(*answer_json, &contents);
               answer_contents = base::UTF8ToUTF16(contents);
             } else {
               answer_type = base::string16();
             }
-            UMA_HISTOGRAM_BOOLEAN("Omnibox.AnswerParseSuccess", !!answer);
+            UMA_HISTOGRAM_BOOLEAN("Omnibox.AnswerParseSuccess",
+                                  answer_parsed_successfully);
           }
         }
       }
@@ -635,8 +608,10 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
-      results->suggest_results.back().SetAnswer(answer_contents, answer_type,
-                                                std::move(answer));
+      if (answer_parsed_successfully) {
+        results->suggest_results.back().SetAnswer(answer_contents, answer_type,
+                                                  answer);
+      }
     }
   }
   results->relevances_from_server = relevances != nullptr;

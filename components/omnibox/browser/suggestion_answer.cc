@@ -77,14 +77,10 @@ size_t SuggestionAnswer::TextField::EstimateMemoryUsage() const {
 
 SuggestionAnswer::ImageLine::ImageLine()
     : num_text_lines_(1) {}
-SuggestionAnswer::ImageLine::ImageLine(const ImageLine& line)
-    : text_fields_(line.text_fields_),
-      num_text_lines_(line.num_text_lines_),
-      additional_text_(line.additional_text_ ?
-                       new TextField(*line.additional_text_) : nullptr),
-      status_text_(line.status_text_ ?
-                   new TextField(*line.status_text_) : nullptr),
-      image_url_(line.image_url_) {}
+SuggestionAnswer::ImageLine::ImageLine(const ImageLine& line) = default;
+
+SuggestionAnswer::ImageLine& SuggestionAnswer::ImageLine::operator=(
+    const ImageLine& line) = default;
 
 SuggestionAnswer::ImageLine::~ImageLine() {}
 
@@ -115,19 +111,20 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
   }
 
   if (inner_json->HasKey(kAnswerJsonAdditionalText)) {
-    image_line->additional_text_.reset(new TextField());
+    image_line->additional_text_ = TextField();
     const base::DictionaryValue* field_json;
     if (!inner_json->GetDictionary(kAnswerJsonAdditionalText, &field_json) ||
         !TextField::ParseTextField(field_json,
-                                   image_line->additional_text_.get()))
+                                   &image_line->additional_text_.value()))
       return false;
   }
 
   if (inner_json->HasKey(kAnswerJsonStatusText)) {
-    image_line->status_text_.reset(new TextField());
+    image_line->status_text_ = TextField();
     const base::DictionaryValue* field_json;
     if (!inner_json->GetDictionary(kAnswerJsonStatusText, &field_json) ||
-        !TextField::ParseTextField(field_json, image_line->status_text_.get()))
+        !TextField::ParseTextField(field_json,
+                                   &image_line->status_text_.value()))
       return false;
   }
 
@@ -189,8 +186,8 @@ base::string16 SuggestionAnswer::ImageLine::AccessibleText() const {
   base::string16 result;
   for (const TextField& text_field : text_fields_)
     AppendWithSpace(&text_field, &result);
-  AppendWithSpace(additional_text_.get(), &result);
-  AppendWithSpace(status_text_.get(), &result);
+  AppendWithSpace(additional_text(), &result);
+  AppendWithSpace(status_text(), &result);
   return result;
 }
 
@@ -198,8 +195,16 @@ size_t SuggestionAnswer::ImageLine::EstimateMemoryUsage() const {
   size_t res = 0;
 
   res += base::trace_event::EstimateMemoryUsage(text_fields_);
-  res += base::trace_event::EstimateMemoryUsage(additional_text_);
-  res += base::trace_event::EstimateMemoryUsage(status_text_);
+  res += sizeof(int);
+  if (additional_text_)
+    res += base::trace_event::EstimateMemoryUsage(additional_text_.value());
+  else
+    res += sizeof(TextField);
+  res += sizeof(int);
+  if (status_text_)
+    res += base::trace_event::EstimateMemoryUsage(status_text_.value());
+  else
+    res += sizeof(TextField);
   res += base::trace_event::EstimateMemoryUsage(image_url_);
 
   return res;
@@ -217,9 +222,9 @@ void SuggestionAnswer::ImageLine::SetTextStyles(
   for (auto& field : text_fields_)
     replace(&field);
   if (additional_text_)
-    replace(additional_text_.get());
+    replace(&additional_text_.value());
   if (status_text_)
-    replace(status_text_.get());
+    replace(&status_text_.value());
 }
 
 // SuggestionAnswer ------------------------------------------------------------
@@ -228,35 +233,37 @@ SuggestionAnswer::SuggestionAnswer() = default;
 
 SuggestionAnswer::SuggestionAnswer(const SuggestionAnswer& answer) = default;
 
+SuggestionAnswer& SuggestionAnswer::operator=(const SuggestionAnswer& answer) =
+    default;
+
 SuggestionAnswer::~SuggestionAnswer() = default;
 
 // static
-std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
-    const base::DictionaryValue* answer_json,
-    const base::string16& answer_type_str) {
+bool SuggestionAnswer::ParseAnswer(const base::DictionaryValue* answer_json,
+                                   const base::string16& answer_type_str,
+                                   SuggestionAnswer* result) {
   int answer_type = 0;
   if (!base::StringToInt(answer_type_str, &answer_type))
-    return nullptr;
+    return false;
 
-  auto result = std::make_unique<SuggestionAnswer>();
   result->set_type(answer_type);
 
   const base::ListValue* lines_json;
   if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||
       lines_json->GetSize() != 2) {
-    return nullptr;
+    return false;
   }
 
   const base::DictionaryValue* first_line_json;
   if (!lines_json->GetDictionary(0, &first_line_json) ||
       !ImageLine::ParseImageLine(first_line_json, &result->first_line_)) {
-    return nullptr;
+    return false;
   }
 
   const base::DictionaryValue* second_line_json;
   if (!lines_json->GetDictionary(1, &second_line_json) ||
       !ImageLine::ParseImageLine(second_line_json, &result->second_line_)) {
-    return nullptr;
+    return false;
   }
 
   std::string image_url;
@@ -269,7 +276,7 @@ std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
     result->image_url_ = result->second_line_.image_url();
   }
   result->InterpretTextTypes();
-  return result;
+  return true;
 }
 
 bool SuggestionAnswer::Equals(const SuggestionAnswer& answer) const {

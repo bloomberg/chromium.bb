@@ -16,6 +16,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
@@ -441,7 +442,7 @@ struct AutocompleteMatch {
   // A rich-format version of the display for the dropdown.
   base::string16 answer_contents;
   base::string16 answer_type;
-  std::unique_ptr<SuggestionAnswer> answer;
+  base::Optional<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set

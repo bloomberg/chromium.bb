@@ -99,8 +99,8 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   base::string16 answer_contents = base::ASCIIToUTF16("some answer content");
   base::string16 answer_type = base::ASCIIToUTF16("2334");
-  std::unique_ptr<SuggestionAnswer> answer(new SuggestionAnswer());
-  answer->set_type(2334);
+  SuggestionAnswer answer;
+  answer.set_type(2334);
 
   EXPECT_CALL(*provider_, GetInput(_))
       .WillRepeatedly(Return(AutocompleteInput()));
@@ -121,8 +121,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
       /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
-  less_relevant.SetAnswer(answer_contents, answer_type,
-                          SuggestionAnswer::copy(answer.get()));
+  less_relevant.SetAnswer(answer_contents, answer_type, answer);
   provider_->AddMatchToMap(
       less_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -134,13 +133,13 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   EXPECT_EQ(answer_contents, match.answer_contents);
   EXPECT_EQ(answer_type, match.answer_type);
-  EXPECT_TRUE(answer->Equals(*match.answer));
+  EXPECT_TRUE(answer.Equals(*match.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, match.type);
   EXPECT_EQ(1300, match.relevance);
 
   EXPECT_EQ(answer_contents, duplicate.answer_contents);
   EXPECT_EQ(answer_type, duplicate.answer_type);
-  EXPECT_TRUE(answer->Equals(*duplicate.answer));
+  EXPECT_TRUE(answer.Equals(*duplicate.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
   EXPECT_EQ(850, duplicate.relevance);
 
@@ -148,15 +147,14 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   map.clear();
   base::string16 answer_contents2 = base::ASCIIToUTF16("different answer");
   base::string16 answer_type2 = base::ASCIIToUTF16("8242");
-  std::unique_ptr<SuggestionAnswer> answer2(new SuggestionAnswer());
-  answer2->set_type(8242);
+  SuggestionAnswer answer2;
+  answer2.set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY,
       /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
-  more_relevant.SetAnswer(answer_contents2, answer_type2,
-                          SuggestionAnswer::copy(answer2.get()));
+  more_relevant.SetAnswer(answer_contents2, answer_type2, answer2);
   provider_->AddMatchToMap(
       more_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -170,13 +168,13 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   EXPECT_EQ(answer_contents2, match.answer_contents);
   EXPECT_EQ(answer_type2, match.answer_type);
-  EXPECT_TRUE(answer2->Equals(*match.answer));
+  EXPECT_TRUE(answer2.Equals(*match.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, match.type);
   EXPECT_EQ(1300, match.relevance);
 
   EXPECT_EQ(answer_contents, duplicate.answer_contents);
   EXPECT_EQ(answer_type, duplicate.answer_type);
-  EXPECT_TRUE(answer->Equals(*duplicate.answer));
+  EXPECT_TRUE(answer.Equals(*duplicate.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
   EXPECT_EQ(850, duplicate.relevance);
 }

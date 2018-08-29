@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -27,10 +28,6 @@ class DictionaryValue;
 //
 // When represented in the UI, these elements should be styled and laid out
 // according to the specification at https://goto.google.com/ais_api.
-//
-// Each of the three classes has either an explicit or implicit copy
-// constructor to support copying answer values (via SuggestionAnswer::copy) as
-// members of SuggestResult and AutocompleteMatch.
 class SuggestionAnswer {
  public:
   class TextField;
@@ -144,6 +141,7 @@ class SuggestionAnswer {
    public:
     ImageLine();
     explicit ImageLine(const ImageLine& line);
+    ImageLine& operator=(const ImageLine& line);
     ~ImageLine();
 
     // Parses |line_json| and populates |image_line| with the contents.  If any
@@ -154,8 +152,18 @@ class SuggestionAnswer {
 
     const TextFields& text_fields() const { return text_fields_; }
     int num_text_lines() const { return num_text_lines_; }
-    const TextField* additional_text() const { return additional_text_.get(); }
-    const TextField* status_text() const { return status_text_.get(); }
+    const TextField* additional_text() const {
+      if (additional_text_)
+        return &additional_text_.value();
+      else
+        return nullptr;
+    }
+    const TextField* status_text() const {
+      if (status_text_)
+        return &status_text_.value();
+      else
+        return nullptr;
+    }
     const GURL& image_url() const { return image_url_; }
 
     bool Equals(const ImageLine& line) const;
@@ -173,13 +181,10 @@ class SuggestionAnswer {
     void SetTextStyles(int from_type, TextStyle style);
 
    private:
-    // Forbid assignment.
-    ImageLine& operator=(const ImageLine&);
-
     TextFields text_fields_;
     int num_text_lines_;
-    std::unique_ptr<TextField> additional_text_;
-    std::unique_ptr<TextField> status_text_;
+    base::Optional<TextField> additional_text_;
+    base::Optional<TextField> status_text_;
     GURL image_url_;
 
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
@@ -187,22 +192,15 @@ class SuggestionAnswer {
 
   SuggestionAnswer();
   SuggestionAnswer(const SuggestionAnswer& answer);
+  SuggestionAnswer& operator=(const SuggestionAnswer& answer);
   ~SuggestionAnswer();
 
-  // Parses |answer_json| and returns a SuggestionAnswer containing the
-  // contents.  If the supplied data is not well formed or is missing required
-  // elements, returns nullptr instead.
-  static std::unique_ptr<SuggestionAnswer> ParseAnswer(
-      const base::DictionaryValue* answer_json,
-      const base::string16& answer_type_str);
-
-  // TODO(jdonnelly): Once something like std::optional<T> is available in base/
-  // (see discussion at http://goo.gl/zN2GNy) remove this in favor of having
-  // SuggestResult and AutocompleteMatch use optional<SuggestionAnswer>.
-  static std::unique_ptr<SuggestionAnswer> copy(
-      const SuggestionAnswer* source) {
-    return base::WrapUnique(source ? new SuggestionAnswer(*source) : nullptr);
-  }
+  // Parses |answer_json| and fills a SuggestionAnswer containing the
+  // contents. Returns true on success. If the supplied data is not well
+  // formed or is missing required elements, returns false instead.
+  static bool ParseAnswer(const base::DictionaryValue* answer_json,
+                          const base::string16& answer_type_str,
+                          SuggestionAnswer* answer);
 
   const GURL& image_url() const { return image_url_; }
   const ImageLine& first_line() const { return first_line_; }
@@ -226,9 +224,6 @@ class SuggestionAnswer {
   void InterpretTextTypes();
 
  private:
-  // Forbid assignment.
-  SuggestionAnswer& operator=(const SuggestionAnswer&);
-
   GURL image_url_;
   ImageLine first_line_;
   ImageLine second_line_;

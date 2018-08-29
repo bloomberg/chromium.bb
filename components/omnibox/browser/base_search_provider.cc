@@ -251,7 +251,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.contents_class = suggestion.match_contents_class();
   match.answer_contents = suggestion.answer_contents();
   match.answer_type = suggestion.answer_type();
-  match.answer = SuggestionAnswer::copy(suggestion.answer());
+  match.answer = suggestion.answer();
   match.subtype_identifier = suggestion.subtype_identifier();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     match.RecordAdditionalInfo(kACMatchPropertySuggestionText,
@@ -468,8 +468,7 @@ void BaseSearchProvider::AddMatchToMap(
     if (less_relevant_match.answer && !more_relevant_match.answer) {
       more_relevant_match.answer_type = less_relevant_match.answer_type;
       more_relevant_match.answer_contents = less_relevant_match.answer_contents;
-      more_relevant_match.answer =
-          SuggestionAnswer::copy(less_relevant_match.answer.get());
+      more_relevant_match.answer = less_relevant_match.answer;
     }
   }
 }
