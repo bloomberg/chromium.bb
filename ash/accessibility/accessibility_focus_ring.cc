@@ -7,8 +7,13 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace ash {
+
+// static
+gfx::Rect AccessibilityFocusRing::screen_bounds_for_testing_;
 
 // static
 AccessibilityFocusRing AccessibilityFocusRing::CreateWithRect(
@@ -49,6 +54,29 @@ AccessibilityFocusRing AccessibilityFocusRing::CreateWithParagraphShape(
   gfx::Rect top = orig_top_line;
   gfx::Rect middle = orig_body;
   gfx::Rect bottom = orig_bottom_line;
+
+  gfx::Rect display = GetScreenBoundsForRect(middle);
+
+  top.Intersect(display);
+  bottom.Intersect(display);
+
+  // Because calling Intersect() on a rect with a height of 0 causes all
+  // dimensions to be reset, we need to adjust middle manually (all other rects
+  // are guaranteed nonzero height).
+  if (middle.x() < 0) {
+    middle.set_width(middle.width() + middle.x());
+    middle.set_x(0);
+  }
+  if (middle.y() < 0) {
+    middle.set_height(middle.height() + middle.y());
+    middle.set_y(0);
+  }
+  if (middle.width() > display.width() - middle.x()) {
+    middle.set_width(display.width() - middle.x());
+  }
+  if (middle.height() > display.height() - middle.y()) {
+    middle.set_height(display.height() - middle.y());
+  }
 
   int min_height = std::min(top.height(), bottom.height());
   margin = std::min(margin, min_height / 2);
@@ -139,6 +167,16 @@ gfx::Rect AccessibilityFocusRing::GetBounds() const {
   }
   return gfx::Rect(top_left, gfx::Size(bottom_right.x() - top_left.x(),
                                        bottom_right.y() - top_left.y()));
+}
+
+// static
+gfx::Rect AccessibilityFocusRing::GetScreenBoundsForRect(
+    const gfx::Rect& rect) {
+  if (!screen_bounds_for_testing_.IsEmpty())
+    return screen_bounds_for_testing_;
+
+  DCHECK(display::Screen::GetScreen());
+  return display::Screen::GetScreen()->GetDisplayMatching(rect).bounds();
 }
 
 }  // namespace ash
