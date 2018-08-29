@@ -79,7 +79,9 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--perf-dashboard-machine-group', _GetMachineGroup(build_properties)
   ]
   is_luci = False
-  buildbucket = json.loads(build_properties.get('buildbucket', "{}"))
+  buildbucket = build_properties.get('buildbucket', {})
+  if isinstance(buildbucket, basestring):
+    buildbucket = json.loads(buildbucket)
   if ('build' in buildbucket and
       buildbucket['build'].get('bucket') == 'luci.chrome.ci'):
     is_luci = True
