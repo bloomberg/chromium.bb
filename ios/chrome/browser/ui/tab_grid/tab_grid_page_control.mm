@@ -154,8 +154,8 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 // the positive-x direction.
 @property(nonatomic) CGFloat sliderRange;
 @property(nonatomic, strong) NSArray* accessibilityElements;
-// YES if the slider is currently being dragged
-@property(nonatomic) BOOL dragging;
+// State properties to track the point and position (in the 0.0-1.0 range) of
+// drags.
 @property(nonatomic) CGPoint dragStart;
 @property(nonatomic) CGFloat dragStartPosition;
 @end
@@ -182,7 +182,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @synthesize sliderOrigin = _sliderOrigin;
 @synthesize sliderRange = _sliderRange;
 @synthesize accessibilityElements = _accessibilityElements;
-@synthesize dragging = _dragging;
 @synthesize dragStart = _dragStart;
 @synthesize dragStartPosition = _dragStartPosition;
 
@@ -278,7 +277,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 - (BOOL)beginTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
   CGPoint locationInSlider = [touch locationInView:self.sliderView];
   if ([self.sliderView pointInside:locationInSlider withEvent:event]) {
-    self.dragging = YES;
     self.dragStart = [touch locationInView:self];
     self.dragStartPosition = self.sliderPosition;
     return YES;
@@ -287,8 +285,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 }
 
 - (BOOL)continueTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
-  if (!self.dragging)
-    return NO;
   // Compute x-distance offset
   CGPoint position = [touch locationInView:self];
   CGFloat deltaX = position.x - self.dragStart.x;
@@ -301,16 +297,18 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 }
 
 - (void)endTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
-  // endTracking is called when -continueTracking returns NO. There's no
-  // additional logic in this case, so just forward to -cancelTracking
-  [self cancelTrackingWithEvent:event];
+  // UIControl requires that the superclass method is called.
+  [super endTrackingWithTouch:touch withEvent:event];
+  [self setSelectedPage:self.selectedPage animated:YES];
+  // UIControl will send actions for UIControlEventTouchUpInside as part of its
+  // UIResponder implementation, so there's no need to send them at this point.
 }
 
 - (void)cancelTrackingWithEvent:(UIEvent*)event {
-  // cancelTracking is called when there are no more touches (that is, when the
-  // user lifts their finger).
-  self.dragging = NO;
+  [super cancelTrackingWithEvent:event];
   [self setSelectedPage:self.selectedPage animated:YES];
+  // UIControl doesn't sent control events for -cancelTrackingWithEvent:, so
+  // explicitly do so here.
   [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -407,6 +405,13 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
         @[ incognitoElement, regularElement, remoteElement ];
   }
   return _accessibilityElements;
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
+  // Don't recognize taps if drag touches are being tracked.
+  return !self.tracking;
 }
 
 #pragma mark - Private
@@ -532,6 +537,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   UITapGestureRecognizer* tapRecognizer =
       [[UITapGestureRecognizer alloc] initWithTarget:self
                                               action:@selector(handleTap:)];
+  tapRecognizer.delegate = self;
   [self addGestureRecognizer:tapRecognizer];
 }
 
