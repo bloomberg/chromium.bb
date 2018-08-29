@@ -702,8 +702,10 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
-                            signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_manager()->ClearPrimaryAccount(
+      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
   // Wait for PSS to be notified that the primary account has gone away.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
@@ -761,7 +763,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
+      identity_manager()->GetPrimaryAccountInfo().account_id;
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -813,7 +815,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   service()->AddObserver(&observer);
 
   const std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
+      identity_manager()->GetPrimaryAccountInfo().account_id;
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -869,7 +871,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
+      identity_manager()->GetPrimaryAccountInfo().account_id;
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -885,8 +887,10 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
-                            signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_manager()->ClearPrimaryAccount(
+      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 #endif
@@ -956,7 +960,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
+      identity_manager()->GetPrimaryAccountInfo().account_id;
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -1019,7 +1023,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
+      identity_manager()->GetPrimaryAccountInfo().account_id;
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -1383,13 +1387,13 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, DisableSyncOnClient) {
 
 #if defined(OS_CHROMEOS)
   // ChromeOS does not support signout.
-  EXPECT_FALSE(signin_manager()->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
 #else
-  EXPECT_TRUE(signin_manager()->GetAuthenticatedAccountId().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
                 syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
@@ -1420,7 +1424,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
 
 #if defined(OS_CHROMEOS)
   // ChromeOS does not support signout.
-  EXPECT_FALSE(signin_manager()->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
   // Since ChromeOS doesn't support signout and so the account is still there
@@ -1428,7 +1432,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 #else
-  EXPECT_TRUE(signin_manager()->GetAuthenticatedAccountId().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
                 syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());

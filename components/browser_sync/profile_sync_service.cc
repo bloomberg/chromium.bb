@@ -68,6 +68,7 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using syncer::DataTypeController;
@@ -1160,9 +1161,10 @@ void ProfileSyncService::OnActionableError(
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
       if (!IsLocalSyncEnabled()) {
-        SigninManager::FromSigninManagerBase(signin_->GetSigninManager())
-            ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
-                      signin_metrics::SignoutDelete::IGNORE_METRIC);
+        signin_->GetIdentityManager()->ClearPrimaryAccount(
+            identity::IdentityManager::ClearAccountTokensAction::kDefault,
+            signin_metrics::SERVER_FORCED_DISABLE,
+            signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
 #endif
       break;
