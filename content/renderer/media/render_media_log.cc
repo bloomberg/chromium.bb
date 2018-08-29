@@ -57,6 +57,9 @@ RenderMediaLog::RenderMediaLog(
 
 RenderMediaLog::~RenderMediaLog() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  // AddEvent() could be in-flight on some other thread.  Wait for it, and make
+  // sure that nobody else calls it.
+  InvalidateLog();
 
   // There's no further chance to handle this, so send them now. This should not
   // be racy since nothing should have a pointer to the media log on another
@@ -65,7 +68,8 @@ RenderMediaLog::~RenderMediaLog() {
     SendQueuedMediaEvents();
 }
 
-void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
+void RenderMediaLog::AddEventLocked(
+    std::unique_ptr<media::MediaLogEvent> event) {
   Log(event.get());
 
   // For enforcing delay until it's been a second since the last ipc message was
@@ -74,7 +78,6 @@ void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
 
   {
     base::AutoLock auto_lock(lock_);
-
     switch (event->type) {
       case media::MediaLogEvent::DURATION_SET:
         // Similar to the extents changed message, this may fire many times for
@@ -125,12 +128,9 @@ void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
       base::BindOnce(&RenderMediaLog::SendQueuedMediaEvents, weak_this_));
 }
 
-std::string RenderMediaLog::GetErrorMessage() {
-  base::AutoLock auto_lock(lock_);
-
+std::string RenderMediaLog::GetErrorMessageLocked() {
   // Keep message structure in sync with
   // HTMLMediaElement::BuildElementErrorMessage().
-
   std::stringstream result;
   if (last_pipeline_error_)
     result << MediaEventToMessageString(*last_pipeline_error_);
@@ -147,8 +147,10 @@ std::string RenderMediaLog::GetErrorMessage() {
   return result.str();
 }
 
-void RenderMediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
+void RenderMediaLog::RecordRapporWithSecurityOriginLocked(
+    const std::string& metric) {
   if (!task_runner_->BelongsToCurrentThread()) {
+    // Note that we don't post back to *Locked.
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&RenderMediaLog::RecordRapporWithSecurityOrigin,
@@ -165,7 +167,6 @@ void RenderMediaLog::SendQueuedMediaEvents() {
   std::vector<media::MediaLogEvent> events_to_send;
   {
     base::AutoLock auto_lock(lock_);
-
     DCHECK(ipc_send_pending_);
     ipc_send_pending_ = false;
 
