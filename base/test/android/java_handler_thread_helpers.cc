@@ -15,8 +15,8 @@ namespace android {
 // static
 std::unique_ptr<JavaHandlerThread> JavaHandlerThreadHelpers::CreateJavaFirst() {
   return std::make_unique<JavaHandlerThread>(
-      Java_JavaHandlerThreadHelpers_testAndGetJavaHandlerThread(
-          base::android::AttachCurrentThread()));
+      nullptr, Java_JavaHandlerThreadHelpers_testAndGetJavaHandlerThread(
+                   base::android::AttachCurrentThread()));
 }
 
 // static

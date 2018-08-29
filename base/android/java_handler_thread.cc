@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread_internal_posix.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "jni/JavaHandlerThread_jni.h"
 
@@ -23,14 +24,17 @@ namespace android {
 
 JavaHandlerThread::JavaHandlerThread(const char* name,
                                      base::ThreadPriority priority)
-    : JavaHandlerThread(Java_JavaHandlerThread_create(
-          AttachCurrentThread(),
-          ConvertUTF8ToJavaString(AttachCurrentThread(), name),
-          base::internal::ThreadPriorityToNiceValue(priority))) {}
+    : JavaHandlerThread(
+          name,
+          Java_JavaHandlerThread_create(
+              AttachCurrentThread(),
+              ConvertUTF8ToJavaString(AttachCurrentThread(), name),
+              base::internal::ThreadPriorityToNiceValue(priority))) {}
 
 JavaHandlerThread::JavaHandlerThread(
+    const char* name,
     const base::android::ScopedJavaLocalRef<jobject>& obj)
-    : java_thread_(obj) {}
+    : name_(name), java_thread_(obj) {}
 
 JavaHandlerThread::~JavaHandlerThread() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -77,6 +81,13 @@ void JavaHandlerThread::Stop() {
 void JavaHandlerThread::InitializeThread(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          jlong event) {
+  base::ThreadIdNameManager::GetInstance()->RegisterThread(
+      base::PlatformThread::CurrentHandle().platform_handle(),
+      base::PlatformThread::CurrentId());
+
+  if (name_)
+    PlatformThread::SetName(name_);
+
   // TYPE_JAVA to get the Android java style message loop.
   message_loop_ =
       std::make_unique<MessageLoopForUI>(base::MessageLoop::TYPE_JAVA);
@@ -88,7 +99,12 @@ void JavaHandlerThread::OnLooperStopped(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   message_loop_.reset();
+
   CleanUp();
+
+  base::ThreadIdNameManager::GetInstance()->RemoveName(
+      base::PlatformThread::CurrentHandle().platform_handle(),
+      base::PlatformThread::CurrentId());
 }
 
 void JavaHandlerThread::StopMessageLoopForTesting() {
