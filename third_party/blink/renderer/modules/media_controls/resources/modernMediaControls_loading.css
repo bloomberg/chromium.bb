@@ -64,8 +64,8 @@
   right: -50%;
 }
 
-#spinner-mask-1-background,
-#spinner-mask-2-background {
+div[pseudo="-internal-media-controls-loading-panel-spinner-mask-1-background"],
+div[pseudo="-internal-media-controls-loading-panel-spinner-mask-2-background"] {
   position: absolute;
   background-repeat: no-repeat;
   width: 200%;
@@ -77,19 +77,11 @@
   animation-fill-mode: forwards;
 }
 
-#spinner-mask-1-background {
-  left: 0;
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/loading_mask_1.svg) 1x);
-  background-position: center left;
+div[pseudo="-internal-media-controls-loading-panel-spinner-mask-1-background"] {
   animation-name: mask-1-spin;
 }
 
-#spinner-mask-2-background {
-  left: -100%;
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/loading_mask_2.svg) 1x);
-  background-position: center right;
+div[pseudo="-internal-media-controls-loading-panel-spinner-mask-2-background"] {
   animation-name: mask-2-spin;
 }
 

@@ -569,6 +569,20 @@ video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-
       / -2);
 }
 
+div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-mask-1-background {
+  left: 0;
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/loading_mask_1.svg) 1x);
+  background-position: center left;
+}
+
+div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-mask-2-background {
+  left: -100%;
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/loading_mask_2.svg) 1x);
+  background-position: center right;
+}
+
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
   -webkit-appearance: -internal-media-control;
 
