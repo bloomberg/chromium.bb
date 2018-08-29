@@ -69,7 +69,7 @@ bool IsPepperPluginEnabled(Profile* profile,
                            const base::FilePath& plugin_path) {
   DCHECK(profile);
 
-  content::PepperPluginInfo* pepper_info =
+  const content::PepperPluginInfo* pepper_info =
       PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(plugin_path);
   if (!pepper_info)
     return false;

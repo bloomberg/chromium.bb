@@ -459,7 +459,7 @@ void PepperFileSystemBrowserHost::GotReservedQuota(
 
 std::string PepperFileSystemBrowserHost::GetPluginMimeType() const {
   base::FilePath plugin_path = browser_ppapi_host_->GetPluginPath();
-  PepperPluginInfo* info =
+  const PepperPluginInfo* info =
       PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info || info->mime_types.empty())
     return std::string();

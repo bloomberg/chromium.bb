@@ -98,7 +98,7 @@ class PluginDataRemoverImpl::Context
 
     base::FilePath plugin_path = plugins[0].path;
 
-    PepperPluginInfo* pepper_info =
+    const PepperPluginInfo* pepper_info =
         plugin_service->GetRegisteredPpapiPluginInfo(plugin_path);
     if (!pepper_info) {
       event_->Signal();

@@ -174,7 +174,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   }
 
   // Validate that the plugin is actually registered.
-  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  const PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info) {
     VLOG(1) << "Unable to find ppapi plugin registration for: "
             << plugin_path.MaybeAsASCII();
@@ -241,12 +241,11 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
     return plugin_host;
 
   // Validate that the plugin is actually registered.
-  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  const PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return nullptr;
 
-  // TODO(ddorwin): Uncomment once out of process is supported.
-  // DCHECK(info->is_out_of_process);
+  DCHECK(info->is_out_of_process);
 
   // This broker isn't loaded by any broker process, so create a new process.
   return PpapiPluginProcessHost::CreateBrokerHost(*info);
@@ -334,11 +333,9 @@ bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
   std::vector<WebPluginInfo> plugins;
   PluginList::Singleton()->GetPluginsNoRefresh(&plugins);
 
-  for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
-       it != plugins.end();
-       ++it) {
-    if (it->path == plugin_path) {
-      *info = *it;
+  for (const WebPluginInfo& plugin : plugins) {
+    if (plugin.path == plugin_path) {
+      *info = plugin;
       return true;
     }
   }
@@ -356,11 +353,11 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
 #if defined(OS_MACOSX)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
-    const std::string kPluginExtension = ".plugin";
+    static const char kPluginExtension[] = ".plugin";
     if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
                        base::CompareCase::SENSITIVE))
-      plugin_name.erase(plugin_name.length() - kPluginExtension.length());
-#endif  // OS_MACOSX
+      plugin_name.erase(plugin_name.length() - strlen(kPluginExtension));
+#endif  // defined(OS_MACOSX)
   }
   return plugin_name;
 }
@@ -377,18 +374,18 @@ void PluginServiceImpl::GetPlugins(GetPluginsCallback callback) {
 
 void PluginServiceImpl::RegisterPepperPlugins() {
   ComputePepperPluginList(&ppapi_plugins_);
-  for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
-    RegisterInternalPlugin(ppapi_plugins_[i].ToWebPluginInfo(), true);
-  }
+  for (const auto& plugin : ppapi_plugins_)
+    RegisterInternalPlugin(plugin.ToWebPluginInfo(), /*add_at_beginning=*/true);
 }
 
 // There should generally be very few plugins so a brute-force search is fine.
-PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
+const PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
     const base::FilePath& plugin_path) {
-  for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
-    if (ppapi_plugins_[i].path == plugin_path)
-      return &ppapi_plugins_[i];
+  for (auto& plugin : ppapi_plugins_) {
+    if (plugin.path == plugin_path)
+      return &plugin;
   }
+
   // We did not find the plugin in our list. But wait! the plugin can also
   // be a latecomer, as it happens with pepper flash. This information
   // can be obtained from the PluginList singleton and we can use it to

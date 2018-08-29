@@ -99,7 +99,7 @@ class CONTENT_EXPORT PluginService {
   // Returns information about a pepper plugin if it exists, otherwise nullptr.
   // The caller does not own the pointer, and it's not guaranteed to live past
   // the call stack.
-  virtual PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+  virtual const PepperPluginInfo* GetRegisteredPpapiPluginInfo(
       const base::FilePath& plugin_path) = 0;
 
   virtual void SetFilter(PluginServiceFilter* filter) = 0;
