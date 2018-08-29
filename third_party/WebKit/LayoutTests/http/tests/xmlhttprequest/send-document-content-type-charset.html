@@ -14,7 +14,7 @@ async_test(function(t) {
   xhr.open("POST", "print-content-type.cgi");
   xhr.send(document);
   xhr.onloadend = t.step_func_done(function() {
-    assert_equals(xhr.responseText, "application/xml;charset=UTF-8\n");
+    assert_equals(xhr.responseText, "text/html;charset=UTF-8\n");
   });
 });
 </script>
