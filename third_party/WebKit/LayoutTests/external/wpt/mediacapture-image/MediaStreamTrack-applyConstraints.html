@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/media/capture/mojom/image_capture.mojom.js"></script>
-<script src="resources/imagecapture-helpers.js"></script>
-<script src="resources/mock-imagecapture.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/mediacapture-image/resources/imagecapture-helpers.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
 </body>
@@ -15,7 +12,7 @@ const meteringModeNames = ['none', 'manual', 'single-shot', 'continuous'];
 // This test verifies that we can all MediaStreamTrack.applyConstraints(), with
 // a mock Mojo service implementation.
 
-promise_test(async function() {
+image_capture_test(async (t, imageCaptureTest) => {
   let canvas = document.getElementById('canvas');
   let context = canvas.getContext('2d');
   context.fillStyle = 'red';
@@ -50,7 +47,7 @@ promise_test(async function() {
     // to allow for those to be collected, since they are needed to understand
     // which constraints are supported in applyConstraints().
     // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => step_timeout(resolve, 100));
 
     try {
       await videoTrack.applyConstraints(constraints);
@@ -74,7 +71,7 @@ promise_test(async function() {
       }
     });
 
-    let theMock = mockImageCapture;
+    let theMock = imageCaptureTest.mockImageCapture();
     assert_equals(constraintsDict.whiteBalanceMode,
                   meteringModeNames[theMock.options().whiteBalanceMode],
                   'whiteBalanceMode');

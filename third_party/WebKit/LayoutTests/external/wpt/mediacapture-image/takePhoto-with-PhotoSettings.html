@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/media/capture/mojom/image_capture.mojom.js"></script>
-<script src="resources/mock-imagecapture.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/mediacapture-image/resources/imagecapture-helpers.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
 </body>
@@ -14,7 +12,7 @@ const fillLightModeNames = ['off', 'auto', 'flash'];
 // This test verifies that ImageCapture can call takePhoto with a PhotoSettings
 // argument, with a mock Mojo interface implementation.
 
-promise_test(async function() {
+image_capture_test(async (t, imageCaptureTest) => {
   let canvas = document.getElementById('canvas');
   let context = canvas.getContext('2d');
   context.fillStyle = 'red';
@@ -34,24 +32,30 @@ promise_test(async function() {
   assert_equals(blob.type, 'image/cat');
   assert_equals(blob.size, 2);
 
-  assert_equals(true, mockImageCapture.options().hasWidth, 'hasWidth');
-  assert_equals(optionsDict.imageWidth, mockImageCapture.options().width,
-                'width');
-  assert_equals(true, mockImageCapture.options().hasHeight, 'hasHeight');
-  assert_equals(optionsDict.imageHeight, mockImageCapture.options().height,
+
+  assert_equals(true, imageCaptureTest.mockImageCapture().options().hasWidth,
+               'hasWidth');
+  assert_equals(optionsDict.imageWidth,
+                imageCaptureTest.mockImageCapture().options().width,'width');
+  assert_equals(true, imageCaptureTest.mockImageCapture().options().hasHeight,
+               'hasHeight');
+  assert_equals(optionsDict.imageHeight,
+                imageCaptureTest.mockImageCapture().options().height,
                 'height');
 
   // Depending on how mojo boolean packing in integers is arranged, this can
   // be a number instead of a boolean, compare directly.
   // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
   assert_true(
-      optionsDict.redEyeReduction == mockImageCapture.options().redEyeReduction,
-      'redEyeReduction');
+      optionsDict.redEyeReduction == imageCaptureTest.mockImageCapture().
+      options().redEyeReduction, 'redEyeReduction');
 
-  assert_equals(true, mockImageCapture.options().hasFillLightMode,
+  assert_equals(true,
+                imageCaptureTest.mockImageCapture().options().hasFillLightMode,
                 'hasFillLightMode');
   assert_equals(optionsDict.fillLightMode,
-                fillLightModeNames[mockImageCapture.options().fillLightMode],
+                fillLightModeNames[
+                  imageCaptureTest.mockImageCapture().options().fillLightMode],
                 'fillLightMode');
 
 }, 'exercises ImageCapture.takePhoto(PhotoSettings dictionary)');
