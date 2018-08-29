@@ -333,6 +333,8 @@ void SystemNetworkContextManager::SetUp(
 SystemNetworkContextManager::SystemNetworkContextManager()
     : ssl_config_service_manager_(SSLConfigServiceManager::CreateDefaultManager(
           g_browser_process->local_state())) {
+#if !defined(OS_ANDROID)
+  // QuicAllowed was not part of Android policy.
   const base::Value* value =
       g_browser_process->policy_service()
           ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
@@ -340,6 +342,7 @@ SystemNetworkContextManager::SystemNetworkContextManager()
           .GetValue(policy::key::kQuicAllowed);
   if (value)
     value->GetAsBoolean(&is_quic_allowed_);
+#endif
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
   PrefService* local_state = g_browser_process->local_state();
@@ -569,6 +572,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // point, all NetworkContexts will be destroyed as well.
   AddSSLConfigToNetworkContextParams(network_context_params.get());
 
+  bool http_09_on_non_default_ports_enabled = false;
 #if !defined(OS_ANDROID)
   // CT is only enabled on Desktop platforms for now.
   network_context_params->enforce_chrome_ct_policy = true;
@@ -580,9 +584,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
     log_info->dns_api_endpoint = ct_log.log_dns_domain;
     network_context_params->ct_logs.push_back(std::move(log_info));
   }
-#endif
 
-  bool http_09_on_non_default_ports_enabled = false;
   const base::Value* value =
       g_browser_process->policy_service()
           ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
@@ -590,6 +592,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
           .GetValue(policy::key::kHttp09OnNonDefaultPortsEnabled);
   if (value)
     value->GetAsBoolean(&http_09_on_non_default_ports_enabled);
+#endif
   network_context_params->http_09_on_non_default_ports_enabled =
       http_09_on_non_default_ports_enabled;
 
