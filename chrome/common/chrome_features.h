@@ -208,6 +208,11 @@ extern const base::Feature kHappinessTrackingSystem;
 #endif
 
 #if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSurveysForDesktop;
+#endif
+
+#if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsCastDialog;
 #endif
 

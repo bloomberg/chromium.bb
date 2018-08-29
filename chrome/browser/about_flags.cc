@@ -4387,6 +4387,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncherGestures)},
 #endif
 
+#if !defined(OS_ANDROID)
+    {"happiness-tarcking-surveys-for-desktop",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

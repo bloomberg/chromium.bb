@@ -1686,6 +1686,9 @@ extern const char kEnableWebAuthenticationCtap2SupportDescription[];
 extern const char kEnableWebAuthenticationTestingAPIName[];
 extern const char kEnableWebAuthenticationTestingAPIDescription[];
 
+extern const char kHappinessTrackingSurveysForDesktopName[];
+extern const char kHappinessTrackingSurveysForDesktopDescription[];
+
 extern const char kInfiniteSessionRestoreName[];
 extern const char kInfiniteSessionRestoreDescription[];
 
