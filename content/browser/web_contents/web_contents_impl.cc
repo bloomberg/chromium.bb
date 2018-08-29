@@ -1663,6 +1663,10 @@ bool WebContentsImpl::HasRecentInteractiveInputEvent() const {
   return delta <= kMaxInterval;
 }
 
+void WebContentsImpl::SetIgnoreInputEvents(bool ignore_input_events) {
+  ignore_input_events_ = ignore_input_events;
+}
+
 #if defined(OS_ANDROID)
 void WebContentsImpl::SetMainFrameImportance(
     ChildProcessImportance importance) {
@@ -5888,6 +5892,17 @@ void WebContentsImpl::DidReceiveInputEvent(
 
   if (IsResourceLoadUserInteractionInputType(type))
     SendUserGestureForResourceDispatchHost();
+}
+
+bool WebContentsImpl::ShouldIgnoreInputEvents() {
+  WebContentsImpl* web_contents = this;
+  while (web_contents) {
+    if (web_contents->ignore_input_events_)
+      return true;
+    web_contents = web_contents->GetOuterWebContents();
+  }
+
+  return false;
 }
 
 void WebContentsImpl::FocusOwningWebContents(

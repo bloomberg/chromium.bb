@@ -929,6 +929,9 @@ class WebContents : public PageNavigator,
   // user activation work.
   virtual bool HasRecentInteractiveInputEvent() const = 0;
 
+  // Sets a flag that causes the WebContents to ignore input events.
+  virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
+
   // Returns guest browser plugin object, or NULL if this WebContents is not a
   // guest.
   virtual BrowserPluginGuest* GetBrowserPluginGuest() const = 0;

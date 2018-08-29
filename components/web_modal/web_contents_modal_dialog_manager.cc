@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -114,10 +112,7 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
     return;
   }
 
-  // RenderViewHost may be null during shutdown.
-  content::RenderViewHost* host = contents->GetRenderViewHost();
-  if (host)
-    host->GetWidget()->SetIgnoreInputEvents(blocked);
+  contents->SetIgnoreInputEvents(blocked);
   if (delegate_)
     delegate_->SetWebContentsBlocked(contents, blocked);
 }

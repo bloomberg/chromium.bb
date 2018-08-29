@@ -1243,10 +1243,10 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
       return;
   }
 
-  if (ShouldDropInputEvents())
+  if (IsIgnoringInputEvents())
     return;
 
-  // Delegate must be non-null, due to |ShouldDropInputEvents()| test.
+  // Delegate must be non-null, due to |IsIgnoringInputEvents()| test.
   if (delegate_->PreHandleMouseEvent(mouse_event))
     return;
 
@@ -1273,7 +1273,7 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent", "dx",
                wheel_event.delta_x, "dy", wheel_event.delta_y);
 
-  if (ShouldDropInputEvents())
+  if (IsIgnoringInputEvents())
     return;
 
   auto* touch_emulator = GetExistingTouchEmulator();
@@ -1304,7 +1304,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   TRACE_EVENT1("input", "RenderWidgetHostImpl::ForwardGestureEvent", "type",
                WebInputEvent::GetName(gesture_event.GetType()));
   // Early out if necessary, prior to performing latency logic.
-  if (ShouldDropInputEvents())
+  if (IsIgnoringInputEvents())
     return;
 
   bool scroll_update_needs_wrapping = false;
@@ -1393,7 +1393,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
             gesture_event));
   }
 
-  // Delegate must be non-null, due to |ShouldDropInputEvents()| test.
+  // Delegate must be non-null, due to |IsIgnoringInputEvents()| test.
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
 
@@ -1459,7 +1459,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     return;
   }
 
-  if (ShouldDropInputEvents())
+  if (IsIgnoringInputEvents())
     return;
 
   if (!process_->IsInitializedAndNotDead())
@@ -2460,7 +2460,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
   // confused about how many touches are active.
-  if (ShouldDropInputEvents() && event.GetType() != WebInputEvent::kTouchCancel)
+  if (IsIgnoringInputEvents() && event.GetType() != WebInputEvent::kTouchCancel)
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
   if (!process_->IsInitializedAndNotDead())
@@ -2630,8 +2630,9 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
   }
 }
 
-bool RenderWidgetHostImpl::ShouldDropInputEvents() const {
-  return ignore_input_events_ || process_->IgnoreInputEvents() || !delegate_;
+bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
+  return ignore_input_events_ || process_->IgnoreInputEvents() || !delegate_ ||
+         delegate_->ShouldIgnoreInputEvents();
 }
 
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {

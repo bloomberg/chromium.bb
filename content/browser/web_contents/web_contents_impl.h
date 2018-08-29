@@ -469,6 +469,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif
 
   bool HasRecentInteractiveInputEvent() const override;
+  void SetIgnoreInputEvents(bool ignore_input_events) override;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -610,6 +611,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       BrowserContext* browser_context) const override;
   void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
                             const blink::WebInputEvent::Type type) override;
+  bool ShouldIgnoreInputEvents() override;
   void OnIgnoredUIEvent() override;
   void Activate() override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
@@ -1548,6 +1550,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // happen if a connection notification has happened and that they happen only
   // once.
   bool notify_disconnection_;
+
+  // Set to true if we shouldn't send input events.
+  bool ignore_input_events_ = false;
 
   // Pointer to the JavaScript dialog manager, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.

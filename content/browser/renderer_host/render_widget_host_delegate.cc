@@ -27,6 +27,10 @@ bool RenderWidgetHostDelegate::HandleWheelEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::PreHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   return false;

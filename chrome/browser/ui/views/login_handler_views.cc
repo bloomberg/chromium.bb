@@ -13,8 +13,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
@@ -64,10 +62,6 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
 
   void WindowClosing() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::WebContents* web_contents = GetWebContentsForLogin();
-    if (web_contents)
-      web_contents->GetRenderViewHost()->GetWidget()->SetIgnoreInputEvents(
-          false);
 
     // Reference is no longer valid.
     dialog_ = NULL;
