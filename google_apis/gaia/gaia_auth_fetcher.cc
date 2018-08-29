@@ -1178,8 +1178,13 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
                                                net::Error net_error,
                                                int response_code) {
   if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
-    OAuthMultiloginResult result(data);
-    consumer_->OnOAuthMultiloginSuccess(result);
+    OAuthMultiloginResult result;
+    if (!OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+            data, &result)) {
+      consumer_->OnOAuthMultiloginFailure(GoogleServiceAuthError(
+          GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
+    } else
+      consumer_->OnOAuthMultiloginSuccess(result);
   } else {
     consumer_->OnOAuthMultiloginFailure(GenerateAuthError(data, net_error));
   }

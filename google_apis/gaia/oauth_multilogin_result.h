@@ -18,13 +18,24 @@
 
 class OAuthMultiloginResult {
  public:
+  OAuthMultiloginResult();
+  ~OAuthMultiloginResult();
+
   std::vector<net::CanonicalCookie> cookies() const { return cookies_; }
 
-  OAuthMultiloginResult(const std::string& data);
-  ~OAuthMultiloginResult();
+  // Returns true in case of success and false when there is a parse error.
+  static bool CreateOAuthMultiloginResultFromString(
+      const std::string& data,
+      OAuthMultiloginResult* result);
+
+  void TryParseCookiesFromValue(base::DictionaryValue* dictionary_value);
 
  private:
   std::vector<net::CanonicalCookie> cookies_;
+
+  // Response body that has a form of JSON contains protection characters
+  // against XSSI that have to be removed. See go/xssi.
+  static base::StringPiece StripXSSICharacters(const std::string& data);
 };
 
 #endif  // GOOGLE_APIS_GAIA_OAUTH_MULTILOGIN_RESULT_H_
