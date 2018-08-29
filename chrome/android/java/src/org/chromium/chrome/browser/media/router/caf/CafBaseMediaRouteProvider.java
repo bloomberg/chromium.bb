@@ -16,6 +16,7 @@ import com.google.android.gms.cast.framework.SessionManagerListener;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
@@ -25,8 +26,10 @@ import org.chromium.chrome.browser.media.router.MediaSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A base provider containing common implementation for CAF-based {@link MediaRouteProvider}s.
@@ -174,8 +177,7 @@ public abstract class CafBaseMediaRouteProvider
         if (route == null) return;
 
         if (!hasSession()) {
-            mRoutes.remove(routeId);
-            mManager.onRouteClosed(routeId);
+            removeRoute(routeId, /* error= */ null);
             return;
         }
 
@@ -193,24 +195,20 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public void onSessionStartFailed(CastSession session, int error) {
-        for (String routeId : mRoutes.keySet()) {
-            mManager.onRouteClosedWithError(routeId, "Launch error");
-        }
-        mRoutes.clear();
+        removeAllRoutesWithError("Launch error");
     }
 
     @Override
-    public final void onSessionStarted(CastSession session, String sessionId) {
+    public void onSessionStarted(CastSession session, String sessionId) {
+        Log.d(TAG, "onSessionStarted");
         mSessionController.attachToCastSession(session);
-        onSessionStarted(mPendingCreateRouteRequestInfo);
 
         MediaSink sink = mPendingCreateRouteRequestInfo.sink;
         MediaSource source = mPendingCreateRouteRequestInfo.source;
         MediaRoute route = new MediaRoute(
                 sink.getId(), source.getSourceId(), mPendingCreateRouteRequestInfo.presentationId);
-        mRoutes.put(route.id, route);
-        mManager.onRouteCreated(
-                route.id, route.sinkId, mPendingCreateRouteRequestInfo.nativeRequestId, this, true);
+        addRoute(route, mPendingCreateRouteRequestInfo.origin, mPendingCreateRouteRequestInfo.tabId,
+                mPendingCreateRouteRequestInfo.nativeRequestId, /* wasLaunched= */ true);
 
         mPendingCreateRouteRequestInfo = null;
     }
@@ -227,9 +225,10 @@ public abstract class CafBaseMediaRouteProvider
     public final void onSessionResumeFailed(CastSession session, int error) {}
 
     @Override
-    public void onSessionEnding(CastSession session) {
+    public final void onSessionEnding(CastSession session) {
         mSessionController.detachFromCastSession(session);
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
+        removeAllRoutesWithError(/* error= */ null);
     }
 
     @Override
@@ -248,10 +247,6 @@ public abstract class CafBaseMediaRouteProvider
         return mAndroidMediaRouter;
     }
 
-    // TODO(zqzhang): this is a temporary workaround for give CafMRP to manage ClientRecords on
-    // session start. This needs to be removed once ClientRecord management gets refactored.
-    abstract void onSessionStarted(CreateRouteRequestInfo request);
-
     protected boolean hasSession() {
         return mSessionController != null && mSessionController.isConnected();
     }
@@ -261,6 +256,38 @@ public abstract class CafBaseMediaRouteProvider
     }
 
     public CafMessageHandler getMessageHandler() {
+        return null;
+    }
+
+    /** Adds a route for bookkeeping. */
+    protected void addRoute(
+            MediaRoute route, String origin, int tabId, int nativeRequestId, boolean wasLaunched) {
+        mRoutes.put(route.id, route);
+        mManager.onRouteCreated(route.id, route.sinkId,
+                mPendingCreateRouteRequestInfo.nativeRequestId, this, wasLaunched);
+    }
+
+    /** Removes a route for bookkeeping. A null {@code error} indicates no error. */
+    protected void removeRoute(String routeId, @Nullable String error) {
+        mRoutes.remove(routeId);
+        if (error == null) {
+            mManager.onRouteClosed(routeId);
+        } else {
+            mManager.onRouteClosedWithError(routeId, error);
+        }
+    }
+
+    /** Removes all routes for bookkeeping. A null {@code error} indicates no error. */
+    protected void removeAllRoutesWithError(@Nullable String error) {
+        Set<String> routeIds = new HashSet<>(mRoutes.keySet());
+        for (String routeId : routeIds) {
+            removeRoute(routeId, error);
+        }
+    }
+
+    @Override
+    @Nullable
+    public FlingingController getFlingingController(String routeId) {
         return null;
     }
 }

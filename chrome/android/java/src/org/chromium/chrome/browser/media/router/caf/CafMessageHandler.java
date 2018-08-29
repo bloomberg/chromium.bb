@@ -139,7 +139,7 @@ public class CafMessageHandler {
      */
     public void onSessionStarted(CastSessionController sessionController) {
         mSessionController = sessionController;
-        for (ClientRecord client : mRouteProvider.getClientRecords().values()) {
+        for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
             if (!client.isConnected) continue;
 
             sendEnclosedMessageToClient(
@@ -184,7 +184,9 @@ public class CafMessageHandler {
         assert "v2_message".equals(jsonMessage.getString("type"));
 
         final String clientId = jsonMessage.getString("clientId");
-        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
+        if (clientId == null || !mRouteProvider.getClientIdToRecords().containsKey(clientId)) {
+            return false;
+        }
 
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
@@ -290,7 +292,9 @@ public class CafMessageHandler {
         assert "app_message".equals(jsonMessage.getString("type"));
 
         String clientId = jsonMessage.getString("clientId");
-        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
+        if (clientId == null || !mRouteProvider.getClientIdToRecords().containsKey(clientId)) {
+            return false;
+        }
 
         JSONObject jsonAppMessageWrapper = jsonMessage.getJSONObject("message");
 
@@ -382,7 +386,7 @@ public class CafMessageHandler {
 
         if (isMediaStatusMessage(message)) {
             // MEDIA_STATUS needs to be sent to all the clients.
-            for (String clientId : mRouteProvider.getClients()) {
+            for (String clientId : mRouteProvider.getClientIdToRecords().keySet()) {
                 if (request != null && clientId.equals(request.clientId)) continue;
 
                 sendEnclosedMessageToClient(
@@ -423,7 +427,7 @@ public class CafMessageHandler {
      * Notifies the application has stopped to all requesting clients.
      */
     public void onApplicationStopped() {
-        for (String clientId : mRouteProvider.getClients()) {
+        for (String clientId : mRouteProvider.getClientIdToRecords().keySet()) {
             Queue<Integer> sequenceNumbersForClient = mStopRequests.get(clientId);
             if (sequenceNumbersForClient == null) {
                 sendEnclosedMessageToClient(clientId, "remove_session",
@@ -462,7 +466,7 @@ public class CafMessageHandler {
      * @param message The message to broadcast.
      */
     public void broadcastClientMessage(String type, String message) {
-        for (String clientId : mRouteProvider.getClients()) {
+        for (String clientId : mRouteProvider.getClientIdToRecords().keySet()) {
             sendEnclosedMessageToClient(clientId, type, message, INVALID_SEQUENCE_NUMBER);
         }
     }
