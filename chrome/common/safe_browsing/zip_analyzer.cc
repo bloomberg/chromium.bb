@@ -163,6 +163,8 @@ void AnalyzeZipFile(base::File zip_file,
       ClientDownloadRequest::ArchivedBinary* archived_archive =
           results->archived_binary.Add();
       archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
+      archived_archive->set_is_encrypted(
+          reader.current_entry_info()->is_encrypted());
       SetLengthAndDigestForContainedFile(file, &reader, &temp_file,
                                          archived_archive);
     } else if (current_entry_is_executable) {
@@ -179,6 +181,8 @@ void AnalyzeZipFile(base::File zip_file,
         results->has_executable = true;
         ClientDownloadRequest::ArchivedBinary* archived_binary =
             results->archived_binary.Add();
+        archived_binary->set_is_encrypted(
+            reader.current_entry_info()->is_encrypted());
         SetLengthAndDigestForContainedFile(file, &reader, &temp_file,
                                            archived_binary);
         AnalyzeContainedBinary(binary_feature_extractor, &temp_file,
