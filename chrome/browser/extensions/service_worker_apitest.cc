@@ -973,6 +973,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
 
   ProcessManager* pm = ProcessManager::Get(browser()->profile());
   EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
+  EXPECT_FALSE(pm->GetLazyKeepaliveActivities(extension).empty());
 
   // |extension|'s background page opens a tab to its resource.
   content::WebContents* extension_web_contents =
@@ -1031,6 +1032,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
 
   ProcessManager* pm = ProcessManager::Get(browser()->profile());
   EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
+  EXPECT_FALSE(pm->GetLazyKeepaliveActivities(extension).empty());
 
   // |extension|'s background page opens a tab to its resource.
   content::WebContents* extension_web_contents =

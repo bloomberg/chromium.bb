@@ -189,12 +189,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
       InstallExtension(extension_dir.Pack(), 1 /*new install*/);
   ASSERT_TRUE(extension);
   std::string extension_id = extension->id();
+  const auto dev_tools_activity =
+      std::make_pair(Activity::DEV_TOOLS, std::string());
 
   ProcessManager* process_manager = ProcessManager::Get(profile());
   EXPECT_EQ(0, process_manager->GetLazyKeepaliveCount(extension));
+  ProcessManager::ActivitiesMultiset activities =
+      process_manager->GetLazyKeepaliveActivities(extension);
+  EXPECT_TRUE(activities.empty());
 
   devtools_util::InspectBackgroundPage(extension, profile());
   EXPECT_EQ(1, process_manager->GetLazyKeepaliveCount(extension));
+  activities = process_manager->GetLazyKeepaliveActivities(extension);
+  EXPECT_THAT(activities, testing::UnorderedElementsAre(dev_tools_activity));
 
   // Opening DevTools will cause the background page to load. Wait for it.
   WaitForExtensionViewsToLoad();
@@ -221,6 +228,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   // Keepalive count should stabilize back to 1, because DevTools is still open.
   EXPECT_EQ(1, process_manager->GetLazyKeepaliveCount(extension));
+  activities = process_manager->GetLazyKeepaliveActivities(extension);
+  EXPECT_THAT(activities, testing::UnorderedElementsAre(dev_tools_activity));
 }
 
 // Tests whether the extension runtime stays valid when an extension reloads

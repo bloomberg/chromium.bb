@@ -48,7 +48,9 @@ class JavaScriptDialogExtensionsClientImpl
     DCHECK(web_contents);
     extensions::ProcessManager* pm = GetProcessManager(web_contents);
     if (pm)
-      pm->IncrementLazyKeepaliveCount(extension);
+      pm->IncrementLazyKeepaliveCount(
+          extension, extensions::Activity::MODAL_DIALOG,
+          web_contents->GetLastCommittedURL().spec());
   }
   void OnDialogClosed(content::WebContents* web_contents) override {
     const Extension* extension = GetExtensionForWebContents(web_contents);
@@ -58,7 +60,9 @@ class JavaScriptDialogExtensionsClientImpl
     DCHECK(web_contents);
     extensions::ProcessManager* pm = GetProcessManager(web_contents);
     if (pm)
-      pm->DecrementLazyKeepaliveCount(extension);
+      pm->DecrementLazyKeepaliveCount(
+          extension, extensions::Activity::MODAL_DIALOG,
+          web_contents->GetLastCommittedURL().spec());
   }
   bool GetExtensionName(content::WebContents* web_contents,
                         const GURL& alerting_frame_url,

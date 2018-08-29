@@ -40,6 +40,8 @@ jumbo_source_set("browser_sources") {
   visibility = [ "./*" ]
 
   sources = [
+    "activity.cc",
+    "activity.h",
     "api_activity_monitor.cc",
     "api_activity_monitor.h",
     "app_sorting.h",

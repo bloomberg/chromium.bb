@@ -97,7 +97,8 @@ class ExtensionFunctionDispatcher
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
   void OnExtensionFunctionCompleted(const Extension* extension,
-                                    bool is_from_service_worker);
+                                    bool is_from_service_worker,
+                                    const char* name);
 
   // See the Delegate class for documentation on these methods.
   // TODO(devlin): None of these belong here. We should kill

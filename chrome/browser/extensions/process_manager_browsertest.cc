@@ -362,6 +362,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   EXPECT_TRUE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
   EXPECT_EQ(-1, pm->GetLazyKeepaliveCount(extension.get()));
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(extension.get()).empty());
 
   // Process manager gains a background host.
   EXPECT_EQ(1u, pm->background_hosts().size());
@@ -382,6 +383,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
   EXPECT_FALSE(pm->IsBackgroundHostClosing(extension->id()));
   EXPECT_EQ(-1, pm->GetLazyKeepaliveCount(extension.get()));
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(extension.get()).empty());
 }
 
 // Test that loading an extension with a browser action does not create a
@@ -402,6 +404,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   EXPECT_FALSE(BackgroundInfo::HasBackgroundPage(popup.get()));
   EXPECT_EQ(-1, pm->GetLazyKeepaliveCount(popup.get()));
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(popup.get()).empty());
 
   // No background host was added.
   EXPECT_EQ(0u, pm->background_hosts().size());
@@ -429,6 +432,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   EXPECT_TRUE(pm->GetSiteInstanceForURL(popup->url()));
   EXPECT_FALSE(pm->IsBackgroundHostClosing(popup->id()));
   EXPECT_EQ(-1, pm->GetLazyKeepaliveCount(popup.get()));
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(popup.get()).empty());
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(popup.get()).empty());
 }
 
 // Content loaded from http://hlogonemlfkgpejgnedahbkiabcdhnnn should not
@@ -684,22 +689,35 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, KeepaliveOnNetworkRequest) {
   // reliable baseline for future expectations.
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
   int baseline_keepalive = pm->GetLazyKeepaliveCount(extension.get());
+  size_t baseline_activities_count =
+      pm->GetLazyKeepaliveActivities(extension.get()).size();
   EXPECT_LE(0, baseline_keepalive);
+  EXPECT_LE(0u, baseline_activities_count);
 
   // Simulate some network events. This test assumes no other network requests
   // are pending, i.e., that there are no conflicts with the fake request IDs
   // we're using. This should be a safe assumption because LoadExtension should
   // wait for loads to complete, and we don't run the message loop otherwise.
   content::RenderFrameHost* frame_host = *frames.begin();
-  pm->OnNetworkRequestStarted(frame_host, 1);
+  constexpr int kRequestId = 1;
+  const auto activity =
+      std::make_pair(Activity::NETWORK, base::NumberToString(kRequestId));
+
+  pm->OnNetworkRequestStarted(frame_host, kRequestId);
   EXPECT_EQ(baseline_keepalive + 1, pm->GetLazyKeepaliveCount(extension.get()));
-  pm->OnNetworkRequestDone(frame_host, 1);
+  EXPECT_EQ(1u,
+            pm->GetLazyKeepaliveActivities(extension.get()).count(activity));
+  pm->OnNetworkRequestDone(frame_host, kRequestId);
   EXPECT_EQ(baseline_keepalive, pm->GetLazyKeepaliveCount(extension.get()));
+  EXPECT_EQ(0u,
+            pm->GetLazyKeepaliveActivities(extension.get()).count(activity));
 
   // Simulate only a request completion for this ID and ensure it doesn't result
   // in keepalive decrement.
   pm->OnNetworkRequestDone(frame_host, 2);
   EXPECT_EQ(baseline_keepalive, pm->GetLazyKeepaliveCount(extension.get()));
+  EXPECT_EQ(baseline_activities_count,
+            pm->GetLazyKeepaliveActivities(extension.get()).size());
 }
 
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {

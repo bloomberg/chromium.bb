@@ -35,6 +35,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -595,12 +596,19 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   LaunchTestingApp();
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 
+  const auto api_activity = std::make_pair(extensions::Activity::API_FUNCTION,
+                                           std::string("test.sendMessage"));
+  const auto pepper_api_activity =
+      std::make_pair(extensions::Activity::PEPPER_API, std::string());
   // When the app calls chrome.test.sendMessage() the keepalive count stays
   // incremented until the call completes (i.e. until we call Reply() below).
   // So between WaitUntilSatisfied() and Reply(), we know that the count must
   // be in the incremented state, and in this case that is the only
   // contributor to the keepalive count.
   EXPECT_EQ(1, manager->GetLazyKeepaliveCount(extension()));
+  extensions::ProcessManager::ActivitiesMultiset activities =
+      manager->GetLazyKeepaliveActivities(extension());
+  EXPECT_THAT(activities, testing::UnorderedElementsAre(api_activity));
 
   ExtensionTestMessageListener created1_listener("created_module:1", true);
   ready_listener.Reply("create_module");
@@ -609,6 +617,9 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   // Now chrome.test.sendMessage() is incrementing the keepalive count, but
   // there is also a Native Client module active, incrementing it again.
   EXPECT_EQ(2, manager->GetLazyKeepaliveCount(extension()));
+  activities = manager->GetLazyKeepaliveActivities(extension());
+  EXPECT_THAT(activities,
+              testing::UnorderedElementsAre(api_activity, pepper_api_activity));
 
   ExtensionTestMessageListener created2_listener("created_module:2", true);
   created1_listener.Reply("create_module");
@@ -616,6 +627,11 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
 
   // Keepalive comes from chrome.test.sendMessage, plus two modules.
   EXPECT_EQ(3, manager->GetLazyKeepaliveCount(extension()));
+  activities = manager->GetLazyKeepaliveActivities(extension());
+  EXPECT_EQ(3u, activities.size());
+  EXPECT_THAT(activities,
+              testing::UnorderedElementsAre(api_activity, pepper_api_activity,
+                                            pepper_api_activity));
 
   // Tear-down both modules.
   ExtensionTestMessageListener destroyed1_listener("destroyed_module", true);
@@ -628,6 +644,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   // Both modules are gone, and no sendMessage API reply is pending (since the
   // last listener has the |will_reply| flag set to |false|).
   EXPECT_EQ(0, manager->GetLazyKeepaliveCount(extension()));
+  activities = manager->GetLazyKeepaliveActivities(extension());
+  EXPECT_TRUE(activities.empty());
 }
 
 // Verify that we can create a NaCl module by adding the <embed> to the

@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/activity.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_id.h"
@@ -123,9 +125,23 @@ class ProcessManager : public KeyedService,
   // When this reaches 0, we will begin the process of shutting down the page.
   // "Things" include pending events, resource loads, and API calls.
   // Returns -1 if |extension| does not have a lazy background page.
+  // The calls to increment and decrement the count also accept a category
+  // of activity and an extra string of data. These are kept so there is
+  // more information for the counts. See the Activity struct definition
+  // for more details regarding the extra data.
   int GetLazyKeepaliveCount(const Extension* extension);
-  void IncrementLazyKeepaliveCount(const Extension* extension);
-  void DecrementLazyKeepaliveCount(const Extension* extension);
+  void IncrementLazyKeepaliveCount(const Extension* extension,
+                                   Activity::Type activity_type,
+                                   const std::string& extra_data);
+  void DecrementLazyKeepaliveCount(const Extension* extension,
+                                   Activity::Type activity_type,
+                                   const std::string& extra_data);
+
+  using ActivitiesMultisetPair = std::pair<Activity::Type, std::string>;
+  using ActivitiesMultiset = std::multiset<ActivitiesMultisetPair>;
+
+  // Return the current set of keep-alive activities for the extension.
+  ActivitiesMultiset GetLazyKeepaliveActivities(const Extension* extension);
 
   // Handles a response to the ShouldSuspend message, used for lazy background
   // pages.
@@ -245,6 +261,9 @@ class ProcessManager : public KeyedService,
   // Internal implementation of DecrementLazyKeepaliveCount with an
   // |extension_id| known to have a lazy background page.
   void DecrementLazyKeepaliveCount(const std::string& extension_id);
+  void DecrementLazyKeepaliveCount(const std::string& extension_id,
+                                   Activity::Type activity_type,
+                                   const std::string& extra_data);
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.

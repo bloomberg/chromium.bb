@@ -414,11 +414,11 @@ void ExtensionRegistrar::DidCreateRenderViewForBackgroundPage(
       orphaned_dev_tools_.find(host->extension_id());
   if (iter == orphaned_dev_tools_.end())
     return;
-
   // Keepalive count is reset on extension reload. This re-establishes the
   // keepalive that was added when the DevTools agent was initially attached.
   ProcessManager::Get(browser_context_)
-      ->IncrementLazyKeepaliveCount(host->extension());
+      ->IncrementLazyKeepaliveCount(host->extension(), Activity::DEV_TOOLS,
+                                    std::string());
   iter->second->ConnectWebContents(host->host_contents());
   orphaned_dev_tools_.erase(iter);
 }

@@ -227,9 +227,11 @@ void ExtensionWebContentsObserver::MediaPictureInPictureChanged(
     if (extension == nullptr)
       return;
     if (is_picture_in_picture)
-      process_manager->IncrementLazyKeepaliveCount(extension);
+      process_manager->IncrementLazyKeepaliveCount(extension, Activity::MEDIA,
+                                                   Activity::kPictureInPicture);
     else
-      process_manager->DecrementLazyKeepaliveCount(extension);
+      process_manager->DecrementLazyKeepaliveCount(extension, Activity::MEDIA,
+                                                   Activity::kPictureInPicture);
   }
 }
 
@@ -254,7 +256,8 @@ void ExtensionWebContentsObserver::PepperInstanceCreated() {
     const Extension* const extension =
         process_manager->GetExtensionForWebContents(web_contents());
     if (extension)
-      process_manager->IncrementLazyKeepaliveCount(extension);
+      process_manager->IncrementLazyKeepaliveCount(
+          extension, Activity::PEPPER_API, std::string());
   }
 }
 
@@ -266,7 +269,8 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
     const Extension* const extension =
         process_manager->GetExtensionForWebContents(web_contents());
     if (extension)
-      process_manager->DecrementLazyKeepaliveCount(extension);
+      process_manager->DecrementLazyKeepaliveCount(
+          extension, Activity::PEPPER_API, std::string());
   }
 }
 

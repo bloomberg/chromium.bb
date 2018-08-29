@@ -186,7 +186,7 @@ void ExtensionHost::RemoveObserver(ExtensionHostObserver* observer) {
 void ExtensionHost::OnBackgroundEventDispatched(const std::string& event_name,
                                                 int event_id) {
   CHECK(IsBackgroundPage());
-  unacked_messages_.insert(event_id);
+  unacked_messages_[event_id] = event_name;
   for (auto& observer : observer_list_)
     observer.OnBackgroundEventDispatched(this, event_name, event_id);
 }
@@ -356,7 +356,7 @@ void ExtensionHost::OnEventAck(int event_id) {
 
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
-    router->OnEventAck(browser_context_, extension_id());
+    router->OnEventAck(browser_context_, extension_id(), it->second);
 
   for (auto& observer : observer_list_)
     observer.OnBackgroundEventAcked(this, event_id);
@@ -367,12 +367,14 @@ void ExtensionHost::OnEventAck(int event_id) {
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {
   ProcessManager::Get(browser_context_)
-      ->IncrementLazyKeepaliveCount(extension());
+      ->IncrementLazyKeepaliveCount(extension(), Activity::LIFECYCLE_MANAGEMENT,
+                                    Activity::kIPC);
 }
 
 void ExtensionHost::OnDecrementLazyKeepaliveCount() {
   ProcessManager::Get(browser_context_)
-      ->DecrementLazyKeepaliveCount(extension());
+      ->DecrementLazyKeepaliveCount(extension(), Activity::LIFECYCLE_MANAGEMENT,
+                                    Activity::kIPC);
 }
 
 // content::WebContentsObserver
