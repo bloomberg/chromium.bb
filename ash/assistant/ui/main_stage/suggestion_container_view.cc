@@ -4,7 +4,9 @@
 
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller.h"
@@ -134,6 +136,7 @@ void SuggestionContainerView::OnSuggestionsChanged(
 
     app_list::SuggestionChipView* suggestion_chip_view =
         new app_list::SuggestionChipView(params, /*listener=*/this);
+    suggestion_chip_view->SetAccessibleName(params.text);
 
     // Given a suggestion chip view, we need to be able to look up the id of
     // the underlying suggestion. This is used for handling press events.

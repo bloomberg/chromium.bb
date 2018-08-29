@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -88,6 +90,7 @@ void AssistantFooterView::InitLayout() {
   suggestion_container_->SetPaintToLayer();
   suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
   suggestion_container_->layer()->SetOpacity(setup_completed ? 1.f : 0.f);
+  suggestion_container_->SetVisible(setup_completed);
 
   AddChildView(suggestion_container_);
 
@@ -100,6 +103,7 @@ void AssistantFooterView::InitLayout() {
   opt_in_view_->SetPaintToLayer();
   opt_in_view_->layer()->SetFillsBoundsOpaquely(false);
   opt_in_view_->layer()->SetOpacity(setup_completed ? 0.f : 1.f);
+  opt_in_view_->SetVisible(!setup_completed);
 
   AddChildView(opt_in_view_);
 }
@@ -118,10 +122,15 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
       completed ? static_cast<views::View*>(suggestion_container_)
                 : static_cast<views::View*>(opt_in_view_);
 
+  // Reset visibility to enable animation.
+  hide_view->SetVisible(true);
+  show_view->SetVisible(true);
+
   // Hide the view for the previous consent state by fading to 0% opacity.
-  hide_view->layer()->GetAnimator()->StartAnimation(
-      CreateLayerAnimationSequence(
-          CreateOpacityElement(0.f, kAnimationFadeOutDuration)));
+  StartLayerAnimationSequence(hide_view->layer()->GetAnimator(),
+                              CreateLayerAnimationSequence(CreateOpacityElement(
+                                  0.f, kAnimationFadeOutDuration)),
+                              animation_observer_.get());
 
   // Show the view for the next consent state by fading to 100% opacity with
   // delay.
@@ -153,7 +162,9 @@ bool AssistantFooterView::OnAnimationEnded(
 
   // Only the view relevant to our consent state should process events.
   suggestion_container_->set_can_process_events_within_subtree(setup_completed);
+  suggestion_container_->SetVisible(setup_completed);
   opt_in_view_->set_can_process_events_within_subtree(!setup_completed);
+  opt_in_view_->SetVisible(!setup_completed);
 
   // Return false to prevent the observer from destroying itself.
   return false;

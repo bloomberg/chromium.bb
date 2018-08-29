@@ -39,7 +39,12 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
 class AssistantOptInContainer : public views::Button {
  public:
   explicit AssistantOptInContainer(views::ButtonListener* listener)
-      : views::Button(listener) {}
+      : views::Button(listener) {
+    constexpr float kHighlightOpacity = 0.06f;
+    SetFocusPainter(views::Painter::CreateSolidRoundRectPainter(
+        SkColorSetA(SK_ColorBLACK, 0xff * kHighlightOpacity),
+        kPreferredHeightDip / 2));
+  }
 
   ~AssistantOptInContainer() override = default;
 
@@ -127,8 +132,9 @@ void AssistantOptInView::InitLayout() {
   // Set the text, having replaced placeholders in the opt in prompt with
   // substitution strings and caching their offset positions for styling.
   std::vector<size_t> offsets;
-  label_->SetText(l10n_util::GetStringFUTF16(
-      IDS_ASH_ASSISTANT_OPT_IN_PROMPT, unlock_features, get_started, &offsets));
+  auto label_text = l10n_util::GetStringFUTF16(
+      IDS_ASH_ASSISTANT_OPT_IN_PROMPT, unlock_features, get_started, &offsets);
+  label_->SetText(label_text);
 
   // Style the first substitution string.
   label_->AddStyleRange(
@@ -141,6 +147,9 @@ void AssistantOptInView::InitLayout() {
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
   container->AddChildView(label_);
+
+  container->SetFocusForPlatform();
+  container->SetAccessibleName(label_text);
 }
 
 void AssistantOptInView::ButtonPressed(views::Button* sender,
