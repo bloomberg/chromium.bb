@@ -30,6 +30,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
   virtual void OnStartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoverySession>);
 
+  // BluetoothAdapter::Observer:
+  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
+
   void OnSetPoweredError();
   void OnStartDiscoverySessionError();
   void SetDiscoverySession(

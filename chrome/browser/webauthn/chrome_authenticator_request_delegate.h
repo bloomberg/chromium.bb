@@ -84,6 +84,7 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
+  void BluetoothAdapterPowerChanged(bool is_powered_on) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
