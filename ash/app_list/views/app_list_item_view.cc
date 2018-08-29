@@ -394,8 +394,7 @@ void AppListItemView::OnContextMenuModelReceived(
     anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
     anchor_rect = apps_grid_view_->GetIdealBounds(this);
     // Anchor the menu to the same rect that is used for selection highlight.
-    anchor_rect.ClampToCenteredSize(
-        AppListConfig::instance().grid_focus_size());
+    AdaptBoundsForSelectionHighlight(&anchor_rect);
     views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
   }
 
@@ -456,18 +455,17 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (apps_grid_view_->IsDraggedView(this))
     return;
 
-  gfx::Rect rect(GetContentsBounds());
   if (apps_grid_view_->IsSelectedView(this)) {
-    const int grid_focus_corner_radius =
-        AppListConfig::instance().grid_focus_corner_radius();
-    rect.Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
-    rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(apps_grid_view_->is_in_folder() ? kFolderGridSelectedColor
                                                    : kGridSelectedColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawRoundRect(gfx::RectF(rect), grid_focus_corner_radius, flags);
+    gfx::Rect selection_highlight_bounds = GetContentsBounds();
+    AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
+    canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),
+                          AppListConfig::instance().grid_focus_corner_radius(),
+                          flags);
   }
 
   int preview_circle_radius = GetPreviewCircleRadius();
@@ -846,6 +844,11 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
       kDraggedViewHoverAnimationDuration);
+}
+
+void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
+  bounds->Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
+  bounds->ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 }
 
 }  // namespace app_list

@@ -212,6 +212,9 @@ class APP_LIST_EXPORT AppListItemView
   // Creates dragged view hover animation if it does not exist.
   void CreateDraggedViewHoverAnimation();
 
+  // Modifies AppListItemView bounds to match the selected highlight bounds.
+  void AdaptBoundsForSelectionHighlight(gfx::Rect* rect);
+
   const bool is_folder_;
   const bool is_in_folder_;
 
