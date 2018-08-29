@@ -196,12 +196,12 @@ body.has-error #error {
 
 .top-stripe {
   position: absolute;
-  top: 40px;
+  top: 48px;
   -webkit-transform: translateY(-50%);
 }
 
 body.shift-top-stripe .top-stripe {
-  top: 0px;  /* Calculate at runtime. */
+  top: 0;  /* Calculate at runtime. */
 }
 
 .bottom-stripe,
@@ -212,23 +212,23 @@ body:not(.tablet-landscape) .actions-group {
 }
 
 body.tablet-landscape .bottom-stripe {
-  bottom: 40px;
+  bottom: 48px;
 }
 
 body.shift-bottom-stripe .bottom-stripe,
 body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
-  bottom: 0px;  /* Calculate at runtime. */
+  bottom: 0;  /* Calculate at runtime. */
 }
 
 .left-stripe {
   position: absolute;
-  left: 40px;
+  left: 48px;
   -webkit-transform: translateX(-50%);
 }
 
 
 body.shift-left-stripe .left-stripe {
-  left: 0px;  /* Calculate at runtime. */
+  left: 0;  /* Calculate at runtime. */
 }
 
 .right-stripe,
@@ -239,12 +239,12 @@ body.tablet-landscape .actions-group {
 }
 
 body:not(.tablet-landscape) .right-stripe {
-  right: 40px;
+  right: 48px;
 }
 
 body.shift-right-stripe .right-stripe,
 body.shift-right-stripe.tablet-landscape .actions-group {
-  right: 0px;  /* Calculate at runtime. */
+  right: 0;  /* Calculate at runtime. */
 }
 
 .top-stripe.right-stripe {
