@@ -67,15 +67,29 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
   if (!wm_helper)
     return;
 
-  aura::Window* focused_window = wm_helper->GetFocusedWindow();
-  if (!focused_window)
+  aura::Window* active_window = wm_helper->GetActiveWindow();
+  if (!active_window)
     return;
 
-  aura::Window* toplevel_window = focused_window->GetToplevelWindow();
+  aura::Window* toplevel_window = active_window->GetToplevelWindow();
 
   gfx::Rect bounds_in_screen = gfx::ScaleToEnclosingRect(
       node_data->bounds_in_screen,
       1.0f / toplevel_window->layer()->device_scale_factor());
+
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
+  DCHECK(widget);
+
+  // On Android side, content is rendered without considering height of
+  // caption bar, e.g. Content is rendered at y:0 instead of y:32 where 32 is
+  // height of caption bar. Add back height of caption bar here.
+  if (widget->IsMaximized()) {
+    bounds_in_screen.Offset(
+        0, static_cast<int>(static_cast<float>(widget->non_client_view()
+                                                   ->frame_view()
+                                                   ->GetBoundsForClientView()
+                                                   .y())));
+  }
 
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
 }
