@@ -11,7 +11,7 @@
 #include <wrl/client.h>
 
 #include "base/files/file_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -57,7 +57,7 @@ ShortcutProperties::~ShortcutProperties() {
 bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
                                 const ShortcutProperties& properties,
                                 ShortcutOperation operation) {
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   // A target is required unless |operation| is SHORTCUT_UPDATE_EXISTING.
   if (operation != SHORTCUT_UPDATE_EXISTING &&
@@ -199,7 +199,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
                                uint32_t options,
                                ShortcutProperties* properties) {
   DCHECK(options && properties);
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   if (options & ~ShortcutProperties::PROPERTIES_ALL)
     NOTREACHED() << "Unhandled property is used.";
@@ -355,7 +355,7 @@ bool CanPinShortcutToTaskbar() {
 }
 
 bool PinShortcutToTaskbar(const FilePath& shortcut) {
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   DCHECK(CanPinShortcutToTaskbar());
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
@@ -364,7 +364,7 @@ bool PinShortcutToTaskbar(const FilePath& shortcut) {
 }
 
 bool UnpinShortcutFromTaskbar(const FilePath& shortcut) {
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
       NULL, L"taskbarunpin", shortcut.value().c_str(), NULL, NULL, 0));
