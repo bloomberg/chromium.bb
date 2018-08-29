@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/browser/cocoa/system_hotkey_map.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -48,7 +48,7 @@ SystemHotkeyHelperMac::~SystemHotkeyHelperMac() {
 }
 
 void SystemHotkeyHelperMac::LoadSystemHotkeys() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::string library_path(base::mac::GetUserLibraryPath().value());
   NSString* expanded_file_path =
