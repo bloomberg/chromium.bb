@@ -299,7 +299,7 @@ void SmbService::SetupTempFileManagerAndCompleteSetup() {
   base::OnceClosure task =
       base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
   base::OnceClosure reply =
-      base::BindOnce(&SmbService::CompleteSetup, base::Unretained(this));
+      base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr());
 
   base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
                                    std::move(reply));
