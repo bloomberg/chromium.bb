@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
@@ -59,6 +60,7 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierMessage = kSectionIdentifierEnumZero,
+  SectionIdentifierSearchPasswordsBox,
   SectionIdentifierSavePasswordsSwitch,
   SectionIdentifierSavedPasswords,
   SectionIdentifierBlacklist,
@@ -67,6 +69,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeManageAccount = kItemTypeEnumZero,
+  ItemTypeSearchBox,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
   ItemTypeSavedPassword,  // This is a repeated item type.
@@ -84,14 +87,23 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return password_list_copy;
 }
 
+const CGFloat kSearchCellHeight = 44.0f;
+
 }  // namespace
 
+@interface PasswordFormContentItem : SettingsTextItem
+@property(nonatomic) autofill::PasswordForm* form;
+@end
+@implementation PasswordFormContentItem
+@synthesize form = form_;
+@end
+
 // Use the type of the items to convey the Saved/Blacklisted status.
-@interface SavedFormContentItem : SettingsTextItem
+@interface SavedFormContentItem : PasswordFormContentItem
 @end
 @implementation SavedFormContentItem
 @end
-@interface BlacklistedFormContentItem : SettingsTextItem
+@interface BlacklistedFormContentItem : PasswordFormContentItem
 @end
 @implementation BlacklistedFormContentItem
 @end
@@ -138,10 +150,11 @@ initWithActivityItems:(NSArray*)activityItems
 @interface SavePasswordsCollectionViewController ()<
     BooleanObserver,
     PasswordDetailsCollectionViewControllerDelegate,
-    SuccessfulReauthTimeAccessor,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
-    SavePasswordsConsumerDelegate> {
+    SavePasswordsConsumerDelegate,
+    SettingsSearchItemDelegate,
+    SuccessfulReauthTimeAccessor> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
@@ -189,12 +202,16 @@ initWithActivityItems:(NSArray*)activityItems
 // Object handling passwords export operations.
 @property(nonatomic, strong) PasswordExporter* passwordExporter;
 
+// Current passwords search term.
+@property(nonatomic, copy) NSString* searchTerm;
+
 @end
 
 @implementation SavePasswordsCollectionViewController
 
 // Private synthesized properties
 @synthesize passwordExporter = passwordExporter_;
+@synthesize searchTerm = searchTerm_;
 
 #pragma mark - Initialization
 
@@ -217,6 +234,7 @@ initWithActivityItems:(NSArray*)activityItems
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
     self.shouldHideDoneButton = YES;
+    self.searchTerm = @"";
     passwordStore_ = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState_, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(passwordStore_);
@@ -229,6 +247,7 @@ initWithActivityItems:(NSArray*)activityItems
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. Consider moving the other calls on instance methods as well.
     [self loadModel];
+    [self updateExportPasswordsButton];
   }
   return self;
 }
@@ -243,6 +262,13 @@ initWithActivityItems:(NSArray*)activityItems
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  if (!savedForms_.empty() || !blacklistedForms_.empty()) {
+    CollectionViewItem* searchItem = [self searchItem];
+    [model addSectionWithIdentifier:SectionIdentifierSearchPasswordsBox];
+    [model addItem:searchItem
+        toSectionWithIdentifier:SectionIdentifierSearchPasswordsBox];
+  }
 
   // Manage account message.
   CollectionViewItem* manageAccountLinkItem = [self manageAccountLinkItem];
@@ -268,10 +294,6 @@ initWithActivityItems:(NSArray*)activityItems
     headerItem.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:headerItem
         forSectionWithIdentifier:SectionIdentifierSavedPasswords];
-    for (const auto& form : savedForms_) {
-      [model addItem:[self savedFormItemWithForm:form.get()]
-          toSectionWithIdentifier:SectionIdentifierSavedPasswords];
-    }
   }
 
   if (!blacklistedForms_.empty()) {
@@ -283,10 +305,6 @@ initWithActivityItems:(NSArray*)activityItems
     headerItem.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:headerItem
         forSectionWithIdentifier:SectionIdentifierBlacklist];
-    for (const auto& form : blacklistedForms_) {
-      [model addItem:[self blacklistedFormItemWithForm:form.get()]
-          toSectionWithIdentifier:SectionIdentifierBlacklist];
-    }
   }
 
   if (base::FeatureList::IsEnabled(
@@ -296,8 +314,14 @@ initWithActivityItems:(NSArray*)activityItems
     exportPasswordsItem_ = [self exportPasswordsItem];
     [model addItem:exportPasswordsItem_
         toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    [self updateExportPasswordsButton];
   }
+
+  [self filterItems:self.searchTerm];
+}
+
+- (void)reloadData {
+  [super reloadData];
+  [self updateExportPasswordsButton];
 }
 
 - (BOOL)shouldShowEditButton {
@@ -310,6 +334,15 @@ initWithActivityItems:(NSArray*)activityItems
 }
 
 #pragma mark - Items
+
+- (SettingsSearchItem*)searchItem {
+  SettingsSearchItem* item =
+      [[SettingsSearchItem alloc] initWithType:ItemTypeSearchBox];
+  item.placeholder =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_PLACEHOLDER_SEARCH);
+  item.delegate = self;
+  return item;
+}
 
 - (CollectionViewItem*)manageAccountLinkItem {
   CollectionViewFooterItem* footerItem =
@@ -342,24 +375,27 @@ initWithActivityItems:(NSArray*)activityItems
   return exportPasswordsItem;
 }
 
-- (SavedFormContentItem*)savedFormItemWithForm:(autofill::PasswordForm*)form {
+- (SavedFormContentItem*)savedFormItemWithText:(NSString*)text
+                                 andDetailText:(NSString*)detailText
+                                       forForm:(autofill::PasswordForm*)form {
   SavedFormContentItem* passwordItem =
       [[SavedFormContentItem alloc] initWithType:ItemTypeSavedPassword];
-  passwordItem.text = base::SysUTF8ToNSString(
-      password_manager::GetShownOriginAndLinkUrl(*form).first);
-  passwordItem.detailText = base::SysUTF16ToNSString(form->username_value);
+  passwordItem.text = text;
+  passwordItem.form = form;
+  passwordItem.detailText = detailText;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
   return passwordItem;
 }
 
-- (BlacklistedFormContentItem*)blacklistedFormItemWithForm:
-    (autofill::PasswordForm*)form {
+- (BlacklistedFormContentItem*)
+blacklistedFormItemWithText:(NSString*)text
+                    forForm:(autofill::PasswordForm*)form {
   BlacklistedFormContentItem* passwordItem =
       [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
-  passwordItem.text = base::SysUTF8ToNSString(
-      password_manager::GetShownOriginAndLinkUrl(*form).first);
+  passwordItem.text = text;
+  passwordItem.form = form;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -380,6 +416,7 @@ initWithActivityItems:(NSArray*)activityItems
       [self.collectionViewModel sectionIdentifierForSection:section];
   switch (sectionIdentifier) {
     case SectionIdentifierMessage:
+    case SectionIdentifierSearchPasswordsBox:
       // Display the message in the default style with no "card" UI and no
       // section padding.
       return MDCCollectionViewCellStyleDefault;
@@ -394,6 +431,7 @@ initWithActivityItems:(NSArray*)activityItems
       [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
   switch (sectionIdentifier) {
     case SectionIdentifierMessage:
+    case SectionIdentifierSearchPasswordsBox:
       // Display the message without any background image or shadowing.
       return YES;
     default:
@@ -412,6 +450,8 @@ initWithActivityItems:(NSArray*)activityItems
                              forItem:item];
     case ItemTypeSavedPassword:
       return MDCCellDefaultTwoLineHeight;
+    case ItemTypeSearchBox:
+      return kSearchCellHeight;
     default:
       return MDCCellDefaultOneLineHeight;
   }
@@ -490,7 +530,72 @@ initWithActivityItems:(NSArray*)activityItems
   [self reloadData];
 }
 
+#pragma mark SettingsSearchItemDelegate
+
+- (void)didRequestSearchForTerm:(NSString*)searchTerm {
+  self.searchTerm = searchTerm;
+  [self filterItems:searchTerm];
+
+  CollectionViewModel* model = self.collectionViewModel;
+  NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
+  if ([model hasSectionForSectionIdentifier:SectionIdentifierSavedPasswords]) {
+    NSInteger passwordSection =
+        [model sectionForSectionIdentifier:SectionIdentifierSavedPasswords];
+    [indexSet addIndex:passwordSection];
+  }
+  if ([model hasSectionForSectionIdentifier:SectionIdentifierBlacklist]) {
+    NSInteger blacklistedSection =
+        [model sectionForSectionIdentifier:SectionIdentifierBlacklist];
+    [indexSet addIndex:blacklistedSection];
+  }
+  if (indexSet.count > 0) {
+    [UIView setAnimationsEnabled:NO];
+    [self.collectionView reloadSections:indexSet];
+    [UIView setAnimationsEnabled:YES];
+  }
+}
+
 #pragma mark - Private methods
+
+// Builds the filtered list of passwords/blacklisted based on given
+// |searchTerm|.
+- (void)filterItems:(NSString*)searchTerm {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  if (!savedForms_.empty()) {
+    [model deleteAllItemsFromSectionWithIdentifier:
+               SectionIdentifierSavedPasswords];
+    for (const auto& form : savedForms_) {
+      NSString* text = base::SysUTF8ToNSString(
+          password_manager::GetShownOriginAndLinkUrl(*form).first);
+      NSString* detailText = base::SysUTF16ToNSString(form->username_value);
+      bool hidden =
+          searchTerm.length > 0 &&
+          ![text localizedCaseInsensitiveContainsString:searchTerm] &&
+          ![detailText localizedCaseInsensitiveContainsString:searchTerm];
+      if (hidden)
+        continue;
+      [model addItem:[self savedFormItemWithText:text
+                                   andDetailText:detailText
+                                         forForm:form.get()]
+          toSectionWithIdentifier:SectionIdentifierSavedPasswords];
+    }
+  }
+
+  if (!blacklistedForms_.empty()) {
+    [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierBlacklist];
+    for (const auto& form : blacklistedForms_) {
+      NSString* text = base::SysUTF8ToNSString(
+          password_manager::GetShownOriginAndLinkUrl(*form).first);
+      bool hidden = searchTerm.length > 0 &&
+                    ![text localizedCaseInsensitiveContainsString:searchTerm];
+      if (hidden)
+        continue;
+      [model addItem:[self blacklistedFormItemWithText:text forForm:form.get()]
+          toSectionWithIdentifier:SectionIdentifierBlacklist];
+    }
+  }
+}
 
 // Starts requests for saved and blacklisted passwords to the store.
 - (void)getLoginsFromPasswordStore {
@@ -501,7 +606,8 @@ initWithActivityItems:(NSArray*)activityItems
 }
 
 - (void)updateExportPasswordsButton {
-  if (!exportPasswordsItem_)
+  if (!exportPasswordsItem_ || !base::FeatureList::IsEnabled(
+                                   password_manager::features::kPasswordExport))
     return;
   if (!savedForms_.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
@@ -565,6 +671,18 @@ initWithActivityItems:(NSArray*)activityItems
   [self presentViewController:exportConfirmation animated:YES completion:nil];
 }
 
+// Removes the given section if it exists and if isEmpty is true.
+- (void)clearSectionWithIdentifier:(NSInteger)sectionIdentifier
+                           ifEmpty:(bool)isEmpty {
+  CollectionViewModel* model = self.collectionViewModel;
+  if (isEmpty && [model hasSectionForSectionIdentifier:sectionIdentifier]) {
+    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+    [model removeSectionWithIdentifier:sectionIdentifier];
+    [[self collectionView]
+        deleteSections:[NSIndexSet indexSetWithIndex:section]];
+  }
+}
+
 #pragma mark UICollectionViewDelegate
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
@@ -592,20 +710,26 @@ initWithActivityItems:(NSArray*)activityItems
     case ItemTypeManageAccount:
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
+    case ItemTypeSearchBox:
       break;
-    case ItemTypeSavedPassword:
+    case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
                 [model sectionIdentifierForSection:indexPath.section]);
-      DCHECK_LT(base::checked_cast<size_t>(indexPath.item), savedForms_.size());
-      [self openDetailedViewForForm:*savedForms_[indexPath.item]];
+      SavedFormContentItem* saveFormItem =
+          base::mac::ObjCCastStrict<SavedFormContentItem>(
+              [model itemAtIndexPath:indexPath]);
+      [self openDetailedViewForForm:*saveFormItem.form];
       break;
-    case ItemTypeBlacklisted:
+    }
+    case ItemTypeBlacklisted: {
       DCHECK_EQ(SectionIdentifierBlacklist,
                 [model sectionIdentifierForSection:indexPath.section]);
-      DCHECK_LT(base::checked_cast<size_t>(indexPath.item),
-                blacklistedForms_.size());
-      [self openDetailedViewForForm:*blacklistedForms_[indexPath.item]];
+      BlacklistedFormContentItem* blacklistedItem =
+          base::mac::ObjCCastStrict<BlacklistedFormContentItem>(
+              [model itemAtIndexPath:indexPath]);
+      [self openDetailedViewForForm:*blacklistedItem.form];
       break;
+    }
     case ItemTypeExportPasswordsButton:
       DCHECK_EQ(SectionIdentifierExportPasswordsButton,
                 [model sectionIdentifierForSection:indexPath.section]);
@@ -660,22 +784,30 @@ initWithActivityItems:(NSArray*)activityItems
   // forms vectors.
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
-  int passwordsDeleted = 0;
-  int blacklistedDeleted = 0;
+  auto passwordIterator = savedForms_.begin();
+  auto passwordEndIterator = savedForms_.end();
+  auto blacklistedIterator = blacklistedForms_.begin();
+  auto blacklistedEndIterator = blacklistedForms_.end();
   for (NSIndexPath* indexPath in sortedIndexPaths) {
     // Only form items are editable.
-    SettingsTextItem* item = base::mac::ObjCCastStrict<SettingsTextItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    PasswordFormContentItem* item =
+        base::mac::ObjCCastStrict<PasswordFormContentItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     BOOL blacklisted = [item isKindOfClass:[BlacklistedFormContentItem class]];
-    unsigned int formIndex = (unsigned int)indexPath.item;
-    // Adjust index to account for deleted items.
-    formIndex -= blacklisted ? blacklistedDeleted : passwordsDeleted;
     auto& forms = blacklisted ? blacklistedForms_ : savedForms_;
     auto& duplicates =
         blacklisted ? blacklistedPasswordDuplicates_ : savedPasswordDuplicates_;
 
-    DCHECK_LT(formIndex, forms.size());
-    auto formIterator = forms.begin() + formIndex;
+    const autofill::PasswordForm& deletedForm = *item.form;
+    auto begin = blacklisted ? blacklistedIterator : passwordIterator;
+    auto end = blacklisted ? blacklistedEndIterator : passwordEndIterator;
+
+    auto formIterator = std::find_if(
+        begin, end,
+        [&deletedForm](const std::unique_ptr<autofill::PasswordForm>& value) {
+          return *value == deletedForm;
+        });
+    DCHECK(formIterator != end);
 
     std::unique_ptr<autofill::PasswordForm> form = std::move(*formIterator);
     std::string key = password_manager::CreateSortKey(*form);
@@ -686,12 +818,14 @@ initWithActivityItems:(NSArray*)activityItems
     }
     duplicates.erase(key);
 
-    forms.erase(formIterator);
+    formIterator = forms.erase(formIterator);
     passwordStore_->RemoveLogin(*form);
+
+    // Keep track of where we are in the current list.
     if (blacklisted) {
-      ++blacklistedDeleted;
+      blacklistedIterator = formIterator;
     } else {
-      ++passwordsDeleted;
+      passwordIterator = formIterator;
     }
   }
 
@@ -702,31 +836,18 @@ initWithActivityItems:(NSArray*)activityItems
 - (void)collectionView:(UICollectionView*)collectionView
     didDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
   // Remove empty sections.
-  // TODO(crbug.com/593786): Move this logic in CollectionViewController.
-  NSMutableOrderedSet* sectionsToRemove = [NSMutableOrderedSet orderedSet];
-  // Sort and enumerate in reverse order to delete the items from the collection
-  // view model.
-  NSArray* sortedIndexPaths =
-      [indexPaths sortedArrayUsingSelector:@selector(compare:)];
-  for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
-    if ([collectionView numberOfItemsInSection:indexPath.section] == 0) {
-      [sectionsToRemove addObject:@(indexPath.section)];
-    }
-  }
   __weak SavePasswordsCollectionViewController* weakSelf = self;
   [self.collectionView performBatchUpdates:^{
     SavePasswordsCollectionViewController* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    for (NSNumber* sectionNumber in sectionsToRemove) {
-      NSInteger section = [sectionNumber integerValue];
-      NSInteger sectionIdentifier = [[strongSelf collectionViewModel]
-          sectionIdentifierForSection:section];
-      [[strongSelf collectionViewModel]
-          removeSectionWithIdentifier:sectionIdentifier];
-      [[strongSelf collectionView]
-          deleteSections:[NSIndexSet indexSetWithIndex:section]];
-    }
+    [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
+                                   ifEmpty:savedForms_.empty()];
+    [strongSelf clearSectionWithIdentifier:SectionIdentifierBlacklist
+                                   ifEmpty:blacklistedForms_.empty()];
+    [strongSelf clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
+                                   ifEmpty:savedForms_.empty() &&
+                                           blacklistedForms_.empty()];
   }
       completion:^(BOOL finished) {
         SavePasswordsCollectionViewController* strongSelf = weakSelf;
@@ -736,10 +857,7 @@ initWithActivityItems:(NSArray*)activityItems
           [strongSelf.editor setEditing:NO];
         }
         [strongSelf updateEditButton];
-        if (base::FeatureList::IsEnabled(
-                password_manager::features::kPasswordExport)) {
-          [strongSelf updateExportPasswordsButton];
-        }
+        [strongSelf updateExportPasswordsButton];
       }];
 }
 
