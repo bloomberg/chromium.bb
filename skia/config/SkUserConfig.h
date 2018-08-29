@@ -36,7 +36,7 @@
 
     Below are optional defines that add, subtract, or change default behavior
     in Skia. Your port can locally edit this file to enable/disable flags as
-    you choose, or these can be delared on your command line (i.e. -Dfoo).
+    you choose, or these can be declared on your command line (i.e. -Dfoo).
 
     By default, this include file will always default to having all of the flags
     commented out, so including it will have no effect.
@@ -151,12 +151,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
 #endif
 
-// Skia is enabling this feature soon. Chrome probably does
-// not want it for M64
-#ifndef SK_DISABLE_RENDER_TARGET_SORTING
-#define SK_DISABLE_RENDER_TARGET_SORTING
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_TILED_BITMAPS
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
@@ -189,14 +183,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
 #endif
 
-// Here while the skia's public vulkan interface is getting updated
-#ifndef SK_SUPPORT_LEGACY_VULKAN_INTERFACE
-#define SK_SUPPORT_LEGACY_VULKAN_INTERFACE
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_AAA_CHOICE
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
+
+#define SK_LEGACY_SRGB_TRANSFER_FUNCTION
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
@@ -213,10 +204,5 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_ATTR_DEPRECATED          SK_NOTHING_ARG1
 #define GR_GL_CUSTOM_SETUP_HEADER   "GrGLConfig_chrome.h"
-
-// enable interfaces unique to Chrome
-#define SK_BUILD_FOR_CHROME
-
-// ===== End Chrome-specific definitions =====
 
 #endif
