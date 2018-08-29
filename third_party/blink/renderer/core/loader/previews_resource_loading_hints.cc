@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -27,22 +28,42 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
 
 PreviewsResourceLoadingHints::~PreviewsResourceLoadingHints() = default;
 
-bool PreviewsResourceLoadingHints::AllowLoad(const KURL& resource_url) const {
+bool PreviewsResourceLoadingHints::AllowLoad(
+    const KURL& resource_url,
+    ResourceLoadPriority resource_load_priority) const {
   if (!resource_url.ProtocolIsInHTTPFamily())
     return true;
 
   WTF::String resource_url_string = resource_url.GetString();
   resource_url_string = resource_url_string.Left(resource_url.PathEnd());
+  bool allow_load = true;
 
   for (const WTF::String& subresource_pattern :
        subresource_patterns_to_block_) {
     // TODO(tbansal): https://crbug.com/856247. Add support for wildcard
     // matching.
-    if (resource_url_string.Find(subresource_pattern) != kNotFound)
-      return false;
+    if (resource_url_string.Find(subresource_pattern) != kNotFound) {
+      allow_load = false;
+      break;
+    }
   }
 
-  return true;
+  UMA_HISTOGRAM_BOOLEAN("ResourceLoadingHints.ResourceLoadingBlocked",
+                        !allow_load);
+  if (!allow_load) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ResourceLoadingHints.ResourceLoadingBlocked.ResourceLoadPriority."
+        "Blocked",
+        resource_load_priority,
+        static_cast<int>(ResourceLoadPriority::kHighest) + 1);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ResourceLoadingHints.ResourceLoadingBlocked.ResourceLoadPriority."
+        "Allowed",
+        resource_load_priority,
+        static_cast<int>(ResourceLoadPriority::kHighest) + 1);
+  }
+  return allow_load;
 }
 
 void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {

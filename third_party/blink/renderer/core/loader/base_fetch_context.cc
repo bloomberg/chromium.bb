@@ -384,7 +384,8 @@ BaseFetchContext::CanRequestInternal(
 
   // Loading of a subresource may be blocked by previews resource loading hints.
   if (GetPreviewsResourceLoadingHints() &&
-      !GetPreviewsResourceLoadingHints()->AllowLoad(url)) {
+      !GetPreviewsResourceLoadingHints()->AllowLoad(
+          url, resource_request.Priority())) {
     // TODO (tbansal): https://crbug.com/864253. Add a specific reason for why
     // the resource fetch was blocked.
     return ResourceRequestBlockedReason::kOther;
