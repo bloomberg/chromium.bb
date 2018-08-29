@@ -35,9 +35,9 @@ class V8ObjectBuilder;
 //   * A non-null timing function, which applies to the period of time between
 //     this keyframe and the next keyframe in the same effect and influences
 //     the interpolation between them.
-//   * An possibly-null keyframe-specific composite operation, which specifies a
-//     specific composite operation used to combine values in this keyframe with
-//     an underlying value. If this is null, the keyframe effect composite
+//   * An keyframe-specific composite operation, which specifies a specific
+//     composite operation used to combine values in this keyframe with an
+//     underlying value. If this is 'auto', the keyframe effect composite
 //     operation is used instead.
 //
 // For spec details, refer to: https://drafts.csswg.org/web-animations/#keyframe
@@ -197,6 +197,9 @@ class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
   }
 
   base::Optional<double> offset_;
+  // To avoid having multiple CompositeOperation enums internally (one with
+  // 'auto' and one without), we use a base::Optional for composite_. A
+  // base::nullopt value represents 'auto'.
   base::Optional<EffectModel::CompositeOperation> composite_;
   scoped_refptr<TimingFunction> easing_;
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
