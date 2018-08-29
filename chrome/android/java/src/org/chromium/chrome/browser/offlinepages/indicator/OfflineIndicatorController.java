@@ -80,6 +80,7 @@ public class OfflineIndicatorController
     @Override
     public void onConnectionStateChanged(
             @ConnectivityDetector.ConnectionState int connectionState) {
+        if (connectionState == ConnectivityDetector.ConnectionState.NONE) return;
         updateOfflineIndicator(connectionState == ConnectivityDetector.ConnectionState.VALIDATED);
     }
 
