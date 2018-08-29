@@ -67,6 +67,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 
+  ABI::Windows::Devices::Radios::IRadio* GetRadioForTesting();
+
  protected:
   friend class BluetoothAdapterWin;
   friend class BluetoothTestWinrt;
@@ -128,7 +130,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
           ABI::Windows::Devices::Enumeration::IDeviceInformation>
           device_information);
 
-  void OnRequestAccess(
+  void OnRequestRadioAccess(
       base::ScopedClosureRunner on_init,
       ABI::Windows::Devices::Radios::RadioAccessStatus access_status);
 
@@ -136,8 +138,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       base::ScopedClosureRunner on_init,
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio);
 
-  void OnSetState(
+  void OnSetRadioState(
       ABI::Windows::Devices::Radios::RadioAccessStatus access_status);
+
+  void OnRadioStateChanged(ABI::Windows::Devices::Radios::IRadio* radio,
+                           IInspectable* object);
+
+  void TryRemoveRadioStateChangedHandler();
 
   void OnAdvertisementReceived(
       ABI::Windows::Devices::Bluetooth::Advertisement::
@@ -161,7 +168,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::IBluetoothAdapter>
       adapter_;
+
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio_;
+  base::Optional<EventRegistrationToken> radio_state_changed_token_;
 
   std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
   size_t num_discovery_sessions_ = 0;

@@ -572,6 +572,10 @@ BluetoothLocalGattService* BluetoothAdapterWinrt::GetGattService(
   return nullptr;
 }
 
+IRadio* BluetoothAdapterWinrt::GetRadioForTesting() {
+  return radio_.Get();
+}
+
 BluetoothAdapterWinrt::BluetoothAdapterWinrt() : weak_ptr_factory_(this) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
@@ -583,6 +587,9 @@ BluetoothAdapterWinrt::~BluetoothAdapterWinrt() {
   // otherwise.
   auto pending_advertisements = std::move(pending_advertisements_);
   pending_advertisements_.clear();
+
+  if (radio_)
+    TryRemoveRadioStateChangedHandler();
 }
 
 void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
@@ -645,7 +652,7 @@ bool BluetoothAdapterWinrt::SetPoweredImpl(bool powered) {
   }
 
   hr = PostAsyncResults(std::move(set_state_op),
-                        base::BindOnce(&BluetoothAdapterWinrt::OnSetState,
+                        base::BindOnce(&BluetoothAdapterWinrt::OnSetRadioState,
                                        weak_ptr_factory_.GetWeakPtr()));
 
   if (FAILED(hr)) {
@@ -940,7 +947,7 @@ void BluetoothAdapterWinrt::OnCreateFromIdAsync(
 
   hr = PostAsyncResults(
       std::move(request_access_op),
-      base::BindOnce(&BluetoothAdapterWinrt::OnRequestAccess,
+      base::BindOnce(&BluetoothAdapterWinrt::OnRequestRadioAccess,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
 
   if (FAILED(hr)) {
@@ -949,8 +956,9 @@ void BluetoothAdapterWinrt::OnCreateFromIdAsync(
   }
 }
 
-void BluetoothAdapterWinrt::OnRequestAccess(base::ScopedClosureRunner on_init,
-                                            RadioAccessStatus access_status) {
+void BluetoothAdapterWinrt::OnRequestRadioAccess(
+    base::ScopedClosureRunner on_init,
+    RadioAccessStatus access_status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (access_status != RadioAccessStatus_Allowed) {
     VLOG(2) << "Got unexpected Radio Access Status: "
@@ -986,18 +994,42 @@ void BluetoothAdapterWinrt::OnGetRadio(base::ScopedClosureRunner on_init,
   }
 
   radio_ = std::move(radio);
+  radio_state_changed_token_ = AddTypedEventHandler(
+      radio_.Get(), &IRadio::add_StateChanged,
+      base::BindRepeating(&BluetoothAdapterWinrt::OnRadioStateChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  if (!radio_state_changed_token_)
+    VLOG(2) << "Adding Radio State Changed Handler failed.";
 }
 
-void BluetoothAdapterWinrt::OnSetState(RadioAccessStatus access_status) {
+void BluetoothAdapterWinrt::OnSetRadioState(RadioAccessStatus access_status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (access_status != RadioAccessStatus_Allowed) {
     VLOG(2) << "Got unexpected Radio Access Status: "
             << ToCString(access_status);
-  } else {
-    NotifyAdapterPoweredChanged(IsPowered());
+    RunPendingPowerCallbacks();
+  }
+}
+
+void BluetoothAdapterWinrt::OnRadioStateChanged(IRadio* radio,
+                                                IInspectable* object) {
+  RunPendingPowerCallbacks();
+  NotifyAdapterPoweredChanged(IsPowered());
+}
+
+void BluetoothAdapterWinrt::TryRemoveRadioStateChangedHandler() {
+  DCHECK(radio_);
+  if (!radio_state_changed_token_)
+    return;
+
+  HRESULT hr = radio_->remove_StateChanged(*radio_state_changed_token_);
+  if (FAILED(hr)) {
+    VLOG(2) << "Removing Radio State Changed Handler failed: "
+            << logging::SystemErrorCodeToString(hr);
   }
 
-  DidChangePoweredState();
+  radio_state_changed_token_.reset();
 }
 
 void BluetoothAdapterWinrt::OnAdvertisementReceived(

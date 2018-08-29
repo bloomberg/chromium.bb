@@ -515,7 +515,7 @@ void BluetoothAdapterMac::PollAdapter() {
 
   if (classic_powered_ != state.classic_powered) {
     classic_powered_ = state.classic_powered;
-    DidChangePoweredState();
+    RunPendingPowerCallbacks();
     NotifyAdapterPoweredChanged(classic_powered_);
   }
 

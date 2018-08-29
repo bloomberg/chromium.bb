@@ -712,6 +712,27 @@ void BluetoothTestWinrt::InitFakeAdapterWithoutRadio() {
   run_loop.Run();
 }
 
+void BluetoothTestWinrt::SimulateAdapterPowerFailure() {
+  static_cast<FakeRadioWinrt*>(
+      static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+          ->GetRadioForTesting())
+      ->SimulateAdapterPowerFailure();
+}
+
+void BluetoothTestWinrt::SimulateAdapterPoweredOn() {
+  static_cast<FakeRadioWinrt*>(
+      static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+          ->GetRadioForTesting())
+      ->SimulateAdapterPoweredOn();
+}
+
+void BluetoothTestWinrt::SimulateAdapterPoweredOff() {
+  static_cast<FakeRadioWinrt*>(
+      static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+          ->GetRadioForTesting())
+      ->SimulateAdapterPoweredOff();
+}
+
 BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
     int device_ordinal) {
   if (!GetParam() || !PlatformSupportsLowEnergy())

@@ -359,7 +359,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // callback based API. It will store pending callbacks in
   // |set_powered_callbacks_| and invoke SetPoweredImpl(bool) which these
   // platforms need to implement. Pending callbacks are only run when
-  // DidChangePoweredState() is invoked.
+  // RunPendingPowerCallbacks() is invoked.
   //
   // Platforms that natively support a callback based API (e.g. BlueZ and Win)
   // should override this method and provide their own implementation instead.
@@ -599,9 +599,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // pending SetPowered() callbacks need to be stored explicitly.
   virtual bool SetPoweredImpl(bool powered) = 0;
 
-  // Called by macOS and Android once the specific powered state events are
-  // received. Clears out pending callbacks.
-  void DidChangePoweredState();
+  // Called by macOS, Android and WinRT once the specific powered state events
+  // are received or an error occurred. Clears out pending callbacks.
+  void RunPendingPowerCallbacks();
 
   // Internal methods for initiating and terminating device discovery sessions.
   // An implementation of BluetoothAdapter keeps an internal reference count to

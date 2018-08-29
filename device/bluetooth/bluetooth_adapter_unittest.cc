@@ -777,6 +777,58 @@ TEST_F(BluetoothTest, MAYBE_DiscoverMultipleLowEnergyDevices) {
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
 
+#if defined(OS_WIN)
+// Tests that the adapter responds to external changes to the power state.
+TEST_P(BluetoothTestWinrtOnly, SimulateAdapterPoweredOffAndOn) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
+
+  SimulateAdapterPoweredOff();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(1, observer.powered_changed_count());
+  EXPECT_FALSE(observer.last_powered());
+
+  SimulateAdapterPoweredOn();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(2, observer.powered_changed_count());
+  EXPECT_TRUE(observer.last_powered());
+}
+
+// Makes sure the error callback gets run when changing the adapter power state
+// fails.
+// TODO(https://crbug.com/878680): Implement SimulateAdapterPowerSuccess() and
+// enable on all platforms.
+TEST_P(BluetoothTestWinrtOnly, SimulateAdapterPowerFailure) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_TRUE(adapter_->IsPowered());
+
+  adapter_->SetPowered(false, GetCallback(Call::NOT_EXPECTED),
+                       GetErrorCallback(Call::EXPECTED));
+  SimulateAdapterPowerFailure();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(adapter_->IsPowered());
+}
+#endif  // defined(OS_WIN)
+
 // TODO(https://crbug.com/804356): Enable this test on old Windows versions as
 // well.
 #if defined(OS_WIN)
