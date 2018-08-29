@@ -12,6 +12,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
 
+@class NSView;
+
 namespace views {
 
 // The interface through which the app shim (BridgedNativeWidgetImpl)
@@ -19,6 +21,12 @@ namespace views {
 class VIEWS_EXPORT BridgedNativeWidgetHost {
  public:
   virtual ~BridgedNativeWidgetHost() = default;
+
+  // Retrieve the NSView for accessibility for this widget.
+  // TODO(ccameron): This interface cannot be implemented over IPC. A scheme
+  // for implementing accessibility across processes needs to be designed and
+  // implemented.
+  virtual NSView* GetNativeViewAccessible() = 0;
 
   // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
   virtual void OnVisibilityChanged(bool visible) = 0;

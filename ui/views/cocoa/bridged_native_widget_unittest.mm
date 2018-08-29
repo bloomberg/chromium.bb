@@ -594,7 +594,7 @@ void BridgedNativeWidgetTest::SetUp() {
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
   bridge_host()->SetRootView(view_.get());
-  bridge()->CreateContentView(view_.get());
+  bridge()->CreateContentView(view_->bounds());
   ns_view_ = bridge()->ns_view();
 
   // Pretend it has been shown via NativeWidgetMac::Show().
@@ -767,7 +767,7 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
 
   // The superview of a contentView is an NSNextStepFrame.
   EXPECT_TRUE([view superview]);
-  EXPECT_TRUE([view hostedView]);
+  EXPECT_TRUE([view bridge]);
 
   // Ensure the tracking area to propagate mouseMoved: events to the RootView is
   // installed.
@@ -776,7 +776,7 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
   // Closing the window should tear down the C++ bridge, remove references to
   // any C++ objects in the ObjectiveC object, and remove it from the hierarchy.
   [window close];
-  EXPECT_FALSE([view hostedView]);
+  EXPECT_FALSE([view bridge]);
   EXPECT_FALSE([view superview]);
   EXPECT_FALSE([view window]);
   EXPECT_EQ(0u, [[view trackingAreas] count]);

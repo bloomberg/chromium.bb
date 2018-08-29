@@ -15,9 +15,6 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/viz/common/features.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
-#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
@@ -36,10 +33,8 @@
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 
 namespace {
 constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
@@ -406,15 +401,13 @@ void BridgedNativeWidget::DestroyContentView() {
   [window_ setContentView:nil];
 }
 
-void BridgedNativeWidget::CreateContentView(views::View* view) {
+void BridgedNativeWidget::CreateContentView(const gfx::Rect& bounds) {
   DCHECK(!bridged_view_);
-  DCHECK(view);
   // The compositor needs to point at the new content view created here.
   DCHECK(!compositor_superview_);
 
   bridged_view_.reset(
-      [[BridgedContentView alloc] initWithBridge:this view:view]);
-  drag_drop_client_.reset(new DragDropClientMac(this, view));
+      [[BridgedContentView alloc] initWithBridge:this bounds:bounds]);
 
   // Objective C initializers can return nil. However, if |view| is non-NULL
   // this should be treated as an error and caught early.
@@ -425,6 +418,10 @@ void BridgedNativeWidget::CreateContentView(views::View* view) {
   [bridged_view_ setWantsLayer:YES];
 
   [window_ setContentView:bridged_view_];
+}
+
+void BridgedNativeWidget::CreateDragDropClient(views::View* view) {
+  drag_drop_client_.reset(new DragDropClientMac(this, view));
 }
 
 void BridgedNativeWidget::CloseWindow() {

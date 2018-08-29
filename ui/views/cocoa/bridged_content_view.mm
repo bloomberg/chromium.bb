@@ -267,21 +267,18 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 @implementation BridgedContentView
 
-@synthesize hostedView = hostedView_;
+@synthesize bridge = bridge_;
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
 - (id)initWithBridge:(views::BridgedNativeWidget*)bridge
-                view:(views::View*)viewToHost {
-  DCHECK(viewToHost);
-  gfx::Rect bounds = viewToHost->bounds();
+              bounds:(gfx::Rect)bounds {
   // To keep things simple, assume the origin is (0, 0) until there exists a use
   // case for something other than that.
   DCHECK(bounds.origin().IsOrigin());
   NSRect initialFrame = NSMakeRect(0, 0, bounds.width(), bounds.height());
   if ((self = [super initWithFrame:initialFrame])) {
     bridge_ = bridge;
-    hostedView_ = viewToHost;
 
     // Apple's documentation says that NSTrackingActiveAlways is incompatible
     // with NSTrackingCursorUpdate, so use NSTrackingActiveInActiveApp.
@@ -323,7 +320,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)clearView {
   [self setTextInputClient:nullptr];
   bridge_ = nullptr;
-  hostedView_ = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
@@ -766,12 +762,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (BOOL)isOpaque {
-  if (!hostedView_)
-    return NO;
-
-  // TODO(ccameron): Plumb this from BridgedNativeWidget to here.
-  ui::Layer* layer = hostedView_->GetWidget()->GetLayer();
-  return layer && layer->fills_bounds_opaquely();
+  return bridge_ ? !bridge_->is_translucent_window() : NO;
 }
 
 // To maximize consistency with the Cocoa browser (mac_views_browser=0), accept
@@ -1545,20 +1536,22 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    return @[ hostedView_->GetNativeViewAccessible() ];
+    return @[ bridge_->host()->GetNativeViewAccessible() ];
   }
 
   return [super accessibilityAttributeValue:attribute];
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  return [hostedView_->GetNativeViewAccessible() accessibilityHitTest:point];
+  return
+      [bridge_->host()->GetNativeViewAccessible() accessibilityHitTest:point];
 }
 
 - (id)accessibilityFocusedUIElement {
-  if (!hostedView_)
+  if (!bridge_)
     return nil;
-  return [hostedView_->GetNativeViewAccessible() accessibilityFocusedUIElement];
+  return [bridge_->host()->GetNativeViewAccessible()
+              accessibilityFocusedUIElement];
 }
 
 @end

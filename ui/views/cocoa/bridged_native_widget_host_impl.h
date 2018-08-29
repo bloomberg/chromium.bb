@@ -116,6 +116,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void DestroyCompositor();
 
   // views::BridgedNativeWidgetHost:
+  NSView* GetNativeViewAccessible() override;
   void OnVisibilityChanged(bool visible) override;
   void SetViewSize(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
