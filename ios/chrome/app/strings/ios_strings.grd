@@ -292,7 +292,7 @@ locale.  The strings in this file are specific to iOS.
         Zip Code
       </message>
       <message name="IDS_IOS_BANDWIDTH_MANAGEMENT_LEARN_URL" translateable="false">
-        https://support.google.com/chrome/answer/2392284?p=mobile_bandwidth&amp;hl=[GRITLANGCODE]
+        https://support.google.com/chrome/answer/2392284?p=mobile_bandwidth&amp;hl=[GRITLANGCODE]&amp;ios=1
       </message>
       <message name="IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS" desc="Title for the bandwidth management panel in settings [Length: 30em] [iOS only]">
         Bandwidth
@@ -1747,7 +1747,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Help
       </message>
       <message name="IDS_IOS_TOOLS_MENU_HELP_URL" translateable="false">
-        https://support.google.com/chrome/?p=chrome_help&amp;hl=[GRITLANGCODE]
+        https://support.google.com/chrome/?p=chrome_help&amp;hl=[GRITLANGCODE]&amp;ios=1
       </message>
       <message name="IDS_IOS_TOOLS_MENU_HISTORY" desc="The Tools menu item for opening the navigation history menu">
         History

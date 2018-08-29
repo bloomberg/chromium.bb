@@ -74,9 +74,10 @@ bool NotificationPromoWhatsNew::Init() {
                         "", "RateThisAppPromo", "logo");
         break;
       case experimental_flags::WHATS_NEW_MOVE_TO_DOCK_TIP:
-        InjectFakePromo("2", "moveToDockTip", "url", "",
-                        "https://support.google.com/chrome/?p=iphone_dock",
-                        "MoveToDockTipPromo", "logoWithRoundedRectangle");
+        InjectFakePromo(
+            "2", "moveToDockTip", "url", "",
+            "https://support.google.com/chrome/?p=iphone_dock&ios=1",
+            "MoveToDockTipPromo", "logoWithRoundedRectangle");
         break;
       default:
         NOTREACHED();
