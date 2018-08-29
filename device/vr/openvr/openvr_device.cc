@@ -264,7 +264,10 @@ void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
-  render_loop_->Stop();
+  // Don't stop the render loop here. We need to keep the gamepad provider alive
+  // so that we don't lose a pending mojo gamepad_callback_.
+  // TODO(https://crbug.com/875187): Alternatively, we could recreate the
+  // provider on the next session, or look into why the callback gets lost.
   OnExitPresent();
   exclusive_controller_binding_.Close();
 }
