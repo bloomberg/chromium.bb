@@ -450,6 +450,8 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
                                        archived_binary.download_type());
     if (archived_binary.has_length())
       dict_archived_binary->SetInteger("length", archived_binary.length());
+    if (archived_binary.is_encrypted())
+      dict_archived_binary->SetBoolean("is_encrypted", true);
     archived_binaries->Append(std::move(dict_archived_binary));
   }
   dict.SetList("archived_binary", std::move(archived_binaries));

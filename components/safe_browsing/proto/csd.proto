@@ -556,6 +556,9 @@ message ClientDownloadRequest {
     optional int64 length = 4;
     optional SignatureInfo signature = 5;
     optional ImageHeaders image_headers = 6;
+
+    // Indicates if the given file is password protected.
+    optional bool is_encrypted = 7;
   }
 
   repeated ArchivedBinary archived_binary = 22;
