@@ -89,12 +89,6 @@ const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[] =
     "ShouldProactivelyDiscard";
 const char kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[] =
     "ShouldPeriodicallyUnfreeze";
-
-// NOTE: This parameter is disabled by default and shouldn't be enabled until
-// the privacy review for the UKM associated with it has been approved, see
-//  https://docs.google.com/a/google.com/document/d/1BNQ5nLOtPuwP7oxr9r-XKNKr5iObXEiA_69WXAvuYAo/edit?disco=AAAABzM-vE0
-//
-// TODO(sebmarchand): Remove this comment once the UKM has been approved.
 const char
     kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam
         [] = "ShouldProtectTabsSharingBrowsingInstance";
@@ -150,15 +144,9 @@ const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault =
     false;
 const bool kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault =
     false;
-
-// NOTE: This parameter is disabled by default and shouldn't be enabled until
-// the privacy review for the UKM associated with it has been approved, see
-//  https://docs.google.com/a/google.com/document/d/1BNQ5nLOtPuwP7oxr9r-XKNKr5iObXEiA_69WXAvuYAo/edit?disco=AAAABzM-vE0
-//
-// TODO(sebmarchand): Remove this comment once the UKM has been approved.
 const bool
     kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault =
-        false;
+        true;
 
 // 50% of people cap out at 4 tabs, so for them proactive discarding won't even
 // be invoked. See Tabs.MaxTabsInADay.
