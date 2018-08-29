@@ -17,11 +17,13 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/notification_view_md.h"
+#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;
 using message_center::Notification;
 using message_center::NotificationViewMD;
+using message_center::SlidableMessageView;
 using message_center::NotifierId;
 using message_center::NOTIFICATION_TYPE_SIMPLE;
 
@@ -435,6 +437,19 @@ TEST_F(MessageListViewTest, ClearAllClosableNotifications) {
   EXPECT_TRUE(is_on_all_notifications_cleared_called());
 }
 
+bool ContainsMessageView(MessageListView* message_list_view,
+                         NotificationViewMD* notification_view) {
+  for (int i = 0; i < message_list_view->child_count(); i++) {
+    DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
+              message_list_view->child_at(i)->GetClassName());
+    if (static_cast<SlidableMessageView*>(message_list_view->child_at(i))
+            ->GetMessageView() == notification_view) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Regression test for crbug.com/713983
 TEST_F(MessageListViewTest, RemoveWhileClearAll) {
   message_list_view()->SetBounds(0, 0, 800, 600);
@@ -460,11 +475,11 @@ TEST_F(MessageListViewTest, RemoveWhileClearAll) {
   RunPendingAnimations();
 
   // Call RemoveNotification()
-  EXPECT_TRUE(message_list_view()->Contains(notification_view2));
+  EXPECT_TRUE(ContainsMessageView(message_list_view(), notification_view2));
   message_list_view()->RemoveNotification(notification_view2);
 
   // Call "Clear All" while notification_view2 is still in message_list_view.
-  EXPECT_TRUE(message_list_view()->Contains(notification_view2));
+  EXPECT_TRUE(ContainsMessageView(message_list_view(), notification_view2));
   message_list_view()->ClearAllClosableNotifications(
       message_list_view()->bounds());
 

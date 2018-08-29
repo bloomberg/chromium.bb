@@ -27,6 +27,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/message_center/message_center.h"
@@ -457,7 +458,9 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
   // We skip repositioning during clear-all anomation, since we don't need keep
   // positions.
   if (by_user && !is_clearing_all_notifications_) {
-    message_list_view_->SetRepositionTarget(view->bounds());
+    gfx::RectF rect_f(view->x(), view->y(), view->width(), view->height());
+    views::View::ConvertRectToTarget(view, message_list_view_.get(), &rect_f);
+    message_list_view_->SetRepositionTarget(gfx::ToNearestRect(rect_f));
     // Moves the keyboard focus to the next notification if the removed
     // notification is focused so that the user can dismiss notifications
     // without re-focusing by tab key.
