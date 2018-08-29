@@ -1471,3 +1471,5 @@ crbug.com/874695 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSend
 crbug.com/798572 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Slow ]
 
 crbug.com/868956 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
+
+crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Slow ]
