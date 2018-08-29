@@ -257,6 +257,23 @@ fuchsia_sdk_fidl_pkg("netstack") {
   ]
 }
 
+fuchsia_sdk_fidl_pkg("oldhttp") {
+  namespace = "fuchsia.net"
+  namespace_path = "fuchsia/net"
+  sources = [
+    "http_error.fidl",
+    "http_header.fidl",
+    "http_service.fidl",
+    "url_body.fidl",
+    "url_loader.fidl",
+    "url_request.fidl",
+    "url_response.fidl",
+  ]
+  deps = [
+    ":mem",
+  ]
+}
+
 fuchsia_sdk_fidl_pkg("policy") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"

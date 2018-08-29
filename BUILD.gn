@@ -736,6 +736,7 @@ group("gn_all") {
       "//webrunner",
       "//webrunner:archive_sources",
       "//webrunner:webrunner_unittests",
+      "//webrunner/net_http:http_pkg",
     ]
   }
 
