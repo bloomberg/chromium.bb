@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.crash;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.Context;
@@ -24,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
  * Creates a crash report and uploads it to crash server if there is a Java exception.
@@ -103,6 +105,7 @@ public class PureJavaExceptionReporter {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private void createReport(Throwable javaException) {
         try {
             String minidumpFileName = FILE_PREFIX + mLocalId + FILE_SUFFIX;
@@ -141,6 +144,12 @@ public class PureJavaExceptionReporter {
                         buildInfo.versionName));
         addPairedString(CUSTOM_THEMES, buildInfo.customThemes);
         addPairedString(RESOURCES_VERSION, buildInfo.resourcesVersion);
+
+        AtomicReferenceArray<String> values = CrashKeys.getInstance().getValues();
+        for (int i = 0; i < values.length(); i++) {
+            String value = values.get(i);
+            if (value != null) addPairedString(CrashKeys.getKey(i), value);
+        }
 
         addString(mBoundary);
     }
