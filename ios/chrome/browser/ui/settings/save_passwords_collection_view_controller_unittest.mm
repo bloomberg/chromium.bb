@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -37,8 +38,9 @@ using password_manager::MockPasswordStore;
 
 // Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
 // this file working.
-@interface SavePasswordsCollectionViewController (Test)<
-    SavePasswordsConsumerDelegate>
+@interface SavePasswordsCollectionViewController (
+    Test)<SettingsSearchItemDelegate, SavePasswordsConsumerDelegate>
+- (void)updateExportPasswordsButton;
 @end
 
 namespace {
@@ -181,8 +183,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedPasswords) {
   AddSavedForm1();
 
   int section_offset = GetParam().section_offset;
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests adding one item in blacklisted password section.
@@ -191,8 +193,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddBlacklistedPasswords) {
 
   int section_offset = GetParam().section_offset;
 
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests adding one item in saved password section, and two items in blacklisted
@@ -205,34 +207,34 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedAndBlacklisted) {
   int section_offset = GetParam().section_offset;
 
   // There should be two sections added.
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(section_offset + 5, NumberOfSections());
 
   // There should be 1 row in saved password section.
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
   // There should be 2 rows in blacklisted password section.
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(4));
 }
 
 // Tests the order in which the saved passwords are displayed.
 TEST_P(SavePasswordsCollectionViewControllerTest, TestSavedPasswordsOrder) {
   AddSavedForm2();
 
-  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 2, 0);
+  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 0);
 
   AddSavedForm1();
-  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 2, 0);
-  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 2, 1);
+  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
+  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 1);
 }
 
 // Tests the order in which the blacklisted passwords are displayed.
 TEST_P(SavePasswordsCollectionViewControllerTest,
        TestBlacklistedPasswordsOrder) {
   AddBlacklistedForm2();
-  CheckTextCellTitle(@"secret2.com", 2, 0);
+  CheckTextCellTitle(@"secret2.com", 3, 0);
 
   AddBlacklistedForm1();
-  CheckTextCellTitle(@"secret.com", 2, 0);
-  CheckTextCellTitle(@"secret2.com", 2, 1);
+  CheckTextCellTitle(@"secret.com", 3, 0);
+  CheckTextCellTitle(@"secret2.com", 3, 1);
 }
 
 // Tests displaying passwords in the saved passwords section when there are
@@ -243,8 +245,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedDuplicates) {
 
   int section_offset = GetParam().section_offset;
 
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests displaying passwords in the blacklisted passwords section when there
@@ -255,8 +257,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddBlacklistedDuplicates) {
 
   int section_offset = GetParam().section_offset;
 
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections.
@@ -279,17 +281,17 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItems) {
   int section_offset = GetParam().section_offset;
 
   // Delete item in save passwords section.
-  deleteItemWithWait(2, 0);
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  // Section 2 should now be the blacklisted passwords section, and should still
+  deleteItemWithWait(3, 0);
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  // Section 3 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
 
   // Delete item in blacklisted passwords section.
-  deleteItemWithWait(2, 0);
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
-  deleteItemWithWait(2, 0);
-  // There should be no password sections remaining.
+  deleteItemWithWait(3, 0);
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  deleteItemWithWait(3, 0);
+  // There should be no password sections remaining and no search bar.
   EXPECT_EQ(section_offset + 2, NumberOfSections());
 }
 
@@ -316,17 +318,17 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
   int section_offset = GetParam().section_offset;
 
   // Delete item in save passwords section.
-  deleteItemWithWait(2, 0);
-  EXPECT_EQ(section_offset + 3, NumberOfSections());
-  // Section 2 should now be the blacklisted passwords section, and should still
+  deleteItemWithWait(3, 0);
+  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  // Section 3 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
 
   // Delete item in blacklisted passwords section.
-  deleteItemWithWait(2, 0);
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
-  deleteItemWithWait(2, 0);
-  // There should be no password sections remaining.
+  deleteItemWithWait(3, 0);
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  deleteItemWithWait(3, 0);
+  // There should be no password sections remaining and no search bar.
   EXPECT_EQ(section_offset + 2, NumberOfSections());
 }
 
@@ -334,6 +336,10 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
        TestExportButtonDisabledNoSavedPasswords) {
   if (!GetParam().export_enabled)
     return;
+
+  SavePasswordsCollectionViewController* save_password_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+  [save_password_controller updateExportPasswordsButton];
 
   SettingsTextItem* exportButton = GetCollectionViewItem(2, 0);
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
@@ -356,10 +362,15 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
        TestExportButtonEnabledWithSavedPasswords) {
   if (!GetParam().export_enabled)
     return;
-  AddSavedForm1();
-  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
 
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+  SavePasswordsCollectionViewController* save_password_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+  AddSavedForm1();
+  [save_password_controller updateExportPasswordsButton];
+
+  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
+
+  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
   EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
@@ -370,15 +381,17 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
        TestExportButtonDisabledEditMode) {
   if (!GetParam().export_enabled)
     return;
-  AddSavedForm1();
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
-
-  SavePasswordsCollectionViewController* save_passwords_controller =
+  SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
-  [save_passwords_controller
-      collectionViewWillBeginEditing:save_passwords_controller.collectionView];
+  AddSavedForm1();
+  [save_password_controller updateExportPasswordsButton];
+
+  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
+  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
+
+  [save_password_controller
+      collectionViewWillBeginEditing:save_password_controller.collectionView];
 
   EXPECT_NSEQ([[MDCPalette greyPalette] tint500], exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
@@ -391,17 +404,19 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
        TestExportButtonEnabledWhenEdittingFinished) {
   if (!GetParam().export_enabled)
     return;
-  AddSavedForm1();
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
-
-  SavePasswordsCollectionViewController* save_passwords_controller =
+  SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
-  [save_passwords_controller
-      collectionViewWillBeginEditing:save_passwords_controller.collectionView];
-  [save_passwords_controller
-      collectionViewWillEndEditing:save_passwords_controller.collectionView];
+  AddSavedForm1();
+  [save_password_controller updateExportPasswordsButton];
+
+  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
+  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
+
+  [save_password_controller
+      collectionViewWillBeginEditing:save_password_controller.collectionView];
+  [save_password_controller
+      collectionViewWillEndEditing:save_password_controller.collectionView];
 
   EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
@@ -427,6 +442,50 @@ TEST_P(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
 
   EXPECT_CALL(GetMockStore(), RemoveLogin(form));
   [save_password_controller deletePassword:form];
+}
+
+// Tests filtering of items.
+TEST_P(SavePasswordsCollectionViewControllerTest, FilterItems) {
+  AddSavedForm1();
+  AddSavedForm2();
+  AddBlacklistedForm1();
+  AddBlacklistedForm2();
+
+  int section_offset = GetParam().section_offset;
+  EXPECT_EQ(section_offset + 5, NumberOfSections());
+
+  SavePasswordsCollectionViewController* save_password_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+
+  // Force the initial data to be rendered into view first, before doing any
+  // new filtering (avoids mismatch when reloadSections is called).
+  [save_password_controller didRequestSearchForTerm:@""];
+
+  // Search item in save passwords section.
+  [save_password_controller didRequestSearchForTerm:@"example.com"];
+  // Only one item in saved passwords should remain.
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(0, NumberOfItemsInSection(4));
+  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
+
+  [save_password_controller didRequestSearchForTerm:@"test@egmail.com"];
+  // Only two items in saved passwords should remain.
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(0, NumberOfItemsInSection(4));
+  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
+  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 1);
+
+  [save_password_controller didRequestSearchForTerm:@"secret"];
+  // Only two items in blacklisted should remain.
+  EXPECT_EQ(0, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(4));
+  CheckTextCellTitle(@"secret.com", 4, 0);
+  CheckTextCellTitle(@"secret2.com", 4, 1);
+
+  [save_password_controller didRequestSearchForTerm:@""];
+  // All items should be back.
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(4));
 }
 
 const std::vector<ExportPasswordsFeatureStatus> kExportFeatureStatusCases{

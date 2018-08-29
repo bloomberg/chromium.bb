@@ -1327,6 +1327,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_USERNAME_COPY_MENU_ITEM" desc="Context menu item available on the username cell in the detailed view of a stored credential. The user can select it to copy the username to clipboard. [Length: should be one short word, is under 5em in English]">
         Copy
       </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORD_PLACEHOLDER_SEARCH" desc="The iOS placeholder for searching passwords in the saved list [Length: 30em] [iOS only]">
+        Search Passwords
+      </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON" desc="Button that the user can press to copy the password to clipboard. [Length: 12em]">
         Copy
       </message>
