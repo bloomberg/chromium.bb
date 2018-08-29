@@ -675,6 +675,18 @@
   <message name="IDS_SETTINGS_ADD_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when entering the information for a new card. This can be either credit, debit, or prepaid card.">
     Add card
   </message>
+  <message name="IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_LABEL" desc="Label for the field to migrate the locally cached credit card to Google Payments for single migratable card. Clicking this will upload migratable credit cards to Google Payments.">
+    Save card to use Google Pay
+  </message>
+  <message name="IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARDS_LABEL" desc="Label for the field to migrate the locally cached credit cards to Google Payments for multiple migratable cards. Clicking this will upload migratable credit cards to Google Payments.">
+    Save cards to use Google Pay
+  </message>
+  <message name="IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO" desc="Display text under the save cards to Google Pay label. This text indicates one of local cards can only be used on this device.">
+    1 of your cards can only be used on this device
+  </message>
+  <message name="IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARDS_INFO" desc="Display text under the save cards to Google Pay label. This text indicates user has multiple migratable cards on this device.">
+    Some of your cards can only be used on this device
+  </message>
   <message name="IDS_SETTINGS_NAME_ON_CREDIT_CARD" desc="The title for the input that lets users modify the name on the credit card.">
     Name on card
   </message>

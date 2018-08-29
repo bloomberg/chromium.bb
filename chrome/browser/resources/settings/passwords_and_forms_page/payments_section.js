@@ -92,6 +92,7 @@ Polymer({
 
   behaviors: [
     WebUIListenerBehavior,
+    I18nBehavior,
   ],
 
   properties: {
@@ -110,13 +111,29 @@ Polymer({
     /** @private */
     showCreditCardDialog_: Boolean,
 
+    /** @private */
+    migrateCreditCardsLabel_: String,
+
+    /** @private */
+    migratableCreditCardsInfo_: String,
+
     /**
      * The current sync status, supplied by SyncBrowserProxy.
-     * TODO(sujiezhu): Use this to check migration requirements when all
-     * information is ready. (https://crbug.com/852904).
      * @type {?settings.SyncStatus}
      */
     syncStatus: Object,
+
+    /**
+     * Whether migration local card on settings page is enabled.
+     * @private
+     */
+    migrationEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('migrationEnabled');
+      },
+      readOnly: true,
+    },
   },
 
   listeners: {
@@ -285,6 +302,14 @@ Polymer({
   },
 
   /**
+   * Handles clicking on the "Migrate" button for migrate local credit cards.
+   * TODO(sujiezhu): Call the new autofill api function here to trigger credit
+   * cards migration when new api is ready. (https://crbug.com/852904).
+   * @private
+   */
+  onMigrateCreditCardsClick_: function() {},
+
+  /**
    * The 3-dot menu should not be shown if the card is entirely remote.
    * @param {!chrome.autofillPrivate.AutofillMetadata} metadata
    * @return {boolean}
@@ -332,5 +357,51 @@ Polymer({
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
   },
+
+  /**
+   * @param {!settings.SyncStatus} syncStatus
+   * @param {!Array<!PaymentsManager.CreditCardEntry>} creditCards
+   * @param {boolean} autofillEnabled
+   * @param {boolean} creditCardEnabled
+   * @return {boolean} Whether to show the migration button. True iff at least
+   * one valid local card, enable migration, signed-in & synced and both prefs
+   * enabled.
+   * @private
+   */
+  checkIfMigratable_: function(
+      syncStatus, creditCards, autofillEnabled, creditCardEnabled) {
+    if (syncStatus == undefined)
+      return false;
+
+    if (this.eitherIsDisabled_(autofillEnabled, creditCardEnabled))
+      return false;
+
+    // If user not enable migration experimental flag, return false.
+    if (!this.migrationEnabled_)
+      return false;
+
+    // If user not signed-in and synced, return false.
+    if (!syncStatus.signedIn || !syncStatus.syncSystemEnabled)
+      return false;
+
+    let numberOfMigratableCreditCard =
+        creditCards.filter(card => card.metadata.isMigratable).length;
+    // Check whether exist at least one local valid card for migration.
+    if (numberOfMigratableCreditCard == 0)
+      return false;
+
+    // Update the display label depends on the number of migratable credit
+    // cards.
+    this.migrateCreditCardsLabel_ = numberOfMigratableCreditCard == 1 ?
+        this.i18n('migrateCreditCardsLabelSingle') :
+        this.i18n('migrateCreditCardsLabelMultiple');
+    // Update the display text depends on the number of migratable credit cards.
+    this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?
+        this.i18n('migratableCardsInfoSingle') :
+        this.i18n('migratableCardsInfoMultiple');
+
+    return true;
+  },
+
 });
 })();
