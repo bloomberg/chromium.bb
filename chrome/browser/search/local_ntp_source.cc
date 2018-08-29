@@ -218,6 +218,12 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CONFIRM_MSG_SHORTCUT_ADDED);
     AddString(translated_strings.get(), "restoreDefaultLinks",
               IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS);
+    AddString(translated_strings.get(), "linkCantCreate",
+              IDS_NTP_CUSTOM_LINKS_CANT_CREATE);
+    AddString(translated_strings.get(), "linkCantEdit",
+              IDS_NTP_CUSTOM_LINKS_CANT_EDIT);
+    AddString(translated_strings.get(), "linkCantRemove",
+              IDS_NTP_CUSTOM_LINKS_CANT_REMOVE);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
