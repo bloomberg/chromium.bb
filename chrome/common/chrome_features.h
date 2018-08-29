@@ -217,9 +217,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsCastDialog;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIdnNavigationSuggestions;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImprovedRecoveryComponent;
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -231,6 +228,9 @@ extern const base::Feature kIncompatibleApplicationsWarning;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLocalScreenCasting;
 #endif
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kLookalikeUrlNavigationSuggestions;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLsdPermissionPrompt;

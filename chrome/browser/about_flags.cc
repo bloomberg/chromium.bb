@@ -484,13 +484,15 @@ const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
-const FeatureEntry::FeatureParam kIdnNavigationSuggestionsMetricsOnly[] = {
-    {"metrics_only", "true"},
+const FeatureEntry::FeatureParam
+    kLookalikeUrlNavigationSuggestionsMetricsOnly[] = {
+        {"metrics_only", "true"},
 };
 
-const FeatureEntry::FeatureVariation kIdnNavigationSuggestionVariants[] = {
-    {"With Metrics Only", kIdnNavigationSuggestionsMetricsOnly,
-     base::size(kIdnNavigationSuggestionsMetricsOnly)}};
+const FeatureEntry::FeatureVariation
+    kLookalikeUrlNavigationSuggestionsVariants[] = {
+        {"With Metrics Only", kLookalikeUrlNavigationSuggestionsMetricsOnly,
+         base::size(kLookalikeUrlNavigationSuggestionsMetricsOnly)}};
 
 const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -4308,12 +4310,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kIncognitoStrings)},
 #endif
 
-    {"enable-idn-navigation-suggestions",
-     flag_descriptions::kIdnNavigationSuggestionsName,
-     flag_descriptions::kIdnNavigationSuggestionsDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIdnNavigationSuggestions,
-                                    kIdnNavigationSuggestionVariants,
-                                    "IdnNavigationSuggestions")},
+    {"enable-lookalike-url-navigation-suggestions",
+     flag_descriptions::kLookalikeUrlNavigationSuggestionsName,
+     flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         features::kLookalikeUrlNavigationSuggestions,
+         kLookalikeUrlNavigationSuggestionsVariants,
+         "LookalikeUrlNavigationSuggestions")},
 
 #if defined(OS_ANDROID)
     {"long-press-back-for-history",

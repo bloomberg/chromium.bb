@@ -322,10 +322,11 @@ const base::Feature kViewsCastDialog{"ViewsCastDialog",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
-// Enables navigation suggestions for internationalized domain names that are
-// visually similar to popular domains.
-const base::Feature kIdnNavigationSuggestions{
-    "IdnNavigationSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables navigation suggestions for lookalike URLs (e.g. internationalized
+// domain names that are visually similar to popular domains or to domains with
+// engagement score, such as googlé.com).
+const base::Feature kLookalikeUrlNavigationSuggestions{
+    "LookalikeUrlNavigationSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the "improved recovery component" is used. The improved
 // recovery component is a redesigned Chrome component intended to restore

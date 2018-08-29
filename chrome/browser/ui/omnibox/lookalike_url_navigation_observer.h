@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_IDN_NAVIGATION_OBSERVER_H_
-#define CHROME_BROWSER_UI_OMNIBOX_IDN_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
+#define CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class SiteEngagementService;
 
-// Observes navigations and shows an infobar if an IDN hostname visually looks
-// like a top domain.
-class IdnNavigationObserver
+// Observes navigations and shows an infobar if the navigated domain name
+// is visually similar to a top domain or a domain with a site engagement score.
+class LookalikeUrlNavigationObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<IdnNavigationObserver> {
+      public content::WebContentsUserData<LookalikeUrlNavigationObserver> {
  public:
   // Used for metrics.
   enum class NavigationSuggestionEvent {
@@ -33,8 +33,8 @@ class IdnNavigationObserver
 
   static void CreateForWebContents(content::WebContents* web_contents);
 
-  explicit IdnNavigationObserver(content::WebContents* web_contents);
-  ~IdnNavigationObserver() override;
+  explicit LookalikeUrlNavigationObserver(content::WebContents* web_contents);
+  ~LookalikeUrlNavigationObserver() override;
 
   // content::WebContentsObserver:
   void NavigationEntryCommitted(
@@ -47,4 +47,4 @@ class IdnNavigationObserver
                                               const GURL& url);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_IDN_NAVIGATION_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_

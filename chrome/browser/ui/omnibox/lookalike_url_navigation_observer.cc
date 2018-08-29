@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/idn_navigation_observer.h"
+#include "chrome/browser/ui/omnibox/lookalike_url_navigation_observer.h"
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -23,10 +23,12 @@
 namespace {
 
 const base::FeatureParam<std::string> kMetricsOnly{
-    &features::kIdnNavigationSuggestions, "metrics_only", ""};
+    &features::kLookalikeUrlNavigationSuggestions, "metrics_only", ""};
 
-void RecordEvent(IdnNavigationObserver::NavigationSuggestionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(IdnNavigationObserver::kHistogramName, event);
+void RecordEvent(
+    LookalikeUrlNavigationObserver::NavigationSuggestionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(LookalikeUrlNavigationObserver::kHistogramName,
+                            event);
 }
 
 bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
@@ -43,15 +45,16 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
 }  // namespace
 
 // static
-const char IdnNavigationObserver::kHistogramName[] =
+const char LookalikeUrlNavigationObserver::kHistogramName[] =
     "NavigationSuggestion.Event";
 
-IdnNavigationObserver::IdnNavigationObserver(content::WebContents* web_contents)
+LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
+    content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
 
-IdnNavigationObserver::~IdnNavigationObserver() {}
+LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
 
-void IdnNavigationObserver::NavigationEntryCommitted(
+void LookalikeUrlNavigationObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   const GURL url = load_details.entry->GetVirtualURL();
   // If the user has engaged with this site, don't show any lookalike
@@ -87,7 +90,7 @@ void IdnNavigationObserver::NavigationEntryCommitted(
 
   if (kMetricsOnly.Get().empty()) {
     RecordEvent(NavigationSuggestionEvent::kInfobarShown);
-    AlternateNavInfoBarDelegate::CreateForIDNNavigation(
+    AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
         web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url,
         load_details.entry->GetVirtualURL(),
         base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
@@ -95,16 +98,17 @@ void IdnNavigationObserver::NavigationEntryCommitted(
 }
 
 // static
-void IdnNavigationObserver::CreateForWebContents(
+void LookalikeUrlNavigationObserver::CreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (!FromWebContents(web_contents)) {
     web_contents->SetUserData(
-        UserDataKey(), std::make_unique<IdnNavigationObserver>(web_contents));
+        UserDataKey(),
+        std::make_unique<LookalikeUrlNavigationObserver>(web_contents));
   }
 }
 
-std::string IdnNavigationObserver::GetMatchingSiteEngagementDomain(
+std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
     SiteEngagementService* service,
     const GURL& url) {
   // Compute skeletons using eTLD+1.
