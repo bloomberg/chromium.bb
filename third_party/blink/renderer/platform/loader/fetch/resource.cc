@@ -769,6 +769,7 @@ bool Resource::CanReuse(
     scoped_refptr<const SecurityOrigin> new_source_origin) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
   const ResourceLoaderOptions& new_options = params.Options();
+  DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
 
   // Never reuse opaque responses from a service worker for requests that are
   // not no-cors. https://crbug.com/625575
@@ -833,6 +834,12 @@ bool Resource::CanReuse(
   if (resource_request_.GetKeepalive() || new_request.GetKeepalive()) {
     return false;
   }
+
+  if (GetResourceRequest().HttpMethod() != new_request.HttpMethod())
+    return false;
+
+  if (GetResourceRequest().HttpBody() != new_request.HttpBody())
+    return false;
 
   DCHECK(source_origin_);
   DCHECK(new_source_origin);
