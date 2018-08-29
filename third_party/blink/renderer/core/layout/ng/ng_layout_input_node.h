@@ -24,6 +24,8 @@ struct MinMaxSize;
 struct NGLogicalSize;
 struct NGPhysicalSize;
 
+enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
+
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
 // them. Additionally, orthogonal writing mode roots will need the extrinsic
@@ -34,6 +36,9 @@ struct MinMaxSizeInput {
 
   // Extrinsic block-size of the containing block.
   LayoutUnit extrinsic_block_size = NGSizeIndefinite;
+
+  // Whether to return the size as a content-box size or border-box size.
+  NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;
 };
 
 // Represents the input to a layout algorithm for a given node. The layout

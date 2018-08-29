@@ -322,7 +322,8 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   DCHECK_GE(sizes.min_size, LayoutUnit());
   DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
-  sizes += border_padding.InlineSum() + node_.GetScrollbarSizes().InlineSum();
+  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
+    sizes += border_padding.InlineSum() + node_.GetScrollbarSizes().InlineSum();
   return sizes;
 }
 
