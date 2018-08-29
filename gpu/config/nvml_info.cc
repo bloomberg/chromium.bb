@@ -6,15 +6,16 @@
 
 #include <windows.h>
 
+#include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/version.h"
 #include "third_party/nvml/nvml.h"
 
 namespace {
 
-// TODO(crbug.com/873095): diagnose crashes inside nvml.dll
-// const unsigned int kDriverVersionCapacity = 80u;
+const unsigned int kDriverVersionCapacity = 80u;
 
 }  // anonymous namespace
 
@@ -36,14 +37,34 @@ bool GetNvmlDeviceInfo(uint32_t pci_device_id,
   *major_cuda_compute_capability = 0;
   *minor_cuda_compute_capability = 0;
 
-  // TODO(crbug.com/873095): diagnose crashes inside nvml.dll
-  return false;
-#if 0
   base::FilePath dll_path;
   if (!base::PathService::Get(base::DIR_PROGRAM_FILES6432, &dll_path)) {
     return false;
   }
   dll_path = dll_path.Append(L"NVIDIA Corporation\\NVSMI\\nvml.dll");
+
+  std::unique_ptr<FileVersionInfoWin> file_version_info(
+      static_cast<FileVersionInfoWin*>(
+          FileVersionInfoWin::CreateFileVersionInfo(dll_path)));
+
+  if (!file_version_info) {
+    return false;
+  }
+
+  std::vector<uint32_t> components = {
+      {HIWORD(file_version_info->fixed_file_info()->dwFileVersionMS),
+       LOWORD(file_version_info->fixed_file_info()->dwFileVersionMS),
+       HIWORD(file_version_info->fixed_file_info()->dwFileVersionLS),
+       LOWORD(file_version_info->fixed_file_info()->dwFileVersionLS)}};
+  base::Version dll_version(components);
+
+  // There was a bug that could cause crashes in 64-bit applications in earlier
+  // versions of NVML, so we only use it if a new enough DLL is detected.
+  // http://crbug.com/873095
+  if (dll_version < base::Version("8.17.13.4800")) {
+    return false;
+  }
+
   HINSTANCE hinstNVML = LoadLibrary(dll_path.value().data());
 
   if (!hinstNVML) {
@@ -127,5 +148,4 @@ bool GetNvmlDeviceInfo(uint32_t pci_device_id,
     return false;
   }
   return true;
-#endif
 }
