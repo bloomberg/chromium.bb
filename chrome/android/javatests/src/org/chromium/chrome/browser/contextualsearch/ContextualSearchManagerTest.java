@@ -3201,6 +3201,9 @@ public class ContextualSearchManagerTest {
         assertPanelClosedOrUndefined();
         Assert.assertEquals(1, observer.getShowRedactedCount());
         Assert.assertEquals(1, observer.getShowCount());
+        // Note that this test is flawed because it doesn't wait until the selection is cleared
+        // and verify that a Hide notification is sent.  This is a bug because no hide is ever
+        // sent in this case, but should be.  Details in https://crbug.com/878006.
         Assert.assertEquals(0, observer.getHideCount());
         mManager.removeObserver(observer);
     }
