@@ -8117,14 +8117,6 @@ static int64_t interpolation_filter_search(
     }
   }
 
-  if (cpi->sf.use_rd_breakout && ref_best_rd < INT64_MAX) {
-    // if current pred_error modeled rd is substantially more than the best
-    // so far, do not bother doing full rd
-    if ((*rd >> 2) > ref_best_rd) {
-      return INT64_MAX;
-    }
-  }
-
   x->recalc_luma_mc_data = 0;
   // skip_flag=xx (in binary form)
   // Setting 0th flag corresonds to skipping luma MC and setting 1st bt
@@ -9363,16 +9355,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           }
         }
       }
-
-      if (cpi->sf.use_rd_breakout && ref_best_rd < INT64_MAX) {
-        // if current pred_error modeled rd is substantially more than the best
-        // so far, do not bother doing full rd
-        if (rd / 2 > ref_best_rd) {
-          restore_dst_buf(xd, orig_dst, num_planes);
-          continue;
-        }
-      }
-
       rd_stats->rate += compmode_interinter_cost;
 
       if (search_jnt_comp && cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
