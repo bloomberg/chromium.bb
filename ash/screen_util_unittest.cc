@@ -4,6 +4,7 @@
 
 #include "ash/screen_util.h"
 
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -29,13 +30,15 @@ TEST_F(ScreenUtilTest, Bounds) {
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
-  // Maximized bounds. By default the shelf is 47px tall (ash::kShelfSize).
+  // Maximized bounds.
+  const int bottom_inset_first = 600 - ShelfConstants::shelf_size();
+  const int bottom_inset_second = 500 - ShelfConstants::shelf_size();
   EXPECT_EQ(
-      gfx::Rect(0, 0, 600, 552).ToString(),
+      gfx::Rect(0, 0, 600, bottom_inset_first).ToString(),
       screen_util::GetMaximizedWindowBoundsInParent(primary->GetNativeView())
           .ToString());
   EXPECT_EQ(
-      gfx::Rect(0, 0, 500, 452).ToString(),
+      gfx::Rect(0, 0, 500, bottom_inset_second).ToString(),
       screen_util::GetMaximizedWindowBoundsInParent(secondary->GetNativeView())
           .ToString());
 
@@ -49,11 +52,11 @@ TEST_F(ScreenUtilTest, Bounds) {
 
   // Work area bounds
   EXPECT_EQ(
-      gfx::Rect(0, 0, 600, 552).ToString(),
+      gfx::Rect(0, 0, 600, bottom_inset_first).ToString(),
       screen_util::GetDisplayWorkAreaBoundsInParent(primary->GetNativeView())
           .ToString());
   EXPECT_EQ(
-      gfx::Rect(0, 0, 500, 452).ToString(),
+      gfx::Rect(0, 0, 500, bottom_inset_second).ToString(),
       screen_util::GetDisplayWorkAreaBoundsInParent(secondary->GetNativeView())
           .ToString());
 }

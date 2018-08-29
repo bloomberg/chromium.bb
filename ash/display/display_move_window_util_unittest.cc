@@ -249,6 +249,7 @@ TEST_F(DisplayMoveWindowUtilTest, KeepWindowBoundsIfNotChangedByUser) {
   //     |   |
   //     +---+
   UpdateDisplay("400x300,400x600");
+  const int shelf_inset = 300 - ShelfConstants::shelf_size();
   // Create and activate window on display [1].
   aura::Window* window =
       CreateTestWindowInShellWithBounds(gfx::Rect(410, 20, 200, 400));
@@ -261,7 +262,7 @@ TEST_F(DisplayMoveWindowUtilTest, KeepWindowBoundsIfNotChangedByUser) {
   PerformMoveWindowAccel();
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
             screen->GetDisplayNearestWindow(window).id());
-  EXPECT_EQ(gfx::Rect(10, 20, 200, 252), window->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(10, 20, 200, shelf_inset), window->GetBoundsInScreen());
   // Move window back to display [1]. Its window bounds should be restored.
   PerformMoveWindowAccel();
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
@@ -277,7 +278,7 @@ TEST_F(DisplayMoveWindowUtilTest, KeepWindowBoundsIfNotChangedByUser) {
   PerformMoveWindowAccel();
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
             screen->GetDisplayNearestWindow(window).id());
-  EXPECT_EQ(gfx::Rect(410, 20, 200, 252), window->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(410, 20, 200, shelf_inset), window->GetBoundsInScreen());
 }
 
 // Tests auto window management on moving window between displays.
@@ -440,10 +441,12 @@ TEST_F(DisplayMoveWindowUtilTest, RestoreMaximizedWindowAfterMovement) {
 
   wm::WindowState* window_state = wm::GetWindowState(w);
   window_state->Maximize();
-  EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - kShelfSize), w->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - ShelfConstants::shelf_size()),
+            w->GetBoundsInScreen());
 
   PerformMoveWindowAccel();
-  EXPECT_EQ(gfx::Rect(400, 0, 400, 300 - kShelfSize), w->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(400, 0, 400, 300 - ShelfConstants::shelf_size()),
+            w->GetBoundsInScreen());
   window_state->Restore();
   EXPECT_EQ(gfx::Rect(410, 20, 200, 100), w->GetBoundsInScreen());
 }

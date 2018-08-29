@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_util.h"
@@ -426,12 +427,14 @@ TEST_F(WindowStateTest, RestoredWindowBoundsShrink) {
 }
 
 TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
+  const int shelf_inset_first = 600 - ShelfConstants::shelf_size();
+  const int shelf_inset_second = 700 - ShelfConstants::shelf_size();
   std::unique_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
   WindowState* maximized_state = GetWindowState(maximized.get());
   maximized_state->Maximize();
   ASSERT_TRUE(maximized_state->IsMaximized());
-  EXPECT_EQ(gfx::Rect(0, 0, 800, 552).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 800, shelf_inset_first).ToString(),
             maximized->GetBoundsInScreen().ToString());
 
   // Entering fullscreen mode will not update the maximized window's size
@@ -441,7 +444,7 @@ TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
   fullscreen_state->OnWMEvent(&fullscreen_event);
   ASSERT_TRUE(fullscreen_state->IsFullscreen());
   ASSERT_TRUE(maximized_state->IsMaximized());
-  EXPECT_EQ(gfx::Rect(0, 0, 800, 552).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 800, shelf_inset_first).ToString(),
             maximized->GetBoundsInScreen().ToString());
 
   // Updating display size will update the maximum window size.
@@ -450,7 +453,7 @@ TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
   fullscreen.reset();
 
   // Exiting fullscreen will update the maximized window to the work area.
-  EXPECT_EQ(gfx::Rect(0, 0, 900, 652).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 900, shelf_inset_second).ToString(),
             maximized->GetBoundsInScreen().ToString());
 }
 

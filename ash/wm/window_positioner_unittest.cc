@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/scoped_root_window_for_new_windows.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
@@ -50,6 +51,7 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 // its restore bounds.
 TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
   UpdateDisplay("1400x900");
+  const int bottom_inset = 900 - ShelfConstants::shelf_size();
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;
@@ -64,7 +66,7 @@ TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
   // The window should be maximized.
   bounds = widget1->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget1->IsMaximized());
-  EXPECT_EQ(gfx::Rect(0, 0, 1400, 852).ToString(), bounds.ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1400, bottom_inset).ToString(), bounds.ToString());
 
   // Create another window
   views::Widget* widget2 = shell::ToplevelWindow::CreateToplevelWindow(params);
@@ -72,7 +74,7 @@ TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
   // The second window should be maximized.
   bounds = widget2->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget2->IsMaximized());
-  EXPECT_EQ(gfx::Rect(0, 0, 1400, 852).ToString(), bounds.ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1400, bottom_inset).ToString(), bounds.ToString());
 
   widget2->Restore();
   // Second window's restored size should be set to default size.

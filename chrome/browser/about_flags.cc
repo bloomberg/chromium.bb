@@ -1732,7 +1732,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
     {"shelf-new-ui", flag_descriptions::kShelfNewUiName,
      flag_descriptions::kShelfNewUiDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfNewUi)},
+     FEATURE_VALUE_TYPE(chromeos::switches::kEnableShelfNewUi)},
     {"show-taps", flag_descriptions::kShowTapsName,
      flag_descriptions::kShowTapsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
