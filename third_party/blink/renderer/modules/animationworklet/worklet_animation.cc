@@ -406,7 +406,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   double playback_rate = 1;
   CompositorAnimations::FailureCode failure_code =
-      GetEffect()->CheckCanStartAnimationOnCompositor(playback_rate);
+      GetEffect()->CheckCanStartAnimationOnCompositor(
+          base::Optional<CompositorElementIdSet>(), playback_rate);
 
   if (!failure_code.Ok()) {
     play_state_ = Animation::kIdle;

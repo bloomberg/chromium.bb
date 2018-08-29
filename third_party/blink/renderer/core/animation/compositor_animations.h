@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -85,6 +86,7 @@ class CORE_EXPORT CompositorAnimations {
       const Element&,
       const Animation*,
       const EffectModel&,
+      const base::Optional<CompositorElementIdSet>& composited_element_ids,
       double animation_playback_rate);
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
@@ -140,6 +142,7 @@ class CORE_EXPORT CompositorAnimations {
       const Element&,
       const Animation*,
       const EffectModel&,
+      const base::Optional<CompositorElementIdSet>& composited_element_ids,
       double animation_playback_rate);
   static FailureCode CheckCanStartElementOnCompositor(const Element&);
 

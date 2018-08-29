@@ -117,7 +117,7 @@ class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
 
   // Represents a property-specific keyframe as defined in the spec. Refer to
   // the Keyframe class-level documentation for more details.
-  class PropertySpecificKeyframe
+  class CORE_EXPORT PropertySpecificKeyframe
       : public GarbageCollectedFinalized<PropertySpecificKeyframe> {
    public:
     virtual ~PropertySpecificKeyframe() = default;

@@ -253,8 +253,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void BeginUpdatingState();
   void EndUpdatingState();
 
-  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositorInternal(
-      const base::Optional<CompositorElementIdSet>&) const;
+  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositorInternal()
+      const;
   void CreateCompositorAnimation();
   void DestroyCompositorAnimation();
   void AttachCompositorTimeline();

@@ -216,6 +216,7 @@ void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {
 
 CompositorAnimations::FailureCode
 KeyframeEffect::CheckCanStartAnimationOnCompositor(
+    const base::Optional<CompositorElementIdSet>& composited_element_ids,
     double animation_playback_rate) const {
   if (!model_->HasFrames()) {
     return CompositorAnimations::FailureCode::Actionable(
@@ -242,7 +243,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
   return CompositorAnimations::CheckCanStartAnimationOnCompositor(
       SpecifiedTiming(), *target_, GetAnimation(), *Model(),
-      animation_playback_rate);
+      composited_element_ids, animation_playback_rate);
 }
 
 void KeyframeEffect::StartAnimationOnCompositor(
@@ -252,11 +253,15 @@ void KeyframeEffect::StartAnimationOnCompositor(
     double animation_playback_rate,
     CompositorAnimation* compositor_animation) {
   DCHECK(!HasActiveAnimationsOnCompositor());
-  DCHECK(CheckCanStartAnimationOnCompositor(animation_playback_rate).Ok());
+  // TODO(petermayo): Maybe we should recheck that we can start on the
+  // compositor if we have the compositable IDs somewhere.
 
   if (!compositor_animation)
     compositor_animation = GetAnimation()->GetCompositorAnimation();
+
   DCHECK(compositor_animation);
+  DCHECK(target_);
+  DCHECK(Model());
 
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),

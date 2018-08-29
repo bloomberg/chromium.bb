@@ -165,13 +165,14 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     String value_;
   };
 
- private:
+ protected:
   StringKeyframe()
       : css_property_map_(
             MutableCSSPropertyValueSet::Create(kHTMLStandardMode)),
         presentation_attribute_map_(
             MutableCSSPropertyValueSet::Create(kHTMLStandardMode)) {}
 
+ private:
   StringKeyframe(const StringKeyframe& copy_from);
 
   Keyframe* Clone() const override;
