@@ -4176,16 +4176,11 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pa
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Skip ]
-# These are currently skipped on all OSes due to crbug.com/785931
-#crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
-#crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Skip ]
 # This is currently skipped on all OSes due to crbug.com/775957
 #crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
-
-crbug.com/868956 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
