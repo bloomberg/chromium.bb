@@ -55,7 +55,6 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback = base::DoNothing();
-  init_params.url_request_context = profile->GetRequestContext();
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();

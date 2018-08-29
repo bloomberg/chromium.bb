@@ -52,10 +52,6 @@ namespace base {
 class MessageLoop;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -217,7 +213,6 @@ class ProfileSyncService : public syncer::SyncService,
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
-    scoped_refptr<net::URLRequestContextGetter> url_request_context;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
@@ -676,9 +671,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Callback to update the network time; used for initializing the engine.
   syncer::NetworkTimeUpdateCallback network_time_update_callback_;
-
-  // The request context in which sync should operate.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
   // The URL loader factory for the sync.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

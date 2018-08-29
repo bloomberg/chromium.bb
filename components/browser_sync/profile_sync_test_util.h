@@ -29,10 +29,6 @@ namespace history {
 class HistoryService;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -127,10 +123,6 @@ class ProfileSyncServiceBundle {
 
   // Accessors
 
-  net::URLRequestContextGetter* url_request_context() {
-    return url_request_context_.get();
-  }
-
   network::TestURLLoaderFactory* url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -182,9 +174,6 @@ class ProfileSyncServiceBundle {
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
-  // TODO(https://crbug.com/844968): Remove references to url_request_context_
-  // once the rest of the sync engine is migrated to network service.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
