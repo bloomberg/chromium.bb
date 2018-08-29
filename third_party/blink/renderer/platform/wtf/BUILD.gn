@@ -200,6 +200,7 @@ jumbo_component("wtf") {
     "thread_restriction_verifier.h",
     "thread_safe_ref_counted.h",
     "thread_specific.h",
+    "threading.cc",
     "threading.h",
     "threading_primitives.h",
     "threading_pthreads.cc",
