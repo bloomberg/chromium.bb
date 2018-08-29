@@ -39,15 +39,6 @@ using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
     base::Optional<AuthenticatorMakeCredentialResponse>,
     FidoTransportProtocol>;
 
-// Returns the set of transport protocols that are safe to test with. Because
-// FidoCableDiscovery cannot be faked out, and attempting to start the real
-// thing would flakily work/fail depending on the environment, avoid testing.
-base::flat_set<FidoTransportProtocol> GetTestableTransportProtocols() {
-  auto transports = GetAllTransportProtocols();
-  transports.erase(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  return transports;
-}
-
 }  // namespace
 
 class FidoMakeCredentialHandlerTest : public ::testing::Test {
@@ -111,12 +102,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         ::testing::UnorderedElementsAreArray(transports));
   }
 
-  void ExpectAllTransportsAreAllowedForRequest(
-      MakeCredentialRequestHandler* request_handler) {
-    ExpectAllowedTransportsForRequestAre(request_handler,
-                                         GetTestableTransportProtocols());
-  }
-
   void InitFeatureListAndDisableCtapFlag() {
     scoped_feature_list_.InitAndDisableFeature(kNewCtap2Device);
   }
@@ -154,7 +139,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   std::unique_ptr<MockFidoDevice> mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
-      GetTestableTransportProtocols();
+      GetAllTransportProtocols();
 };
 
 TEST_F(FidoMakeCredentialHandlerTest, TransportAvailabilityInfo) {
@@ -287,6 +272,7 @@ TEST_F(FidoMakeCredentialHandlerTest, AnyAttachment) {
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(callback().was_called());
 
+  // kCloudAssistedBluetoothLowEnergy not yet supported for MakeCredential.
   ExpectAllowedTransportsForRequestAre(
       request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
                               FidoTransportProtocol::kNearFieldCommunication,
@@ -302,6 +288,7 @@ TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {
               false /* require_resident_key */,
               UserVerificationRequirement::kPreferred));
 
+  // kCloudAssistedBluetoothLowEnergy not yet supported for MakeCredential.
   ExpectAllowedTransportsForRequestAre(
       request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
                               FidoTransportProtocol::kNearFieldCommunication,

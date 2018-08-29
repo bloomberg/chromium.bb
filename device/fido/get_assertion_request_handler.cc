@@ -144,6 +144,14 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
   return transports;
 }
 
+base::flat_set<FidoTransportProtocol> GetTransportsAllowedAndConfiguredByRP(
+    const CtapGetAssertionRequest& request) {
+  auto transports = GetTransportsAllowedByRP(request);
+  if (!request.cable_extension())
+    transports.erase(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+  return transports;
+}
+
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
@@ -155,7 +163,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
-              GetTransportsAllowedByRP(request)),
+              GetTransportsAllowedAndConfiguredByRP(request)),
           std::move(completion_callback)),
       request_(std::move(request)),
       weak_factory_(this) {
@@ -165,10 +173,9 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 
   if (base::ContainsKey(
           transport_availability_info().available_transports,
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) &&
-      request_.cable_extension()) {
-    auto discovery =
-        std::make_unique<FidoCableDiscovery>(*request_.cable_extension());
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
+    DCHECK(request_.cable_extension());
+    auto discovery = FidoDiscovery::CreateCable(*request_.cable_extension());
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }

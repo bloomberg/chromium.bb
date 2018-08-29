@@ -146,7 +146,7 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::SetPinProtocol(
 }
 
 CtapGetAssertionRequest& CtapGetAssertionRequest::SetCableExtension(
-    std::vector<FidoCableDiscovery::CableDiscoveryData> cable_extension) {
+    std::vector<CableDiscoveryData> cable_extension) {
   cable_extension_ = std::move(cable_extension);
   return *this;
 }

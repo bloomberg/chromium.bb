@@ -174,30 +174,30 @@ TypeConverter<::device::PublicKeyCredentialUserEntity,
 }
 
 // static
-std::vector<::device::FidoCableDiscovery::CableDiscoveryData>
-TypeConverter<std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
+std::vector<::device::CableDiscoveryData>
+TypeConverter<std::vector<::device::CableDiscoveryData>,
               std::vector<CableAuthenticationPtr>>::
     Convert(const std::vector<CableAuthenticationPtr>& input) {
-  std::vector<::device::FidoCableDiscovery::CableDiscoveryData> discovery_data;
+  std::vector<::device::CableDiscoveryData> discovery_data;
   discovery_data.reserve(input.size());
 
   for (const auto& data : input) {
-    ::device::FidoCableDiscovery::EidArray client_eid;
+    ::device::EidArray client_eid;
     DCHECK_EQ(client_eid.size(), data->client_eid.size());
     std::copy(data->client_eid.begin(), data->client_eid.end(),
               client_eid.begin());
 
-    ::device::FidoCableDiscovery::EidArray authenticator_eid;
+    ::device::EidArray authenticator_eid;
     DCHECK_EQ(authenticator_eid.size(), data->authenticator_eid.size());
     std::copy(data->authenticator_eid.begin(), data->authenticator_eid.end(),
               authenticator_eid.begin());
 
-    ::device::FidoCableDiscovery::SessionPreKeyArray session_pre_key;
+    ::device::SessionPreKeyArray session_pre_key;
     DCHECK_EQ(session_pre_key.size(), data->session_pre_key.size());
     std::copy(data->session_pre_key.begin(), data->session_pre_key.end(),
               session_pre_key.begin());
 
-    discovery_data.push_back(::device::FidoCableDiscovery::CableDiscoveryData{
+    discovery_data.push_back(::device::CableDiscoveryData{
         data->version, client_eid, authenticator_eid, session_pre_key});
   }
 

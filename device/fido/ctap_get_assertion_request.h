@@ -14,7 +14,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
@@ -47,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   CtapGetAssertionRequest& SetPinAuth(std::vector<uint8_t> pin_auth);
   CtapGetAssertionRequest& SetPinProtocol(uint8_t pin_protocol);
   CtapGetAssertionRequest& SetCableExtension(
-      std::vector<FidoCableDiscovery::CableDiscoveryData> cable_extension);
+      std::vector<CableDiscoveryData> cable_extension);
   CtapGetAssertionRequest& SetAlternativeApplicationParameter(
       base::span<const uint8_t, kRpIdHashLength>
           alternative_application_parameter);
@@ -77,8 +77,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   }
 
   const base::Optional<uint8_t>& pin_protocol() const { return pin_protocol_; }
-  const base::Optional<std::vector<FidoCableDiscovery::CableDiscoveryData>>&
-  cable_extension() const {
+  const base::Optional<std::vector<CableDiscoveryData>>& cable_extension()
+      const {
     return cable_extension_;
   }
   const base::Optional<std::array<uint8_t, kRpIdHashLength>>&
@@ -96,8 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
-  base::Optional<std::vector<FidoCableDiscovery::CableDiscoveryData>>
-      cable_extension_;
+  base::Optional<std::vector<CableDiscoveryData>> cable_extension_;
   base::Optional<std::array<uint8_t, kRpIdHashLength>>
       alternative_application_parameter_;
 };
