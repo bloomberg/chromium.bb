@@ -323,7 +323,8 @@ bool IsAboutUI(const GURL& url) {
           || url.host_piece() == chrome::kChromeUILinuxProxyConfigHost
 #endif
 #if defined(OS_CHROMEOS)
-          || url.host_piece() == chrome::kChromeUIOSCreditsHost
+          || url.host_piece() == chrome::kChromeUIOSCreditsHost ||
+          url.host_piece() == chrome::kChromeUILinuxCreditsHost
 #endif
           );  // NOLINT
 }

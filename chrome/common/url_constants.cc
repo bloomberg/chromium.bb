@@ -285,6 +285,9 @@ const char kLearnMoreEnterpriseURL[] =
 const char kLinuxAppsLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_linuxapps";
 
+const char kLinuxCreditsPath[] =
+    "/opt/google/chrome/resources/linux_credits.html";
+
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
