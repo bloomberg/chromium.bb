@@ -115,7 +115,7 @@ class AssistantContainerLayout : public views::LayoutManager {
   }
 
   void Layout(views::View* host) override {
-    const int host_width = host->width();
+    const int host_center_x = host->GetBoundsInScreen().CenterPoint().x();
     const int host_height = host->height();
 
     for (int i = 0; i < host->child_count(); ++i) {
@@ -123,8 +123,16 @@ class AssistantContainerLayout : public views::LayoutManager {
 
       const gfx::Size child_size = child->GetPreferredSize();
 
-      // Children are horizontally centered and bottom aligned.
-      int child_left = (host_width - child_size.width()) / 2;
+      // Children are horizontally centered. This means that both the |host|
+      // and child views share the same center x-coordinate relative to the
+      // screen. We use this center value when placing our children because
+      // deriving center from the host width causes rounding inconsistencies
+      // that are especially noticeable during animation.
+      gfx::Point child_center(host_center_x, /*y=*/0);
+      views::View::ConvertPointFromScreen(host, &child_center);
+      int child_left = child_center.x() - child_size.width() / 2;
+
+      // Children are bottom aligned.
       int child_top = host_height - child_size.height();
 
       child->SetBounds(child_left, child_top, child_size.width(),
