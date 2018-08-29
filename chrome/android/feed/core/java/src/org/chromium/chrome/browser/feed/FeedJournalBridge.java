@@ -46,7 +46,7 @@ public class FeedJournalBridge {
     }
 
     /** Loads the journal and asynchronously returns the contents. */
-    public void loadJournal(String journalName, Callback<List<String>> callback) {
+    public void loadJournal(String journalName, Callback<String[]> callback) {
         assert mNativeFeedJournalBridge != 0;
         nativeLoadJournal(mNativeFeedJournalBridge, journalName, callback);
     }
@@ -107,7 +107,7 @@ public class FeedJournalBridge {
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedJournalBridge);
     private native void nativeLoadJournal(
-            long nativeFeedJournalBridge, String journalName, Callback<List<String>> callback);
+            long nativeFeedJournalBridge, String journalName, Callback<String[]> callback);
     private native void nativeCommitJournalMutation(
             long nativeFeedJournalBridge, Callback<Boolean> callback);
     private native void nativeCreateJournalMutation(

@@ -24,8 +24,12 @@
 
 namespace feed {
 
+using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStrings;
 
 static jlong JNI_FeedJournalBridge_Init(
     JNIEnv* env,
@@ -58,7 +62,14 @@ void FeedJournalBridge::LoadJournal(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
     const base::android::JavaRef<jstring>& j_journal_name,
-    const base::android::JavaRef<jobject>& j_callback) {}
+    const base::android::JavaRef<jobject>& j_callback) {
+  std::string journal_name = ConvertJavaStringToUTF8(j_env, j_journal_name);
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  feed_journal_database_->LoadJournal(
+      journal_name, base::BindOnce(&FeedJournalBridge::OnLoadJournalDone,
+                                   weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void FeedJournalBridge::CommitJournalMutation(
     JNIEnv* j_env,
@@ -103,5 +114,15 @@ void FeedJournalBridge::AddCopyOperation(
 void FeedJournalBridge::AddDeleteOperation(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this) {}
+
+void FeedJournalBridge::OnLoadJournalDone(
+    base::android::ScopedJavaGlobalRef<jobject> callback,
+    std::vector<std::string> entries) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_entries =
+      ToJavaArrayOfStrings(env, entries);
+
+  RunObjectCallbackAndroid(callback, j_entries);
+}
 
 }  // namespace feed

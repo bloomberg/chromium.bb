@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_FEED_FEED_JOURNAL_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_FEED_FEED_JOURNAL_BRIDGE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
 
@@ -60,6 +63,9 @@ class FeedJournalBridge {
                           const base::android::JavaRef<jobject>& j_this);
 
  private:
+  void OnLoadJournalDone(base::android::ScopedJavaGlobalRef<jobject> callback,
+                         std::vector<std::string> entries);
+
   FeedJournalDatabase* feed_journal_database_;
 
   base::WeakPtrFactory<FeedJournalBridge> weak_ptr_factory_;

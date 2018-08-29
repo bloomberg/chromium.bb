@@ -77,9 +77,21 @@ public class FeedJournalStorageTest {
     @Captor
             private ArgumentCaptor < Callback < List<String>>> mListOfStringCallbackArgument;
     @Captor
+    private ArgumentCaptor<Callback<String[]>> mStringArrayCallbackArgument;
+    @Captor
     private ArgumentCaptor<JournalMutation> mJournalMutationArgument;
 
     private FeedJournalStorage mJournalStorage;
+
+    private Answer<Void> createStringArrayAnswer(String[] stringArray) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mStringArrayCallbackArgument.getValue().onResult(stringArray);
+                return null;
+            }
+        };
+    }
 
     private Answer<Void> createStringListAnswer(List<String> stringList) {
         return new Answer<Void>() {
@@ -113,6 +125,12 @@ public class FeedJournalStorageTest {
         }
     }
 
+    private void verifyListOfBytesResult(
+            String[] expectedString, boolean expectedBoolean, Result<List<byte[]>> actualResult) {
+        List<String> expectedList = Arrays.asList(expectedString);
+        verifyListOfBytesResult(expectedList, expectedBoolean, actualResult);
+    }
+
     private void verifyListOfStringResult(
             List<String> expectedList, boolean expectedBoolean, Result<List<String>> actualResult) {
         assertEquals(expectedBoolean, actualResult.isSuccessful());
@@ -136,14 +154,14 @@ public class FeedJournalStorageTest {
     @Test
     @SmallTest
     public void readTest() {
-        List<String> answerStrings = Arrays.asList(JOURNAL_DATA1, JOURNAL_DATA2, JOURNAL_DATA3);
-        Answer<Void> answer = createStringListAnswer(answerStrings);
+        String[] answerStrings = {JOURNAL_DATA1, JOURNAL_DATA2, JOURNAL_DATA3};
+        Answer<Void> answer = createStringArrayAnswer(answerStrings);
         doAnswer(answer).when(mBridge).loadJournal(
-                mStringArgument.capture(), mListOfStringCallbackArgument.capture());
+                mStringArgument.capture(), mStringArrayCallbackArgument.capture());
 
         mJournalStorage.read(JOURNAL_KEY1, mListOfByteArrayConsumer);
         verify(mBridge, times(1))
-                .loadJournal(eq(JOURNAL_KEY1), mListOfStringCallbackArgument.capture());
+                .loadJournal(eq(JOURNAL_KEY1), mStringArrayCallbackArgument.capture());
         verify(mListOfByteArrayConsumer, times(1)).accept(mListOfByteArrayCaptor.capture());
         verifyListOfBytesResult(answerStrings, true, mListOfByteArrayCaptor.getValue());
     }

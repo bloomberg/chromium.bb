@@ -77,6 +77,7 @@ source_set("core_unit_tests") {
     "feed_content_mutation_unittest.cc",
     "feed_image_database_unittest.cc",
     "feed_image_manager_unittest.cc",
+    "feed_journal_database_unittest.cc",
     "feed_journal_mutation_unittest.cc",
     "feed_networking_host_unittest.cc",
     "feed_scheduler_host_unittest.cc",
