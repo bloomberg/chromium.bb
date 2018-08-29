@@ -92,8 +92,12 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
         ReputationVerdict verdict);
 
+// TODO(markusheintz): Remove.
 const char* ProtoEnumToString(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                                   PasswordCaptured::EventTrigger trigger);
+
+const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::GaiaPasswordCaptured::EventTrigger trigger);
 
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class);

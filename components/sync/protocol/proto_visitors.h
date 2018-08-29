@@ -805,6 +805,7 @@ VISIT_PROTO_FIELDS(
   VISIT(reuse_detected);
   VISIT(reuse_lookup);
   VISIT(dialog_interaction);
+  // TODO(markusheintz): Remove.
   VISIT(password_captured);
 }
 
@@ -833,9 +834,15 @@ VISIT_PROTO_FIELDS(
   VISIT(verdict_token);
 }
 
+// TODO(markusheintz): Remove.
 VISIT_PROTO_FIELDS(
     const sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured&
         proto) {
+  VISIT_ENUM(event_trigger);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::GaiaPasswordCaptured& proto) {
   VISIT_ENUM(event_trigger);
 }
 
@@ -985,6 +992,7 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(translation_event);
   VISIT(user_consent);
   VISIT(gaia_password_reuse_event);
+  VISIT(gaia_password_captured_event);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}
