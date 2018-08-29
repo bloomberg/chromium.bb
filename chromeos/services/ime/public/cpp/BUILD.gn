@@ -13,3 +13,14 @@ buildflag_header("buildflags") {
     "ENABLE_CROS_IME_EXAMPLE_SO=$enable_cros_ime_example_so",
   ]
 }
+
+source_set("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}

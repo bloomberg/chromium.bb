@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
@@ -16,6 +17,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/services/ime/public/cpp/features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "content/public/common/service_manager_connection.h"
@@ -55,8 +57,8 @@ void RegisterChromeInterfacesForExtension(
   }
 
 #if defined(OS_CHROMEOS)
-  // TODO(https://crbug.com/837156): Add an IME service experiment.
-  if (extension->permissions_data()->HasAPIPermission(
+  if (base::FeatureList::IsEnabled(chromeos::ime::kImeServiceConnectable) &&
+      extension->permissions_data()->HasAPIPermission(
           APIPermission::kInputMethodPrivate)) {
     registry->AddInterface(base::BindRepeating(
         &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
