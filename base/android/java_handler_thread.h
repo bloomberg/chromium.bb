@@ -33,6 +33,7 @@ class BASE_EXPORT JavaHandlerThread {
   // Wrap and connect to an existing JavaHandlerThread.
   // |obj| is an instance of JavaHandlerThread.
   explicit JavaHandlerThread(
+      const char* name,
       const base::android::ScopedJavaLocalRef<jobject>& obj);
   virtual ~JavaHandlerThread();
 
@@ -86,6 +87,7 @@ class BASE_EXPORT JavaHandlerThread {
   void StopOnThread();
   void QuitThreadSafely();
 
+  const char* name_;
   ScopedJavaGlobalRef<jobject> java_thread_;
 };
 
