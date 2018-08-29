@@ -170,8 +170,9 @@ bool LayoutEmbeddedContent::NodeAtPoint(
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
   FrameView* frame_view = ChildFrameView();
-  if (!frame_view || !frame_view->IsLocalFrameView() ||
-      !result.GetHitTestRequest().AllowsChildFrameContent()) {
+  bool skip_contents = (result.GetHitTestRequest().GetStopNode() == this ||
+                        !result.GetHitTestRequest().AllowsChildFrameContent());
+  if (!frame_view || !frame_view->IsLocalFrameView() || skip_contents) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
