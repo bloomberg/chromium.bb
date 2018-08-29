@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/metrics/power_metrics_provider_mac.h"
+
+#include <IOKit/IOKitLib.h>
+#include <libkern/OSByteOrder.h>
+
 #include "base/mac/scoped_ioobject.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
@@ -12,9 +16,6 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser_finder.h"
-
-#include <IOKit/IOKitLib.h>
-#include <libkern/OSByteOrder.h>
 
 namespace {
 constexpr base::TimeDelta kStartupPowerMetricsCollectionDuration =
