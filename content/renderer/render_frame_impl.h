@@ -1146,14 +1146,12 @@ class CONTENT_EXPORT RenderFrameImpl
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageInternal(
       const std::string& error_html,
-      const GURL& error_page_url,
       const GURL& error_url,
       bool replace,
-      blink::WebFrameLoadType frame_load_type,
-      const blink::WebHistoryItem& history_item,
+      HistoryEntry* history_entry,
       std::unique_ptr<blink::WebNavigationParams> navigation_params,
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
-      const blink::WebURLRequest& failed_request);
+      const blink::WebURLRequest* failed_request);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,

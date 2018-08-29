@@ -949,7 +949,7 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
   CommitDataNavigation(data, WebString::FromUTF8("text/html"),
                        WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
                        replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr, nullptr, nullptr);
+                       false, nullptr, nullptr);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2119,8 +2119,7 @@ void WebLocalFrameImpl::CommitDataNavigation(
     const WebHistoryItem& item,
     bool is_client_redirect,
     std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
-    const WebURLRequest* original_failed_request) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
   DCHECK(GetFrame());
 
   // TODO(dgozman): this whole logic of rewriting the params is odd,
@@ -2151,22 +2150,30 @@ void WebLocalFrameImpl::CommitDataNavigation(
                previous_load_type == WebFrameLoadType::kReloadBypassingCache) {
       web_frame_load_type = previous_load_type;
     }
-  } else if (original_failed_request) {
-    // We should only come here when committing an error page.  In particular,
-    // outside of unit tests, unreachable_url should be non-empty.
-    //
-    // TODO(lukasza): Extract error handling to a separate method.  See a WIP CL
-    // @ https://crrev.com/c/1176230.
-    request = original_failed_request->ToResourceRequest();
-
-    // Locally generated error pages should not be cached (in particular they
-    // should not inherit the cache mode from |original_failed_request|).
-    request.SetCacheMode(mojom::FetchCacheMode::kNoStore);
   }
   request.SetURL(base_url);
 
+  CommitDataNavigationWithRequest(
+      WrappedResourceRequest(request), data, mime_type, text_encoding,
+      unreachable_url, replace, web_frame_load_type, history_item,
+      is_client_redirect, std::move(navigation_params),
+      std::move(navigation_data));
+}
+
+void WebLocalFrameImpl::CommitDataNavigationWithRequest(
+    const WebURLRequest& request,
+    const WebData& data,
+    const WebString& mime_type,
+    const WebString& text_encoding,
+    const WebURL& unreachable_url,
+    bool replace,
+    WebFrameLoadType web_frame_load_type,
+    const WebHistoryItem& history_item,
+    bool is_client_redirect,
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
   FrameLoadRequest frame_request(
-      nullptr, request,
+      nullptr, request.ToResourceRequest(),
       SubstituteData(data, mime_type, text_encoding, unreachable_url));
   DCHECK(frame_request.GetSubstituteData().IsValid());
   frame_request.SetReplacesCurrentItem(replace);

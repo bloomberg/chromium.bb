@@ -142,8 +142,7 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
           data, "text/html", encoding_info, base_url, WebURL(),
           false /* replace */, blink::WebFrameLoadType::kStandard,
           blink::WebHistoryItem(), false /* is_client_redirect */,
-          nullptr /* navigation_params */, nullptr /* navigation_data */,
-          nullptr /* original_request_to_replace */);
+          nullptr /* navigation_params */, nullptr /* navigation_data */);
     }
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();

@@ -2701,12 +2701,6 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::WebNavigationParams> navigation_params,
     std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
-  blink::WebFrameLoadType frame_load_type =
-      entry ? blink::WebFrameLoadType::kBackForward
-            : blink::WebFrameLoadType::kStandard;
-  const blink::WebHistoryItem& history_item =
-      entry ? entry->root() : blink::WebHistoryItem();
-
   std::string error_html;
   if (error_page_content.has_value()) {
     error_html = error_page_content.value();
@@ -2716,10 +2710,9 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     GetContentClient()->renderer()->PrepareErrorPage(
         this, failed_request, error, &error_html, nullptr);
   }
-  LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
-                                  error.url(), replace, frame_load_type,
-                                  history_item, std::move(navigation_params),
-                                  std::move(navigation_data), failed_request);
+  LoadNavigationErrorPageInternal(error_html, error.url(), replace, entry,
+                                  std::move(navigation_params),
+                                  std::move(navigation_data), &failed_request);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
@@ -2730,36 +2723,45 @@ void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
     HistoryEntry* entry,
     std::unique_ptr<blink::WebNavigationParams> navigation_params,
     std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
-  blink::WebFrameLoadType frame_load_type =
-      entry ? blink::WebFrameLoadType::kBackForward
-            : blink::WebFrameLoadType::kStandard;
-  const blink::WebHistoryItem& history_item =
-      entry ? entry->root() : blink::WebHistoryItem();
-
   std::string error_html;
   GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
       this, failed_request, unreachable_url, http_status, &error_html, nullptr);
-  LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
-                                  unreachable_url, replace, frame_load_type,
-                                  history_item, std::move(navigation_params),
-                                  std::move(navigation_data), failed_request);
+  LoadNavigationErrorPageInternal(error_html, unreachable_url, replace, entry,
+                                  std::move(navigation_params),
+                                  std::move(navigation_data), &failed_request);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPageInternal(
     const std::string& error_html,
-    const GURL& error_page_url,
     const GURL& error_url,
     bool replace,
-    blink::WebFrameLoadType frame_load_type,
-    const blink::WebHistoryItem& history_item,
+    HistoryEntry* history_entry,
     std::unique_ptr<blink::WebNavigationParams> navigation_params,
     std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
-    const WebURLRequest& failed_request) {
-  frame_->CommitDataNavigation(
-      error_html, WebString::FromUTF8("text/html"),
-      WebString::FromUTF8("UTF-8"), error_page_url, error_url, replace,
-      frame_load_type, history_item, false, std::move(navigation_params),
-      std::move(navigation_data), &failed_request);
+    const WebURLRequest* failed_request) {
+  blink::WebFrameLoadType frame_load_type =
+      history_entry ? blink::WebFrameLoadType::kBackForward
+                    : blink::WebFrameLoadType::kStandard;
+  const blink::WebHistoryItem& history_item =
+      history_entry ? history_entry->root() : blink::WebHistoryItem();
+
+  // Failed navigations will always provide a |failed_request|.  Error induced
+  // by the client/renderer side after a commit won't have a |failed_request|.
+  bool is_client_redirect = !failed_request;
+
+  WebURLRequest new_request;
+  if (failed_request)
+    new_request = *failed_request;
+  new_request.SetURL(GURL(kUnreachableWebDataURL));
+
+  // Locally generated error pages should not be cached (in particular they
+  // should not inherit the cache mode from |failed_request|).
+  new_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
+
+  frame_->CommitDataNavigationWithRequest(
+      new_request, error_html, "text/html", "UTF-8", error_url, replace,
+      frame_load_type, history_item, is_client_redirect,
+      std::move(navigation_params), std::move(navigation_data));
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2882,12 +2884,10 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
       this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html,
       nullptr);
 
-  frame_->CommitDataNavigation(
-      error_html, WebString::FromUTF8("text/html"),
-      WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL), error.url(),
-      true, blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), true,
+  LoadNavigationErrorPageInternal(
+      error_html, error.url(), true /* replace */, nullptr /* history_entry */,
       nullptr /* navigation_params */, nullptr /* navigation_data */,
-      nullptr /* original_failed_request */);
+      nullptr /* failed_request */);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -6913,8 +6913,7 @@ void RenderFrameImpl::LoadDataURL(
             common_params, request_params,
             BuildServiceWorkerNetworkProviderForNavigation(
                 &request_params, nullptr /* controller_service_worker_info */)),
-        std::move(navigation_data),
-        nullptr);  // original_failed_request
+        std::move(navigation_data));
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << common_params.url.possibly_invalid_spec();

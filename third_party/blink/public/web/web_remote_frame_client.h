@@ -13,8 +13,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 
 namespace blink {
-enum class ClientRedirectPolicy;
-enum class WebFrameLoadType;
 class WebURLRequest;
 struct WebRect;
 
