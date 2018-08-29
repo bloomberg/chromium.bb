@@ -4,8 +4,10 @@
 
 // https://drafts.csswg.org/web-animations/#dictdef-basekeyframe
 
+enum CompositeOperationOrAuto {"replace", "add", "accumulate", "auto"};
+
 dictionary BaseKeyframe {
   double? offset = null;
   DOMString easing = "linear";
-  CompositeOperation? composite = null;
+  CompositeOperationOrAuto composite = "auto";
 };

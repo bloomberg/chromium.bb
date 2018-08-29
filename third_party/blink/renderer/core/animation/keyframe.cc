@@ -37,13 +37,8 @@ void Keyframe::AddKeyframePropertiesToV8Object(
     object_builder.AddNull("offset");
   }
   object_builder.Add("easing", easing_->ToString());
-  if (composite_) {
-    object_builder.AddString(
-        "composite",
-        EffectModel::CompositeOperationToString(composite_.value()));
-  } else {
-    object_builder.AddNull("composite");
-  }
+  object_builder.AddString("composite",
+                           EffectModel::CompositeOperationToString(composite_));
 }
 
 }  // namespace blink

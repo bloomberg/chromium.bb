@@ -50,8 +50,9 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
     kCompositeReplace,
     kCompositeAdd,
   };
-  static CompositeOperation StringToCompositeOperation(const String&);
-  static String CompositeOperationToString(CompositeOperation);
+  static base::Optional<CompositeOperation> StringToCompositeOperation(
+      const String&);
+  static String CompositeOperationToString(base::Optional<CompositeOperation>);
 
   EffectModel() = default;
   virtual ~EffectModel() = default;

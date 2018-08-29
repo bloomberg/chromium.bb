@@ -61,31 +61,22 @@ namespace blink {
 namespace {
 
 // Converts the composite property of a BasePropertyIndexedKeyframe into a
-// vector of EffectModel::CompositeOperation enums.
+// vector of base::Optional<EffectModel::CompositeOperation> enums.
 Vector<base::Optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
     const BasePropertyIndexedKeyframe& keyframe) {
-  const CompositeOperationOrCompositeOperationOrNullSequence& composite =
+  const CompositeOperationOrAutoOrCompositeOperationOrAutoSequence& composite =
       keyframe.composite();
 
-  // This handles the case where we have 'composite: null'. The null value is
-  // lifted to the union level in the bindings code.
-  if (composite.IsNull())
-    return {base::nullopt};
-
-  if (composite.IsCompositeOperation()) {
+  if (composite.IsCompositeOperationOrAuto()) {
     return {EffectModel::StringToCompositeOperation(
-        composite.GetAsCompositeOperation())};
+        composite.GetAsCompositeOperationOrAuto())};
   }
 
   Vector<base::Optional<EffectModel::CompositeOperation>> result;
   for (const String& composite_operation_string :
-       composite.GetAsCompositeOperationOrNullSequence()) {
-    if (composite_operation_string.IsNull()) {
-      result.push_back(base::nullopt);
-    } else {
-      result.push_back(
-          EffectModel::StringToCompositeOperation(composite_operation_string));
-    }
+       composite.GetAsCompositeOperationOrAutoSequence()) {
+    result.push_back(
+        EffectModel::StringToCompositeOperation(composite_operation_string));
   }
   return result;
 }
@@ -367,11 +358,12 @@ StringKeyframeVector ConvertArrayForm(Element* element,
                        execution_context);
     }
 
-    if (processed_keyframe.base_keyframe.hasComposite()) {
-      keyframe->SetComposite(ResolveCompositeOperationForKeyframe(
-          EffectModel::StringToCompositeOperation(
-              processed_keyframe.base_keyframe.composite()),
-          keyframe));
+    base::Optional<EffectModel::CompositeOperation> composite =
+        EffectModel::StringToCompositeOperation(
+            processed_keyframe.base_keyframe.composite());
+    if (composite) {
+      keyframe->SetComposite(
+          ResolveCompositeOperationForKeyframe(composite.value(), keyframe));
     }
 
     // 8.2. Let the timing function of frame be the result of parsing the

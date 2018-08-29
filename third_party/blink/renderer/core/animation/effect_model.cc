@@ -9,19 +9,23 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-EffectModel::CompositeOperation EffectModel::StringToCompositeOperation(
-    const String& composite_string) {
+base::Optional<EffectModel::CompositeOperation>
+EffectModel::StringToCompositeOperation(const String& composite_string) {
   DCHECK(composite_string == "replace" || composite_string == "add" ||
-         composite_string == "accumulate");
-  if (composite_string == "add") {
+         composite_string == "accumulate" || composite_string == "auto");
+  if (composite_string == "auto")
+    return base::nullopt;
+  if (composite_string == "add")
     return kCompositeAdd;
-  }
   // TODO(crbug.com/788440): Support accumulate.
   return kCompositeReplace;
 }
 
-String EffectModel::CompositeOperationToString(CompositeOperation composite) {
-  switch (composite) {
+String EffectModel::CompositeOperationToString(
+    base::Optional<CompositeOperation> composite) {
+  if (!composite)
+    return "auto";
+  switch (composite.value()) {
     case EffectModel::kCompositeAdd:
       return "add";
     case EffectModel::kCompositeReplace:

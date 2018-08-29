@@ -76,7 +76,8 @@ KeyframeEffect* KeyframeEffect::Create(
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeEffectOptions()) {
     composite = EffectModel::StringToCompositeOperation(
-        options.GetAsKeyframeEffectOptions().composite());
+                    options.GetAsKeyframeEffectOptions().composite())
+                    .value();
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(
@@ -145,7 +146,7 @@ String KeyframeEffect::composite() const {
 
 void KeyframeEffect::setComposite(String composite_string) {
   Model()->SetComposite(
-      EffectModel::StringToCompositeOperation(composite_string));
+      EffectModel::StringToCompositeOperation(composite_string).value());
 }
 
 Vector<ScriptValue> KeyframeEffect::getKeyframes(ScriptState* script_state) {

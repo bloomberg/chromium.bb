@@ -28,7 +28,8 @@ Animation* ElementAnimation::animate(
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeAnimationOptions()) {
     composite = EffectModel::StringToCompositeOperation(
-        options.GetAsKeyframeAnimationOptions().composite());
+                    options.GetAsKeyframeAnimationOptions().composite())
+                    .value();
   }
 
   KeyframeEffectModelBase* effect = EffectInput::Convert(
