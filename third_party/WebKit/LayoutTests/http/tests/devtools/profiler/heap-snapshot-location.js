@@ -36,14 +36,20 @@ async function assertLocation(section, select_row) {
       function* myGenerator() {
         yield 1;
       }
+      class MyTestClass2 {}
       window.myTestClass = new MyTestClass();
       window.myTestGenerator = myGenerator();
+      window.myTestClass2 = new MyTestClass2();
       //# sourceURL=my-test-script.js`);
 
   await HeapProfilerTestRunner.takeSnapshotPromise();
   await HeapProfilerTestRunner.switchToView('Summary');
 
-  const rowsToCheck = [['MyTestClass', 'myFunction'], ['myGenerator']];
+  const rowsToCheck = [
+    ['MyTestClass', 'myFunction'],
+    ['myGenerator'],
+    ['MyTestClass2']
+  ];
   for (let expected of rowsToCheck) {
     const section = expected[0];
     const select_row = expected[1];
