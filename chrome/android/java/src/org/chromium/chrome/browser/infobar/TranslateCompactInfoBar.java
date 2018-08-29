@@ -202,7 +202,7 @@ public class TranslateCompactInfoBar extends InfoBar
         mTabLayout = (TranslateTabLayout) content.findViewById(R.id.translate_infobar_tabs);
         if (mDefaultTextColor > 0) {
             mTabLayout.setTabTextColors(
-                    ContextCompat.getColor(getContext(), R.color.black_alpha_87),
+                    ContextCompat.getColor(getContext(), R.color.default_text_color),
                     ContextCompat.getColor(getContext(), R.color.infobar_accent_blue));
         }
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());

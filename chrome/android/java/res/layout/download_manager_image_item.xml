@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
-    android:background="@color/google_grey_100" >
+    android:background="@color/modern_grey_100" >
 
     <ImageView
         android:id="@+id/thumbnail"

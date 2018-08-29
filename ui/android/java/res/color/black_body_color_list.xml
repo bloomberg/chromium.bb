@@ -4,7 +4,7 @@
      found in the LICENSE file.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/black_alpha_54" android:state_enabled="true"/>
+    <item android:color="@color/default_text_color_secondary" android:state_enabled="true"/>
     <item android:color="@color/black_alpha_38" android:state_enabled="false"/>
-    <item android:color="@color/black_alpha_54" />
+    <item android:color="@color/default_text_color_secondary" />
 </selector>

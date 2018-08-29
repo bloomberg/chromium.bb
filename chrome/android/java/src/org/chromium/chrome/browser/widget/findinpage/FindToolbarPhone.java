@@ -61,7 +61,7 @@ public class FindToolbarPhone extends FindToolbar {
             mFindNextButton.setTint(dark);
             mFindPrevButton.setTint(dark);
             mCloseFindButton.setTint(dark);
-            queryTextColorId = R.color.black_alpha_87;
+            queryTextColorId = R.color.default_text_color;
         }
         mFindQuery.setTextColor(
                 ApiCompatibilityUtils.getColor(getContext().getResources(), queryTextColorId));

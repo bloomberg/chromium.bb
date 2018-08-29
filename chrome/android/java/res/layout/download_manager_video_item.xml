@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:scaleType="centerCrop"
         android:adjustViewBounds="true"
-        android:background="@color/google_grey_300"
+        android:background="@color/modern_grey_300"
         android:src="@drawable/audio_playing_square"
         app:layout_column="0"
         app:layout_row="0"

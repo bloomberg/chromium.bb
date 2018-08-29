@@ -40,7 +40,6 @@
         android:layout_marginEnd="@dimen/editor_dialog_section_large_spacing"
         android:layout_marginBottom="@dimen/editor_dialog_section_large_spacing"
         android:gravity="center_horizontal"
-        android:textColor="@color/descriptive_text_color"
-        android:textSize="16sp" />
+        android:textAppearance="@style/BlackHint1" />
 
 </FrameLayout>

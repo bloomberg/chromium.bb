@@ -218,7 +218,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:background">@color/google_grey_600</item>
+        <item name="android:background">@color/modern_grey_600</item>
     </style>
 
     <!-- Dividers -->
@@ -567,6 +567,9 @@
     <style name="TextAppearance.EditorDialogSectionAddButton" parent="BlueLink2">
         <item name="android:textAllCaps">true</item>
     </style>
+    <style name="TextAppearance.PaymentRequestHeaderTitle" parent="BlackTitle1">
+        <item name="android:textStyle">bold</item>
+    </style>
 
     <!-- Misc styles -->
     <style name="LocationBarButton">
@@ -622,7 +625,7 @@
 
     <!-- New Tab Page -->
     <style name="NewTabPageRecyclerView">
-        <item name="android:colorEdgeEffect" tools:targetApi="21">@color/google_grey_300</item>
+        <item name="android:colorEdgeEffect" tools:targetApi="21">@color/modern_grey_300</item>
     </style>
 
     <!-- Use style="..." for the following search box style as textColorHint

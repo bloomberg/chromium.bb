@@ -117,7 +117,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 context.getResources().getDimensionPixelSize(R.dimen.list_item_subsection_margin);
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
         mIconBackgroundColorSelected =
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_600);
         mIconSize = getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_width);
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
 

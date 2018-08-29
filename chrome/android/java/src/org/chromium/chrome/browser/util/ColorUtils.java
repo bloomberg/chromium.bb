@@ -90,7 +90,7 @@ public class ColorUtils {
             // not visible by default, so we make it white to appear as part of the background.
             return isLocationBarShownInNtp
                     ? Color.WHITE
-                    : ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey);
+                    : ApiCompatibilityUtils.getColor(res, R.color.modern_grey_100);
         }
 
         if (shouldUseOpaqueTextboxBackground(color)) {
