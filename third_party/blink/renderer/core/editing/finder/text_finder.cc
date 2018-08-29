@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -431,6 +432,9 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
     return;
   }
 
+  const TimeDelta time_available =
+      TimeDelta::FromMillisecondsD(deadline->timeRemaining());
+  const TimeTicks start_time = CurrentTimeTicks();
   PositionInFlatTree search_start = PositionInFlatTree::FirstPositionInNode(
       *OwnerFrame().GetFrame()->GetDocument());
   PositionInFlatTree search_end = PositionInFlatTree::LastPositionInNode(
@@ -527,6 +531,10 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
 
     next_scoping_start = search_start;
   } while (deadline->timeRemaining() > 0);
+
+  const TimeDelta time_spent = CurrentTimeTicks() - start_time;
+  UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",
+                      time_spent - time_available);
 
   if (next_scoping_start.IsNotNull()) {
     resume_scoping_from_range_ =
