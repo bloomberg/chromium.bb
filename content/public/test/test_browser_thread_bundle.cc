@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -64,6 +65,8 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // to invoke BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
   scoped_task_environment_.reset();
 
+  BrowserThreadImpl::ResetTaskExecutorForTesting();
+
 #if defined(OS_WIN)
   com_initializer_.reset();
 #endif
@@ -86,6 +89,8 @@ void TestBrowserThreadBundle::Init() {
   com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
   CHECK(com_initializer_->Succeeded());
 #endif
+
+  BrowserThreadImpl::CreateTaskExecutor();
 
   // Create the ScopedTaskEnvironment if it doesn't already exist. A
   // ScopedTaskEnvironment may already exist if this TestBrowserThreadBundle is

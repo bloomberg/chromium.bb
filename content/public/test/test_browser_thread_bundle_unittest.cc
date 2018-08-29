@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,8 +74,8 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PostToTaskScheduler, iteration + 1, tasks_run));
 }
 
@@ -110,8 +111,8 @@ void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PostRecurringTaskToIOThread, iteration + 1, tasks_run));
 }
 
