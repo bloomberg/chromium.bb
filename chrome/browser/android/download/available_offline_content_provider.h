@@ -5,11 +5,18 @@
 #ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_AVAILABLE_OFFLINE_CONTENT_PROVIDER_H_
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_AVAILABLE_OFFLINE_CONTENT_PROVIDER_H_
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/available_offline_content.mojom.h"
 
 namespace content {
 class BrowserContext;
 }
+
+namespace offline_items_collection {
+class OfflineContentAggregator;
+struct OfflineItem;
+}  // namespace offline_items_collection
 
 namespace android {
 
@@ -17,9 +24,6 @@ namespace android {
 class AvailableOfflineContentProvider
     : public chrome::mojom::AvailableOfflineContentProvider {
  public:
-  using ListCallback = base::OnceCallback<void(
-      std::vector<chrome::mojom::AvailableOfflineContentPtr>)>;
-
   // Public for testing.
   explicit AvailableOfflineContentProvider(
       content::BrowserContext* browser_context);
@@ -27,6 +31,7 @@ class AvailableOfflineContentProvider
 
   // chrome::mojom::AvailableOfflineContentProvider methods.
   void List(ListCallback callback) override;
+  void Summarize(SummarizeCallback) override;
   void LaunchItem(const std::string& item_id,
                   const std::string& name_space) override;
   void LaunchDownloadsPage() override;
@@ -36,7 +41,18 @@ class AvailableOfflineContentProvider
       chrome::mojom::AvailableOfflineContentProviderRequest request);
 
  private:
+  void SummarizeFinalize(
+      AvailableOfflineContentProvider::SummarizeCallback callback,
+      const std::vector<offline_items_collection::OfflineItem>& all_items);
+
+  void ListFinalize(
+      AvailableOfflineContentProvider::ListCallback callback,
+      offline_items_collection::OfflineContentAggregator* aggregator,
+      const std::vector<offline_items_collection::OfflineItem>& all_items);
+
   content::BrowserContext* browser_context_;
+
+  base::WeakPtrFactory<AvailableOfflineContentProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvailableOfflineContentProvider);
 };

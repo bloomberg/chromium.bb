@@ -104,15 +104,18 @@ class AvailableOfflineContentTest : public testing::Test {
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> ListAndWait() {
     std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
-    bool received = false;
-    provider_.List(base::BindLambdaForTesting(
-        [&](std::vector<chrome::mojom::AvailableOfflineContentPtr> result) {
-          received = true;
-          suggestions = std::move(result);
-        }));
-    thread_bundle_.RunUntilIdle();
-    EXPECT_TRUE(received);
+    chrome::mojom::AvailableOfflineContentProviderAsyncWaiter waiter(
+        &provider_);
+    waiter.List(&suggestions);
     return suggestions;
+  }
+
+  chrome::mojom::AvailableOfflineContentSummaryPtr SummarizeAndWait() {
+    chrome::mojom::AvailableOfflineContentSummaryPtr summary;
+    chrome::mojom::AvailableOfflineContentProviderAsyncWaiter waiter(
+        &provider_);
+    waiter.Summarize(&summary);
+    return summary;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -126,21 +129,35 @@ class AvailableOfflineContentTest : public testing::Test {
 TEST_F(AvailableOfflineContentTest, NoContent) {
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
+  EXPECT_EQ(0u, summary->total_items);
+  EXPECT_FALSE(summary->has_prefetched_page);
+  EXPECT_FALSE(summary->has_offline_page);
+  EXPECT_FALSE(summary->has_video);
+  EXPECT_FALSE(summary->has_audio);
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(AvailableOfflineContentTest, AllContentFilteredOut) {
+TEST_F(AvailableOfflineContentTest, ListAllContentFilteredOut) {
   scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({UselessItem(), OldOfflinePage()});
 
+  // Call List() and Summary().
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
+
+  EXPECT_EQ(2u, summary->total_items);
+  EXPECT_TRUE(summary->has_prefetched_page);
+  EXPECT_TRUE(summary->has_offline_page);
+  EXPECT_FALSE(summary->has_video);
+  EXPECT_FALSE(summary->has_audio);
 
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(AvailableOfflineContentTest, ThreeItems) {
+TEST_F(AvailableOfflineContentTest, ListThreeItems) {
   scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({
       UselessItem(), VideoItem(), SuggestedOfflinePageItem(), AudioItem(),
@@ -149,8 +166,17 @@ TEST_F(AvailableOfflineContentTest, ThreeItems) {
   content_provider_.SetVisuals(
       {{SuggestedOfflinePageItem().id, TestThumbnail()}});
 
+  // Call List() and Summary().
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
+
+  // Check summary.
+  EXPECT_EQ(4u, summary->total_items);
+  EXPECT_TRUE(summary->has_prefetched_page);
+  EXPECT_TRUE(summary->has_offline_page);
+  EXPECT_TRUE(summary->has_video);
+  EXPECT_TRUE(summary->has_audio);
 
   // Check that the right suggestions have been received in order.
   EXPECT_EQ(3ul, suggestions.size());
