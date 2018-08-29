@@ -1612,21 +1612,6 @@
       ]
     },
     {
-      "id": 169,
-      "description": "Mac Drivers store texture level parameters on int16_t that overflow",
-      "cr_bugs": [610153],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.12.2"
-        }
-      },
-      "features": [
-        "use_shadowed_tex_level_params"
-      ]
-    },
-    {
       "id": 170,
       "description": "Zero copy DXGI video hangs on shutdown on Win < 8.1",
       "cr_bugs": [621190],
@@ -2949,6 +2934,19 @@
       "gl_renderer": "Adreno.*",
       "features": [
         "use_es2_for_oopr"
+      ]
+    },
+    {
+      "id": 274,
+      "description": "glTexStorage* are buggy when base mipmap level is not 0",
+      "cr_bugs": [877874],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "reset_base_mipmap_level_before_texstorage"
       ]
     }
   ]

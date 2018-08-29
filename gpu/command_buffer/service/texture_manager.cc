@@ -1088,17 +1088,17 @@ void Texture::IncAllFramebufferStateChangeCount() {
 }
 
 void Texture::UpdateBaseLevel(GLint base_level) {
-  if (base_level_ == base_level)
+  if (unclamped_base_level_ == base_level)
     return;
-  base_level_ = base_level;
+  unclamped_base_level_ = base_level;
 
   UpdateNumMipLevels();
 }
 
 void Texture::UpdateMaxLevel(GLint max_level) {
-  if (max_level_ == max_level)
+  if (unclamped_max_level_ == max_level)
     return;
-  max_level_ = max_level;
+  unclamped_max_level_ = max_level;
 
   UpdateNumMipLevels();
 }
@@ -1107,22 +1107,24 @@ void Texture::UpdateNumMipLevels() {
   if (face_infos_.empty())
     return;
 
-  GLint base_level = base_level_;
-  GLint max_level = max_level_;
   if (immutable_) {
     GLint levels = GetImmutableLevels();
     DCHECK_LE(1, levels);
-    DCHECK_LE(0, base_level_);
-    base_level = std::min(base_level_, levels - 1);
-    max_level = std::max(base_level, max_level_);
-    max_level = std::min(max_level, levels - 1);
+    DCHECK_LE(0, unclamped_base_level_);
+    DCHECK_LE(0, unclamped_max_level_);
+    base_level_ = std::min(unclamped_base_level_, levels - 1);
+    max_level_ = std::max(base_level_, unclamped_max_level_);
+    max_level_ = std::min(max_level_, levels - 1);
+  } else {
+    base_level_ = unclamped_base_level_;
+    max_level_ = unclamped_max_level_;
   }
-  GLint max_num_mip_levels = std::max(0, max_level - base_level + 1);
+  GLint max_num_mip_levels = std::max(0, max_level_ - base_level_ + 1);
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     Texture::FaceInfo& face_info = face_infos_[ii];
-    if (static_cast<size_t>(base_level) >= face_info.level_infos.size())
+    if (static_cast<size_t>(base_level_) >= face_info.level_infos.size())
       continue;
-    const Texture::LevelInfo& info = face_info.level_infos[base_level];
+    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
     face_info.num_mip_levels = std::min(
         max_num_mip_levels, TextureManager::ComputeMipMapCount(
                                 target_, info.width, info.height, info.depth));
@@ -2228,6 +2230,14 @@ void TextureManager::SetParameteri(
         glTexParameteri(texture->target(), pname,
                         texture->GetCompatibilitySwizzleForChannel(param));
         break;
+      case GL_TEXTURE_BASE_LEVEL:
+        // base level might have been clamped.
+        glTexParameteri(texture->target(), pname, texture->base_level());
+        break;
+      case GL_TEXTURE_MAX_LEVEL:
+        // max level might have been clamped.
+        glTexParameteri(texture->target(), pname, texture->max_level());
+        break;
       default:
         glTexParameteri(texture->target(), pname, param);
         break;
@@ -2251,7 +2261,21 @@ void TextureManager::SetParameterf(
           error_state, result, function_name, pname, param);
     }
   } else {
-    glTexParameterf(texture->target(), pname, param);
+    switch (pname) {
+      case GL_TEXTURE_BASE_LEVEL:
+        // base level might have been clamped.
+        glTexParameterf(texture->target(), pname,
+                        static_cast<GLfloat>(texture->base_level()));
+        break;
+      case GL_TEXTURE_MAX_LEVEL:
+        // max level might have been clamped.
+        glTexParameterf(texture->target(), pname,
+                        static_cast<GLfloat>(texture->max_level()));
+        break;
+      default:
+        glTexParameterf(texture->target(), pname, param);
+        break;
+    }
   }
 }
 
