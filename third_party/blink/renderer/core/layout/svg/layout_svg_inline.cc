@@ -127,6 +127,11 @@ void LayoutSVGInline::WillBeDestroyed() {
 
 void LayoutSVGInline::StyleDidChange(StyleDifference diff,
                                      const ComputedStyle* old_style) {
+  // Since layout depends on the bounds of the filter, we need to force layout
+  // when the filter changes.
+  if (diff.FilterChanged())
+    SetNeedsLayout(LayoutInvalidationReason::kStyleChange);
+
   if (diff.NeedsFullLayout())
     SetNeedsBoundariesUpdate();
 
