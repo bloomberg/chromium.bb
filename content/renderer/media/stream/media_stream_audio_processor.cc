@@ -23,13 +23,13 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/webrtc/echo_information.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
@@ -524,9 +524,9 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 }
 
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
-  stats->typing_noise_detected =
-      (base::subtle::Acquire_Load(&typing_detected_) != false);
-  GetAudioProcessingStats(audio_processing_.get(), stats);
+  // This is the old GetStats interface from webrtc::AudioProcessorInterface.
+  // It should not be in use by Chrome any longer.
+  NOTREACHED();
 }
 
 webrtc::AudioProcessorInterface::AudioProcessorStatistics

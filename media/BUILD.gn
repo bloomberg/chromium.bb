@@ -147,6 +147,7 @@ test("media_unittests") {
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
     "//media/video:unit_tests",
+    "//media/webrtc:unit_tests",
   ]
 
   data = [

@@ -13,21 +13,6 @@ namespace switches {
 // have an effect. 0 disables MSAA.
 const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 
-// Enables a new tuning of the WebRTC Acoustic Echo Canceler (AEC). The new
-// tuning aims at resolving two issues with the AEC:
-// https://bugs.chromium.org/p/webrtc/issues/detail?id=5777
-// https://bugs.chromium.org/p/webrtc/issues/detail?id=5778
-// TODO(hlundin): Remove this switch when experimentation is over;
-// crbug.com/603821.
-const char kAecRefinedAdaptiveFilter[] = "aec-refined-adaptive-filter";
-
-// Override the default minimum starting volume of the Automatic Gain Control
-// algorithm in WebRTC used with audio tracks from getUserMedia.
-// The valid range is 12-255. Values outside that range will be clamped
-// to the lowest or highest valid value inside WebRTC.
-// TODO(tommi): Remove this switch when crbug.com/555577 is fixed.
-const char kAgcStartupMinVolume[] = "agc-startup-min-volume";
-
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
