@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,9 +130,11 @@ TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
     auto request_context =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
             base::ThreadTaskRunnerHandle::Get());
+    network::mojom::NetworkContextPtr network_context_pipe;
+    auto network_context = std::make_unique<network::NetworkContext>(
+        nullptr, mojo::MakeRequest(&network_context_pipe),
+        request_context->GetURLRequestContext());
 
-    net::TransportSecurityState* state =
-        request_context->GetURLRequestContext()->transport_security_state();
     const base::Time expiry = base::Time::Max();
     const bool include_subdomains = false;
 
@@ -169,14 +173,27 @@ TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
     password_store->AddLogin(hsts_host_3);
 
     if (is_hsts_enabled) {
-      state->AddHSTS(hsts_host_1.origin.host(), expiry, include_subdomains);
-      state->AddHSTS(hsts_host_2.origin.host(), expiry, include_subdomains);
-      state->AddHSTS(hsts_host_3.origin.host(), expiry, include_subdomains);
+      network_context->AddHSTSForTesting(hsts_host_1.origin.host(), expiry,
+                                         include_subdomains, base::DoNothing());
+      network_context->AddHSTSForTesting(hsts_host_2.origin.host(), expiry,
+                                         include_subdomains, base::DoNothing());
+      network_context->AddHSTSForTesting(hsts_host_3.origin.host(), expiry,
+                                         include_subdomains, base::DoNothing());
     }
     scoped_task_environment.RunUntilIdle();
 
     base::HistogramTester histogram_tester;
-    ReportHttpMigrationMetrics(password_store, std::move(request_context));
+    ReportHttpMigrationMetrics(
+        password_store,
+        base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
+          // This needs to be network_context_pipe.get() and
+          // not network_context.get() to make HSTS queries asynchronous, which
+          // is what the progress tracking logic in HttpMetricsMigrationReporter
+          // assumes.  This also matches reality, since
+          // StoragePartition::GetNetworkContext will return a mojo pipe
+          // even in the in-process case.
+          return network_context_pipe.get();
+        }));
     scoped_task_environment.RunUntilIdle();
 
     for (bool test_hsts_enabled : {false, true}) {

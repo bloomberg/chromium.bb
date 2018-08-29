@@ -93,8 +93,9 @@ class HttpMetricsMigrationReporter
  public:
   HttpMetricsMigrationReporter(
       password_manager::PasswordStore* store,
-      scoped_refptr<net::URLRequestContextGetter> request_context)
-      : request_context_(std::move(request_context)) {
+      base::RepeatingCallback<network::mojom::NetworkContext*()>
+          network_context_getter)
+      : network_context_getter_(network_context_getter) {
     store->GetAutofillableLogins(this);
   }
 
@@ -109,12 +110,14 @@ class HttpMetricsMigrationReporter
 
   void OnHSTSQueryResult(FormKey key,
                          base::string16 password_value,
-                         bool is_hsts);
+                         password_manager::HSTSResult is_hsts);
 
   void ReportMetrics();
 
+  base::RepeatingCallback<network::mojom::NetworkContext*()>
+      network_context_getter_;
+
   std::map<FormKey, base::flat_set<base::string16>> https_credentials_map_;
-  const scoped_refptr<net::URLRequestContextGetter> request_context_;
   size_t processed_results_ = 0;
 
   // The next three counters are in pairs where [0] component means that HSTS is
@@ -144,8 +147,8 @@ void HttpMetricsMigrationReporter::OnGetPasswordStoreResults(
   for (auto& form : results) {
     FormKey form_key({form->origin.host(), form->username_value});
     if (form->origin.SchemeIs(url::kHttpScheme)) {
-      password_manager::PostHSTSQueryForHostAndRequestContext(
-          form->origin, request_context_,
+      password_manager::PostHSTSQueryForHostAndNetworkContext(
+          form->origin, network_context_getter_.Run(),
           base::Bind(&HttpMetricsMigrationReporter::OnHSTSQueryResult,
                      base::Unretained(this), form_key, form->password_value));
       ++total_http_credentials_;
@@ -160,10 +163,16 @@ void HttpMetricsMigrationReporter::OnGetPasswordStoreResults(
 void HttpMetricsMigrationReporter::OnHSTSQueryResult(
     FormKey key,
     base::string16 password_value,
-    bool is_hsts) {
+    password_manager::HSTSResult hsts_result) {
   ++processed_results_;
   base::ScopedClosureRunner report(base::BindOnce(
       &HttpMetricsMigrationReporter::ReportMetrics, base::Unretained(this)));
+
+  if (hsts_result == password_manager::HSTSResult::kError)
+    return;
+
+  bool is_hsts = (hsts_result == password_manager::HSTSResult::kYes);
+
   auto user_it = https_credentials_map_.find(key);
   if (user_it == https_credentials_map_.end()) {
     // Credentials are not migrated yet.
@@ -211,9 +220,10 @@ void HttpMetricsMigrationReporter::ReportMetrics() {
 #if !defined(OS_IOS)
 void ReportHttpMigrationMetrics(
     scoped_refptr<password_manager::PasswordStore> store,
-    scoped_refptr<net::URLRequestContextGetter> request_context) {
+    base::RepeatingCallback<network::mojom::NetworkContext*()>
+        network_context_getter) {
   // The object will delete itself once the metrics are recorded.
-  new HttpMetricsMigrationReporter(store.get(), std::move(request_context));
+  new HttpMetricsMigrationReporter(store.get(), network_context_getter);
 }
 #endif  // !defined(OS_IOS)
 

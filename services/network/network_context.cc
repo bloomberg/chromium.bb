@@ -859,6 +859,19 @@ void NetworkContext::WriteCacheMetadata(const GURL& url,
                        data.size());
 }
 
+void NetworkContext::IsHSTSActiveForHost(const std::string& host,
+                                         IsHSTSActiveForHostCallback callback) {
+  net::TransportSecurityState* security_state =
+      url_request_context_->transport_security_state();
+
+  if (!security_state) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(security_state->ShouldUpgradeToSSL(host));
+}
+
 void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        base::Time expiry,
                                        bool include_subdomains,

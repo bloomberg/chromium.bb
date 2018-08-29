@@ -31,6 +31,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/dns/mock_host_resolver.h"
@@ -251,23 +252,6 @@ void CustomManagePasswordsUIController::QuitRunLoop() {
   run_loop_ = nullptr;
   wait_for_fallback_ = false;
   target_state_.reset();
-}
-
-void AddHSTSHostImpl(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const std::string& host) {
-  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::TransportSecurityState* transport_security_state =
-      request_context->GetURLRequestContext()->transport_security_state();
-  if (!transport_security_state) {
-    ADD_FAILURE();
-    return;
-  }
-
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-  bool include_subdomains = false;
-  transport_security_state->AddHSTS(host, expiry, include_subdomains);
-  EXPECT_TRUE(transport_security_state->ShouldUpgradeToSSL(host));
 }
 
 enum ReturnCodes {  // Possible results of the JavaScript code.
@@ -635,16 +619,14 @@ void PasswordManagerBrowserTestBase::CheckElementValue(
 }
 
 void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
+  network::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetNetworkContext();
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
   base::RunLoop run_loop;
-
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &AddHSTSHostImpl,
-          base::WrapRefCounted(browser()->profile()->GetRequestContext()),
-          host),
-      run_loop.QuitClosure());
-
+  network_context->AddHSTSForTesting(host, expiry, include_subdomains,
+                                     run_loop.QuitClosure());
   run_loop.Run();
 }
 

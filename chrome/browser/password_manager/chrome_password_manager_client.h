@@ -59,8 +59,9 @@ class ChromePasswordManagerClient
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   bool IsFillingEnabledForCurrentPage() const override;
   bool IsFillingFallbackEnabledForCurrentPage() const override;
-  void PostHSTSQueryForHost(const GURL& origin,
-                            const HSTSCallback& callback) const override;
+  void PostHSTSQueryForHost(
+      const GURL& origin,
+      password_manager::HSTSCallback callback) const override;
   bool OnCredentialManagerUsed() override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
