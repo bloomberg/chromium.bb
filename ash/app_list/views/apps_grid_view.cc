@@ -347,16 +347,19 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     all_apps_indicator_ = new IndicatorChipView(
         l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
     AddChildView(all_apps_indicator_);
-    if (features::IsBackgroundBlurEnabled()) {
-      // TODO(newcomer): Improve implementation of the mask layer so we can
-      // enable it on all devices crbug.com/765292.
-      fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
-      layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
-    }
 
     expand_arrow_view_ =
         new ExpandArrowView(contents_view_, contents_view_->app_list_view());
     AddChildView(expand_arrow_view_);
+  }
+
+  if (!folder_delegate_ && features::IsBackgroundBlurEnabled()) {
+    // TODO(newcomer): Improve implementation of the mask layer so we can
+    // enable it on all devices https://crbug.com/765292.
+    fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
+    layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
+    if (is_new_style_launcher_enabled_)
+      SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
   }
 
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
