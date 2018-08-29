@@ -31,6 +31,10 @@ void TestProfileSyncService::OnConfigureDone(
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
+bool TestProfileSyncService::IsAuthenticatedAccountPrimary() const {
+  return true;
+}
+
 syncer::UserShare* TestProfileSyncService::GetUserShare() const {
   return engine_->GetUserShare();
 }

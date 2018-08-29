@@ -41,6 +41,7 @@ class FakeSyncService : public SyncService {
   // SyncService implementation.
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
+  bool IsAuthenticatedAccountPrimary() const override;
   bool IsFirstSetupComplete() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;

@@ -58,6 +58,10 @@ syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
   return TransportState::ACTIVE;
 }
 
+bool FakeSyncService::IsAuthenticatedAccountPrimary() const {
+  return true;
+}
+
 bool FakeSyncService::IsFirstSetupComplete() const {
   return false;
 }

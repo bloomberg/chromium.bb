@@ -453,7 +453,14 @@ void ProfileSyncService::AccountStateChanged() {
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
+#if !defined(OS_CHROMEOS)
+    // TODO(crbug.com/814787): SyncAuthManager shouldn't call us again if we
+    // already have the signed-in account, and hence we shouldn't have an engine
+    // here, but some tests on ChromeOS set the account without notifying, which
+    // get us into an inconsistent state. Since calling TryStart() again in that
+    // case isn't harmful, skip the DCHECK on ChromeOS for now.
     DCHECK(!engine_);
+#endif
     startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
   }
 }
@@ -1614,7 +1621,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
   syncer::ModelTypeSet types = GetPreferredDataTypes();
   // If Sync-the-feature isn't fully enabled, then only a subset of data types
   // is supported.
-  if (!IsSyncFeatureEnabled()) {
+  if (!IsSyncFeatureEnabled() && !IsLocalSyncEnabled()) {
     DCHECK(IsStandaloneTransportEnabled());
     syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
 
@@ -2011,7 +2018,12 @@ void ProfileSyncService::GetAllNodes(
 
 AccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return auth_manager_->GetAuthenticatedAccountInfo();
+  return auth_manager_->GetActiveAccountInfo().account_info;
+}
+
+bool ProfileSyncService::IsAuthenticatedAccountPrimary() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return auth_manager_->GetActiveAccountInfo().is_primary;
 }
 
 syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {

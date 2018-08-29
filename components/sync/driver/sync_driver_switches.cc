@@ -45,6 +45,12 @@ const base::Feature kSyncClearDataOnPassphraseEncryption{
 const base::Feature kSyncStandaloneTransport{"SyncStandaloneTransport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, allows the Sync machinery to start with a signed-in account that
+// has *not* been chosen as Chrome's primary account (see IdentityManager). Only
+// has an effect if SyncStandaloneTransport is also enabled.
+const base::Feature kSyncSupportSecondaryAccount{
+    "SyncSupportSecondaryAccount", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Gates registration and construction of user events machinery. Enabled by
 // default as each use case should have their own gating feature as well.
 const base::Feature kSyncUserEvents{"SyncUserEvents",

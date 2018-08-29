@@ -169,6 +169,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Information about the currently signed in user.
   virtual AccountInfo GetAuthenticatedAccountInfo() const = 0;
+  // Whether the currently signed in user is the "primary" browser account (see
+  // IdentityManager). If this is false, then IsSyncFeatureEnabled will also be
+  // false, but Sync-the-transport might still run.
+  virtual bool IsAuthenticatedAccountPrimary() const = 0;
 
   // The last authentication error that was encountered by the SyncService. This
   // error can be either from Chrome's identity system (e.g. while trying to get

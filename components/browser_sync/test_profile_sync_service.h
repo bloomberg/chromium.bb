@@ -27,6 +27,11 @@ class TestProfileSyncService : public ProfileSyncService {
   void OnConfigureDone(
       const syncer::DataTypeManager::ConfigureResult& result) override;
 
+  // TODO(crbug.com/871221): This is overridden here to return true by default,
+  // as a workaround for tests not setting up an authenticated account, and
+  // IsSyncFeatureEnabled() therefore returning false.
+  bool IsAuthenticatedAccountPrimary() const override;
+
   // We implement our own version to avoid some DCHECKs.
   syncer::UserShare* GetUserShare() const override;
 

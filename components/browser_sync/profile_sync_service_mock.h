@@ -102,6 +102,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
 
+  // TODO(crbug.com/871221): Remove this override. This is overridden here to
+  // return true by default, as a workaround for tests not setting up an
+  // authenticated account and IsSyncFeatureEnabled() therefore returning false.
+  bool IsAuthenticatedAccountPrimary() const override;
+
   // Gives access to the real implementation of ProfileSyncService methods:
   std::unique_ptr<syncer::SyncSetupInProgressHandle>
   GetSetupInProgressHandleConcrete();

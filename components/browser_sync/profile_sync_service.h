@@ -293,6 +293,7 @@ class ProfileSyncService : public syncer::SyncService,
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
+  bool IsAuthenticatedAccountPrimary() const override;
   syncer::GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // Add a sync type preference provider. Each provider may only be added once.
