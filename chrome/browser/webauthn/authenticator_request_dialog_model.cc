@@ -18,13 +18,22 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo
         transport_availability,
     base::Optional<device::FidoTransportProtocol> last_used_transport) {
-  // If the KeyChain contains one of the |allowedCredentials|, then we are
-  // certain we can service the request using Touch ID, as long as allowed by
-  // the RP, so go for the certain choice here.
-  if (transport_availability.has_recognized_mac_touch_id_credential &&
+  if (transport_availability.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
       base::ContainsKey(transport_availability.available_transports,
                         device::FidoTransportProtocol::kInternal)) {
-    return device::FidoTransportProtocol::kInternal;
+    // For GetAssertion requests, auto advance to Touch ID if the keychain
+    // contains one of the allowedCredentials.
+    if (transport_availability.has_recognized_mac_touch_id_credential) {
+      return device::FidoTransportProtocol::kInternal;
+    }
+    // Otherwise make sure we never return Touch ID (unless there is no other
+    // option, in which case we auto advance to a special error screen).
+    if (transport_availability.available_transports.size() == 1) {
+      return device::FidoTransportProtocol::kInternal;
+    }
+    transport_availability.available_transports.erase(
+        device::FidoTransportProtocol::kInternal);
   }
 
   // For GetAssertion call, if the |last_used_transport| is available, use that.
@@ -126,8 +135,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       SetCurrentStep(Step::kTransportSelection);
       break;
     case AuthenticatorTransport::kInternal:
-      SetCurrentStep(Step::kTouchId);
-      TryTouchId();
+      StartTouchIdFlow();
       break;
     case AuthenticatorTransport::kBluetoothLowEnergy:
       SetCurrentStep(Step::kBleActivate);
@@ -166,7 +174,18 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
   DCHECK_EQ(current_step(), Step::kUsbInsertAndActivate);
 }
 
-void AuthenticatorRequestDialogModel::TryTouchId() {
+void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
+  // Never try Touch ID if the request is known in advance to fail. Proceed to
+  // a special error screen instead.
+  if (transport_availability_.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      !transport_availability_.has_recognized_mac_touch_id_credential) {
+    SetCurrentStep(Step::kErrorInternalUnrecognized);
+    return;
+  }
+
+  SetCurrentStep(Step::kTouchId);
+
   if (!request_callback_)
     return;
 

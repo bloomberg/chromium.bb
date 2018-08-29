@@ -169,6 +169,18 @@ class AuthenticatorAlreadyRegisteredErrorModel
   void OnAccept() override;
 };
 
+class AuthenticatorInternalUnrecognizedErrorSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
 class AuthenticatorBlePowerOnManualSheetModel
     : public AuthenticatorSheetModelBase {
  public:
