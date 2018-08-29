@@ -100,6 +100,9 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // the idle callback is called.
   bool MaybeTriggerIdleTimer();
 
+  // Returns true if there are running events.
+  bool HasInflightEvent() const;
+
   struct EventInfo {
     EventInfo(int id,
               base::TimeTicks expiration_time,
@@ -136,9 +139,16 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // StartEvent() is called.
   bool did_idle_timeout_ = false;
 
-  // Tasks waiting for the timer getting the next request to start an event
-  // by StartEvent().
+  // Tasks that are to be run after the next StartEvent() call. In practice, the
+  // caller adds pending tasks after the service worker requested the browser to
+  // terminate it due to idleness. These tasks run once StartEvent() is called
+  // due to a new event from the browser, signalling that the browser decided
+  // not to terminate the worker.
   base::queue<base::OnceClosure> pending_tasks_;
+
+  // Set to true during running |pending_tasks_|. This is used for avoiding to
+  // invoke |idle_callback_| when running |pending_tasks_|.
+  bool running_pending_tasks_ = false;
 
   // |timer_| invokes UpdateEventStatus() periodically.
   base::RepeatingTimer timer_;
