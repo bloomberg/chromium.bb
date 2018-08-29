@@ -387,7 +387,10 @@ rm -rf $TEMP_DIR
 cp -R $LIBVPX_SRC_DIR $TEMP_DIR
 cd $TEMP_DIR
 
-gen_rtcd_header linux/ia32 x86
+# chromium has required sse2 for x86 since 2014
+require_sse2="--require-mmx --require-sse --require-sse2"
+
+gen_rtcd_header linux/ia32 x86 "${require_sse2}"
 gen_rtcd_header linux/x64 x86_64
 gen_rtcd_header linux/arm armv7 "--disable-neon --disable-neon_asm"
 gen_rtcd_header linux/arm-neon armv7
@@ -396,9 +399,9 @@ gen_rtcd_header linux/arm64 armv8
 gen_rtcd_header linux/mipsel mipsel
 gen_rtcd_header linux/mips64el mips64el
 gen_rtcd_header linux/generic generic
-gen_rtcd_header win/ia32 x86
+gen_rtcd_header win/ia32 x86 "${require_sse2}"
 gen_rtcd_header win/x64 x86_64
-gen_rtcd_header mac/ia32 x86
+gen_rtcd_header mac/ia32 x86 "${require_sse2}"
 gen_rtcd_header mac/x64 x86_64
 gen_rtcd_header ios/arm-neon armv7
 gen_rtcd_header ios/arm64 armv8
