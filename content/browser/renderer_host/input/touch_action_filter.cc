@@ -55,7 +55,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   switch (gesture_event->GetType()) {
     case WebInputEvent::kGestureScrollBegin: {
       DCHECK(!suppress_manipulation_events_);
-      gesture_sequence_in_progress_ = true;
+      // In VR, GestureScrollBegin could come without GestureTapDown.
+      if (!gesture_sequence_in_progress_) {
+        gesture_sequence_in_progress_ = true;
+        SetTouchAction(cc::kTouchActionAuto);
+      }
       gesture_sequence_.append("B");
       if (!scrolling_touch_action_.has_value()) {
         static auto* crash_key = base::debug::AllocateCrashKeyString(
