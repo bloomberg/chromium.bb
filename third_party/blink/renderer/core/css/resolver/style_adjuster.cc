@@ -742,12 +742,20 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (IsImageOrVideoElement(element)) {
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
         element->GetDocument().GetFrame() &&
-        !element->GetDocument().GetFrame()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kUnsizedMedia)) {
-      if (!style.Width().IsSpecified())
-        style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
-      if (!style.Height().IsSpecified())
-        style.SetLogicalHeight(Length(LayoutReplaced::kDefaultHeight, kFixed));
+        (!style.Width().IsSpecified() || !style.Height().IsSpecified())) {
+      // This check will trigger reporting, so only do it if either width or
+      // height is unspecified.
+      if (!element->GetDocument().GetFrame()->IsFeatureEnabled(
+              mojom::FeaturePolicyFeature::kUnsizedMedia,
+              ReportOptions::kReportOnFailure)) {
+        if (!style.Width().IsSpecified()) {
+          style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
+        }
+        if (!style.Height().IsSpecified()) {
+          style.SetLogicalHeight(
+              Length(LayoutReplaced::kDefaultHeight, kFixed));
+        }
+      }
     }
   }
 }
