@@ -6,11 +6,19 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 #import "ios/chrome/app/firebase_buildflags.h"
+#include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #if BUILDFLAG(FIREBASE_ENABLED)
 #import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRApp.h"
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -22,18 +30,29 @@
 
 class FirebaseUtilsTest : public PlatformTest {
  public:
+  FirebaseUtilsTest()
+      : scoped_browser_state_manager_(
+            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {
+  }
   void SetUp() override {
     PlatformTest::SetUp();
 #if BUILDFLAG(FIREBASE_ENABLED)
     firapp_ = OCMClassMock([FIRApp class]);
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
+    SetInstallDate(base::Time::Now().ToTimeT());
   }
   void TearDown() override {
     [firapp_ stopMocking];
     PlatformTest::TearDown();
   }
+  void SetInstallDate(int64_t install_date) {
+    GetApplicationContext()->GetLocalState()->SetInt64(
+        metrics::prefs::kInstallDate, install_date);
+  }
 
  protected:
+  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
+  web::TestWebThreadBundle thread_bundle_;
   id firapp_;
   base::HistogramTester histogram_tester_;
 };
@@ -41,8 +60,9 @@ class FirebaseUtilsTest : public PlatformTest {
 #if BUILDFLAG(FIREBASE_ENABLED)
 
 TEST_F(FirebaseUtilsTest, EnabledInitializedHistogramFirstRun) {
+  // Expects Firebase SDK initialization to be called.
   [[firapp_ expect] configure];
-  InitializeFirebase(true);
+  InitializeFirebase(/*is_first_run=*/true);
   histogram_tester_.ExpectUniqueSample(
       kFirebaseConfiguredHistogramName,
       FirebaseConfiguredState::kEnabledFirstRun, 1);
@@ -50,11 +70,28 @@ TEST_F(FirebaseUtilsTest, EnabledInitializedHistogramFirstRun) {
 }
 
 TEST_F(FirebaseUtilsTest, EnabledInitializedHistogramNotFirstRun) {
+  // Expects Firebase SDK initialization to be called.
   [[firapp_ expect] configure];
-  InitializeFirebase(false);
+  InitializeFirebase(/*is_first_run=*/false);
   histogram_tester_.ExpectUniqueSample(
       kFirebaseConfiguredHistogramName,
       FirebaseConfiguredState::kEnabledNotFirstRun, 1);
+  EXPECT_OCMOCK_VERIFY(firapp_);
+}
+
+TEST_F(FirebaseUtilsTest, DisabledInitializedOutsideWindow) {
+  // Set an app install date that is older than the conversion attribution
+  // window.
+  int64_t before_attribution =
+      base::TimeDelta::FromDays(kConversionAttributionWindowInDays + 1)
+          .InMilliseconds();
+  SetInstallDate(base::Time::Now().ToTimeT() - before_attribution);
+  // Expects Firebase SDK initialization to be not called.
+  [[firapp_ reject] configure];
+  InitializeFirebase(/*is_first_run=*/false);
+  histogram_tester_.ExpectUniqueSample(
+      kFirebaseConfiguredHistogramName,
+      FirebaseConfiguredState::kDisabledConversionWindow, 1);
   EXPECT_OCMOCK_VERIFY(firapp_);
 }
 
@@ -63,7 +100,7 @@ TEST_F(FirebaseUtilsTest, EnabledInitializedHistogramNotFirstRun) {
 TEST_F(FirebaseUtilsTest, DisabledInitializedHistogram) {
   // FIRApp class should not exist if Firebase is not enabled.
   ASSERT_EQ(nil, NSClassFromString(@"FIRApp"));
-  InitializeFirebase(false);
+  InitializeFirebase(/*is_first_run=*/false);
   histogram_tester_.ExpectUniqueSample(kFirebaseConfiguredHistogramName,
                                        FirebaseConfiguredState::kDisabled, 1);
 }
