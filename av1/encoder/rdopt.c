@@ -11365,10 +11365,24 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         search_state.best_mbmode = *mbmi;
         search_state.best_skip2 = this_skip2;
         search_state.best_mode_skippable = skippable;
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+        if (do_tx_search) {
+          // When do_tx_search == 0, handle_inter_mode won't provide correct
+          // rate_y and rate_uv because txfm_search process is replaced by
+          // rd estimation.
+          // Therfore, we should avoid updating best_rate_y and best_rate_uv
+          // here. These two values will be updated when txfm_search is called
+          search_state.best_rate_y =
+              rate_y +
+              x->skip_cost[av1_get_skip_context(xd)][this_skip2 || skippable];
+          search_state.best_rate_uv = rate_uv;
+        }
+#else   // CONFIG_COLLECT_INTER_MODE_RD_STATS
         search_state.best_rate_y =
             rate_y +
             x->skip_cost[av1_get_skip_context(xd)][this_skip2 || skippable];
         search_state.best_rate_uv = rate_uv;
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
         memcpy(ctx->blk_skip, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
       }
