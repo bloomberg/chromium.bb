@@ -710,8 +710,7 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
                   autofill::PasswordFormFillData>::
     Read(autofill::mojom::PasswordFormFillDataDataView data,
          autofill::PasswordFormFillData* out) {
-  if (!data.ReadName(&out->name) || !data.ReadOrigin(&out->origin) ||
-      !data.ReadAction(&out->action) ||
+  if (!data.ReadOrigin(&out->origin) || !data.ReadAction(&out->action) ||
       !data.ReadUsernameField(&out->username_field) ||
       !data.ReadPasswordField(&out->password_field) ||
       !data.ReadPreferredRealm(&out->preferred_realm) ||
@@ -720,8 +719,6 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 
   out->form_renderer_id = data.form_renderer_id();
   out->wait_for_username = data.wait_for_username();
-  out->is_possible_change_password_form =
-      data.is_possible_change_password_form();
   out->has_renderer_ids = data.has_renderer_ids();
   out->username_may_use_prefilled_placeholder =
       data.username_may_use_prefilled_placeholder();
