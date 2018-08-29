@@ -61,23 +61,17 @@ file for a theme:
 <p>
 Colors are in RGB format.
 To find the strings you can use within the "colors" field,
-look for kColor* strings in
-<a href="https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/themes/theme_service.cc"><code>theme_service.cc</code></a>.
+see
+<a href="https://cs.chromium.org/search/?q=file:chrome/browser/themes%20symbol:kColorTable$"><code>kColorTable</code></a>.
 </p>
 
 <h3 id="images">images</h3>
 
 <p>
 Image resources use paths relative to the root of the extension.
-You can override any of the images that are specified by
-<code>kThemeableImages</code> in
-<a href="https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/themes/theme_service.cc"><code>theme_service.cc</code></a>.
-Just remove the "IDR_"
-and convert the remaining characters to lowercase.
-For example, <code>IDR_THEME_NTP_BACKGROUND</code>
-(which <code>kThemeableImages</code> uses
-to specify the background of the new tab pane)
-corresponds to "theme_ntp_background".
+You can override any of the images that are specified by the
+strings in
+<a href="https://cs.chromium.org/search/?q=file:chrome/browser/themes%20symbol:kPersistingImages$"><code>kPersistingImages</code></a>.
 </p>
 
 <h3 id="properties">properties</h3>
@@ -88,7 +82,7 @@ properties such as background alignment,
 background repeat,
 and an alternate logo.
 To see the properties and the values they can have, see
-<a href="https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/themes/theme_service.cc"><code>theme_service.cc</code></a>.
+<a href="https://cs.chromium.org/search/?q=file:chrome/browser/themes%20symbol:kDisplayProperties$"><code>kDisplayProperties</code></a>.
 
 </p>
 
@@ -101,8 +95,8 @@ Google Chrome supports tints, not images,
 because images don't work across platforms
 and are brittle in the case of adding new buttons.
 To find the strings you can use within the "tints" field,
-look for kTint* strings in
-<a href="https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/themes/theme_service.cc"><code>theme_service.cc</code></a>.
+see
+<a href="https://cs.chromium.org/search/?q=file:chrome/browser/themes%20symbol:kTintTable$"><code>kTintTable</code></a>.
 </p>
 
 <p>
