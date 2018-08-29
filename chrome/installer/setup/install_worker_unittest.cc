@@ -19,6 +19,7 @@
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/delete_tree_work_item.h"

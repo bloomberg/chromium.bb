@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"

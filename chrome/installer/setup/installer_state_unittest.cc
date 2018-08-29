@@ -25,6 +25,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/google_update_constants.h"
