@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/files/file_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/test/test_timeouts.h"
@@ -446,7 +447,7 @@ SBOX_TESTS_COMMAND int CheckWin10FontLoad(int argc, wchar_t** argv) {
     return SBOX_TEST_NOT_FOUND;
   font_data.resize(len);
 
-  int read = file.Read(0, &font_data[0], len);
+  int read = file.Read(0, &font_data[0], base::checked_cast<int>(len));
   file.Close();
 
   if (read != len)

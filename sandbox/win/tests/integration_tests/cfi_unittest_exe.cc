@@ -115,7 +115,7 @@ bool FindBinary(BYTE* binary_to_find,
                 DWORD size_to_match,
                 BYTE* address_start,
                 DWORD max_distance,
-                DWORD* out_offset) {
+                intptr_t* out_offset) {
   assert(size_to_match <= max_distance);
   assert(size_to_match > 0);
 
@@ -167,7 +167,7 @@ bool DoPatch(BYTE* start_addr) {
 }
 
 // - Find the offset from |start| that the x86 or x64 signature starts.
-bool FindSignature(BYTE* start, DWORD* offset_found) {
+bool FindSignature(BYTE* start, intptr_t* offset_found) {
   Signature signature = {};
 #if defined(_WIN64)
   signature.cmp_rsi = kCmpRsi;
@@ -248,9 +248,12 @@ void TestMsIndirect() {
     _exit(3);
 
   BYTE* target = reinterpret_cast<BYTE*>(get_system_metrics);
-  DWORD offset = 0;
+  intptr_t offset = 0;
   if (!FindSignature(target, &offset))
     _exit(4);
+
+  if (offset < 0)
+    _exit(6);
 
   // Now patch the function.  Don't bother saving original code,
   // as this process will end very soon.
