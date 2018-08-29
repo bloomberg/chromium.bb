@@ -124,6 +124,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnScrollEvent(const ui::ScrollEvent& const_event) override;
   void OnMouseEvent(const ui::MouseEvent& const_event) override;
   void OnGestureEvent(const ui::GestureEvent& const_event) override;
+  void DispatchKeyEvent(const ui::KeyEvent& const_event,
+                        bool* event_handled) override;
+  void DispatchKeyEventToMenuController(const ui::KeyEvent& const_event,
+                                        bool* event_swallowed,
+                                        bool* event_handled) override;
+  void GetHasMenuController(bool* has_menu_controller) override;
   void GetIsDraggableBackgroundAt(const gfx::Point& location_in_content,
                                   bool* is_draggable_background) override;
   void GetTooltipTextAt(const gfx::Point& location_in_content,
@@ -133,6 +139,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
   void GetWidgetIsModal(bool* widget_is_modal) override;
+  void GetIsFocusedViewTextual(bool* is_textual) override;
   void OnWindowGeometryChanged(
       const gfx::Rect& window_bounds_in_screen_dips,
       const gfx::Rect& content_bounds_in_screen_dips) override;
