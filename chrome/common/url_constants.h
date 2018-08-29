@@ -240,6 +240,9 @@ extern const char kLearnMoreEnterpriseURL[];
 // The URL for the Learn More page about Linux for Chromebooks.
 extern const char kLinuxAppsLearnMoreURL[];
 
+// Credits for Linux for Chromebooks.
+extern const char kLinuxCreditsPath[];
+
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
 

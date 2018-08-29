@@ -322,7 +322,8 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
   html_source->AddString("aboutProductOsLicense", os_license);
   base::string16 os_with_linux_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE,
-      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
+      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL),
+      base::ASCIIToUTF16(chrome::kChromeUILinuxCreditsURL));
   html_source->AddString("aboutProductOsWithLinuxLicense",
                          os_with_linux_license);
   html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
