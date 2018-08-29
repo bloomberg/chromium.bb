@@ -17,8 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 class TestWindowServiceObserver : public WindowServiceObserver {
@@ -97,14 +96,14 @@ TEST(WindowServiceObserverTest, EventRelatedFunctions) {
 
   // Move the mouse, but don't ack. This should result in a call to
   // OnWillSendEventToClient().
-  test::EventGenerator event_generator(setup.root());
+  ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
   EXPECT_EQ(1, window_service_observer.send_count());
   EXPECT_EQ(0, window_service_observer.ack_count());
 
   // Ack the event, which should call the OnClientAckedEvent().
   EXPECT_TRUE(setup.window_tree_client()->AckFirstEvent(
-      setup.window_tree(), ws::mojom::EventResult::UNHANDLED));
+      setup.window_tree(), mojom::EventResult::UNHANDLED));
   EXPECT_EQ(1, window_service_observer.send_count());
   EXPECT_EQ(1, window_service_observer.ack_count());
   EXPECT_EQ(window_service_observer.last_send_event_id(),
@@ -137,5 +136,4 @@ TEST(WindowServiceObserverTest, OnWillDestroyClient) {
 }
 
 }  // namespace
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

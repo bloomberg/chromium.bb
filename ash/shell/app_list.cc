@@ -313,7 +313,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
-  ui::ws2::WindowService* GetWindowService() override {
+  ws::WindowService* GetWindowService() override {
     NOTIMPLEMENTED();
     return nullptr;
   }

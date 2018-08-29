@@ -11,8 +11,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 ServerRemoteViewHost::ServerRemoteViewHost(WindowService* window_service)
     : window_service_(window_service) {}
@@ -66,5 +65,4 @@ void ServerRemoteViewHost::AddedToWidget() {
     EmbedImpl();
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -524,17 +524,17 @@ display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
 }
 
-ui::ws2::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
+ws::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
   CreateWindowTreeIfNecessary();
   return window_tree_test_helper_.get();
 }
 
-ui::ws2::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
+ws::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
   CreateWindowTreeIfNecessary();
   return window_tree_client_.get();
 }
 
-ui::ws2::WindowTree* AshTestBase::GetWindowTree() {
+ws::WindowTree* AshTestBase::GetWindowTree() {
   CreateWindowTreeIfNecessary();
   return window_tree_.get();
 }
@@ -544,13 +544,13 @@ void AshTestBase::CreateWindowTreeIfNecessary() {
     return;
 
   // Lazily create a single client.
-  window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
+  window_tree_client_ = std::make_unique<ws::TestWindowTreeClient>();
   window_tree_ =
       Shell::Get()->window_service_owner()->window_service()->CreateWindowTree(
           window_tree_client_.get());
   window_tree_->InitFromFactory();
   window_tree_test_helper_ =
-      std::make_unique<ui::ws2::WindowTreeTestHelper>(window_tree_.get());
+      std::make_unique<ws::WindowTreeTestHelper>(window_tree_.get());
 }
 
 }  // namespace ash

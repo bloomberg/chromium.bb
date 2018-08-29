@@ -10,16 +10,16 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 
-namespace ui {
+namespace ws {
 
 InputDeviceControllerClient::InputDeviceControllerClient(
     service_manager::Connector* connector,
     const std::string& service_name)
     : binding_(this) {
   connector->BindInterface(
-      service_name.empty() ? ws::mojom::kServiceName : service_name,
+      service_name.empty() ? mojom::kServiceName : service_name,
       &input_device_controller_);
-  ws::mojom::KeyboardDeviceObserverPtr ptr;
+  mojom::KeyboardDeviceObserverPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   input_device_controller_->AddKeyboardDeviceObserver(std::move(ptr));
 }
@@ -120,7 +120,7 @@ void InputDeviceControllerClient::SetTouchscreensEnabled(bool enable) {
 
 void InputDeviceControllerClient::SetInternalKeyboardFilter(
     bool enable_filter,
-    const std::vector<DomCode>& allowed_keys) {
+    const std::vector<ui::DomCode>& allowed_keys) {
   std::vector<uint32_t> transport_keys(allowed_keys.size());
   for (size_t i = 0; i < allowed_keys.size(); ++i)
     transport_keys[i] = static_cast<uint32_t>(allowed_keys[i]);
@@ -136,8 +136,8 @@ void InputDeviceControllerClient::SetInternalTouchpadEnabled(
 }
 
 void InputDeviceControllerClient::OnKeyboardStateChanged(
-    ws::mojom::KeyboardDeviceStatePtr state) {
+    mojom::KeyboardDeviceStatePtr state) {
   keyboard_device_state_ = *state;
 }
 
-}  // namespace ui
+}  // namespace ws

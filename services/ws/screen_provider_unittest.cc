@@ -23,8 +23,7 @@ using display::Display;
 using display::DisplayList;
 using display::DisplayObserver;
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 // A testing screen that generates the OnDidProcessDisplayChanges() notification
@@ -128,7 +127,7 @@ TEST(ScreenProviderTest, SetFrameDecorationValues) {
 
   // The screen information contains the frame decoration values.
   ASSERT_EQ(1u, observer.displays().size());
-  const ws::mojom::FrameDecorationValuesPtr& values =
+  const mojom::FrameDecorationValuesPtr& values =
       observer.displays()[0]->frame_decoration_values;
   EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->normal_client_area_insets);
   EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->maximized_client_area_insets);
@@ -151,16 +150,16 @@ TEST(ScreenProviderTest, DisplaysSentOnConnection) {
       factory->CreateConnector();
 
   // Connect to |window_service| and ask for a new WindowTree.
-  ws::mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(ws::mojom::kServiceName, &window_tree_factory);
-  ws::mojom::WindowTreePtr window_tree;
-  ws::mojom::WindowTreeClientPtr client;
-  ws::mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  mojom::WindowTreeFactoryPtr window_tree_factory;
+  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  mojom::WindowTreePtr window_tree;
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
   window_tree_factory->CreateWindowTree(MakeRequest(&window_tree),
                                         std::move(client));
 
   TestWindowTreeClient window_tree_client;
-  mojo::Binding<ws::mojom::WindowTreeClient> binding(&window_tree_client);
+  mojo::Binding<mojom::WindowTreeClient> binding(&window_tree_client);
   binding.Bind(std::move(client_request));
 
   // Wait for all mojo messages to be processed.
@@ -172,5 +171,4 @@ TEST(ScreenProviderTest, DisplaysSentOnConnection) {
 }
 
 }  // namespace
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

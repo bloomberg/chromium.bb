@@ -12,14 +12,13 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // A delegate to forward drag and drop events to a remote client window via
-// ws::mojom::WindowTreeClient.
+// mojom::WindowTreeClient.
 class DragDropDelegate : public aura::client::DragDropDelegate {
  public:
-  DragDropDelegate(ws::mojom::WindowTreeClient* window_tree_client,
+  DragDropDelegate(mojom::WindowTreeClient* window_tree_client,
                    aura::Window* window,
                    Id transport_window_id);
   ~DragDropDelegate() override;
@@ -37,7 +36,7 @@ class DragDropDelegate : public aura::client::DragDropDelegate {
   // Callback invoked to update |last_drag_operations_|.
   void UpdateDragOperations(uint32_t drag_operations);
 
-  ws::mojom::WindowTreeClient* const tree_client_;
+  mojom::WindowTreeClient* const tree_client_;
   aura::Window* const window_;
   const Id transport_window_id_;
 
@@ -53,7 +52,6 @@ class DragDropDelegate : public aura::client::DragDropDelegate {
   DISALLOW_COPY_AND_ASSIGN(DragDropDelegate);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_DRAG_DROP_DELEGATE_H_

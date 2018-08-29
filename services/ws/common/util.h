@@ -9,7 +9,7 @@
 
 #include "services/ws/common/types.h"
 
-namespace ui {
+namespace ws {
 
 inline ClientSpecificId ClientIdFromTransportId(Id id) {
   return static_cast<ClientSpecificId>((id >> 32) & 0xFFFFFFFF);
@@ -19,6 +19,6 @@ inline ClientSpecificId ClientWindowIdFromTransportId(Id id) {
   return static_cast<ClientSpecificId>(id & 0xFFFFFFFF);
 }
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_COMMON_UTIL_H_

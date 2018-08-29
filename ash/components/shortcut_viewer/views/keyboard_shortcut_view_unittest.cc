@@ -35,7 +35,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   void SetUp() override {
     ash::AshTestBase::SetUp();
     // Simulate the complete listing of input devices, required by the viewer.
-    ui::InputDeviceClientTestApi().OnDeviceListsComplete();
+    ws::InputDeviceClientTestApi().OnDeviceListsComplete();
   }
 
  protected:

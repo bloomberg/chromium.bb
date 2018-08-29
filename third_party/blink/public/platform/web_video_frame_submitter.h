@@ -14,7 +14,7 @@ namespace cc {
 class LayerTreeSettings;
 }
 
-namespace ui {
+namespace ws {
 class ContextProviderCommandBuffer;
 }  // namespace ui
 
@@ -24,7 +24,7 @@ namespace blink {
 // we are in software compositing mode.
 using WebContextProviderCallback = base::RepeatingCallback<void(
     base::OnceCallback<void(bool,
-                            scoped_refptr<ui::ContextProviderCommandBuffer>)>)>;
+                            scoped_refptr<ws::ContextProviderCommandBuffer>)>)>;
 using WebFrameSinkDestroyedCallback = base::RepeatingCallback<void()>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing

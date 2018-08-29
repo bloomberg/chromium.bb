@@ -8,8 +8,7 @@
 #include "base/macros.h"
 #include "ui/events/event.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class ServerWindow;
 
@@ -19,7 +18,7 @@ class ServerWindowTestHelper {
   explicit ServerWindowTestHelper(ServerWindow* server_window);
   ~ServerWindowTestHelper();
 
-  bool IsHandlingPointerPress(PointerId pointer_id);
+  bool IsHandlingPointerPress(ui::PointerId pointer_id);
 
  private:
   ServerWindow* server_window_;
@@ -27,7 +26,6 @@ class ServerWindowTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ServerWindowTestHelper);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_SERVER_WINDOW_TEST_HELPER_H_

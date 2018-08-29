@@ -52,7 +52,7 @@ class MusEmbeddedFrame {
 
   MusEmbeddedFrame(RendererWindowTreeClient* renderer_window_tree_client,
                    MusEmbeddedFrameDelegate* delegate,
-                   ui::ClientSpecificId window_id,
+                   ws::ClientSpecificId window_id,
                    const base::UnguessableToken& token);
 
   // Called once the WindowTree has been obtained. This is only called if
@@ -72,7 +72,7 @@ class MusEmbeddedFrame {
 
   RendererWindowTreeClient* renderer_window_tree_client_;
   MusEmbeddedFrameDelegate* delegate_;
-  const ui::ClientSpecificId window_id_;
+  const ws::ClientSpecificId window_id_;
 
   std::unique_ptr<PendingState> pending_state_;
 

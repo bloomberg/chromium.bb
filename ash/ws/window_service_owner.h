@@ -16,12 +16,10 @@ namespace service_manager {
 class ServiceContext;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 class GpuInterfaceProvider;
 class WindowService;
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 namespace ash {
 
@@ -33,14 +31,14 @@ class WindowServiceDelegateImpl;
 class ASH_EXPORT WindowServiceOwner {
  public:
   explicit WindowServiceOwner(
-      std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider);
+      std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider);
   ~WindowServiceOwner();
 
   // Called from the ServiceManager when a request is made for the
   // WindowService.
   void BindWindowService(service_manager::mojom::ServiceRequest request);
 
-  ui::ws2::WindowService* window_service() { return window_service_; }
+  ws::WindowService* window_service() { return window_service_; }
 
  private:
   friend class AshTestHelper;
@@ -54,8 +52,8 @@ class ASH_EXPORT WindowServiceOwner {
   // it to |owned_window_service_| and |window_service_|. When
   // BindWindowService() is called |owned_window_service_| is passed to
   // |service_context_|.
-  std::unique_ptr<ui::ws2::WindowService> owned_window_service_;
-  ui::ws2::WindowService* window_service_;
+  std::unique_ptr<ws::WindowService> owned_window_service_;
+  ws::WindowService* window_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceOwner);
 };

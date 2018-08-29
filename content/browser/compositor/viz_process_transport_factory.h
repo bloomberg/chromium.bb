@@ -31,13 +31,13 @@ namespace gpu {
 class GpuChannelEstablishFactory;
 }
 
-namespace ui {
-class ContextProviderCommandBuffer;
-}
-
 namespace viz {
 class CompositingModeReporterImpl;
 class RasterContextProvider;
+}
+
+namespace ws {
+class ContextProviderCommandBuffer;
 }
 
 namespace content {
@@ -124,7 +124,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // ContextProvider used on the main thread. Shared by ui::Compositors and also
   // returned from GetSharedMainThreadContextProvider().
-  scoped_refptr<ui::ContextProviderCommandBuffer> main_context_provider_;
+  scoped_refptr<ws::ContextProviderCommandBuffer> main_context_provider_;
 
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
 

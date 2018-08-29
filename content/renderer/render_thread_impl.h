@@ -105,11 +105,6 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 }
 
-namespace ui {
-class ContextProviderCommandBuffer;
-class Gpu;
-}
-
 namespace v8 {
 class Extension;
 }
@@ -119,6 +114,11 @@ class BeginFrameSource;
 class RasterContextProvider;
 class SyntheticBeginFrameSource;
 }
+
+namespace ws {
+class ContextProviderCommandBuffer;
+class Gpu;
+}  // namespace ws
 
 namespace content {
 
@@ -404,7 +404,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<ui::ContextProviderCommandBuffer>
+  scoped_refptr<ws::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
@@ -683,7 +683,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-  scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
@@ -699,7 +699,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // memory saving mode.
   std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
-  std::unique_ptr<ui::Gpu> gpu_;
+  std::unique_ptr<ws::Gpu> gpu_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

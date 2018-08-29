@@ -11,7 +11,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-namespace ui {
+namespace ws {
 
 InputDeviceServer::InputDeviceServer() = default;
 
@@ -33,14 +33,13 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
   return manager_ != nullptr;
 }
 
-void InputDeviceServer::AddBinding(
-    ws::mojom::InputDeviceServerRequest request) {
+void InputDeviceServer::AddBinding(mojom::InputDeviceServerRequest request) {
   DCHECK(IsRegisteredAsObserver());
   bindings_.AddBinding(this, std::move(request));
 }
 
 void InputDeviceServer::AddObserver(
-    ws::mojom::InputDeviceObserverMojoPtr observer) {
+    mojom::InputDeviceObserverMojoPtr observer) {
   // We only want to send this message once, so we need to check to make sure
   // device lists are actually complete before sending it to a new observer.
   if (manager_->AreDeviceListsComplete())
@@ -53,10 +52,9 @@ void InputDeviceServer::OnKeyboardDeviceConfigurationChanged() {
     return;
 
   auto& devices = manager_->GetKeyboardDevices();
-  observers_.ForAllPtrs(
-      [&devices](ws::mojom::InputDeviceObserverMojo* observer) {
-        observer->OnKeyboardDeviceConfigurationChanged(devices);
-      });
+  observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnKeyboardDeviceConfigurationChanged(devices);
+  });
 }
 
 void InputDeviceServer::OnTouchscreenDeviceConfigurationChanged() {
@@ -68,10 +66,9 @@ void InputDeviceServer::OnMouseDeviceConfigurationChanged() {
     return;
 
   auto& devices = manager_->GetMouseDevices();
-  observers_.ForAllPtrs(
-      [&devices](ws::mojom::InputDeviceObserverMojo* observer) {
-        observer->OnMouseDeviceConfigurationChanged(devices);
-      });
+  observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnMouseDeviceConfigurationChanged(devices);
+  });
 }
 
 void InputDeviceServer::OnTouchpadDeviceConfigurationChanged() {
@@ -79,20 +76,19 @@ void InputDeviceServer::OnTouchpadDeviceConfigurationChanged() {
     return;
 
   auto& devices = manager_->GetTouchpadDevices();
-  observers_.ForAllPtrs(
-      [&devices](ws::mojom::InputDeviceObserverMojo* observer) {
-        observer->OnTouchpadDeviceConfigurationChanged(devices);
-      });
+  observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnTouchpadDeviceConfigurationChanged(devices);
+  });
 }
 
 void InputDeviceServer::OnDeviceListsComplete() {
-  observers_.ForAllPtrs([this](ws::mojom::InputDeviceObserverMojo* observer) {
+  observers_.ForAllPtrs([this](mojom::InputDeviceObserverMojo* observer) {
     SendDeviceListsComplete(observer);
   });
 }
 
-void InputDeviceServer::OnStylusStateChanged(StylusState state) {
-  observers_.ForAllPtrs([state](ws::mojom::InputDeviceObserverMojo* observer) {
+void InputDeviceServer::OnStylusStateChanged(ui::StylusState state) {
+  observers_.ForAllPtrs([state](mojom::InputDeviceObserverMojo* observer) {
     observer->OnStylusStateChanged(state);
   });
 }
@@ -102,7 +98,7 @@ void InputDeviceServer::OnTouchDeviceAssociationChanged() {
 }
 
 void InputDeviceServer::SendDeviceListsComplete(
-    ws::mojom::InputDeviceObserverMojo* observer) {
+    mojom::InputDeviceObserverMojo* observer) {
   DCHECK(manager_->AreDeviceListsComplete());
 
   observer->OnDeviceListsComplete(
@@ -119,10 +115,10 @@ void InputDeviceServer::CallOnTouchscreenDeviceConfigurationChanged() {
   const bool are_touchscreen_target_displays_valid =
       manager_->AreTouchscreenTargetDisplaysValid();
   observers_.ForAllPtrs([&devices, are_touchscreen_target_displays_valid](
-                            ws::mojom::InputDeviceObserverMojo* observer) {
+                            mojom::InputDeviceObserverMojo* observer) {
     observer->OnTouchscreenDeviceConfigurationChanged(
         devices, are_touchscreen_target_displays_valid);
   });
 }
 
-}  // namespace ui
+}  // namespace ws

@@ -19,10 +19,13 @@
 #include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/devices/touchscreen_device.h"
 
+namespace ws {
+class InputDeviceClientTestApi;
+}  // namespace ws
+
 namespace ui {
 
 class DeviceDataManagerTest;
-class InputDeviceClientTestApi;
 class InputDeviceEventObserver;
 
 // Keeps track of device mappings and event transformations.
@@ -82,7 +85,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
  private:
   friend class DeviceDataManagerTest;
-  friend class InputDeviceClientTestApi;
+  friend class ws::InputDeviceClientTestApi;
 
   void ClearTouchDeviceAssociations();
   void UpdateTouchInfoFromTransform(

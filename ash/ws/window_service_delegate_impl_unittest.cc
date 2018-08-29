@@ -49,7 +49,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
   WindowServiceDelegateImplTest() = default;
   ~WindowServiceDelegateImplTest() override = default;
 
-  ui::Id GetTopLevelWindowId() {
+  ws::Id GetTopLevelWindowId() {
     return GetWindowTreeTestHelper()->TransportIdForWindow(top_level_.get());
   }
 
@@ -59,7 +59,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
         ->wm_toplevel_window_event_handler();
   }
 
-  std::vector<ui::ws2::Change>* GetWindowTreeClientChanges() {
+  std::vector<ws::Change>* GetWindowTreeClientChanges() {
     return GetTestWindowTreeClient()->tracker()->changes();
   }
 

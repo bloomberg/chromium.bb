@@ -9,8 +9,7 @@
 #include "services/ws/client_change_tracker.h"
 #include "ui/aura/window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 ClientChange::ClientChange(ClientChangeTracker* tracker,
                            aura::Window* window,
@@ -27,5 +26,4 @@ ClientChange::~ClientChange() {
   tracker_->current_change_ = nullptr;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -6,8 +6,7 @@
 
 #include "services/ws/client_change.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 ClientChangeTracker::ClientChangeTracker() = default;
 
@@ -19,5 +18,4 @@ bool ClientChangeTracker::IsProcessingChangeForWindow(aura::Window* window,
          current_change_->type() == type;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -62,7 +62,7 @@ class WindowTreeClientPrivate {
 
   bool HasPointerWatcher();
 
-  Window* GetWindowByServerId(ui::Id id);
+  Window* GetWindowByServerId(ws::Id id);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
                                      const ws::mojom::WindowData& window_data);

@@ -116,7 +116,7 @@ ChromeShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<ChromeScreenshotGrabber>();
 }
 
-ui::InputDeviceControllerClient*
+ws::InputDeviceControllerClient*
 ChromeShellDelegate::GetInputDeviceControllerClient() {
   return g_browser_process->platform_part()->GetInputDeviceControllerClient();
 }

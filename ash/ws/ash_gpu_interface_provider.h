@@ -14,23 +14,23 @@ namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 class GpuHost;
 }
-}  // namespace ui
+}  // namespace ws
 
 namespace ash {
 
 // Implementation of GpuInterfaceProvider used when Ash runs out of process.
-class AshGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
+class AshGpuInterfaceProvider : public ws::GpuInterfaceProvider {
  public:
-  AshGpuInterfaceProvider(ui::gpu_host::GpuHost* gpu_host,
+  AshGpuInterfaceProvider(ws::gpu_host::GpuHost* gpu_host,
                           discardable_memory::DiscardableSharedMemoryManager*
                               discardable_shared_memory_manager);
   ~AshGpuInterfaceProvider() override;
 
-  // ui::ws2::GpuInterfaceProvider:
+  // ws::GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
   void RegisterOzoneGpuInterfaces(
@@ -42,7 +42,7 @@ class AshGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request);
   void BindGpuRequest(ws::mojom::GpuRequest request);
 
-  ui::gpu_host::GpuHost* gpu_host_;
+  ws::gpu_host::GpuHost* gpu_host_;
   discardable_memory::DiscardableSharedMemoryManager*
       discardable_shared_memory_manager_;
 

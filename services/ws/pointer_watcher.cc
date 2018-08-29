@@ -12,18 +12,17 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // static
-std::unique_ptr<Event> PointerWatcher::CreateEventForClient(
-    const Event& event) {
+std::unique_ptr<ui::Event> PointerWatcher::CreateEventForClient(
+    const ui::Event& event) {
   // Client code expects to get PointerEvents.
   if (event.IsMouseEvent())
     return std::make_unique<ui::PointerEvent>(*event.AsMouseEvent());
   if (event.IsTouchEvent())
     return std::make_unique<ui::PointerEvent>(*event.AsTouchEvent());
-  return Event::Clone(event);
+  return ui::Event::Clone(event);
 }
 
 PointerWatcher::PointerWatcher(WindowTree* tree) : tree_(tree) {
@@ -77,5 +76,4 @@ void PointerWatcher::OnWindowEventDispatcherFinishedProcessingEvent(
                                          std::move(pending_event_));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

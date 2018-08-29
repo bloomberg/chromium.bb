@@ -235,7 +235,7 @@ void ViewsMusTestSuite::Initialize() {
   // Let other services know that we're running in tests. Do this with a
   // command line flag to avoid making blocking calls to other processes for
   // setup for tests (e.g. to unlock the screen in the window manager).
-  EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
+  EnsureCommandLineSwitch(ws::switches::kUseTestConfig);
 
   EnsureCommandLineSwitch(switches::kOverrideUseSoftwareGLForTests);
 

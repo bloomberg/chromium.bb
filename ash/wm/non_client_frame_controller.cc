@@ -407,7 +407,7 @@ bool NonClientFrameController::CanMinimize() const {
 
 bool NonClientFrameController::CanActivate() const {
   // kCanFocus is used for both focus and activation.
-  return window_ && window_->GetProperty(ui::ws2::kCanFocus) &&
+  return window_ && window_->GetProperty(ws::kCanFocus) &&
          views::WidgetDelegate::CanActivate();
 }
 

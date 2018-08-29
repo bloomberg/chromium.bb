@@ -374,7 +374,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #else
   bool use_vulkan = false;
 #endif
-  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider;
+  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider;
 
   if (!use_gpu_compositing || use_vulkan) {
     // If not using GL compositing, don't keep the old shared worker context.
@@ -400,7 +400,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
           false /* support_stencil */, support_locking, support_gles2_interface,
           support_raster_interface, support_grcontext,
-          ui::command_buffer_metrics::ContextType::BROWSER_WORKER);
+          ws::command_buffer_metrics::ContextType::BROWSER_WORKER);
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         shared_worker_context_provider_ = nullptr;
@@ -427,7 +427,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           std::move(gpu_channel_host), surface_handle, need_alpha_channel,
           support_stencil, support_locking, support_gles2_interface,
           support_raster_interface, support_grcontext,
-          ui::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
+          ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
       // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
       // a nested run loop during resize.
       context_provider->SetDefaultTaskRunner(resize_task_runner_);
@@ -941,7 +941,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
       support_grcontext,
-      ui::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
+      ws::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
   shared_main_thread_contexts_->AddObserver(this);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess) {
@@ -1027,7 +1027,7 @@ void GpuProcessTransportFactory::OnContextLost() {
                      callback_factory_.GetWeakPtr()));
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer>
+scoped_refptr<ws::ContextProviderCommandBuffer>
 GpuProcessTransportFactory::CreateContextCommon(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle,
@@ -1037,7 +1037,7 @@ GpuProcessTransportFactory::CreateContextCommon(
     bool support_gles2_interface,
     bool support_raster_interface,
     bool support_grcontext,
-    ui::command_buffer_metrics::ContextType type) {
+    ws::command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
   DCHECK(!is_gpu_compositing_disabled_);
 
@@ -1074,7 +1074,7 @@ GpuProcessTransportFactory::CreateContextCommon(
   constexpr bool automatic_flushes = false;
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
-  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+  return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, surface_handle, url, automatic_flushes, support_locking,
       support_grcontext, gpu::SharedMemoryLimits(), attributes, type);

@@ -71,7 +71,7 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector,
                                const gfx::Size& default_window_size) {
   DCHECK(!aura::Env::GetInstance()->HasWindowTreeClient());
 
-  input_device_client_ = std::make_unique<ui::InputDeviceClient>();
+  input_device_client_ = std::make_unique<ws::InputDeviceClient>();
   ws::mojom::InputDeviceServerPtr input_device_server;
   connector->BindInterface(ws::mojom::kServiceName, &input_device_server);
   input_device_client_->Connect(std::move(input_device_server));

@@ -27,8 +27,7 @@
 #include "ui/base/mojo/clipboard_host.h"
 #include "ui/wm/core/shadow_types.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 WindowService::WindowService(
     WindowServiceDelegate* delegate,
@@ -57,7 +56,7 @@ WindowService::WindowService(
   // but that would create a dependency cycle between ui/wm and ui/aura.
   property_converter_.RegisterPrimitiveProperty(
       ::wm::kShadowElevationKey,
-      ws::mojom::WindowManager::kShadowElevation_Property,
+      mojom::WindowManager::kShadowElevation_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
@@ -84,7 +83,7 @@ ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
 }
 
 std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
-    ws::mojom::WindowTreeClient* window_tree_client,
+    mojom::WindowTreeClient* window_tree_client,
     const std::string& client_name) {
   const ClientSpecificId client_id =
       decrement_client_ids_ ? next_client_id_-- : next_client_id_++;
@@ -143,7 +142,7 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
     return false;
 
   // Event interception is not supported for embedding without a client.
-  DCHECK(!(embed_flags & ws::mojom::kEmbedFlagEmbedderInterceptsEvents));
+  DCHECK(!(embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents));
   const bool owner_intercept_events = false;
 
   ServerWindow* server_window =
@@ -222,7 +221,7 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindUserActivityMonitorRequest, base::Unretained(this)));
 
-  registry_with_source_info_.AddInterface<ws::mojom::WindowTreeFactory>(
+  registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(
       base::BindRepeating(&WindowService::BindWindowTreeFactoryRequest,
                           base::Unretained(this)));
 
@@ -236,7 +235,7 @@ void WindowService::OnStart() {
   }
 
   if (test_config_) {
-    registry_.AddInterface<ws::mojom::WindowServerTest>(base::BindRepeating(
+    registry_.AddInterface<mojom::WindowServerTest>(base::BindRepeating(
         &WindowService::BindWindowServerTestRequest, base::Unretained(this)));
   }
 }
@@ -260,28 +259,28 @@ void WindowService::SetSurfaceActivationCallback(
 }
 
 void WindowService::BindClipboardHostRequest(
-    mojom::ClipboardHostRequest request) {
+    ui::mojom::ClipboardHostRequest request) {
   if (!clipboard_host_)
-    clipboard_host_ = std::make_unique<ClipboardHost>();
+    clipboard_host_ = std::make_unique<ui::ClipboardHost>();
   clipboard_host_->AddBinding(std::move(request));
 }
 
 void WindowService::BindImeRegistrarRequest(
-    ws::mojom::IMERegistrarRequest request) {
+    mojom::IMERegistrarRequest request) {
   ime_registrar_.AddBinding(std::move(request));
 }
 
-void WindowService::BindImeDriverRequest(ws::mojom::IMEDriverRequest request) {
+void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
   ime_driver_.AddBinding(std::move(request));
 }
 
 void WindowService::BindInputDeviceServerRequest(
-    ws::mojom::InputDeviceServerRequest request) {
+    mojom::InputDeviceServerRequest request) {
   input_device_server_.AddBinding(std::move(request));
 }
 
 void WindowService::BindRemotingEventInjectorRequest(
-    ws::mojom::RemotingEventInjectorRequest request) {
+    mojom::RemotingEventInjectorRequest request) {
   if (!remoting_event_injector_ && delegate_->GetSystemInputInjector()) {
     remoting_event_injector_ = std::make_unique<RemotingEventInjector>(
         delegate_->GetSystemInputInjector());
@@ -291,12 +290,12 @@ void WindowService::BindRemotingEventInjectorRequest(
 }
 
 void WindowService::BindUserActivityMonitorRequest(
-    ws::mojom::UserActivityMonitorRequest request) {
+    mojom::UserActivityMonitorRequest request) {
   user_activity_monitor_->AddBinding(std::move(request));
 }
 
 void WindowService::BindWindowServerTestRequest(
-    ws::mojom::WindowServerTestRequest request) {
+    mojom::WindowServerTestRequest request) {
   if (!test_config_)
     return;
   mojo::MakeStrongBinding(std::make_unique<WindowServerTestImpl>(this),
@@ -304,11 +303,10 @@ void WindowService::BindWindowServerTestRequest(
 }
 
 void WindowService::BindWindowTreeFactoryRequest(
-    ws::mojom::WindowTreeFactoryRequest request,
+    mojom::WindowTreeFactoryRequest request,
     const service_manager::BindSourceInfo& source_info) {
   window_tree_factory_->AddBinding(std::move(request),
                                    source_info.identity.name());
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

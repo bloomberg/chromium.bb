@@ -667,7 +667,7 @@ void WindowTreeHostManager::OnDisplayMetricsChanged(
   // Shell creates |window_service_owner_| from Shell::Init(), but this
   // function may be called before |window_service_owner_| is created. It's safe
   // to ignore the call in this case as no clients have connected yet.
-  ui::ws2::WindowService* window_service =
+  ws::WindowService* window_service =
       Shell::Get()->window_service_owner()
           ? Shell::Get()->window_service_owner()->window_service()
           : nullptr;

@@ -9,7 +9,7 @@
 
 #include "gpu/command_buffer/common/constants.h"
 
-namespace ui {
+namespace ws {
 namespace command_buffer_metrics {
 
 // A rough classification for what the context is used for. These enum types
@@ -41,6 +41,6 @@ void UmaRecordContextLost(ContextType type,
                           gpu::error::ContextLostReason reason);
 
 }  // namespace command_buffer_metrics
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_

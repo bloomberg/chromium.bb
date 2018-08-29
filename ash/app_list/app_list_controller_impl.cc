@@ -45,8 +45,7 @@ int64_t GetDisplayIdToShowAppListOn() {
 
 namespace ash {
 
-AppListControllerImpl::AppListControllerImpl(
-    ui::ws2::WindowService* window_service)
+AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
     : window_service_(window_service),
       presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()),
@@ -705,7 +704,7 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
   Shell::Get()->ShowContextMenu(onscreen_location, source_type);
 }
 
-ui::ws2::WindowService* AppListControllerImpl::GetWindowService() {
+ws::WindowService* AppListControllerImpl::GetWindowService() {
   return window_service_;
 }
 

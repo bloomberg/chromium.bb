@@ -11,7 +11,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace ws {
 
 // Test base with a TaskRunner. The test implementation should not create its
 // own MessageLoop, as this creates a MessageLoop and sets a TaskRunner. Useful
@@ -46,6 +46,6 @@ class TaskRunnerTestBase : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerTestBase);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_COMMON_TASK_RUNNER_TEST_BASE_H_

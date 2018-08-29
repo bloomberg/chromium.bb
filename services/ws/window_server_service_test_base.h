@@ -8,8 +8,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // Base class for all window manager ServiceTests to perform some common setup.
 class WindowServerServiceTestBase : public service_manager::test::ServiceTest {
@@ -29,7 +28,6 @@ class WindowServerServiceTestBase : public service_manager::test::ServiceTest {
   DISALLOW_COPY_AND_ASSIGN(WindowServerServiceTestBase);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_SERVER_SERVICE_TEST_BASE_H_

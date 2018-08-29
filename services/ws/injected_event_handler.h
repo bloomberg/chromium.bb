@@ -21,8 +21,9 @@ class WindowTreeHost;
 namespace ui {
 
 class Event;
+}
 
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 
@@ -47,7 +48,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
     : public aura::WindowEventDispatcherObserver,
       public WindowServiceObserver,
       public aura::WindowObserver,
-      public EventHandler {
+      public ui::EventHandler {
  public:
   using ResultCallback = base::OnceClosure;
 
@@ -99,7 +100,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
   void OnWillDestroyClient(ClientSpecificId client_id) override;
 
   // EventHandler:
-  void OnEvent(Event* event) override;
+  void OnEvent(ui::Event* event) override;
 
   WindowService* window_service_;
   aura::WindowTreeHost* window_tree_host_;
@@ -113,7 +114,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
   DISALLOW_COPY_AND_ASSIGN(InjectedEventHandler);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_INJECTED_EVENT_HANDLER_H_

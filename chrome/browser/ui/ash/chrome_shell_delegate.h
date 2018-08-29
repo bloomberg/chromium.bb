@@ -27,7 +27,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;
-  ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
+  ws::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

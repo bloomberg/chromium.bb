@@ -13,7 +13,7 @@
 #include "ui/base/cursor/cursor_data.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
-namespace ui {
+namespace ws {
 
 namespace {
 
@@ -23,8 +23,8 @@ class CursorStructTraitsTest : public testing::Test {
 
  protected:
   bool EchoCursorData(const ui::CursorData& in, ui::CursorData* out) {
-    return ws::mojom::CursorData::Deserialize(
-        ws::mojom::CursorData::Serialize(&in), out);
+    return mojom::CursorData::Deserialize(mojom::CursorData::Serialize(&in),
+                                          out);
   }
 
   DISALLOW_COPY_AND_ASSIGN(CursorStructTraitsTest);
@@ -67,7 +67,7 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   ui::CursorData output;
   ASSERT_TRUE(EchoCursorData(input, &output));
 
-  EXPECT_EQ(CursorType::kCustom, output.cursor_type());
+  EXPECT_EQ(ui::CursorType::kCustom, output.cursor_type());
   EXPECT_EQ(kScale, output.scale_factor());
   EXPECT_EQ(kFrameDelay, output.frame_delay());
   EXPECT_EQ(kHotspot, output.hotspot_in_pixels());
@@ -126,4 +126,4 @@ TEST_F(CursorStructTraitsTest, TestMissingFrames) {
   EXPECT_FALSE(EchoCursorData(input, &output));
 }
 
-}  // namespace ui
+}  // namespace ws

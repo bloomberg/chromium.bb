@@ -8,8 +8,7 @@
 #include "base/component_export.h"
 #include "ui/aura/window_delegate.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // The aura::WindowDelegate implementation used by Windows created by the
 // WindowService. The local environment may create its own WindowDelegate for
@@ -55,7 +54,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(WindowDelegateImpl);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_DELEGATE_IMPL_H_

@@ -172,8 +172,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 
   // WindowDelegateImpl() deletes itself when the associated window is
   // destroyed.
-  ui::ws2::WindowDelegateImpl* window_delegate =
-      new ui::ws2::WindowDelegateImpl();
+  ws::WindowDelegateImpl* window_delegate = new ws::WindowDelegateImpl();
   aura::Window* window = window_factory::NewWindow(window_delegate).release();
   window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
@@ -227,7 +226,7 @@ aura::Window* CreateAndParentTopLevelWindow(
     bool can_focus = mojo::ConvertTo<bool>(focusable_iter->second);
     NonClientFrameController* non_client_frame_controller =
         NonClientFrameController::Get(window);
-    window->SetProperty(ui::ws2::kCanFocus, can_focus);
+    window->SetProperty(ws::kCanFocus, can_focus);
     if (non_client_frame_controller)
       non_client_frame_controller->set_can_activate(can_focus);
     // No need to persist this value.

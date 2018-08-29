@@ -20,8 +20,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/property_change_reason.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 ClientRoot::ClientRoot(WindowTree* window_tree,
                        aura::Window* window,
@@ -197,5 +196,4 @@ void ClientRoot::OnFrameTokenChanged(uint32_t frame_token) {
   // https://crbug.com/848022.
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

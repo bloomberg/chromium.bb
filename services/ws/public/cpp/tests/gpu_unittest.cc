@@ -15,11 +15,11 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace ws {
 
 namespace {
 
-class TestGpuImpl : public ws::mojom::Gpu {
+class TestGpuImpl : public mojom::Gpu {
  public:
   TestGpuImpl() = default;
   ~TestGpuImpl() override = default;
@@ -30,13 +30,13 @@ class TestGpuImpl : public ws::mojom::Gpu {
 
   void CloseBindingOnRequest() { close_binding_on_request_ = true; }
 
-  void BindRequest(ws::mojom::GpuRequest request) {
+  void BindRequest(mojom::GpuRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // ws::mojom::Gpu overrides:
+  // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      ws::mojom::GpuMemoryBufferFactoryRequest request) override {}
+      mojom::GpuMemoryBufferFactoryRequest request) override {}
 
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override {
     if (close_binding_on_request_) {
@@ -66,7 +66,7 @@ class TestGpuImpl : public ws::mojom::Gpu {
  private:
   bool request_will_succeed_ = true;
   bool close_binding_on_request_ = false;
-  mojo::BindingSet<ws::mojom::Gpu> bindings_;
+  mojo::BindingSet<mojom::Gpu> bindings_;
 
   // Closing this handle will result in GpuChannelHost being lost.
   mojo::ScopedMessagePipeHandle gpu_channel_handle_;
@@ -133,8 +133,8 @@ class GpuTest : public testing::Test {
   }
 
  private:
-  ws::mojom::GpuPtr GetPtr() {
-    ws::mojom::GpuPtr ptr;
+  mojom::GpuPtr GetPtr() {
+    mojom::GpuPtr ptr;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&TestGpuImpl::BindRequest, base::Unretained(gpu_impl_.get()),
@@ -204,7 +204,7 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
       },
       &host, run_loop.QuitClosure());
   gpu()->EstablishGpuChannel(base::BindOnce(
-      [](ui::Gpu* gpu, TestGpuImpl* gpu_impl,
+      [](Gpu* gpu, TestGpuImpl* gpu_impl,
          gpu::GpuChannelEstablishedCallback callback,
          scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_FALSE(host);
@@ -348,4 +348,4 @@ TEST_F(GpuTest, DestroyGpuWithPendingRequest) {
   EXPECT_EQ(0, counter);
 }
 
-}  // namespace ui
+}  // namespace ws

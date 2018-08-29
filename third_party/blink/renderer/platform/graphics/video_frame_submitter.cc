@@ -169,7 +169,7 @@ void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
     bool use_gpu_compositing,
-    scoped_refptr<ui::ContextProviderCommandBuffer> context_provider) {
+    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
   // We could get a null |context_provider| back if the context is still lost.
   if (!context_provider && use_gpu_compositing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

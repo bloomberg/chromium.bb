@@ -33,7 +33,9 @@ bool operator==(const FileInfo& info1, const FileInfo& info2) {
   return info1.path == info2.path && info1.display_name == info2.display_name;
 }
 
-namespace ws2 {
+}  // namespace ui
+
+namespace ws {
 
 class DragDropDelegateTest : public testing::Test {
  public:
@@ -185,7 +187,7 @@ TEST_F(DragDropDelegateTest, DragData) {
   // set.
   {
     // No "display_name" since OSExchangeDataProviderMus does not support it.
-    const std::vector<FileInfo> kTestFilenames = {
+    const std::vector<ui::FileInfo> kTestFilenames = {
         {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file1")),
          base::FilePath()},
         {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file2")),
@@ -195,7 +197,7 @@ TEST_F(DragDropDelegateTest, DragData) {
     data.SetFilenames(kTestFilenames);
 
     aura::OSExchangeDataProviderMus mus_provider(GetDragData(data));
-    std::vector<FileInfo> dropped_filenames;
+    std::vector<ui::FileInfo> dropped_filenames;
     EXPECT_TRUE(mus_provider.GetFilenames(&dropped_filenames));
     EXPECT_EQ(kTestFilenames, dropped_filenames);
   }
@@ -264,5 +266,4 @@ TEST_F(DragDropDelegateTest, EnterAndDrop) {
       ChangesToDescription1(*changes()));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

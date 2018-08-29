@@ -39,7 +39,7 @@ WindowTreeClientPrivate::CreateWindowTreeClient(
 }
 
 void WindowTreeClientPrivate::OnEmbed(ws::mojom::WindowTree* window_tree) {
-  const ui::Id focused_window_id = 0;
+  const ws::Id focused_window_id = 0;
   tree_client_impl_->OnEmbedImpl(window_tree, CreateWindowDataForEmbed(),
                                  kDisplayId, focused_window_id, true,
                                  base::nullopt);
@@ -78,7 +78,7 @@ bool WindowTreeClientPrivate::HasPointerWatcher() {
   return tree_client_impl_->has_pointer_watcher_;
 }
 
-Window* WindowTreeClientPrivate::GetWindowByServerId(ui::Id id) {
+Window* WindowTreeClientPrivate::GetWindowByServerId(ws::Id id) {
   WindowMus* window = tree_client_impl_->GetWindowByServerId(id);
   return window ? window->GetWindow() : nullptr;
 }
@@ -108,7 +108,7 @@ ws::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {
   // to mirror what the server does for the client-id portion, and use the
   // number of roots for the window id. The important part is the combination is
   // unique to the client.
-  const ui::Id client_id = 1;
+  const ws::Id client_id = 1;
   root_data->window_id =
       (client_id << 32) | tree_client_impl_->GetRoots().size();
   root_data->visible = true;

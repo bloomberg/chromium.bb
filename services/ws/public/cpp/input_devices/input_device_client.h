@@ -16,14 +16,14 @@
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-namespace ui {
+namespace ws {
 
 // Allows in-process client code to register as a InputDeviceEventObserver and
 // get information about input-devices. InputDeviceClient itself acts as an
 // InputDeviceObserverMojo and registers to get updates from InputDeviceServer.
 // Essentially, InputDeviceClient forwards input-device events and caches
 // input-device state.
-class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
+class InputDeviceClient : public mojom::InputDeviceObserverMojo,
                           public ui::InputDeviceManager {
  public:
   InputDeviceClient();
@@ -31,7 +31,7 @@ class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
 
   // Connects to mojo:ui as an observer on InputDeviceServer to receive input
   // device updates.
-  void Connect(ws::mojom::InputDeviceServerPtr server);
+  void Connect(mojom::InputDeviceServerPtr server);
 
   // ui::InputDeviceManager:
   const std::vector<ui::InputDevice>& GetKeyboardDevices() const override;
@@ -49,9 +49,9 @@ class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
   // Default constructor registers as InputDeviceManager. Can be subclassed in
   // tests to avoid this.
   explicit InputDeviceClient(bool is_input_device_manager);
-  ws::mojom::InputDeviceObserverMojoPtr GetIntefacePtr();
+  mojom::InputDeviceObserverMojoPtr GetIntefacePtr();
 
-  // ws::mojom::InputDeviceObserverMojo:
+  // mojom::InputDeviceObserverMojo:
   void OnKeyboardDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
   void OnTouchscreenDeviceConfigurationChanged(
@@ -67,7 +67,7 @@ class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
       const std::vector<ui::InputDevice>& mouse_devices,
       const std::vector<ui::InputDevice>& touchpad_devices,
       bool are_touchscreen_target_displays_valid) override;
-  void OnStylusStateChanged(StylusState state) override;
+  void OnStylusStateChanged(ui::StylusState state) override;
 
  private:
   friend class InputDeviceClientTestApi;
@@ -76,7 +76,7 @@ class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
 
-  mojo::Binding<ws::mojom::InputDeviceObserverMojo> binding_;
+  mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
 
   bool is_input_device_manager_;
 
@@ -95,6 +95,6 @@ class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
   DISALLOW_COPY_AND_ASSIGN(InputDeviceClient);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_INPUT_DEVICES_INPUT_DEVICE_CLIENT_H_

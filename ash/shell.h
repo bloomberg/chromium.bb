@@ -64,9 +64,6 @@ class ContextFactory;
 class ContextFactoryPrivate;
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
-namespace ws2 {
-class GpuInterfaceProvider;
-}
 }  // namespace ui
 
 namespace views {
@@ -88,6 +85,10 @@ class ShadowController;
 class VisibilityController;
 class WindowModalityController;
 }  // namespace wm
+
+namespace ws {
+class GpuInterfaceProvider;
+}
 
 namespace ash {
 
@@ -672,11 +673,10 @@ class ASH_EXPORT Shell : public SessionObserver,
         service_manager::Connector* connector);
   ~Shell() override;
 
-  void Init(
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private,
-      std::unique_ptr<base::Value> initial_display_prefs,
-      std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider);
+  void Init(ui::ContextFactory* context_factory,
+            ui::ContextFactoryPrivate* context_factory_private,
+            std::unique_ptr<base::Value> initial_display_prefs,
+            std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();

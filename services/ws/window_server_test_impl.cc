@@ -8,8 +8,7 @@
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 WindowServerTestImpl::WindowServerTestImpl(WindowService* window_service)
     : window_service_(window_service) {}
@@ -57,5 +56,4 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
   InstallCallback(client_name, std::move(callback));
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

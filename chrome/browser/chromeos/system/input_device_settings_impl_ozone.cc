@@ -50,7 +50,7 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void SetTouchscreensEnabled(bool enabled) override;
 
   // Cached InputDeviceControllerClient. It is owned by BrowserProcess.
-  ui::InputDeviceControllerClient* input_device_controller_client_;
+  ws::InputDeviceControllerClient* input_device_controller_client_;
 
   // Respective device setting objects.
   TouchpadSettings current_touchpad_settings_;

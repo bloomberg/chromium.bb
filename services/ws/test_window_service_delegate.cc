@@ -7,8 +7,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TestWindowServiceDelegate::TestWindowServiceDelegate(
     aura::Window* top_level_parent)
@@ -32,7 +31,7 @@ std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
   std::unique_ptr<aura::Window> window =
       std::make_unique<aura::Window>(delegate_for_next_top_level_);
   delegate_for_next_top_level_ = nullptr;
-  window->Init(LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   if (top_level_parent_)
     top_level_parent_->AddChild(window.get());
   for (auto property : properties) {
@@ -42,15 +41,15 @@ std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
   return window;
 }
 
-void TestWindowServiceDelegate::OnUnhandledKeyEvent(const KeyEvent& key_event) {
+void TestWindowServiceDelegate::OnUnhandledKeyEvent(
+    const ui::KeyEvent& key_event) {
   unhandled_key_events_.push_back(key_event);
 }
 
-void TestWindowServiceDelegate::RunWindowMoveLoop(
-    aura::Window* window,
-    ws::mojom::MoveLoopSource source,
-    const gfx::Point& cursor,
-    DoneCallback callback) {
+void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
+                                                  mojom::MoveLoopSource source,
+                                                  const gfx::Point& cursor,
+                                                  DoneCallback callback) {
   move_loop_callback_ = std::move(callback);
 }
 
@@ -72,5 +71,4 @@ void TestWindowServiceDelegate::CancelDragLoop(aura::Window* window) {
   cancel_drag_loop_called_ = true;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

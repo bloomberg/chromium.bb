@@ -14,8 +14,7 @@
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TEST(WindowDeleteImplTest, GetCursorTopLevel) {
   WindowServiceTestSetup setup;
@@ -78,7 +77,7 @@ TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
-      embed_window, ws::mojom::kEmbedFlagEmbedderInterceptsEvents);
+      embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
 
   // Set a cursor on the embedding. Because the embedding was created with
   // kEmbedFlagEmbedderInterceptsEvents the cursor should come from the parent
@@ -90,5 +89,4 @@ TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
             embed_window->GetCursor(gfx::Point()).native_type());
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

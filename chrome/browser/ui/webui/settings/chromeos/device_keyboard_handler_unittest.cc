@@ -141,7 +141,7 @@ class KeyboardHandlerTest : public testing::Test {
     return has_apple_command_key;
   }
 
-  ui::InputDeviceClientTestApi input_device_client_test_api_;
+  ws::InputDeviceClientTestApi input_device_client_test_api_;
   content::TestWebUI web_ui_;
   TestKeyboardHandler handler_;
   KeyboardHandler::TestAPI handler_test_api_;

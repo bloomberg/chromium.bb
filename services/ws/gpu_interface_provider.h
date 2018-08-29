@@ -8,8 +8,7 @@
 #include "base/component_export.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // GpuInterfaceProvider is responsible for providing the Gpu related interfaces.
 // The implementation of these varies depending upon where the WindowService is
@@ -20,7 +19,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
 
   // Registers the gpu-related interfaces, specifically
   // discardable_memory::mojom::DiscardableSharedMemoryManagerRequest and
-  // ws::mojom::GpuRequest.
+  // mojom::GpuRequest.
   virtual void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) = 0;
 
@@ -31,7 +30,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
 #endif
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_GPU_INTERFACE_PROVIDER_H_

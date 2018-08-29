@@ -7,7 +7,7 @@
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
-namespace ui {
+namespace ws {
 namespace gpu_host {
 
 GpuClient::GpuClient(int client_id,
@@ -75,7 +75,7 @@ void GpuClient::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    ws::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
+    mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
   gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
       id, client_id_, size, format, usage, gpu::kNullSurfaceHandle,
       std::move(callback));
@@ -88,9 +88,9 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 }
 
 void GpuClient::CreateGpuMemoryBufferFactory(
-    ws::mojom::GpuMemoryBufferFactoryRequest request) {
+    mojom::GpuMemoryBufferFactoryRequest request) {
   gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace gpu_host
-}  // namespace ui
+}  // namespace ws

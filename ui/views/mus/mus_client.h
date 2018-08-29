@@ -35,11 +35,14 @@ class Connector;
 
 namespace ui {
 class CursorDataFactoryOzone;
-class InputDeviceClient;
 }
 
 namespace wm {
 class WMState;
+}
+
+namespace ws {
+class InputDeviceClient;
 }
 
 namespace views {
@@ -210,7 +213,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
 
   // Gives services transparent remote access the InputDeviceManager.
-  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
+  std::unique_ptr<ws::InputDeviceClient> input_device_client_;
 
   // Forwards accessibility events to extensions in the browser. Can be null for
   // apps that do not need accessibility support and for the browser itself

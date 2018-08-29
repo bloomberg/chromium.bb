@@ -15,8 +15,7 @@ namespace aura {
 class WindowDelegate;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class TestWindowServiceDelegate : public WindowServiceDelegate {
  public:
@@ -33,7 +32,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
     delegate_for_next_top_level_ = delegate;
   }
 
-  std::vector<KeyEvent>* unhandled_key_events() {
+  std::vector<ui::KeyEvent>* unhandled_key_events() {
     return &unhandled_key_events_;
   }
 
@@ -52,9 +51,9 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
-  void OnUnhandledKeyEvent(const KeyEvent& key_event) override;
+  void OnUnhandledKeyEvent(const ui::KeyEvent& key_event) override;
   void RunWindowMoveLoop(aura::Window* window,
-                         ws::mojom::MoveLoopSource source,
+                         mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
@@ -77,7 +76,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
   DragDropCompletedCallback drag_loop_callback_;
 
   // Events passed to OnUnhandledKeyEvent() are added here.
-  std::vector<KeyEvent> unhandled_key_events_;
+  std::vector<ui::KeyEvent> unhandled_key_events_;
 
   bool cancel_window_move_loop_called_ = false;
   bool cancel_drag_loop_called_ = false;
@@ -85,7 +84,6 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegate);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_TEST_WINDOW_SERVICE_DELEGATE_H_

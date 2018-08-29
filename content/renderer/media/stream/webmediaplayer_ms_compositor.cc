@@ -51,7 +51,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
         frame->natural_size(), frame->timestamp());
 
-    ui::ContextProviderCommandBuffer* const provider =
+    ws::ContextProviderCommandBuffer* const provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     if (!provider) {
       // Return a black frame (yuv = {0, 0x80, 0x80}).

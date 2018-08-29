@@ -50,14 +50,10 @@ class Insets;
 }
 
 namespace ui {
-
 class ClipboardHost;
-
-namespace mojom {
-class WindowTreeClient;
 }
 
-namespace ws2 {
+namespace ws {
 
 class EventInjector;
 class GpuInterfaceProvider;
@@ -70,8 +66,12 @@ class WindowServiceObserver;
 class WindowTree;
 class WindowTreeFactory;
 
+namespace mojom {
+class WindowTreeClient;
+}
+
 // WindowService is the entry point into providing an implementation of
-// the ws::mojom::WindowTree related mojoms on top of an aura Window hierarchy.
+// the mojom::WindowTree related mojoms on top of an aura Window hierarchy.
 // A WindowTree is created for each client.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
     : public service_manager::Service {
@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Creates a new WindowTree, caller must call one of the Init() functions on
   // the returned object.
   std::unique_ptr<WindowTree> CreateWindowTree(
-      ws::mojom::WindowTreeClient* window_tree_client,
+      mojom::WindowTreeClient* window_tree_client,
       const std::string& client_name = std::string());
 
   // Sets the window frame metrics.
@@ -180,19 +180,18 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void SetSurfaceActivationCallback(
       base::OnceCallback<void(const std::string&)> callback);
 
-  void BindClipboardHostRequest(mojom::ClipboardHostRequest request);
-  void BindImeRegistrarRequest(ws::mojom::IMERegistrarRequest request);
-  void BindImeDriverRequest(ws::mojom::IMEDriverRequest request);
-  void BindInputDeviceServerRequest(
-      ws::mojom::InputDeviceServerRequest request);
+  void BindClipboardHostRequest(ui::mojom::ClipboardHostRequest request);
+  void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
+  void BindImeDriverRequest(mojom::IMEDriverRequest request);
+  void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
   void BindRemotingEventInjectorRequest(
-      ws::mojom::RemotingEventInjectorRequest request);
+      mojom::RemotingEventInjectorRequest request);
   void BindUserActivityMonitorRequest(
-      ws::mojom::UserActivityMonitorRequest request);
-  void BindWindowServerTestRequest(ws::mojom::WindowServerTestRequest request);
+      mojom::UserActivityMonitorRequest request);
+  void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
 
   void BindWindowTreeFactoryRequest(
-      ws::mojom::WindowTreeFactoryRequest request,
+      mojom::WindowTreeFactoryRequest request,
       const service_manager::BindSourceInfo& source_info);
 
   WindowServiceDelegate* delegate_;
@@ -219,12 +218,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   aura::PropertyConverter property_converter_;
 
   // Provides info to InputDeviceClient users, via InputDeviceManager.
-  ui::InputDeviceServer input_device_server_;
+  InputDeviceServer input_device_server_;
 
   std::unique_ptr<EventInjector> event_injector_;
   std::unique_ptr<RemotingEventInjector> remoting_event_injector_;
 
-  std::unique_ptr<ClipboardHost> clipboard_host_;
+  std::unique_ptr<ui::ClipboardHost> clipboard_host_;
 
   // Id for the next WindowTree.
   ClientSpecificId next_client_id_;
@@ -251,7 +250,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   DISALLOW_COPY_AND_ASSIGN(WindowService);
 };
 
-}  // namespace ws2
 }  // namespace ui
 
 #endif  // SERVICES_WS_WINDOW_SERVICE_H_

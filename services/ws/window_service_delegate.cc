@@ -4,8 +4,7 @@
 
 #include "services/ws/window_service_delegate.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 bool WindowServiceDelegate::StoreAndSetCursor(aura::Window* window,
                                               ui::Cursor cursor) {
@@ -13,7 +12,7 @@ bool WindowServiceDelegate::StoreAndSetCursor(aura::Window* window,
 }
 
 void WindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
-                                              ws::mojom::MoveLoopSource source,
+                                              mojom::MoveLoopSource source,
                                               const gfx::Point& cursor,
                                               DoneCallback callback) {
   std::move(callback).Run(false);
@@ -29,7 +28,7 @@ void WindowServiceDelegate::RunDragLoop(
   std::move(callback).Run(ui::DragDropTypes::DRAG_NONE);
 }
 
-SystemInputInjector* WindowServiceDelegate::GetSystemInputInjector() {
+ui::SystemInputInjector* WindowServiceDelegate::GetSystemInputInjector() {
   return nullptr;
 }
 
@@ -45,5 +44,4 @@ aura::Window* WindowServiceDelegate::GetTopmostWindowAtPoint(
   return nullptr;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

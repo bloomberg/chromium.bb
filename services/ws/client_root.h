@@ -25,8 +25,7 @@ namespace viz {
 class SurfaceInfo;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowTree;
 
@@ -107,7 +106,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_CLIENT_ROOT_H_

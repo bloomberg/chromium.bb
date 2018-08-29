@@ -389,7 +389,7 @@ bool Shell::IsSystemModalWindowOpen() {
 
 // static
 bool Shell::HasRemoteClient(aura::Window* window) {
-  return ui::ws2::WindowService::HasRemoteClient(window);
+  return ws::WindowService::HasRemoteClient(window);
 }
 
 // static
@@ -982,7 +982,7 @@ void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
-    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
+    std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider) {
   if (::features::IsSingleProcessMash()) {
     // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
     // to set the WindowManagerFrameValues.

@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusUnsupported) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
-  ui::InputDeviceClientTestApi test_api;
+  ws::InputDeviceClientTestApi test_api;
   ui::TouchscreenDevice touchscreen(1,
                                     ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                                     "Touchscreen", gfx::Size(1024, 768), 0);
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
 // TODO(https://crbug.com/814675): Excluded from Mash because pointer events
 // aren't seen.
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
-  ui::InputDeviceClientTestApi test_api;
+  ws::InputDeviceClientTestApi test_api;
   ui::TouchscreenDevice touchscreen(1,
                                     ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                                     "Touchscreen", gfx::Size(1024, 768), 0);

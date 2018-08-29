@@ -14,7 +14,7 @@ namespace ash {
 
 namespace {
 
-ui::InputDeviceControllerClient* GetInputDeviceControllerClient() {
+ws::InputDeviceControllerClient* GetInputDeviceControllerClient() {
   return Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
 }
 

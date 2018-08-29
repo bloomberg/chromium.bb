@@ -47,7 +47,7 @@ namespace skia_bindings {
 class GrContextForGLES2Interface;
 }
 
-namespace ui {
+namespace ws {
 
 // Implementation of viz::ContextProvider that provides a GL implementation
 // over command buffer to the GPU process.
@@ -156,6 +156,6 @@ class ContextProviderCommandBuffer
   base::ObserverList<viz::ContextLostObserver>::Unchecked observers_;
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_

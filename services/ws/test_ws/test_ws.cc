@@ -33,7 +33,7 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
 // Service implementation that brings up the Window Service on top of aura.
@@ -42,8 +42,8 @@ namespace test {
 // Service.
 class TestWindowService : public service_manager::Service,
                           public service_manager::mojom::ServiceFactory,
-                          public ui::gpu_host::GpuHostDelegate,
-                          public ws2::WindowServiceDelegate {
+                          public gpu_host::GpuHostDelegate,
+                          public WindowServiceDelegate {
  public:
   TestWindowService() = default;
 
@@ -71,7 +71,7 @@ class TestWindowService : public service_manager::Service,
       override {
     std::unique_ptr<aura::Window> top_level =
         std::make_unique<aura::Window>(nullptr);
-    top_level->Init(LAYER_NOT_DRAWN);
+    top_level->Init(ui::LAYER_NOT_DRAWN);
     aura_test_helper_->root_window()->AddChild(top_level.get());
     for (auto property : properties) {
       property_converter->SetPropertyFromTransportValue(
@@ -134,7 +134,7 @@ class TestWindowService : public service_manager::Service,
       service_manager::mojom::ServiceRequest request,
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    DCHECK_EQ(name, ws::mojom::kServiceName);
+    DCHECK_EQ(name, mojom::kServiceName);
 
     // Defer CreateService if |aura_test_helper_| is not created.
     if (!aura_test_helper_) {
@@ -149,7 +149,7 @@ class TestWindowService : public service_manager::Service,
     DCHECK(!ui_service_created_);
     ui_service_created_ = true;
 
-    auto window_service = std::make_unique<ws2::WindowService>(
+    auto window_service = std::make_unique<WindowService>(
         this,
         std::make_unique<TestGpuInterfaceProvider>(
             gpu_host_.get(), discardable_shared_memory_manager_.get()),
@@ -159,7 +159,7 @@ class TestWindowService : public service_manager::Service,
     pid_receiver->SetPID(base::GetCurrentProcId());
   }
 
-  // ui::gpu_host::GpuHostDelegate:
+  // gpu_host::GpuHostDelegate:
   void OnGpuServiceInitialized() override {
     CreateAuraTestHelper();
 
@@ -176,7 +176,7 @@ class TestWindowService : public service_manager::Service,
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
-    gpu_host_ = std::make_unique<ui::gpu_host::DefaultGpuHost>(
+    gpu_host_ = std::make_unique<gpu_host::DefaultGpuHost>(
         this, context()->connector(), discardable_shared_memory_manager_.get());
 
     // |aura_test_helper_| is created later in OnGpuServiceInitialized.
@@ -209,7 +209,7 @@ class TestWindowService : public service_manager::Service,
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
-  std::unique_ptr<ui::gpu_host::DefaultGpuHost> gpu_host_;
+  std::unique_ptr<gpu_host::DefaultGpuHost> gpu_host_;
 
   // For drag and drop code to convert to/from screen coordinates.
   wm::DefaultScreenPositionClient screen_position_client_;
@@ -225,10 +225,10 @@ class TestWindowService : public service_manager::Service,
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new ui::test::TestWindowService);
+  service_manager::ServiceRunner runner(new ws::test::TestWindowService);
   runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(service_request_handle);
 }

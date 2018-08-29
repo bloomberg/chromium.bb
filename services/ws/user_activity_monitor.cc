@@ -12,8 +12,7 @@
 #include "base/time/default_tick_clock.h"
 #include "ui/aura/env.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 UserActivityMonitor::UserActivityMonitor(
     aura::Env* env,
@@ -31,13 +30,13 @@ UserActivityMonitor::~UserActivityMonitor() {
 }
 
 void UserActivityMonitor::AddBinding(
-    ws::mojom::UserActivityMonitorRequest request) {
+    mojom::UserActivityMonitorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void UserActivityMonitor::AddUserActivityObserver(
     uint32_t delay_between_notify_secs,
-    ws::mojom::UserActivityObserverPtr observer) {
+    mojom::UserActivityObserverPtr observer) {
   ActivityObserverInfo info;
   info.delay = base::TimeDelta::FromSeconds(delay_between_notify_secs);
   observer.set_connection_error_handler(
@@ -48,15 +47,14 @@ void UserActivityMonitor::AddUserActivityObserver(
 
 void UserActivityMonitor::AddUserIdleObserver(
     uint32_t idleness_in_minutes,
-    ws::mojom::UserIdleObserverPtr observer) {
+    mojom::UserIdleObserverPtr observer) {
   IdleObserverInfo info;
   info.idle_duration = base::TimeDelta::FromMinutes(idleness_in_minutes);
   base::TimeTicks now = now_clock_->NowTicks();
   DCHECK(!last_activity_.is_null());
   bool user_is_active = (now - last_activity_ < info.idle_duration);
-  info.idle_state = user_is_active
-                        ? ws::mojom::UserIdleObserver::IdleState::ACTIVE
-                        : ws::mojom::UserIdleObserver::IdleState::IDLE;
+  info.idle_state = user_is_active ? mojom::UserIdleObserver::IdleState::ACTIVE
+                                   : mojom::UserIdleObserver::IdleState::IDLE;
   info.last_idle_state_notification = now;
   observer->OnUserIdleStateChanged(info.idle_state);
   observer.set_connection_error_handler(
@@ -81,10 +79,10 @@ void UserActivityMonitor::OnEvent(ui::Event* event) {
   // Wake up all the 'idle' observers.
   for (auto& pair : idle_observers_) {
     IdleObserverInfo* info = &(pair.first);
-    if (info->idle_state == ws::mojom::UserIdleObserver::IdleState::ACTIVE)
+    if (info->idle_state == mojom::UserIdleObserver::IdleState::ACTIVE)
       continue;
     info->last_idle_state_notification = now;
-    info->idle_state = ws::mojom::UserIdleObserver::IdleState::ACTIVE;
+    info->idle_state = mojom::UserIdleObserver::IdleState::ACTIVE;
     pair.second->OnUserIdleStateChanged(info->idle_state);
   }
 
@@ -107,14 +105,14 @@ void UserActivityMonitor::OnMinuteTimer() {
   bool active_observer = false;
   for (auto& pair : idle_observers_) {
     IdleObserverInfo* info = &(pair.first);
-    if (info->idle_state == ws::mojom::UserIdleObserver::IdleState::IDLE)
+    if (info->idle_state == mojom::UserIdleObserver::IdleState::IDLE)
       continue;
     if (now - info->last_idle_state_notification < info->idle_duration) {
       active_observer = true;
       continue;
     }
     info->last_idle_state_notification = now;
-    info->idle_state = ws::mojom::UserIdleObserver::IdleState::IDLE;
+    info->idle_state = mojom::UserIdleObserver::IdleState::IDLE;
     pair.second->OnUserIdleStateChanged(info->idle_state);
   }
   // All observers are already notified of IDLE. No point running the timer
@@ -124,23 +122,22 @@ void UserActivityMonitor::OnMinuteTimer() {
 }
 
 void UserActivityMonitor::OnActivityObserverDisconnected(
-    ws::mojom::UserActivityObserver* observer) {
+    mojom::UserActivityObserver* observer) {
   activity_observers_.erase(std::remove_if(
       activity_observers_.begin(), activity_observers_.end(),
-      [observer](const std::pair<ActivityObserverInfo,
-                                 ws::mojom::UserActivityObserverPtr>& pair) {
+      [observer](
+          const std::pair<ActivityObserverInfo, mojom::UserActivityObserverPtr>&
+              pair) { return pair.second.get() == observer; }));
+}
+
+void UserActivityMonitor::OnIdleObserverDisconnected(
+    mojom::UserIdleObserver* observer) {
+  idle_observers_.erase(std::remove_if(
+      idle_observers_.begin(), idle_observers_.end(),
+      [observer](
+          const std::pair<IdleObserverInfo, mojom::UserIdleObserverPtr>& pair) {
         return pair.second.get() == observer;
       }));
 }
 
-void UserActivityMonitor::OnIdleObserverDisconnected(
-    ws::mojom::UserIdleObserver* observer) {
-  idle_observers_.erase(std::remove_if(
-      idle_observers_.begin(), idle_observers_.end(),
-      [observer](
-          const std::pair<IdleObserverInfo, ws::mojom::UserIdleObserverPtr>&
-              pair) { return pair.second.get() == observer; }));
-}
-
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

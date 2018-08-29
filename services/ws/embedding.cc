@@ -12,8 +12,7 @@
 #include "services/ws/window_tree_binding.h"
 #include "ui/aura/window.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 Embedding::Embedding(WindowTree* embedding_tree,
                      aura::Window* window,
@@ -31,8 +30,8 @@ Embedding::~Embedding() {
 }
 
 void Embedding::Init(WindowService* window_service,
-                     ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-                     ws::mojom::WindowTreeClient* window_tree_client,
+                     mojom::WindowTreeClientPtr window_tree_client_ptr,
+                     mojom::WindowTreeClient* window_tree_client,
                      base::OnceClosure connection_lost_callback) {
   binding_ = std::make_unique<WindowTreeBinding>();
   binding_->InitForEmbed(window_service, std::move(window_tree_client_ptr),
@@ -45,5 +44,4 @@ void Embedding::InitForEmbedInExistingTree(WindowTree* embedded_tree) {
   embedded_tree_ = embedded_tree;
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

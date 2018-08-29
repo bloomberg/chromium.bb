@@ -20,8 +20,7 @@ namespace wm {
 class ScopedCaptureClient;
 }
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 class WindowTree;
@@ -35,7 +34,7 @@ class WindowServiceTestSetup {
   WindowServiceTestSetup();
   ~WindowServiceTestSetup();
 
-  // |flags| mirrors that from ws::mojom::WindowTree::Embed(), see it for
+  // |flags| mirrors that from mojom::WindowTree::Embed(), see it for
   // details.
   std::unique_ptr<EmbeddingHelper> CreateEmbedding(aura::Window* embed_root,
                                                    uint32_t flags = 0);
@@ -97,7 +96,6 @@ struct EmbeddingHelper {
   std::unique_ptr<WindowTreeTestHelper> window_tree_test_helper;
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_SERVICE_TEST_SETUP_H_

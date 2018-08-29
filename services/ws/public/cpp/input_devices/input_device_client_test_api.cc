@@ -9,32 +9,32 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-namespace ui {
+namespace ws {
 
 InputDeviceClientTestApi::InputDeviceClientTestApi() = default;
 
 InputDeviceClientTestApi::~InputDeviceClientTestApi() = default;
 
 void InputDeviceClientTestApi::NotifyObserversDeviceListsComplete() {
-  if (DeviceDataManager::instance_)
-    DeviceDataManager::instance_->NotifyObserversDeviceListsComplete();
+  if (ui::DeviceDataManager::instance_)
+    ui::DeviceDataManager::instance_->NotifyObserversDeviceListsComplete();
   else
     GetInputDeviceClient()->NotifyObserversDeviceListsComplete();
 }
 
 void InputDeviceClientTestApi::
     NotifyObserversKeyboardDeviceConfigurationChanged() {
-  if (DeviceDataManager::instance_)
-    DeviceDataManager::instance_
+  if (ui::DeviceDataManager::instance_)
+    ui::DeviceDataManager::instance_
         ->NotifyObserversKeyboardDeviceConfigurationChanged();
   else
     GetInputDeviceClient()->NotifyObserversKeyboardDeviceConfigurationChanged();
 }
 
 void InputDeviceClientTestApi::NotifyObserversStylusStateChanged(
-    StylusState stylus_state) {
-  if (DeviceDataManager::instance_) {
-    DeviceDataManager::instance_->NotifyObserversStylusStateChanged(
+    ui::StylusState stylus_state) {
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_->NotifyObserversStylusStateChanged(
         stylus_state);
   } else {
     GetInputDeviceClient()->OnStylusStateChanged(stylus_state);
@@ -43,8 +43,8 @@ void InputDeviceClientTestApi::NotifyObserversStylusStateChanged(
 
 void InputDeviceClientTestApi::
     NotifyObserversTouchscreenDeviceConfigurationChanged() {
-  if (DeviceDataManager::instance_) {
-    DeviceDataManager::instance_
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_
         ->NotifyObserversTouchscreenDeviceConfigurationChanged();
   } else {
     GetInputDeviceClient()
@@ -53,35 +53,35 @@ void InputDeviceClientTestApi::
 }
 
 void InputDeviceClientTestApi::OnDeviceListsComplete() {
-  if (DeviceDataManager::instance_)
-    DeviceDataManager::instance_->OnDeviceListsComplete();
+  if (ui::DeviceDataManager::instance_)
+    ui::DeviceDataManager::instance_->OnDeviceListsComplete();
   else
     GetInputDeviceClient()->OnDeviceListsComplete({}, {}, {}, {}, false);
 }
 
 void InputDeviceClientTestApi::SetKeyboardDevices(
-    const std::vector<InputDevice>& devices) {
-  if (DeviceDataManager::instance_) {
-    DeviceDataManager::instance_->OnKeyboardDevicesUpdated(devices);
+    const std::vector<ui::InputDevice>& devices) {
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_->OnKeyboardDevicesUpdated(devices);
   } else {
     GetInputDeviceClient()->OnKeyboardDeviceConfigurationChanged(devices);
   }
 }
 
 void InputDeviceClientTestApi::SetMouseDevices(
-    const std::vector<InputDevice>& devices) {
-  if (DeviceDataManager::instance_) {
-    DeviceDataManager::instance_->OnMouseDevicesUpdated(devices);
+    const std::vector<ui::InputDevice>& devices) {
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_->OnMouseDevicesUpdated(devices);
   } else {
     GetInputDeviceClient()->OnMouseDeviceConfigurationChanged(devices);
   }
 }
 
 void InputDeviceClientTestApi::SetTouchscreenDevices(
-    const std::vector<TouchscreenDevice>& devices,
+    const std::vector<ui::TouchscreenDevice>& devices,
     bool are_touchscreen_target_displays_valid) {
-  if (DeviceDataManager::instance_) {
-    DeviceDataManager::instance_->OnTouchscreenDevicesUpdated(devices);
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_->OnTouchscreenDevicesUpdated(devices);
   } else {
     GetInputDeviceClient()->OnTouchscreenDeviceConfigurationChanged(
         devices, are_touchscreen_target_displays_valid);
@@ -89,9 +89,10 @@ void InputDeviceClientTestApi::SetTouchscreenDevices(
 }
 
 InputDeviceClient* InputDeviceClientTestApi::GetInputDeviceClient() {
-  if (DeviceDataManager::instance_ || !InputDeviceManager::HasInstance())
+  if (ui::DeviceDataManager::instance_ ||
+      !ui::InputDeviceManager::HasInstance())
     return nullptr;
-  return static_cast<InputDeviceClient*>(InputDeviceManager::GetInstance());
+  return static_cast<InputDeviceClient*>(ui::InputDeviceManager::GetInstance());
 }
 
-}  // namespace ui
+}  // namespace ws

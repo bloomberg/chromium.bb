@@ -22,10 +22,10 @@ class ShellDelegateMash : public ShellDelegate {
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
+  ws::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
  private:
-  std::unique_ptr<ui::InputDeviceControllerClient>
+  std::unique_ptr<ws::InputDeviceControllerClient>
       input_device_controller_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMash);

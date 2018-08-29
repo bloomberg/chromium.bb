@@ -17,8 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 TEST(EmbeddingTest, DestroyingRootDestroysEmbedding) {
@@ -44,5 +43,4 @@ TEST(EmbeddingTest, DestroyingRootDestroysEmbedding) {
 }
 
 }  // namespace
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

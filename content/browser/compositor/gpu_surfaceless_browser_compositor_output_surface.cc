@@ -20,7 +20,7 @@ namespace content {
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
-        scoped_refptr<ui::ContextProviderCommandBuffer> context,
+        scoped_refptr<ws::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
         const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
         std::unique_ptr<viz::CompositorOverlayCandidateValidator>

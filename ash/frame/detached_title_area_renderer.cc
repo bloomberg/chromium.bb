@@ -136,7 +136,7 @@ void DetachedTitleAreaRendererForClient::Detach() {
 }
 
 bool DetachedTitleAreaRendererForClient::CanActivate() const {
-  return widget_->GetNativeView()->GetProperty(ui::ws2::kCanFocus);
+  return widget_->GetNativeView()->GetProperty(ws::kCanFocus);
 }
 
 views::Widget* DetachedTitleAreaRendererForClient::GetWidget() {

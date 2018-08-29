@@ -12,22 +12,22 @@
 
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
-namespace ui {
+namespace ws {
 namespace test {
 
-class TestIMEDriver : public ws::mojom::IMEDriver {
+class TestIMEDriver : public mojom::IMEDriver {
  public:
   TestIMEDriver();
   ~TestIMEDriver() override;
 
  private:
-  // ws::mojom::IMEDriver:
-  void StartSession(ws::mojom::StartSessionDetailsPtr details) override;
+  // mojom::IMEDriver:
+  void StartSession(mojom::StartSessionDetailsPtr details) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEDriver);
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_IME_TEST_IME_DRIVER_TEST_IME_DRIVER_H_

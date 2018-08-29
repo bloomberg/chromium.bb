@@ -35,8 +35,11 @@ class Connector;
 
 namespace ui {
 class ContextFactory;
-class InputDeviceClient;
 }
+
+namespace ws {
+class InputDeviceClient;
+}  // namespace ws
 
 namespace wm {
 
@@ -80,7 +83,7 @@ class WMTestHelper : public aura::client::WindowParentingClient,
   aura::PropertyConverter* GetPropertyConverter() override;
 
   std::unique_ptr<WMState> wm_state_;
-  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
+  std::unique_ptr<ws::InputDeviceClient> input_device_client_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::WindowTreeHost> host_;

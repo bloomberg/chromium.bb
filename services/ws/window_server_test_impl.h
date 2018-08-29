@@ -7,15 +7,14 @@
 
 #include "services/ws/public/mojom/window_server_test.mojom.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class WindowService;
 class WindowTree;
 
 // Used to detect when a client (as identified by a name) has drawn at least
 // once to screen.
-class WindowServerTestImpl : public ws::mojom::WindowServerTest {
+class WindowServerTestImpl : public mojom::WindowServerTest {
  public:
   explicit WindowServerTestImpl(WindowService* server);
   ~WindowServerTestImpl() override;
@@ -35,7 +34,7 @@ class WindowServerTestImpl : public ws::mojom::WindowServerTest {
   void InstallCallback(const std::string& name,
                        EnsureClientHasDrawnWindowCallback cb);
 
-  // ws::mojom::WindowServerTest:
+  // mojom::WindowServerTest:
   void EnsureClientHasDrawnWindow(
       const std::string& client_name,
       EnsureClientHasDrawnWindowCallback callback) override;
@@ -45,7 +44,6 @@ class WindowServerTestImpl : public ws::mojom::WindowServerTest {
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestImpl);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_WINDOW_SERVER_TEST_IMPL_H_

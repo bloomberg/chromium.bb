@@ -27,8 +27,9 @@ class WindowTargeter;
 namespace ui {
 
 class EventHandler;
+}
 
-namespace ws2 {
+namespace ws {
 
 class DragDropDelegate;
 class Embedding;
@@ -144,7 +145,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
 
   // Forwards to TopLevelEventHandler, see it for details.
   // NOTE: this is only applicable to top-levels.
-  bool IsHandlingPointerPressForTesting(PointerId pointer_id);
+  bool IsHandlingPointerPressForTesting(ui::PointerId pointer_id);
 
   aura::Window* window_;
 
@@ -201,7 +202,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_SERVER_WINDOW_H_

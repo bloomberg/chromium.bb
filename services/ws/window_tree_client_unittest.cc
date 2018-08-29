@@ -31,8 +31,7 @@ using ws::mojom::WindowTreeClient;
 // TODO: this is a copy of existing tests. Many that are disabled need to be
 // reevaluated to understand if they make sense with ws2.
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace test {
 
 namespace {
@@ -70,13 +69,13 @@ void ScheduleEmbedCallbackImpl(base::RunLoop* run_loop,
 // -----------------------------------------------------------------------------
 
 bool EmbedUrl(service_manager::Connector* connector,
-              ws::mojom::WindowTree* tree,
+              mojom::WindowTree* tree,
               const std::string& url,
               Id root_id) {
   bool result = false;
   base::RunLoop run_loop;
   {
-    ws::mojom::WindowTreeClientPtr client;
+    mojom::WindowTreeClientPtr client;
     connector->BindInterface(url, &client);
     const uint32_t embed_flags = 0;
     tree->Embed(root_id, std::move(client), embed_flags,
@@ -86,9 +85,9 @@ bool EmbedUrl(service_manager::Connector* connector,
   return result;
 }
 
-bool Embed(ws::mojom::WindowTree* tree,
+bool Embed(mojom::WindowTree* tree,
            Id root_id,
-           ws::mojom::WindowTreeClientPtr client) {
+           mojom::WindowTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
   {
@@ -100,7 +99,7 @@ bool Embed(ws::mojom::WindowTree* tree,
   return result;
 }
 
-bool EmbedUsingToken(ws::mojom::WindowTree* tree,
+bool EmbedUsingToken(mojom::WindowTree* tree,
                      Id root_id,
                      const base::UnguessableToken& token) {
   bool result = false;
@@ -112,8 +111,8 @@ bool EmbedUsingToken(ws::mojom::WindowTree* tree,
   return result;
 }
 
-void ScheduleEmbed(ws::mojom::WindowTree* tree,
-                   ws::mojom::WindowTreeClientPtr client,
+void ScheduleEmbed(mojom::WindowTree* tree,
+                   mojom::WindowTreeClientPtr client,
                    base::UnguessableToken* token) {
   base::RunLoop run_loop;
   tree->ScheduleEmbed(std::move(client),
@@ -121,7 +120,7 @@ void ScheduleEmbed(ws::mojom::WindowTree* tree,
   run_loop.Run();
 }
 
-void GetWindowTree(ws::mojom::WindowTree* tree,
+void GetWindowTree(mojom::WindowTree* tree,
                    Id window_id,
                    std::vector<TestWindow>* windows) {
   base::RunLoop run_loop;
@@ -159,7 +158,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
         waiting_change_id_(0),
         on_change_completed_result_(false) {}
 
-  void Bind(mojo::InterfaceRequest<ws::mojom::WindowTreeClient> request) {
+  void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
     binding_.Bind(std::move(request));
   }
 
@@ -214,7 +213,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
 
   bool ReorderWindow(Id window_id,
                      Id relative_window_id,
-                     ws::mojom::OrderDirection direction) {
+                     mojom::OrderDirection direction) {
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->ReorderWindow(change_id, window_id, relative_window_id, direction);
     return WaitForChangeCompleted(change_id);
@@ -286,7 +285,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   }
   void OnEmbed(
       WindowDataPtr root,
-      ws::mojom::WindowTreePtr tree,
+      mojom::WindowTreePtr tree,
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
@@ -298,7 +297,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   }
   void OnEmbedFromToken(
       const base::UnguessableToken& token,
-      ws::mojom::WindowDataPtr root,
+      mojom::WindowDataPtr root,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {}
   void OnEmbeddedAppDisconnected(Id window_id) override {
@@ -313,7 +312,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
                               const viz::FrameSinkId& frame_sink_id) override {}
   void OnTopLevelCreated(
       uint32_t change_id,
-      ws::mojom::WindowDataPtr data,
+      mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
@@ -352,7 +351,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   }
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
-                         ws::mojom::OrderDirection direction) override {
+                         mojom::OrderDirection direction) override {
     tracker()->OnWindowReordered(window_id, relative_window_id, direction);
   }
   void OnWindowDeleted(Id window) override {
@@ -377,7 +376,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.
-    tree()->OnWindowInputEventAck(event_id, ws::mojom::EventResult::HANDLED);
+    tree()->OnWindowInputEventAck(event_id, mojom::EventResult::HANDLED);
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
@@ -470,7 +469,7 @@ class WindowTreeClientFactory {
     return std::move(client_impl_);
   }
 
-  void BindWindowTreeClientRequest(ws::mojom::WindowTreeClientRequest request) {
+  void BindWindowTreeClientRequest(mojom::WindowTreeClientRequest request) {
     client_impl_ = std::make_unique<TestWindowTreeClient2>();
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
@@ -500,9 +499,9 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
   // Various clients. |wt1()|, being the first client, has special permissions
   // (it's treated as the window manager).
-  ws::mojom::WindowTree* wt1() { return wt_client1_->tree(); }
-  ws::mojom::WindowTree* wt2() { return wt_client2_->tree(); }
-  ws::mojom::WindowTree* wt3() { return wt_client3_->tree(); }
+  mojom::WindowTree* wt1() { return wt_client1_->tree(); }
+  mojom::WindowTree* wt2() { return wt_client2_->tree(); }
+  mojom::WindowTree* wt3() { return wt_client3_->tree(); }
 
   TestWindowTreeClient2* wt_client1() { return wt_client1_.get(); }
   TestWindowTreeClient2* wt_client2() { return wt_client2_.get(); }
@@ -544,7 +543,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
     }
   }
 
-  void EstablishThirdClient(ws::mojom::WindowTree* owner, Id root_id) {
+  void EstablishThirdClient(mojom::WindowTree* owner, Id root_id) {
     ASSERT_TRUE(wt_client3_.get() == nullptr);
     wt_client3_ = EstablishClientViaEmbed(owner, root_id);
     ASSERT_TRUE(wt_client3_.get() != nullptr);
@@ -556,13 +555,13 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
   // Establishes a new client by way of Embed() on the specified WindowTree.
   std::unique_ptr<TestWindowTreeClient2> EstablishClientViaEmbed(
-      ws::mojom::WindowTree* owner,
+      mojom::WindowTree* owner,
       Id root_id) {
     return EstablishClientViaEmbedWithPolicyBitmask(owner, root_id);
   }
 
   std::unique_ptr<TestWindowTreeClient2>
-  EstablishClientViaEmbedWithPolicyBitmask(ws::mojom::WindowTree* owner,
+  EstablishClientViaEmbedWithPolicyBitmask(mojom::WindowTree* owner,
                                            Id root_id) {
     if (!EmbedUrl(connector(), owner, test_name(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
@@ -599,16 +598,16 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
     WindowServerServiceTestBase::SetUp();
 
-    ws::mojom::WindowTreeFactoryPtr factory;
+    mojom::WindowTreeFactoryPtr factory;
     // TODO: figure out better way to isolate this!
     connector()->BindInterface("ui", &factory);
 
     // Connect |wt_client_1| as the first client.
-    ws::mojom::WindowTreeClientPtr tree_client_ptr;
+    mojom::WindowTreeClientPtr tree_client_ptr;
     wt_client1_ = std::make_unique<TestWindowTreeClient2>();
     wt_client1_->Bind(MakeRequest(&tree_client_ptr));
 
-    ws::mojom::WindowTreePtr tree_ptr;
+    mojom::WindowTreePtr tree_ptr;
     factory->CreateWindowTree(MakeRequest(&tree_ptr),
                               std::move(tree_client_ptr));
     wt_client1_->SetWindowTree(std::move(tree_ptr));
@@ -969,7 +968,7 @@ TEST_F(WindowTreeClientTest, DISABLED_ReorderWindow) {
   {
     changes1()->clear();
     ASSERT_TRUE(wt_client2()->ReorderWindow(window_2_2, window_2_3,
-                                            ws::mojom::OrderDirection::ABOVE));
+                                            mojom::OrderDirection::ABOVE));
 
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window22_in_wt1) + " relative=" +
@@ -980,7 +979,7 @@ TEST_F(WindowTreeClientTest, DISABLED_ReorderWindow) {
   {
     changes1()->clear();
     ASSERT_TRUE(wt_client2()->ReorderWindow(window_2_2, window_2_3,
-                                            ws::mojom::OrderDirection::BELOW));
+                                            mojom::OrderDirection::BELOW));
 
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window22_in_wt1) + " relative=" +
@@ -990,24 +989,24 @@ TEST_F(WindowTreeClientTest, DISABLED_ReorderWindow) {
 
   // view2 is already below view3.
   EXPECT_FALSE(wt_client2()->ReorderWindow(window_2_2, window_2_3,
-                                           ws::mojom::OrderDirection::BELOW));
+                                           mojom::OrderDirection::BELOW));
 
   // view4 & 5 are unknown to client 2.
   EXPECT_FALSE(wt_client2()->ReorderWindow(window_1_4, window_1_5,
-                                           ws::mojom::OrderDirection::ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // view6 & view3 have different parents.
   EXPECT_FALSE(wt_client1()->ReorderWindow(window23_in_wt1, window26_in_wt1,
-                                           ws::mojom::OrderDirection::ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // Non-existent window-ids
   EXPECT_FALSE(wt_client1()->ReorderWindow(BuildWindowId(client_id_1(), 27),
                                            BuildWindowId(client_id_1(), 28),
-                                           ws::mojom::OrderDirection::ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // view7 & view8 are un-parented.
   EXPECT_FALSE(wt_client1()->ReorderWindow(window27_in_wt1, window28_in_wt1,
-                                           ws::mojom::OrderDirection::ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 }
 
 // Verifies DeleteWindow works.
@@ -1875,7 +1874,7 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
   ASSERT_TRUE(wt_client1()->NewWindow(1));
 
   TestWindowTreeClient2 client2;
-  ws::mojom::WindowTreeClientPtr client2_ptr;
+  mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
   ASSERT_TRUE(
@@ -1889,7 +1888,7 @@ TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingToken) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   TestWindowTreeClient2 client2;
-  ws::mojom::WindowTreeClientPtr client2_ptr;
+  mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
   ASSERT_TRUE(
@@ -1900,7 +1899,7 @@ TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingToken) {
 
   // Schedule an embed of |client3| from wt1().
   TestWindowTreeClient2 client3;
-  ws::mojom::WindowTreeClientPtr client3_ptr;
+  mojom::WindowTreeClientPtr client3_ptr;
   mojo::Binding<WindowTreeClient> client3_binding(
       &client3, mojo::MakeRequest(&client3_ptr));
   base::UnguessableToken token;
@@ -1929,7 +1928,7 @@ TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   TestWindowTreeClient2 client2;
-  ws::mojom::WindowTreeClientPtr client2_ptr;
+  mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
   ASSERT_TRUE(
@@ -1940,7 +1939,7 @@ TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
 
   // Schedule an embed of |client3| from wt1().
   TestWindowTreeClient2 client3;
-  ws::mojom::WindowTreeClientPtr client3_ptr;
+  mojom::WindowTreeClientPtr client3_ptr;
   mojo::Binding<WindowTreeClient> client3_binding(
       &client3, mojo::MakeRequest(&client3_ptr));
   base::UnguessableToken token;
@@ -2333,5 +2332,4 @@ TEST_F(WindowTreeClientTest, DISABLED_Transform) {
 // tests.
 
 }  // namespace test
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

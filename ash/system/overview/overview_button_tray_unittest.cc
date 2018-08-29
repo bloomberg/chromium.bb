@@ -79,7 +79,7 @@ class OverviewButtonTrayTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    ui::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
+    ws::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
         3, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard")});
     base::RunLoop().RunUntilIdle();
   }

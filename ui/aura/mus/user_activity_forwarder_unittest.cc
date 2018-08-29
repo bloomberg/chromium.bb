@@ -31,7 +31,7 @@ class FakeUserActivityMonitor : public ws::mojom::UserActivityMonitor {
   }
 
   // Notifies all observers about user activity.
-  // ui::TaskRunnerTestBase::RunUntilIdle() must be called after this method in
+  // ws::TaskRunnerTestBase::RunUntilIdle() must be called after this method in
   // order for observers to receive notifications.
   void NotifyUserActivityObservers() {
     for (auto& observer : activity_observers_)
@@ -60,7 +60,7 @@ class FakeUserActivityMonitor : public ws::mojom::UserActivityMonitor {
 
 namespace aura {
 
-using UserActivityForwarderTest = ui::TaskRunnerTestBase;
+using UserActivityForwarderTest = ws::TaskRunnerTestBase;
 
 TEST_F(UserActivityForwarderTest, ForwardActivityToDetector) {
   FakeUserActivityMonitor monitor;

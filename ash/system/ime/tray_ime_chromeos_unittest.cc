@@ -105,7 +105,7 @@ void TrayIMETest::SuppressKeyboard() {
   std::vector<ui::TouchscreenDevice> screens;
   screens.emplace_back(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                        "Touchscreen", gfx::Size(1024, 768), 0);
-  ui::InputDeviceClientTestApi input_device_client_test_api;
+  ws::InputDeviceClientTestApi input_device_client_test_api;
   input_device_client_test_api.SetTouchscreenDevices(screens);
 
   std::vector<ui::InputDevice> keyboards;
@@ -116,9 +116,9 @@ void TrayIMETest::SuppressKeyboard() {
 
 void TrayIMETest::RestoreKeyboard() {
   DCHECK(keyboard_suppressed_);
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices(
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices(
       touchscreen_devices_to_restore_);
-  ui::InputDeviceClientTestApi().SetKeyboardDevices(
+  ws::InputDeviceClientTestApi().SetKeyboardDevices(
       keyboard_devices_to_restore_);
 }
 

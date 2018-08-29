@@ -8,7 +8,7 @@
 #include "base/threading/simple_thread.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 
-namespace ui {
+namespace ws {
 
 RasterThreadHelper::RasterThreadHelper()
     : task_graph_runner_(new cc::SingleThreadTaskGraphRunner) {
@@ -24,4 +24,4 @@ cc::TaskGraphRunner* RasterThreadHelper::task_graph_runner() {
   return task_graph_runner_.get();
 }
 
-}  // namespace ui
+}  // namespace ws

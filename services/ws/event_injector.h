@@ -11,20 +11,19 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/event_injector.mojom.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 class InjectedEventHandler;
 class WindowService;
 
 // See description in mojom for details on this.
 class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
-    : public ws::mojom::EventInjector {
+    : public mojom::EventInjector {
  public:
   explicit EventInjector(WindowService* window_service);
   ~EventInjector() override;
 
-  void AddBinding(ws::mojom::EventInjectorRequest request);
+  void AddBinding(mojom::EventInjectorRequest request);
 
  private:
   struct EventAndHost;
@@ -37,14 +36,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   // |window_tree_host| there was a problem in conversion and the event should
   // not be dispatched.
   EventAndHost DetermineEventAndHost(int64_t display_id,
-                                     std::unique_ptr<Event> event);
+                                     std::unique_ptr<ui::Event> event);
 
-  // ws::mojom::EventInjector:
+  // mojom::EventInjector:
   void InjectEvent(int64_t display_id,
                    std::unique_ptr<ui::Event> event,
                    InjectEventCallback cb) override;
   void InjectEventNoAck(int64_t display_id,
-                        std::unique_ptr<Event> event) override;
+                        std::unique_ptr<ui::Event> event) override;
 
   WindowService* window_service_;
 
@@ -53,12 +52,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   // the client. The handlers are removed once the event is processed.
   std::vector<std::unique_ptr<HandlerAndCallback>> handlers_;
 
-  mojo::BindingSet<ws::mojom::EventInjector> bindings_;
+  mojo::BindingSet<mojom::EventInjector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_EVENT_INJECTOR_H_

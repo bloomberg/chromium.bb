@@ -73,13 +73,13 @@ const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";
 const char kTestPropertyServerKey3[] = "test-property-server3";
 
-ui::Id server_id(Window* window) {
+ws::Id server_id(Window* window) {
   return window ? WindowMus::Get(window)->server_id() : 0;
 }
 
 std::unique_ptr<Window> CreateWindowUsingId(
     WindowTreeClient* window_tree_client,
-    ui::Id server_id,
+    ws::Id server_id,
     Window* parent = nullptr) {
   ws::mojom::WindowData window_data;
   window_data.window_id = server_id;
@@ -451,7 +451,7 @@ TEST_P(WindowTreeClientTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
 // Verifies a new window from the server doesn't result in attempting to add
 // the window back to the server.
 TEST_F(WindowTreeClientTest, AddFromServerDoesntAddAgain) {
-  const ui::Id child_window_id = server_id(root_window()) + 11;
+  const ws::Id child_window_id = server_id(root_window()) + 11;
   ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
   data->parent_id = server_id(root_window());
   data->window_id = child_window_id;
@@ -493,7 +493,7 @@ TEST_F(WindowTreeClientTest, ReparentFromServerDoesntAddAgain) {
 TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithProperties) {
   RegisterTestProperties(GetPropertyConverter());
   window_tree()->AckAllChanges();
-  const ui::Id child_window_id = server_id(root_window()) + 11;
+  const ws::Id child_window_id = server_id(root_window()) + 11;
   ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
   const uint8_t server_test_property1_value = 91;
   data->properties[kTestPropertyServerKey1] =
@@ -2472,7 +2472,7 @@ TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithExistingWindow) {
   Window* window2 = new Window(nullptr);
   window2->Init(ui::LAYER_NOT_DRAWN);
   window_tree()->AckAllChanges();
-  const ui::Id server_window_id = server_id(root_window()) + 11;
+  const ws::Id server_window_id = server_id(root_window()) + 11;
   ws::mojom::WindowDataPtr data1 = ws::mojom::WindowData::New();
   ws::mojom::WindowDataPtr data2 = ws::mojom::WindowData::New();
   ws::mojom::WindowDataPtr data3 = ws::mojom::WindowData::New();

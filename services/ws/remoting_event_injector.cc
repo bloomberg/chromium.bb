@@ -7,24 +7,23 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/system_input_injector.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 namespace {
 
 // Converts an InjectedMouseButtonTypeToEventFlags to EventFlags, which is what
 // SystemInputInjector expects.
-EventFlags InjectedMouseButtonTypeToEventFlags(
-    ws::mojom::InjectedMouseButtonType type) {
+ui::EventFlags InjectedMouseButtonTypeToEventFlags(
+    mojom::InjectedMouseButtonType type) {
   switch (type) {
-    case ws::mojom::InjectedMouseButtonType::kLeft:
-      return EF_LEFT_MOUSE_BUTTON;
-    case ws::mojom::InjectedMouseButtonType::kMiddle:
-      return EF_MIDDLE_MOUSE_BUTTON;
-    case ws::mojom::InjectedMouseButtonType::kRight:
-      return EF_MIDDLE_MOUSE_BUTTON;
+    case mojom::InjectedMouseButtonType::kLeft:
+      return ui::EF_LEFT_MOUSE_BUTTON;
+    case mojom::InjectedMouseButtonType::kMiddle:
+      return ui::EF_MIDDLE_MOUSE_BUTTON;
+    case mojom::InjectedMouseButtonType::kRight:
+      return ui::EF_MIDDLE_MOUSE_BUTTON;
   }
   NOTREACHED();
-  return EF_NONE;
+  return ui::EF_NONE;
 }
 
 }  // namespace
@@ -36,7 +35,7 @@ RemotingEventInjector::RemotingEventInjector(
 RemotingEventInjector::~RemotingEventInjector() = default;
 
 void RemotingEventInjector::AddBinding(
-    ws::mojom::RemotingEventInjectorRequest request) {
+    mojom::RemotingEventInjectorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -46,7 +45,7 @@ void RemotingEventInjector::MoveCursorToLocationInPixels(
 }
 
 void RemotingEventInjector::InjectMousePressOrRelease(
-    ws::mojom::InjectedMouseButtonType button,
+    mojom::InjectedMouseButtonType button,
     bool down) {
   system_injector_->InjectMouseButton(
       InjectedMouseButtonTypeToEventFlags(button), down);
@@ -65,5 +64,4 @@ void RemotingEventInjector::InjectKeyEvent(int32_t native_key_code,
       suppress_auto_repeat);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -111,7 +111,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
 #if defined(OS_CHROMEOS)
   chromeos::Launchable launchable_;
 #if defined(USE_OZONE)
-  ui::InputDeviceController input_device_controller_;
+  ws::InputDeviceController input_device_controller_;
 #endif
 #endif
 

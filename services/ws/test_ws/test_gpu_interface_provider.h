@@ -13,7 +13,7 @@ namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
 
-namespace ui {
+namespace ws {
 
 namespace gpu_host {
 class GpuHost;
@@ -22,14 +22,14 @@ class GpuHost;
 namespace test {
 
 // TestGpuInterfaceProvider used by test_ws.
-class TestGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
+class TestGpuInterfaceProvider : public GpuInterfaceProvider {
  public:
-  TestGpuInterfaceProvider(ui::gpu_host::GpuHost* gpu_host,
+  TestGpuInterfaceProvider(gpu_host::GpuHost* gpu_host,
                            discardable_memory::DiscardableSharedMemoryManager*
                                discardable_shared_memory_manager);
   ~TestGpuInterfaceProvider() override;
 
-  // ui::ws2::GpuInterfaceProvider:
+  // GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
 #if defined(USE_OZONE)
@@ -40,9 +40,9 @@ class TestGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
  private:
   void BindDiscardableSharedMemoryManagerRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request);
-  void BindGpuRequest(ws::mojom::GpuRequest request);
+  void BindGpuRequest(mojom::GpuRequest request);
 
-  ui::gpu_host::GpuHost* const gpu_host_;
+  gpu_host::GpuHost* const gpu_host_;
   discardable_memory::DiscardableSharedMemoryManager* const
       discardable_shared_memory_manager_;
 
@@ -50,6 +50,6 @@ class TestGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_TEST_WS_TEST_GPU_INTERFACE_PROVIDER_H_

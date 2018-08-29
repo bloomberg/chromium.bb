@@ -27,18 +27,17 @@ gfx::Point GetLocationInScreen(const ui::LocatedEvent& event) {
 
 }  // namespace
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 TopmostWindowObserver::TopmostWindowObserver(WindowTree* window_tree,
-                                             ws::mojom::MoveLoopSource source,
+                                             mojom::MoveLoopSource source,
                                              aura::Window* initial_target)
     : window_tree_(window_tree),
       source_(source),
       last_target_(initial_target),
       root_(initial_target->GetRootWindow()) {
   root_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
-  if (source == ws::mojom::MoveLoopSource::MOUSE) {
+  if (source == mojom::MoveLoopSource::MOUSE) {
     last_location_ =
         root_->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
     ::wm::ConvertPointToScreen(root_, &last_location_);
@@ -63,7 +62,7 @@ TopmostWindowObserver::~TopmostWindowObserver() {
 
 void TopmostWindowObserver::OnMouseEvent(ui::MouseEvent* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
-  if (source_ != ws::mojom::MoveLoopSource::MOUSE)
+  if (source_ != mojom::MoveLoopSource::MOUSE)
     return;
   // The event target can change when the dragged browser tab is detached into a
   // new window.
@@ -74,7 +73,7 @@ void TopmostWindowObserver::OnMouseEvent(ui::MouseEvent* event) {
 
 void TopmostWindowObserver::OnTouchEvent(ui::TouchEvent* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
-  if (source_ != ws::mojom::MoveLoopSource::TOUCH)
+  if (source_ != mojom::MoveLoopSource::TOUCH)
     return;
   // The event target can change when the dragged browser tab is detached into a
   // new window.
@@ -142,5 +141,4 @@ void TopmostWindowObserver::UpdateTopmostWindows() {
   window_tree_->SendTopmostWindows(windows);
 }
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws

@@ -268,7 +268,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
   scoped_refptr<media::VideoFrame> frame;
 
   // |context_provider| is null if the GPU process has crashed or isn't there.
-  ui::ContextProviderCommandBuffer* const context_provider =
+  ws::ContextProviderCommandBuffer* const context_provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   if (!context_provider) {
     // Send black frames (yuv = {0, 127, 127}).

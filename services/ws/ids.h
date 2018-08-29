@@ -10,8 +10,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ws/common/types.h"
 
-namespace ui {
-namespace ws2 {
+namespace ws {
 
 // A client id used to indicate no client. That is, no WindowTree ever gets this
 // id.
@@ -37,7 +36,6 @@ using ClientWindowId = viz::FrameSinkId;
 
 using ClientWindowIdHash = viz::FrameSinkIdHash;
 
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_IDS_H_

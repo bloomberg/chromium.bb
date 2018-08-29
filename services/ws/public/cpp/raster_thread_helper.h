@@ -14,7 +14,7 @@ class TaskGraphRunner;
 class SingleThreadTaskGraphRunner;
 }  // namespace cc
 
-namespace ui {
+namespace ws {
 
 class RasterThreadHelper {
  public:
@@ -29,6 +29,6 @@ class RasterThreadHelper {
   DISALLOW_COPY_AND_ASSIGN(RasterThreadHelper);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_RASTER_THREAD_HELPER_H_

@@ -9,7 +9,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
-namespace ui {
+namespace ws {
 class InputDeviceControllerClient;
 }
 
@@ -19,7 +19,7 @@ namespace input_method {
 class UI_BASE_IME_EXPORT ImeKeyboardMus : public ImeKeyboard {
  public:
   explicit ImeKeyboardMus(
-      ui::InputDeviceControllerClient* input_device_controller_client);
+      ws::InputDeviceControllerClient* input_device_controller_client);
   ~ImeKeyboardMus() override;
 
   // ImeKeyboard:
@@ -34,7 +34,7 @@ class UI_BASE_IME_EXPORT ImeKeyboardMus : public ImeKeyboard {
   bool CapsLockIsEnabled() override;
 
  private:
-  ui::InputDeviceControllerClient* input_device_controller_client_;
+  ws::InputDeviceControllerClient* input_device_controller_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeKeyboardMus);
 };

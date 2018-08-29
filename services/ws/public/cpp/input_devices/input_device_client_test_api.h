@@ -10,13 +10,15 @@
 #include "base/macros.h"
 
 namespace ui {
-
-class InputDeviceClient;
-
-enum class StylusState;
-
 struct InputDevice;
 struct TouchscreenDevice;
+
+enum class StylusState;
+}  // namespace ui
+
+namespace ws {
+
+class InputDeviceClient;
 
 // Test interfaces for calling private functions of InputDeviceClient. Until
 // Chrome OS has been converted to InputDeviceClient this uses DeviceDataManager
@@ -32,18 +34,18 @@ class InputDeviceClientTestApi {
 
   void NotifyObserversDeviceListsComplete();
   void NotifyObserversKeyboardDeviceConfigurationChanged();
-  void NotifyObserversStylusStateChanged(StylusState stylus_state);
+  void NotifyObserversStylusStateChanged(ui::StylusState stylus_state);
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
   void OnDeviceListsComplete();
 
-  void SetKeyboardDevices(const std::vector<InputDevice>& devices);
-  void SetMouseDevices(const std::vector<InputDevice>& devices);
+  void SetKeyboardDevices(const std::vector<ui::InputDevice>& devices);
+  void SetMouseDevices(const std::vector<ui::InputDevice>& devices);
 
   // |are_touchscreen_target_displays_valid| is only applicable to
   // InputDeviceClient. See
   // InputDeviceClient::OnTouchscreenDeviceConfigurationChanged() for details.
   void SetTouchscreenDevices(
-      const std::vector<TouchscreenDevice>& devices,
+      const std::vector<ui::TouchscreenDevice>& devices,
       bool are_touchscreen_target_displays_valid = false);
 
   InputDeviceClient* GetInputDeviceClient();
@@ -52,6 +54,6 @@ class InputDeviceClientTestApi {
   DISALLOW_COPY_AND_ASSIGN(InputDeviceClientTestApi);
 };
 
-}  // namespace ui
+}  // namespace ws
 
 #endif  // SERVICES_WS_PUBLIC_CPP_INPUT_DEVICES_INPUT_DEVICE_CLIENT_TEST_API_H_

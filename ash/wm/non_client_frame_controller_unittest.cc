@@ -204,7 +204,7 @@ TEST_F(NonClientFrameControllerTest, CallsRequestClose) {
   auto* changes = GetTestWindowTreeClient()->tracker()->changes();
   ASSERT_FALSE(changes->empty());
   // The remote client should have a request to close the window.
-  EXPECT_EQ("RequestClose", ui::ws2::ChangeToDescription(changes->back()));
+  EXPECT_EQ("RequestClose", ws::ChangeToDescription(changes->back()));
 }
 
 TEST_F(NonClientFrameControllerTest, WindowTitle) {

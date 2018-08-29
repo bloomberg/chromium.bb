@@ -12,10 +12,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 
-using ws::mojom::UserIdleObserver;
+namespace ws {
 
-namespace ui {
-namespace ws2 {
+using mojom::UserIdleObserver;
+
 namespace test {
 
 class UserActivityMonitorTestApi {
@@ -33,13 +33,13 @@ class UserActivityMonitorTestApi {
   DISALLOW_COPY_AND_ASSIGN(UserActivityMonitorTestApi);
 };
 
-class TestUserActivityObserver : public ws::mojom::UserActivityObserver {
+class TestUserActivityObserver : public mojom::UserActivityObserver {
  public:
   TestUserActivityObserver() : binding_(this) {}
   ~TestUserActivityObserver() override {}
 
-  ws::mojom::UserActivityObserverPtr GetPtr() {
-    ws::mojom::UserActivityObserverPtr ptr;
+  mojom::UserActivityObserverPtr GetPtr() {
+    mojom::UserActivityObserverPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
   }
@@ -51,22 +51,22 @@ class TestUserActivityObserver : public ws::mojom::UserActivityObserver {
   }
 
  private:
-  // ws::mojom::UserActivityObserver:
+  // mojom::UserActivityObserver:
   void OnUserActivity() override { received_user_activity_ = true; }
 
-  mojo::Binding<ws::mojom::UserActivityObserver> binding_;
+  mojo::Binding<mojom::UserActivityObserver> binding_;
   bool received_user_activity_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserActivityObserver);
 };
 
-class TestUserIdleObserver : public ws::mojom::UserIdleObserver {
+class TestUserIdleObserver : public mojom::UserIdleObserver {
  public:
   TestUserIdleObserver() : binding_(this) {}
   ~TestUserIdleObserver() override {}
 
-  ws::mojom::UserIdleObserverPtr GetPtr() {
-    ws::mojom::UserIdleObserverPtr ptr;
+  mojom::UserIdleObserverPtr GetPtr() {
+    mojom::UserIdleObserverPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
   }
@@ -80,13 +80,13 @@ class TestUserIdleObserver : public ws::mojom::UserIdleObserver {
   }
 
  private:
-  // ws::mojom::UserIdleObserver:
+  // mojom::UserIdleObserver:
   void OnUserIdleStateChanged(UserIdleObserver::IdleState new_state) override {
     received_idle_state_ = true;
     idle_state_ = new_state;
   }
 
-  mojo::Binding<ws::mojom::UserIdleObserver> binding_;
+  mojo::Binding<mojom::UserIdleObserver> binding_;
   bool received_idle_state_ = false;
   UserIdleObserver::IdleState idle_state_ = UserIdleObserver::IdleState::ACTIVE;
 
@@ -227,5 +227,4 @@ TEST_F(Ws2UserActivityMonitorTest, UserIdleObserverConnectNotification) {
 }
 
 }  // namespace test
-}  // namespace ws2
-}  // namespace ui
+}  // namespace ws
