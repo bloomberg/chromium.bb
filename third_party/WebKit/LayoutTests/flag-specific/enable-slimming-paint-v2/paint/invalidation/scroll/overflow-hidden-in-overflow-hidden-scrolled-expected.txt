@@ -9,12 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV class='innerWrapper'",
           "rect": [8, 18, 100, 190],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='innerWrapper'",
-          "rect": [8, 18, 100, 190],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         }
       ]
     }

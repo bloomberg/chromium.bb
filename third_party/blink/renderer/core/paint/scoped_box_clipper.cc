@@ -38,7 +38,7 @@ void ScopedBoxClipper::InitializeScopedProperties(
   const PropertyTreeState& contents_properties =
       fragment_data->ContentsProperties();
   scoped_properties_.emplace(paint_info.context.GetPaintController(),
-                             contents_properties.Clip(), client,
+                             contents_properties, client,
                              paint_info.DisplayItemTypeForClipping());
 }
 
