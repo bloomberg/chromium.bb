@@ -83,8 +83,7 @@ void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
 
 void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
                                              bool powered) {
-  if (observer_)
-    observer_->BluetoothAdapterPowerChanged(powered);
+  FidoBleDiscoveryBase::AdapterPoweredChanged(adapter, powered);
 
   // If Bluetooth adapter is powered on, resume scanning for nearby FIDO
   // devices. Previously inactive discovery sessions would be terminated upon

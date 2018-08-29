@@ -172,10 +172,10 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
 }
 
 void FidoRequestHandlerBase::BluetoothAdapterPowerChanged(bool is_powered_on) {
-  if (!observer_)
-    return;
+  transport_availability_info_.is_ble_powered = is_powered_on;
 
-  observer_->BluetoothAdapterPowerChanged(is_powered_on);
+  if (observer_)
+    observer_->BluetoothAdapterPowerChanged(is_powered_on);
 }
 
 void FidoRequestHandlerBase::DiscoveryAvailable(FidoDiscovery* discovery,

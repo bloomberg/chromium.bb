@@ -298,6 +298,13 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
       saved_authenticators.end());
 }
 
+void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
+    bool is_powered_on) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->OnBluetoothPoweredStateChanged(is_powered_on);
+}
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
   DCHECK(weak_dialog_model_);
   weak_dialog_model_ = nullptr;
