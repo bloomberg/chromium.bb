@@ -142,10 +142,15 @@ void GoFullscreen(Element& element, Fullscreen::RequestType request_type) {
   Document& document = element.GetDocument();
   Element* old_element = Fullscreen::FullscreenElementFrom(document);
 
+  // If |element| is already in top layer remove it so it will
+  // be appended to the end.
+  if (element.IsInTopLayer())
+    document.RemoveFromTopLayer(&element);
+  else
+    DCHECK(!HasFullscreenFlag(element));
+
   // To fullscreen an |element| within a |document|, set the |element|'s
   // fullscreen flag and add it to |document|'s top layer.
-  DCHECK(!HasFullscreenFlag(element));
-  DCHECK(!element.IsInTopLayer());
   SetFullscreenFlag(element, request_type);
   document.AddToTopLayer(&element);
 
@@ -259,28 +264,6 @@ bool FullscreenElementReady(const Element& element,
   if (!AllowedToUseFullscreen(element.GetDocument().GetFrame(),
                               report_on_failure))
     return false;
-
-  // |element|'s node document's fullscreen element stack is either empty or its
-  // top element is an inclusive ancestor of |element|.
-  if (const Element* top_element =
-          Fullscreen::FullscreenElementFrom(element.GetDocument())) {
-    if (!top_element->contains(&element))
-      return false;
-  }
-
-  // |element| has no ancestor element whose local name is iframe and namespace
-  // is the HTML namespace.
-  if (Traversal<HTMLIFrameElement>::FirstAncestor(element))
-    return false;
-
-  // |element|'s node document's browsing context either has a browsing context
-  // container and the fullscreen element ready check returns true for
-  // |element|'s node document's browsing context's browsing context container,
-  // or it has no browsing context container.
-  if (const Element* owner = element.GetDocument().LocalOwner()) {
-    if (!FullscreenElementReady(*owner, ReportOptions::kDoNotReport))
-      return false;
-  }
 
   return true;
 }
