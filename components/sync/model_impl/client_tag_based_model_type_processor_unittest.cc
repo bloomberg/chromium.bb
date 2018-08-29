@@ -1731,6 +1731,18 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0, bridge()->apply_call_count());
 }
 
+// Tests that the processor correctly handles an initial (non-empty) update
+// without any gc directives (as it happens in the migration to USS).
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       InitialUpdateForFullUpdateBridge) {
+  // Do not set any model type state to emulate that initial sync has not been
+  // done yet.
+  ModelReadyToSync();
+  OnSyncStarting();
+
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
+}
+
 // Tests that the processor reports an error for updates with a version GC
 // directive that are received for types that support incremental updates.
 TEST_F(ClientTagBasedModelTypeProcessorTest,

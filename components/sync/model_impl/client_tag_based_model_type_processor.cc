@@ -558,24 +558,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (HasClearAllDirective(model_type_state) &&
-      bridge_->SupportsIncrementalUpdates()) {
-    ReportError(ModelError(FROM_HERE,
-                           "Received an update with version watermark for "
-                           "bridge that supports incremental updates"));
-
-    return;
-  } else if (!HasClearAllDirective(model_type_state) &&
-             !bridge_->SupportsIncrementalUpdates()) {
-    // We receive empty updates (without clear all directive) from the server to
-    // indicate nothing changed. We can just ignore these updates for bridges
-    // that don't support incremental updates.
-    if (!updates.empty()) {
-      ReportError(ModelError(FROM_HERE,
-                             "Received an update without version watermark for "
-                             "bridge that does not support incremental "
-                             "updates"));
-    }
+  if (!ValidateUpdate(model_type_state, updates)) {
     return;
   }
 
@@ -786,6 +769,40 @@ void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
     }
     metadata_changes->UpdateMetadata(entity->storage_key(), entity->metadata());
   }
+}
+
+bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
+    const sync_pb::ModelTypeState& model_type_state,
+    const UpdateResponseDataList& updates) {
+  if (!model_type_state_.initial_sync_done()) {
+    // Due to uss_migrator, initial sync (when migrating from non-USS) does not
+    // contain any gc directives. Thus, we cannot expect the conditions below to
+    // be satisfied. It is okay to skip the check as for an initial sync, the gc
+    // directive does not make any semantical difference.
+    return true;
+  }
+
+  if (HasClearAllDirective(model_type_state) &&
+      bridge_->SupportsIncrementalUpdates()) {
+    ReportError(ModelError(FROM_HERE,
+                           "Received an update with version watermark for "
+                           "bridge that supports incremental updates"));
+
+    return false;
+  } else if (!HasClearAllDirective(model_type_state) &&
+             !bridge_->SupportsIncrementalUpdates()) {
+    // We receive empty updates (without clear all directive) from the server to
+    // indicate nothing changed. We can just ignore these updates for bridges
+    // that don't support incremental updates.
+    if (!updates.empty()) {
+      ReportError(ModelError(FROM_HERE,
+                             "Received an update without version watermark for "
+                             "bridge that does not support incremental "
+                             "updates"));
+    }
+    return false;
+  }
+  return true;
 }
 
 base::Optional<ModelError>
