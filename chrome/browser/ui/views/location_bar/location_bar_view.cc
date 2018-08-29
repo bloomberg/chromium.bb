@@ -208,17 +208,18 @@ void LocationBarView::Init() {
   keyword_hint_view_ = new KeywordHintView(this, profile(), tint());
   AddChildView(keyword_hint_view_);
 
+  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
+
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
     ContentSettingImageView* image_view =
         new ContentSettingImageView(std::move(model), this, font_list);
+    image_view->SetIconColor(icon_color);
     content_setting_views_.push_back(image_view);
     image_view->SetVisible(false);
     AddChildView(image_view);
   }
-
-  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
 
   std::vector<PageActionIconType> page_action_icon_types;
   // |browser_| may be null when LocationBarView is used for non-Browser windows
