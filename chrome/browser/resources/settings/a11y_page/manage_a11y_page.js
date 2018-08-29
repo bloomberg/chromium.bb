@@ -114,6 +114,14 @@ Polymer({
     chrome.send('initializeKeyboardWatcher');
   },
 
+  /** @override */
+  ready: function() {
+    this.addWebUIListener(
+        'startup-sound-enabled-updated',
+        this.updateStartupSoundEnabled_.bind(this));
+    chrome.send('getStartupSoundEnabled');
+  },
+
   /**
    * Updates the Select-to-Speak description text based on:
    *    1. Whether Select-to-Speak is enabled.
@@ -131,6 +139,23 @@ Polymer({
       enabled, hasKeyboard, disabledString, keyboardString, noKeyboardString) {
     return !enabled ? disabledString :
                       hasKeyboard ? keyboardString : noKeyboardString;
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  toggleStartupSoundEnabled_: function(e) {
+    let checked = /** @type {boolean} */ (e.detail);
+    chrome.send('setStartupSoundEnabled', [checked]);
+  },
+
+  /**
+   * @param {boolean} enabled
+   * @private
+   */
+  updateStartupSoundEnabled_: function(enabled) {
+    this.$.startupSoundEnabled.checked = enabled;
   },
 
   /** @private */

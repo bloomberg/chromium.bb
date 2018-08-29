@@ -244,6 +244,11 @@
         pref="{{prefs.settings.a11y.mono_audio}}"
         label="$i18n{monoAudioLabel}">
     </settings-toggle-button>
+    <settings-toggle-button id="startupSoundEnabled" class="first"
+        pref=" "
+        on-change="toggleStartupSoundEnabled_"
+        label="$i18n{startupSoundLabel}">
+    </settings-toggle-button>
 
     <template is="dom-if" if="[[!isGuest_]]">
       <a class="settings-box two-line inherit-color no-outline" tabindex="-1"
