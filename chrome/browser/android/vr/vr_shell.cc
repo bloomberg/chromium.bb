@@ -1339,6 +1339,8 @@ jlong JNI_VrShell_Init(JNIEnv* env,
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
   ui_initial_state.create_tabs_view =
       base::FeatureList::IsEnabled(chrome::android::kVrBrowsingTabsView);
+  ui_initial_state.use_new_incognito_strings =
+      base::FeatureList::IsEnabled(features::kIncognitoStrings);
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,

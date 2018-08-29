@@ -71,7 +71,6 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vector_icons/vector_icons.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/vector_icons.h"
@@ -2393,20 +2392,19 @@ void UiSceneCreator::CreateOverflowMenu() {
     button_region->AddChild(std::move(button));
   }
 
+  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_PRIVATE_TAB;
+  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_PRIVATE_TABS;
+  if (!model_->use_new_incognito_strings) {
+    new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
+    close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
+  }
+
   struct MenuItem {
     UiElementName name;
     int string_id;
     base::RepeatingCallback<void(UiBrowserInterface*)> action;
     base::RepeatingCallback<bool(Model*)> visibility;
   };
-  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
-  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kIncognitoStrings)) {
-    new_incognito_tab_res_id = IDS_VR_MENU_NEW_PRIVATE_TAB;
-    close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_PRIVATE_TABS;
-  }
-#endif  // defined(OS_ANDROID)
   std::vector<MenuItem> menu_items = {
       {
           kOverflowMenuNewIncognitoTabItem, new_incognito_tab_res_id,
