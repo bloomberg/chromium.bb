@@ -14,24 +14,6 @@
 
 namespace blink {
 
-namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class RendererInterventionEnabledStatus {
-  kDetectionOnlyEnabled = 0,
-  kTriggerEnabled = 1,
-  kDisabledFailedMemoryMetricsFetch = 2,
-  kMaxValue = kDisabledFailedMemoryMetricsFetch
-};
-
-void RecordEnabledStatus(RendererInterventionEnabledStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.OomIntervention.RendererEnabledStatus", status);
-}
-
-}  // namespace
-
 // static
 void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
   mojo::MakeStrongBinding(std::make_unique<OomInterventionImpl>(),
@@ -53,15 +35,8 @@ void OomInterventionImpl::StartDetection(
   host_ = std::move(host);
 
   // Disable intervention if we cannot get memory details of current process.
-  if (CrashMemoryMetricsReporterImpl::Instance().ResetFileDiscriptors()) {
-    RecordEnabledStatus(
-        RendererInterventionEnabledStatus::kDisabledFailedMemoryMetricsFetch);
+  if (CrashMemoryMetricsReporterImpl::Instance().ResetFileDiscriptors())
     return;
-  }
-  RecordEnabledStatus(
-      renderer_pause_enabled || navigate_ads_enabled
-          ? RendererInterventionEnabledStatus::kTriggerEnabled
-          : RendererInterventionEnabledStatus::kDetectionOnlyEnabled);
 
   detection_args_ = std::move(detection_args);
   renderer_pause_enabled_ = renderer_pause_enabled;
