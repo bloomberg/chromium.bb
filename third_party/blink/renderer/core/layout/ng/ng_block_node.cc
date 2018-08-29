@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -203,6 +204,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     box_->ComputePreferredLogicalWidths();
   }
 
+  PrepareForLayout();
+
   NGBoxStrut old_scrollbars = GetScrollbarSizes();
   layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                       /* ignored */ nullptr);
@@ -225,6 +228,11 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   }
 
   return layout_result;
+}
+
+void NGBlockNode::PrepareForLayout() {
+  if (IsListItem())
+    ToLayoutNGListItem(box_)->UpdateMarkerTextIfNeeded();
 }
 
 void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
