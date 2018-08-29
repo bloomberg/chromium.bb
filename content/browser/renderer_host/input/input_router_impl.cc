@@ -215,8 +215,7 @@ void InputRouterImpl::SetForceEnableZoom(bool enabled) {
 }
 
 base::Optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
-  return touch_action_filter_.allowed_touch_action().value_or(
-      cc::kTouchActionAuto);
+  return touch_action_filter_.allowed_touch_action();
 }
 
 void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
