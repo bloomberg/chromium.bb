@@ -3410,7 +3410,9 @@ interface HTMLPictureElement : HTMLElement
     method constructor
 interface HTMLPortalElement : HTMLElement
     attribute @@toStringTag
+    getter src
     method constructor
+    setter src
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag
     getter width

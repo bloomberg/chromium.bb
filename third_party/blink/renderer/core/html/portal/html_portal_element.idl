@@ -6,4 +6,5 @@
 
 [HTMLConstructor, RuntimeEnabled=Portals]
 interface HTMLPortalElement : HTMLElement {
+  [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
 };
