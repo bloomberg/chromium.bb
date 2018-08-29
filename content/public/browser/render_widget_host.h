@@ -201,8 +201,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if the renderer is considered unresponsive.
   virtual bool IsCurrentlyUnresponsive() const = 0;
 
-  virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
-
   // Called to propagate updated visual properties to the renderer. Returns
   // whether the renderer has been informed of updated properties.
   virtual bool SynchronizeVisualProperties() = 0;

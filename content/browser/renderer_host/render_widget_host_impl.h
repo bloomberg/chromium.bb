@@ -199,7 +199,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
   bool IsCurrentlyUnresponsive() const override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
   bool SynchronizeVisualProperties() override;
   void AddKeyPressEventCallback(const KeyPressEventCallback& callback) override;
   void RemoveKeyPressEventCallback(
@@ -344,6 +343,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Notifies the RenderWidget that it lost the mouse lock.
   void SendMouseLockLost();
 
+  // Sets a flag that causes the widget to ignore input events.
+  void SetIgnoreInputEvents(bool ignore_input_events);
+
   bool is_last_unlocked_by_target() const {
     return is_last_unlocked_by_target_;
   }
@@ -480,12 +482,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Cancels an ongoing composition.
   void ImeCancelComposition();
 
-  bool ignore_input_events() const {
-    return ignore_input_events_;
-  }
-
-  // Whether forwarded WebInputEvents should be dropped.
-  bool ShouldDropInputEvents() const;
+  // Whether forwarded WebInputEvents are being ignored.
+  bool IsIgnoringInputEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
 
