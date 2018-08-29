@@ -159,7 +159,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   base::FilePath device_path_;
 
   // Temporary directory to store files as we go.
-  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<base::ScopedTempDir> temp_dir_;
 
  private:
   friend class base::RefCountedThreadSafe<Operation>;
