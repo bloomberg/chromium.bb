@@ -1037,11 +1037,13 @@ always young 5-13456
 
 # ance
 match %a ance - 46-15
+nofor midendword ance 46-15
 
 sufword fiance 124-24-1-1345-14-15   should be fiancé
 
 # ence
 match %a ence - 56-15
+nofor midendword ence 56-15
 
 #midendword oence 135-26-14-15 electroencephalogram
 sufword electroencephalogram 15-123-15-14-2345-1235-135-26-14-15-1234-125-1-123-135-1245-1235-1-134
@@ -1049,11 +1051,13 @@ sufword electroencephalograph 15-123-15-14-2345-1235-135-26-14-15-1234-125-1-123
 
 # ful
 match %a ful - 56-123
+nofor midendword ful 56-123
 
 sufword overfull 135-1236-12456-124-136-123-123 #TODO:  check
 
 # ity   10.8.3
 match %a ity - 56-13456
+nofor midendword ity 56-13456
 
 word biscuity 12-24-234-14-136-24-2345-13456
 word dacoity 145-1-14-135-24-2345-13456
@@ -1064,16 +1068,18 @@ word pityard 1234-24-2345-13456-345-145
 
 # less
 match %a less - 46-234
+nofor midendword less 46-234
 
 # ment
-#midendword ment 56-2345
 match %a ment - 56-2345
+nofor midendword ment 56-2345
 
 sufword aforementioned 1-123456-15-134-26-56-1345-1246
 sufword unmentionable 136-1345-134-26-56-1345-1-12-123-15
 
 # ness   10.8.4
 match %a ness - 56-234
+nofor midendword ness 56-234
 
 sufword chieftainess 16-24-15-124-2345-1-35-15-234-234
 sufword citizeness 14-24-2345-24-1356-26-15-234-234
@@ -1081,6 +1087,7 @@ sufword heatheness 125-2-2346-1345-15-234-234
 
 # ong
 match %a ong - 56-1245
+nofor midendword ong 56-1245
 
 sufword moongod 134-135-135-1345-1245-135-145
 #begword nong = nongraphical
@@ -1089,15 +1096,19 @@ sufword nongovernmental 1345-135-1345-1245-135-1236-12456-1345-56-2345-1-123
 
 # ound
 match %a ound - 46-145
+nofor midendword ound 46-145
 
 # ount
 match %a ount - 46-2345
+nofor midendword ount 46-2345
 
 # sion
 match %a sion - 46-1345
+nofor midendword sion 46-1345
 
 # tion
 match %a tion - 56-1345
+nofor midendword tion 56-1345
 
 sufword cation 14-1-2345-24-135-1345
 
