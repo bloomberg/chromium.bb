@@ -279,6 +279,7 @@ void AppsContainerView::Layout() {
         grid_rect.Inset(horizontal_margin, vertical_margin);
         grid_rect.ClampToCenteredSize(
             apps_grid_view_->GetMaximumTileGridSize());
+        grid_rect.Inset(-apps_grid_view_->GetInsets());
       } else {
         grid_rect.Inset(kAppsGridLeftRightPadding, 0);
       }
