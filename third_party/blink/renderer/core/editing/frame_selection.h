@@ -45,6 +45,7 @@ namespace blink {
 class DisplayItemClient;
 class Element;
 class LayoutBlock;
+class LayoutText;
 class LocalFrame;
 class FrameCaret;
 class GranularityStrategy;
@@ -92,6 +93,29 @@ struct LayoutSelectionStatus {
   unsigned start;
   unsigned end;
   SelectSoftLineBreak line_break;
+};
+
+enum class SelectionIncludeEnd { kInclude, kNotInclude };
+
+struct LayoutTextSelectionStatus {
+  STACK_ALLOCATED();
+
+ public:
+  LayoutTextSelectionStatus(unsigned passed_start,
+                            unsigned passed_end,
+                            SelectionIncludeEnd passed_include_end)
+      : start(passed_start), end(passed_end), include_end(passed_include_end) {
+    DCHECK_LE(start, end);
+  }
+  bool operator==(const LayoutTextSelectionStatus& other) const {
+    return start == other.start && end == other.end &&
+           include_end == other.include_end;
+  }
+  bool IsEmpty() const { return start == 0 && end == 0; }
+
+  unsigned start;
+  unsigned end;
+  SelectionIncludeEnd include_end;
 };
 
 class CORE_EXPORT FrameSelection final
@@ -247,8 +271,8 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
-  base::Optional<unsigned> LayoutSelectionStart() const;
-  base::Optional<unsigned> LayoutSelectionEnd() const;
+  LayoutTextSelectionStatus ComputeLayoutSelectionStatus(
+      const LayoutText& text) const;
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGPaintFragment&) const;
 

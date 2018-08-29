@@ -1229,13 +1229,6 @@ void FrameSelection::ClearDocumentCachedRange() {
   selection_editor_->ClearDocumentCachedRange();
 }
 
-base::Optional<unsigned> FrameSelection::LayoutSelectionStart() const {
-  return layout_selection_->SelectionStart();
-}
-base::Optional<unsigned> FrameSelection::LayoutSelectionEnd() const {
-  return layout_selection_->SelectionEnd();
-}
-
 LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
     const NGPaintFragment& text_fragment) const {
   return layout_selection_->ComputeSelectionStatus(text_fragment);

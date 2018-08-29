@@ -2051,29 +2051,10 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     return rect;
   }
 
-  // Now calculate startPos and endPos for painting selection.
-  // We include a selection while endPos > 0
-  unsigned start_pos, end_pos;
-  if (GetSelectionState() == SelectionState::kInside) {
-    // We are fully selected.
-    start_pos = 0;
-    end_pos = TextLength();
-  } else {
-    if (GetSelectionState() == SelectionState::kStart) {
-      // TODO(yoichio): value_or is used to prevent use uininitialized value
-      // on release. It should be value() after LayoutSelection brushup.
-      start_pos = frame_selection.LayoutSelectionStart().value_or(0);
-      end_pos = TextLength();
-    } else if (GetSelectionState() == SelectionState::kEnd) {
-      start_pos = 0;
-      end_pos = frame_selection.LayoutSelectionEnd().value_or(0);
-    } else {
-      DCHECK(GetSelectionState() == SelectionState::kStartAndEnd);
-      start_pos = frame_selection.LayoutSelectionStart().value_or(0);
-      end_pos = frame_selection.LayoutSelectionEnd().value_or(0);
-    }
-  }
-
+  const LayoutTextSelectionStatus& selection_status =
+      frame_selection.ComputeLayoutSelectionStatus(*this);
+  const unsigned start_pos = selection_status.start;
+  const unsigned end_pos = selection_status.end;
   DCHECK_LE(start_pos, end_pos);
   LayoutRect rect;
   for (InlineTextBox* box : TextBoxes()) {

@@ -650,7 +650,7 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineBreakPre) {
       LayoutRect(30, 0, 10, 10),
       GetSelectionRectFor("<div style='white-space:pre;'>foo^\n|\nbar</div>"));
   EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(0, 10, 10, 10) : LayoutRect(0, 0, 50, 20),
+      LayoutRect(0, 10, 10, 10),
       GetSelectionRectFor("<div style='white-space:pre;'>foo\n^\n|bar</div>"));
 }
 

@@ -36,14 +36,32 @@ class LayoutSelectionTest : public EditingTestBase {
     ostream << "'" << text.data().Utf8().data() << "'";
   }
 
-  static void PrintLayoutObjectInfo(std::ostream& ostream,
-                                    const LayoutObject& layout_object) {
-    ostream << ", " << layout_object.GetSelectionState()
-            << (layout_object.ShouldInvalidateSelection()
+  static void PrintLayoutTextInfo(const FrameSelection& selection,
+                                  std::ostream& ostream,
+                                  const LayoutText& layout_text) {
+    if (layout_text.IsLayoutNGObject()) {
+      // TODO(yoichio): Print NG LayoutSelectionStatus.
+      return;
+    }
+    const LayoutTextSelectionStatus& status =
+        selection.ComputeLayoutSelectionStatus(layout_text);
+    ostream << "(" << status.start << "," << status.end << ")";
+  }
+
+  static void PrintLayoutObjectInfo(const FrameSelection& selection,
+                                    std::ostream& ostream,
+                                    LayoutObject* layout_object) {
+    const SelectionState& status = layout_object->GetSelectionState();
+    ostream << ", " << status;
+    if (status != SelectionState::kNone && layout_object->IsText())
+      PrintLayoutTextInfo(selection, ostream, ToLayoutText(*layout_object));
+
+    ostream << (layout_object->ShouldInvalidateSelection()
                     ? ", ShouldInvalidate "
                     : ", NotInvalidate ");
   }
-  static void PrintSelectionInfo(std::ostream& ostream,
+  static void PrintSelectionInfo(const FrameSelection& selection,
+                                 std::ostream& ostream,
                                  const Node& node,
                                  size_t depth) {
     if (const Text* text = ToTextOrNull(node))
@@ -58,16 +76,16 @@ class LayoutSelectionTest : public EditingTestBase {
       ostream << ", <null LayoutObject> ";
       return;
     }
-    PrintLayoutObjectInfo(ostream, *layout_object);
+    PrintLayoutObjectInfo(selection, ostream, layout_object);
     if (LayoutTextFragment* first_letter = FirstLetterPartFor(layout_object)) {
       ostream << std::endl
-              << RepeatString("  ", depth + 1).Utf8().data()
-              << ":first-letter, ";
-      PrintLayoutObjectInfo(ostream, *first_letter);
+              << RepeatString("  ", depth + 1).Utf8().data() << ":first-letter";
+      PrintLayoutObjectInfo(selection, ostream, first_letter);
     }
   }
 
-  static void PrintDOMTreeInternal(std::ostream& ostream,
+  static void PrintDOMTreeInternal(const FrameSelection& selection,
+                                   std::ostream& ostream,
                                    const Node& node,
                                    size_t depth) {
     ostream << RepeatString("  ", depth).Utf8().data();
@@ -75,20 +93,20 @@ class LayoutSelectionTest : public EditingTestBase {
       ostream << "<style> ";
       return;
     }
-    PrintSelectionInfo(ostream, node, depth);
+    PrintSelectionInfo(selection, ostream, node, depth);
     if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
       ostream << std::endl << RepeatString("  ", depth + 1).Utf8().data();
       ostream << "#shadow-root ";
       for (Node* child = shadow_root->firstChild(); child;
            child = child->nextSibling()) {
         ostream << std::endl;
-        PrintDOMTreeInternal(ostream, *child, depth + 2);
+        PrintDOMTreeInternal(selection, ostream, *child, depth + 2);
       }
     }
 
     for (Node* child = node.firstChild(); child; child = child->nextSibling()) {
       ostream << std::endl;
-      PrintDOMTreeInternal(ostream, *child, depth + 1);
+      PrintDOMTreeInternal(selection, ostream, *child, depth + 1);
     }
   }
 
@@ -96,22 +114,17 @@ class LayoutSelectionTest : public EditingTestBase {
   void PrintDOMTreeForDebug() {
     std::stringstream stream;
     stream << "\nPrintDOMTreeForDebug";
-    PrintDOMTreeInternal(stream, *GetDocument().body(), 0u);
+    PrintDOMTreeInternal(Selection(), stream, *GetDocument().body(), 0u);
     LOG(INFO) << stream.str();
   }
 #endif
 
   std::string DumpSelectionInfo() {
     std::stringstream stream;
-    PrintDOMTreeInternal(stream, *GetDocument().body(), 0u);
+    PrintDOMTreeInternal(Selection(), stream, *GetDocument().body(), 0u);
     return stream.str();
   }
 };
-
-std::ostream& operator<<(std::ostream& ostream, LayoutObject* layout_object) {
-  PrintLayoutObjectForSelection(ostream, layout_object);
-  return ostream;
-}
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
   SetBodyContent("foo<br>bar");
@@ -122,9 +135,9 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
-      "  BR, Inside, ShouldInvalidate \n"
-      "  'bar', End, ShouldInvalidate ",
+      "  'foo', Start(0,3), ShouldInvalidate \n"
+      "  BR, Inside(0,1), ShouldInvalidate \n"
+      "  'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -142,7 +155,7 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateVisibilityHidden) {
       "BODY, Contain, NotInvalidate \n"
       "  SPAN, None, NotInvalidate \n"
       "    'before', None, NotInvalidate \n"
-      "  'foo', StartAndEnd, ShouldInvalidate \n"
+      "  'foo', StartAndEnd(0,3), ShouldInvalidate \n"
       "  SPAN, None, NotInvalidate \n"
       "    'after', None, NotInvalidate ",
       DumpSelectionInfo());
@@ -157,14 +170,12 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectBRs) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  BR, Start, ShouldInvalidate \n"
-      "  BR, Inside, ShouldInvalidate \n"
-      "  'foo', Inside, ShouldInvalidate \n"
-      "  BR, Inside, ShouldInvalidate \n"
-      "  BR, End, ShouldInvalidate ",
+      "  BR, Start(0,1), ShouldInvalidate \n"
+      "  BR, Inside(0,1), ShouldInvalidate \n"
+      "  'foo', Inside(0,3), ShouldInvalidate \n"
+      "  BR, Inside(0,1), ShouldInvalidate \n"
+      "  BR, End(0,0), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_FALSE(Selection().LayoutSelectionStart().has_value());
-  EXPECT_FALSE(Selection().LayoutSelectionEnd().has_value());
 }
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObjectListStyleImage) {
@@ -183,9 +194,9 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectListStyleImage) {
       "  <style> \n"
       "  UL, Contain, NotInvalidate \n"
       "    LI, Contain, NotInvalidate \n"
-      "      'foo', Start, ShouldInvalidate \n"
+      "      'foo', Start(0,3), ShouldInvalidate \n"
       "    LI, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -202,16 +213,16 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(0,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'Foo', Inside, ShouldInvalidate \n"
+      "      'Foo', Inside(0,3), ShouldInvalidate \n"
       "      SLOT, <null LayoutObject> \n"
       "      SLOT, <null LayoutObject> \n"
       "    SPAN, None, NotInvalidate \n"
       "      'bar1', None, NotInvalidate \n"
       "    SPAN, Contain, NotInvalidate \n"
-      "      'bar2', End, ShouldInvalidate ",
+      "      'bar2', End(0,4), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -234,7 +245,7 @@ TEST_F(LayoutSelectionTest,
       "  DIV, Contain, NotInvalidate \n"
       "    'foo', None, NotInvalidate \n"
       "    SPAN, Contain, NotInvalidate \n"
-      "      'bar', StartAndEnd, ShouldInvalidate \n"
+      "      'bar', StartAndEnd(0,3), ShouldInvalidate \n"
       "    'baz', None, NotInvalidate ",
       DumpSelectionInfo());
 
@@ -249,7 +260,7 @@ TEST_F(LayoutSelectionTest,
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'div1', StartAndEnd, ShouldInvalidate \n"
+      "    'div1', StartAndEnd(0,4), ShouldInvalidate \n"
       "  DIV, None, NotInvalidate \n"
       "    'foo', None, NotInvalidate \n"
       "    SPAN, None, NotInvalidate \n"
@@ -267,10 +278,8 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectLineWrap) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'bar\n', StartAndEnd, ShouldInvalidate ",
+      "  'bar\n', StartAndEnd(0,4), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(0u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, FirstLetter) {
@@ -286,8 +295,22 @@ TEST_F(LayoutSelectionTest, FirstLetter) {
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'foo', End, ShouldInvalidate \n"
-      "      :first-letter, , Start, ShouldInvalidate ",
+      "    'foo', End(0,2), ShouldInvalidate \n"
+      "      :first-letter, Start(0,1), ShouldInvalidate ",
+      DumpSelectionInfo());
+}
+
+TEST_F(LayoutSelectionTest, FirstLetterMultiple) {
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("<style>::first-letter { color: red; }</style>"
+                             "<span> [^f]o|o</span>"));
+  Selection().CommitAppearanceIfNeeded();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  <style> \n"
+      "  SPAN, Contain, NotInvalidate \n"
+      "    ' [f]oo', End(0,1), ShouldInvalidate \n"
+      "      :first-letter, Start(2,4), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -298,11 +321,11 @@ TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(2,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate \n"
-      "      :first-letter, , Inside, ShouldInvalidate \n"
-      "  'baz', End, ShouldInvalidate ",
+      "    'bar', Inside(0,2), ShouldInvalidate \n"
+      "      :first-letter, Inside(0,1), ShouldInvalidate \n"
+      "  'baz', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
 
   Selection().Clear();
@@ -312,7 +335,7 @@ TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
       "  'foo', None, ShouldInvalidate \n"
       "  DIV, None, NotInvalidate \n"
       "    'bar', None, ShouldInvalidate \n"
-      "      :first-letter, , None, ShouldInvalidate \n"
+      "      :first-letter, None, ShouldInvalidate \n"
       "  'baz', None, ShouldInvalidate ",
       DumpSelectionInfo());
 }
@@ -336,11 +359,11 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(2,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate \n"
-      "      :first-letter, , Inside, ShouldInvalidate \n"
-      "  'baz', End, ShouldInvalidate ",
+      "    'bar', Inside(0,2), ShouldInvalidate \n"
+      "      :first-letter, Inside(0,1), ShouldInvalidate \n"
+      "  'baz', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
   // <div>foo</div><div>bar</div>ba^z|
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
@@ -353,8 +376,8 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
       "  'foo', None, ShouldInvalidate \n"
       "  DIV, None, NotInvalidate \n"
       "    'bar', None, ShouldInvalidate \n"
-      "      :first-letter, , None, ShouldInvalidate \n"
-      "  'baz', StartAndEnd, ShouldInvalidate ",
+      "      :first-letter, None, ShouldInvalidate \n"
+      "  'baz', StartAndEnd(2,3), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -377,8 +400,6 @@ TEST_F(LayoutSelectionTest, SelectImage) {
       "BODY, Contain, NotInvalidate \n"
       "  IMG, StartAndEnd, ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_FALSE(Selection().LayoutSelectionStart().has_value());
-  EXPECT_FALSE(Selection().LayoutSelectionEnd().has_value());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
@@ -388,20 +409,18 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(1,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, ShouldInvalidate ",
+      "    'bar', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, NotInvalidate \n"
+      "  'foo', Start(1,3), NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, NotInvalidate ",
+      "    'bar', End(0,1), NotInvalidate ",
       DumpSelectionInfo());
 
   // "fo^o<span>b|ar</span>"
@@ -414,12 +433,10 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   // Only "foo" should be invalidated.
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(2,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, NotInvalidate ",
+      "    'bar', End(0,1), NotInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
@@ -429,20 +446,18 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(1,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, ShouldInvalidate ",
+      "    'bar', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, NotInvalidate \n"
+      "  'foo', Start(1,3), NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, NotInvalidate ",
+      "    'bar', End(0,1), NotInvalidate ",
       DumpSelectionInfo());
 
   // "fo^o<span>ba|r</span>"
@@ -455,12 +470,10 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   // Only "bar" should be invalidated.
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, NotInvalidate \n"
+      "  'foo', Start(1,3), NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, ShouldInvalidate ",
+      "    'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(2u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
@@ -469,16 +482,14 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foobar', StartAndEnd, ShouldInvalidate ",
+      "  'foobar', StartAndEnd(1,4), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foobar', StartAndEnd, NotInvalidate ",
+      "  'foobar', StartAndEnd(1,4), NotInvalidate ",
       DumpSelectionInfo());
 
   // "f^ooba|r"
@@ -491,10 +502,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
   // "foobar" should be invalidated.
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foobar', StartAndEnd, ShouldInvalidate ",
+      "  'foobar', StartAndEnd(1,5), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(5u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
@@ -503,16 +512,14 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foobar', StartAndEnd, ShouldInvalidate ",
+      "  'foobar', StartAndEnd(1,4), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foobar', StartAndEnd, NotInvalidate ",
+      "  'foobar', StartAndEnd(1,4), NotInvalidate ",
       DumpSelectionInfo());
 
   // "foo^|bar"
@@ -526,8 +533,6 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
       "BODY, None, NotInvalidate \n"
       "  'foobar', None, ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_FALSE(Selection().LayoutSelectionStart().has_value());
-  EXPECT_FALSE(Selection().LayoutSelectionEnd().has_value());
 }
 
 TEST_F(LayoutSelectionTest, ContentEditableButton) {
@@ -541,7 +546,7 @@ TEST_F(LayoutSelectionTest, ContentEditableButton) {
       "BODY, Contain, NotInvalidate \n"
       "  INPUT, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'foo', StartAndEnd, ShouldInvalidate ",
+      "      'foo', StartAndEnd(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -552,16 +557,14 @@ TEST_F(LayoutSelectionTest, ClearSelection) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', StartAndEnd, ShouldInvalidate ",
+      "    'foo', StartAndEnd(1,2), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(2u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', StartAndEnd, NotInvalidate ",
+      "    'foo', StartAndEnd(1,2), NotInvalidate ",
       DumpSelectionInfo());
 
   Selection().Clear();
@@ -571,8 +574,6 @@ TEST_F(LayoutSelectionTest, ClearSelection) {
       "  DIV, None, NotInvalidate \n"
       "    'foo', None, ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_FALSE(Selection().LayoutSelectionStart().has_value());
-  EXPECT_FALSE(Selection().LayoutSelectionEnd().has_value());
 }
 
 TEST_F(LayoutSelectionTest, SVG) {
@@ -585,17 +586,15 @@ TEST_F(LayoutSelectionTest, SVG) {
       "BODY, Contain, NotInvalidate \n"
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, ShouldInvalidate \n"
-      "      'foobar', StartAndEnd, ShouldInvalidate ",
+      "      'foobar', StartAndEnd(2,3), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(3u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, NotInvalidate \n"
-      "      'foobar', StartAndEnd, NotInvalidate ",
+      "      'foobar', StartAndEnd(2,3), NotInvalidate ",
       DumpSelectionInfo());
 
   Selection().SetSelectionAndEndTyping(
@@ -608,10 +607,8 @@ TEST_F(LayoutSelectionTest, SVG) {
       "BODY, Contain, NotInvalidate \n"
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, ShouldInvalidate \n"
-      "      'foobar', StartAndEnd, ShouldInvalidate ",
+      "      'foobar', StartAndEnd(2,4), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 // crbug.com/781705
@@ -626,10 +623,8 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, ShouldInvalidate \n"
       "      tspan, Contain, NotInvalidate \n"
-      "        'foobar', StartAndEnd, ShouldInvalidate ",
+      "        'foobar', StartAndEnd(2,3), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(3u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
@@ -637,7 +632,7 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, NotInvalidate \n"
       "      tspan, Contain, NotInvalidate \n"
-      "        'foobar', StartAndEnd, NotInvalidate ",
+      "        'foobar', StartAndEnd(2,3), NotInvalidate ",
       DumpSelectionInfo());
 
   Selection().SetSelectionAndEndTyping(
@@ -651,10 +646,8 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
       "  svg, Contain, NotInvalidate \n"
       "    text, Contain, ShouldInvalidate \n"
       "      tspan, Contain, NotInvalidate \n"
-      "        'foobar', StartAndEnd, ShouldInvalidate ",
+      "        'foobar', StartAndEnd(2,4), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, Embed) {
@@ -677,18 +670,18 @@ TEST_F(LayoutSelectionTest, Ruby) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  RUBY, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(0,3), ShouldInvalidate \n"
       "    RT, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  RUBY, Contain, NotInvalidate \n"
-      "    'foo', Start, NotInvalidate \n"
+      "    'foo', Start(0,3), NotInvalidate \n"
       "    RT, Contain, NotInvalidate \n"
-      "      'bar', End, NotInvalidate ",
+      "      'bar', End(0,3), NotInvalidate ",
       DumpSelectionInfo());
 
   Selection().Clear();
@@ -708,27 +701,27 @@ TEST_F(LayoutSelectionTest, ClearByRemoveNode) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate \n"
-      "  'baz', End, ShouldInvalidate ",
+      "    'bar', Inside(0,3), ShouldInvalidate \n"
+      "  'baz', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
   Node* baz = GetDocument().body()->lastChild();
   baz->remove();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate ",
+      "    'bar', Inside(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, NotInvalidate \n"
+      "  'foo', Start(0,3), NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, NotInvalidate ",
+      "    'bar', End(0,3), NotInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -738,11 +731,11 @@ TEST_F(LayoutSelectionTest, ClearByRemoveLayoutObject) {
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate \n"
+      "    'bar', Inside(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'baz', End, ShouldInvalidate ",
+      "    'baz', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
   Element* span_baz = ToElement(GetDocument().body()->lastChild());
@@ -750,18 +743,18 @@ TEST_F(LayoutSelectionTest, ClearByRemoveLayoutObject) {
   GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, ShouldInvalidate \n"
+      "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside, ShouldInvalidate \n"
+      "    'bar', Inside(0,3), ShouldInvalidate \n"
       "  SPAN, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> ",
       DumpSelectionInfo());
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
-      "  'foo', Start, NotInvalidate \n"
+      "  'foo', Start(0,3), NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', End, NotInvalidate \n"
+      "    'bar', End(0,3), NotInvalidate \n"
       "  SPAN, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> ",
       DumpSelectionInfo());
@@ -780,11 +773,11 @@ TEST_F(LayoutSelectionTest, ClearBySlotChange) {
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'Foo', Start, ShouldInvalidate \n"
+      "      'Foo', Start(0,3), ShouldInvalidate \n"
       "      SLOT, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> \n"
       "    SPAN, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
   Element* slot =
       GetDocument().body()->firstChild()->GetShadowRoot()->QuerySelector(
@@ -795,7 +788,7 @@ TEST_F(LayoutSelectionTest, ClearBySlotChange) {
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'Foo', Start, ShouldInvalidate \n"
+      "      'Foo', Start(0,3), ShouldInvalidate \n"
       "      SLOT, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> \n"
       "    SPAN, <null LayoutObject> \n"
@@ -807,7 +800,7 @@ TEST_F(LayoutSelectionTest, ClearBySlotChange) {
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'Foo', StartAndEnd, NotInvalidate \n"
+      "      'Foo', StartAndEnd(0,3), NotInvalidate \n"
       "      SLOT, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> \n"
       "    SPAN, <null LayoutObject> \n"
@@ -823,9 +816,9 @@ TEST_F(LayoutSelectionTest, MoveNode) {
       "BODY, Contain, NotInvalidate \n"
       "  DIV, None, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(0,3), ShouldInvalidate \n"
       "    B, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
   Node* div1 = GetDocument().QuerySelector("#div1");
   Node* div2 = GetDocument().QuerySelector("#div2");
@@ -865,7 +858,7 @@ TEST_F(LayoutSelectionTest, InvalidateSlot) {
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
       "      SLOT, <null LayoutObject> \n"
-      "    'foo', StartAndEnd, NotInvalidate ",
+      "    'foo', StartAndEnd(0,3), NotInvalidate ",
       DumpSelectionInfo());
 
   Selection().Clear();
@@ -963,19 +956,6 @@ TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
       "  SPAN, Contain, NotInvalidate \n"
       "    'bar', StartAndEnd, ShouldInvalidate ",
       DumpSelectionInfo());
-
-  LayoutObject* const foo =
-      GetDocument().body()->firstChild()->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(0u, 0u, SelectSoftLineBreak::kNotSelected),
-            Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo)));
-  LayoutObject* const bar = GetDocument()
-                                .body()
-                                ->firstChild()
-                                ->nextSibling()
-                                ->firstChild()
-                                ->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(4u, 5u, SelectSoftLineBreak::kNotSelected),
-            Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(bar)));
 }
 
 TEST_F(NGLayoutSelectionTest, FirstLetterInAnotherBlockFlow) {
@@ -984,20 +964,9 @@ TEST_F(NGLayoutSelectionTest, FirstLetterInAnotherBlockFlow) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
-      "  'foo', End, ShouldInvalidate \n"
-      "    :first-letter, , Start, ShouldInvalidate ",
+      "  'foo', End(0,2), ShouldInvalidate \n"
+      "    :first-letter, Start(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
-  Node* const foo = GetDocument().body()->firstChild()->nextSibling();
-  const LayoutTextFragment* const foo_f =
-      ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 0));
-  EXPECT_EQ(
-      LayoutSelectionStatus(0u, 1u, SelectSoftLineBreak::kSelected),
-      Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo_f)));
-  const LayoutTextFragment* const foo_oo =
-      ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 1));
-  EXPECT_EQ(
-      LayoutSelectionStatus(1u, 2u, SelectSoftLineBreak::kNotSelected),
-      Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo_oo)));
 }
 
 TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
@@ -1032,12 +1001,10 @@ TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAsSibling) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(1,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'bar', End, ShouldInvalidate ",
+      "    'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
-  EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -1050,11 +1017,10 @@ TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAnscestor) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(1,3), ShouldInvalidate \n"
       "    DIV, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -1066,12 +1032,10 @@ TEST_F(NGLayoutSelectionTest, MixedBlockFlowsDecendant) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(1,3), ShouldInvalidate \n"
       "    DIV, Contain, NotInvalidate \n"
-      "      'bar', End, ShouldInvalidate ",
+      "      'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
-  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
-  EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
 }
 
 TEST_F(NGLayoutSelectionTest, LineBreakBasic) {
