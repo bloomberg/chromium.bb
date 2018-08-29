@@ -1952,4 +1952,177 @@ TEST_F(CookiesTreeModelTest, CookiesFilterWithoutSource) {
   EXPECT_EQ("A", GetDisplayedCookies(&cookies_model));
 }
 
+TEST_F(CookiesTreeModelTest, FlashFilter) {
+  std::unique_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
+
+  cookies_model->UpdateSearchResults(base::string16(base::ASCIIToUTF16("xyz")));
+  {
+    SCOPED_TRACE("Search for 'xyz'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("xyz.com", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  // Search for any domain containing 'y'.
+  cookies_model->UpdateSearchResults(base::string16(base::ASCIIToUTF16("y")));
+  {
+    SCOPED_TRACE("Search for 'y'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("xyz.com", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  // Search for any domain containing 'abc' (which doesn't match anything).
+  cookies_model->UpdateSearchResults(base::string16(base::ASCIIToUTF16("abc")));
+  {
+    SCOPED_TRACE("Search for 'abc'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+}
+
+TEST_F(CookiesTreeModelTest, MediaLicensesFilter) {
+  std::unique_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
+
+  cookies_model->UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("media1")));
+  {
+    SCOPED_TRACE("Search for 'media1'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("https://media1/",
+              GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  cookies_model->UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("media")));
+  {
+    SCOPED_TRACE("Search for 'media'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("https://media1/,https://media2/",
+              GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  // Search for everything.
+  cookies_model->UpdateSearchResults(base::string16());
+  {
+    SCOPED_TRACE("Search for everything");
+    EXPECT_EQ("A,B,C", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("http://idbhost1:1/,http://idbhost2:2/",
+              GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("http://fshost1:1/,http://fshost2:2/,http://fshost3:3/",
+              GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
+    EXPECT_EQ("sbc1,sbc2", GetDisplayedChannelIDs(cookies_model.get()));
+    EXPECT_EQ("https://cshost1:1/,https://cshost2:2/",
+              GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("https://swhost1:1/,https://swhost2:2/",
+              GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ(
+        "https://sharedworkerhost1:1/app/worker.js,"
+        "https://sharedworkerhost2:2/worker.js",
+        GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("xyz.com", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("https://media1/,https://media2/",
+              GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  // Search for any domain containing '1'.
+  cookies_model->UpdateSearchResults(base::string16(base::ASCIIToUTF16("1")));
+  {
+    SCOPED_TRACE("Search for '1'");
+    EXPECT_EQ("A", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("db1", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/",
+              GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("http://idbhost1:1/",
+              GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("http://fshost1:1/",
+              GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("quotahost1", GetDisplayedQuotas(cookies_model.get()));
+    EXPECT_EQ("sbc1", GetDisplayedChannelIDs(cookies_model.get()));
+    EXPECT_EQ("https://cshost1:1/",
+              GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("https://swhost1:1/",
+              GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("https://sharedworkerhost1:1/app/worker.js",
+              GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("https://media1/",
+              GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+
+  // Search for any domain containing 'i'.
+  cookies_model->UpdateSearchResults(base::string16(base::ASCIIToUTF16("i")));
+  {
+    SCOPED_TRACE("Search for 'i'");
+    EXPECT_EQ("", GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("http://idbhost1:1/,http://idbhost2:2/",
+              GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedQuotas(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedChannelIDs(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedCacheStorages(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedServiceWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedSharedWorkers(cookies_model.get()));
+    EXPECT_EQ("", GetDisplayedFlashLSOs(cookies_model.get()));
+    EXPECT_EQ("https://media1/,https://media2/",
+              GetDisplayedMediaLicenses(cookies_model.get()));
+  }
+}
+
 }  // namespace
