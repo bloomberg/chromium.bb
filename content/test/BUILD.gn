@@ -9,6 +9,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//build/nocompile.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -1255,6 +1256,19 @@ if (is_chromeos) {
   }
 }
 
+static_library("run_all_unittests") {
+  testonly = true
+  sources = [
+    "run_all_unittests.cc",
+  ]
+  deps = [
+    ":content_unittests_catalog_source",
+    ":test_support",
+    "//base/test:test_support",
+    "//services/catalog:lib",
+  ]
+}
+
 test("content_unittests") {
   # See comment at the top of //content/BUILD.gn for why this is disabled in
   # component builds.
@@ -1778,7 +1792,6 @@ test("content_unittests") {
     "image_decoder_test.h",
     "navigation_simulator_unittest.cc",
     "proxy_service_mojo_unittest.cc",
-    "run_all_unittests.cc",
     "url_request_context_builder_mojo_unittest.cc",
   ]
 
@@ -1812,7 +1825,7 @@ test("content_unittests") {
 
   deps = [
     ":content_test_mojo_bindings",
-    ":content_unittests_catalog_source",
+    ":run_all_unittests",
     ":test_interfaces",
     ":test_support",
     "//base/allocator:buildflags",
@@ -1879,7 +1892,6 @@ test("content_unittests") {
     "//printing",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
-    "//services/catalog:lib",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/cpp/test:test_support",
     "//services/device/public/mojom",
@@ -2137,6 +2149,21 @@ test("content_unittests") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
+  }
+}
+
+if (enable_nocompile_tests) {
+  nocompile_test("content_nocompile_tests") {
+    sources = [
+      "../public/browser/browser_task_traits_unittest.nc",
+    ]
+
+    deps = [
+      ":run_all_unittests",
+      "//base",
+      "//content/public/browser",
+      "//testing/gtest",
+    ]
   }
 }
 
