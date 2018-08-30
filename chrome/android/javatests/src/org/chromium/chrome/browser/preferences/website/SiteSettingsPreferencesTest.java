@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceScreen;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -38,6 +41,8 @@ import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 /**
@@ -266,6 +271,42 @@ public class SiteSettingsPreferencesTest {
         });
     }
 
+    /**
+     * Tests that the Preferences designated by keys in |expectedKeys|, and only
+     * these preferences, will be shown for the category specified by |type|. The
+     * order of Preferences matters.
+     *
+     * @throws Exception
+     */
+    private void checkPreferencesForCategory(
+            final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
+        final Preferences preferenceActivity = startSiteSettingsCategory(type);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PreferenceFragment preferenceFragment =
+                        (PreferenceFragment) preferenceActivity.getFragmentForTest();
+                PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
+                int preferenceCount = preferenceScreen.getPreferenceCount();
+
+                ArrayList<String> actualKeys = new ArrayList<String>();
+                for (int index = 0; index < preferenceCount; index++) {
+                    Preference preference = preferenceScreen.getPreference(index);
+                    String key = preference.getKey();
+                    // Not all Preferences have keys. For example, the list of websites below the
+                    // toggles, which are dynamically added. Ignore those.
+                    if (key != null) actualKeys.add(key);
+                }
+
+                Assert.assertTrue(
+                        actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
+                        Arrays.equals(actualKeys.toArray(), expectedKeys));
+            }
+        });
+        preferenceActivity.finish();
+    }
+
     // TODO(finnur): Write test for Autoplay.
 
     /**
@@ -420,6 +461,19 @@ public class SiteSettingsPreferencesTest {
                 preferenceActivity.finish();
             }
         });
+    }
+
+    /**
+     * Tests that only expected Preferences are shown for a category.
+     * @throws Exception
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testOnlyExpectedPreferencesShown() throws Exception {
+        // TODO: Add tests for other categories. The allow/block group could be tricky.
+        checkPreferencesForCategory(SiteSettingsCategory.Type.ALL_SITES, new String[0]);
+        checkPreferencesForCategory(SiteSettingsCategory.Type.USE_STORAGE, new String[0]);
     }
 
     /**

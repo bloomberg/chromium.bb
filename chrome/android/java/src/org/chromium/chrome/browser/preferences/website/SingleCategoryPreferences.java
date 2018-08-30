@@ -759,8 +759,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
 
         // For these categories, no binary, tri-state or custom toggles should be shown.
-        // TODO(xhwang): Add a test to make sure no toggles are shown on the ALL_SITES
-        // and USE_STORAGE category.
         boolean hideAllToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
                 || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)
                 || mCategory.showPermissionBlockedMessage(getActivity());
