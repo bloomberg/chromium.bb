@@ -2675,28 +2675,4 @@ TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
 }
 
-TEST_F(PasswordManagerTest, GaiaFormWithIncorrectSubmissionType) {
-  // Test that Gaia sign-in form is not considered successfully submitted when
-  // the submission type is DOM_MUTATION_AFTER_XHR. This submission type is
-  // known to be false positive for submission detection.
-  std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleGAIAForm());
-  observed.push_back(form);
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
-
-  form.username_value = ASCIIToUTF16("username");
-  form.password_value = ASCIIToUTF16("password");
-  form.submission_event =
-      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
-
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-  manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
-}
-
 }  // namespace password_manager
