@@ -15,7 +15,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,18 +29,9 @@ namespace web_resource {
 class TestResourceRequestAllowedNotifier
     : public ResourceRequestAllowedNotifier {
  public:
-  TestResourceRequestAllowedNotifier(
-      PrefService* prefs,
-      const char* disable_network_switch,
-      network::NetworkConnectionTracker* network_connection_tracker)
-      : ResourceRequestAllowedNotifier(
-            prefs,
-            disable_network_switch,
-            base::BindOnce(
-                [](network::NetworkConnectionTracker* tracker) {
-                  return tracker;
-                },
-                network_connection_tracker)) {}
+  TestResourceRequestAllowedNotifier(PrefService* prefs,
+                                     const char* disable_network_switch)
+      : ResourceRequestAllowedNotifier(prefs, disable_network_switch) {}
 
   ResourceRequestAllowedNotifier::State GetResourceRequestsAllowedState()
       override {
@@ -71,8 +61,7 @@ class TestWebResourceService : public WebResourceService {
       int cache_update_delay_ms,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const char* disable_network_switch,
-      const ParseJSONCallback& parse_json_callback,
-      network::NetworkConnectionTracker* network_connection_tracker)
+      const ParseJSONCallback& parse_json_callback)
       : WebResourceService(prefs,
                            web_resource_server,
                            application_locale,
@@ -82,21 +71,14 @@ class TestWebResourceService : public WebResourceService {
                            url_loader_factory,
                            disable_network_switch,
                            parse_json_callback,
-                           TRAFFIC_ANNOTATION_FOR_TESTS,
-                           base::BindOnce(
-                               [](network::NetworkConnectionTracker* tracker) {
-                                 return tracker;
-                               },
-                               network_connection_tracker)){};
+                           TRAFFIC_ANNOTATION_FOR_TESTS){};
 
   void Unpack(const base::DictionaryValue& parsed_json) override {}
 };
 
 class WebResourceServiceTest : public testing::Test {
  public:
-  WebResourceServiceTest()
-      : network_tracker_(true,
-                         network::mojom::ConnectionType::CONNECTION_UNKNOWN) {}
+  WebResourceServiceTest() {}
 
   void SetUp() override {
     test_shared_loader_factory_ =
@@ -107,12 +89,10 @@ class WebResourceServiceTest : public testing::Test {
     test_web_resource_service_.reset(new TestWebResourceService(
         local_state_.get(), GURL(kTestUrl), "", kCacheUpdatePath.c_str(), 100,
         5000, test_shared_loader_factory_, nullptr,
-        base::BindRepeating(web_resource::WebResourceServiceTest::Parse),
-        &network_tracker_));
+        base::Bind(web_resource::WebResourceServiceTest::Parse)));
     error_message_ = "";
     TestResourceRequestAllowedNotifier* notifier =
-        new TestResourceRequestAllowedNotifier(local_state_.get(), nullptr,
-                                               &network_tracker_);
+        new TestResourceRequestAllowedNotifier(local_state_.get(), nullptr);
     notifier->SetState(ResourceRequestAllowedNotifier::ALLOWED);
     test_web_resource_service_->SetResourceRequestAllowedNotifier(
         std::unique_ptr<ResourceRequestAllowedNotifier>(notifier));
@@ -152,7 +132,6 @@ class WebResourceServiceTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
-  network::TestNetworkConnectionTracker network_tracker_;
   std::unique_ptr<TestWebResourceService> test_web_resource_service_;
 };
 

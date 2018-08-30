@@ -14,7 +14,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -90,8 +89,7 @@ PluginsResourceService::PluginsResourceService(PrefService* local_state)
           base::Bind(data_decoder::SafeJsonParser::Parse,
                      content::ServiceManagerConnection::GetForProcess()
                          ->GetConnector()),
-          kPluginResourceServiceTrafficAnnotation,
-          base::BindOnce(&content::GetNetworkConnectionTracker)) {}
+          kPluginResourceServiceTrafficAnnotation) {}
 
 void PluginsResourceService::Init() {
   const base::DictionaryValue* metadata =
