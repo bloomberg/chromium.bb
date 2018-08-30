@@ -107,7 +107,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
-    const std::string& suggest_query_params,
+    const std::string& additional_query_params,
     const std::string& deletion_url,
     const std::string& image_dominant_color,
     const std::string& image_url,
@@ -125,7 +125,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       suggestion_(suggestion),
       match_contents_prefix_(match_contents_prefix),
       annotation_(annotation),
-      suggest_query_params_(suggest_query_params),
+      additional_query_params_(additional_query_params),
       image_dominant_color_(image_dominant_color),
       image_url_(image_url),
       should_prefetch_(should_prefetch) {
@@ -555,7 +555,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       bool answer_parsed_successfully = false;
       std::string image_dominant_color;
       std::string image_url;
-      std::string suggest_query_params;
+      std::string additional_query_params;
 
       if (suggestion_details) {
         suggestion_details->GetDictionary(index, &suggestion_detail);
@@ -568,7 +568,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("a", &annotation);
           suggestion_detail->GetString("dc", &image_dominant_color);
           suggestion_detail->GetString("i", &image_url);
-          suggestion_detail->GetString("q", &suggest_query_params);
+          suggestion_detail->GetString("q", &additional_query_params);
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
@@ -599,7 +599,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           base::CollapseWhitespace(match_contents, false),
           match_contents_prefix,
           annotation,
-          suggest_query_params,
+          additional_query_params,
           deletion_url,
           image_dominant_color,
           image_url,

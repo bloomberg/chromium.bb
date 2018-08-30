@@ -166,8 +166,8 @@ class TemplateURLRef {
     std::string prefetch_query;
     std::string prefetch_query_type;
 
-    // Additional query params provided by the suggest server.
-    std::string suggest_query_params;
+    // Additional query params to append to the request.
+    std::string additional_query_params;
 
     // If set, ReplaceSearchTerms() will automatically append any extra query
     // params specified via the --extra-search-query-params command-line
@@ -176,7 +176,7 @@ class TemplateURLRef {
     // about the query portion of the URL.  Since neither TemplateURLRef nor
     // indeed TemplateURL know whether a TemplateURL is the default search
     // engine, callers instead must set this manually.
-    bool append_extra_query_params;
+    bool append_extra_query_params_from_command_line;
 
     // The raw content of an image thumbnail that will be used as a query for
     // search-by-image frontend.

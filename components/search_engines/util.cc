@@ -42,7 +42,7 @@ GURL GetDefaultSearchURLForSearchTerms(TemplateURLService* service,
   const TemplateURLRef& search_url = default_provider->url_ref();
   DCHECK(search_url.SupportsReplacement(service->search_terms_data()));
   TemplateURLRef::SearchTermsArgs search_terms_args(terms);
-  search_terms_args.append_extra_query_params = true;
+  search_terms_args.append_extra_query_params_from_command_line = true;
   return GURL(search_url.ReplaceSearchTerms(search_terms_args,
                                             service->search_terms_data()));
 }

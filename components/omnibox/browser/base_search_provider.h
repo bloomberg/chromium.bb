@@ -110,9 +110,9 @@ class BaseSearchProvider : public AutocompleteProvider {
   // |in_keyword_mode| helps guarantee a non-keyword suggestion does not
   // appear as the default match when the user is in keyword mode.
   // |accepted_suggestion| is used to generate Assisted Query Stats.
-  // |append_extra_query_params| should be set if |template_url| is the default
-  // search engine, so the destination URL will contain any
-  // command-line-specified query params.
+  // |append_extra_query_params_from_command_line| should be set if
+  // |template_url| is the default search engine, so the destination URL will
+  // contain any command-line-specified query params.
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       const AutocompleteInput& input,
@@ -121,7 +121,7 @@ class BaseSearchProvider : public AutocompleteProvider {
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data,
       int accepted_suggestion,
-      bool append_extra_query_params);
+      bool append_extra_query_params_from_command_line);
 
   // Returns whether we can send the URL of the current page in any suggest
   // requests.  Doing this requires that all the following hold:

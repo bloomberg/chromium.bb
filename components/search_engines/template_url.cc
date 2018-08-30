@@ -192,7 +192,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(base::string16::npos),
       page_classification(metrics::OmniboxEventProto::INVALID_SPEC),
-      append_extra_query_params(false),
+      append_extra_query_params_from_command_line(false),
       from_app_list(false),
       contextual_search_params(ContextualSearchParams()) {}
 
@@ -212,7 +212,7 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(session_token);
   res += base::trace_event::EstimateMemoryUsage(prefetch_query);
   res += base::trace_event::EstimateMemoryUsage(prefetch_query_type);
-  res += base::trace_event::EstimateMemoryUsage(suggest_query_params);
+  res += base::trace_event::EstimateMemoryUsage(additional_query_params);
   res += base::trace_event::EstimateMemoryUsage(image_thumbnail_content);
   res += base::trace_event::EstimateMemoryUsage(image_url);
   res += base::trace_event::EstimateMemoryUsage(contextual_search_params);
@@ -380,15 +380,15 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     return url;
 
   std::vector<std::string> query_params;
-  if (search_terms_args.append_extra_query_params) {
+  if (search_terms_args.append_extra_query_params_from_command_line) {
     std::string extra_params(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kExtraSearchQueryParams));
     if (!extra_params.empty())
       query_params.push_back(extra_params);
   }
-  if (!search_terms_args.suggest_query_params.empty())
-    query_params.push_back(search_terms_args.suggest_query_params);
+  if (!search_terms_args.additional_query_params.empty())
+    query_params.push_back(search_terms_args.additional_query_params);
   if (!gurl.query().empty())
     query_params.push_back(gurl.query());
 

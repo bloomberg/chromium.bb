@@ -551,7 +551,7 @@ class SearchTermTask : public HistoryProviderTask {
     if (search_engine) {
       const TemplateURLRef* search_url = &search_engine->url_ref();
       TemplateURLRef::SearchTermsArgs search_terms_args(row->search_term());
-      search_terms_args.append_extra_query_params = true;
+      search_terms_args.append_extra_query_params_from_command_line = true;
       std::string url = search_url->ReplaceSearchTerms(
           search_terms_args, template_service->search_terms_data());
       if (!url.empty()) {
