@@ -53,7 +53,6 @@ const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
 
 const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
 
-const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const SkColor kOobeTrayIconColor = gfx::kGoogleGrey600;
 

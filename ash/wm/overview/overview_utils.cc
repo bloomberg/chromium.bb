@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/overview_utils.h"
 
+#include <utility>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -13,6 +15,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "base/no_destructor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -30,7 +33,10 @@ namespace {
 
 // The transform applied to a window selector item when animating to or from the
 // home launcher.
-const gfx::Transform kShiftTransform(1, 0, 0, 1, 0, -100);
+const gfx::Transform& GetShiftTransform() {
+  static const base::NoDestructor<gfx::Transform> matrix(1, 0, 0, 1, 0, -100);
+  return *matrix;
+}
 
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
@@ -120,7 +126,7 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   if (slide) {
     // Translate the window up before sliding down to |original_transform|.
     gfx::Transform new_transform = original_transform;
-    new_transform.ConcatTransform(kShiftTransform);
+    new_transform.ConcatTransform(GetShiftTransform());
     if (window->layer()->GetTargetOpacity() == 1.f &&
         window->layer()->GetTargetTransform() == new_transform) {
       return;
@@ -164,7 +170,7 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   widget_ptr->SetOpacity(0.f);
   if (slide) {
     gfx::Transform new_transform = widget_ptr->GetNativeWindow()->transform();
-    new_transform.ConcatTransform(kShiftTransform);
+    new_transform.ConcatTransform(GetShiftTransform());
     widget_ptr->GetNativeWindow()->SetTransform(new_transform);
   }
 }

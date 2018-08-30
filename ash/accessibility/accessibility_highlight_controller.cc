@@ -28,9 +28,9 @@ ui::InputMethod* GetSharedInputMethod() {
   return Shell::Get()->window_tree_host_manager()->input_method();
 }
 
-}  // namespace
+constexpr char kHighlightCallerId[] = "HighlightController";
 
-const std::string kHighlightCallerId = "HighlightController";
+}  // namespace
 
 AccessibilityHighlightController::AccessibilityHighlightController() {
   Shell::Get()->AddPreTargetHandler(this);
