@@ -630,8 +630,14 @@ LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 NGPhysicalBoxStrut ComputePhysicalMargins(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
+  if (style.MarginLeft().IsZero() && style.MarginRight().IsZero() &&
+      style.MarginTop().IsZero() && style.MarginBottom().IsZero()) {
+    return NGPhysicalBoxStrut();
+  }
+
   if (constraint_space.IsAnonymous())
     return NGPhysicalBoxStrut();
+
   NGPhysicalBoxStrut physical_dim;
   physical_dim.left =
       ResolveMarginPaddingLength(constraint_space, style.MarginLeft());
