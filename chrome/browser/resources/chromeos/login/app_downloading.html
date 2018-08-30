@@ -11,12 +11,14 @@
     <link rel="stylesheet" href="app_downloading.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="app-downloading-dialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'appDownloadingScreenTitle')]]"
         no-footer-padding>
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'appDownloadingScreenTitle')]]
+      <h1 slot="title" hidden="[[!hasSingleApp]]">
+        [[i18nDynamic(locale, 'appDownloadingScreenTitleSingular')]]
+      </h1>
+      <h1 slot="title" hidden="[[hasSingleApp]]">
+        [[i18nDynamic(locale, 'appDownloadingScreenTitlePlural', numOfApps)]]
       </h1>
       <div slot="subtitle">
         [[i18nDynamic(locale, 'appDownloadingScreenDescription')]]

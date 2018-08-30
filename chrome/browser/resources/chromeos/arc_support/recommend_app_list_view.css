@@ -4,7 +4,8 @@
 
 :root {
   color: #333;
-  font: 13px Roboto, sans-serif;
+  font-family: 'Google Sans', Roboto, sans-serif;
+  font-size: 13px;
   font-weight: 400; /* roboto-regular */
 }
 
@@ -16,7 +17,7 @@ body {
 #recommend-apps-container {
   max-height: 300px;
   overflow: auto;
-  padding: 12px 64px 0 64px;
+  padding: 8px 64px 0;
   width: 640px;
 }
 
@@ -59,9 +60,9 @@ body {
   background: url(images/ic_checkmark.svg) no-repeat;
   display: none;
   height: 24px;
-  left: 180px; /* TODO(rsgingerrs): left is not rtl-language friendly. */
+  left: 176px; /* TODO(rsgingerrs): left is not rtl-language friendly. */
   position: absolute;
-  top: -12px;
+  top: -8px;
   width: 24px;
   z-index: 2;
 }
