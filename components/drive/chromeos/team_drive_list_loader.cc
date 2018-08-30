@@ -29,7 +29,7 @@ namespace {
 
 // Add any new team drives, or update existing team drives in resource
 // metadata.
-FileError AddOrUpdateTeamDrives(const ResourceEntryVector& team_drives,
+FileError AddOrUpdateTeamDrives(ResourceEntryVector team_drives,
                                 ResourceMetadata* metadata,
                                 base::CancellationFlag* in_shutdown) {
   DCHECK(metadata);
@@ -74,7 +74,7 @@ FileError AddOrUpdateTeamDrives(const ResourceEntryVector& team_drives,
 }
 
 // Remove the supplied list of team drives from the resource metadata.
-FileError RemoveTeamDrives(const ResourceEntryVector& team_drives,
+FileError RemoveTeamDrives(ResourceEntryVector team_drives,
                            ResourceMetadata* metadata,
                            base::CancellationFlag* in_shutdown) {
   DCHECK(metadata);
@@ -279,22 +279,21 @@ void TeamDriveListLoader::OnReadDirectoryByPath(
                  });
 
   // Remove team drives that have been deleted.
-  loader_controller_->ScheduleRun(base::BindRepeating(
+  loader_controller_->ScheduleRun(base::BindOnce(
       &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
       FROM_HERE,
-      base::BindRepeating(&RemoveTeamDrives,
-                          base::Passed(std::move(removed_team_drives)),
-                          base::Unretained(resource_metadata_),
-                          base::Unretained(in_shutdown_.get())),
-      base::BindRepeating(&TeamDriveListLoader::OnTeamDrivesRemoved,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          base::Passed(std::move(remote_resources)),
-                          base::Passed(std::move(team_drive_updates)))));
+      base::BindOnce(&RemoveTeamDrives, std::move(removed_team_drives),
+                     base::Unretained(resource_metadata_),
+                     base::Unretained(in_shutdown_.get())),
+      base::BindOnce(&TeamDriveListLoader::OnTeamDrivesRemoved,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(remote_resources),
+                     std::move(team_drive_updates))));
 }
 
 void TeamDriveListLoader::OnTeamDrivesRemoved(
     ResourceEntryVector remote_resources,
-    const TeamDriveUpdateData& team_drive_updates,
+    TeamDriveUpdateData team_drive_updates,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -305,20 +304,19 @@ void TeamDriveListLoader::OnTeamDrivesRemoved(
     return;
   }
 
-  loader_controller_->ScheduleRun(base::BindRepeating(
+  loader_controller_->ScheduleRun(base::BindOnce(
       &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
       FROM_HERE,
-      base::BindRepeating(&AddOrUpdateTeamDrives,
-                          base::Passed(std::move(remote_resources)),
-                          base::Unretained(resource_metadata_),
-                          base::Unretained(in_shutdown_.get())),
-      base::BindRepeating(&TeamDriveListLoader::OnAddOrUpdateTeamDrives,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          std::move(team_drive_updates))));
+      base::BindOnce(&AddOrUpdateTeamDrives, std::move(remote_resources),
+                     base::Unretained(resource_metadata_),
+                     base::Unretained(in_shutdown_.get())),
+      base::BindOnce(&TeamDriveListLoader::OnAddOrUpdateTeamDrives,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(team_drive_updates))));
 }
 
 void TeamDriveListLoader::OnAddOrUpdateTeamDrives(
-    const TeamDriveUpdateData& team_drive_updates,
+    TeamDriveUpdateData team_drive_updates,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

@@ -40,15 +40,14 @@ class LoaderController {
   std::unique_ptr<base::ScopedClosureRunner> GetLock();
 
   // Runs the task if the lock count is 0, otherwise it will be pending.
-  // TODO(slangley): Change to using a OnceClosure.
-  void ScheduleRun(const base::Closure& task);
+  void ScheduleRun(base::OnceClosure task);
 
  private:
   // Decrements the lock count.
   void Unlock();
 
   int lock_count_;
-  std::vector<base::RepeatingClosure> pending_tasks_;
+  std::vector<base::OnceClosure> pending_tasks_;
 
   THREAD_CHECKER(thread_checker_);
 

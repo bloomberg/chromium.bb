@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/loader_controller.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 
 namespace drive {
@@ -24,14 +26,14 @@ std::unique_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
       &LoaderController::Unlock, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LoaderController::ScheduleRun(const base::RepeatingClosure& task) {
+void LoaderController::ScheduleRun(base::OnceClosure task) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(task);
 
   if (lock_count_ > 0) {
-    pending_tasks_.push_back(task);
+    pending_tasks_.push_back(std::move(task));
   } else {
-    task.Run();
+    std::move(task).Run();
   }
 }
 
@@ -42,10 +44,10 @@ void LoaderController::Unlock() {
   if (--lock_count_ > 0)
     return;
 
-  std::vector<base::RepeatingClosure> tasks;
+  std::vector<base::OnceClosure> tasks;
   tasks.swap(pending_tasks_);
   for (auto& task : tasks)
-    task.Run();
+    std::move(task).Run();
 }
 
 }  // namespace internal

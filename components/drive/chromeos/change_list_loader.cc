@@ -471,23 +471,23 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
 
   logger_->Log(logging::LOG_INFO, "Apply change lists (%s) (is delta: %d)",
                team_drive_msg_.c_str(), is_delta_update);
-  loader_controller_->ScheduleRun(base::Bind(
+  loader_controller_->ScheduleRun(base::BindOnce(
       &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
       FROM_HERE,
-      base::Bind(&ChangeListProcessor::ApplyUserChangeList,
-                 base::Unretained(change_list_processor), start_page_token,
-                 root_resource_id, base::Passed(&change_lists),
-                 is_delta_update),
-      base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterUpdate,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(change_list_processor),
-                 should_notify_changed_directories, base::Time::Now())));
+      base::BindOnce(&ChangeListProcessor::ApplyUserChangeList,
+                     base::Unretained(change_list_processor), start_page_token,
+                     root_resource_id, std::move(change_lists),
+                     is_delta_update),
+      base::BindOnce(&ChangeListLoader::LoadChangeListFromServerAfterUpdate,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(change_list_processor),
+                     should_notify_changed_directories, base::Time::Now())));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
     ChangeListProcessor* change_list_processor,
     bool should_notify_changed_directories,
-    const base::Time& start_time,
+    base::Time start_time,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

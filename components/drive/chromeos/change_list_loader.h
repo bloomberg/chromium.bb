@@ -149,7 +149,7 @@ class ChangeListLoader {
   void LoadChangeListFromServerAfterUpdate(
       ChangeListProcessor* change_list_processor,
       bool should_notify_changed_directories,
-      const base::Time& start_time,
+      base::Time start_time,
       FileError error);
 
   EventLogger* logger_;  // Not owned.

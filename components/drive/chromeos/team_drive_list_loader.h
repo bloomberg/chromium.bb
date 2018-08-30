@@ -75,10 +75,10 @@ class TeamDriveListLoader {
                              FileError error);
 
   void OnTeamDrivesRemoved(ResourceEntryVector remote_resources,
-                           const TeamDriveUpdateData& team_drive_updates,
+                           TeamDriveUpdateData team_drive_updates,
                            FileError error);
 
-  void OnAddOrUpdateTeamDrives(const TeamDriveUpdateData& team_drive_updates,
+  void OnAddOrUpdateTeamDrives(TeamDriveUpdateData team_drive_updates,
                                FileError error);
 
   void OnTeamDriveListLoadComplete(FileError error);
