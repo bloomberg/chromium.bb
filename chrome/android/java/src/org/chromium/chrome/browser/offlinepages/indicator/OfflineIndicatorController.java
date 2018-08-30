@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
@@ -38,11 +39,23 @@ public class OfflineIndicatorController
 
     private static final int DURATION_MS = 10000;
 
+    // Time in milliseconds to wait until the offline state is stablized in the case of flaky
+    // connections.
+    private static final int TIME_TO_WAIT_FOR_STABLE_OFFLINE = 3 * 60 * 1000;
+
     @SuppressLint("StaticFieldLeak")
     private static OfflineIndicatorController sInstance;
 
+    private static int sTimeToWaitForStableOffline = TIME_TO_WAIT_FOR_STABLE_OFFLINE;
+
     private boolean mIsShowingOfflineIndicator = false;
+    // Set to true if the offline indicator has been shown once.
+    private boolean mHasOfflineIndicatorShown = false;
     private ConnectivityDetector mConnectivityDetector;
+
+    private boolean mIsOnline = false;
+    // Last time when the online state is detected. It is recorded as milliseconds since boot.
+    private long mLastOnlineTime = 0;
 
     private OfflineIndicatorController() {
         mConnectivityDetector = new ConnectivityDetector(this);
@@ -98,6 +111,13 @@ public class OfflineIndicatorController
     }
 
     private void updateOfflineIndicator(boolean isOnline) {
+        if (isOnline != mIsOnline) {
+            if (isOnline) {
+                mLastOnlineTime = SystemClock.elapsedRealtime();
+            }
+            mIsOnline = isOnline;
+        }
+
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof SnackbarManageable)) return;
         SnackbarManager snackbarManager = ((SnackbarManageable) activity).getSnackbarManager();
@@ -128,6 +148,14 @@ public class OfflineIndicatorController
     private void showOfflineIndicator(Activity activity, SnackbarManager snackbarManager) {
         if (mIsShowingOfflineIndicator || !canShowOfflineIndicator(activity)) return;
 
+        // If this is the first time to show offline indicator, show it. Otherwise, it will only
+        // be shown if the user has been continuously online for the required duration, then goes
+        // back to being offline.
+        if (mHasOfflineIndicatorShown
+                && SystemClock.elapsedRealtime() - mLastOnlineTime < sTimeToWaitForStableOffline) {
+            return;
+        }
+
         Drawable icon = AppCompatResources.getDrawable(activity, R.drawable.ic_offline_pin_white);
         Snackbar snackbar =
                 Snackbar.make(activity.getString(R.string.offline_indicator_offline_title), this,
@@ -144,6 +172,7 @@ public class OfflineIndicatorController
         RecordHistogram.recordEnumeratedHistogram("OfflineIndicator.CTR",
                 OFFLINE_INDICATOR_CTR_DISPLAYED, OFFLINE_INDICATOR_CTR_COUNT);
         mIsShowingOfflineIndicator = true;
+        mHasOfflineIndicatorShown = true;
     }
 
     private void hideOfflineIndicator(SnackbarManager snackbarManager) {
@@ -154,5 +183,10 @@ public class OfflineIndicatorController
     @VisibleForTesting
     public ConnectivityDetector getConnectivityDetectorForTesting() {
         return mConnectivityDetector;
+    }
+
+    @VisibleForTesting
+    static void overrideTimeToWaitForStableOfflineForTesting(int time) {
+        sTimeToWaitForStableOffline = time;
     }
 }
