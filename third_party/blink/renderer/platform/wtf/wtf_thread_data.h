@@ -41,7 +41,6 @@
 namespace WTF {
 
 class AtomicStringTable;
-class MovableStringTable;
 struct ICUConverterWrapper;
 
 class WTF_EXPORT WTFThreadData {
@@ -52,8 +51,6 @@ class WTF_EXPORT WTFThreadData {
   ~WTFThreadData();
 
   AtomicStringTable& GetAtomicStringTable() { return *atomic_string_table_; }
-
-  MovableStringTable& GetMovableStringTable() { return *movable_string_table_; }
 
   ICUConverterWrapper& CachedConverterICU() { return *cached_converter_icu_; }
 
@@ -68,7 +65,6 @@ class WTF_EXPORT WTFThreadData {
 
  private:
   std::unique_ptr<AtomicStringTable> atomic_string_table_;
-  std::unique_ptr<MovableStringTable> movable_string_table_;
   std::unique_ptr<ICUConverterWrapper> cached_converter_icu_;
 
   ThreadIdentifier thread_id_;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace WTF {
+namespace blink {
 
 class MovableStringTest : public ::testing::Test {
  protected:
@@ -182,4 +182,4 @@ TEST_F(MovableStringTest, TableMultiple) {
       MovableStringImpl::ParkingAction::kParkedInBackground, 1);
 }
 
-}  // namespace WTF
+}  // namespace blink

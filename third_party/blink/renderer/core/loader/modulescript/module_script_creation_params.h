@@ -7,10 +7,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ class ModuleScriptCreationParams {
         GetFetchCredentialsMode(), GetAccessControlStatus());
   }
 
-  const KURL& GetResponseUrl() const { return response_url_; };
+  const KURL& GetResponseUrl() const { return response_url_; }
   const MovableString& GetSourceText() const {
     if (is_isolated_) {
       source_text_ = MovableString(isolated_source_text_.ReleaseImpl());
