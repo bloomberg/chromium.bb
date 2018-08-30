@@ -8,8 +8,6 @@ source_set("mojo") {
     "device_impl.h",
     "device_manager_impl.cc",
     "device_manager_impl.h",
-    "permission_provider.cc",
-    "permission_provider.h",
     "type_converters.cc",
     "type_converters.h",
   ]
@@ -21,26 +19,5 @@ source_set("mojo") {
     "//device/usb/public/mojom",
     "//mojo/public/cpp/bindings",
     "//net",
-  ]
-}
-
-static_library("test_support") {
-  testonly = true
-
-  sources = [
-    "mock_permission_provider.cc",
-    "mock_permission_provider.h",
-  ]
-
-  deps = [
-    "//base",
-    "//device/usb:usb",
-    "//device/usb/mojo:mojo",
-    "//device/usb/public/mojom",
-    "//testing/gtest",
-  ]
-
-  public_deps = [
-    "//testing/gmock",
   ]
 }

@@ -16,7 +16,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
-#include "chrome/browser/usb/web_usb_permission_provider.h"
+#include "chrome/browser/usb/web_usb_service_impl.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
@@ -130,7 +130,7 @@ bool UsbChooserController::IsPaired(size_t index) const {
   auto device_info = device::mojom::UsbDeviceInfo::From(*devices_[index].first);
   DCHECK(device_info);
 
-  return WebUSBPermissionProvider::HasDevicePermission(
+  return WebUsbServiceImpl::HasDevicePermission(
       chooser_context_.get(), requesting_origin_, embedding_origin_,
       *device_info);
 }

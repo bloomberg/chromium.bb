@@ -19,12 +19,6 @@ class WebUsbService;
 }
 }  // namespace blink
 
-namespace device {
-namespace usb {
-class PermissionProvider;
-}
-}  // namespace device
-
 class WebUsbChooser;
 
 struct FrameUsbServices;
@@ -58,9 +52,6 @@ class UsbTabHelper : public content::WebContentsObserver,
   void DidFinishNavigation(content::NavigationHandle* handle) override;
 
   FrameUsbServices* GetFrameUsbService(
-      content::RenderFrameHost* render_frame_host);
-
-  base::WeakPtr<device::usb::PermissionProvider> GetPermissionProvider(
       content::RenderFrameHost* render_frame_host);
 
   base::WeakPtr<WebUsbChooser> GetUsbChooser(

@@ -15,7 +15,6 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
-#include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "chrome/browser/usb/web_usb_service_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -106,11 +105,10 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
       ChromeContentBrowserClient::CreateWebUsbService(render_frame_host,
                                                       std::move(request));
     } else {
-      permission_provider_.reset(
-          new WebUSBPermissionProvider(render_frame_host));
       usb_chooser_.reset(new FakeUsbChooser(render_frame_host));
-      WebUsbServiceImpl::Create(permission_provider_->GetWeakPtr(),
-                                usb_chooser_->GetWeakPtr(), std::move(request));
+      web_usb_service_.reset(
+          new WebUsbServiceImpl(render_frame_host, usb_chooser_->GetWeakPtr()));
+      web_usb_service_->BindRequest(std::move(request));
     }
   }
 
@@ -118,7 +116,7 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
 
  private:
   bool use_real_chooser_ = false;
-  std::unique_ptr<WebUSBPermissionProvider> permission_provider_;
+  std::unique_ptr<WebUsbServiceImpl> web_usb_service_;
   std::unique_ptr<WebUsbChooser> usb_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);

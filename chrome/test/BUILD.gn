@@ -2909,7 +2909,6 @@ test("unit_tests") {
     "//device/base:mocks",
     "//device/bluetooth:mocks",
     "//device/usb:test_support",
-    "//device/usb/mojo:test_support",
     "//extensions/buildflags",
     "//google_apis",
     "//gpu:test_support",

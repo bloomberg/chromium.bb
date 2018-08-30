@@ -1606,8 +1606,6 @@ jumbo_split_static_library("browser") {
     "usb/web_usb_chooser.h",
     "usb/web_usb_histograms.cc",
     "usb/web_usb_histograms.h",
-    "usb/web_usb_permission_provider.cc",
-    "usb/web_usb_permission_provider.h",
     "usb/web_usb_service_impl.cc",
     "usb/web_usb_service_impl.h",
     "vr/ui_suppressed_element.h",
