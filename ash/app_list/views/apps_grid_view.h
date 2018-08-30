@@ -151,6 +151,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void UpdateDrag(Pointer pointer, const gfx::Point& point);
   void EndDrag(bool cancel);
   bool IsDraggedView(const AppListItemView* view) const;
+
+  // Whether |view| IsDraggedView and |view| is not in it's drag start position.
+  bool IsDragViewMoved(const AppListItemView& view) const;
+
   void ClearDragState();
   void SetDragViewVisible(bool visible);
 
