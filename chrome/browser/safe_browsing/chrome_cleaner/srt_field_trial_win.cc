@@ -44,6 +44,9 @@ const base::Feature kUserInitiatedChromeCleanupsFeature{
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kChromeCleanupQuarantineFeature{
+    "ChromeCleanupQuarantine", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsInSRTPromptFieldTrialGroups() {
   return !base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
                            kSRTPromptOffGroup, base::CompareCase::SENSITIVE);
