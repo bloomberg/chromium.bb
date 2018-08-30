@@ -75,7 +75,7 @@ AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
   if (is_home_launcher_enabled_ &&
       app_list::features::IsHomeLauncherGesturesEnabled()) {
     home_launcher_gesture_handler_ =
-        std::make_unique<HomeLauncherGestureHandler>();
+        std::make_unique<HomeLauncherGestureHandler>(this);
   }
 
   mojom::VoiceInteractionObserverPtr ptr;

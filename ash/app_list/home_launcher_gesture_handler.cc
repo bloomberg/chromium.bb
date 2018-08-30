@@ -5,6 +5,7 @@
 #include "ash/app_list/home_launcher_gesture_handler.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -84,6 +85,13 @@ double GetHeightInWorkAreaAsRatio(int y, aura::Window* window) {
   return 1.0 - ratio;
 }
 
+void UpdateSettings(ui::ScopedLayerAnimationSettings* settings) {
+  settings->SetTransitionDuration(kAnimationDurationMs);
+  settings->SetTweenType(gfx::Tween::LINEAR);
+  settings->SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+}
+
 // Helper class to perform window state changes without animations. Used to hide
 // and minimize windows without having their animation interfere with the ones
 // this class is in charge of.
@@ -109,7 +117,9 @@ class ScopedAnimationDisabler {
 
 }  // namespace
 
-HomeLauncherGestureHandler::HomeLauncherGestureHandler() {
+HomeLauncherGestureHandler::HomeLauncherGestureHandler(
+    AppListControllerImpl* app_list_controller)
+    : app_list_controller_(app_list_controller) {
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
@@ -257,6 +267,11 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     }
   }
 
+  // Return the app list to its original opacity and transform without
+  // animation.
+  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_).y(), 1.f,
+      base::NullCallback());
   last_event_location_ = base::nullopt;
   RemoveObserversAndStopTracking();
 }
@@ -264,10 +279,14 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 bool HomeLauncherGestureHandler::CanHideWindow(aura::Window* window) {
   DCHECK(window);
 
+  // Window should not be fullscreen as we do not allow swiping up when auto
+  // hide for shelf.
+  DCHECK(!wm::GetWindowState(window)->IsFullscreen());
+
   if (!window->IsVisible())
     return false;
 
-  if (!Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+  if (!app_list_controller_->IsHomeLauncherEnabledInTabletMode())
     return false;
 
   if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
@@ -301,10 +320,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
     if (animate) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           window->layer()->GetAnimator());
-      settings->SetTransitionDuration(kAnimationDurationMs);
-      settings->SetTweenType(gfx::Tween::LINEAR);
-      settings->SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      UpdateSettings(settings.get());
       if (window == this->window())
         settings->AddObserver(this);
     }
@@ -317,6 +333,22 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
                           descendant.second);
   }
   update_windows_helper(progress, animate, window_, window_values_);
+
+  // Update full screen applist. On tests, |window_| may be null because
+  // OnImplicitAnimationsCompleted runs right away, which invalidates |window_|,
+  // so just skip this section.
+  if (!window_)
+    return;
+
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_);
+  const int y_position =
+      gfx::Tween::IntValueBetween(progress, work_area.bottom(), work_area.y());
+  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
+      y_position,
+      gfx::Tween::FloatValueBetween(progress, window_values_.target_opacity,
+                                    window_values_.initial_opacity),
+      animate ? base::BindRepeating(&UpdateSettings) : base::NullCallback());
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {

@@ -32,19 +32,38 @@ namespace app_list {
 namespace {
 
 // The y offset for app list animation when overview mode toggles.
-constexpr int kOverViewAnimationYOffset = 100;
+constexpr int kOverviewAnimationYOffset = 100;
 
 // The delay in milliseconds for app list animation when overview mode ends
-constexpr base::TimeDelta kOverViewEndAnimationDelay =
+constexpr base::TimeDelta kOverviewEndAnimationDelay =
     base::TimeDelta::FromMilliseconds(250);
 
 // The duration in milliseconds for app list animation when overview mode
 // toggles.
-constexpr base::TimeDelta kOverViewAnimationDuration =
+constexpr base::TimeDelta kOverviewAnimationDuration =
     base::TimeDelta::FromMilliseconds(250);
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
+}
+
+void UpdateOverviewSettings(bool end_overview,
+                            ui::AnimationMetricsReporter* reporter,
+                            ui::ScopedLayerAnimationSettings* settings) {
+  settings->SetTransitionDuration(kOverviewAnimationDuration);
+  settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+  settings->SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  DCHECK(reporter);
+  settings->SetAnimationMetricsReporter(reporter);
+
+  if (end_overview) {
+    settings->GetAnimator()->SchedulePauseForProperties(
+        kOverviewEndAnimationDelay,
+        ui::LayerAnimationElement::AnimatableProperty::OPACITY |
+            ui::LayerAnimationElement::AnimatableProperty::TRANSFORM);
+  }
 }
 
 class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
@@ -213,71 +232,46 @@ void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
     view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
 }
 
-void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
-                                                         bool animate) {
-  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
-    // Start animation immediately in test.
-    StartOverviewModeAnimation(start, false);
-    return;
-  }
-
-  start_animation_timer_.Stop();
-  start_animation_timer_.Start(
-      FROM_HERE, start ? base::TimeDelta() : kOverViewEndAnimationDelay,
-      base::BindOnce(&AppListPresenterImpl::StartOverviewModeAnimation,
-                     base::Unretained(this), start, animate));
-}
-
-void AppListPresenterImpl::StartOverviewModeAnimation(bool start,
-                                                      bool animate) {
+void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
+    int y_position_in_screen,
+    float opacity,
+    UpdateHomeLauncherAnimationSettingsCallback callback) {
   if (!GetTargetVisibility())
     return;
 
-  // Calculate the source and target parameters used in the animation.
-  gfx::Transform transform;
-  transform.Translate(0, kOverViewAnimationYOffset);
-  const base::TimeDelta duration =
-      animate ? kOverViewAnimationDuration : base::TimeDelta();
-  const gfx::Transform source_transform = start ? gfx::Transform() : transform;
-  const gfx::Transform target_transform = start ? transform : gfx::Transform();
-  const float source_opacity = start ? 1.0f : 0.0f;
-  const float target_opacity = start ? 0.0f : 1.0f;
-
-  // Start animation to change the opacity and y position of expand arrow,
-  // suggestion chips and apps grid.
-  AppListMainView* app_list_main_view = view_->app_list_main_view();
-  ui::Layer* layer = app_list_main_view->layer();
-  layer->GetAnimator()->StopAnimating();
-  layer->SetTransform(source_transform);
-  layer->SetOpacity(source_opacity);
-
-  {
-    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-    animation.SetTransitionDuration(duration);
-    animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    animation.SetAnimationMetricsReporter(
-        state_animation_metrics_reporter_.get());
-    layer->SetTransform(target_transform);
-    layer->SetOpacity(target_opacity);
+  const gfx::Transform translation(1.f, 0.f, 0.f, 1.f, 0.f,
+                                   static_cast<float>(y_position_in_screen));
+  // We want to animate the expand arrow, suggestion chips and apps grid in
+  // app_list_main_view, and the search box.
+  std::vector<ui::Layer*> animation_layers = {
+      view_->app_list_main_view()->layer(),
+      view_->search_box_widget()->GetNativeWindow()->layer()};
+  for (auto* layer : animation_layers) {
+    layer->GetAnimator()->StopAnimating();
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (!callback.is_null()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          layer->GetAnimator());
+      callback.Run(settings.get());
+    }
+    layer->SetOpacity(opacity);
+    layer->SetTransform(translation);
   }
+}
 
-  // Start animation to change the opacity and y position of search box.
-  views::Widget* search_box_widget = view_->search_box_widget();
-  ui::Layer* search_box_layer = search_box_widget->GetNativeView()->layer();
-  search_box_layer->GetAnimator()->StopAnimating();
-  search_box_layer->SetTransform(source_transform);
-  search_box_layer->SetOpacity(source_opacity);
-
-  {
-    ui::ScopedLayerAnimationSettings animation(search_box_layer->GetAnimator());
-    animation.SetTransitionDuration(duration);
-    animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    animation.SetAnimationMetricsReporter(
-        state_animation_metrics_reporter_.get());
-    search_box_layer->SetTransform(target_transform);
-    search_box_layer->SetOpacity(target_opacity);
+void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
+                                                         bool animate) {
+  // If animating, set the source parameters.
+  if (animate) {
+    UpdateYPositionAndOpacityForHomeLauncher(
+        start ? 0 : kOverviewAnimationYOffset, start ? 1.f : 0.f,
+        base::NullCallback());
   }
+  UpdateYPositionAndOpacityForHomeLauncher(
+      start ? kOverviewAnimationYOffset : 0, start ? 0.f : 1.f,
+      animate ? base::BindRepeating(&UpdateOverviewSettings, start,
+                                    state_animation_metrics_reporter_.get())
+              : base::NullCallback());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

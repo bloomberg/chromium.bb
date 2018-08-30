@@ -13,9 +13,9 @@
 #include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -39,6 +39,12 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
       public views::WidgetObserver,
       public PaginationModelObserver {
  public:
+  // Callback which fills out the passed settings object. Used by
+  // UpdateYPositionAndOpacityForHomeLauncher so different callers can do
+  // similar animations with different settings.
+  using UpdateHomeLauncherAnimationSettingsCallback =
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
+
   explicit AppListPresenterImpl(
       std::unique_ptr<AppListPresenterDelegate> delegate);
   ~AppListPresenterImpl() override;
@@ -85,13 +91,16 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(int y_scroll_offset);
 
-  // Schedules animation for app list when overview mode starts or ends. The
-  // animation duration will be set to 0 if |animate| is false.
-  void ScheduleOverviewModeAnimation(bool start, bool animate);
+  // Updates the y position and opacity of the full screen app list. The changes
+  // are slightly different than UpdateYPositionAndOpacity. If |callback| is non
+  // null the this will animate using the animation settings in |callback|.
+  void UpdateYPositionAndOpacityForHomeLauncher(
+      int y_position_in_screen,
+      float opacity,
+      UpdateHomeLauncherAnimationSettingsCallback callback);
 
-  // Immediately start animation for app list when overview mode starts or ends.
-  // The animation duration will be set to 0 if |animate| is false.
-  void StartOverviewModeAnimation(bool start, bool animate);
+  // Schedules animation for app list when overview mode starts or ends.
+  void ScheduleOverviewModeAnimation(bool start, bool animate);
 
  private:
   // Sets the app list view and attempts to show it.
@@ -159,9 +168,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // The last visibility change and its display id.
   bool last_visible_ = false;
   int64_t last_display_id_ = display::kInvalidDisplayId;
-
-  // The timer used to delay the start time of an animation.
-  base::OneShotTimer start_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

@@ -22,6 +22,8 @@
 
 namespace ash {
 
+class AppListControllerImpl;
+
 // HomeLauncherGestureHandler makes modifications to a window's transform and
 // opacity when gesture drag events are received and forwarded to it.
 // Additionally hides windows which may block the home launcher. All
@@ -31,7 +33,8 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
                                               TabletModeObserver,
                                               ui::ImplicitAnimationObserver {
  public:
-  HomeLauncherGestureHandler();
+  explicit HomeLauncherGestureHandler(
+      AppListControllerImpl* app_list_controller);
   ~HomeLauncherGestureHandler() override;
 
   // Called by owner of this object when a gesture event is received. |location|
@@ -95,6 +98,9 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
+
+  // Unowned and guaranteed to be non null for the lifetime of this.
+  AppListControllerImpl* app_list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandler);
 };
