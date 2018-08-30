@@ -7,9 +7,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/fcm_sync_invalidation_listener.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -56,7 +56,7 @@ class FCMInvalidator : public Invalidator,
   friend class FCMInvalidatorTestDelegate;
 
   bool is_started_ = false;
-  InvalidatorRegistrar registrar_;
+  DeprecatedInvalidatorRegistrar registrar_;
 
   // The invalidation listener.
   FCMSyncInvalidationListener invalidation_listener_;

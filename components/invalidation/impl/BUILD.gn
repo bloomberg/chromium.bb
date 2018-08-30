@@ -8,6 +8,8 @@ if (is_android) {
 
 static_library("impl") {
   sources = [
+    "deprecated_invalidator_registrar.cc",
+    "deprecated_invalidator_registrar.h",
     "invalidation_logger.cc",
     "invalidation_logger.h",
     "invalidation_logger_observer.h",
@@ -21,8 +23,6 @@ static_library("impl") {
     "invalidation_switches.h",
     "invalidator.cc",
     "invalidator.h",
-    "invalidator_registrar.cc",
-    "invalidator_registrar.h",
     "invalidator_storage.cc",
     "invalidator_storage.h",
     "mock_ack_handler.cc",
@@ -159,6 +159,7 @@ source_set("unit_tests") {
   } else {
     # Non-Android tests.
     sources += [
+      "deprecated_invalidator_registrar_unittest.cc",
       "fake_invalidator_unittest.cc",
       "fcm_invalidation_service_unittest.cc",
       "fcm_invalidator_unittest.cc",
@@ -167,7 +168,6 @@ source_set("unit_tests") {
       "gcm_invalidation_bridge_unittest.cc",
       "gcm_network_channel_unittest.cc",
       "invalidation_notifier_unittest.cc",
-      "invalidator_registrar_unittest.cc",
       "invalidator_storage_unittest.cc",
       "non_blocking_invalidator_unittest.cc",
       "object_id_invalidation_map_unittest.cc",

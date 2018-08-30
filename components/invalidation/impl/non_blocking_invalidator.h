@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -99,7 +99,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   struct InitializeOptions;
   class Core;
 
-  InvalidatorRegistrar registrar_;
+  DeprecatedInvalidatorRegistrar registrar_;
   InvalidationStateTracker* invalidation_state_tracker_;
 
   // The real guts of NonBlockingInvalidator, which allows this class to live

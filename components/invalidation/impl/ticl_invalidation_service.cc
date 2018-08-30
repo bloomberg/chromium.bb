@@ -66,7 +66,7 @@ TiclInvalidationService::TiclInvalidationService(
     : user_agent_(user_agent),
       identity_provider_(std::move(identity_provider)),
       settings_provider_(std::move(settings_provider)),
-      invalidator_registrar_(new syncer::InvalidatorRegistrar()),
+      invalidator_registrar_(new syncer::DeprecatedInvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),

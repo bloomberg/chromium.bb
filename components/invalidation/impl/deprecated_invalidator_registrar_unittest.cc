@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/invalidator_registrar.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 
 #include <memory>
 
@@ -17,18 +17,16 @@ namespace syncer {
 
 namespace {
 
-// We test InvalidatorRegistrar by wrapping it in an Invalidator and
+// We test DeprecatedInvalidatorRegistrar by wrapping it in an Invalidator and
 // running the usual Invalidator tests.
 
-// Thin Invalidator wrapper around InvalidatorRegistrar.
-class RegistrarInvalidator : public Invalidator {
+// Thin Invalidator wrapper around DeprecatedInvalidatorRegistrar.
+class DeprecatedRegistrarInvalidator : public Invalidator {
  public:
-  RegistrarInvalidator() {}
-  ~RegistrarInvalidator() override {}
+  DeprecatedRegistrarInvalidator() {}
+  ~DeprecatedRegistrarInvalidator() override {}
 
-  InvalidatorRegistrar* GetRegistrar() {
-    return &registrar_;
-  }
+  DeprecatedInvalidatorRegistrar* GetRegistrar() { return &registrar_; }
 
   // Invalidator implementation.
   void RegisterHandler(InvalidationHandler* handler) override {
@@ -59,35 +57,30 @@ class RegistrarInvalidator : public Invalidator {
   }
 
  private:
-  InvalidatorRegistrar registrar_;
+  DeprecatedInvalidatorRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(RegistrarInvalidator);
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedRegistrarInvalidator);
 };
 
-class RegistrarInvalidatorTestDelegate {
+class DeprecatedRegistrarInvalidatorTestDelegate {
  public:
-  RegistrarInvalidatorTestDelegate() {}
+  DeprecatedRegistrarInvalidatorTestDelegate() {}
 
-  ~RegistrarInvalidatorTestDelegate() {
-    DestroyInvalidator();
-  }
+  ~DeprecatedRegistrarInvalidatorTestDelegate() { DestroyInvalidator(); }
 
-  void CreateInvalidator(
-      const std::string& invalidator_client_id,
-      const std::string& initial_state,
-      const base::WeakPtr<InvalidationStateTracker>&
-          invalidation_state_tracker) {
+  void CreateInvalidator(const std::string& invalidator_client_id,
+                         const std::string& initial_state,
+                         const base::WeakPtr<InvalidationStateTracker>&
+                             invalidation_state_tracker) {
     DCHECK(!invalidator_);
-    invalidator_.reset(new RegistrarInvalidator());
+    invalidator_.reset(new DeprecatedRegistrarInvalidator());
   }
 
-  RegistrarInvalidator* GetInvalidator() {
+  DeprecatedRegistrarInvalidator* GetInvalidator() {
     return invalidator_.get();
   }
 
-  void DestroyInvalidator() {
-    invalidator_.reset();
-  }
+  void DestroyInvalidator() { invalidator_.reset(); }
 
   void WaitForInvalidator() {
     // Do nothing.
@@ -104,12 +97,12 @@ class RegistrarInvalidatorTestDelegate {
   }
 
  private:
-  std::unique_ptr<RegistrarInvalidator> invalidator_;
+  std::unique_ptr<DeprecatedRegistrarInvalidator> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    RegistrarInvalidatorTest, InvalidatorTest,
-    RegistrarInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(DeprecatedRegistrarInvalidatorTest,
+                              InvalidatorTest,
+                              DeprecatedRegistrarInvalidatorTestDelegate);
 
 }  // namespace
 

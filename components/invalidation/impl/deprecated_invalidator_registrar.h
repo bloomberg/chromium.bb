@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_REGISTRAR_H_
-#define COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_REGISTRAR_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_DEPRECATED_INVALIDATOR_REGISTRAR_H_
+#define COMPONENTS_INVALIDATION_IMPL_DEPRECATED_INVALIDATOR_REGISTRAR_H_
 
 #include <map>
 
@@ -22,12 +22,12 @@ class ObjectIdInvalidationMap;
 // keep track of registered handlers and which object ID registrations are
 // associated with which handlers, so implementors can just reuse the logic
 // here to dispatch invalidations and other interesting notifications.
-class INVALIDATION_EXPORT InvalidatorRegistrar {
+class INVALIDATION_EXPORT DeprecatedInvalidatorRegistrar {
  public:
-  InvalidatorRegistrar();
+  DeprecatedInvalidatorRegistrar();
 
   // It is an error to have registered handlers on destruction.
-  ~InvalidatorRegistrar();
+  ~DeprecatedInvalidatorRegistrar();
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must already be registered.
@@ -85,9 +85,9 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   HandlerIdsMap handler_to_ids_map_;
   InvalidatorState state_;
 
-  DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrar);
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedInvalidatorRegistrar);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_REGISTRAR_H_
+#endif  // COMPONENTS_INVALIDATION_IMPL_DEPRECATED_INVALIDATOR_REGISTRAR_H_

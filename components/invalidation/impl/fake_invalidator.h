@@ -9,8 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_util.h"
 
 namespace syncer {
@@ -41,7 +41,7 @@ class FakeInvalidator : public Invalidator {
                                  callback) const override;
 
  private:
-  InvalidatorRegistrar registrar_;
+  DeprecatedInvalidatorRegistrar registrar_;
   std::string state_;
   std::string email_;
   std::string token_;
