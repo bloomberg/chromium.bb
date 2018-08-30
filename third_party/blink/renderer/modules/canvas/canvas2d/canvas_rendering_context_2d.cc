@@ -841,7 +841,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
   FloatPoint location(clampTo<float>(x),
-                      clampTo<float>(y + GetFontBaseline(font_metrics)));
+                      clampTo<float>(y + GetFontBaseline(*font_data)));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);

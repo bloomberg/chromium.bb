@@ -1975,9 +1975,8 @@ void BaseRenderingContext2D::CheckOverdraw(
 }
 
 float BaseRenderingContext2D::GetFontBaseline(
-    const FontMetrics& font_metrics) const {
-  return TextMetrics::GetFontBaseline(GetState().GetTextBaseline(),
-                                      font_metrics);
+    const SimpleFontData& font_data) const {
+  return TextMetrics::GetFontBaseline(GetState().GetTextBaseline(), font_data);
 }
 
 String BaseRenderingContext2D::textAlign() const {

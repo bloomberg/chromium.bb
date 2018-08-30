@@ -418,7 +418,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
                    false);
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
-  FloatPoint location(x, y + GetFontBaseline(font_metrics));
+  FloatPoint location(x, y + GetFontBaseline(*font_data));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);
