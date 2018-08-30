@@ -12,6 +12,8 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace webrtc_event_logging {
+
 // KeyedService working on behalf of WebRtcEventLogManager, informing it when
 // new BrowserContext-s are loaded.
 class WebRtcEventLogManagerKeyedService : public KeyedService {
@@ -35,5 +37,7 @@ class WebRtcEventLogManagerKeyedService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManagerKeyedService);
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_KEYED_SERVICE_H_

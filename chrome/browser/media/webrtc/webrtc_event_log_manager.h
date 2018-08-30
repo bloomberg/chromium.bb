@@ -23,10 +23,14 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/webrtc_event_logger.h"
 
+class WebRTCInternalsIntegrationBrowserTest;
+
 namespace content {
 class BrowserContext;
 class NetworkConnectionTracker;
 };
+
+namespace webrtc_event_logging {
 
 // This is a singleton class running in the browser UI thread (ownership of
 // the only instance lies in BrowserContext). It is in charge of writing WebRTC
@@ -153,9 +157,8 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                              base::OnceClosure reply);
 
  private:
-  friend class SigninManagerAndroidTest;
   friend class WebRtcEventLogManagerTestBase;
-  friend class WebRTCInternalsIntegrationBrowserTest;
+  friend class ::WebRTCInternalsIntegrationBrowserTest;
 
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
@@ -374,5 +377,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManager);
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_H_

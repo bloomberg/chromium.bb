@@ -17,6 +17,8 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace webrtc_event_logging {
+
 // This file is intended for:
 // 1. Code shared between WebRtcEventLogManager, WebRtcLocalEventLogManager
 //    and WebRtcRemoteEventLogManager.
@@ -422,5 +424,7 @@ WebRtcEventLogPeerConnectionKey::BrowserContextId GetBrowserContextId(
 // This function may be called on any task queue.
 base::FilePath GetRemoteBoundWebRtcEventLogsDir(
     const base::FilePath& browser_context_dir);
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_

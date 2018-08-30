@@ -26,6 +26,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace webrtc_event_logging {
+
 using ::testing::StrictMock;
 using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
@@ -376,3 +378,5 @@ TEST_F(WebRtcEventLogUploaderImplTest,
 
 // TODO(crbug.com/775415): Add a unit test that shows that files with
 // non-ASCII filenames are discard. (Or, alternatively, add support for them.)
+
+}  // namespace webrtc_event_logging

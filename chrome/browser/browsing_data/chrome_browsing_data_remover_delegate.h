@@ -39,6 +39,10 @@ class BrowserContext;
 class PluginDataRemover;
 }
 
+namespace webrtc_event_logging {
+class WebRtcEventLogManager;
+}  // namespace webrtc_event_logging
+
 // A delegate used by BrowsingDataRemover to delete data specific to Chrome
 // as the embedder.
 class ChromeBrowsingDataRemoverDelegate
@@ -178,6 +182,8 @@ class ChromeBrowsingDataRemoverDelegate
 #endif
 
  private:
+  using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
+
   // Called by the closures returned by CreatePendingTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls callback_.
   void OnTaskComplete();

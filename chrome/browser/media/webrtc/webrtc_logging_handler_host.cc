@@ -30,6 +30,7 @@
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 using content::BrowserThread;
+using webrtc_event_logging::WebRtcEventLogManager;
 
 // Key used to attach the handler to the RenderProcessHost.
 const char WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey[] =

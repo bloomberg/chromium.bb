@@ -18,6 +18,8 @@
 
 // TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
+namespace webrtc_event_logging {
+
 class WebRtcRemoteEventLogManager final
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
   using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
@@ -402,5 +404,7 @@ class WebRtcRemoteEventLogManager final
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcRemoteEventLogManager);
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_REMOTE_H_

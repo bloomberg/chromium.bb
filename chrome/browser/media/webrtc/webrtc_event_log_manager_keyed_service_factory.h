@@ -15,6 +15,8 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace webrtc_event_logging {
+
 // Produces WebRtcEventLogManagerKeyedService-s for non-incognito profiles.
 class WebRtcEventLogManagerKeyedServiceFactory
     : public BrowserContextKeyedServiceFactory {
@@ -36,5 +38,7 @@ class WebRtcEventLogManagerKeyedServiceFactory
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManagerKeyedServiceFactory);
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_KEYED_SERVICE_FACTORY_H_

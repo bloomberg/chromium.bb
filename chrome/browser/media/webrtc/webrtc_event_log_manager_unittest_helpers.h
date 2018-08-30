@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
+namespace webrtc_event_logging {
+
 // Which type of compression, if any, LogFileWriterTest should use.
 enum class WebRtcEventLogCompression {
   NONE,
@@ -74,5 +76,7 @@ size_t GzippedSize(const std::string& uncompressed);
 
 // Same as other version, but with elements compressed in sequence.
 size_t GzippedSize(const std::vector<std::string>& uncompressed);
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_UNITTEST_HELPERS_H_

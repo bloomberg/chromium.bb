@@ -21,6 +21,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace webrtc_event_logging {
+
 // TODO(crbug.com/775415): Change max back to (1u << 29) after resolving the
 // issue where we read the entire file into memory.
 const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
@@ -905,3 +907,5 @@ WebRtcRemoteEventLogManager::FindNextPeerConnection(
   }
   return end;
 }
+
+}  // namespace webrtc_event_logging

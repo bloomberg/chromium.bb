@@ -303,9 +303,10 @@
 
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
+using testing::_;
 using testing::Mock;
 using testing::Return;
-using testing::_;
+using webrtc_event_logging::WebRtcEventLogManager;
 
 namespace policy {
 

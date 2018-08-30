@@ -20,6 +20,8 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/text/bytes_formatting.h"
 
+namespace webrtc_event_logging {
+
 namespace {
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
 const char kUploadContentType[] = "multipart/form-data";
@@ -312,3 +314,5 @@ void WebRtcEventLogUploaderImpl::DeleteLogFile() {
     LOG(ERROR) << "Could not delete pending WebRTC event log file.";
   }
 }
+
+}  // namespace webrtc_event_logging

@@ -15,6 +15,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using webrtc_event_logging::WebRtcEventLogManager;
+
 namespace {
 const char kMainWebrtcTestHtmlPage[] = "/webrtc/webrtc_jsep01_test.html";
 }

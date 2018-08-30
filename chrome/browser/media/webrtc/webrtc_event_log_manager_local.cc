@@ -16,6 +16,8 @@
 #define IntToStringType base::IntToString
 #endif
 
+namespace webrtc_event_logging {
+
 #if defined(OS_ANDROID)
 const size_t kDefaultMaxLocalLogFileSizeBytes = 10000000;
 const size_t kMaxNumberLocalWebRtcEventLogFiles = 3;
@@ -252,3 +254,5 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
       .AddExtension(log_file_writer_factory_.Extension())
       .InsertBeforeExtensionASCII(base::StringPiece(stamp));
 }
+
+}  // namespace webrtc_event_logging

@@ -18,6 +18,8 @@ namespace network {
 class SimpleURLLoader;
 }  // namespace network
 
+namespace webrtc_event_logging {
+
 // A sublcass of this interface will take ownership of a file, and either
 // upload it to a remote server (actual implementation), or pretend to do so
 // (in unit tests). Upon completion, success/failure will be reported by posting
@@ -135,5 +137,7 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // The object lives on this IO-capable task runner.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_UPLOADER_H_

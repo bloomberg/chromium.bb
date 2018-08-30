@@ -15,6 +15,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "third_party/zlib/zlib.h"
 
+namespace webrtc_event_logging {
+
 using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
 const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
@@ -810,3 +812,5 @@ base::FilePath GetRemoteBoundWebRtcEventLogsDir(
       FILE_PATH_LITERAL("webrtc_event_logs");
   return browser_context_dir.Append(kRemoteBoundLogSubDirectory);
 }
+
+}  // namespace webrtc_event_logging
