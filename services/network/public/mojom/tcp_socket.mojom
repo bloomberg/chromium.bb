@@ -60,12 +60,12 @@ interface TCPConnectedSocket {
 // error, if a network error happens during a read or a write, consumer can find
 // out about it by implementing this interface.
 interface SocketObserver {
-  // Called when an error occurs during reading from the network. The producer
-  // side of |receive_stream| will be closed.
+  // Called when a network read fails. Called with net::OK if the socket was
+  // closed gracefully. The producer side of |receive_stream| will be closed.
   OnReadError(int32 net_error);
 
-  // Called when an error occurs during sending to the network. The consumer
-  // side of |send_stream| will be closed.
+  // Called when a network write fails. The consumer side of |send_stream| will
+  // be closed.
   OnWriteError(int32 net_error);
 };
 

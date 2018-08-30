@@ -89,8 +89,13 @@ void SocketDataPump::ReceiveMore() {
     receive_stream_close_watcher_.ArmOrNotify();
     return;
   }
-  // Handle EOF.
+  // Handle EOF. Has to be done here rather than in
+  // OnNetworkReadIfReadyCompleted because net::OK in the sync completion case
+  // means EOF, but in the async case just means the socket is ready to be read
+  // from again.
   if (read_result == net::OK) {
+    if (delegate_)
+      delegate_->OnNetworkReadError(read_result);
     ShutdownReceive();
     return;
   }
@@ -113,16 +118,20 @@ void SocketDataPump::OnReceiveStreamWritable(MojoResult result) {
 }
 
 void SocketDataPump::OnNetworkReadIfReadyCompleted(int result) {
+  // This method is called either on ReadIfReady sync completion, except in the
+  // EOF case, or on async completion. In the sync case, result is < 0 on error,
+  // or > 0 on success. In the async case, result is < 0 on error, or 0 if we
+  // should try to read from the socket again (And possibly get any of more
+  // data, an EOF, or an error).
   DCHECK(receive_stream_.is_valid());
   if (read_if_ready_pending_) {
     DCHECK_GE(net::OK, result);
     read_if_ready_pending_ = false;
   }
 
-  if (result < 0 && delegate_)
-    delegate_->OnNetworkReadError(result);
-
   if (result < 0) {
+    if (delegate_)
+      delegate_->OnNetworkReadError(result);
     ShutdownReceive();
     return;
   }
@@ -188,15 +197,14 @@ void SocketDataPump::OnNetworkWriteCompleted(int result) {
   DCHECK(pending_send_buffer_);
   DCHECK(!send_stream_.is_valid());
 
-  if (result < 0 && delegate_)
-    delegate_->OnNetworkWriteError(result);
-
   // Partial write is possible.
   pending_send_buffer_->CompleteRead(result >= 0 ? result : 0);
   send_stream_ = pending_send_buffer_->ReleaseHandle();
   pending_send_buffer_ = nullptr;
 
   if (result <= 0) {
+    if (delegate_)
+      delegate_->OnNetworkWriteError(result);
     ShutdownSend();
     return;
   }
