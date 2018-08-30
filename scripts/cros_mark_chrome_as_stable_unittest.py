@@ -26,8 +26,6 @@ from chromite.scripts import cros_mark_chrome_as_stable
 
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
-fake_svn_rev = '12345'
-new_fake_svn_rev = '23456'
 
 
 class _StubCommandResult(object):
@@ -69,12 +67,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(self.sticky, stable_data)
     osutils.WriteFile(self.sticky_rc, stable_data)
     osutils.WriteFile(self.latest_stable, stable_data)
-    # pylint: disable=protected-access
-    osutils.WriteFile(
-        self.tot_stable,
-        '\n'.join((stable_data,
-                   '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
-                              fake_svn_rev))))
+    osutils.WriteFile(self.tot_stable, '')
 
   def testFindChromeCandidates(self):
     """Test creation of stable ebuilds from mock dir."""
@@ -84,10 +77,10 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     stable_ebuild_paths = [x.ebuild_path for x in stable_ebuilds]
     self.assertEqual(unstable.ebuild_path, self.unstable)
     self.assertEqual(len(stable_ebuilds), 4)
-    self.assertTrue(self.sticky in stable_ebuild_paths)
-    self.assertTrue(self.sticky_rc in stable_ebuild_paths)
-    self.assertTrue(self.latest_stable in stable_ebuild_paths)
-    self.assertTrue(self.tot_stable in stable_ebuild_paths)
+    self.assertIn(self.sticky, stable_ebuild_paths)
+    self.assertIn(self.sticky_rc, stable_ebuild_paths)
+    self.assertIn(self.latest_stable, stable_ebuild_paths)
+    self.assertIn(self.tot_stable, stable_ebuild_paths)
 
   def _GetStableEBuilds(self):
     """Common helper to create a list of stable ebuilds."""
@@ -252,12 +245,11 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
     chrome_pn = 'chromeos-chrome'
     chrome_version = new_version
-    commit = None
     package_dir = self.mock_chrome_dir
 
     cros_mark_chrome_as_stable.MarkChromeEBuildAsStable(
         stable_candidate, unstable_ebuild, chrome_pn, chrome_rev,
-        chrome_version, commit, package_dir)
+        chrome_version, package_dir)
 
     git_mock.assert_has_calls([
         mock.call(package_dir, ['add', new_ebuild_path]),
