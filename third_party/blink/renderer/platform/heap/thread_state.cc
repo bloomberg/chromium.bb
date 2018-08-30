@@ -966,7 +966,6 @@ void ThreadState::FinishSnapshot() {
   gc_state_ = kNoGCScheduled;
   SetGCPhase(GCPhase::kSweeping);
   SetGCPhase(GCPhase::kNone);
-  Heap().stats_collector()->NotifySweepingCompleted();
 }
 
 void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
@@ -1045,11 +1044,19 @@ void ThreadState::CompleteSweep() {
     return;
 
   {
-    AtomicPauseScope atomic_pause_scope(this);
+    // CompleteSweep may be called during regular mutator exececution, from a
+    // task, or from the atomic pause in which the atomic scope has already been
+    // opened.
+    const bool was_in_atomic_pause = in_atomic_pause();
+    if (!was_in_atomic_pause)
+      EnterAtomicPause();
+    ScriptForbiddenScope script_forbidden;
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep);
     Heap().CompleteSweep();
+    if (!was_in_atomic_pause)
+      LeaveAtomicPause();
   }
   PostSweep();
 }
@@ -1215,6 +1222,16 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 }  // namespace
 
+void ThreadState::UpdateStatisticsAfterSweeping() {
+  DCHECK(!IsSweepingInProgress());
+  DCHECK(Heap().stats_collector()->is_started());
+  Heap().stats_collector()->NotifySweepingCompleted();
+  if (IsMainThread())
+    UpdateHistograms(Heap().stats_collector()->previous());
+  // Emit trace counters for all threads.
+  UpdateTraceCounters(*Heap().stats_collector());
+}
+
 void ThreadState::PostSweep() {
   DCHECK(CheckThread());
 
@@ -1227,11 +1244,10 @@ void ThreadState::PostSweep() {
   for (auto* const observer : observers_)
     observer->OnCompleteSweepDone();
 
-  Heap().stats_collector()->NotifySweepingCompleted();
-  if (IsMainThread())
-    UpdateHistograms(Heap().stats_collector()->previous());
-  // Emit trace counters for all threads.
-  UpdateTraceCounters(*Heap().stats_collector());
+  if (!in_atomic_pause()) {
+    // Immediately update the statistics if running outside of the atomic pause.
+    UpdateStatisticsAfterSweeping();
+  }
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
@@ -1515,28 +1531,27 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
           << " reason: " << GcReasonString(reason);
 }
 
-void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
-                                 BlinkGC::MarkingType marking_type,
-                                 BlinkGC::SweepingType sweeping_type,
-                                 BlinkGC::GCReason reason) {
-  {
-    ThreadHeapStatsCollector::DevToolsScope stats1(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase);
-    AtomicPauseScope atomic_pause_scope(this);
-    {
-      ThreadHeapStatsCollector::EnabledScope stats2(
-          Heap().stats_collector(),
-          ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
-          sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
-          GcReasonString(reason));
-      AtomicPausePrologue(stack_state, marking_type, reason);
-      MarkPhaseVisitRoots();
-      MarkPhaseVisitNotFullyConstructedObjects();
-      CHECK(MarkPhaseAdvanceMarking(TimeTicks::Max()));
-      MarkPhaseEpilogue(marking_type);
-    }
-    AtomicPauseEpilogue(marking_type, sweeping_type);
-  }
+void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
+                                          BlinkGC::MarkingType marking_type,
+                                          BlinkGC::GCReason reason) {
+  AtomicPausePrologue(stack_state, marking_type, reason);
+  MarkPhaseVisitRoots();
+  MarkPhaseVisitNotFullyConstructedObjects();
+}
+
+void ThreadState::AtomicPauseMarkTransitiveClosure() {
+  CHECK(MarkPhaseAdvanceMarking(TimeTicks::Max()));
+}
+
+void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
+  MarkPhaseEpilogue(marking_type);
+}
+
+void ThreadState::AtomicPauseSweepAndCompact(
+    BlinkGC::MarkingType marking_type,
+    BlinkGC::SweepingType sweeping_type) {
+  AtomicPauseScope atomic_pause_scope(this);
+  AtomicPauseEpilogue(marking_type, sweeping_type);
   if (marking_type == BlinkGC::kTakeSnapshot) {
     FinishSnapshot();
     CHECK(!IsSweepingInProgress());
@@ -1551,6 +1566,33 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
     DCHECK(sweeping_type == BlinkGC::kLazySweeping);
     // The default behavior is lazy sweeping.
     ScheduleIdleLazySweep();
+  }
+}
+
+void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
+                                 BlinkGC::MarkingType marking_type,
+                                 BlinkGC::SweepingType sweeping_type,
+                                 BlinkGC::GCReason reason) {
+  {
+    ThreadHeapStatsCollector::DevToolsScope stats1(
+        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase);
+    {
+      AtomicPauseScope atomic_pause_scope(this);
+      ThreadHeapStatsCollector::EnabledScope stats2(
+          Heap().stats_collector(),
+          ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
+          sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
+          GcReasonString(reason));
+      AtomicPauseMarkPrologue(stack_state, marking_type, reason);
+      AtomicPauseMarkTransitiveClosure();
+      AtomicPauseMarkEpilogue(marking_type);
+    }
+    AtomicPauseSweepAndCompact(marking_type, sweeping_type);
+  }
+  if (!IsSweepingInProgress()) {
+    // Sweeping was finished during the atomic pause. Update statistics needs to
+    // run outside of the top-most stats scope.
+    UpdateStatisticsAfterSweeping();
   }
 }
 

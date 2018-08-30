@@ -560,14 +560,6 @@ class PLATFORM_EXPORT ThreadState final
   }
 
  private:
-  // Needs to set up visitor for testing purposes.
-  friend class incremental_marking_test::IncrementalMarkingScope;
-  friend class incremental_marking_test::IncrementalMarkingTestDriver;
-  template <typename T>
-  friend class PrefinalizerRegistration;
-  friend class TestGCScope;
-  friend class ThreadStateSchedulingTest;
-
   // Number of ThreadState's that are currently in incremental marking. The
   // counter is incremented by one when some ThreadState enters incremental
   // marking and decremented upon finishing.
@@ -578,6 +570,24 @@ class PLATFORM_EXPORT ThreadState final
 
   ThreadState();
   ~ThreadState() override;
+
+  // The following methods are used to compose RunAtomicPause. Public users
+  // should use the CollectGarbage entrypoint. Internal users should use these
+  // methods to compose a full garbage collection.
+  void AtomicPauseMarkPrologue(BlinkGC::StackState,
+                               BlinkGC::MarkingType,
+                               BlinkGC::GCReason);
+  void AtomicPauseMarkTransitiveClosure();
+  void AtomicPauseMarkEpilogue(BlinkGC::MarkingType);
+  void AtomicPauseSweepAndCompact(BlinkGC::MarkingType marking_type,
+                                  BlinkGC::SweepingType sweeping_type);
+
+  void RunAtomicPause(BlinkGC::StackState,
+                      BlinkGC::MarkingType,
+                      BlinkGC::SweepingType,
+                      BlinkGC::GCReason);
+
+  void UpdateStatisticsAfterSweeping();
 
   // The version is needed to be able to start incremental marking.
   void MarkPhasePrologue(BlinkGC::StackState,
@@ -592,11 +602,6 @@ class PLATFORM_EXPORT ThreadState final
   void MarkPhaseVisitNotFullyConstructedObjects();
   bool MarkPhaseAdvanceMarking(TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
-
-  void RunAtomicPause(BlinkGC::StackState,
-                      BlinkGC::MarkingType,
-                      BlinkGC::SweepingType,
-                      BlinkGC::GCReason);
 
   bool ShouldVerifyMarking() const;
 
@@ -747,6 +752,14 @@ class PLATFORM_EXPORT ThreadState final
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  // Needs to set up visitor for testing purposes.
+  friend class incremental_marking_test::IncrementalMarkingScope;
+  friend class incremental_marking_test::IncrementalMarkingTestDriver;
+  template <typename T>
+  friend class PrefinalizerRegistration;
+  friend class TestGCScope;
+  friend class ThreadStateSchedulingTest;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadState);
 };
