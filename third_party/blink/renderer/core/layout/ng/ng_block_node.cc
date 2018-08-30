@@ -358,21 +358,15 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
 MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
     NGMinMaxSizeType type) const {
-  // TODO(layout-ng): This could be somewhat optimized by directly calling
-  // computeIntrinsicLogicalWidths, but that function is currently private.
-  // Consider doing that if this becomes a performance issue.
   MinMaxSize sizes;
-  sizes.min_size =
-      box_->ComputeLogicalWidthUsing(kMainOrPreferredSize, Length(kMinContent),
-                                     LayoutUnit(), box_->ContainingBlock());
-  sizes.max_size =
-      box_->ComputeLogicalWidthUsing(kMainOrPreferredSize, Length(kMaxContent),
-                                     LayoutUnit(), box_->ContainingBlock());
+  // ComputeIntrinsicLogicalWidths returns content-box + scrollbar.
+  box_->ComputeIntrinsicLogicalWidths(sizes.min_size, sizes.max_size);
   if (type == NGMinMaxSizeType::kContentBoxSize) {
-    sizes -=
-        (box_->BorderAndPaddingLogicalWidth() + box_->ScrollbarLogicalWidth());
+    sizes -= LayoutUnit(box_->ScrollbarLogicalWidth());
     DCHECK_GE(sizes.min_size, LayoutUnit());
     DCHECK_GE(sizes.max_size, LayoutUnit());
+  } else {
+    sizes += box_->BorderAndPaddingLogicalWidth();
   }
   return sizes;
 }

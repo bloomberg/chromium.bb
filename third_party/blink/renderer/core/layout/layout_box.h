@@ -1461,6 +1461,22 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     ClearPreferredLogicalWidthsDirty();
   }
 
+  // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic)
+  // logical widths for this layout box.
+  //
+  // intrinsicWidth is defined as:
+  //     intrinsic size of content (without our border and padding) +
+  //     scrollbarWidth.
+  //
+  // preferredWidth is defined as:
+  //     fixedWidth OR (intrinsicWidth plus border and padding).
+  //     Note: fixedWidth includes border and padding and scrollbarWidth.
+  //
+  // This is public only for use by LayoutNG. Do not call this elsewhere.
+  virtual void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const;
+
  protected:
   ~LayoutBox() override;
 
@@ -1634,20 +1650,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit FillAvailableMeasure(LayoutUnit available_logical_width,
                                   LayoutUnit& margin_start,
                                   LayoutUnit& margin_end) const;
-
-  // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic)
-  // logical widths for this layout box.
-  //
-  // intrinsicWidth is defined as:
-  //     intrinsic size of content (without our border and padding) +
-  //     scrollbarWidth.
-  //
-  // preferredWidth is defined as:
-  //     fixedWidth OR (intrinsicWidth plus border and padding).
-  //     Note: fixedWidth includes border and padding and scrollbarWidth.
-  virtual void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const;
 
   LayoutBoxRareData& EnsureRareData() {
     if (!rare_data_)
