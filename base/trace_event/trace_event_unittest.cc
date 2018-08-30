@@ -1273,6 +1273,21 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
 }
 
+TEST_F(TraceEventTestFixture, EnabledObserverOwnedByTraceLog) {
+  auto observer = std::make_unique<MockEnabledStateChangedObserver>();
+  EXPECT_CALL(*observer, OnTraceLogEnabled()).Times(1);
+  EXPECT_CALL(*observer, OnTraceLogDisabled()).Times(1);
+  TraceLog::GetInstance()->AddOwnedEnabledStateObserver(std::move(observer));
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(kRecordAllCategoryFilter, ""),
+                                      TraceLog::RECORDING_MODE);
+  TraceLog::GetInstance()->SetDisabled();
+  TraceLog::ResetForTesting();
+  // These notifications won't be sent.
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(kRecordAllCategoryFilter, ""),
+                                      TraceLog::RECORDING_MODE);
+  TraceLog::GetInstance()->SetDisabled();
+}
+
 // Tests the IsEnabled() state of TraceLog changes before callbacks.
 class AfterStateChangeEnabledStateObserver
     : public TraceLog::EnabledStateObserver {

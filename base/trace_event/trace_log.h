@@ -127,6 +127,11 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   };
   void AddEnabledStateObserver(EnabledStateObserver* listener);
   void RemoveEnabledStateObserver(EnabledStateObserver* listener);
+  // Adds an observer that is owned by TraceLog. This is useful for agents that
+  // implement tracing feature that needs to stay alive as long as TraceLog
+  // does.
+  void AddOwnedEnabledStateObserver(
+      std::unique_ptr<EnabledStateObserver> listener);
   bool HasEnabledStateObserver(EnabledStateObserver* listener) const;
 
   // Asynchronous enabled state listeners. When tracing is enabled or disabled,
@@ -477,6 +482,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;
   std::map<AsyncEnabledStateObserver*, RegisteredAsyncObserver>
       async_observers_;
+  // Manages ownership of the owned observers. The owned observers will also be
+  // added to |enabled_state_observer_list_|.
+  std::vector<std::unique_ptr<EnabledStateObserver>>
+      owned_enabled_state_observer_copy_;
 
   std::string process_name_;
   std::unordered_map<int, std::string> process_labels_;

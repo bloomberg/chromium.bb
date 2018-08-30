@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/android/jni_string.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -58,8 +57,6 @@ class TraceEnabledObserver
     }
 };
 
-base::LazyInstance<TraceEnabledObserver>::Leaky g_trace_enabled_state_observer_;
-
 }  // namespace
 
 static void JNI_TraceEvent_RegisterEnabledObserver(
@@ -67,8 +64,8 @@ static void JNI_TraceEvent_RegisterEnabledObserver(
     const JavaParamRef<jclass>& clazz) {
   bool enabled = trace_event::TraceLog::GetInstance()->IsEnabled();
   base::android::Java_TraceEvent_setEnabled(env, enabled);
-  trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
-      g_trace_enabled_state_observer_.Pointer());
+  trace_event::TraceLog::GetInstance()->AddOwnedEnabledStateObserver(
+      std::make_unique<TraceEnabledObserver>());
 }
 
 static void JNI_TraceEvent_StartATrace(JNIEnv* env,
