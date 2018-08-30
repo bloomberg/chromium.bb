@@ -5,10 +5,10 @@
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
-#include "content/browser/renderer_host/media/video_capture_dependencies.h"
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -47,19 +47,10 @@ class ServiceConnectorImpl
   std::unique_ptr<service_manager::Connector> connector_;
 };
 
-class DelegateToBrowserGpuServiceAcceleratorFactory
-    : public video_capture::mojom::AcceleratorFactory {
- public:
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override {
-    content::VideoCaptureDependencies::CreateJpegDecodeAccelerator(
-        std::move(jda_request));
-  }
-};
-
 std::unique_ptr<video_capture::mojom::AcceleratorFactory>
 CreateAcceleratorFactory() {
-  return std::make_unique<DelegateToBrowserGpuServiceAcceleratorFactory>();
+  return std::make_unique<
+      content::DelegateToBrowserGpuServiceAcceleratorFactory>();
 }
 
 }  // anonymous namespace
