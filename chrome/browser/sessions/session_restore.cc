@@ -120,29 +120,42 @@ class TabStripRestoreObserver : public TabStripModelObserver {
   ~TabStripRestoreObserver() override { tab_strip_->RemoveObserver(this); }
 
   // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override {
-    if (!destruction_checker_) {
-      destruction_checker_ =
-          std::make_unique<WebContentsDestructionChecker>(contents);
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() == TabStripModelChange::kInserted) {
+      for (const auto& delta : change.deltas())
+        OnTabInserted(delta.insert.contents);
+      return;
     }
-  }
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override {
-    if (destruction_checker_ && contents == destruction_checker_->contents())
-      LOG(FATAL) << "Restored WebContents " << contents << " closing";
-  }
-  void TabDetachedAt(content::WebContents* contents,
-                     int previous_index,
-                     bool was_active) override {
-    if (destruction_checker_ && contents == destruction_checker_->contents())
-      LOG(FATAL) << "Restored WebContents " << contents << " detached";
+
+    if (change.type() == TabStripModelChange::kRemoved) {
+      for (const auto& delta : change.deltas())
+        OnTabRemoved(delta.remove.contents, delta.remove.will_be_deleted);
+      return;
+    }
   }
 
  private:
+  // Creates checker if needed.
+  void OnTabInserted(content::WebContents* contents) {
+    if (destruction_checker_)
+      return;
+
+    destruction_checker_ =
+        std::make_unique<WebContentsDestructionChecker>(contents);
+  }
+
+  void OnTabRemoved(content::WebContents* contents, bool will_be_deleted) {
+    if (!destruction_checker_)
+      return;
+
+    if (contents == destruction_checker_->contents())
+      LOG(FATAL) << "Restored WebContents " << contents
+                 << (will_be_deleted ? " closing" : " detached");
+  }
+
   TabStripModel* tab_strip_;  // owned by caller
 
   // Initialized after a WebContents is inserted into the strip.

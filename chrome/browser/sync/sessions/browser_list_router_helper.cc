@@ -48,23 +48,23 @@ void BrowserListRouterHelper::OnBrowserRemoved(Browser* browser) {
   }
 }
 
-void BrowserListRouterHelper::TabInsertedAt(TabStripModel* model,
-                                            content::WebContents* web_contents,
-                                            int index,
-                                            bool foreground) {
-  if (web_contents && Profile::FromBrowserContext(
-                          web_contents->GetBrowserContext()) == profile_) {
-    router_->NotifyTabModified(web_contents, false);
-  }
-}
+void BrowserListRouterHelper::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted &&
+      change.type() != TabStripModelChange::kReplaced)
+    return;
 
-void BrowserListRouterHelper::TabReplacedAt(TabStripModel* tab_strip_model,
-                                            content::WebContents* old_contents,
-                                            content::WebContents* new_contents,
-                                            int index) {
-  if (new_contents && Profile::FromBrowserContext(
-                          new_contents->GetBrowserContext()) == profile_) {
-    router_->NotifyTabModified(new_contents, false);
+  for (const auto& delta : change.deltas()) {
+    content::WebContents* web_contents =
+        change.type() == TabStripModelChange::kInserted
+            ? delta.insert.contents
+            : delta.replace.new_contents;
+    if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) ==
+        profile_) {
+      router_->NotifyTabModified(web_contents, false);
+    }
   }
 }
 
