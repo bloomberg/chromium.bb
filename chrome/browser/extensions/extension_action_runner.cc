@@ -67,6 +67,7 @@ ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
       browser_context_(web_contents->GetBrowserContext()),
       was_used_on_page_(false),
       ignore_active_tab_granted_(false),
+      test_observer_(nullptr),
       extension_registry_observer_(this),
       weak_factory_(this) {
   CHECK(web_contents);
@@ -152,6 +153,8 @@ void ExtensionActionRunner::OnActiveTabPermissionGranted(
 
 void ExtensionActionRunner::OnWebRequestBlocked(const Extension* extension) {
   web_request_blocked_.insert(extension->id());
+  if (test_observer_)
+    test_observer_->OnBlockedActionAdded();
 }
 
 int ExtensionActionRunner::GetBlockedActions(const Extension* extension) {
@@ -231,6 +234,9 @@ void ExtensionActionRunner::RequestScriptInjection(
     NotifyChange(extension);
 
   was_used_on_page_ = true;
+
+  if (test_observer_)
+    test_observer_->OnBlockedActionAdded();
 }
 
 void ExtensionActionRunner::RunPendingScriptsForExtension(
