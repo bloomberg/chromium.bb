@@ -63,23 +63,10 @@ class MockHostResolverBase::RequestImpl
   RequestImpl(const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               base::WeakPtr<MockHostResolverBase> resolver)
-      : RequestImpl(request_host,
-                    optional_parameters,
-                    0 /* host_resolver_flags */,
-                    true /* allow_cached_response */,
-                    resolver) {}
-
-  RequestImpl(const HostPortPair& request_host,
-              const base::Optional<ResolveHostParameters>& optional_parameters,
-              HostResolverFlags host_resolver_flags,
-              bool allow_cached_response,
-              base::WeakPtr<MockHostResolverBase> resolver)
       : request_host_(request_host),
-        allow_cached_response_(allow_cached_response),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
-        host_resolver_flags_(host_resolver_flags |
-                             ParametersToHostResolverFlags(parameters_)),
+        host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
         id_(0),
         resolver_(resolver),
         complete_(false) {}
@@ -143,8 +130,6 @@ class MockHostResolverBase::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
-  bool allow_cached_response() const { return allow_cached_response_; }
-
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   int host_resolver_flags() const { return host_resolver_flags_; }
@@ -162,7 +147,6 @@ class MockHostResolverBase::RequestImpl
 
  private:
   const HostPortPair request_host_;
-  bool allow_cached_response_;
   const ResolveHostParameters parameters_;
   int host_resolver_flags_;
 
@@ -259,7 +243,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
 
   auto request = std::make_unique<RequestImpl>(
       info.host_port_pair(), RequestInfoToResolveHostParameters(info, priority),
-      info.host_resolver_flags(), info.allow_cached_response(), AsWeakPtr());
+      AsWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
 
@@ -284,7 +268,7 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
       info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      info.allow_cached_response(), addresses);
+      HostResolverSource::ANY, info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -298,7 +282,7 @@ int MockHostResolverBase::ResolveStaleFromCache(
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
       info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      info.allow_cached_response(), addresses);
+      HostResolverSource::ANY, info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -340,7 +324,9 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
       next_request_id_(1),
       num_resolve_(0),
       num_resolve_from_cache_(0) {
-  rules_ = CreateCatchAllHostResolverProc();
+  rules_map_[HostResolverSource::ANY] = CreateCatchAllHostResolverProc();
+  rules_map_[HostResolverSource::SYSTEM] = CreateCatchAllHostResolverProc();
+  rules_map_[HostResolverSource::DNS] = CreateCatchAllHostResolverProc();
 
   if (use_caching) {
     cache_.reset(new HostCache(kMaxCacheEntries));
@@ -356,8 +342,8 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   int rv = ResolveFromIPLiteralOrCache(
       request->request_host(),
       DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
-      request->host_resolver_flags(), request->allow_cached_response(),
-      &addresses);
+      request->host_resolver_flags(), request->parameters().source,
+      request->parameters().allow_cached_response, &addresses);
   if (rv == OK && !request->parameters().is_speculative)
     request->set_address_results(addresses);
   if (rv != ERR_DNS_CACHE_MISS)
@@ -372,7 +358,8 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
     int rv = ResolveProc(
         request->request_host(),
         DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
-        request->host_resolver_flags(), &addresses);
+        request->host_resolver_flags(), request->parameters().source,
+        &addresses);
     if (rv == OK && !request->parameters().is_speculative)
       request->set_address_results(addresses);
     return rv;
@@ -396,6 +383,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     const HostPortPair& host,
     AddressFamily requested_address_family,
     HostResolverFlags flags,
+    HostResolverSource source,
     bool allow_cache,
     AddressList* addresses,
     HostCache::EntryStaleness* stale_info) {
@@ -414,7 +402,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   }
   int rv = ERR_DNS_CACHE_MISS;
   if (cache_.get() && allow_cache) {
-    HostCache::Key key(host.host(), requested_address_family, flags);
+    HostCache::Key key(host.host(), requested_address_family, flags, source);
     const HostCache::Entry* entry;
     if (stale_info)
       entry = cache_->LookupStale(key, base::TimeTicks::Now(), stale_info);
@@ -432,12 +420,15 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
 int MockHostResolverBase::ResolveProc(const HostPortPair& host,
                                       AddressFamily requested_address_family,
                                       HostResolverFlags flags,
+                                      HostResolverSource source,
                                       AddressList* addresses) {
+  DCHECK(rules_map_.find(source) != rules_map_.end());
+
   AddressList addr;
-  int rv = rules_->Resolve(host.host(), requested_address_family, flags, &addr,
-                           nullptr);
+  int rv = rules_map_[source]->Resolve(host.host(), requested_address_family,
+                                       flags, &addr, nullptr);
   if (cache_.get()) {
-    HostCache::Key key(host.host(), requested_address_family, flags);
+    HostCache::Key key(host.host(), requested_address_family, flags, source);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK)
@@ -460,10 +451,10 @@ void MockHostResolverBase::ResolveNow(size_t id) {
   requests_.erase(it);
 
   AddressList addresses;
-  int error =
-      ResolveProc(req->request_host(),
-                  DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
-                  req->host_resolver_flags(), &addresses);
+  int error = ResolveProc(
+      req->request_host(),
+      DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
+      req->host_resolver_flags(), req->parameters().source, &addresses);
   if (error == OK && !req->parameters().is_speculative)
     req->set_address_results(addresses);
   req->OnAsyncCompleted(id, error);

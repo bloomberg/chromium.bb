@@ -370,7 +370,7 @@ class PacFileDeciderQuickCheckTest : public TestWithScopedTaskEnvironment {
 // Fails if a synchronous DNS lookup success for wpad causes QuickCheck to fail.
 TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
   resolver_.set_synchronous_mode(true);
-  resolver_.rules()->AddRule("wpad", "1.2.3.4");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("wpad", "1.2.3.4");
 
   EXPECT_THAT(StartDecider(), IsOk());
   EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
@@ -383,7 +383,7 @@ TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
 // fail.
 TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
   resolver_.set_ondemand_mode(true);
-  resolver_.rules()->AddRule("wpad", "1.2.3.4");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("wpad", "1.2.3.4");
 
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
@@ -399,7 +399,8 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
 // PacFileDecider to yield a PAC URL.
 TEST_F(PacFileDeciderQuickCheckTest, AsyncFail) {
   resolver_.set_ondemand_mode(true);
-  resolver_.rules()->AddSimulatedFailure("wpad");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
+      "wpad");
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
   resolver_.ResolveAllPending();
@@ -439,7 +440,8 @@ TEST_F(PacFileDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
 TEST_F(PacFileDeciderQuickCheckTest, QuickCheckDisabled) {
   const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
   resolver_.set_synchronous_mode(true);
-  resolver_.rules()->AddSimulatedFailure("wpad");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
+      "wpad");
   MockPacFileFetcher fetcher;
   decider_.reset(new PacFileDecider(&fetcher, &dhcp_fetcher_, NULL));
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
@@ -451,8 +453,10 @@ TEST_F(PacFileDeciderQuickCheckTest, ExplicitPacUrl) {
   const char* kCustomUrl = "http://custom/proxy.pac";
   config_.set_pac_url(GURL(kCustomUrl));
   Rules::Rule rule = rules_.AddSuccessRule(kCustomUrl);
-  resolver_.rules()->AddSimulatedFailure("wpad");
-  resolver_.rules()->AddRule("custom", "1.2.3.4");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
+      "wpad");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("custom",
+                                                             "1.2.3.4");
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   callback_.WaitForResult();
   EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
