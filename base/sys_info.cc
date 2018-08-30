@@ -7,9 +7,16 @@
 #include <algorithm>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/sys_info_internal.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -81,6 +88,25 @@ std::string SysInfo::HardwareModelName() {
   return std::string();
 }
 #endif
+
+void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
+#if defined(OS_WIN)
+  base::PostTaskAndReplyWithResult(
+      base::CreateCOMSTATaskRunnerWithTraits({}).get(), FROM_HERE,
+      base::BindOnce(&GetHardwareInfoSync), std::move(callback));
+#elif defined(OS_ANDROID) || defined(OS_MACOSX)
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
+#elif defined(OS_LINUX)
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetHardwareInfoSync),
+      std::move(callback));
+#else
+  NOTIMPLEMENTED();
+  base::PostTask(FROM_HERE,
+                 base::BindOnce(std::move(callback), HardwareInfo()));
+#endif
+}
 
 // static
 base::TimeDelta SysInfo::Uptime() {

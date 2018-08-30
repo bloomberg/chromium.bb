@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info_internal.h"
 
@@ -166,6 +167,12 @@ int GetDalvikHeapGrowthLimitMB() {
   return static_cast<int>(result);
 }
 
+std::string HardwareManufacturerName() {
+  char device_model_str[PROP_VALUE_MAX];
+  __system_property_get("ro.product.manufacturer", device_model_str);
+  return std::string(device_model_str);
+}
+
 }  // anonymous namespace
 
 namespace base {
@@ -237,5 +244,14 @@ bool SysInfo::IsLowEndDeviceImpl() {
   return g_lazy_low_end_device.Get().value();
 }
 
+// static
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  HardwareInfo info;
+  info.manufacturer = HardwareManufacturerName();
+  info.model = HardwareModelName();
+  DCHECK(IsStringUTF8(info.manufacturer));
+  DCHECK(IsStringUTF8(info.model));
+  return info;
+}
 
 }  // namespace base

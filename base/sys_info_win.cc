@@ -13,9 +13,12 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
+#include "base/win/wmi.h"
 
 namespace {
 
@@ -158,6 +161,18 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
   *major_version = os_info->version_number().major;
   *minor_version = os_info->version_number().minor;
   *bugfix_version = 0;
+}
+
+// static
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  win::WmiComputerSystemInfo wmi_info = win::WmiComputerSystemInfo::Get();
+
+  HardwareInfo info;
+  info.manufacturer = UTF16ToUTF8(wmi_info.manufacturer());
+  info.model = UTF16ToUTF8(wmi_info.model());
+  DCHECK(IsStringUTF8(info.manufacturer));
+  DCHECK(IsStringUTF8(info.model));
+  return info;
 }
 
 }  // namespace base

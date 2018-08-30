@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info_internal.h"
 #include "build/build_config.h"
 
@@ -90,5 +91,27 @@ std::string SysInfo::CPUModelName() {
   }
   return std::string();
 }
+
+#if !defined(OS_ANDROID)
+// static
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  static const size_t kMaxStringSize = 100u;
+  HardwareInfo info;
+  std::string data;
+  if (ReadFileToStringWithMaxSize(
+          FilePath("/sys/devices/virtual/dmi/id/sys_vendor"), &data,
+          kMaxStringSize)) {
+    TrimWhitespaceASCII(data, TrimPositions::TRIM_ALL, &info.manufacturer);
+  }
+  if (ReadFileToStringWithMaxSize(
+          FilePath("/sys/devices/virtual/dmi/id/product_name"), &data,
+          kMaxStringSize)) {
+    TrimWhitespaceASCII(data, TrimPositions::TRIM_ALL, &info.model);
+  }
+  DCHECK(IsStringUTF8(info.manufacturer));
+  DCHECK(IsStringUTF8(info.model));
+  return info;
+}
+#endif
 
 }  // namespace base

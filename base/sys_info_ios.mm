@@ -16,6 +16,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace base {
@@ -125,6 +126,16 @@ std::string SysInfo::HardwareModelName() {
   // because "hw.model" doesn't always return the right string on some devices.
   return GetSysctlValue("hw.machine");
 #endif
+}
+
+// static
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  HardwareInfo info;
+  info.manufacturer = "Apple Inc.";
+  info.model = HardwareModelName();
+  DCHECK(IsStringUTF8(info.manufacturer));
+  DCHECK(IsStringUTF8(info.model));
+  return info;
 }
 
 }  // namespace base

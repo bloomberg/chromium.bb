@@ -20,6 +20,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {
@@ -103,6 +104,16 @@ std::string SysInfo::CPUModelName() {
 // static
 std::string SysInfo::HardwareModelName() {
   return GetSysctlValue("hw.model");
+}
+
+// static
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  HardwareInfo info;
+  info.manufacturer = "Apple Inc.";
+  info.model = HardwareModelName();
+  DCHECK(IsStringUTF8(info.manufacturer));
+  DCHECK(IsStringUTF8(info.model));
+  return info;
 }
 
 }  // namespace base
