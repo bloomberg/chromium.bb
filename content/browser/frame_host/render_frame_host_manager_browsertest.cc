@@ -12,12 +12,14 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -30,6 +32,8 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
+#include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -5136,6 +5140,239 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
   ASSERT_EQ(2U, root->child_count());
   EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
   EXPECT_TRUE(root->child_at(1)->current_frame_host()->IsRenderFrameLive());
+}
+
+namespace {
+
+// A helper to post a recurring check that a renderer process is foregrounded.
+// The recurring check uses WeakPtr semantic and will die when this class goes
+// out of scope.
+class AssertForegroundHelper {
+ public:
+  AssertForegroundHelper() : weak_ptr_factory_(this) {}
+
+#if defined(OS_MACOSX)
+  // Asserts that |renderer_process| isn't backgrounded and reposts self to
+  // check again shortly. |renderer_process| must outlive this
+  // AssertForegroundHelper instance.
+  void AssertForegroundAndRepost(const base::Process& renderer_process,
+                                 base::PortProvider* port_provider) {
+    ASSERT_FALSE(renderer_process.IsProcessBackgrounded(port_provider));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::ConstRef(renderer_process), port_provider),
+        base::TimeDelta::FromMilliseconds(1));
+  }
+#else   // defined(OS_MACOSX)
+  // Same as above without the Mac specific base::PortProvider.
+  void AssertForegroundAndRepost(const base::Process& renderer_process) {
+    ASSERT_FALSE(renderer_process.IsProcessBackgrounded());
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::ConstRef(renderer_process)),
+        base::TimeDelta::FromMilliseconds(1));
+  }
+#endif  // defined(OS_MACOSX)
+
+ private:
+  base::WeakPtrFactory<AssertForegroundHelper> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssertForegroundHelper);
+};
+
+// Observer class that waits until the OS process for a specific
+// RenderProcessHost is ready to be used.
+// TODO(nasko): Consider moving this into RenderProcessHostWatcher.
+class RenderProcessReadyObserver : public RenderProcessHostObserver {
+ public:
+  RenderProcessReadyObserver(RenderProcessHost* render_process_host)
+      : render_process_host_(render_process_host),
+        quit_closure_(run_loop_.QuitClosure()) {
+    render_process_host_->AddObserver(this);
+  }
+  ~RenderProcessReadyObserver() override {
+    render_process_host_->RemoveObserver(this);
+  }
+
+  // Waits until the renderer process is ready.
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // RenderProcessHostObserver overrides.
+  void RenderProcessReady(RenderProcessHost* host) override {
+    std::move(quit_closure_).Run();
+  }
+
+  RenderProcessHost* render_process_host_;
+  base::RunLoop run_loop_;
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessReadyObserver);
+};
+
+}  // namespace
+
+// This is a regression test for https://crbug.com/560446. It ensures the
+// newly launched process for cross-process navigation in the foreground
+// WebContents isn't backgrounded prior to the navigation committing and a
+// "visible" widget being added to the process. This test discards the spare
+// RenderProcessHost if present, to ensure that it is not used in the
+// cross-process navigation.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess) {
+  StartEmbeddedServer();
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+#if defined(OS_MACOSX)
+  base::PortProvider* port_provider =
+      BrowserChildProcessHost::GetPortProvider();
+#endif  //  defined(OS_MACOSX)
+
+  // Start off navigating to a.com and capture the process used to commit.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  RenderProcessHost* start_rph = web_contents->GetMainFrame()->GetProcess();
+
+  // Discard the spare RenderProcessHost to ensure a new RenderProcessHost
+  // is created and has the right prioritization.
+  RenderProcessHostImpl::DiscardSpareRenderProcessHostForTesting();
+  EXPECT_FALSE(RenderProcessHostImpl::GetSpareRenderProcessHostForTesting());
+
+  // Start a navigation to b.com to ensure a cross-process navigation is
+  // in progress and ensure the process for the speculative host is different.
+  GURL url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  content::TestNavigationManager navigation_manager(web_contents, url);
+
+  shell()->LoadURL(url);
+  RenderProcessHost* speculative_rph = web_contents->GetFrameTree()
+                                           ->root()
+                                           ->render_manager()
+                                           ->speculative_frame_host()
+                                           ->GetProcess();
+  EXPECT_NE(start_rph, speculative_rph);
+  EXPECT_FALSE(speculative_rph->IsReady());
+
+#if !defined(OS_ANDROID)
+  // TODO(gab, nasko): On Android IsProcessBackgrounded is currently giving
+  // incorrect value at this stage of the process lifetime. This should be
+  // fixed in follow up cleanup work. See https://crbug.com/560446.
+  EXPECT_FALSE(speculative_rph->IsProcessBackgrounded());
+#endif
+
+  // Wait for the underlying OS process to have launched and be ready to
+  // receive IPCs.
+  RenderProcessReadyObserver process_observer(speculative_rph);
+  process_observer.Wait();
+
+  // Kick off an infinite check against self that the process used for
+  // navigation is never backgrounded. The WaitForNavigationFinished will wait
+  // inside a RunLoop() and hence perform this check regularly throughout the
+  // navigation.
+  const base::Process& process = speculative_rph->GetProcess();
+  EXPECT_TRUE(process.IsValid());
+  AssertForegroundHelper assert_foreground_helper;
+#if defined(OS_MACOSX)
+  assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
+#else
+  assert_foreground_helper.AssertForegroundAndRepost(process);
+#endif
+
+  // The process should be foreground priority before commit because it is
+  // pending, and foreground after commit because it has a visible widget.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_NE(start_rph, web_contents->GetMainFrame()->GetProcess());
+  EXPECT_EQ(speculative_rph, web_contents->GetMainFrame()->GetProcess());
+}
+
+// Similar to the test above, but verifies the spare RenderProcessHost uses the
+// right priority.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    ForegroundNavigationIsNeverBackgroundedWithSpareProcess) {
+  // This test applies only when spare RenderProcessHost is enabled and in use.
+  if (!RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes())
+    return;
+
+  StartEmbeddedServer();
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+#if defined(OS_MACOSX)
+  base::PortProvider* port_provider =
+      BrowserChildProcessHost::GetPortProvider();
+#endif  //  defined(OS_MACOSX)
+
+  // Start off navigating to a.com and capture the process used to commit.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  RenderProcessHost* start_rph = web_contents->GetMainFrame()->GetProcess();
+
+  // At this time, there should be a spare RenderProcesHost. Capture it for
+  // testing expectations later.
+  RenderProcessHost* spare_rph =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  EXPECT_TRUE(spare_rph);
+  EXPECT_TRUE(spare_rph->IsProcessBackgrounded());
+
+  // Start a navigation to b.com to ensure a cross-process navigation is
+  // in progress and ensure the process for the speculative host is
+  // different, but matches the spare RenderProcessHost.
+  GURL url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  content::TestNavigationManager navigation_manager(web_contents, url);
+
+  shell()->LoadURL(url);
+  RenderProcessHost* speculative_rph = web_contents->GetFrameTree()
+                                           ->root()
+                                           ->render_manager()
+                                           ->speculative_frame_host()
+                                           ->GetProcess();
+  EXPECT_NE(start_rph, speculative_rph);
+
+  // In this test case, the spare RenderProcessHost will be used, so verify it
+  // and ensure it is ready.
+  EXPECT_EQ(spare_rph, speculative_rph);
+  EXPECT_TRUE(spare_rph->IsReady());
+
+  // The creation of the speculative RenderFrameHost should change the
+  // RenderProcessHost's copy of the priority of the spare process from
+  // background to foreground.
+  EXPECT_FALSE(spare_rph->IsProcessBackgrounded());
+
+  // The OS process itself is updated on the process launcher thread, so it
+  // cannot be observed immediately here. Perform a thread hop to and back to
+  // allow for the priority change to occur before using the
+  // AssertForegroundHelper object to check the OS process priority.
+  {
+    base::RunLoop run_loop;
+    GetProcessLauncherTaskRunner()->PostTaskAndReply(
+        FROM_HERE, base::DoNothing(), run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
+  }
+
+  // Kick off an infinite check against self that the process used for
+  // navigation is never backgrounded. The WaitForNavigationFinished will wait
+  // inside a RunLoop() and hence perform this check regularly throughout the
+  // navigation.
+  const base::Process& process = spare_rph->GetProcess();
+  EXPECT_TRUE(process.IsValid());
+  AssertForegroundHelper assert_foreground_helper;
+#if defined(OS_MACOSX)
+  assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
+#else
+  assert_foreground_helper.AssertForegroundAndRepost(process);
+#endif
+
+  // The process should be foreground priority before commit because it is
+  // pending, and foreground after commit because it has a visible widget.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_NE(start_rph, web_contents->GetMainFrame()->GetProcess());
+  EXPECT_EQ(speculative_rph, web_contents->GetMainFrame()->GetProcess());
 }
 
 }  // namespace content
