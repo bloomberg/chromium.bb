@@ -4,6 +4,8 @@
 
 #include "extensions/browser/activity.h"
 
+#include "base/logging.h"
+
 namespace extensions {
 
 const char Activity::kCancelSuspend[] = "cancel-suspend";
@@ -11,5 +13,34 @@ const char Activity::kCreatePage[] = "create-page";
 const char Activity::kIPC[] = "IPC";
 const char Activity::kPictureInPicture[] = "picture-in-picture";
 const char Activity::kRenderFrame[] = "render-frame";
+
+const char* Activity::ToString(Type type) {
+  switch (type) {
+    case API_FUNCTION:
+      return "API_FUNCTION";
+    case DEV_TOOLS:
+      return "DEV_TOOLS";
+    case EVENT:
+      return "EVENT";
+    case LIFECYCLE_MANAGEMENT:
+      return "LIFECYCLE_MANAGEMENT";
+    case MEDIA:
+      return "MEDIA";
+    case MESSAGE_PORT:
+      return "MESSAGE_PORT";
+    case MODAL_DIALOG:
+      return "MODAL_DIALOG";
+    case MOJO:
+      return "MOJO";
+    case NETWORK:
+      return "NETWORK";
+    case PEPPER_API:
+      return "PEPPER_API";
+    case PROCESS_MANAGER:
+      return "PROCESS_MANAGER";
+  }
+  NOTREACHED();
+  return "";
+}
 
 }  // namespace extensions
