@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
