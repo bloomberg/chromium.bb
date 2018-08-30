@@ -891,7 +891,8 @@ bool ProfileSyncService::IsSyncConfirmationNeeded() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsSetupInProgress() &&
          !IsFirstSetupComplete() &&
-         !HasDisableReason(DISABLE_REASON_USER_CHOICE);
+         !HasDisableReason(DISABLE_REASON_USER_CHOICE) &&
+         IsAuthenticatedAccountPrimary();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
