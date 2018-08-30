@@ -176,6 +176,8 @@ const char kSafeBrowsingTriggerEventTimestamps[] =
     "safebrowsing.trigger_event_timestamps";
 const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
     "safebrowsing.unhandled_sync_password_reuses";
+const char kSafeBrowsingNextPasswordCaptureEventLogTime[] =
+    "safebrowsing.next_password_capture_event_log_time";
 const char kSafeBrowsingWhitelistDomains[] =
     "safebrowsing.safe_browsing_whitelist_domains";
 const char kPasswordProtectionChangePasswordURL[] =
@@ -289,6 +291,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterDictionaryPref(
       prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  registry->RegisterStringPref(
+      prefs::kSafeBrowsingNextPasswordCaptureEventLogTime,
+      "0");  // int64 as string
   registry->RegisterListPref(prefs::kSafeBrowsingWhitelistDomains);
   registry->RegisterStringPref(prefs::kPasswordProtectionChangePasswordURL, "");
   registry->RegisterListPref(prefs::kPasswordProtectionLoginURLs);

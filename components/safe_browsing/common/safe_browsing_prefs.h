@@ -62,6 +62,9 @@ extern const char kSafeBrowsingTriggerEventTimestamps[];
 // phishing site.
 extern const char kSafeBrowsingUnhandledSyncPasswordReuses[];
 
+// Integer timestamp of next time the PasswordCaptured event should be logged.
+extern const char kSafeBrowsingNextPasswordCaptureEventLogTime[];
+
 // List of domains where Safe Browsing should trust. That means Safe Browsing
 // won't check for malware/phishing/Uws on resources on these domains, or
 // trigger warnings. Used for enterprise only.

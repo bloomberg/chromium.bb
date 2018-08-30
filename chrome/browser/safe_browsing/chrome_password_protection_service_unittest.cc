@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
@@ -28,8 +29,10 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
@@ -53,6 +56,7 @@
 
 using sync_pb::UserEventSpecifics;
 using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
+using GaiaPasswordCaptured = UserEventSpecifics::GaiaPasswordCaptured;
 using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
@@ -111,10 +115,12 @@ class MockChromePasswordProtectionService
   explicit MockChromePasswordProtectionService(
       Profile* profile,
       scoped_refptr<HostContentSettingsMap> content_setting_map,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager)
+      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      StringProvider sync_password_hash_provider)
       : ChromePasswordProtectionService(profile,
                                         content_setting_map,
-                                        ui_manager),
+                                        ui_manager,
+                                        sync_password_hash_provider),
         is_incognito_(false),
         is_extended_reporting_(false) {}
   bool IsExtendedReporting() override { return is_extended_reporting_; }
@@ -135,6 +141,7 @@ class MockChromePasswordProtectionService
  private:
   bool is_incognito_;
   bool is_extended_reporting_;
+  std::string mocked_sync_password_hash_;
 };
 
 class ChromePasswordProtectionServiceTest
@@ -153,10 +160,8 @@ class ChromePasswordProtectionServiceTest
         &test_pref_service_, false /* incognito */, false /* guest_profile */,
         false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
-    service_ = std::make_unique<MockChromePasswordProtectionService>(
-        profile(), content_setting_map_,
-        new SafeBrowsingUIManager(
-            SafeBrowsingService::CreateSafeBrowsingService()));
+
+    service_ = NewMockPasswordProtectionService();
     fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
@@ -174,6 +179,21 @@ class ChromePasswordProtectionServiceTest
     request_ = nullptr;
     content_setting_map_->ShutdownOnUIThread();
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  // This can be called whenever to reset service_, if initialition
+  // conditions have changed.
+  std::unique_ptr<MockChromePasswordProtectionService>
+  NewMockPasswordProtectionService(
+      const std::string& sync_password_hash = std::string()) {
+    StringProvider sync_password_hash_provider =
+        base::BindLambdaForTesting([=] { return sync_password_hash; });
+
+    return std::make_unique<MockChromePasswordProtectionService>(
+        profile(), content_setting_map_,
+        new SafeBrowsingUIManager(
+            SafeBrowsingService::CreateSafeBrowsingService()),
+        sync_password_hash_provider);
   }
 
   content::BrowserContext* CreateBrowserContext() override {
@@ -537,6 +557,130 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // Not checking for the extended_reporting_level since that requires setting
   // multiple prefs and doesn't add much verification value.
+}
+
+// Check that the PaswordCapturedEvent timer is set for 1 min if password
+// hash is saved and no timer pref is set yet.
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordCaptureEventScheduledOnStartup) {
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestGaiaID), std::string(kTestEmail));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+
+  // Case 1: Check that the timer is not set in the ctor if no password hash is
+  // saved.
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"");
+  EXPECT_FALSE(service_->log_password_capture_timer_.IsRunning());
+
+  // Case 1: Timer is set to 60 sec by default.
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"some-hash-value");
+  EXPECT_TRUE(service_->log_password_capture_timer_.IsRunning());
+  EXPECT_EQ(
+      60, service_->log_password_capture_timer_.GetCurrentDelay().InSeconds());
+}
+
+// Check that the timer is set for prescribed time based on pref.
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordCaptureEventScheduledFromPref) {
+  // Pick a delay and store the deadline in the pref
+  base::TimeDelta delay = base::TimeDelta::FromDays(13);
+  SetDelayInPref(profile()->GetPrefs(),
+                 prefs::kSafeBrowsingNextPasswordCaptureEventLogTime, delay);
+
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestGaiaID), std::string(kTestEmail));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"");
+  // Check that the timer is not set if no password hash is saved.
+  EXPECT_EQ(
+      0, service_->log_password_capture_timer_.GetCurrentDelay().InSeconds());
+
+  // Save a password hash
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"some-hash-value");
+
+  // Verify the delay is approx correct (not exact since we're not controlling
+  // the clock).
+  base::TimeDelta cur_delay =
+      service_->log_password_capture_timer_.GetCurrentDelay();
+  EXPECT_GE(14, cur_delay.InDays());
+  EXPECT_LE(12, cur_delay.InDays());
+}
+
+// Check that we do log the event
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordCaptureEventRecorded) {
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestGaiaID), std::string(kTestEmail));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+
+  // Case 1: Default service_ ctor has an empty password hash. Should not log.
+  service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
+  ASSERT_EQ(0ul, GetUserEventService()->GetRecordedUserEvents().size());
+
+  // Cases 2 and 3: With a password hash. Should log.
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"some-hash-value");
+
+  service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
+  ASSERT_EQ(1ul, GetUserEventService()->GetRecordedUserEvents().size());
+  GaiaPasswordCaptured event = GetUserEventService()
+                                   ->GetRecordedUserEvents()[0]
+                                   .gaia_password_captured_event();
+  EXPECT_EQ(event.event_trigger(), GaiaPasswordCaptured::EXPIRED_28D_TIMER);
+
+  service_->MaybeLogPasswordCapture(/*did_log_in=*/true);
+  ASSERT_EQ(2ul, GetUserEventService()->GetRecordedUserEvents().size());
+  event = GetUserEventService()
+              ->GetRecordedUserEvents()[1]
+              .gaia_password_captured_event();
+  EXPECT_EQ(event.event_trigger(), GaiaPasswordCaptured::USER_LOGGED_IN);
+}
+
+// Check that we reschedule after logging.
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordCaptureEventReschedules) {
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestGaiaID), std::string(kTestEmail));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+
+  // Case 1: Default service_ ctor has an empty password hash, so we don't log
+  // or reschedule the logging.
+  service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
+  EXPECT_FALSE(service_->log_password_capture_timer_.IsRunning());
+
+  // Case 2: A non-empty password hash.
+  service_ = NewMockPasswordProtectionService(
+      /*sync_password_hash=*/"some-hash-value");
+
+  service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
+
+  // Verify the delay is approx correct. Will be 24-28 days, +- clock drift.
+  EXPECT_TRUE(service_->log_password_capture_timer_.IsRunning());
+  base::TimeDelta cur_delay =
+      service_->log_password_capture_timer_.GetCurrentDelay();
+  EXPECT_GT(29, cur_delay.InDays());
+  EXPECT_LT(23, cur_delay.InDays());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
