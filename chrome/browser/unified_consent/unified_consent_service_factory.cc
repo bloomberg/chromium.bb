@@ -51,7 +51,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   if (!sync_service)
     return nullptr;
 
-  if (!IsUnifiedConsentEnabled(profile)) {
+  if (!IsUnifiedConsentFeatureEnabled(profile)) {
     unified_consent::UnifiedConsentService::RollbackIfNeeded(
         profile->GetPrefs(), sync_service);
     return nullptr;

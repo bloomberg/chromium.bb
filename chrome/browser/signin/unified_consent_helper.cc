@@ -26,7 +26,7 @@ unified_consent::UnifiedConsentFeatureState GetUnifiedConsentFeatureState(
 
 }  // namespace
 
-bool IsUnifiedConsentEnabled(Profile* profile) {
+bool IsUnifiedConsentFeatureEnabled(Profile* profile) {
   DCHECK(profile);
   unified_consent::UnifiedConsentFeatureState feature_state =
       GetUnifiedConsentFeatureState(profile);
@@ -34,7 +34,7 @@ bool IsUnifiedConsentEnabled(Profile* profile) {
          unified_consent::UnifiedConsentFeatureState::kDisabled;
 }
 
-bool IsUnifiedConsentBumpEnabled(Profile* profile) {
+bool IsUnifiedConsentFeatureWithBumpEnabled(Profile* profile) {
   DCHECK(profile);
   unified_consent::UnifiedConsentFeatureState feature_state =
       GetUnifiedConsentFeatureState(profile);

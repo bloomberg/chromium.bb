@@ -583,7 +583,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   EXPECT_NE(0U, original_client_id);
 
   harness->DisableSyncForDatatype(syncer::TYPED_URLS);
-  if (IsUnifiedConsentEnabled(profile)) {
+  if (IsUnifiedConsentFeatureEnabled(profile)) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
     EXPECT_TRUE(ukm_enabled());
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   EXPECT_EQ(original_client_id, client_id());
 
   harness2->DisableSyncForDatatype(syncer::TYPED_URLS);
-  if (IsUnifiedConsentEnabled(profile2)) {
+  if (IsUnifiedConsentFeatureEnabled(profile2)) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
     EXPECT_TRUE(ukm_enabled());

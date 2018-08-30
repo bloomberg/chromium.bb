@@ -201,7 +201,7 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
                                          picture_url_value);
 
-  if (IsUnifiedConsentEnabled(profile_)) {
+  if (IsUnifiedConsentFeatureEnabled(profile_)) {
     AllowJavascript();
     FireWebUIListener("account-image-changed", picture_url_value);
   }

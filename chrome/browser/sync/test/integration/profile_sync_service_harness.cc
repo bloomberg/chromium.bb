@@ -231,7 +231,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
   bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
-  if (IsUnifiedConsentEnabled(profile_)) {
+  if (IsUnifiedConsentFeatureEnabled(profile_)) {
     // When unified consent given is set to |true|, the unified consent service
     // enables syncing all datatypes.
     UnifiedConsentServiceFactory::GetForProfile(profile_)
@@ -531,7 +531,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
   }
 
   // Disable unified consent first as otherwise disabling sync is not possible.
-  if (IsUnifiedConsentEnabled(profile_)) {
+  if (IsUnifiedConsentFeatureEnabled(profile_)) {
     UnifiedConsentServiceFactory::GetForProfile(profile_)
         ->SetUnifiedConsentGiven(false);
   }

@@ -29,8 +29,8 @@ TEST(UnifiedConsentHelperTest, DiceDisabled) {
         unified_consent::UnifiedConsentFeatureState::kEnabledNoBump,
         unified_consent::UnifiedConsentFeatureState::kEnabledWithBump}) {
     unified_consent::ScopedUnifiedConsent scoped_state(state);
-    EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
-    EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
+    EXPECT_FALSE(IsUnifiedConsentFeatureEnabled(&profile));
+    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled(&profile));
   }
 }
 
@@ -48,28 +48,28 @@ TEST(UnifiedConsentHelperTest, FeatureState) {
   TestingProfile profile;
 
   // Unified consent is disabled by default.
-  EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
-  EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
+  EXPECT_FALSE(IsUnifiedConsentFeatureEnabled(&profile));
+  EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled(&profile));
 
   // The feature state for the profile is the same as the global feature state.
   {
     unified_consent::ScopedUnifiedConsent scoped_disabled(
         unified_consent::UnifiedConsentFeatureState::kDisabled);
-    EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
-    EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
+    EXPECT_FALSE(IsUnifiedConsentFeatureEnabled(&profile));
+    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled(&profile));
   }
 
   {
     unified_consent::ScopedUnifiedConsent scoped_no_bump(
         unified_consent::UnifiedConsentFeatureState::kEnabledNoBump);
-    EXPECT_TRUE(IsUnifiedConsentEnabled(&profile));
-    EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
+    EXPECT_TRUE(IsUnifiedConsentFeatureEnabled(&profile));
+    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled(&profile));
   }
 
   {
     unified_consent::ScopedUnifiedConsent scoped_bump(
         unified_consent::UnifiedConsentFeatureState::kEnabledWithBump);
-    EXPECT_TRUE(IsUnifiedConsentEnabled(&profile));
-    EXPECT_TRUE(IsUnifiedConsentBumpEnabled(&profile));
+    EXPECT_TRUE(IsUnifiedConsentFeatureEnabled(&profile));
+    EXPECT_TRUE(IsUnifiedConsentFeatureWithBumpEnabled(&profile));
   }
 }

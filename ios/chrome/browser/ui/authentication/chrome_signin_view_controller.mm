@@ -201,7 +201,7 @@ enum AuthenticationState {
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
-    _unifiedConsentEnabled = IsUnifiedConsentEnabled();
+    _unifiedConsentEnabled = IsUnifiedConsentFeatureEnabled();
     _browserState = browserState;
     _accessPoint = accessPoint;
     _promoAction = promoAction;

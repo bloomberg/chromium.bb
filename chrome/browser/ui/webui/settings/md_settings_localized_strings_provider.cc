@@ -1658,10 +1658,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"deleteProfileWarningWithoutCounts",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
-    {"sync", IsUnifiedConsentEnabled(profile)
+    {"sync", IsUnifiedConsentFeatureEnabled(profile)
                  ? IDS_SETTINGS_SYNC_UNIFIED_CONSENT
                  : IDS_SETTINGS_SYNC},
-    {"syncDescription", IsUnifiedConsentEnabled(profile)
+    {"syncDescription", IsUnifiedConsentFeatureEnabled(profile)
                             ? IDS_SETTINGS_SYNC_DESCRIPTION_UNIFIED_CONSENT
                             : IDS_SETTINGS_SYNC_DESCRIPTION},
     {"nonPersonalizedServicesSectionLabel",
@@ -1673,7 +1673,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncExpandA11yLabel", IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL},
     {"syncAndNonPersonalizedServices",
      IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
-    {"syncPageTitle", IsUnifiedConsentEnabled(profile)
+    {"syncPageTitle", IsUnifiedConsentFeatureEnabled(profile)
                           ? IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES
                           : IDS_SETTINGS_SYNC_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
@@ -1766,7 +1766,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddString(
       "passphraseResetHint",
       l10n_util::GetStringFUTF8(
-          IsUnifiedConsentEnabled(profile)
+          IsUnifiedConsentFeatureEnabled(profile)
               ? IDS_SETTINGS_PASSPHRASE_RESET_HINT_UNIFIED_CONSENT
               : IDS_SETTINGS_PASSPHRASE_RESET_HINT,
           base::ASCIIToUTF16(sync_dashboard_url)));
@@ -1791,7 +1791,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     LocalizedString sync_disconnect_strings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
-         IsUnifiedConsentEnabled(profile)
+         IsUnifiedConsentFeatureEnabled(profile)
              ? IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE_UNIFIED_CONSENT
              : IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
         {"syncDisconnectDeleteProfile",
@@ -1802,7 +1802,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     AddLocalizedStringsBulk(html_source, sync_disconnect_strings,
                             arraysize(sync_disconnect_strings));
 
-    if (IsUnifiedConsentEnabled(profile)) {
+    if (IsUnifiedConsentFeatureEnabled(profile)) {
       html_source->AddLocalizedString(
           "syncDisconnectExplanation",
           IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION_UNIFIED_CONSENT);
@@ -1984,7 +1984,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                           arraysize(localized_strings));
 
   // Select strings depending on unified-consent enabledness.
-  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile);
+  bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
   if (is_unified_consent_enabled) {
     LocalizedString conditional_localized_strings[] = {
         {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF_UNIFIED_CONSENT},
@@ -2031,7 +2031,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   }
 
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
-                         IsUnifiedConsentEnabled(profile)
+                         IsUnifiedConsentFeatureEnabled(profile)
                              ? chrome::kSyncAndGoogleServicesLearnMoreURL
                              : "");
   html_source->AddString(

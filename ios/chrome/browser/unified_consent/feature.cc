@@ -6,14 +6,14 @@
 
 #include "components/unified_consent/feature.h"
 
-bool IsUnifiedConsentEnabled() {
+bool IsUnifiedConsentFeatureEnabled() {
   unified_consent::UnifiedConsentFeatureState feature_state =
       unified_consent::internal::GetUnifiedConsentFeatureState();
   return feature_state !=
          unified_consent::UnifiedConsentFeatureState::kDisabled;
 }
 
-bool IsUnifiedConsentBumpEnabled() {
+bool IsUnifiedConsentFeatureWithBumpEnabled() {
   unified_consent::UnifiedConsentFeatureState feature_state =
       unified_consent::internal::GetUnifiedConsentFeatureState();
   return feature_state ==

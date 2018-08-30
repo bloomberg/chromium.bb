@@ -366,7 +366,7 @@ jboolean ProfileSyncServiceAndroid::IsUrlKeyedDataCollectionEnabled(
     const base::android::JavaParamRef<jobject>& obj,
     jboolean personalized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile_);
+  bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile_);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
       unified_consent_url_helper;
   if (personalized) {

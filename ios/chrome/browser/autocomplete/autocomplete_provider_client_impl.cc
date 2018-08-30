@@ -34,7 +34,7 @@ AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     : browser_state_(browser_state),
       url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
                               NewPersonalizedDataCollectionConsentHelper(
-                                  IsUnifiedConsentEnabled(),
+                                  IsUnifiedConsentFeatureEnabled(),
                                   ProfileSyncServiceFactory::GetForBrowserState(
                                       browser_state_))) {}
 

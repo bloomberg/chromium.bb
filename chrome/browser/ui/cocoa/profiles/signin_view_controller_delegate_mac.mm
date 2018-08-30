@@ -52,7 +52,7 @@ CGFloat GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
 int GetSyncConfirmationDialogPreferredWidth(Profile* profile) {
   // If unified-consent enabled, we show a different sync confirmation dialog
   // which uses a different width.
-  return IsUnifiedConsentEnabled(profile) && profile->IsSyncAllowed()
+  return IsUnifiedConsentFeatureEnabled(profile) && profile->IsSyncAllowed()
              ? kModalDialogWidthForDice
              : kModalDialogWidth;
 }

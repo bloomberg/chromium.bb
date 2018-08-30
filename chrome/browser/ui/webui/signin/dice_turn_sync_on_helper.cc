@@ -407,7 +407,7 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
 }
 
 void DiceTurnSyncOnHelper::EnableUnifiedConsentIfNeeded() {
-  if (IsUnifiedConsentEnabled(profile_)) {
+  if (IsUnifiedConsentFeatureEnabled(profile_)) {
     UnifiedConsentServiceFactory::GetForProfile(profile_)
         ->SetUnifiedConsentGiven(true);
   }

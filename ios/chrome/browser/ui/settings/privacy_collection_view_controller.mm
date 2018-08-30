@@ -115,7 +115,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
     self.collectionViewAccessibilityIdentifier = kPrivacyCollectionViewId;
-    if (!IsUnifiedConsentEnabled()) {
+    if (!IsUnifiedConsentFeatureEnabled()) {
       // When unified consent flag is enabled, the suggestion setting is
       // available in the "Google Services and sync" settings.
       _suggestionsEnabled = [[PrefBackedBoolean alloc]
@@ -167,7 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierOtherDevices];
 
-  if (!IsUnifiedConsentEnabled()) {
+  if (!IsUnifiedConsentFeatureEnabled()) {
     // Add "Web services" section only if the unified consent is disabled.
     // Otherwise the metrics reporting and show suggestions feature are
     // available in the Google services settings.

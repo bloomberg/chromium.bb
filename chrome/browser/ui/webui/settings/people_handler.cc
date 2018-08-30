@@ -618,7 +618,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   // is disabled.
   // TODO(scottchen): finish the UI for signed-out users
   //    (https://crbug.com/800972).
-  if (IsUnifiedConsentEnabled(profile_) &&
+  if (IsUnifiedConsentFeatureEnabled(profile_) &&
       (IsProfileAuthNeededOrHasErrors() || !service)) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();

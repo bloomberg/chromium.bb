@@ -7,10 +7,11 @@
 
 // Returns true if the unified consent feature state is kEnabledNoBump or
 // kEnabledWithBump. Note that the bump may not be enabled, even if this returns
-// true. To check if the bump is enabled, use IsUnifiedConsentBumpEnabled().
-bool IsUnifiedConsentEnabled();
+// true. To check if the bump is enabled, use
+// IsUnifiedConsentFeatureWithBumpEnabled().
+bool IsUnifiedConsentFeatureEnabled();
 
 // Returns true if the unified consent feature state is kEnabledWithBump.
-bool IsUnifiedConsentBumpEnabled();
+bool IsUnifiedConsentFeatureWithBumpEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UNIFIED_CONSENT_FEATURE_H_

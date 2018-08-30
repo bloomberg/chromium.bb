@@ -34,7 +34,8 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
   DCHECK(sync_service_);
   DCHECK(prefs_);
   for (unsigned int i = 0; i < arraysize(kDataTypes); ++i) {
-    if (kDataTypes[i] == syncer::USER_EVENTS && !IsUnifiedConsentEnabled())
+    if (kDataTypes[i] == syncer::USER_EVENTS &&
+        !IsUnifiedConsentFeatureEnabled())
       continue;
     user_selectable_types_.Put(kDataTypes[i]);
   }

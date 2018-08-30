@@ -49,7 +49,7 @@ UnifiedConsentServiceFactory* UnifiedConsentServiceFactory::GetInstance() {
 std::unique_ptr<KeyedService>
 UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  if (!IsUnifiedConsentEnabled())
+  if (!IsUnifiedConsentFeatureEnabled())
     return nullptr;
 
   ios::ChromeBrowserState* browser_state =

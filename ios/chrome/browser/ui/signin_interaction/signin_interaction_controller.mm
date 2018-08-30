@@ -107,7 +107,7 @@ using signin_ui::CompletionCallback;
   completionCallback_ = [completion copy];
   ios::ChromeIdentityService* identityService =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  if (IsUnifiedConsentEnabled()) {
+  if (IsUnifiedConsentFeatureEnabled()) {
     [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
   } else if (identity) {
     DCHECK(identityService->IsValidIdentity(identity));

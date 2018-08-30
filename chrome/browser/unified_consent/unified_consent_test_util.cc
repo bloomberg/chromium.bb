@@ -36,7 +36,7 @@ std::unique_ptr<KeyedService> BuildUnifiedConsentServiceForTesting(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  if (!IsUnifiedConsentEnabled(profile))
+  if (!IsUnifiedConsentFeatureEnabled(profile))
     return nullptr;
 
   return std::make_unique<unified_consent::UnifiedConsentService>(
