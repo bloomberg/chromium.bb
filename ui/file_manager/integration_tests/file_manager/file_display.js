@@ -64,7 +64,7 @@ testcase.fileDisplayDrive = function() {
 };
 
 /**
- * Tests files display in offline Google Drive.
+ * Tests file display rendering in offline Google Drive.
  */
 testcase.fileDisplayDriveOffline = function() {
   var appId;
@@ -92,6 +92,61 @@ testcase.fileDisplayDriveOffline = function() {
     // Check: hello.txt must have 'offline' CSS render style (opacity).
     function(style) {
       chrome.test.assertEq('0.4', style.opacity);
+      this.next();
+    },
+    // Retrieve file entries that are 'available offline' (not dimmed).
+    function() {
+      const availableEntry = '#file-list .table-row:not(.dim-offline)';
+      remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, [availableEntry, ['opacity']], this.next);
+    },
+    // Check: these files should have 'available offline' CSS style.
+    function(elements) {
+      chrome.test.assertEq(2, elements.length);
+
+      function checkRenderedInAvailableOfflineStyle(element, fileName) {
+        chrome.test.assertEq(0, element.text.indexOf(fileName));
+        chrome.test.assertEq('1', element.styles.opacity);
+      }
+
+      // Directories are shown as 'available offline'.
+      checkRenderedInAvailableOfflineStyle(elements[0], 'photos');
+
+      // Pinned files are shown as 'available offline'.
+      checkRenderedInAvailableOfflineStyle(elements[1], 'pinned');
+
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests file display rendering in online Google Drive.
+ */
+testcase.fileDisplayDriveOnline = function() {
+  var appId;
+
+  StepsRunner.run([
+    // Open Files app on Drive.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET);
+    },
+    // Retrieve all file list row entries.
+    function(result) {
+      appId = result.windowId;
+      const fileEntry = '#file-list .table-row';
+      remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, [fileEntry, ['opacity']], this.next);
+    },
+    // Check: all files must have 'online' CSS style (not dimmed).
+    function(elements) {
+      chrome.test.assertEq(BASIC_DRIVE_ENTRY_SET.length, elements.length);
+      for (let i = 0; i < elements.length; ++i)
+        chrome.test.assertEq('1', elements[i].styles.opacity);
       this.next();
     },
     function() {
