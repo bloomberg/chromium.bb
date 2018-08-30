@@ -396,9 +396,6 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
   // TODO(https://crbug.com/857235): We should update these options based on
   // the withheld permissions for the extension.
-  page_access_submenu_->AddRadioItemWithStringId(
-      PAGE_ACCESS_RUN_ON_ALL_SITES,
-      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
   page_access_submenu_->AddRadioItem(
       PAGE_ACCESS_RUN_ON_SITE,
       l10n_util::GetStringFUTF16(
@@ -407,6 +404,9 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
               url::Origin::Create(web_contents->GetLastCommittedURL())
                   .host()))),
       kRadioGroup);
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_ALL_SITES,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
 
   AddSubMenuWithStringId(PAGE_ACCESS_SUBMENU,
                          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS,
