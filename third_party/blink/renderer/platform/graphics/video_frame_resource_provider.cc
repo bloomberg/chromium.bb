@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/bind.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -92,7 +93,11 @@ void VideoFrameResourceProvider::AppendQuads(
       break;
   }
 
+  // When obtaining frame resources, we end up having to wait. See
+  // https://crbug/878070.
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   resource_updater_->ObtainFrameResources(frame);
+
   // TODO(lethalantidote) : update with true value;
   gfx::Rect visible_layer_rect = gfx::Rect(rotated_size);
   gfx::Rect clip_rect = gfx::Rect(frame->coded_size());

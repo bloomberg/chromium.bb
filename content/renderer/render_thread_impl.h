@@ -392,6 +392,13 @@ class CONTENT_EXPORT RenderThreadImpl
   // A TaskRunner instance that runs tasks on the raster worker pool.
   base::TaskRunner* GetWorkerTaskRunner();
 
+  // Creates a ContextProvider if yet created, and returns it to be used for
+  // video frame compositing. The ContextProvider given as an argument is
+  // one that has been lost, and is a hint to the RenderThreadImpl to clear
+  // it's |video_frame_compositor_context_provider_| if it matches.
+  scoped_refptr<viz::ContextProvider> GetVideoFrameCompositorContextProvider(
+      scoped_refptr<viz::ContextProvider>);
+
   // Returns a worker context provider that will be bound on the compositor
   // thread.
   scoped_refptr<viz::RasterContextProvider>
@@ -507,6 +514,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Sets the current pipeline rendering color space.
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
+
+  scoped_refptr<base::SingleThreadTaskRunner>
+  CreateVideoFrameCompositorTaskRunner();
 
  private:
   void OnProcessFinalRelease() override;
@@ -676,6 +686,10 @@ class CONTENT_EXPORT RenderThreadImpl
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
+  // Task to run the VideoFrameCompositor on.
+  scoped_refptr<base::SingleThreadTaskRunner>
+      video_frame_compositor_task_runner_;
+
   // Pool of workers used for raster operations (e.g., tile rasterization).
   scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
@@ -686,6 +700,8 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
+
+  scoped_refptr<viz::ContextProvider> video_frame_compositor_context_provider_;
 
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
 

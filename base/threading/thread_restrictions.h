@@ -23,6 +23,9 @@ class ScopedAllowInitGLBindings;
 namespace audio {
 class OutputDevice;
 }
+namespace blink {
+class VideoFrameResourceProvider;
+}
 namespace cc {
 class CompletionEvent;
 class SingleThreadTaskGraphRunner;
@@ -330,6 +333,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
       LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
   friend class webrtc::DesktopConfigurationMonitor;
   friend class content::ServiceWorkerSubresourceLoader;
+  friend class blink::VideoFrameResourceProvider;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
