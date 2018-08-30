@@ -25,10 +25,11 @@
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/public/test/url_test_util.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -40,8 +41,10 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::OKButton;
 using chrome_test_util::SettingsDoneButton;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using web::test::ElementSelector;
-using web::test::HttpServer;
 
 namespace {
 
@@ -154,29 +157,53 @@ NSString* GetScriptForAlertWithType(JavaScriptAlertType type) {
 
 // HTTP server constants.
 
-// URL and response for a blank document.
-const char kJavaScriptTestURL[] = "http://jsalerts";
-const char kJavaScriptTestResponse[] =
-    "<!DOCTYPE html><html><body></body></html>";
-
-// URL and response for a page with an onload alert.
-const char kOnLoadAlertURL[] = "http://onloadalert";
-const char kOnLoadAlertResponse[] =
+// The URL path for an empty page in which to execute JavaScript that shows
+// alerts, confirmations, and prompts.
+const char kEmptyPageURLPath[] = "/empty";
+const char kEmptyPageContents[] = "<!DOCTYPE html><html><body></body></html>";
+// The URL path for a page that shows an alert onload.
+const char kOnLoadURLPath[] = "/onload";
+const char kOnLoadContents[] =
     "<!DOCTYPE html><html><body onload=\"alert('alert')\"></body></html>";
-
-// URL and response for a page with a link to |kOnLoadAlertURL|.
-const char kPageWithLinkURL[] = "http://pagewithlink";
-const char kPageWithLinkResponseFormat[] =
+// The URL path for a page with a link to kOnLoadURLPath.
+const char kLinkPageURLPath[] = "/link";
+const char kLinkPageContentsFormat[] =
     "<!DOCTYPE html><html><body><a id=\"%s\" href=\"%s\">%s</a></body></html>";
-const char kPageWithLinkText[] = "LINK TO ONLOAD ALERT PAGE";
+const char kLinkPageLinkText[] = "LINK TO ONLOAD ALERT PAGE";
 const char kLinkID[] = "link-id";
-std::string GetPageWithLinkResponse() {
+std::string GetLinkPageContents(const GURL& on_load_url) {
   return base::SysNSStringToUTF8([NSString
-      stringWithFormat:@(kPageWithLinkResponseFormat), kLinkID,
-                       HttpServer::MakeUrl(kOnLoadAlertURL).spec().c_str(),
-                       kPageWithLinkText]);
+      stringWithFormat:@(kLinkPageContentsFormat), kLinkID,
+                       on_load_url.spec().c_str(), kLinkPageLinkText]);
 }
 
+// Helper function that returns a text/html HttpResponse using |content|.
+std::unique_ptr<net::test_server::HttpResponse> GetHttpResponseWithContent(
+    const std::string& content) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_content_type("text/html");
+  http_response->set_content(content);
+  return std::move(http_response);
+}
+
+// net::EmbeddedTestServer handler for kEmptyPageURLPath.
+std::unique_ptr<net::test_server::HttpResponse> LoadEmptyPage(
+    const net::test_server::HttpRequest& request) {
+  return GetHttpResponseWithContent(kEmptyPageContents);
+}
+// net::EmbeddedTestServer handler for kOnLoadURLPath.
+std::unique_ptr<net::test_server::HttpResponse> LoadPageWithOnLoadAlert(
+    const net::test_server::HttpRequest& request) {
+  return GetHttpResponseWithContent(kOnLoadContents);
+}
+// net::EmbeddedTestServer handler for kLinkPageURLPath.
+std::unique_ptr<net::test_server::HttpResponse> LoadPageWithLinkToOnLoadPage(
+    ChromeTestCase* test_case,
+    const net::test_server::HttpRequest& request) {
+  GURL on_load_page_url = test_case.testServer->GetURL(kOnLoadURLPath);
+  return GetHttpResponseWithContent(GetLinkPageContents(on_load_page_url));
+}
 
 // Display the javascript alert.
 void DisplayJavaScriptAlert(JavaScriptAlertType type) {
@@ -200,27 +227,25 @@ void WaitForAlertToBeShown(NSString* alert_label) {
                     error:&error];
     return !error;
   };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout, condition),
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
              @"Alert with title was not present: %@", alert_label);
 }
 
-void WaitForJavaScriptDialogToBeShown() {
-  GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
-
-  NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+// Waits for a JavaScript dialog to be shown from the page at |url|.
+void WaitForJavaScriptDialogToBeShown(const GURL& url) {
+  NSString* hostname = base::SysUTF8ToNSString(url.host());
   NSString* expectedTitle = l10n_util::GetNSStringF(
       IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
 
   WaitForAlertToBeShown(expectedTitle);
 }
 
-// Injects JavaScript to show a dialog with |type|, verifying that it was
-// properly displayed.
-void ShowJavaScriptDialog(JavaScriptAlertType type) {
+// Injects JavaScript to show a dialog with |type| from the page at |url|,
+// verifying that it was properly displayed.
+void ShowJavaScriptDialog(JavaScriptAlertType type, const GURL& url) {
   DisplayJavaScriptAlert(type);
 
-  WaitForJavaScriptDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown(url);
 
   // Check the message of the alert.
   id<GREYMatcher> messageLabel =
@@ -230,12 +255,11 @@ void ShowJavaScriptDialog(JavaScriptAlertType type) {
       assertWithMatcher:grey_notNil()];
 }
 
-// Assert no javascript alert is visible.
-void AssertJavaScriptAlertNotPresent() {
+// Assert no javascript alert is visible over the page at |url|.
+void AssertJavaScriptAlertNotPresent(const GURL& url) {
   ConditionBlock condition = ^{
     NSError* error = nil;
-    GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
-    NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+    NSString* hostname = base::SysUTF8ToNSString(url.host());
     NSString* expectedTitle = l10n_util::GetNSStringF(
         IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
 
@@ -246,9 +270,9 @@ void AssertJavaScriptAlertNotPresent() {
     return !error;
   };
 
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForJSCompletionTimeout, condition),
-             @"Javascript alert title was still present");
+  GREYAssert(
+      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, condition),
+      @"Javascript alert title was still present");
 }
 
 // Types |input| in the prompt.
@@ -280,6 +304,11 @@ void TapSuppressDialogsButton() {
 
 @interface JavaScriptDialogTestCase : ChromeTestCase
 
+// Getters for test page URLs.
+@property(nonatomic, readonly) GURL emptyPageURL;
+@property(nonatomic, readonly) GURL onLoadPageURL;
+@property(nonatomic, readonly) GURL linkPageURL;
+
 // Loads the blank test page at kJavaScriptTestURL.
 - (void)loadBlankTestPage;
 
@@ -289,14 +318,45 @@ void TapSuppressDialogsButton() {
 @end
 
 @implementation JavaScriptDialogTestCase
+@synthesize emptyPageURL = _emptyPageURL;
+@synthesize onLoadPageURL = _onLoadPageURL;
+@synthesize linkPageURL = _linkPageURL;
+
+#pragma mark - Accessors
+
+- (GURL)emptyPageURL {
+  if (_emptyPageURL.is_empty())
+    _emptyPageURL = self.testServer->GetURL(kEmptyPageURLPath);
+  return _emptyPageURL;
+}
+
+- (GURL)onLoadPageURL {
+  if (_onLoadPageURL.is_empty())
+    _onLoadPageURL = self.testServer->GetURL(kOnLoadURLPath);
+  return _onLoadPageURL;
+}
+
+- (GURL)linkPageURL {
+  if (_linkPageURL.is_empty())
+    _linkPageURL = self.testServer->GetURL(kLinkPageURLPath);
+  return _linkPageURL;
+}
+
+#pragma mark - ChromeTestCase
 
 - (void)setUp {
   [super setUp];
-  std::map<GURL, std::string> responses;
-  responses[HttpServer::MakeUrl(kJavaScriptTestURL)] = kJavaScriptTestResponse;
-  responses[HttpServer::MakeUrl(kPageWithLinkURL)] = GetPageWithLinkResponse();
-  responses[HttpServer::MakeUrl(kOnLoadAlertURL)] = kOnLoadAlertResponse;
-  web::test::SetUpSimpleHttpServer(responses);
+
+  self.testServer->RegisterDefaultHandler(base::BindRepeating(
+      net::test_server::HandlePrefixedRequest, kEmptyPageURLPath,
+      base::BindRepeating(&LoadEmptyPage)));
+  self.testServer->RegisterDefaultHandler(base::BindRepeating(
+      net::test_server::HandlePrefixedRequest, kOnLoadURLPath,
+      base::BindRepeating(&LoadPageWithOnLoadAlert)));
+  self.testServer->RegisterDefaultHandler(base::BindRepeating(
+      net::test_server::HandlePrefixedRequest, kLinkPageURLPath,
+      base::BindRepeating(&LoadPageWithLinkToOnLoadPage, self)));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start");
 }
 
 - (void)tearDown {
@@ -327,30 +387,22 @@ void TapSuppressDialogsButton() {
 #pragma mark - Utility
 
 - (void)loadBlankTestPage {
-  [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kJavaScriptTestURL)];
+  [ChromeEarlGrey loadURL:self.emptyPageURL];
   [ChromeEarlGrey waitForWebViewContainingText:std::string()];
 }
 
 - (void)loadPageWithLink {
-  [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kPageWithLinkURL)];
-  [ChromeEarlGrey waitForWebViewContainingText:kPageWithLinkText];
+  [ChromeEarlGrey loadURL:self.linkPageURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kLinkPageLinkText];
 }
 
 #pragma mark - Tests
 
 // Tests that an alert is shown, and that the completion block is called.
-// TODO(crbug.com/871685): Re-enable this test.
 - (void)testShowJavaScriptAlert {
-#if TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(
-        @"Failing on iOS 10 iPad simulator, for "
-        @"ios_chrome_multitasking_egtests");
-  }
-#endif  // TARGET_IPHONE_SIMULATOR
   // Load the blank test page and show an alert.
   [self loadBlankTestPage];
-  ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
+  ShowJavaScriptDialog(JavaScriptAlertType::ALERT, self.emptyPageURL);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
@@ -363,7 +415,7 @@ void TapSuppressDialogsButton() {
 - (void)testShowJavaScriptConfirmationOK {
   // Load the blank test page and show a confirmation dialog.
   [self loadBlankTestPage];
-  ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION);
+  ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION, self.emptyPageURL);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
@@ -376,7 +428,7 @@ void TapSuppressDialogsButton() {
 - (void)testShowJavaScriptConfirmationCancelled {
   // Load the blank test page and show a confirmation dialog.
   [self loadBlankTestPage];
-  ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION);
+  ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION, self.emptyPageURL);
 
   // Tap the Cancel button.
   TapCancel();
@@ -397,7 +449,7 @@ void TapSuppressDialogsButton() {
 
   // Load the blank test page and show a prompt dialog.
   [self loadBlankTestPage];
-  ShowJavaScriptDialog(JavaScriptAlertType::PROMPT);
+  ShowJavaScriptDialog(JavaScriptAlertType::PROMPT, self.emptyPageURL);
 
   // Enter text into text field.
   TypeInPrompt(@(kPromptTestUserInput));
@@ -419,7 +471,7 @@ void TapSuppressDialogsButton() {
 
   // Load the blank test page and show a prompt dialog.
   [self loadBlankTestPage];
-  ShowJavaScriptDialog(JavaScriptAlertType::PROMPT);
+  ShowJavaScriptDialog(JavaScriptAlertType::PROMPT, self.emptyPageURL);
 
   // Enter text into text field.
   TypeInPrompt(@(kPromptTestUserInput));
@@ -438,10 +490,10 @@ void TapSuppressDialogsButton() {
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   NSString* script = GetJavaScriptAlertLoopScript();
   webState->ExecuteJavaScript(base::SysNSStringToUTF16(script));
-  WaitForJavaScriptDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown(self.emptyPageURL);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown(self.emptyPageURL);
 
   // Tap the suppress dialogs button.
   TapSuppressDialogsButton();
@@ -476,14 +528,14 @@ void TapSuppressDialogsButton() {
   DisplayJavaScriptAlert(JavaScriptAlertType::ALERT);
 
   // Make sure the alert is not present.
-  AssertJavaScriptAlertNotPresent();
+  AssertJavaScriptAlertNotPresent(self.emptyPageURL);
 
   // Close the settings.
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Make sure the alert is present.
-  WaitForJavaScriptDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown(self.emptyPageURL);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
@@ -511,7 +563,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:printButton] performAction:grey_tap()];
 
   // Show an alert and assert it is present.
-  ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
+  ShowJavaScriptDialog(JavaScriptAlertType::ALERT, self.emptyPageURL);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
@@ -526,7 +578,6 @@ void TapSuppressDialogsButton() {
 
   // TODO(crbug.com/712358): Use method LongPressElementAndTapOnButton once
   // it is moved out of context_menu_egtests.mm and into a shared location.
-  [ChromeEarlGrey waitForWebViewContainingText:kPageWithLinkText];
   id<GREYMatcher> webViewMatcher =
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
 
@@ -555,16 +606,15 @@ void TapSuppressDialogsButton() {
   }
 
   // Wait for the alert to be shown.
-  GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
-  NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+  NSString* hostname = base::SysUTF8ToNSString(self.onLoadPageURL.host());
   NSString* expectedTitle = l10n_util::GetNSStringF(
       IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
 
   WaitForAlertToBeShown(expectedTitle);
 
   // Verify that the omnibox shows the correct URL when the dialog is visible.
-  GURL onloadURL = HttpServer::MakeUrl(kOnLoadAlertURL);
-  std::string title = base::UTF16ToUTF8(web::GetDisplayTitleForUrl(onloadURL));
+  std::string title =
+      base::UTF16ToUTF8(web::GetDisplayTitleForUrl(self.onLoadPageURL));
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
       assertWithMatcher:grey_notNil()];
 
