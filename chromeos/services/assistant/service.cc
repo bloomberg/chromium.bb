@@ -25,7 +25,6 @@
 #include "services/service_manager/public/cpp/service_context.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "ash/public/interfaces/constants.mojom.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
@@ -261,21 +260,26 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
   }
 
   DCHECK(assistant_manager_service_);
-  if (assistant_manager_service_->GetState() ==
-      AssistantManagerService::State::STOPPED) {
-    assistant_manager_service_->Start(
-        token.value(),
-        base::BindOnce(
-            [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               base::OnceCallback<void()> callback) {
-              task_runner->PostTask(FROM_HERE, std::move(callback));
-            },
-            main_thread_task_runner_,
-            base::BindOnce(&Service::FinalizeAssistantManagerService,
-                           weak_ptr_factory_.GetWeakPtr())));
-    DVLOG(1) << "Request Assistant start";
-  } else {
-    assistant_manager_service_->SetAccessToken(token.value());
+  switch (assistant_manager_service_->GetState()) {
+    case AssistantManagerService::State::STOPPED:
+      assistant_manager_service_->Start(
+          token.value(),
+          base::BindOnce(
+              [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 base::OnceCallback<void()> callback) {
+                task_runner->PostTask(FROM_HERE, std::move(callback));
+              },
+              main_thread_task_runner_,
+              base::BindOnce(&Service::FinalizeAssistantManagerService,
+                             weak_ptr_factory_.GetWeakPtr())));
+      DVLOG(1) << "Request Assistant start";
+      break;
+    case AssistantManagerService::State::RUNNING:
+      assistant_manager_service_->SetAccessToken(token.value());
+      break;
+    case AssistantManagerService::State::STARTED:
+      // in the process of starting, no need to do anything.
+      break;
   }
 
   token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),
