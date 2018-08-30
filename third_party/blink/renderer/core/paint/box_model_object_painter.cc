@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -82,9 +84,14 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
     flow_box_->Paint(paint_info, paint_offset - local_offset, root.LineTop(),
                      root.LineBottom());
   } else {
-    // FIXME: this should only have an effect for the line box list within
-    // |box_model_|. Change this to create a LineBoxListPainter directly.
-    box_model_.Paint(paint_info);
+    const LineBoxList* line_boxes = nullptr;
+    if (box_model_.IsLayoutBlockFlow())
+      line_boxes = &ToLayoutBlockFlow(box_model_).LineBoxes();
+    else if (box_model_.IsLayoutInline())
+      line_boxes = ToLayoutInline(box_model_).LineBoxes();
+    if (!line_boxes)
+      return;
+    LineBoxListPainter(*line_boxes).Paint(box_model_, paint_info, paint_offset);
   }
 }
 
