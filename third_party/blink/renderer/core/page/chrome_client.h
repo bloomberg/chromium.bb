@@ -397,6 +397,7 @@ class CORE_EXPORT ChromeClient
   String last_tool_tip_text_;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
+  FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipEmptyString);
 };
 
 }  // namespace blink

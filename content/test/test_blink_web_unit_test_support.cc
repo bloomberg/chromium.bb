@@ -243,6 +243,8 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
     blink::WebLocalizedString::Name name) {
   // Returns placeholder strings to check if they are correctly localized.
   switch (name) {
+    case blink::WebLocalizedString::kFileButtonNoFileSelectedLabel:
+      return WebString::FromASCII("<<NoFileChosenLabel>>");
     case blink::WebLocalizedString::kOtherDateLabel:
       return WebString::FromASCII("<<OtherDateLabel>>");
     case blink::WebLocalizedString::kOtherMonthLabel:
