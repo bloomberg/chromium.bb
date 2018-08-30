@@ -61,7 +61,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
       EnclosingIntRect(constraints.scroll_container_relative_sticky_box_rect));
 
   // The sticky constraining rect also doesn't include the border offset.
-  ASSERT_EQ(IntRect(0, 50, 400, 100),
+  ASSERT_EQ(IntRect(0, 0, 400, 100),
             EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
@@ -104,7 +104,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
       EnclosingIntRect(constraints.scroll_container_relative_sticky_box_rect));
 
   // The sticky constraining rect also doesn't include the border offset.
-  ASSERT_EQ(IntRect(0, 50, 400, 100),
+  ASSERT_EQ(IntRect(0, 0, 400, 100),
             EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
@@ -155,7 +155,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionInlineConstraints) {
   EXPECT_EQ(
       IntRect(0, 100, 10, 10),
       EnclosingIntRect(constraints.scroll_container_relative_sticky_box_rect));
-  EXPECT_EQ(IntRect(0, 50, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
@@ -214,7 +214,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLInlineConstraints) {
   EXPECT_EQ(
       IntRect(2190, 100, 10, 10),
       EnclosingIntRect(constraints.scroll_container_relative_sticky_box_rect));
-  EXPECT_EQ(IntRect(2100, 50, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 

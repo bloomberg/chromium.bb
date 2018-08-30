@@ -374,9 +374,19 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
     scroll_position -= transform_node->snap_amount;
   }
 
-  gfx::RectF clip(
-      scroll_position,
-      gfx::SizeF(property_trees.scroll_tree.container_bounds(scroll_node->id)));
+  gfx::RectF clip = constraint.constraint_box_rect;
+  clip.Offset(scroll_position.x(), scroll_position.y());
+
+  // The clip region may need to be offset by the outer viewport bounds, e.g. if
+  // the top bar hides/shows. Position sticky should never attach to the inner
+  // viewport since it shouldn't be affected by pinch-zoom.
+  DCHECK(!scroll_node->scrolls_inner_viewport);
+  if (scroll_node->scrolls_outer_viewport) {
+    clip.set_width(clip.width() +
+                   property_trees.outer_viewport_container_bounds_delta().x());
+    clip.set_height(clip.height() +
+                    property_trees.outer_viewport_container_bounds_delta().y());
+  }
 
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box !=
