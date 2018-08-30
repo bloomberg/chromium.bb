@@ -4661,7 +4661,7 @@ crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative
 
 # These won't pass as layout tests until the linked bug is fixed.
 crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
-crbug.com/828858 external/wpt/html/editing/focus/inert/inert-node-is-uneditable.html [ Failure ]
+crbug.com/828858 external/wpt/inert/inert-node-is-uneditable.tentative.html [ Failure ]
 
 # Sheriff 2018-06-07
 crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html [ Pass Failure ]
