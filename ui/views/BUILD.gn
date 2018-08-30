@@ -1016,7 +1016,7 @@ source_set("views_unittests_sources") {
   # Make all deps in this target public so both views_unittests and
   # views_mus_unittests will get them.
   public_deps = [
-    ":test_support",
+    ":test_support_internal",
     ":views",
     "//base",
     "//base:i18n",
@@ -1160,6 +1160,7 @@ test("views_unittests") {
   }
 
   deps = [
+    ":test_support",
     ":views_unittests_sources",
     "//mojo/core/embedder",
   ]
