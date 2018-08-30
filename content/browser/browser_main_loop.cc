@@ -156,6 +156,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "base/trace_event/cpufreq_monitor_android.h"
 #include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/launcher_thread.h"
@@ -777,6 +778,9 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     screen_orientation_delegate_.reset(
         new ScreenOrientationDelegateAndroid());
   }
+
+  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
+      base::trace_event::CPUFreqMonitor::GetInstance());
 #endif
 
   if (parsed_command_line_.HasSwitch(
