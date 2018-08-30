@@ -68,6 +68,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
   if (name == "notifications")
     return CreatePermissionDescriptor(PermissionName::NOTIFICATIONS);
+  if (name == "persistent-storage")
+    return CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE);
   if (name == "push") {
     PushPermissionDescriptor push_permission =
         NativeValueTraits<PushPermissionDescriptor>::NativeValue(
