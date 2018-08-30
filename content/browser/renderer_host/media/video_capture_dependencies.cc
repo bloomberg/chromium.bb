@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/video_capture_dependencies.h"
+#include "content/browser/renderer_host/media/video_capture_dependencies.h"
 
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
