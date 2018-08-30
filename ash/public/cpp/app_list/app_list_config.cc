@@ -27,6 +27,7 @@ AppListConfig::AppListConfig()
       search_tile_badge_background_radius_(10),
       search_list_icon_dimension_(18),
       search_list_badge_icon_dimension_(14),
+      recommended_app_icon_dimension_(48),
       app_title_max_line_height_(16),
       app_title_font_(
           ui::ResourceBundle::GetSharedInstance()
@@ -67,6 +68,7 @@ AppListConfig::AppListConfig()
     grid_title_width_ = 96;
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
+    recommended_app_icon_dimension_ = 16;
     app_title_max_line_height_ = 20;
     app_title_font_ =
         ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(1);
@@ -103,7 +105,8 @@ const AppListConfig& AppListConfig::instance() {
 int AppListConfig::GetPreferredIconDimension(
     ash::SearchResultDisplayType display_type) const {
   switch (display_type) {
-    case ash::SearchResultDisplayType::kRecommendation:  // Falls through.
+    case ash::SearchResultDisplayType::kRecommendation:
+      return recommended_app_icon_dimension_;
     case ash::SearchResultDisplayType::kTile:
       return search_tile_icon_dimension_;
     case ash::SearchResultDisplayType::kList:

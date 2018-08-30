@@ -46,7 +46,6 @@ constexpr int kAppListMaxTextWidth = 192;
 constexpr int kIconMarginDip = 8;
 constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
-constexpr int kIconSizeDip = 16;
 
 }  // namespace
 
@@ -103,8 +102,10 @@ void SuggestionChipView::InitLayout(const Params& params) {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Icon.
-  icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  const int icon_size =
+      AppListConfig::instance().recommended_app_icon_dimension();
+  icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
+  icon_view_->SetPreferredSize(gfx::Size(icon_size, icon_size));
 
   if (params.icon)
     icon_view_->SetImage(params.icon.value());

@@ -49,6 +49,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_list_badge_icon_dimension() const {
     return search_list_badge_icon_dimension_;
   }
+  int recommended_app_icon_dimension() const {
+    return recommended_app_icon_dimension_;
+  }
   int app_title_max_line_height() const { return app_title_max_line_height_; }
   const gfx::FontList& app_title_font() const { return app_title_font_; }
   int peeking_app_list_height() const { return peeking_app_list_height_; }
@@ -178,6 +181,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The badge background corner radius of list views in search result page
   // view.
   int search_list_badge_icon_dimension_;
+
+  // The suggestion chip icon dimension.
+  int recommended_app_icon_dimension_;
 
   // The maximum line height for app title in app list.
   int app_title_max_line_height_;
