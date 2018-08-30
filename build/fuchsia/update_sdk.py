@@ -25,10 +25,8 @@ SDK_SUBDIRS = ["arch", "pkg", "qemu", "sysroot", "target",
                "toolchain_libs", "tools"]
 
 def GetSdkHashForPlatform():
-  if sys.platform.startswith('darwin'):
-    return os.path.join(os.path.dirname(__file__), 'mac.sdk.sha1')
-  else:
-    return os.path.join(os.path.dirname(__file__), 'sdk.sha1')
+  filename = '{platform}.sdk.sha1'.format(platform =  GetHostOsFromPlatform())
+  return os.path.join(os.path.dirname(__file__), filename)
 
 def GetBucketForPlatform():
   return 'gs://fuchsia/sdk/{platform}-amd64/'.format(
