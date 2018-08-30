@@ -64,6 +64,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnPrintInstanceReady(mojom::PrintInstancePtr print_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
+  void OnPropertyInstanceReady(
+      mojom::PropertyInstancePtr property_ptr) override;
   void OnRotationLockInstanceReady(
       mojom::RotationLockInstancePtr rotation_lock_ptr) override;
   void OnScreenCaptureInstanceReady(
