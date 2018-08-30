@@ -373,6 +373,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PRIVACY_SYNC_AND_SERVICES_LINK" desc="The text for Privacy preferences that is shown after all preference rows.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">&lt;link&gt;</ph>Sync and Google services<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for a preference that enables sending usage statistics and crash reports.">
+        Help improve Chrome's features and performance
+      </message>
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_SUMMARY" desc="Description for 'Help improve Chrome's features and performance' preference.">
+        Automatically sends usage statistics and crash reports to Google
+      </message>
 
       <!-- Search engine preferences -->
       <message name="IDS_PREFS_SEARCH_ENGINE" desc="Title for Search Engine preferences. [CHAR-LIMIT=32]">
@@ -824,10 +830,10 @@ Your Google account may have other forms of browsing history like searches and a
         Blocked site
       </message>
 
-      <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE_LEGACY" desc="Title for 'Usage and crash reports' preference">
         Usage and crash reports
       </message>
-      <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION" desc="Description for 'Usage and crash reports' preference">
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION_LEGACY" desc="Description for 'Usage and crash reports' preference">
         Automatically send usage statistics and crash reports to Google
       </message>
 

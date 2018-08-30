@@ -14,7 +14,7 @@
         app:drawDivider="true"/>
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
-        android:title="@string/usage_and_crash_reports_description"/>
+        android:title="@string/usage_and_crash_reports_description_legacy"/>
 
     <org.chromium.chrome.browser.preferences.LearnMorePreference
         android:key="usage_and_crash_reports_learn_more"
