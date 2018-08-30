@@ -896,11 +896,6 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  if (demo_setup_controller_) {
-    ShowDemoModeSetupScreen();
-    return;
-  }
-
   if (IsSharkRequisition() || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
   } else if (IsControllerDetected()) {
@@ -1195,7 +1190,10 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
                                       ->browser_policy_connector_chromeos()
                                       ->GetPrescribedEnrollmentConfig();
   if (device_disabled) {
+    demo_setup_controller_.reset();
     ShowDeviceDisabledScreen();
+  } else if (demo_setup_controller_) {
+    ShowDemoModeSetupScreen();
   } else if (skip_update_enroll_after_eula_ ||
              prescribed_enrollment_config_.should_enroll()) {
     StartEnrollmentScreen(skip_update_enroll_after_eula_);
