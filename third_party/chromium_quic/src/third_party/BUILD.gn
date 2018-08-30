@@ -1,0 +1,61 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("third_party_config") {
+  configs = [ "//third_party/chromium_quic:chromium_quic_config" ]
+  defines = [ "U_DISABLE_RENAMING" ]
+}
+
+source_set("third_party") {
+  sources = [
+    "modp_b64/modp_b64.cc",
+    "modp_b64/modp_b64.h",
+  ]
+
+  deps = [
+    ":quic_trace",
+    "boringssl",
+    "icu:icuuc",
+    "protobuf:protobuf_full",
+    "zlib",
+  ]
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  public_configs = [ ":third_party_config" ]
+}
+
+action("quic_trace_gen") {
+  script = "../tools/protoc_wapper/protoc_wrapper.py"
+  sources = [ "quic_trace/src/lib/quic_trace.proto" ]
+  outputs = [
+    "$target_gen_dir/quic_trace/lib/quic_trace.pb.cc",
+    "$target_gen_dir/quic_trace/lib/quic_trace.pb.h",
+  ]
+
+  args = rebase_path(sources, get_path_info(sources[0], "dir"))
+  args += [
+    "--protoc",
+    "./protoc",
+    "--proto-in-dir",
+    rebase_path(get_path_info(sources[0], "dir"), root_build_dir),
+    "--cc-out-dir",
+    rebase_path("$target_gen_dir/quic_trace/lib", root_build_dir),
+  ]
+
+  deps = [ "protobuf:protoc" ]
+}
+
+source_set("quic_trace") {
+  sources = [
+    "$target_gen_dir/quic_trace/lib/quic_trace.pb.cc",
+    "$target_gen_dir/quic_trace/lib/quic_trace.pb.h",
+  ]
+  deps = [
+    ":quic_trace_gen",
+    "protobuf:protobuf_full",
+  ]
+}

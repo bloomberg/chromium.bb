@@ -4,3 +4,11 @@
 [submodule "third_party/mDNSResponder/src"]
 	path = third_party/mDNSResponder/src
 	url = https://github.com/jevinskie/mDNSResponder.git
+# These two submodules are necessary for third_party/chromium_quic, but aren't
+# used in the rest of the OSP library.
+[submodule "third_party/chromium_quic/src/base"]
+	path = third_party/chromium_quic/src/base
+	url = https://chromium.googlesource.com/chromium/src/base
+[submodule "third_party/chromium_quic/src/third_party/boringssl/src"]
+	path = third_party/chromium_quic/src/third_party/boringssl/src
+	url = https://boringssl.googlesource.com/boringssl.git

@@ -9,7 +9,7 @@ config("default_include_dirs") {
 config("compiler_defaults") {
   cflags = []
   cflags_cc = [
-    "-std=c++11",
+    "-std=c++14",
     "-fno-exceptions",
   ]
   configs = [ "config:default_optimization" ]

@@ -1,0 +1,220 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("zlib_config") {
+  include_dirs = [ "." ]
+}
+
+config("zlib_adler32_simd_config") {
+  defines = [ "ADLER32_SIMD_SSSE3" ]
+}
+
+source_set("zlib_adler32_simd") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "adler32_simd.c",
+    "adler32_simd.h",
+  ]
+
+  cflags = [ "-mssse3" ]
+
+  public_configs = [ ":zlib_adler32_simd_config" ]
+}
+
+config("zlib_arm_crc32_config") {
+}
+
+config("zlib_inflate_chunk_simd_config") {
+  defines = [ "INFLATE_CHUNK_SIMD_SSE2" ]
+
+  if (current_cpu == "x64") {
+    defines += [ "INFLATE_CHUNK_READ_64LE" ]
+  }
+}
+
+source_set("zlib_inflate_chunk_simd") {
+  visibility = [ ":*" ]
+
+  include_dirs = [ "." ]
+
+  sources = [
+    "contrib/optimizations/chunkcopy.h",
+    "contrib/optimizations/inffast_chunk.c",
+    "contrib/optimizations/inffast_chunk.h",
+    "contrib/optimizations/inflate.c",
+  ]
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
+
+  public_configs = [ ":zlib_inflate_chunk_simd_config" ]
+}
+
+config("zlib_crc32_simd_config") {
+  defines = [ "CRC32_SIMD_SSE42_PCLMUL" ]
+}
+
+source_set("zlib_crc32_simd") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "crc32_simd.c",
+    "crc32_simd.h",
+  ]
+
+  cflags = [
+    "-msse4.2",
+    "-mpclmul",
+  ]
+
+  public_configs = [ ":zlib_crc32_simd_config" ]
+}
+
+static_library("zlib_x86_simd") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "crc_folding.c",
+    "fill_window_sse.c",
+  ]
+
+  cflags = [
+    "-msse4.2",
+    "-mpclmul",
+  ]
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
+}
+
+config("zlib_warnings") {
+  cflags = [ "-Wno-incompatible-pointer-types" ]
+}
+
+static_library("zlib") {
+  # Don't stomp on "libzlib" on other platforms.
+  output_name = "chrome_zlib"
+
+  sources = [
+    "adler32.c",
+    "compress.c",
+    "crc32.c",
+    "crc32.h",
+    "deflate.c",
+    "deflate.h",
+    "gzclose.c",
+    "gzguts.h",
+    "gzlib.c",
+    "gzread.c",
+    "gzwrite.c",
+    "infback.c",
+    "inffast.c",
+    "inffast.h",
+    "inffixed.h",
+    "inflate.c",
+    "inflate.h",
+    "inftrees.c",
+    "inftrees.h",
+    "names.h",
+    "trees.c",
+    "trees.h",
+    "uncompr.c",
+    "x86.h",
+    "zconf.h",
+    "zlib.h",
+    "zutil.c",
+    "zutil.h",
+  ]
+
+  defines = []
+  deps = []
+
+  deps += [ ":zlib_crc32_simd" ]
+
+  deps += [ ":zlib_adler32_simd" ]
+  sources += [ "x86.c" ]
+
+  deps += [ ":zlib_inflate_chunk_simd" ]
+  sources -= [ "inflate.c" ]
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  configs += [
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":zlib_warnings",
+  ]
+
+  public_configs = [ ":zlib_config" ]
+
+  deps += [ ":zlib_x86_simd" ]
+}
+
+config("minizip_warnings") {
+  visibility = [ ":*" ]
+
+  # zlib uses `if ((a == b))` for some reason.
+  cflags = [ "-Wno-parentheses-equality" ]
+}
+
+static_library("minizip") {
+  sources = [
+    "contrib/minizip/ioapi.c",
+    "contrib/minizip/ioapi.h",
+    "contrib/minizip/iowin32.c",
+    "contrib/minizip/iowin32.h",
+    "contrib/minizip/unzip.c",
+    "contrib/minizip/unzip.h",
+    "contrib/minizip/zip.c",
+    "contrib/minizip/zip.h",
+  ]
+
+  sources -= [
+    "contrib/minizip/iowin32.c",
+    "contrib/minizip/iowin32.h",
+  ]
+
+  deps = [
+    ":zlib",
+  ]
+
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  configs += [
+    "//third_party/chromium_quic:chromium_quic_config",
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":minizip_warnings",
+  ]
+
+  public_configs = [ ":zlib_config" ]
+}
+
+executable("zlib_bench") {
+  include_dirs = [ "." ]
+
+  sources = [
+    "contrib/bench/zlib_bench.cc",
+  ]
+
+  configs -= [
+    "//build:default_include_dirs",
+    "//build/config:openscreen_code",
+  ]
+  configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
+
+  deps = [
+    ":zlib",
+  ]
+}
