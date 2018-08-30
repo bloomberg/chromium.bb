@@ -75,6 +75,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // icon's bounds.
   void UpdatePreferredBounds();
 
+  // Returns the Y-offset that would move a folder out from under a visible
+  // Virtual keyboard
+  int GetYOffsetForFolder();
+
   // Returns true if this view's child views are in animation for opening or
   // closing the folder.
   bool IsAnimationRunning() const;

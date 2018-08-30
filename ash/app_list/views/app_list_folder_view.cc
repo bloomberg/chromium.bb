@@ -594,24 +594,35 @@ void AppListFolderView::UpdatePreferredBounds() {
       0, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled()) {
-    // This view should be on top of on-screen keyboard to prevent the folder
-    // title from being blocked.
-    const gfx::Rect occluded_bounds =
-        keyboard_controller->GetWorkspaceOccludedBounds();
-    if (!occluded_bounds.IsEmpty()) {
-      gfx::Point keyboard_top_right = occluded_bounds.top_right();
-      ConvertPointFromScreen(parent(), &keyboard_top_right);
-      int y_offset = keyboard_top_right.y() - kOnscreenKeyboardTopPadding -
-                     preferred_bounds_.bottom();
-      preferred_bounds_.Offset(0, std::min(0, y_offset));
-    }
-  }
-
   // Calculate the folder icon's bounds relative to this view.
   folder_item_icon_bounds_ =
       icon_bounds_in_container - preferred_bounds_.OffsetFromOrigin();
+}
+
+int AppListFolderView::GetYOffsetForFolder() {
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->enabled())
+    return 0;
+
+  // This view should be on top of on-screen keyboard to prevent the folder
+  // title from being blocked.
+  const gfx::Rect occluded_bounds =
+      keyboard_controller->GetWorkspaceOccludedBounds();
+  if (!occluded_bounds.IsEmpty()) {
+    gfx::Point keyboard_top_right = occluded_bounds.top_right();
+    ConvertPointFromScreen(parent(), &keyboard_top_right);
+
+    // Our final Y-Offset is determined by combining the space from the bottom
+    // of the folder to the top of the keyboard, and the padding that should
+    // exist between the keyboard and the folder bottom.
+    // std::min() is used so that positive offsets are ignored.
+    return std::min(keyboard_top_right.y() - kOnscreenKeyboardTopPadding -
+                        preferred_bounds_.bottom(),
+                    0);
+  }
+
+  // If no offset is calculated above, then we need none.
+  return 0;
 }
 
 bool AppListFolderView::IsAnimationRunning() const {

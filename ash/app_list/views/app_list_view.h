@@ -180,6 +180,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
 
+  // Offsets the y position of the app list (above the screen)
+  void OffsetYPositionOfAppList(int offset);
+
   // Layouts the app list during dragging.
   void DraggingLayout();
 

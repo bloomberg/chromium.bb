@@ -1420,6 +1420,13 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   DraggingLayout();
 }
 
+void AppListView::OffsetYPositionOfAppList(int offset) {
+  gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
+  gfx::Transform transform;
+  transform.Translate(0, offset);
+  native_view->SetTransform(transform);
+}
+
 PaginationModel* AppListView::GetAppsPaginationModel() {
   return GetRootAppsGridView()->pagination_model();
 }
@@ -1541,13 +1548,16 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
     return;
 
   onscreen_keyboard_shown_ = shown;
-  if (!GetAppsContainerView()->IsInFolderView())
-    return;
-  // Update the folder's bounds to avoid being blocked by the on-screen
-  // keyboard.
-  GetAppsContainerView()->app_list_folder_view()->UpdatePreferredBounds();
-  GetAppsContainerView()->Layout();
-  GetAppsContainerView()->SchedulePaint();
+  if (shown && GetAppsContainerView()->IsInFolderView()) {
+    // Move the app list up to prevent folders being blocked by the
+    // on-screen keyboard.
+    OffsetYPositionOfAppList(
+        GetAppsContainerView()->app_list_folder_view()->GetYOffsetForFolder());
+  } else {
+    // If the keyboard is closing or a folder isn't being shown, reset
+    // the app list's position
+    OffsetYPositionOfAppList(0);
+  }
 }
 
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
