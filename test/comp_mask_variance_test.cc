@@ -200,10 +200,10 @@ void AV1CompMaskUpVarianceTest::RunCheckOutput(comp_mask_pred_func test_impl,
         const uint8_t *mask =
             av1_get_contiguous_soft_mask(wedge_index, 1, bsize);
 
-        aom_comp_mask_pred = aom_comp_mask_pred_c;  // ref
-        aom_comp_mask_upsampled_pred(NULL, NULL, 0, 0, NULL, comp_pred1_, pred_,
-                                     w, h, subx, suby, ref_, MAX_SB_SIZE, mask,
-                                     w, inv, subpel_search);
+        // ref
+        aom_comp_mask_upsampled_pred_c(
+            NULL, NULL, 0, 0, NULL, comp_pred1_, pred_, w, h, subx, suby, ref_,
+            MAX_SB_SIZE, mask, w, inv, subpel_search);
 
         aom_comp_mask_pred = test_impl;  // test
         aom_comp_mask_upsampled_pred(NULL, NULL, 0, 0, NULL, comp_pred2_, pred_,
