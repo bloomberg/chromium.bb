@@ -726,8 +726,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 
   WritingMode writing_mode = Style().GetWritingMode();
   const NGConstraintSpace* old_space =
-      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_)->CachedConstraintSpace()
-                              : nullptr;
+      box_->IsLayoutBlock() ? ToLayoutBlock(box_)->CachedConstraintSpace()
+                            : nullptr;
   if (!old_space || box_->NeedsLayout() || *old_space != constraint_space) {
     LayoutUnit inline_size =
         Style().LogicalWidth().IsPercent()
@@ -775,6 +775,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     // container (e.g. objects with intrinsic ratio and percentage block size)
     // in a subsequent layout pass might otherwise become wrong.
     box_->ClearOverrideContainingBlockContentSize();
+    if (box_->IsLayoutBlock())
+      ToLayoutBlock(box_)->SetCachedConstraintSpace(constraint_space);
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.

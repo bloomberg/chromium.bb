@@ -214,13 +214,15 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
     NGBreakToken* break_token) const {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
-  if (!cached_result_ || break_token || Base::NeedsLayout())
+  if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
+      Base::NeedsLayout())
     return nullptr;
-  if (constraint_space != *cached_constraint_space_)
+  if (constraint_space != *Base::cached_constraint_space_)
     return nullptr;
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
-  DCHECK(IsBlockLayoutComplete(*cached_constraint_space_, *cached_result_));
+  DCHECK(
+      IsBlockLayoutComplete(*Base::cached_constraint_space_, *cached_result_));
   // If we used to contain abspos items, we can't reuse the fragment, because
   // we can't be sure that the list of items hasn't changed (as we bubble them
   // up during layout). In the case of newly-added abspos items to this
@@ -230,11 +232,6 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (cached_result_->OutOfFlowPositionedDescendants().size())
     return nullptr;
   return cached_result_->CloneWithoutOffset();
-}
-
-template <typename Base>
-const NGConstraintSpace* LayoutNGMixin<Base>::CachedConstraintSpace() const {
-  return cached_constraint_space_.get();
 }
 
 template <typename Base>
@@ -249,7 +246,7 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
   if (constraint_space.IsIntermediateLayout())
     return;
 
-  cached_constraint_space_ = &constraint_space;
+  Base::cached_constraint_space_ = &constraint_space;
   cached_result_ = layout_result;
 }
 
