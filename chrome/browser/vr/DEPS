@@ -3,5 +3,4 @@ include_rules = [
   "+cc/base",
   "+cc/test",
   "+cc/trees",
-  "+device/vr/public/mojom"
 ]

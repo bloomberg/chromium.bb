@@ -1,4 +1,4 @@
 include_rules = [
-  "+ui/ozone",
-  "+ui/events/ozone",
+  "+ui/events/ozone/layout",
+  "+ui/ozone/public",
 ]
