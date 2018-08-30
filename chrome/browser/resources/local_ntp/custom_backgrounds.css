@@ -126,6 +126,10 @@ html[dir=rtl] .bg-option-img {
   opacity: 0.28;
 }
 
+.bg-option.bg-option-disabled:focus {
+  outline: none;
+}
+
 .bg-option.bg-option-disabled:hover {
   background-color: transparent;
 }

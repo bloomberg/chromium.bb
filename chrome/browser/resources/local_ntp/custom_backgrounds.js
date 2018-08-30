@@ -873,6 +873,7 @@ customBackgrounds.init = function(showErrorNotification) {
     editDialog.close();
   };
   editDialog.onclick = function(event) {
+    editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
     if (event.target === editDialog)
       editDialogInteraction();
   };
