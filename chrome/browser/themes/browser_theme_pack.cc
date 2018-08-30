@@ -1382,36 +1382,45 @@ void BrowserThemePack::GenerateMissingTextColors() {
   // Background Tab
   constexpr int kDefaultSourceTextColorId = TP::COLOR_BACKGROUND_TAB_TEXT;
   GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT,
-                                TP::COLOR_BACKGROUND_TAB,
+                                TP::COLOR_BACKGROUND_TAB, TP::COLOR_FRAME,
                                 kDefaultSourceTextColorId);
 
   // Background Tab - Inactive
-  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
-                                TP::COLOR_BACKGROUND_TAB_INACTIVE,
-                                kDefaultSourceTextColorId);
+  GenerateMissingTextColorForID(
+      TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE, TP::COLOR_BACKGROUND_TAB_INACTIVE,
+      TP::COLOR_FRAME_INACTIVE, kDefaultSourceTextColorId);
 
   // Incognito
   GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
                                 TP::COLOR_BACKGROUND_TAB_INCOGNITO,
+                                TP::COLOR_FRAME_INCOGNITO,
                                 kDefaultSourceTextColorId);
 
   // Incognito - Inactive
   GenerateMissingTextColorForID(
       TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
       TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+      TP::COLOR_FRAME_INCOGNITO_INACTIVE,
       TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
 }
 
 void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
                                                      int tab_color_id,
+                                                     int frame_color_id,
                                                      int source_color_id) {
-  SkColor text_color, tab_color;
+  SkColor text_color, tab_color, frame_color;
   const bool has_text_color = GetColor(text_color_id, &text_color);
   const bool has_tab_color = GetColor(tab_color_id, &tab_color);
+  const bool has_frame_color = GetColor(frame_color_id, &frame_color);
 
-  // If neither the text color nor the tab color has been set by the theme,
-  // do nothing.
-  if (!has_text_color && !has_tab_color)
+  // If there is no tab color specified (also meaning there is no image), fall
+  // back to the frame color.
+  SkColor bg_color = (has_tab_color ? tab_color : frame_color);
+  const bool has_bg_color = has_tab_color || has_frame_color;
+
+  // If no bg color is set, we have nothing to blend against, so there's no way
+  // to do this calculation.
+  if (!has_bg_color)
     return;
 
   // Determine the text color to start with, in order of preference:
@@ -1435,7 +1444,7 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
   }
 
   const SkColor result_color =
-      color_utils::GetColorWithMinimumContrast(blend_source_color, tab_color);
+      color_utils::GetColorWithMinimumContrast(blend_source_color, bg_color);
   SetColor(text_color_id, result_color);
 }
 
