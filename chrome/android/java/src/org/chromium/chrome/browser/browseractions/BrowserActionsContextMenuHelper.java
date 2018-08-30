@@ -176,14 +176,21 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
                 R.string.browser_actions_share, R.id.browser_actions_share, true);
         shareItem.setCreatorPackageName(sourcePackageName);
         if (FirstRunStatus.getFirstRunFlowComplete()) {
-            mBrowserActionsLinkGroup =
-                    Arrays.asList(ChromeContextMenuItem.BROWSER_ACTIONS_OPEN_IN_BACKGROUND,
-                            ChromeContextMenuItem.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB,
-                            ChromeContextMenuItem.BROWSER_ACTION_SAVE_LINK_AS,
-                            ChromeContextMenuItem.BROWSER_ACTIONS_COPY_ADDRESS, shareItem);
+            mBrowserActionsLinkGroup = Arrays.asList(
+                    new ChromeContextMenuItem(
+                            ChromeContextMenuItem.Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND),
+                    new ChromeContextMenuItem(
+                            ChromeContextMenuItem.Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB),
+                    new ChromeContextMenuItem(
+                            ChromeContextMenuItem.Item.BROWSER_ACTION_SAVE_LINK_AS),
+                    new ChromeContextMenuItem(
+                            ChromeContextMenuItem.Item.BROWSER_ACTIONS_COPY_ADDRESS),
+                    shareItem);
         } else {
             mBrowserActionsLinkGroup =
-                    Arrays.asList(ChromeContextMenuItem.BROWSER_ACTIONS_COPY_ADDRESS, shareItem);
+                    Arrays.asList(new ChromeContextMenuItem(
+                                          ChromeContextMenuItem.Item.BROWSER_ACTIONS_COPY_ADDRESS),
+                            shareItem);
         }
         mMenuItemDelegate = new BrowserActionsContextMenuItemDelegate(mActivity, sourcePackageName);
         mOnBrowserActionSelectedCallback = onBrowserActionSelectedCallback;
