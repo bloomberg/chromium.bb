@@ -163,7 +163,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   sync_manager_->PurgeDisabledTypes(types_to_purge, ModelTypeSet(),
                                     ModelTypeSet());
   sync_manager_->ConfigureSyncer(
-      reason, new_control_types,
+      reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Closure());
@@ -491,6 +491,9 @@ void SyncBackendHostCore::DoConfigureSyncer(
                  weak_ptr_factory_.GetWeakPtr(), params.retry_callback));
 
   sync_manager_->ConfigureSyncer(params.reason, params.to_download,
+                                 params.is_sync_feature_enabled
+                                     ? SyncManager::SyncFeatureState::ON
+                                     : SyncManager::SyncFeatureState::OFF,
                                  chained_ready_task, chained_retry_task);
 }
 

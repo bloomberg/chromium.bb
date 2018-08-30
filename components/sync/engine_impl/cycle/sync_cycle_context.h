@@ -92,6 +92,10 @@ class SyncCycleContext {
     client_status_.set_hierarchy_conflict_detected(value);
   }
 
+  void set_is_sync_feature_enabled(bool value) {
+    client_status_.set_is_sync_feature_enabled(value);
+  }
+
   const sync_pb::ClientStatus& client_status() const { return client_status_; }
 
   const std::string& invalidator_client_id() const {

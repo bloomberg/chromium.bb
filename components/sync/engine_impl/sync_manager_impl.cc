@@ -162,11 +162,11 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
   return result;
 }
 
-void SyncManagerImpl::ConfigureSyncer(
-    ConfigureReason reason,
-    ModelTypeSet to_download,
-    const base::Closure& ready_task,
-    const base::Closure& retry_task) {
+void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
+                                      ModelTypeSet to_download,
+                                      SyncFeatureState sync_feature_state,
+                                      const base::Closure& ready_task,
+                                      const base::Closure& retry_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
@@ -183,6 +183,10 @@ void SyncManagerImpl::ConfigureSyncer(
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
   scheduler_->ScheduleConfiguration(params);
+  if (sync_feature_state != SyncFeatureState::INITIALIZING) {
+    cycle_context_->set_is_sync_feature_enabled(sync_feature_state ==
+                                                SyncFeatureState::ON);
+  }
 }
 
 void SyncManagerImpl::Init(InitArgs* args) {

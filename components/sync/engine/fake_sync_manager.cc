@@ -142,11 +142,11 @@ void FakeSyncManager::StartConfiguration() {
   // Do nothing.
 }
 
-void FakeSyncManager::ConfigureSyncer(
-    ConfigureReason reason,
-    ModelTypeSet to_download,
-    const base::Closure& ready_task,
-    const base::Closure& retry_task) {
+void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
+                                      ModelTypeSet to_download,
+                                      SyncFeatureState sync_feature_state,
+                                      const base::Closure& ready_task,
+                                      const base::Closure& retry_task) {
   last_configure_reason_ = reason;
   ModelTypeSet success_types = to_download;
   success_types.RemoveAll(configure_fail_types_);

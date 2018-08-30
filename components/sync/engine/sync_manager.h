@@ -253,6 +253,11 @@ class SyncManager {
     base::TimeDelta long_poll_interval;
   };
 
+  // The state of sync the feature. If the user turned on sync explicitly, it
+  // will be set to ON. Will be set to INITIALIZING until we know the actual
+  // state.
+  enum class SyncFeatureState { INITIALIZING, ON, OFF };
+
   SyncManager();
   virtual ~SyncManager();
 
@@ -305,6 +310,7 @@ class SyncManager {
   //              does finish.
   virtual void ConfigureSyncer(ConfigureReason reason,
                                ModelTypeSet to_download,
+                               SyncFeatureState sync_feature_state,
                                const base::Closure& ready_task,
                                const base::Closure& retry_task) = 0;
 

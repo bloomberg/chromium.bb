@@ -736,6 +736,9 @@ message ClientStatus {
   // taken.  There is no guarantee the problem will be addressed in a reasonable
   // amount of time.
   optional bool hierarchy_conflict_detected = 1;
+
+  // Whether the client has full sync (or, sync the feature) enabled or not.
+  optional bool is_sync_feature_enabled = 2;
 }
 
 // A single datatype's sync context. Allows the datatype to pass along

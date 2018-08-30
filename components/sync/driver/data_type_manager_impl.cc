@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
@@ -606,6 +607,8 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
                  weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
   params->retry_callback = base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
                                       weak_ptr_factory_.GetWeakPtr());
+  params->is_sync_feature_enabled = last_requested_context_.storage_option ==
+                                    ConfigureContext::STORAGE_ON_DISK;
 
   DCHECK(Intersection(active_types, types_to_purge).Empty());
   DCHECK(Intersection(active_types, fatal_types).Empty());
