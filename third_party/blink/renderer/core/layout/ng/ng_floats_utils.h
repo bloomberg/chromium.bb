@@ -18,6 +18,8 @@ class NGBlockNode;
 class NGConstraintSpace;
 class NGContainerFragmentBuilder;
 class NGExclusionSpace;
+struct NGBfcOffset;
+struct NGLogicalSize;
 struct NGPositionedFloat;
 struct NGUnpositionedFloat;
 
@@ -38,7 +40,9 @@ CORE_EXPORT LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
 // @returns A positioned float.
 CORE_EXPORT NGPositionedFloat
-PositionFloat(LayoutUnit origin_block_offset,
+PositionFloat(const NGLogicalSize& float_available_size,
+              const NGLogicalSize& float_percentage_size,
+              const NGBfcOffset& origin_bfc_offset,
               LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
               const NGConstraintSpace& parent_space,
@@ -47,7 +51,9 @@ PositionFloat(LayoutUnit origin_block_offset,
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
-    LayoutUnit origin_block_offset,
+    const NGLogicalSize& float_available_size,
+    const NGLogicalSize& float_percentage_size,
+    const NGBfcOffset& origin_bfc_offset,
     LayoutUnit container_block_offset,
     NGUnpositionedFloatVector& unpositioned_floats,
     const NGConstraintSpace& space,

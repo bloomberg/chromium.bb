@@ -710,15 +710,8 @@ void NGBlockLayoutAlgorithm::HandleFloat(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child,
     NGBlockBreakToken* child_break_token) {
-  LayoutUnit origin_inline_offset =
-      ConstraintSpace().BfcOffset().line_offset +
-      border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction());
-
-  AddUnpositionedFloat(
-      &unpositioned_floats_, &container_builder_,
-      NGUnpositionedFloat(
-          child_available_size_, child_percentage_size_, origin_inline_offset,
-          ConstraintSpace().BfcOffset().line_offset, child, child_break_token));
+  AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
+                       NGUnpositionedFloat(child, child_break_token));
 
   // If there is a break token for a float we must be resuming layout, we must
   // always know our position in the BFC.
@@ -2057,14 +2050,20 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
          ConstraintSpace().FloatsBfcBlockOffset())
       << "The parent BFC block offset should be known here";
 
+  NGBfcOffset origin_bfc_offset = {
+      ConstraintSpace().BfcOffset().line_offset +
+          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
+      origin_block_offset};
+
   LayoutUnit bfc_block_offset =
       container_builder_.BfcBlockOffset()
           ? container_builder_.BfcBlockOffset().value()
           : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  const auto positioned_floats = PositionFloats(
-      origin_block_offset, bfc_block_offset, unpositioned_floats_,
-      ConstraintSpace(), exclusion_space_.get());
+  const auto positioned_floats =
+      PositionFloats(child_available_size_, child_percentage_size_,
+                     origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
+                     ConstraintSpace(), exclusion_space_.get());
 
   AddPositionedFloats(positioned_floats);
 

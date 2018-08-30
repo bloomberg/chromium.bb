@@ -812,7 +812,6 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     NGExclusionSpace* exclusion_space) {
   const Vector<NGInlineItem>& items = Node().ItemsData(false).items;
-  LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
 
   unsigned index = BreakToken() ? BreakToken()->ItemIndex() : 0;
   for (; index < items.size(); ++index) {
@@ -823,10 +822,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
 
       AddUnpositionedFloat(
           &unpositioned_floats_, &container_builder_,
-          NGUnpositionedFloat(ConstraintSpace().AvailableSize(),
-                              ConstraintSpace().PercentageResolutionSize(),
-                              bfc_line_offset, bfc_line_offset, node,
-                              /* break_token */ nullptr));
+          NGUnpositionedFloat(node, /* break_token */ nullptr));
     }
 
     // Abort if we've found something that makes this a non-empty inline.
@@ -860,11 +856,14 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
           ? container_builder_.BfcBlockOffset().value()
           : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  LayoutUnit origin_block_offset = bfc_block_offset + content_size;
+  NGBfcOffset origin_bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
+                                   bfc_block_offset + content_size};
 
   const Vector<NGPositionedFloat> positioned_floats =
-      PositionFloats(origin_block_offset, bfc_block_offset,
-                     unpositioned_floats_, ConstraintSpace(), exclusion_space);
+      PositionFloats(ConstraintSpace().AvailableSize(),
+                     ConstraintSpace().PercentageResolutionSize(),
+                     origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
+                     ConstraintSpace(), exclusion_space);
 
   positioned_floats_.AppendVector(positioned_floats);
   unpositioned_floats_.clear();

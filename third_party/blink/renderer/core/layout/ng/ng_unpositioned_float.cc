@@ -12,18 +12,9 @@ namespace blink {
 
 // Define the constructor and destructor here, so that we can forward-declare
 // more in the header file.
-NGUnpositionedFloat::NGUnpositionedFloat(const NGLogicalSize& available_size,
-                                         const NGLogicalSize& percentage_size,
-                                         LayoutUnit origin_bfc_line_offset,
-                                         LayoutUnit bfc_line_offset,
-                                         NGBlockNode node,
+NGUnpositionedFloat::NGUnpositionedFloat(NGBlockNode node,
                                          NGBlockBreakToken* token)
-    : node(node),
-      token(token),
-      available_size(available_size),
-      percentage_size(percentage_size),
-      origin_bfc_line_offset(origin_bfc_line_offset),
-      bfc_line_offset(bfc_line_offset) {}
+    : node(node), token(token) {}
 
 NGUnpositionedFloat::~NGUnpositionedFloat() = default;
 

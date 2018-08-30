@@ -831,12 +831,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
-  NGUnpositionedFloat unpositioned_float(
-      constraint_space_.AvailableSize(),
-      constraint_space_.PercentageResolutionSize(),
-      constraint_space_.BfcOffset().line_offset,
-      constraint_space_.BfcOffset().line_offset, node,
-      /* break_token */ nullptr);
+  NGUnpositionedFloat unpositioned_float(node, /* break_token */ nullptr);
 
   // If we are currently computing our min/max-content size simply append
   // to the unpositioned floats list and abort.
@@ -883,8 +878,11 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
                          std::move(unpositioned_float));
   } else {
     NGPositionedFloat positioned_float = PositionFloat(
-        bfc_block_offset, constraint_space_.BfcOffset().block_offset,
-        &unpositioned_float, constraint_space_, exclusion_space_);
+        constraint_space_.AvailableSize(),
+        constraint_space_.PercentageResolutionSize(),
+        {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+        constraint_space_.BfcOffset().block_offset, &unpositioned_float,
+        constraint_space_, exclusion_space_);
     positioned_floats_->push_back(positioned_float);
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
