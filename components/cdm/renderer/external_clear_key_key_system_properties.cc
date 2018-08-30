@@ -66,7 +66,7 @@ ExternalClearKeyProperties::GetPersistentLicenseSessionSupport() const {
 
 media::EmeSessionTypeSupport
 ExternalClearKeyProperties::GetPersistentUsageRecordSessionSupport() const {
-  return media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  return media::EmeSessionTypeSupport::SUPPORTED;
 }
 
 media::EmeFeatureSupport ExternalClearKeyProperties::GetPersistentStateSupport()

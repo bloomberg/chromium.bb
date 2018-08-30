@@ -418,11 +418,6 @@ void KeySystemsImpl::AddSupportedKeySystems(
              EmeSessionTypeSupport::NOT_SUPPORTED);
     }
 
-    // persistent-usage-record sessions are not currently supported.
-    // http://crbug.com/448888
-    DCHECK(properties->GetPersistentUsageRecordSessionSupport() ==
-           EmeSessionTypeSupport::NOT_SUPPORTED);
-
     // If distinctive identifiers are not supported, then no other features can
     // require them.
     if (properties->GetDistinctiveIdentifierSupport() ==

@@ -180,8 +180,10 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    command_line->AppendSwitchASCII("enable-blink-features",
-                                    "EncryptedMediaEncryptionSchemeQuery");
+    command_line->AppendSwitchASCII(
+        "enable-blink-features",
+        "EncryptedMediaEncryptionSchemeQuery,"
+        "EncryptedMediaPersistentUsageRecordSession");
   }
 
   void SetUpOnMainThread() override {
@@ -260,8 +262,9 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   }
 
   enum class SessionType {
-    kTemporary,         // Temporary session
-    kPersistentLicense  // Persistent license session
+    kTemporary,             // Temporary session
+    kPersistentLicense,     // Persistent license session
+    kPersistentUsageRecord  // Persistent usage record session
   };
 
   std::string GetSessionTypeString(SessionType session_type) {
@@ -270,6 +273,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
         return "temporary";
       case SessionType::kPersistentLicense:
         return "persistent-license";
+      case SessionType::kPersistentUsageRecord:
+        return "persistent-usage-record";
     }
 
     NOTREACHED();
@@ -638,9 +643,11 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, SessionType) {
   // Temporary session always supported.
   EXPECT_SUCCESS(IsSessionTypeSupported(kClearKey, SessionType::kTemporary));
 
-  // Persistent license session not supported by Clear Key key system.
+  // Persistent sessions not supported by Clear Key key system.
   EXPECT_UNSUPPORTED(
       IsSessionTypeSupported(kClearKey, SessionType::kPersistentLicense));
+  EXPECT_UNSUPPORTED(
+      IsSessionTypeSupported(kClearKey, SessionType::kPersistentUsageRecord));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Robustness) {
@@ -838,9 +845,11 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
   EXPECT_SUCCESS(
       IsSessionTypeSupported(kExternalClearKey, SessionType::kTemporary));
 
-  // Persistent license session always supported by External Clear Key.
+  // Persistent sessions always supported by External Clear Key.
   EXPECT_SUCCESS(IsSessionTypeSupported(kExternalClearKey,
                                         SessionType::kPersistentLicense));
+  EXPECT_SUCCESS(IsSessionTypeSupported(kExternalClearKey,
+                                        SessionType::kPersistentUsageRecord));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
@@ -1062,6 +1071,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, SessionType) {
 #else
   EXPECT_UNSUPPORTED(result);
 #endif
+
+  // Persistent usage record session not supported on any platform.
+  EXPECT_UNSUPPORTED(
+      IsSessionTypeSupported(kWidevine, SessionType::kPersistentUsageRecord));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Robustness) {

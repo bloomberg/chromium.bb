@@ -26,6 +26,7 @@
 enum MediaKeySessionType {
     "temporary",
     "persistent-license",
+    "persistent-usage-record",
 };
 
 [
