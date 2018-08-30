@@ -1135,6 +1135,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_ITEM_OPTION_MOVE_TO_TOP" desc="Option in language item menu. User can click the 'Move to top' option to move the language up to the top of the list of languages. [CHAR-LIMIT=32]">
         Move to top
       </message>
+      <message name="IDS_LANGUAGES_EXPLICIT_ASK_TITLE" desc="Title of the dialog that explicitly asks the user which languages they can read.">
+        What languages do you read?
+      </message>
 
       <!-- Location preferences -->
       <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location." meaning="Geolocation">

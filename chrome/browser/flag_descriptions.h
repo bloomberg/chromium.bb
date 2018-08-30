@@ -1184,6 +1184,9 @@ extern const char kTraceUploadUrlChoiceEmloading[];
 extern const char kTraceUploadUrlChoiceQa[];
 extern const char kTraceUploadUrlChoiceTesting[];
 
+extern const char kTranslateExplicitLanguageAskName[];
+extern const char kTranslateExplicitLanguageAskDescription[];
+
 extern const char kTranslateForceTriggerOnEnglishName[];
 extern const char kTranslateForceTriggerOnEnglishDescription[];
 

@@ -729,6 +729,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/invalidation/UniqueIdInvalidationClientNameGenerator.java",
   "java/src/org/chromium/chrome/browser/jsdialog/JavascriptModalDialogView.java",
   "java/src/org/chromium/chrome/browser/jsdialog/JavascriptTabModalDialog.java",
+  "java/src/org/chromium/chrome/browser/language/LanguageAskPrompt.java",
   "java/src/org/chromium/chrome/browser/locale/DefaultSearchEngineDialogHelper.java",
   "java/src/org/chromium/chrome/browser/locale/DefaultSearchEnginePromoDialog.java",
   "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",

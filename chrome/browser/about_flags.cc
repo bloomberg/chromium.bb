@@ -2037,6 +2037,10 @@ const FeatureEntry kFeatureEntries[] = {
          language::kOverrideTranslateTriggerInIndia,
          kTranslateForceTriggerOnEnglishVariations,
          language::kOverrideTranslateTriggerInIndia.name)},
+    {"translate-explicit-ask",
+     flag_descriptions::kTranslateExplicitLanguageAskName,
+     flag_descriptions::kTranslateExplicitLanguageAskDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(language::kExplicitLanguageAsk)},
 #endif  // OS_ANDROID
     {"translate-ranker-enforcement",
      flag_descriptions::kTranslateRankerEnforcementName,
