@@ -269,7 +269,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   // TODO(mash): Port TabScrubber. This depends on where gesture recognition
   // happens because TabScrubber uses 3-finger scrolls. https://crbug.com/796366
-  if (!features::IsUsingWindowService()) {
+  if (!features::IsMultiProcessMash()) {
     // Initialize TabScrubber after the Ash Shell has been initialized.
     TabScrubber::GetInstance();
   }
