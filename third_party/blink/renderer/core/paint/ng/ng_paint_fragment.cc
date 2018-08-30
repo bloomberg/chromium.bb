@@ -359,13 +359,12 @@ void NGPaintFragment::ResetInlineFragmentsFor(
   // Because |next_for_same_layout_object_| can be the last reference, we should
   // have another reference during resetting |next_for_same_layout_object_|
   // |FragmentRange|..
-  const FragmentRange range = InlineFragmentsFor(layout_object);
-  Vector<scoped_refptr<NGPaintFragment>> fragments;
-  fragments.ReserveCapacity(range.size());
-  for (NGPaintFragment* fragment : range)
-    fragments.push_back(fragment);
-  for (const auto& fragment : fragments)
-    fragment->next_for_same_layout_object_.reset();
+  scoped_refptr<NGPaintFragment> current = layout_object->FirstInlineFragment();
+  while (current) {
+    scoped_refptr<NGPaintFragment> next;
+    next.swap(current->next_for_same_layout_object_);
+    current.swap(next);
+  }
 }
 
 bool NGPaintFragment::FlippedLocalVisualRectFor(
