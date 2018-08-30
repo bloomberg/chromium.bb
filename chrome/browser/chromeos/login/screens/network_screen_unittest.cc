@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 
 #include <memory>
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_model_view_channel.h"
+#include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -74,7 +75,7 @@ class NetworkScreenUnitTest : public testing::Test {
 TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
   // Set expectation that NetworkScreen will finish.
   EXPECT_CALL(mock_base_screen_delegate_,
-              OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))
+              OnExit(ScreenExitCode::NETWORK_CONNECTED))
       .Times(1);
 
   // Simulate a network connection.
@@ -90,7 +91,7 @@ TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
 TEST_F(NetworkScreenUnitTest, ContinuesOnlyOnce) {
   // Set expectation that NetworkScreen will finish.
   EXPECT_CALL(mock_base_screen_delegate_,
-              OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))
+              OnExit(ScreenExitCode::NETWORK_CONNECTED))
       .Times(1);
 
   // Connect to network "net0".

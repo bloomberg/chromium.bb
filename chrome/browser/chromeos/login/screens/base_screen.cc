@@ -98,7 +98,7 @@ void BaseScreen::CommitContextChanges() {
 }
 
 void BaseScreen::Finish(ScreenExitCode exit_code) {
-  base_screen_delegate_->OnExit(*this, exit_code, &context_);
+  base_screen_delegate_->OnExit(exit_code);
 }
 
 void BaseScreen::OnUserAction(const std::string& action_id) {
