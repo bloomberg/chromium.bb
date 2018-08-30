@@ -192,7 +192,7 @@ const displayInfocard = (() => {
         d: this._tableBody.querySelector('.data-info'),
         r: this._tableBody.querySelector('.rodata-info'),
         t: this._tableBody.querySelector('.text-info'),
-        v: this._tableBody.querySelector('.vtable-info'),
+        R: this._tableBody.querySelector('.relro-info'),
         x: this._tableBody.querySelector('.dexnon-info'),
         m: this._tableBody.querySelector('.dex-info'),
         p: this._tableBody.querySelector('.pak-info'),

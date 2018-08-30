@@ -48,6 +48,7 @@ METADATA_GN_ARGS = 'gn_args'
 METADATA_LINKER_NAME = 'linker_name'
 METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
+# New sections should also be added to the SuperSize UI.
 SECTION_BSS = '.bss'
 SECTION_DATA = '.data'
 SECTION_DATA_REL_RO = '.data.rel.ro'
@@ -257,8 +258,7 @@ class BaseSymbol(object):
   @property
   def section(self):
     """Returns the one-letter section."""
-    # Fallback to section_name if there is no short-form defined.
-    return SECTION_NAME_TO_SECTION.get(self.section_name, self.section_name)
+    return SECTION_NAME_TO_SECTION[self.section_name]
 
   @property
   def size_without_padding(self):
