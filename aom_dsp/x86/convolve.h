@@ -36,7 +36,7 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
     if (((filter[0] | filter[1] | filter[6] | filter[7]) == 0) &&            \
         (filter[2] | filter[5])) {                                           \
       while (w >= 16) {                                                      \
-        aom_filter_block1d16_##dir##8_##avg##opt(src_start, src_stride, dst, \
+        aom_filter_block1d16_##dir##4_##avg##opt(src_start, src_stride, dst, \
                                                  dst_stride, h, filter);     \
         src += 16;                                                           \
         dst += 16;                                                           \
