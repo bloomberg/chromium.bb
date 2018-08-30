@@ -160,7 +160,7 @@ void TabletModeAppWindowDragController::EndWindowDrag(
     DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
     Shell::Get()->window_selector_controller()->window_selector()->AddItem(
         drag_delegate_->dragged_window(), /*reposition=*/true,
-        /*animate=*/true);
+        /*animate=*/false);
   }
   drag_delegate_->EndWindowDrag(result, GetEventLocationInScreen(event));
 }
