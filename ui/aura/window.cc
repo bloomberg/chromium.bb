@@ -568,7 +568,55 @@ bool Window::ContainsPoint(const gfx::Point& local_point) const {
 }
 
 Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
-  return GetWindowForPoint(local_point, true, true);
+  if (!IsVisible())
+    return nullptr;
+
+  if (!HitTest(local_point))
+    return nullptr;
+
+  for (Windows::const_reverse_iterator it = children_.rbegin(),
+                                       rend = children_.rend();
+       it != rend; ++it) {
+    Window* child = *it;
+
+    if (child->event_targeting_policy_ ==
+        ws::mojom::EventTargetingPolicy::NONE) {
+      continue;
+    }
+
+    // The client may not allow events to be processed by certain subtrees.
+    client::EventClient* client = client::GetEventClient(GetRootWindow());
+    if (client && !client->CanProcessEventsWithinSubtree(child))
+      continue;
+
+    if (delegate_ && !delegate_->ShouldDescendIntoChildForEventHandling(
+                         child, local_point)) {
+      continue;
+    }
+
+    gfx::Point point_in_child_coords(local_point);
+    ConvertPointToTarget(this, child, &point_in_child_coords);
+    Window* match = child->GetEventHandlerForPoint(point_in_child_coords);
+    if (!match)
+      continue;
+
+    switch (child->event_targeting_policy_) {
+      case ws::mojom::EventTargetingPolicy::TARGET_ONLY:
+        if (child->delegate_)
+          return child;
+        break;
+      case ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
+        return match;
+      case ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
+        if (match != child)
+          return match;
+        break;
+      case ws::mojom::EventTargetingPolicy::NONE:
+        NOTREACHED();  // This case is handled early on.
+    }
+  }
+
+  return delegate_ ? this : nullptr;
 }
 
 Window* Window::GetToplevelWindow() {
@@ -822,69 +870,6 @@ void Window::SchedulePaint() {
 void Window::Paint(const ui::PaintContext& context) {
   if (delegate_)
     delegate_->OnPaint(context);
-}
-
-Window* Window::GetWindowForPoint(const gfx::Point& local_point,
-                                  bool return_tightest,
-                                  bool for_event_handling) {
-  if (!IsVisible())
-    return nullptr;
-
-  if ((for_event_handling && !HitTest(local_point)) ||
-      (!for_event_handling && !ContainsPoint(local_point))) {
-    return nullptr;
-  }
-
-  if (!return_tightest && delegate_)
-    return this;
-
-  for (Windows::const_reverse_iterator it = children_.rbegin(),
-           rend = children_.rend();
-       it != rend; ++it) {
-    Window* child = *it;
-
-    if (for_event_handling) {
-      if (child->event_targeting_policy_ ==
-          ws::mojom::EventTargetingPolicy::NONE) {
-        continue;
-      }
-
-      // The client may not allow events to be processed by certain subtrees.
-      client::EventClient* client = client::GetEventClient(GetRootWindow());
-      if (client && !client->CanProcessEventsWithinSubtree(child))
-        continue;
-
-      if (delegate_ && !delegate_->ShouldDescendIntoChildForEventHandling(
-                           child, local_point)) {
-        continue;
-      }
-    }
-
-    gfx::Point point_in_child_coords(local_point);
-    ConvertPointToTarget(this, child, &point_in_child_coords);
-    Window* match = child->GetWindowForPoint(point_in_child_coords,
-                                             return_tightest,
-                                             for_event_handling);
-    if (!match)
-      continue;
-
-    switch (child->event_targeting_policy_) {
-      case ws::mojom::EventTargetingPolicy::TARGET_ONLY:
-        if (child->delegate_)
-          return child;
-        break;
-      case ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
-        return match;
-      case ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
-        if (match != child)
-          return match;
-        break;
-      case ws::mojom::EventTargetingPolicy::NONE:
-        NOTREACHED();  // This case is handled early on.
-    }
-  }
-
-  return delegate_ ? this : nullptr;
 }
 
 void Window::RemoveChildImpl(Window* child, Window* new_parent) {
