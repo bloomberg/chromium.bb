@@ -167,24 +167,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
 
     AuthenticatorRequestDialogModel model;
     model.StartFlow(std::move(transports_info), test_case.last_used_transport);
-
-    // Expect and advance through the welcome screen if this is the first time
-    // the user goes through the flow (there is no |last_used_transport|.
-    if (!test_case.last_used_transport) {
-      ASSERT_EQ(Step::kWelcomeScreen, model.current_step());
-      model.StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
-    }
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
 
     if (model.current_step() == Step::kTransportSelection)
       continue;
 
     model.Back();
-    if (test_case.available_transports.size() >= 2u) {
-      EXPECT_EQ(Step::kTransportSelection, model.current_step());
-    } else {
-      EXPECT_EQ(Step::kWelcomeScreen, model.current_step());
-    }
+    EXPECT_EQ(Step::kTransportSelection, model.current_step());
   }
 }
 

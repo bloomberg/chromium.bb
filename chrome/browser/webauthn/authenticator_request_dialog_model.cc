@@ -95,11 +95,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
     transport_list_model_.AppendTransport(transport);
   }
 
-  if (last_used_transport) {
-    StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
-  } else {
-    SetCurrentStep(Step::kWelcomeScreen);
-  }
+  StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
 
 void AuthenticatorRequestDialogModel::
@@ -219,14 +215,10 @@ void AuthenticatorRequestDialogModel::Cancel() {
 }
 
 void AuthenticatorRequestDialogModel::Back() {
-  if (current_step() == Step::kWelcomeScreen) {
+  if (current_step() == Step::kTransportSelection) {
     Cancel();
-  } else if (current_step() == Step::kTransportSelection) {
-    SetCurrentStep(Step::kWelcomeScreen);
   } else {
-    SetCurrentStep(transport_availability_.available_transports.size() >= 2u
-                       ? Step::kTransportSelection
-                       : Step::kWelcomeScreen);
+    SetCurrentStep(Step::kTransportSelection);
   }
 }
 
