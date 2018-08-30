@@ -12,6 +12,16 @@ Polymer({
 
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
+  properties: {
+    numOfApps: Number,
+
+    /** Whether the user selected one app. */
+    hasSingleApp: {
+      type: Boolean,
+      computed: 'hasSingleApp_(numOfApps)',
+    },
+  },
+
   focus: function() {
     this.$['app-downloading-dialog'].focus();
   },
@@ -22,4 +32,9 @@ Polymer({
         'login.AppDownloadingScreen.userActed',
         ['appDownloadingContinueSetup']);
   },
+
+  /** @private */
+  hasSingleApp_: function(numOfApps) {
+    return numOfApps === 1;
+  }
 });
