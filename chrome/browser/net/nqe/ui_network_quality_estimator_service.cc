@@ -18,12 +18,9 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
-#include "net/nqe/network_quality.h"
-#include "net/nqe/rtt_throughput_estimates_observer.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request_context.h"
 
 namespace {
@@ -84,102 +81,19 @@ void SetNQEOnIOThread(net::NetworkQualitiesPrefsManager* prefs_manager,
 
 }  // namespace
 
-// A class that sets itself as an observer of the EffectiveconnectionType for
-// the browser IO thread. It reports any change in EffectiveConnectionType back
-// to the UI service.
-// It is created on the UI thread, but used and deleted on the IO thread.
-class UINetworkQualityEstimatorService::IONetworkQualityObserver
-    : public net::EffectiveConnectionTypeObserver,
-      public net::RTTAndThroughputEstimatesObserver {
- public:
-  explicit IONetworkQualityObserver(
-      base::WeakPtr<UINetworkQualityEstimatorService> service)
-      : service_(service), network_quality_estimator_(nullptr) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  }
-
-  ~IONetworkQualityObserver() override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (network_quality_estimator_) {
-      network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
-      network_quality_estimator_->RemoveRTTAndThroughputEstimatesObserver(this);
-    }
-  }
-
-  void InitializeOnIOThread(IOThread* io_thread) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    if (!io_thread->globals()->system_request_context ||
-        !io_thread->globals()
-             ->system_request_context->network_quality_estimator()) {
-      return;
-    }
-    network_quality_estimator_ =
-        io_thread->globals()
-            ->system_request_context->network_quality_estimator();
-    if (!network_quality_estimator_)
-      return;
-    network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
-    network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
-  }
-
-  // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
-  // implementation:
-  void OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType type) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged,
-            service_, type));
-  }
-
-  // net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver
-  // implementation:
-  void OnRTTOrThroughputEstimatesComputed(
-      base::TimeDelta http_rtt,
-      base::TimeDelta transport_rtt,
-      int32_t downstream_throughput_kbps) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &UINetworkQualityEstimatorService::RTTOrThroughputComputed,
-            service_, http_rtt, transport_rtt, downstream_throughput_kbps));
-  }
-
- private:
-  base::WeakPtr<UINetworkQualityEstimatorService> service_;
-  net::NetworkQualityEstimator* network_quality_estimator_;
-
-  DISALLOW_COPY_AND_ASSIGN(IONetworkQualityObserver);
-};
-
 UINetworkQualityEstimatorService::UINetworkQualityEstimatorService(
     Profile* profile)
-    : type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      http_rtt_(net::nqe::internal::InvalidRTT()),
-      transport_rtt_(net::nqe::internal::InvalidRTT()),
-      downstream_throughput_kbps_(net::nqe::internal::INVALID_RTT_THROUGHPUT),
-      weak_factory_(this) {
+    : weak_factory_(this) {
   DCHECK(profile);
   // If this is running in a context without an IOThread, don't try to create
   // the IO object.
   if (!g_browser_process->io_thread())
     return;
-  io_observer_ = base::WrapUnique(
-      new IONetworkQualityObserver(weak_factory_.GetWeakPtr()));
   std::unique_ptr<PrefDelegateImpl> pref_delegate(
       new PrefDelegateImpl(profile->GetPrefs()));
   prefs_manager_ = base::WrapUnique(
       new net::NetworkQualitiesPrefsManager(std::move(pref_delegate)));
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&IONetworkQualityObserver::InitializeOnIOThread,
-                     base::Unretained(io_observer_.get()),
-                     g_browser_process->io_thread()));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SetNQEOnIOThread, prefs_manager_.get(),
@@ -193,13 +107,6 @@ UINetworkQualityEstimatorService::~UINetworkQualityEstimatorService() {
 void UINetworkQualityEstimatorService::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   weak_factory_.InvalidateWeakPtrs();
-  if (io_observer_) {
-    bool deleted = content::BrowserThread::DeleteSoon(
-        content::BrowserThread::IO, FROM_HERE, io_observer_.release());
-    DCHECK(deleted);
-    // Silence unused variable warning in release builds.
-    (void)deleted;
-  }
   if (prefs_manager_) {
     prefs_manager_->ShutdownOnPrefSequence();
     bool deleted = content::BrowserThread::DeleteSoon(
@@ -210,100 +117,11 @@ void UINetworkQualityEstimatorService::Shutdown() {
   }
 }
 
-void UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged(
-    net::EffectiveConnectionType type) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  type_ = type;
-  for (auto& observer : effective_connection_type_observer_list_)
-    observer.OnEffectiveConnectionTypeChanged(type);
-}
-
-void UINetworkQualityEstimatorService::RTTOrThroughputComputed(
-    base::TimeDelta http_rtt,
-    base::TimeDelta transport_rtt,
-    int32_t downstream_throughput_kbps) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  http_rtt_ = http_rtt;
-  transport_rtt_ = transport_rtt;
-  downstream_throughput_kbps_ = downstream_throughput_kbps;
-}
-
-void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
-    net::EffectiveConnectionTypeObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  effective_connection_type_observer_list_.AddObserver(observer);
-
-  // Notify the |observer| on the next message pump since |observer| may not
-  // be completely set up for receiving the callbacks.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UINetworkQualityEstimatorService::
-                         NotifyEffectiveConnectionTypeObserverIfPresent,
-                     weak_factory_.GetWeakPtr(), observer));
-}
-
-void UINetworkQualityEstimatorService::RemoveEffectiveConnectionTypeObserver(
-    net::EffectiveConnectionTypeObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  effective_connection_type_observer_list_.RemoveObserver(observer);
-}
-
-base::Optional<base::TimeDelta> UINetworkQualityEstimatorService::GetHttpRTT()
-    const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (http_rtt_ == net::nqe::internal::InvalidRTT())
-    return base::Optional<base::TimeDelta>();
-  return http_rtt_;
-}
-
-base::Optional<base::TimeDelta>
-UINetworkQualityEstimatorService::GetTransportRTT() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (transport_rtt_ == net::nqe::internal::InvalidRTT())
-    return base::Optional<base::TimeDelta>();
-  return transport_rtt_;
-}
-
-base::Optional<int32_t>
-UINetworkQualityEstimatorService::GetDownstreamThroughputKbps() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (downstream_throughput_kbps_ == net::nqe::internal::INVALID_RTT_THROUGHPUT)
-    return base::Optional<int32_t>();
-  return downstream_throughput_kbps_;
-}
-
-void UINetworkQualityEstimatorService::SetEffectiveConnectionTypeForTesting(
-    net::EffectiveConnectionType type) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  EffectiveConnectionTypeChanged(type);
-}
-
-net::EffectiveConnectionType
-UINetworkQualityEstimatorService::GetEffectiveConnectionType() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return type_;
-}
-
 void UINetworkQualityEstimatorService::ClearPrefs() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!prefs_manager_)
     return;
   prefs_manager_->ClearPrefs();
-}
-
-void UINetworkQualityEstimatorService::
-    NotifyEffectiveConnectionTypeObserverIfPresent(
-        net::EffectiveConnectionTypeObserver* observer) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!effective_connection_type_observer_list_.HasObserver(observer))
-    return;
-  if (type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
-    return;
-  observer->OnEffectiveConnectionTypeChanged(type_);
 }
 
 // static
