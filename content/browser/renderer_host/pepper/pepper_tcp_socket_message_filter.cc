@@ -692,60 +692,22 @@ void PepperTCPSocketMessageFilter::DoWrite(
   DCHECK(state_.IsConnected());
 
   int net_result = net::ERR_FAILED;
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("pepper_tcp_socket", R"(
-        semantics {
-          sender: "Pepper TCP Socket"
-          description:
-            "Pepper plugins use this API to send and receive data over the "
-            "network using TCP connections. This inteface is used by Flash and "
-            "PDF viewer, and Chrome Apps which use plugins to send/receive TCP "
-            "traffic (require Chrome Apps TCP socket permission)."
-          trigger:
-            "A request from a Pepper plugin."
-          data: "Any data that the plugin sends."
-          destination: OTHER
-          destination_other:
-            "Data can be sent to any destination."
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "These requests cannot be disabled, but will not happen if user "
-            "does not use Flash, internal PDF Viewer, or Chrome Apps that use "
-            "Pepper interface."
-          chrome_policy {
-            DefaultPluginsSetting {
-              DefaultPluginsSetting: 2
-            }
-          }
-          chrome_policy {
-            AlwaysOpenPdfExternally {
-              AlwaysOpenPdfExternally: true
-            }
-          }
-          chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
-                entries: '*'
-              }
-            }
-          }
-        })");
   if (socket_) {
     DCHECK_EQ(state_.state(), TCPSocketState::CONNECTED);
     net_result = socket_->Write(
         write_buffer_.get(), write_buffer_->BytesRemaining(),
         base::BindOnce(&PepperTCPSocketMessageFilter::OnWriteCompleted,
                        base::Unretained(this), context),
-        traffic_annotation);
+        static_cast<net::NetworkTrafficAnnotationTag>(
+            pepper_socket_utils::PepperTCPNetworkAnnotationTag()));
   } else if (ssl_socket_) {
     DCHECK_EQ(state_.state(), TCPSocketState::SSL_CONNECTED);
     net_result = ssl_socket_->Write(
         write_buffer_.get(), write_buffer_->BytesRemaining(),
         base::BindOnce(&PepperTCPSocketMessageFilter::OnWriteCompleted,
                        base::Unretained(this), context),
-        traffic_annotation);
+        static_cast<net::NetworkTrafficAnnotationTag>(
+            pepper_socket_utils::PepperTCPNetworkAnnotationTag()));
   }
   if (net_result != net::ERR_IO_PENDING)
     OnWriteCompleted(context, net_result);
