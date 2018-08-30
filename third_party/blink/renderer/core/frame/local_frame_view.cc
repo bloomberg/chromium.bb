@@ -2619,9 +2619,12 @@ void LocalFrameView::RunPaintLifecyclePhase() {
           CompositorElementIdSet();
       PushPaintArtifactToCompositor(composited_element_ids.value());
       // TODO(wkorman): Add call to UpdateCompositorScrollAnimations here.
-      DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
-                                           DocumentLifecycle::kPaintClean,
-                                           composited_element_ids);
+      ForAllNonThrottledLocalFrameViews(
+          [&composited_element_ids](LocalFrameView& frame_view) {
+            DocumentAnimations::UpdateAnimations(
+                frame_view.GetLayoutView()->GetDocument(),
+                DocumentLifecycle::kPaintClean, composited_element_ids);
+          });
 
       // Notify the controller that the artifact has been pushed and some
       // lifecycle state can be freed (such as raster invalidations).

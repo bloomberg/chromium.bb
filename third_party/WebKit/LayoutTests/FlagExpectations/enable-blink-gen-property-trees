@@ -150,12 +150,6 @@ crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 Bug(none) animations/ [ Pass ]
 Bug(none) transitions/ [ Pass ]
 
-#  crbug.com/836897 - covers 855688,855691,855702,855718
-crbug.com/855688 transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
-crbug.com/855688 transitions/transition-end-event-destroy-iframe.html [ Timeout ]
-crbug.com/855688 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
-crbug.com/855688 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
-
 crbug.com/861824 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
 
 # These scrollbar tests should pass.
