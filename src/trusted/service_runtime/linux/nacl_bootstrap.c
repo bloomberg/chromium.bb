@@ -694,23 +694,23 @@ asm(".pushsection \".text\",\"ax\",%progbits\n"
     ".popsection"
     );
 #elif defined(__mips__)
-asm(".pushsection \".text\",\"ax\",@progbits\n"
-    ".globl _start\n"
-    ".type _start,@function\n"
-    "_start:\n"
-    ".set noreorder\n"
-    "addiu $fp, $zero, 0\n"
-    "addiu $ra, $zero, 0\n"
-    "addiu $s8, $sp,   0\n"     /* Save starting SP in s8.  */
-    "addiu $a0, $sp,   0\n"
-    "addiu $sp, $sp, -16\n"
-    "jal   do_load\n"
-    "nop\n"
-    "addiu $sp, $s8,  0\n"      /* Restore the saved SP.  */
-    "jr    $v0\n"               /* Jump to the entry point.  */
-    "nop\n"
-    ".popsection"
-    );
+__asm__(".pushsection \".text\",\"ax\",@progbits\n"
+        ".globl _start\n"
+        ".type _start,@function\n"
+        "_start:\n"
+        ".set noreorder\n"
+        "addiu $fp, $zero, 0\n"
+        "addiu $ra, $zero, 0\n"
+        "addiu $s8, $sp,   0\n"     /* Save starting SP in s8.  */
+        "addiu $a0, $sp,   0\n"
+        "addiu $sp, $sp, -16\n"
+        "jal   do_load\n"
+        "nop\n"
+        "addiu $sp, $s8,  0\n"      /* Restore the saved SP.  */
+        "jr    $v0\n"               /* Jump to the entry point.  */
+        "nop\n"
+        ".popsection"
+        );
 #else
 # error "Need stack-preserving _start code for this architecture!"
 #endif

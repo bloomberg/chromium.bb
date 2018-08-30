@@ -10,7 +10,7 @@
 uint32_t NaClGetStackPtr(void) {
   uint32_t sp;
 
-  asm("move %0, $sp" : "=r" (sp));
+  __asm__("move %0, $sp" : "=r" (sp));
 
   return sp;
 }
