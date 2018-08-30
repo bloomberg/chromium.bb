@@ -452,12 +452,19 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
     input_handling_per_task_type_duration_reporter_.RecordTask(task_type,
                                                                duration);
   }
-  if (task_type == TaskType::kNetworkingWithURLLoaderAnnotation && queue &&
-      queue->net_request_priority()) {
+
+  if (task_type == TaskType::kNetworkingWithURLLoaderAnnotation && queue) {
+    if (queue->net_request_priority()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "RendererScheduler.ResourceLoadingTaskCountPerNetPriority",
+          queue->net_request_priority().value(),
+          net::RequestPriority::MAXIMUM_PRIORITY + 1);
+    }
+
     UMA_HISTOGRAM_ENUMERATION(
-        "RendererScheduler.ResourceLoadingTaskCountPerNetPriority",
-        queue->net_request_priority().value(),
-        net::RequestPriority::MAXIMUM_PRIORITY + 1);
+        "RendererScheduler.ResourceLoadingTaskCountPerPriority",
+        queue->GetQueuePriority(),
+        base::sequence_manager::TaskQueue::QueuePriority::kQueuePriorityCount);
   }
 }
 

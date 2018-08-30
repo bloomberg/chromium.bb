@@ -47114,6 +47114,15 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Tapped Inside, Different Node"/>
 </enum>
 
+<enum name="TaskQueuePriority">
+  <int value="0" label="Control"/>
+  <int value="1" label="Highest"/>
+  <int value="2" label="High"/>
+  <int value="3" label="Normal"/>
+  <int value="4" label="Low"/>
+  <int value="5" label="Best Effort"/>
+</enum>
+
 <enum name="TaskQueueSelectorLogic">
   <summary>
     Used to record selector logic trigerred when servicing a task queue.
