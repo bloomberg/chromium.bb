@@ -600,6 +600,10 @@ void OverlayWindowViews::OnNativeWidgetBeginUserBoundsChange() {
 }
 
 void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
+  // Every time a user uses a keyboard to interact on the window, restart the
+  // timer to automatically hide the controls.
+  hide_controls_timer_.Reset();
+
   // Any keystroke will make the controls visible, if not already. The Tab key
   // needs to be handled separately.
   // If the controls are already visible, this is a no-op.
