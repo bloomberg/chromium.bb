@@ -558,6 +558,15 @@ void TranslateManager::SetIgnoreMissingKeyForTesting(bool ignore) {
   ignore_missing_key_for_testing_ = ignore;
 }
 
+// static
+bool TranslateManager::IsAvailable(const TranslatePrefs* prefs) {
+  // These conditions mirror the conditions in InitiateTranslation.
+  return base::FeatureList::IsEnabled(translate::kTranslateUI) &&
+         (ignore_missing_key_for_testing_ ||
+          ::google_apis::HasAPIKeyConfigured()) &&
+         prefs->IsOfferTranslateEnabled();
+}
+
 void TranslateManager::InitTranslateEvent(const std::string& src_lang,
                                           const std::string& dst_lang,
                                           const TranslatePrefs& prefs) {

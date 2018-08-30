@@ -109,6 +109,11 @@ struct CORE_EXPORT FrameLoadRequest {
     should_set_opener_ = should_set_opener;
   }
 
+  const AtomicString& HrefTranslate() { return href_translate_; }
+  void SetHrefTranslate(const AtomicString& translate) {
+    href_translate_ = translate;
+  }
+
   ContentSecurityPolicyDisposition ShouldCheckMainWorldContentSecurityPolicy()
       const {
     return should_check_main_world_content_security_policy_;
@@ -160,6 +165,7 @@ struct CORE_EXPORT FrameLoadRequest {
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
   AtomicString frame_name_;
+  AtomicString href_translate_;
   SubstituteData substitute_data_;
   bool replaces_current_item_;
   ClientRedirectPolicy client_redirect_;
