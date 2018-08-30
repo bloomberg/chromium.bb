@@ -328,6 +328,9 @@ class GaiaCookieManagerService : public KeyedService,
   // Virtual for testing purpose.
   virtual void StartFetchingLogOut();
 
+  // Starts setting parsed cookies in browser;
+  void StartSettingCookies(const OAuthMultiloginResult& result);
+
   // Start the next request, if needed.
   void HandleNextRequest();
 
