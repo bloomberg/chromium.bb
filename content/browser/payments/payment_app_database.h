@@ -19,7 +19,7 @@
 #include "content/public/browser/stored_payment_app.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 
 namespace content {
 

@@ -15,7 +15,7 @@
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payments_validators.h"
 #include "jni/PaymentValidator_jni.h"
-#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace payments {
 
