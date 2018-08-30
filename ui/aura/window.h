@@ -486,15 +486,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Asks the delegate to paint the window.
   void Paint(const ui::PaintContext& context);
 
-  // Gets a Window (either this one or a subwindow) containing |local_point|.
-  // If |return_tightest| is true, returns the tightest-containing (i.e.
-  // furthest down the hierarchy) Window containing the point; otherwise,
-  // returns the loosest.  If |for_event_handling| is true, then hit-test masks
-  // are honored; otherwise, only bounds checks are performed.
-  Window* GetWindowForPoint(const gfx::Point& local_point,
-                            bool return_tightest,
-                            bool for_event_handling);
-
   // Implementation of RemoveChild(). If |child| is being removed as the result
   // of an add, |new_parent| is the new parent |child| is going to be parented
   // to.
