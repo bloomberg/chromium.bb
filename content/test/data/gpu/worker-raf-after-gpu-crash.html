@@ -24,10 +24,11 @@ frame();
 postMessage("READY");
 </script>
 <script>
-var numFramesBeforeFail = 500;
+var numFramesBeforeFail = 600;
 
 function sendResult(status, detail) {
-  console.log(detail);
+  if (detail)
+    console.log(detail);
   if (window.domAutomationController) {
     window.domAutomationController.send(status);
   } else {
@@ -42,12 +43,14 @@ function main() {
 
   worker.addEventListener("message", (ev) => {
     if (ev.data == "READY") {
-      // Sending READY will make the GPU crash.
-      sendResult("READY");
+      // Sending LOADED will make the GPU crash.
+      sendResult("LOADED");
       frame();
-    } else {
+    } else if (ev.data == "DONE") {
       sendResult("SUCCESS", "Test complete");
       done = true;
+    } else {
+      sendResult("FAILURE", "Unexpected reply from worker: " + ev.data);
     }
   });
 

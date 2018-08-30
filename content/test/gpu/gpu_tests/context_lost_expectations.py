@@ -61,3 +61,8 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
 
+    # Android NVIDIA (Nexus 9, SHIELD TV)
+    self.Fail('ContextLost_WorkerRAFAfterGPUCrash',
+              ['android', 'nvidia'], bug=851213)
+    self.Fail('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
+              ['android', 'nvidia'], bug=851213)
