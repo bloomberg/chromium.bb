@@ -86,7 +86,7 @@ function testPositionSetterVsCurve(should, context, options) {
               setterMethod,
               prefix + methodName + setterArguments + ' for ' +
                   options.paramName)
-              .throw('NotSupportedError');
+              .throw(DOMException, 'NotSupportedError');
         })
         .then(resumeContext);
   }

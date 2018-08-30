@@ -24,7 +24,7 @@
         should(
             () => new AudioBuffer(options),
             'new AudioBuffer(' + JSON.stringify(options) + ')')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         task.done();
       });
 

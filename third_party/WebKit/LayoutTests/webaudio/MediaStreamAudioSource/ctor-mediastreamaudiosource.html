@@ -39,7 +39,7 @@
             },
             'node = new MediaStreamAudioSourceNode(context, ' +
                 JSON.stringify(options) + ')')
-            .throw('InvalidStateError');
+            .throw(DOMException, 'InvalidStateError');
 
         task.done();
       });

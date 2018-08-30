@@ -22,7 +22,7 @@
           function(task, should) {
             should(function() {
               return new AudioScheduledSourceNode(context);
-            }, 'new AudioScheduledSourceNode(c)').throw('TypeError');
+            }, 'new AudioScheduledSourceNode(c)').throw(TypeError);
 
             task.done();
           });

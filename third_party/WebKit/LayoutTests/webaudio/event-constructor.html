@@ -16,25 +16,25 @@
       audit.define('offline-constructor', (task, should) => {
         should(function() {
           new OfflineAudioCompletionEvent();
-        }, 'new OfflineAudioCompletionEvent()').throw('TypeError');
+        }, 'new OfflineAudioCompletionEvent()').throw(TypeError);
 
         should(function() {
           new OfflineAudioCompletionEvent('complete');
-        }, 'new OfflineAudioCompletionEvent("complete")').throw('TypeError');
+        }, 'new OfflineAudioCompletionEvent("complete")').throw(TypeError);
 
         should(
             function() {
               new OfflineAudioCompletionEvent('complete', {});
             },
             'new OfflineAudioCompletionEvent("complete", {})')
-            .throw('TypeError');
+            .throw(TypeError);
 
         should(
             function() {
               new OfflineAudioCompletionEvent('complete', {foo: 42});
             },
             'new OfflineAudioCompletionEvent("complete", {foo: 42})')
-            .throw('TypeError');
+            .throw(TypeError);
 
         let context = new OfflineAudioContext(1, 100, 48000);
         let buffer = new AudioBuffer(context, {length: 42});
@@ -83,15 +83,15 @@
         // Verify required arguments.
         should(function() {
           new AudioProcessingEvent();
-        }, 'new AudioProcessingEvent()').throw('TypeError');
+        }, 'new AudioProcessingEvent()').throw(TypeError);
 
         should(function() {
           new AudioProcessingEvent('proc');
-        }, 'new AudioProcessingEvent("proc")').throw('TypeError');
+        }, 'new AudioProcessingEvent("proc")').throw(TypeError);
 
         should(function() {
           new AudioProcessingEvent('proc', {foo: 99});
-        }, 'new AudioProcessingEvent("proc", {foo: 99})').throw('TypeError');
+        }, 'new AudioProcessingEvent("proc", {foo: 99})').throw(TypeError);
 
         should(
             function() {
@@ -100,7 +100,7 @@
             },
             'new AudioProcessingEvent("proc", ' +
                 '{inputBuffer: input, outputBuffer: output})')
-            .throw('TypeError');
+            .throw(TypeError);
 
         should(
             function() {
@@ -109,7 +109,7 @@
             },
             'new AudioProcessingEvent("proc", ' +
                 '{inputBuffer: input, playbackTime: time})')
-            .throw('TypeError');
+            .throw(TypeError);
 
         should(
             function() {
@@ -118,7 +118,7 @@
             },
             'new AudioProcessingEvent("proc", ' +
                 '{outputBuffer: output, playbackTime: time})')
-            .throw('TypeError');
+            .throw(TypeError);
 
 
         // Finally test valid call

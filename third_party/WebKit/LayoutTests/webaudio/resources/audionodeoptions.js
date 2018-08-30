@@ -40,19 +40,18 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
                   {channelCount: testChannelCount}));
         },
         'new ' + nodeName + '(c, {channelCount: ' + testChannelCount + '}}')
-        .throw(expectedNodeOptions.channelCount.errorType || 'TypeError');
+        .throw(expectedNodeOptions.channelCount.errorType || TypeError);
   } else {
     // The channel count is not fixed.  Try to set the count to invalid
     // values and make sure an error is thrown.
-    let errorType = 'NotSupportedError';
-
     [0, 99].forEach(testValue => {
       should(() => {
         node = new window[nodeName](
             context, Object.assign({}, expectedNodeOptions.additionalOptions, {
               channelCount: testValue
             }));
-      }, `new ${nodeName}(c, {channelCount: ${testValue}})`).throw(errorType);
+      }, `new ${nodeName}(c, {channelCount: ${testValue}})`)
+          .throw(DOMException, 'NotSupportedError');
     });
   }
 
@@ -119,7 +118,7 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
                   {channelCountMode: 'foobar'}));
         },
         'new ' + nodeName + '(c, {channelCountMode: "foobar"}')
-        .throw('TypeError');
+        .throw(TypeError);
     should(node.channelCountMode, 'node.channelCountMode after invalid setter')
         .beEqualTo(testValues[testValues.length - 1]);
   }
@@ -181,7 +180,7 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
                   {channelInterpretation: 'foobar'}));
         },
         'new ' + nodeName + '(c, {channelInterpretation: "foobar"})')
-        .throw('TypeError');
+        .throw(TypeError);
     should(
         node.channelInterpretation,
         'node.channelInterpretation after invalid setter')
@@ -201,13 +200,13 @@ function initializeContext(should) {
 function testInvalidConstructor(should, name, context) {
   should(() => {
     new window[name]();
-  }, 'new ' + name + '()').throw('TypeError');
+  }, 'new ' + name + '()').throw(TypeError);
   should(() => {
     new window[name](1);
-  }, 'new ' + name + '(1)').throw('TypeError');
+  }, 'new ' + name + '(1)').throw(TypeError);
   should(() => {
     new window[name](context, 42);
-  }, 'new ' + name + '(context, 42)').throw('TypeError');
+  }, 'new ' + name + '(context, 42)').throw(TypeError);
 }
 
 function testDefaultConstructor(should, name, context, options) {

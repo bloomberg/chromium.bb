@@ -42,7 +42,7 @@ Create an oscillator of each type and verify that the type is set correctly.
 
         should(function() {
           osc.type = 'custom';
-        }, 'osc.type = \'custom\'').throw('InvalidStateError');
+        }, 'osc.type = \'custom\'').throw(DOMException, 'InvalidStateError');
 
         // Now set a custom oscillator
         let coeffA = new Float32Array([0, 1, 0.5]);
