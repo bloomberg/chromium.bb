@@ -6,15 +6,18 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
@@ -25,6 +28,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class BrowserViewTest : public InProcessBrowserTest {
  public:
@@ -87,6 +91,17 @@ class TestWebContentsObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
+class TestTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
+ public:
+  explicit TestTabModalConfirmDialogDelegate(content::WebContents* contents)
+      : TabModalConfirmDialogDelegate(contents) {}
+  base::string16 GetTitle() override {
+    return base::string16(base::ASCIIToUTF16("Dialog Title"));
+  }
+  base::string16 GetDialogMessage() override { return base::string16(); }
+
+  DISALLOW_COPY_AND_ASSIGN(TestTabModalConfirmDialogDelegate);
+};
 }  // namespace
 
 // Verifies don't crash when CloseNow() is invoked with two tabs in a browser.
@@ -338,4 +353,32 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
 
   auto favicon = helper->GetFavicon();
   ASSERT_FALSE(favicon.IsEmpty());
+}
+
+#if defined(OS_MACOSX)
+// Voiceover treats tab modal dialogs as native windows, so this approach is not
+// necessary.
+#define MAYBE_GetAccessibleTabModalDialogTitle \
+  DISABLED_GetAccessibleTabModalDialogTitle
+#else
+#define MAYBE_GetAccessibleTabModalDialogTitle GetAccessibleTabModalDialogTitle
+#endif
+// Open a tab-modal dialog and check that the accessible window title is the
+// title of the dialog.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest,
+                       MAYBE_GetAccessibleTabModalDialogTitle) {
+  base::string16 window_title = base::ASCIIToUTF16("about:blank - ") +
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
+                               window_title, base::CompareCase::SENSITIVE));
+
+  content::WebContents* contents = browser_view()->GetActiveWebContents();
+  TestTabModalConfirmDialogDelegate* delegate =
+      new TestTabModalConfirmDialogDelegate(contents);
+  TabModalConfirmDialog::Create(delegate, contents);
+  EXPECT_EQ(browser_view()->GetAccessibleWindowTitle(), delegate->GetTitle());
+
+  delegate->Close();
+  EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
+                               window_title, base::CompareCase::SENSITIVE));
 }
