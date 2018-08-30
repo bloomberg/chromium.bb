@@ -41266,6 +41266,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="No App"/>
 </enum>
 
+<enum name="RecommendAppsScreenAction">
+  <int value="0" label="Skipped"/>
+  <int value="1" label="Retried"/>
+  <int value="2" label="Selected none"/>
+  <int value="3" label="Selected some apps"/>
+</enum>
+
+<enum name="RecommendAppsScreenState">
+  <int value="0" label="Show"/>
+  <int value="1" label="No show"/>
+  <int value="2" label="Error"/>
+</enum>
+
 <enum name="RecoveryComponentEvent">
   <int value="0" label="RunningNonElevated"/>
   <int value="1" label="ElevationNeeded"/>
