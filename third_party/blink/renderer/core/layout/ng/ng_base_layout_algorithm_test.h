@@ -32,7 +32,7 @@ class NGBaseLayoutAlgorithmTest
   // RunBlockLayoutAlgorithmForElement.
   void AdvanceToLayoutPhase();
 
-  std::pair<scoped_refptr<NGPhysicalBoxFragment>,
+  std::pair<scoped_refptr<const NGPhysicalBoxFragment>,
             scoped_refptr<NGConstraintSpace>>
   RunBlockLayoutAlgorithmForElement(Element* element);
 
@@ -55,7 +55,8 @@ class FragmentChildIterator {
     index_ = 0;
   }
 
-  const NGPhysicalBoxFragment* NextChild();
+  const NGPhysicalBoxFragment* NextChild(
+      NGPhysicalOffset* fragment_offset = nullptr);
 
  private:
   const NGPhysicalBoxFragment* parent_;

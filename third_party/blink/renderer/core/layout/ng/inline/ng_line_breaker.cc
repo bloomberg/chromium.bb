@@ -103,7 +103,7 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item) {
 }
 
 void NGLineBreaker::SetLineEndFragment(
-    scoped_refptr<NGPhysicalTextFragment> fragment) {
+    scoped_refptr<const NGPhysicalTextFragment> fragment) {
   bool is_horizontal =
       IsHorizontalWritingMode(constraint_space_.GetWritingMode());
   if (line_info_->LineEndFragment()) {

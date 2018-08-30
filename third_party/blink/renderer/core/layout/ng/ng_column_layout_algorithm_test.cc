@@ -27,7 +27,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
         was_block_fragmentation_enabled_);
   }
 
-  scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
+  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       const NGConstraintSpace& space,
       NGBlockNode node) {
     scoped_refptr<NGLayoutResult> result =
@@ -36,7 +36,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
   }
 
-  scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
+  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     scoped_refptr<NGConstraintSpace> space =
@@ -137,17 +137,18 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
   iterator.SetParent(fragment);
 
   // first column fragment
-  fragment = iterator.NextChild();
+  NGPhysicalOffset offset;
+  fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
-  fragment = iterator.NextChild();
+  fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
@@ -187,17 +188,18 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   iterator.SetParent(fragment);
 
   // first column fragment
-  fragment = iterator.NextChild();
+  NGPhysicalOffset offset;
+  fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(100)), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
-  fragment = iterator.NextChild();
+  fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(90), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());

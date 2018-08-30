@@ -21,7 +21,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     const ComputedStyle& style,
     NGStyleVariant style_variant,
     NGPhysicalSize size,
-    Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    Vector<NGLink>& children,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
     const NGPhysicalOffsetRect& contents_ink_overflow,
@@ -115,7 +115,7 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
     for (const auto& child_fragment : Children()) {
       NGPhysicalOffsetRect child_overflow =
           child_fragment->ScrollableOverflow();
-      child_overflow.offset += child_fragment->Offset();
+      child_overflow.offset += child_fragment.Offset();
       overflow.Unite(child_overflow);
     }
     return overflow;
@@ -196,7 +196,7 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
         DCHECK(line_child.fragment->GetLayoutObject());
         line_child.fragment->GetLayoutObject()->LocalToAncestorRects(
             line_child_rects, ToLayoutBoxModelObject(GetLayoutObject()),
-            child->Offset().ToLayoutPoint(), additional_offset);
+            child.Offset().ToLayoutPoint(), additional_offset);
         if (!line_child_rects.IsEmpty())
           outline_rects->push_back(line_child_rects[0]);
       }
@@ -236,18 +236,6 @@ UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
   DCHECK(self_item);
   DCHECK_NE(self_item, inline_items.end());
   return self_item->BidiLevel();
-}
-
-scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
-    const {
-  Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
-  Vector<NGBaseline> baselines_copy(baselines_);
-  scoped_refptr<NGPhysicalFragment> physical_fragment =
-      base::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), StyleVariant(), size_, children_copy,
-          borders_, padding_, contents_ink_overflow_, baselines_copy, BoxType(),
-          is_old_layout_root_, border_edge_, break_token_));
-  return physical_fragment;
 }
 
 }  // namespace blink

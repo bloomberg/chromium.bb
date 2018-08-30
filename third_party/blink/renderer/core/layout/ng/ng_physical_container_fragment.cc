@@ -13,7 +13,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGPhysicalSize size,
     NGFragmentType type,
     unsigned sub_type,
-    Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    Vector<NGLink>& children,
     const NGPhysicalOffsetRect& contents_ink_overflow,
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,

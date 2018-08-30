@@ -134,7 +134,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
       } else {
         continue;
       }
-      child_scrollable_overflow.offset += child->Offset();
+      child_scrollable_overflow.offset += child.Offset();
       children_overflow.Unite(child_scrollable_overflow);
     }
   }
@@ -276,7 +276,8 @@ void LayoutNGMixin<Base>::SetPaintFragment(
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     const NGBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment) {
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset) {
   // TODO(kojii): There are cases where the first call has break_token.
   // Investigate why and handle appropriately.
   // DCHECK(!break_token || paint_fragment_);
@@ -290,14 +291,16 @@ void LayoutNGMixin<Base>::SetPaintFragment(
       last_paint_fragment = paint_fragment_->Last();
     DCHECK(last_paint_fragment);
   }
-  SetPaintFragment(last_paint_fragment,
-                   fragment ? NGPaintFragment::Create(fragment) : nullptr);
+  SetPaintFragment(
+      last_paint_fragment,
+      fragment ? NGPaintFragment::Create(fragment, offset) : nullptr);
 }
 
 template <typename Base>
 void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
     const NGBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment) {
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset fragment_offset) {
   DCHECK(fragment);
   // TODO(kojii): There are cases where the first call has break_token.
   // Investigate why and handle appropriately.
@@ -318,8 +321,9 @@ void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
   }
 
   if (!paint_fragment) {
-    SetPaintFragment(last_paint_fragment,
-                     NGPaintFragment::Create(std::move(fragment)));
+    SetPaintFragment(
+        last_paint_fragment,
+        NGPaintFragment::Create(std::move(fragment), fragment_offset));
     return;
   }
 

@@ -95,7 +95,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    scoped_refptr<NGPhysicalFragment> child,
+    scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   if (!has_last_resort_break_) {
     if (const auto* token = child->BreakToken()) {
@@ -104,7 +104,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
         has_last_resort_break_ = true;
     }
   }
-  children_.push_back(std::move(child));
+  children_.emplace_back(std::move(child), NGPhysicalOffset());
   offsets_.push_back(child_offset);
   return *this;
 }

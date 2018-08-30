@@ -193,7 +193,7 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfInkOverflow() const {
   return local_ink_overflow;
 }
 
-scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
+scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
     unsigned new_start_offset,
     unsigned new_end_offset) const {
   DCHECK(shape_result_);
@@ -209,14 +209,6 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
       IsHorizontal() ? NGPhysicalSize{new_inline_size, size_.height}
                      : NGPhysicalSize{size_.width, new_inline_size},
       LineOrientation(), EndEffect(), std::move(new_shape_result)));
-}
-
-scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::CloneWithoutOffset()
-    const {
-  return base::AdoptRef(new NGPhysicalTextFragment(
-      layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
-      TextType(), text_, start_offset_, end_offset_, size_, LineOrientation(),
-      EndEffect(), shape_result_));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(

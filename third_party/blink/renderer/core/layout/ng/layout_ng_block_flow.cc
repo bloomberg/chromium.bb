@@ -69,7 +69,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  NGPhysicalBoxFragment* fragment =
+  const NGPhysicalBoxFragment* fragment =
       ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
 
   // This object has already been positioned in legacy layout by our containing
@@ -94,7 +94,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
         constraint_space->GetWritingMode(), constraint_space->Direction(),
         containing_block_size, fragment->Size());
   }
-  fragment->SetOffset(physical_offset);
+  result->SetOffset(physical_offset);
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -240,19 +240,19 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  scoped_refptr<NGPhysicalBoxFragment> fragment =
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
       ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
   DCHECK_GT(fragment->Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose
   // container is this node's container.
   // Example: fixed descendant of fixed element.
-  for (scoped_refptr<NGPhysicalFragment> child_fragment :
-       fragment->Children()) {
+  for (auto& child : fragment->Children()) {
+    const NGPhysicalFragment* child_fragment = child.get();
     DCHECK(child_fragment->GetLayoutObject()->IsBox());
     LayoutBox* child_legacy_box =
         ToLayoutBox(child_fragment->GetLayoutObject());
-    NGPhysicalOffset child_offset = child_fragment->Offset();
+    NGPhysicalOffset child_offset = child.Offset();
     if (container_style->IsFlippedBlocksWritingMode()) {
       child_legacy_box->SetX(container_border_box_logical_height -
                              child_offset.left - child_fragment->Size().width);
@@ -261,7 +261,6 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     }
     child_legacy_box->SetY(child_offset.top);
   }
-  scoped_refptr<NGPhysicalFragment> child_fragment = fragment->Children()[0];
   DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
   SetIsLegacyInitiatedOutOfFlowLayout(true);
 }

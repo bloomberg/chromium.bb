@@ -66,7 +66,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                         const NGLineInfo&,
                         NGInlineItemResult*,
                         NGInlineBoxState*);
-  void PlaceGeneratedContent(scoped_refptr<NGPhysicalFragment>,
+  void PlaceGeneratedContent(scoped_refptr<const NGPhysicalFragment>,
                              UBiDiLevel,
                              NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,

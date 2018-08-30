@@ -51,7 +51,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     scoped_refptr<NGLayoutResult> layout_result;
-    scoped_refptr<NGPhysicalFragment> fragment;
+    scoped_refptr<const NGPhysicalFragment> fragment;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* out_of_flow_containing_box = nullptr;
     NGLogicalOffset offset;
@@ -77,7 +77,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           inline_size(inline_size),
           bidi_level(bidi_level) {}
     // Create an in-flow |NGPhysicalFragment|.
-    Child(scoped_refptr<NGPhysicalFragment> fragment,
+    Child(scoped_refptr<const NGPhysicalFragment> fragment,
           NGLogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -85,7 +85,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           offset(offset),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    Child(scoped_refptr<NGPhysicalFragment> fragment,
+    Child(scoped_refptr<const NGPhysicalFragment> fragment,
           LayoutUnit block_offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)

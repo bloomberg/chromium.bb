@@ -19,7 +19,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGPhysicalLineBoxFragment(const ComputedStyle&,
                             NGStyleVariant style_variant,
                             NGPhysicalSize size,
-                            Vector<scoped_refptr<NGPhysicalFragment>>& children,
+                            Vector<NGLink>& children,
                             const NGPhysicalOffsetRect& contents_ink_overflow,
                             const NGLineHeightMetrics&,
                             TextDirection base_direction,
@@ -55,13 +55,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
-
-  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
-    Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
-    return base::AdoptRef(new NGPhysicalLineBoxFragment(
-        Style(), StyleVariant(), size_, children_copy, contents_ink_overflow_,
-        metrics_, BaseDirection(), break_token_));
-  }
 
  private:
   NGLineHeightMetrics metrics_;

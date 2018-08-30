@@ -38,10 +38,14 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
                                     public DisplayItemClient,
                                     public ImageResourceObserver {
  public:
-  NGPaintFragment(scoped_refptr<const NGPhysicalFragment>, NGPaintFragment*);
+  NGPaintFragment(scoped_refptr<const NGPhysicalFragment>,
+                  NGPhysicalOffset offset,
+                  NGPaintFragment*);
   ~NGPaintFragment() override;
+
   static scoped_refptr<NGPaintFragment> Create(
-      scoped_refptr<const NGPhysicalFragment>);
+      scoped_refptr<const NGPhysicalFragment>,
+      NGPhysicalOffset offset);
 
   const NGPhysicalFragment& PhysicalFragment() const {
     return *physical_fragment_;
@@ -134,7 +138,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return PhysicalFragment().GetLayoutObject();
   }
   const ComputedStyle& Style() const { return PhysicalFragment().Style(); }
-  NGPhysicalOffset Offset() const { return PhysicalFragment().Offset(); }
+  NGPhysicalOffset Offset() const { return offset_; }
   NGPhysicalSize Size() const { return PhysicalFragment().Size(); }
 
   // Converts the given point, relative to the fragment itself, into a position
@@ -258,6 +262,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   //
 
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
+  NGPhysicalOffset offset_;
 
   NGPaintFragment* parent_;
   Vector<scoped_refptr<NGPaintFragment>> children_;

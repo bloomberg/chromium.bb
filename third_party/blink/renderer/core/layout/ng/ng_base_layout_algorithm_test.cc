@@ -28,7 +28,7 @@ void NGBaseLayoutAlgorithmTest::AdvanceToLayoutPhase() {
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
 }
 
-std::pair<scoped_refptr<NGPhysicalBoxFragment>,
+std::pair<scoped_refptr<const NGPhysicalBoxFragment>,
           scoped_refptr<NGConstraintSpace>>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
   LayoutBlockFlow* block_flow = ToLayoutBlockFlow(element->GetLayoutObject());
@@ -58,7 +58,8 @@ const NGPhysicalBoxFragment* NGBaseLayoutAlgorithmTest::CurrentFragmentFor(
   return block_flow->CurrentFragment();
 }
 
-const NGPhysicalBoxFragment* FragmentChildIterator::NextChild() {
+const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
+    NGPhysicalOffset* fragment_offset) {
   if (!parent_)
     return nullptr;
   if (index_ >= parent_->Children().size())
@@ -69,7 +70,10 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild() {
     if (index_ >= parent_->Children().size())
       return nullptr;
   }
-  return ToNGPhysicalBoxFragment(parent_->Children()[index_++].get());
+  auto& child = parent_->Children()[index_++];
+  if (fragment_offset)
+    *fragment_offset = child.Offset();
+  return ToNGPhysicalBoxFragment(child.get());
 }
 
 scoped_refptr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(

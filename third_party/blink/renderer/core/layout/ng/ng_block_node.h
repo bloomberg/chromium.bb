@@ -119,6 +119,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
                                  const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
       const NGPhysicalFragment& fragment,
+      const NGPhysicalOffset& fragment_offset,
       const NGPhysicalOffset& additional_offset = NGPhysicalOffset());
 
   void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);

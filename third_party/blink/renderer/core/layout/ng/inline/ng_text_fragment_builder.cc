@@ -81,8 +81,9 @@ void NGTextFragmentBuilder::SetText(
   end_effect_ = NGTextEndEffect::kNone;
 }
 
-scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment() {
-  scoped_refptr<NGPhysicalTextFragment> fragment =
+scoped_refptr<const NGPhysicalTextFragment>
+NGTextFragmentBuilder::ToTextFragment() {
+  scoped_refptr<const NGPhysicalTextFragment> fragment =
       base::AdoptRef(new NGPhysicalTextFragment(
           layout_object_, Style(), style_variant_, text_type_, text_,
           start_offset_, end_offset_, size_.ConvertToPhysical(GetWritingMode()),
