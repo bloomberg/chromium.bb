@@ -10,6 +10,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -354,6 +355,17 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     DCHECK(buffer->memory(0));
     // RasterBufferProvider::PlaybackToMemory only supports unsigned strides.
     DCHECK_GE(buffer->stride(0), 0);
+
+    // TODO(https://crbug.com/870663): Temporary diagnostics.
+    base::debug::Alias(&playback_rect);
+    base::debug::Alias(&full_rect_size);
+    base::debug::Alias(&rv);
+    void* buffer_memory = buffer->memory(0);
+    base::debug::Alias(&buffer_memory);
+    gfx::Size staging_buffer_size = staging_buffer->size;
+    base::debug::Alias(&staging_buffer_size);
+    gfx::Size buffer_size = buffer->GetSize();
+    base::debug::Alias(&buffer_size);
 
     DCHECK(!playback_rect.IsEmpty())
         << "Why are we rastering a tile that's not dirty?";
