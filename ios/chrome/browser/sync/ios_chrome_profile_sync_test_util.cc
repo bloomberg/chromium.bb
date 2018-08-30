@@ -12,11 +12,8 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/common/channel_info.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -28,9 +25,8 @@ CreateProfileSyncServiceParamsForTest(
     ios::ChromeBrowserState* browser_state) {
   browser_sync::ProfileSyncService::InitParams init_params;
 
-  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
-      IdentityManagerFactory::GetForBrowserState(browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(browser_state));
+  init_params.identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
   init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;

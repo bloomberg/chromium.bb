@@ -20,7 +20,6 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -223,7 +222,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
     prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
     init_params.gaia_cookie_manager_service = nullptr;
-    init_params.signin_wrapper.reset();
+    init_params.identity_manager = nullptr;
 
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
 

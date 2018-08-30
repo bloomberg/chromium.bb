@@ -24,7 +24,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
@@ -39,7 +38,6 @@
 #include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_error_controller.h"
@@ -171,10 +169,10 @@ ProfileSyncService::InitParams::~InitParams() = default;
 ProfileSyncService::ProfileSyncService(InitParams init_params)
     : sync_client_(std::move(init_params.sync_client)),
       sync_prefs_(sync_client_->GetPrefService()),
-      signin_(std::move(init_params.signin_wrapper)),
+      identity_manager_(init_params.identity_manager),
       auth_manager_(std::make_unique<SyncAuthManager>(
           &sync_prefs_,
-          signin_ ? signin_->GetIdentityManager() : nullptr,
+          identity_manager_,
           base::BindRepeating(&ProfileSyncService::AccountStateChanged,
                               base::Unretained(this)),
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
@@ -1162,7 +1160,7 @@ void ProfileSyncService::OnActionableError(
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
       if (!IsLocalSyncEnabled()) {
-        signin_->GetIdentityManager()->ClearPrimaryAccount(
+        identity_manager_->ClearPrimaryAccount(
             identity::IdentityManager::ClearAccountTokensAction::kDefault,
             signin_metrics::SERVER_FORCED_DISABLE,
             signin_metrics::SignoutDelete::IGNORE_METRIC);

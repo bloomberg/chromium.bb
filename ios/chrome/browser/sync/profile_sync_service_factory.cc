@@ -13,8 +13,6 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -32,7 +30,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
@@ -106,7 +103,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ios::FaviconServiceFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(ios::TemplateURLServiceFactory::GetInstance());
   DependsOn(ios::WebDataServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
@@ -135,9 +131,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   ProfileSyncService::InitParams init_params;
-  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
-      IdentityManagerFactory::GetForBrowserState(browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(browser_state));
+  init_params.identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
   init_params.signin_scoped_device_id_callback = base::BindRepeating(
       &signin::GetSigninScopedDeviceId, browser_state->GetPrefs());
   init_params.start_behavior = ProfileSyncService::MANUAL_START;

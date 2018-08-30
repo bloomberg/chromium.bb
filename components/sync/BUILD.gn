@@ -134,8 +134,6 @@ jumbo_static_library("sync") {
     "driver/shared_change_processor.h",
     "driver/shared_change_processor_ref.cc",
     "driver/shared_change_processor_ref.h",
-    "driver/signin_manager_wrapper.cc",
-    "driver/signin_manager_wrapper.h",
     "driver/startup_controller.cc",
     "driver/startup_controller.h",
     "driver/sync_api_component_factory.cc",

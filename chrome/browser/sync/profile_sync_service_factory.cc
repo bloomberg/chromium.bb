@@ -30,7 +30,6 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
@@ -45,8 +44,6 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "content/public/browser/browser_context.h"
@@ -149,7 +146,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
                 GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
@@ -234,9 +230,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // once http://crbug.com/171406 has been fixed.
     AboutSigninInternalsFactory::GetForProfile(profile);
 
-    init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
-        IdentityManagerFactory::GetForProfile(profile),
-        SigninManagerFactory::GetForProfile(profile));
+    init_params.identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
     init_params.signin_scoped_device_id_callback =
         base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
     init_params.gaia_cookie_manager_service =
