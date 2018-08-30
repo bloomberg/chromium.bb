@@ -57,6 +57,7 @@ namespace content {
 
 struct PlatformNotificationData;
 class EmbeddedWorkerInstanceClientImpl;
+class HostChildURLLoaderFactoryBundle;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
@@ -100,6 +101,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
 
@@ -445,6 +447,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Accessed on the worker thread. Passed to the browser process after worker
   // startup completes.
   mojom::EmbeddedWorkerStartTimingPtr start_timing_;
+
+  // S13nServiceWorker:
+  // A URLLoaderFactory instance used for subresource loading.
+  scoped_refptr<HostChildURLLoaderFactoryBundle> loader_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
