@@ -27,6 +27,10 @@ enum class ParseResult {
   ERROR_DUPLICATE_IDS,
   ERROR_PERSISTING_RULESET,
   ERROR_LIST_NOT_PASSED,
+  // Parse errors related to fields containing non-ascii characters.
+  ERROR_NON_ASCII_URL_FILTER,
+  ERROR_NON_ASCII_DOMAIN,
+  ERROR_NON_ASCII_EXCLUDED_DOMAIN,
 };
 
 // Rule parsing errors.
@@ -41,6 +45,7 @@ extern const char kErrorListNotPassed[];
 extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
 extern const char kErrorListNotPassed[];
+extern const char kErrorNonAscii[];
 
 // Rule parsing install warnings.
 extern const char kRulesNotParsedWarning[];

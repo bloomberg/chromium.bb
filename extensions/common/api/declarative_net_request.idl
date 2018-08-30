@@ -58,6 +58,12 @@ namespace declarativeNetRequest {
     // Therefore urlFilter is composed of the following parts:
     // (optional Left/Domain name anchor) + pattern + (optional Right anchor)
     // If omitted, all urls are matched. An empty string is not allowed.
+    // Note: The urlFilter must be composed of only ASCII characters. This is
+    // matched against a url where the host is encoded in the punycode format
+    // (in case of internationalized domains) and any other non-ascii characters
+    // are url encoded in utf-8.
+    // For example, when the request url is http://abc.рф?q=ф, the urlFilter
+    // will be matched against the url http://abc.xn--p1ai/?q=%D1%84.
     DOMString? urlFilter;
 
     // Whether the |urlFilter| is case sensitive. Default is false.
@@ -67,12 +73,16 @@ namespace declarativeNetRequest {
     // |domains|. If the list is omitted, the rule is applied to requests from
     // all domains. An empty list is not allowed.
     // Note: sub-domains like "a.example.com" are also allowed.
+    // The entries must consist of only ascii characters. Use punycode encoding
+    // for internationalized domains.
     DOMString[]? domains;
 
     // The rule will not match network requests originating from the list of
     // |excludedDomains|. If the list is empty or omitted, no domains are
     // excluded. This takes precedence over |domains|.
     // Note: sub-domains like "a.example.com" are also allowed.
+    // The entries must consist of only ascii characters. Use punycode encoding
+    // for internationalized domains.
     DOMString[]? excludedDomains;
 
     // List of resource types which the rule can match. An empty list is not

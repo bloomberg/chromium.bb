@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
@@ -482,7 +483,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"|http://*.us", 3},
       {"pages_with_script/page2.html|", 4},
       {"|http://msn*/pages_with_script/page.html|", 5},
-      {"%20", 6},  // Block any urls with space.
+      {"%20", 6},     // Block any urls with space.
+      {"%C3%A9", 7},  // Percent-encoded non-ascii character é.
+      // Internationalized domain "ⱴase.com" in punycode.
+      {"|http://xn--ase-7z0b.com", 8},
   };
 
   // Rule |i| is the rule with id |i|.
@@ -506,6 +510,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"abc.com", "/pages_with_script/page.html?q=hi bye", false},    // Rule 6
       {"abc.com", "/pages_with_script/page.html?q=hi%20bye", false},  // Rule 6
       {"abc.com", "/pages_with_script/page.html?q=hibye", true},
+      {"abc.com",
+       "/pages_with_script/page.html?q=" + base::WideToUTF8(L"\u00E9"),
+       false},  // Rule 7
+      {base::WideToUTF8(L"\x2c74"
+                        L"ase.com"),
+       "/pages_with_script/page.html", false},  // Rule 8
   };
 
   // Load the extension.
@@ -655,7 +665,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     size_t id;
     std::vector<std::string> domains;
     std::vector<std::string> excluded_domains;
-  } rules_data[] = {{"child_frame.html?frame=1", 1, {"x.com"}, {"a.x.com"}},
+  } rules_data[] = {{"child_frame.html?frame=1",
+                     1,
+                     {"x.com", "xn--36c-tfa.com" /* punycode for 36°c.com */},
+                     {"a.x.com"}},
                     {"child_frame.html?frame=2", 2, {}, {"a.y.com"}}};
 
   std::vector<TestRule> rules;
@@ -681,6 +694,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     bool expect_frame_2_loaded;
   } test_cases[] = {
       {"x.com", false /* Rule 1 */, false /* Rule 2 */},
+      {base::WideToUTF8(L"36\x00b0"
+                        L"c.com" /* 36°c.com */),
+       false /*Rule 1*/, false /*Rule 2*/},
       {"b.x.com", false /* Rule 1 */, false /* Rule 2 */},
       {"a.x.com", true, false /* Rule 2 */},
       {"b.a.x.com", true, false /* Rule 2 */},

@@ -94,6 +94,21 @@ std::string ParseInfo::GetErrorDescription(
       error = ErrorUtils::FormatErrorMessage(kErrorListNotPassed,
                                              json_rules_filename);
       break;
+    case ParseResult::ERROR_NON_ASCII_URL_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_index_),
+          kUrlFilterKey);
+      break;
+    case ParseResult::ERROR_NON_ASCII_DOMAIN:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_index_),
+          kDomainsKey);
+      break;
+    case ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_index_),
+          kExcludedDomainsKey);
+      break;
   }
   return error;
 }
