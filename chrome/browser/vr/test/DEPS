@@ -1,5 +1,5 @@
 include_rules = [
-  "+mojo/core/embedder",
+  "+device/vr/openvr/openvr_device_provider.h",
   "+device/vr/openvr/test/test_hook.h",
-  "+device/vr/openvr/openvr_device_provider.h"
+  "+mojo/core/embedder",
 ]
