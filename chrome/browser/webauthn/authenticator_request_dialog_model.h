@@ -194,6 +194,9 @@ class AuthenticatorRequestDialogModel {
   void SetRequestCallback(
       device::FidoRequestHandlerBase::RequestCallback request_callback);
 
+  void SetBluetoothAdapterPowerOnCallback(
+      base::RepeatingClosure bluetooth_adapter_power_on_callback);
+
   std::vector<AuthenticatorReference>& saved_authenticators() {
     return saved_authenticators_;
   }
@@ -214,6 +217,7 @@ class AuthenticatorRequestDialogModel {
   // dispatched lazily after the user interacts with the UI element.
   std::vector<AuthenticatorReference> saved_authenticators_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
+  base::RepeatingClosure bluetooth_adapter_power_on_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };
