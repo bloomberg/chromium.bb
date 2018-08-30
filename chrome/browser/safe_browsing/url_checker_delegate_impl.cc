@@ -64,9 +64,9 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
       threat_types_(CreateSBThreatTypeSet({
 // TODO(crbug.com/835961): Enable on Android when list is available.
 #if defined(SAFE_BROWSING_DB_LOCAL)
-            safe_browsing::SB_THREAT_TYPE_BILLING,
             safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
 #endif
+            safe_browsing::SB_THREAT_TYPE_BILLING,
             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
             safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
             safe_browsing::SB_THREAT_TYPE_URL_UNWANTED
