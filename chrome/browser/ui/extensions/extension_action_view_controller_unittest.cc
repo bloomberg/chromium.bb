@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -208,19 +209,34 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionContextMenu) {
                           IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 }
 
-// Tests the behavior for icon grayscaling with the runtime host permissions
-// feature enabled.
-TEST_P(ToolbarActionsBarUnitTest, GrayscaleIcon) {
+class ExtensionActionViewControllerGrayscaleTest
+    : public ToolbarActionsBarUnitTest {
+ public:
+  enum class PermissionType {
+    kScriptableHost,
+    kExplicitHost,
+  };
+
+  ExtensionActionViewControllerGrayscaleTest() {}
+  ~ExtensionActionViewControllerGrayscaleTest() override = default;
+
+  void RunGrayscaleTest(PermissionType permission_type);
+
+ private:
+  scoped_refptr<const extensions::Extension> CreateExtension(
+      PermissionType permission_type);
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewControllerGrayscaleTest);
+};
+
+void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
+    PermissionType permission_type) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       extensions::features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("extension")
-          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
-          .SetLocation(extensions::Manifest::INTERNAL)
-          .AddPermission("https://www.google.com/*")
-          .Build();
+      CreateExtension(permission_type);
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   service->GrantPermissions(extension.get());
@@ -293,12 +309,24 @@ TEST_P(ToolbarActionsBarUnitTest, GrayscaleIcon) {
     extension_action->SetIsVisible(
         tab_id, test_case.action_state == ActionState::kEnabled);
     switch (test_case.page_access) {
-      case PageAccess::kNone:
-        // Page access should already be "none", but verify.
+      case PageAccess::kNone: {
+        // Page access should already be withheld; verify.
+        extensions::PermissionsData::PageAccess page_access =
+            extensions::PermissionsData::PageAccess::kDenied;
+        switch (permission_type) {
+          case PermissionType::kExplicitHost:
+            page_access = extension->permissions_data()->GetPageAccess(
+                kUrl, tab_id, /*error=*/nullptr);
+            break;
+          case PermissionType::kScriptableHost:
+            page_access = extension->permissions_data()->GetContentScriptAccess(
+                kUrl, tab_id, /*error=*/nullptr);
+            break;
+        }
         EXPECT_EQ(extensions::PermissionsData::PageAccess::kWithheld,
-                  extension->permissions_data()->GetPageAccess(
-                      kUrl, tab_id, /*error=*/nullptr));
+                  page_access);
         break;
+      }
       case PageAccess::kPending:
         action_runner->RequestScriptInjectionForTesting(
             extension.get(), extensions::UserScript::DOCUMENT_IDLE,
@@ -323,8 +351,51 @@ TEST_P(ToolbarActionsBarUnitTest, GrayscaleIcon) {
   }
 }
 
-// Tests the tooltip shown when an extension requests or has access to a page
-// with the runtime host permissions feature enabled.
+scoped_refptr<const extensions::Extension>
+ExtensionActionViewControllerGrayscaleTest::CreateExtension(
+    PermissionType permission_type) {
+  extensions::ExtensionBuilder builder("extension");
+  builder.SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+      .SetLocation(extensions::Manifest::INTERNAL);
+  switch (permission_type) {
+    case PermissionType::kScriptableHost: {
+      std::unique_ptr<base::Value> content_scripts = base::JSONReader::Read(
+          R"([{
+                     "matches": ["https://www.google.com/*"],
+                     "js": ["script.js"]
+                 }])");
+      builder.SetManifestKey("content_scripts", std::move(content_scripts));
+      break;
+    }
+    case PermissionType::kExplicitHost:
+      builder.AddPermission("https://www.google.com/*");
+      break;
+  }
+
+  return builder.Build();
+}
+
+// Tests the behavior for icon grayscaling with the runtime host permissions
+// feature enabled. Ideally, these would be a single parameterized test, but
+// toolbar tests are already parameterized with the UI mode.
+TEST_P(ExtensionActionViewControllerGrayscaleTest,
+       GrayscaleIcon_ExplicitHosts) {
+  RunGrayscaleTest(PermissionType::kExplicitHost);
+}
+TEST_P(ExtensionActionViewControllerGrayscaleTest,
+       GrayscaleIcon_ScriptableHosts) {
+  RunGrayscaleTest(PermissionType::kScriptableHost);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ExtensionActionViewControllerGrayscaleTest,
+    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
+                    ui::MaterialDesignController::MATERIAL_HYBRID,
+                    ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED,
+                    ui::MaterialDesignController::MATERIAL_REFRESH,
+                    ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH));
+
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(

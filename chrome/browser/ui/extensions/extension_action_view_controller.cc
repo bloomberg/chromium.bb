@@ -300,10 +300,14 @@ ExtensionActionViewController::GetPageInteractionStatus(
   // This is a bit more complex, and it's unclear if this is a better UX, since
   // it would lead to much less determinism in terms of what extensions look
   // like on a given host.
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
-  if (extension_->permissions_data()->GetPageAccess(
-          web_contents->GetLastCommittedURL(), tab_id, /*error=*/nullptr) ==
-      extensions::PermissionsData::PageAccess::kAllowed) {
+  const int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  const GURL& url = web_contents->GetLastCommittedURL();
+  if (extension_->permissions_data()->GetPageAccess(url, tab_id,
+                                                    /*error=*/nullptr) ==
+          extensions::PermissionsData::PageAccess::kAllowed ||
+      extension_->permissions_data()->GetContentScriptAccess(
+          url, tab_id, /*error=*/nullptr) ==
+          extensions::PermissionsData::PageAccess::kAllowed) {
     return PageInteractionStatus::kActive;
   }
 
