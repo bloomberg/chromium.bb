@@ -4,7 +4,6 @@
 
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 
-#include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "content/renderer/indexed_db/webidbcursor_impl.h"

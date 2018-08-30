@@ -64,7 +64,7 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
  protected:
   ~IndexedDBTestDatabase() override {}
 
-  size_t GetMaxMessageSizeInBytes() const override {
+  size_t GetUsableMessageSizeInBytes() const override {
     return 10 * 1024 * 1024;  // 10MB
   }
 };
