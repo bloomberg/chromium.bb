@@ -41720,6 +41720,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="90" label="IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS"/>
   <int value="91" label="IDC_CONTENT_CONTENT_PICTUREINPICTURE"/>
   <int value="92" label="IDC_CONTENT_CONTEXT_EMOJI"/>
+  <int value="93" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1"/>
+  <int value="94" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION2"/>
+  <int value="95" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3"/>
+  <int value="96" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4"/>
+  <int value="97" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5"/>
+  <int value="98" label="IDC_CONTENT_CONTEXT_LOOK_UP"/>
 </enum>
 
 <enum name="ReportingHeaderEndpointGroupOutcome">

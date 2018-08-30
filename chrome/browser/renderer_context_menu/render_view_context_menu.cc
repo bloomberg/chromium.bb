@@ -349,10 +349,11 @@ const struct UmaEnumCommandIdPair {
     {95, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3},
     {96, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4},
     {97, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5},
+    {98, -1, IDC_CONTENT_CONTEXT_LOOK_UP},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {98, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {99, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
