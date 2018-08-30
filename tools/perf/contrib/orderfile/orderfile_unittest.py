@@ -22,159 +22,40 @@ class Orderfile(unittest.TestCase):
     self.maxDiff = None
 
   def testDefaults(self):
-    training = [s.NAME for s in orderfile.OrderfileStorySet(
-        orderfile.OrderfileStorySet.TRAINING).RunSetStories()]
-    self.assertListEqual(
-        ['background:social:facebook',
-         'load:media:soundcloud',
-         'load:news:wikipedia',
-         'browse:media:imgur',
-         'browse:tech:discourse_infinite_scroll',
-         'browse:news:cricbuzz',
-         'load:games:lazors',
-         'load:tools:drive',
-         'load:search:google',
-         'load:tools:stackoverflow',
-         'load:news:washingtonpost',
-         'load:news:reddit',
-         'browse:shopping:avito',
-         'load:news:cnn',
-         'browse:news:qq',
-         'load:search:baidu',
-         'load:search:ebay',
-         'long_running:tools:gmail-foreground',
-         'load:media:imgur',
-         'background:news:nytimes',
-         'load:tools:dropbox',
-         'background:search:google',
-         'load:chrome:blank',
-         'browse:social:tumblr_infinite_scroll',
-         'load:news:qq',
-         'load:search:yandex',
-         'load:media:dailymotion',
-         'browse:tools:maps',
-         'load:games:bubbles',
-         'browse:shopping:amazon',
-         'browse:social:instagram',
-         'background:tools:gmail',
-         'load:media:youtube',
-         'load:media:facebook_photos',
-         'browse:media:facebook_photos',
-         'browse:social:facebook',
-         'browse:news:reddit',
-         'load:media:google_images',
-         'load:tools:weather',
-         'load:social:twitter',
-         'browse:news:cnn',
-         'browse:media:flickr_infinite_scroll',
-         'load:games:spychase',
-         'load:tools:docs',
-         'load:news:nytimes',
-         'browse:news:washingtonpost',
-         'browse:social:pinterest_infinite_scroll',
-         'load:news:irctc',
-         'browse:media:youtube',
-         'load:search:yahoo'], training)
-    testing = [s.NAME for s in orderfile.OrderfileStorySet(
-        orderfile.OrderfileStorySet.TESTING).RunSetStories()]
-    self.assertListEqual(
-        ['browse:shopping:lazada',
-         'load:tools:gmail',
-         'browse:news:toi',
-         'browse:chrome:omnibox',
-         'browse:news:globo',
-         'browse:social:facebook_infinite_scroll',
-         'load:search:taobao',
-         'background:media:imgur'], testing)
+    training = set([s.NAME for s in orderfile.OrderfileStorySet(
+        orderfile.OrderfileStorySet.TRAINING).RunSetStories()])
+    self.assertEqual(orderfile.OrderfileStorySet.DEFAULT_TRAINING,
+                     len(training))
+    testing = set([s.NAME for s in orderfile.OrderfileStorySet(
+        orderfile.OrderfileStorySet.TESTING).RunSetStories()])
+    self.assertEqual(orderfile.OrderfileStorySet.DEFAULT_TESTING, len(testing))
+    self.assertEqual(0, len(testing & training))
 
   def test25TrainingStories(self):
-    training = [s.NAME for s in orderfile.OrderfileStorySet(
-        orderfile.OrderfileStorySet.TRAINING, num_training=25).RunSetStories()]
-    self.assertListEqual(
-        ['background:social:facebook',
-         'load:media:soundcloud',
-         'load:news:wikipedia',
-         'browse:media:imgur',
-         'browse:tech:discourse_infinite_scroll',
-         'browse:news:cricbuzz',
-         'load:games:lazors',
-         'load:tools:drive',
-         'load:search:google',
-         'load:tools:stackoverflow',
-         'load:news:washingtonpost',
-         'load:news:reddit',
-         'browse:shopping:avito',
-         'load:news:cnn',
-         'browse:news:qq',
-         'load:search:baidu',
-         'load:search:ebay',
-         'long_running:tools:gmail-foreground',
-         'load:media:imgur',
-         'background:news:nytimes',
-         'load:tools:dropbox',
-         'background:search:google',
-         'load:chrome:blank',
-         'browse:social:tumblr_infinite_scroll',
-         'load:news:qq'],
-        training)
-
-  def testTestingStories(self):
-    testing = [s.NAME for s in orderfile.OrderfileStorySet(
+    training = set([s.NAME for s in orderfile.OrderfileStorySet(
+        orderfile.OrderfileStorySet.TRAINING, num_training=25).RunSetStories()])
+    self.assertEqual(25, len(training))
+    testing = set([s.NAME for s in orderfile.OrderfileStorySet(
         orderfile.OrderfileStorySet.TESTING,
-        num_training=25).RunSetStories()]
-    self.assertListEqual(
-        ['load:search:yandex',
-         'load:media:dailymotion',
-         'browse:tools:maps',
-         'load:games:bubbles',
-         'browse:shopping:amazon',
-         'browse:social:instagram',
-         'background:tools:gmail',
-         'load:media:youtube'],
-        testing)
+        num_training=25).RunSetStories()])
+    self.assertEqual(orderfile.OrderfileStorySet.DEFAULT_TESTING, len(testing))
+    self.assertEqual(0, len(testing & training))
 
   def testTestingVariationStories(self):
-    testing = [s.NAME for s in orderfile.OrderfileStorySet(
+    training = set([s.NAME for s in orderfile.OrderfileStorySet(
+        orderfile.OrderfileStorySet.TRAINING, num_training=25,
+        num_variations=4, test_variation=0).RunSetStories()])
+    testing = [set([s.NAME for s in orderfile.OrderfileStorySet(
         orderfile.OrderfileStorySet.TESTING, num_training=25,
-        num_variations=4, test_variation=0).RunSetStories()]
-    self.assertListEqual(
-        ['load:search:yandex',
-         'load:media:dailymotion',
-         'browse:tools:maps',
-         'load:games:bubbles',
-         'browse:shopping:amazon',
-         'browse:social:instagram',
-         'background:tools:gmail',
-         'load:media:youtube'],
-        testing)
-
-    testing = [s.NAME for s in orderfile.OrderfileStorySet(
-        orderfile.OrderfileStorySet.TESTING, num_training=25,
-        num_variations=4, test_variation=1).RunSetStories()]
-    self.assertListEqual(
-        ['load:media:facebook_photos',
-         'browse:media:facebook_photos',
-         'browse:social:facebook',
-         'browse:news:reddit',
-         'load:media:google_images',
-         'load:tools:weather',
-         'load:social:twitter',
-         'browse:news:cnn'],
-        testing)
-
-    testing = [s.NAME for s in orderfile.OrderfileStorySet(
-        orderfile.OrderfileStorySet.TESTING, num_training=25,
-        num_variations=4, test_variation=3).RunSetStories()]
-    self.assertListEqual(
-        ['load:search:yahoo',
-         'browse:shopping:lazada',
-         'load:tools:gmail',
-         'browse:news:toi',
-         'browse:chrome:omnibox',
-         'browse:news:globo',
-         'browse:social:facebook_infinite_scroll',
-         'load:search:taobao'],
-        testing)
+        num_variations=4, test_variation=i).RunSetStories()])
+               for i in xrange(4)]
+    self.assertEqual(25, len(training))
+    for i in xrange(4):
+      self.assertEqual(orderfile.OrderfileStorySet.DEFAULT_TESTING,
+                       len(testing[i]))
+      self.assertEqual(0, len(testing[i] & training))
+      for j in xrange(i + 1, 4):
+        self.assertEqual(0, len(testing[i] & testing[j]))
 
 
 if __name__ == '__main__':
