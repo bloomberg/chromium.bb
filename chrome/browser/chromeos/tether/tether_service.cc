@@ -422,17 +422,16 @@ void TetherService::OnReady() {
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    multidevice_setup_client_->GetHostStatus(base::BindOnce(
-        &TetherService::OnHostStatusChanged, weak_ptr_factory_.GetWeakPtr()));
+    OnHostStatusChanged(multidevice_setup_client_->GetHostStatus());
   } else {
     GetBluetoothAdapter();
   }
 }
 
 void TetherService::OnHostStatusChanged(
-    chromeos::multidevice_setup::mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  host_status_ = host_status;
+    const chromeos::multidevice_setup::MultiDeviceSetupClient::
+        HostStatusWithDevice& host_status_with_device) {
+  host_status_ = host_status_with_device.first;
 
   if (adapter_)
     UpdateTetherTechnologyState();
@@ -521,6 +520,11 @@ TetherService::GetTetherTechnologyState() {
 }
 
 void TetherService::GetBluetoothAdapter() {
+  if (adapter_ || is_adapter_being_fetched_)
+    return;
+
+  is_adapter_being_fetched_ = true;
+
   // In the case that this is indirectly called from the constructor,
   // GetAdapter() may call OnBluetoothAdapterFetched immediately which can cause
   // problems with the Fake implementation since the class is not fully
@@ -534,6 +538,8 @@ void TetherService::GetBluetoothAdapter() {
 
 void TetherService::OnBluetoothAdapterFetched(
     scoped_refptr<device::BluetoothAdapter> adapter) {
+  is_adapter_being_fetched_ = false;
+
   if (shut_down_)
     return;
 

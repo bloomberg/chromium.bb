@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/remote_device_provider.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -20,10 +21,6 @@ class RemoteDeviceProvider;
 }  // namespace cryptauth
 
 namespace chromeos {
-
-namespace multidevice_setup {
-class MultiDeviceSetupClient;
-}  // namespace multidevice_setup
 
 namespace tether {
 
@@ -37,9 +34,11 @@ namespace tether {
 // features::kMultiDeviceApi). Once Tether has fully migrated to DeviceSync Mojo
 // Service, RemoteDeviceProvider will be ripped out of this class. See
 // https://crbug.com/848956.
-class TetherHostFetcherImpl : public TetherHostFetcher,
-                              public cryptauth::RemoteDeviceProvider::Observer,
-                              public device_sync::DeviceSyncClient::Observer {
+class TetherHostFetcherImpl
+    : public TetherHostFetcher,
+      public cryptauth::RemoteDeviceProvider::Observer,
+      public device_sync::DeviceSyncClient::Observer,
+      public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   class Factory {
    public:
@@ -76,6 +75,14 @@ class TetherHostFetcherImpl : public TetherHostFetcher,
   // device_sync::DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;
 
+  // multidevice_setup::MultiDeviceSetupClient::Observer:
+  void OnHostStatusChanged(
+      const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
+          host_status_with_device) override;
+  void OnFeatureStatesChanged(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) override;
+
  protected:
   // TODO(crbug.com/848956): Remove RemoteDeviceProvider once all clients have
   // migrated to the DeviceSync Mojo API.
@@ -86,9 +93,6 @@ class TetherHostFetcherImpl : public TetherHostFetcher,
 
  private:
   void CacheCurrentTetherHosts();
-  void OnHostStatusFetched(
-      chromeos::multidevice_setup::mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
 
   cryptauth::RemoteDeviceProvider* remote_device_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;

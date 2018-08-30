@@ -8,6 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -212,6 +213,13 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
       fake_host_status_observer->GenerateInterfacePtr());
   multidevice_setup_ptr().FlushForTesting();
 
+  // AddFeatureStateObserver().
+  auto fake_feature_state_observer =
+      std::make_unique<FakeFeatureStateObserver>();
+  multidevice_setup_ptr()->AddFeatureStateObserver(
+      fake_feature_state_observer->GenerateInterfacePtr());
+  multidevice_setup_ptr().FlushForTesting();
+
   // GetEligibleHostDevices().
   multidevice_setup_ptr()->GetEligibleHostDevices(base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
@@ -241,7 +249,8 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
   // Finish initialization; all of the pending calls should have been forwarded.
   FinishInitialization();
   EXPECT_TRUE(fake_multidevice_setup()->delegate());
-  EXPECT_EQ(1u, fake_multidevice_setup()->host_status_observers().size());
+  EXPECT_TRUE(fake_multidevice_setup()->HasAtLeastOneHostStatusObserver());
+  EXPECT_TRUE(fake_multidevice_setup()->HasAtLeastOneFeatureStateObserver());
   EXPECT_EQ(1u, fake_multidevice_setup()->get_eligible_hosts_args().size());
   EXPECT_EQ(1u, fake_multidevice_setup()->get_host_args().size());
   EXPECT_EQ(1u, fake_multidevice_setup()->set_feature_enabled_args().size());
@@ -310,7 +319,15 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   multidevice_setup_ptr()->AddHostStatusObserver(
       fake_host_status_observer->GenerateInterfacePtr());
   multidevice_setup_ptr().FlushForTesting();
-  EXPECT_EQ(1u, fake_multidevice_setup()->host_status_observers().size());
+  EXPECT_TRUE(fake_multidevice_setup()->HasAtLeastOneHostStatusObserver());
+
+  // AddFeatureStateObserver().
+  auto fake_feature_state_observer =
+      std::make_unique<FakeFeatureStateObserver>();
+  multidevice_setup_ptr()->AddFeatureStateObserver(
+      fake_feature_state_observer->GenerateInterfacePtr());
+  multidevice_setup_ptr().FlushForTesting();
+  EXPECT_TRUE(fake_multidevice_setup()->HasAtLeastOneFeatureStateObserver());
 
   // GetEligibleHostDevices().
   multidevice_setup_ptr()->GetEligibleHostDevices(base::DoNothing());

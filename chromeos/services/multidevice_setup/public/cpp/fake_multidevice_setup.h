@@ -12,6 +12,7 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace chromeos {
 
@@ -24,16 +25,19 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   ~FakeMultiDeviceSetup() override;
 
   void BindHandle(mojo::ScopedMessagePipeHandle handle);
+  void FlushForTesting();
+
+  bool HasAtLeastOneHostStatusObserver();
+  bool HasAtLeastOneFeatureStateObserver();
+
+  void NotifyHostStatusChanged(
+      mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDevice>& host_device);
+  void NotifyFeatureStateChanged(
+      const base::flat_map<mojom::Feature, mojom::FeatureState>&
+          feature_states);
 
   mojom::AccountStatusChangeDelegatePtr& delegate() { return delegate_; }
-
-  std::vector<mojom::HostStatusObserverPtr>& host_status_observers() {
-    return host_status_observers_;
-  }
-
-  std::vector<mojom::FeatureStateObserverPtr>& feature_state_observers() {
-    return feature_state_observers_;
-  }
 
   std::vector<GetEligibleHostDevicesCallback>& get_eligible_hosts_args() {
     return get_eligible_hosts_args_;
@@ -94,8 +98,9 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
       TriggerEventForDebuggingCallback callback) override;
 
   mojom::AccountStatusChangeDelegatePtr delegate_;
-  std::vector<mojom::HostStatusObserverPtr> host_status_observers_;
-  std::vector<mojom::FeatureStateObserverPtr> feature_state_observers_;
+  mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
+  mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
+
   std::vector<GetEligibleHostDevicesCallback> get_eligible_hosts_args_;
   std::vector<std::tuple<std::string, std::string, SetHostDeviceCallback>>
       set_host_args_;
