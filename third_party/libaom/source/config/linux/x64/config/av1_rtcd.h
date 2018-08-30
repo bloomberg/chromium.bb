@@ -119,6 +119,14 @@ void av1_build_compound_diffwtd_mask_sse4_1(uint8_t* mask,
                                             int src1_stride,
                                             int h,
                                             int w);
+void av1_build_compound_diffwtd_mask_avx2(uint8_t* mask,
+                                          DIFFWTD_MASK_TYPE mask_type,
+                                          const uint8_t* src0,
+                                          int src0_stride,
+                                          const uint8_t* src1,
+                                          int src1_stride,
+                                          int h,
+                                          int w);
 RTCD_EXTERN void (*av1_build_compound_diffwtd_mask)(uint8_t* mask,
                                                     DIFFWTD_MASK_TYPE mask_type,
                                                     const uint8_t* src0,
@@ -148,6 +156,16 @@ void av1_build_compound_diffwtd_mask_d16_sse4_1(uint8_t* mask,
                                                 int w,
                                                 ConvolveParams* conv_params,
                                                 int bd);
+void av1_build_compound_diffwtd_mask_d16_avx2(uint8_t* mask,
+                                              DIFFWTD_MASK_TYPE mask_type,
+                                              const CONV_BUF_TYPE* src0,
+                                              int src0_stride,
+                                              const CONV_BUF_TYPE* src1,
+                                              int src1_stride,
+                                              int h,
+                                              int w,
+                                              ConvolveParams* conv_params,
+                                              int bd);
 RTCD_EXTERN void (*av1_build_compound_diffwtd_mask_d16)(
     uint8_t* mask,
     DIFFWTD_MASK_TYPE mask_type,
@@ -1323,16 +1341,7 @@ void av1_inv_txfm2d_add_16x16_c(const int32_t* input,
                                 int stride,
                                 TX_TYPE tx_type,
                                 int bd);
-void av1_inv_txfm2d_add_16x16_sse4_1(const int32_t* input,
-                                     uint16_t* output,
-                                     int stride,
-                                     TX_TYPE tx_type,
-                                     int bd);
-RTCD_EXTERN void (*av1_inv_txfm2d_add_16x16)(const int32_t* input,
-                                             uint16_t* output,
-                                             int stride,
-                                             TX_TYPE tx_type,
-                                             int bd);
+#define av1_inv_txfm2d_add_16x16 av1_inv_txfm2d_add_16x16_c
 
 void av1_inv_txfm2d_add_16x32_c(const int32_t* input,
                                 uint16_t* output,
@@ -2078,10 +2087,15 @@ static void setup_rtcd_internal(void) {
   av1_build_compound_diffwtd_mask = av1_build_compound_diffwtd_mask_c;
   if (flags & HAS_SSE4_1)
     av1_build_compound_diffwtd_mask = av1_build_compound_diffwtd_mask_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_build_compound_diffwtd_mask = av1_build_compound_diffwtd_mask_avx2;
   av1_build_compound_diffwtd_mask_d16 = av1_build_compound_diffwtd_mask_d16_c;
   if (flags & HAS_SSE4_1)
     av1_build_compound_diffwtd_mask_d16 =
         av1_build_compound_diffwtd_mask_d16_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_build_compound_diffwtd_mask_d16 =
+        av1_build_compound_diffwtd_mask_d16_avx2;
   av1_build_compound_diffwtd_mask_highbd =
       av1_build_compound_diffwtd_mask_highbd_c;
   if (flags & HAS_SSSE3)
@@ -2188,9 +2202,6 @@ static void setup_rtcd_internal(void) {
   if (flags & HAS_AVX2)
     av1_highbd_wiener_convolve_add_src =
         av1_highbd_wiener_convolve_add_src_avx2;
-  av1_inv_txfm2d_add_16x16 = av1_inv_txfm2d_add_16x16_c;
-  if (flags & HAS_SSE4_1)
-    av1_inv_txfm2d_add_16x16 = av1_inv_txfm2d_add_16x16_sse4_1;
   av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_c;
   if (flags & HAS_AVX2)
     av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_avx2;
