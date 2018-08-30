@@ -1449,6 +1449,9 @@
         # http://crbug.com/669196
         '--test-launcher-retry-limit=0'
       ],
+      'swarming': {
+        'shards': 4,
+      },
     },
   },
 
