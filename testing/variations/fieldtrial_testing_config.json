@@ -4280,6 +4280,21 @@
             ]
         }
     ],
+    "ThirdPartyModulesBlocking": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ThirdPartyModulesBlocking"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThrottleDelayable": [
         {
             "platforms": [
