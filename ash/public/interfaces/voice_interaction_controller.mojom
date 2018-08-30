@@ -42,7 +42,9 @@ enum AssistantAllowedState {
   // Disallowed because current user is child user.
   DISALLOWED_BY_CHILD_USER,
   // Disallowed because incognito mode.
-  DISALLOWED_BY_INCOGNITO
+  DISALLOWED_BY_INCOGNITO,
+  // Disallowed because the device is in demo mode.
+  DISALLOWED_BY_DEMO_MODE
 };
 
 // Allows observing changes to voice interaction status and settings.
