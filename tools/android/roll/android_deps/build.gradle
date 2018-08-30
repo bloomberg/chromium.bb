@@ -67,12 +67,9 @@ dependencies {
     // Dagger
     def daggerVersion = '2.17'
     compile "com.google.dagger:dagger:${daggerVersion}"
-    compile "com.google.dagger:dagger-android:${daggerVersion}"
-    compile "com.google.dagger:dagger-android-support:${daggerVersion}"
     compile "javax.inject:javax.inject:1"
 
     annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
-    annotationProcessor "com.google.dagger:dagger-android-processor:${daggerVersion}"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

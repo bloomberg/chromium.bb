@@ -273,7 +273,6 @@ android_library("chrome_java") {
     "//services/shape_detection/public/mojom:mojom_java",
     "//skia/public/interfaces:interfaces_java",
     "//third_party/android_data_chart:android_data_chart_java",
-    "//third_party/android_deps:com_google_dagger_dagger_android_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
@@ -372,8 +371,7 @@ android_library("chrome_java") {
   jar_excluded_patterns = [ "*/AppHooksImpl.class" ]
 
   annotation_processor_deps = [
-    "//third_party/android_deps:dagger_processor",
-    "//third_party/android_deps:dagger_android_processor",
+    "//third_party/android_deps:dagger_processor"
   ]
 }
 

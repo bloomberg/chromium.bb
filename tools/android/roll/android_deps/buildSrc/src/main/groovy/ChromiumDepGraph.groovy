@@ -164,9 +164,9 @@ class ChromiumDepGraph {
                 dep.exclude = true
             }
         } else if (dep.licenseName?.isEmpty()) {
-            def fallbackProperties = FALLBACK_PROPERTIES.get(id)
+            def fallbackProperties = FALLBACK_PROPERTIES.get(dep.id)
             if (fallbackProperties != null) {
-                project.logger.debug("Using fallback properties for ${id}")
+                project.logger.debug("Using fallback properties for ${dep.id}")
                 dep.licenseName = fallbackProperties.licenseName
                 dep.licenseUrl = fallbackProperties.licenseUrl
             }
