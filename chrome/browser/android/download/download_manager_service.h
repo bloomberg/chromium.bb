@@ -61,8 +61,9 @@ class DownloadManagerService
   // Called when full browser process starts.
   void OnFullBrowserStarted(JNIEnv* env, jobject obj);
 
-  // Called to show the download manager.
-  void ShowDownloadManager();
+  // Called to show the download manager, with a choice to focus on prefetched
+  // content instead of regular downloads.
+  void ShowDownloadManager(bool show_prefetched_content);
 
   // Called to open a given download item.
   void OpenDownload(download::DownloadItem* download, int source);

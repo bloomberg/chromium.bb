@@ -1663,8 +1663,8 @@ public class DownloadManagerService
     }
 
     @CalledByNative
-    private void showDownloadManager() {
-        DownloadManagerService.openDownloadsPage(ContextUtils.getApplicationContext());
+    private void showDownloadManager(boolean showPrefetchedContent) {
+        DownloadUtils.showDownloadManager(null, null, showPrefetchedContent);
     }
 
     @CalledByNative

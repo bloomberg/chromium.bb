@@ -218,9 +218,10 @@ DownloadManagerService::RetriveInProgressDownloadManager(
   return nullptr;
 }
 
-void DownloadManagerService::ShowDownloadManager() {
+void DownloadManagerService::ShowDownloadManager(bool show_prefetched_content) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_DownloadManagerService_showDownloadManager(env, java_ref_);
+  Java_DownloadManagerService_showDownloadManager(
+      env, java_ref_, static_cast<jboolean>(show_prefetched_content));
 }
 
 void DownloadManagerService::OpenDownload(download::DownloadItem* download,
