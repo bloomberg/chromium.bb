@@ -467,6 +467,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                                     "Element.attachShadow", kM73,
                                     "4507242028072960")};
 
+    case WebFeature::kDocumentRegisterElement:
+      return {"DocumentRegisterElement", kM73,
+              ReplacedWillBeRemoved("document.registerElement",
+                                    "window.customElements.define", kM73,
+                                    "4642138092470272")};
+
     case WebFeature::
         kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
       return {"EncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe",

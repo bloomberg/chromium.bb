@@ -1,7 +1,7 @@
 Tests that custom element lifecycle events fire while debugger is paused.
 
 Custom element registered.
-new CustomElement() instanceof CustomElement = true
+new CustomElement() instanceof CustomElement = 
 Script execution paused.
 new CustomElement() instanceof CustomElement = true
 Script execution resumed.
