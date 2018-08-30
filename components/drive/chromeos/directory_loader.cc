@@ -148,15 +148,15 @@ class DirectoryLoader::FeedFetcher {
     GURL next_url = file_list->next_link();
 
     ResourceEntryVector* entries = new ResourceEntryVector;
-    loader_->loader_controller_->ScheduleRun(base::Bind(
+    loader_->loader_controller_->ScheduleRun(base::BindOnce(
         &drive::util::RunAsyncTask,
         base::RetainedRef(loader_->blocking_task_runner_), FROM_HERE,
-        base::Bind(&ChangeListProcessor::RefreshDirectory,
-                   loader_->resource_metadata_, directory_fetch_info_,
-                   base::Passed(&change_list), entries),
-        base::Bind(&FeedFetcher::OnDirectoryRefreshed,
-                   weak_ptr_factory_.GetWeakPtr(), callback, next_url,
-                   base::Owned(entries))));
+        base::BindOnce(&ChangeListProcessor::RefreshDirectory,
+                       loader_->resource_metadata_, directory_fetch_info_,
+                       std::move(change_list), entries),
+        base::BindOnce(&FeedFetcher::OnDirectoryRefreshed,
+                       weak_ptr_factory_.GetWeakPtr(), callback, next_url,
+                       base::Owned(entries))));
   }
 
   void OnDirectoryRefreshed(
