@@ -46,17 +46,24 @@ public class ResourceExtractor {
 
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
-            String[] assetsToExtract = detectFilesToExtract();
+            String[] assetPaths = detectFilesToExtract();
 
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
             String extractSuffix = BuildInfo.getInstance().extractedFileSuffix;
+            String[] outputNames = new String[assetPaths.length];
+            for (int n = 0; n < assetPaths.length; ++n) {
+                String assetPath = assetPaths[n];
+                outputNames[n] =
+                        assetPath.substring(assetPath.lastIndexOf('/') + 1) + extractSuffix;
+            }
+
             String[] existingFileNames = outputDir.list();
             boolean allFilesExist = existingFileNames != null;
             if (allFilesExist) {
                 List<String> existingFiles = Arrays.asList(existingFileNames);
-                for (String assetName : assetsToExtract) {
-                    allFilesExist &= existingFiles.contains(assetName + extractSuffix);
+                for (String outputName : outputNames) {
+                    allFilesExist &= existingFiles.contains(outputName);
                 }
             }
             // This is the normal case.
@@ -74,9 +81,9 @@ public class ResourceExtractor {
 
             AssetManager assetManager = ContextUtils.getApplicationAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
-            for (String assetPath : assetsToExtract) {
-                String assetName = assetPath.substring(assetPath.lastIndexOf('/') + 1);
-                File output = new File(outputDir, assetName + extractSuffix);
+            for (int n = 0; n < assetPaths.length; ++n) {
+                String assetPath = assetPaths[n];
+                File output = new File(outputDir, outputNames[n]);
                 TraceEvent.begin("ExtractResource");
                 try (InputStream inputStream = assetManager.open(assetPath)) {
                     FileUtils.copyFileStreamAtomicWithBuffer(inputStream, output, buffer);
