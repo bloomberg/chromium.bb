@@ -2071,30 +2071,22 @@ static void setup_rtcd_internal(void) {
   if (flags & HAS_AVX2)
     av1_build_compound_diffwtd_mask_highbd =
         av1_build_compound_diffwtd_mask_highbd_avx2;
-  av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_c;
-  if (flags & HAS_SSE2)
-    av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_sse2;
+  av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_sse2;
   if (flags & HAS_AVX2)
     av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_avx2;
   av1_convolve_2d_scale = av1_convolve_2d_scale_c;
   if (flags & HAS_SSE4_1)
     av1_convolve_2d_scale = av1_convolve_2d_scale_sse4_1;
-  av1_convolve_2d_sr = av1_convolve_2d_sr_c;
-  if (flags & HAS_SSE2)
-    av1_convolve_2d_sr = av1_convolve_2d_sr_sse2;
+  av1_convolve_2d_sr = av1_convolve_2d_sr_sse2;
   if (flags & HAS_AVX2)
     av1_convolve_2d_sr = av1_convolve_2d_sr_avx2;
   av1_convolve_horiz_rs = av1_convolve_horiz_rs_c;
   if (flags & HAS_SSE4_1)
     av1_convolve_horiz_rs = av1_convolve_horiz_rs_sse4_1;
-  av1_convolve_x_sr = av1_convolve_x_sr_c;
-  if (flags & HAS_SSE2)
-    av1_convolve_x_sr = av1_convolve_x_sr_sse2;
+  av1_convolve_x_sr = av1_convolve_x_sr_sse2;
   if (flags & HAS_AVX2)
     av1_convolve_x_sr = av1_convolve_x_sr_avx2;
-  av1_convolve_y_sr = av1_convolve_y_sr_c;
-  if (flags & HAS_SSE2)
-    av1_convolve_y_sr = av1_convolve_y_sr_sse2;
+  av1_convolve_y_sr = av1_convolve_y_sr_sse2;
   if (flags & HAS_AVX2)
     av1_convolve_y_sr = av1_convolve_y_sr_avx2;
   av1_filter_intra_edge = av1_filter_intra_edge_c;
@@ -2106,9 +2098,7 @@ static void setup_rtcd_internal(void) {
   av1_filter_intra_predictor = av1_filter_intra_predictor_c;
   if (flags & HAS_SSE4_1)
     av1_filter_intra_predictor = av1_filter_intra_predictor_sse4_1;
-  av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_c;
-  if (flags & HAS_SSE2)
-    av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_sse2;
+  av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_sse2;
   if (flags & HAS_AVX2)
     av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_avx2;
   av1_highbd_convolve_2d_scale = av1_highbd_convolve_2d_scale_c;
@@ -2198,19 +2188,13 @@ static void setup_rtcd_internal(void) {
     av1_jnt_convolve_2d = av1_jnt_convolve_2d_ssse3;
   if (flags & HAS_AVX2)
     av1_jnt_convolve_2d = av1_jnt_convolve_2d_avx2;
-  av1_jnt_convolve_2d_copy = av1_jnt_convolve_2d_copy_c;
-  if (flags & HAS_SSE2)
-    av1_jnt_convolve_2d_copy = av1_jnt_convolve_2d_copy_sse2;
+  av1_jnt_convolve_2d_copy = av1_jnt_convolve_2d_copy_sse2;
   if (flags & HAS_AVX2)
     av1_jnt_convolve_2d_copy = av1_jnt_convolve_2d_copy_avx2;
-  av1_jnt_convolve_x = av1_jnt_convolve_x_c;
-  if (flags & HAS_SSE2)
-    av1_jnt_convolve_x = av1_jnt_convolve_x_sse2;
+  av1_jnt_convolve_x = av1_jnt_convolve_x_sse2;
   if (flags & HAS_AVX2)
     av1_jnt_convolve_x = av1_jnt_convolve_x_avx2;
-  av1_jnt_convolve_y = av1_jnt_convolve_y_c;
-  if (flags & HAS_SSE2)
-    av1_jnt_convolve_y = av1_jnt_convolve_y_sse2;
+  av1_jnt_convolve_y = av1_jnt_convolve_y_sse2;
   if (flags & HAS_AVX2)
     av1_jnt_convolve_y = av1_jnt_convolve_y_avx2;
   av1_selfguided_restoration = av1_selfguided_restoration_c;
@@ -2227,23 +2211,17 @@ static void setup_rtcd_internal(void) {
   av1_warp_affine = av1_warp_affine_c;
   if (flags & HAS_SSE4_1)
     av1_warp_affine = av1_warp_affine_sse4_1;
-  av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_c;
-  if (flags & HAS_SSE2)
-    av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_sse2;
+  av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_sse2;
   if (flags & HAS_AVX2)
     av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_avx2;
-  cdef_filter_block = cdef_filter_block_c;
-  if (flags & HAS_SSE2)
-    cdef_filter_block = cdef_filter_block_sse2;
+  cdef_filter_block = cdef_filter_block_sse2;
   if (flags & HAS_SSSE3)
     cdef_filter_block = cdef_filter_block_ssse3;
   if (flags & HAS_SSE4_1)
     cdef_filter_block = cdef_filter_block_sse4_1;
   if (flags & HAS_AVX2)
     cdef_filter_block = cdef_filter_block_avx2;
-  cdef_find_dir = cdef_find_dir_c;
-  if (flags & HAS_SSE2)
-    cdef_find_dir = cdef_find_dir_sse2;
+  cdef_find_dir = cdef_find_dir_sse2;
   if (flags & HAS_SSSE3)
     cdef_find_dir = cdef_find_dir_ssse3;
   if (flags & HAS_SSE4_1)
@@ -2280,18 +2258,14 @@ static void setup_rtcd_internal(void) {
     cfl_get_luma_subsampling_444_lbd = cfl_get_luma_subsampling_444_lbd_ssse3;
   if (flags & HAS_AVX2)
     cfl_get_luma_subsampling_444_lbd = cfl_get_luma_subsampling_444_lbd_avx2;
-  copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_c;
-  if (flags & HAS_SSE2)
-    copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_sse2;
+  copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_sse2;
   if (flags & HAS_SSSE3)
     copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_ssse3;
   if (flags & HAS_SSE4_1)
     copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_sse4_1;
   if (flags & HAS_AVX2)
     copy_rect8_16bit_to_16bit = copy_rect8_16bit_to_16bit_avx2;
-  copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_c;
-  if (flags & HAS_SSE2)
-    copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_sse2;
+  copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_sse2;
   if (flags & HAS_SSSE3)
     copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_ssse3;
   if (flags & HAS_SSE4_1)
@@ -2308,9 +2282,7 @@ static void setup_rtcd_internal(void) {
     get_predict_lbd_fn = get_predict_lbd_fn_ssse3;
   if (flags & HAS_AVX2)
     get_predict_lbd_fn = get_predict_lbd_fn_avx2;
-  get_subtract_average_fn = get_subtract_average_fn_c;
-  if (flags & HAS_SSE2)
-    get_subtract_average_fn = get_subtract_average_fn_sse2;
+  get_subtract_average_fn = get_subtract_average_fn_sse2;
   if (flags & HAS_AVX2)
     get_subtract_average_fn = get_subtract_average_fn_avx2;
 }
