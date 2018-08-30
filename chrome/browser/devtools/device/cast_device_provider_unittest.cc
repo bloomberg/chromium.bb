@@ -5,6 +5,8 @@
 #include "chrome/browser/devtools/device/cast_device_provider.h"
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/host_port_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +38,10 @@ void DummyCallback(bool* was_run, const DeviceInfo& device_info) {
 }  // namespace
 
 TEST(CastDeviceProviderTest, ServiceDiscovery) {
-  scoped_refptr<CastDeviceProvider> device_provider_ = new CastDeviceProvider();
+  content::TestBrowserThreadBundle thread_bundle;
+  TestingProfile profile;
+  scoped_refptr<CastDeviceProvider> device_provider_ =
+      new CastDeviceProvider(&profile);
 
   // Create a cast service.
   const std::string cast_service_display_name = "FakeCast1337";
