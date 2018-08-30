@@ -217,7 +217,6 @@ class RDebug {
   // is enabled, otherwise it runs immediately on the current thread.
   // AddEntryImpl() and DelEntryImpl() are the member functions called
   // by the static ones to do the actual work.
-  void WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry);
   void AddEntryImpl(link_map_t* entry);
   void DelEntryImpl(link_map_t* entry);
   static void AddEntryInternal(RDebug* rdebug, link_map_t* entry) {

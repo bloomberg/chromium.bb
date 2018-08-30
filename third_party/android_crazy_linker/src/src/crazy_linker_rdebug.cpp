@@ -6,6 +6,7 @@
 
 #include <elf.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <pthread.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -141,57 +142,42 @@ bool FindElfDynamicSection(const char* path,
   return false;
 }
 
-// Helper class to temporarily remap a page to readable+writable until
-// scope exit.
-class ScopedPageReadWriteRemapper {
- public:
-  ScopedPageReadWriteRemapper(void* address);
-  ~ScopedPageReadWriteRemapper();
+// Helper function for AddEntryImpl and DelEntryImpl.
+// Sets *link_pointer to entry.  link_pointer is either an 'l_prev' or an
+// 'l_next' field in a neighbouring linkmap_t.  If link_pointer is in a
+// page that is mapped readonly, the page is remapped to be writable before
+// assignment.
+void WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry) {
+  // We always mprotect the page containing link_pointer to read/write,
+  // then write the entry. The page may already be read/write, but on
+  // recent Android release is most likely readonly. Because of the way
+  // the system linker operates we cannot tell with certainty what its
+  // correct setting should be.
+  //
+  // Now, we always leave the page read/write. Here is why. If we set it
+  // back to readonly at the point between where the system linker sets
+  // it to read/write and where it writes to the address, this will cause
+  // the system linker to crash. Clearly that is undesirable. From
+  // observations this occurs most frequently on the gpu process.
+  //
+  // https://code.google.com/p/chromium/issues/detail?id=450659
+  // https://code.google.com/p/chromium/issues/detail?id=458346
+  const uintptr_t kPageSize = PAGE_SIZE;
+  const uintptr_t ptr_address = reinterpret_cast<uintptr_t>(link_pointer);
+  void* page = reinterpret_cast<void*>(ptr_address & ~(kPageSize - 1U));
 
-  // Releases the page so that the destructor does not undo the remapping.
-  void Release();
-
- private:
-  static const uintptr_t kPageSize = 4096;
-  uintptr_t page_address_;
-  int page_prot_;
-};
-
-ScopedPageReadWriteRemapper::ScopedPageReadWriteRemapper(void* address) {
-  page_address_ = reinterpret_cast<uintptr_t>(address) & ~(kPageSize - 1);
-  page_prot_ = 0;
-  if (!FindProtectionFlagsForAddress(address, &page_prot_)) {
-    LOG("Could not find protection flags for %p\n", address);
-    page_address_ = 0;
+  LOG("Mapping page at %p read-write for pointer at %p", page, link_pointer);
+  const int prot = PROT_READ | PROT_WRITE;
+  const int ret = ::mprotect(page, kPageSize, prot);
+  if (ret < 0) {
+    // In case of error, return immediately to avoid crashing below when
+    // writing the new value. Note that there is still a tiny chance that the
+    // system linker remapped the page read-only just after mprotect() above
+    // returns, so this cannot be guaranteed 100% of the time.
+    LOG_ERRNO("Error mapping page %p read/write", page);
     return;
   }
-
-  // Note: page_prot_ may already indicate read/write, but because of
-  // possible races with the system linker we cannot be confident that
-  // this is reliable. So we always set read/write here.
-  //
-  // See commentary in WriteLinkMapField for more.
-  int new_page_prot = page_prot_ | PROT_READ | PROT_WRITE;
-  int ret = mprotect(
-      reinterpret_cast<void*>(page_address_), kPageSize, new_page_prot);
-  if (ret < 0) {
-    LOG_ERRNO("Could not remap page to read/write");
-    page_address_ = 0;
-  }
-}
-
-ScopedPageReadWriteRemapper::~ScopedPageReadWriteRemapper() {
-  if (page_address_) {
-    int ret =
-        mprotect(reinterpret_cast<void*>(page_address_), kPageSize, page_prot_);
-    if (ret < 0)
-      LOG_ERRNO("Could not remap page to old protection flags");
-  }
-}
-
-void ScopedPageReadWriteRemapper::Release() {
-  page_address_ = 0;
-  page_prot_ = 0;
+  *link_pointer = entry;
 }
 
 }  // namespace
@@ -384,36 +370,6 @@ bool RDebug::PostCallback(rdebug_callback_handler_t handler,
   }
 
   return true;
-}
-
-// Helper function for AddEntryImpl and DelEntryImpl.
-// Sets *link_pointer to entry.  link_pointer is either an 'l_prev' or an
-// 'l_next' field in a neighbouring linkmap_t.  If link_pointer is in a
-// page that is mapped readonly, the page is remapped to be writable before
-// assignment.
-void RDebug::WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry) {
-  ScopedPageReadWriteRemapper mapper(link_pointer);
-  LOG("Remapped page for %p for read/write", link_pointer);
-
-  *link_pointer = entry;
-
-  // We always mprotect the page containing link_pointer to read/write,
-  // then write the entry. The page may already be read/write, but on
-  // recent Android release is most likely readonly. Because of the way
-  // the system linker operates we cannot tell with certainty what its
-  // correct setting should be.
-  //
-  // Now, we always leave the page read/write. Here is why. If we set it
-  // back to readonly at the point between where the system linker sets
-  // it to read/write and where it writes to the address, this will cause
-  // the system linker to crash. Clearly that is undesirable. From
-  // observations this occurs most frequently on the gpu process.
-  //
-  // TODO(simonb): Revisit this, details in:
-  // https://code.google.com/p/chromium/issues/detail?id=450659
-  // https://code.google.com/p/chromium/issues/detail?id=458346
-  mapper.Release();
-  LOG("Released mapper, leaving page read/write");
 }
 
 void RDebug::AddEntryImpl(link_map_t* entry) {
