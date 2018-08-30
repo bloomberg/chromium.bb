@@ -549,8 +549,9 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 				  amdgpu_bo_handle *buf_handle,
 				  uint64_t *offset_in_bo)
 {
-	uint32_t i;
 	struct amdgpu_bo *bo;
+	uint32_t i;
+	int r = 0;
 
 	if (cpu == NULL || size == 0)
 		return -EINVAL;
@@ -577,10 +578,11 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 	} else {
 		*buf_handle = NULL;
 		*offset_in_bo = 0;
+		r = -ENXIO;
 	}
 	pthread_mutex_unlock(&dev->bo_table_mutex);
 
-	return 0;
+	return r;
 }
 
 int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
