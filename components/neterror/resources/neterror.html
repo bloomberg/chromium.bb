@@ -49,14 +49,34 @@
           </div>
         </div>
         <div id="diagnose-frame" class="hidden"></div>
-        <div id="offline-suggestions" hidden>
-          <!--TODO(https://crbug.com/852872) Finalize this UI.
-            Don't remove PLACEHOLDER until the UI is complete and localized.-->
-          <p style="text-align: center;">Explore while offline [PLACEHOLDER]</p>
-          <div id="offline-content-list">
+        <div id="download-links-wrapper" class="hidden">
+          <div id="download-link-wrapper">
+            <a id="download-link" class="link-button"
+                onclick="downloadButtonClick()" jsselect="downloadButton"
+                jscontent="msg" jsvalues=".disabledText:disabledMsg">
+            </a>
+          </div>
+          <div id="download-link-clicked-wrapper" class="hidden">
+            <div id="download-link-clicked" class="link-button"
+                jsselect="downloadButton" jscontent="disabledMsg">
+            </div>
           </div>
         </div>
-        <div id="scroll-spacer" style="height: 30vw" hidden></div>
+        <div id="offline-content-list" hidden></div>
+        <div id="offline-content-summary" onclick="launchDownloadsPage()" hidden>
+          <div class="offline-content-summary-images">
+            <img id="earth" src="offline_content/earth.svg">
+            <img id="music-note" src="offline_content/music-note.svg">
+            <img id="video" src="offline_content/video.svg">
+            <img id="image" src="offline_content/image.svg">
+          </div>
+          <div class="offline-content-summary-description"
+              jsselect="offlineContentSummary" jscontent="description">
+          </div>
+          <a class="offline-content-summary-action link-button"
+              jsselect="offlineContentSummary" jscontent="actionText">
+          </a>
+        </div>
       </div>
     </div>
     <div id="buttons" class="nav-wrapper">
