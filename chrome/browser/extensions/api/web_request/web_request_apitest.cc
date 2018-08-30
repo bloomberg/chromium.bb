@@ -515,6 +515,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
       << message_;
 }
 
+// Tests that redirects from secure to insecure don't send the referrer header.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestRedirectsToInsecure) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL insecure_destination =
+      embedded_test_server()->GetURL("/extensions/test_file.html");
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(https_test_server.Start());
+
+  GURL url = https_test_server.GetURL("/webrequest/simulate_click.html");
+
+  base::ListValue custom_args;
+  custom_args.AppendString(url.spec());
+  custom_args.AppendString(insecure_destination.spec());
+
+  std::string config_string;
+  base::JSONWriter::Write(custom_args, &config_string);
+  ASSERT_TRUE(RunExtensionSubtestWithArg(
+      "webrequest", "test_redirects_from_secure.html", config_string.c_str()))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestSubresourceRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
