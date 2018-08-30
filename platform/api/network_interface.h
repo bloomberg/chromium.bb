@@ -19,6 +19,8 @@ struct InterfaceInfo {
     kOther,
   };
 
+  void CopyHardwareAddressTo(uint8_t x[6]) const;
+
   // Interface index, typically as specified by the operating system,
   // identifying this interface on the host machine.
   int32_t index = 0;

@@ -18,6 +18,7 @@ executable("unittests") {
   deps = [
     "//api:api_unittests",
     "//base:base_unittests",
+    "//discovery/mdns:mdns_unittests",
     "//sample:hello_unittests",
     "//third_party/googletest:gtest_main",
   ]

@@ -1,0 +1,29 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("core") {
+  sources = [
+    "src/mDNSCore/mDNS.c",
+    "src/mDNSCore/mDNSEmbeddedAPI.h",
+    "src/mDNSCore/DNSCommon.c",
+    "src/mDNSCore/DNSCommon.h",
+    "src/mDNSCore/DNSDigest.c",
+    "src/mDNSCore/mDNSDebug.h",
+    "src/mDNSCore/uDNS.c",
+    "src/mDNSCore/uDNS.h",
+    "src/mDNSShared/mDNSDebug.c",
+  ]
+
+  configs -= [ "//build/config:openscreen_code" ]
+  configs -= [ "//build/config:symbol_visibility_hidden" ]
+  configs += [ "//build/config:symbol_visibility_default" ]
+
+  if (is_debug) {
+    defines = [ "MDNS_DEBUGMSGS=2" ]
+  }
+
+  include_dirs = [
+    "src/mDNSCore",
+  ]
+}

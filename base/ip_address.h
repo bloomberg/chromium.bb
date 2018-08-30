@@ -12,6 +12,7 @@
 
 namespace openscreen {
 
+// TODO(issues/9): Merge v4 and v6 IP address types.
 struct IPv4Address {
  public:
   // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") and
@@ -38,6 +39,8 @@ struct IPv4Address {
   bool operator==(const IPv4Address& o) const;
   bool operator!=(const IPv4Address& o) const;
   explicit operator bool() const;
+
+  void CopyTo(uint8_t x[4]) const;
 
   std::array<uint8_t, 4> bytes;
 };
@@ -83,6 +86,8 @@ struct IPv6Address {
   bool operator==(const IPv6Address& o) const;
   bool operator!=(const IPv6Address& o) const;
   explicit operator bool() const;
+
+  void CopyTo(uint8_t x[16]) const;
 
   std::array<uint8_t, 16> bytes;
 };

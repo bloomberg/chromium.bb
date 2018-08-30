@@ -10,6 +10,7 @@ source_set("base") {
     "macros.h",
     "make_unique.h",
     "scoped_pipe.h",
+    "stringprintf.h",
   ]
 }
 

@@ -4,6 +4,8 @@
 
 #include "base/ip_address.h"
 
+#include <cstring>
+
 namespace openscreen {
 
 // static
@@ -66,6 +68,10 @@ bool IPv4Address::operator!=(const IPv4Address& o) const {
 
 IPv4Address::operator bool() const {
   return bytes[0] | bytes[1] | bytes[2] | bytes[3];
+}
+
+void IPv4Address::CopyTo(uint8_t x[4]) const {
+  std::memcpy(x, bytes.data(), 4);
 }
 
 // static
@@ -176,6 +182,10 @@ IPv6Address::operator bool() const {
     if (byte) return true;
 
   return false;
+}
+
+void IPv6Address::CopyTo(uint8_t x[16]) const {
+  std::memcpy(x, bytes.data(), 16);
 }
 
 }  // namespace openscreen
