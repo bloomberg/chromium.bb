@@ -148,6 +148,7 @@ public class HomepageManager {
         sharedPreferencesEditor.apply();
         RecordHistogram.recordBooleanHistogram(
                 "Settings.ShowHomeButtonPreferenceStateChanged", enabled);
+        RecordHistogram.recordBooleanHistogram("Settings.ShowHomeButtonPreferenceState", enabled);
         notifyHomepageUpdated();
     }
 
@@ -178,6 +179,7 @@ public class HomepageManager {
      * Sets whether the homepage URL is the default value.
      */
     public void setPrefHomepageUseDefaultUri(boolean useDefaultUri) {
+        RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", !useDefaultUri);
         SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putBoolean(PREF_HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
         sharedPreferencesEditor.apply();

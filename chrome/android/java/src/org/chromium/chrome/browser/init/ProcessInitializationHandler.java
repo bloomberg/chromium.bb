@@ -344,6 +344,8 @@ public class ProcessInitializationHandler {
                 if (HomepageManager.shouldShowHomepageSetting()) {
                     RecordHistogram.recordBooleanHistogram("Settings.ShowHomeButtonPreferenceState",
                             HomepageManager.isHomepageEnabled());
+                    RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized",
+                            !HomepageManager.getInstance().getPrefHomepageUseDefaultUri());
                 }
             }
         });
