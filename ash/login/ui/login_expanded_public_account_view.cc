@@ -58,7 +58,7 @@ constexpr SkColor kArrowButtonColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 
 constexpr int kDropDownIconSizeDp = 16;
 constexpr int kArrowButtonSizeDp = 40;
-constexpr int kAdvancedViewButtonWidthDp = 174;
+constexpr int kAdvancedViewButtonWidthDp = 190;
 constexpr int kAdvancedViewButtonHeightDp = 16;
 constexpr int kSelectionBoxWidthDp = 178;
 constexpr int kSelectionBoxHeightDp = 28;
