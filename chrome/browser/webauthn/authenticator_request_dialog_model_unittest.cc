@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +47,10 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
  public:
   AuthenticatorRequestDialogModelTest() {}
   ~AuthenticatorRequestDialogModelTest() override {}
+
+ protected:
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModelTest);
@@ -275,4 +281,47 @@ TEST_F(AuthenticatorRequestDialogModelTest, PostMortems) {
 
     EXPECT_CALL(mock_observer, OnModelDestroyed());
   }
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest,
+       RequestCallbackOnlyCalledOncePerAuthenticator) {
+  ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info;
+  transports_info.request_type =
+      device::FidoRequestHandlerBase::RequestType::kMakeCredential;
+  transports_info.available_transports = {
+      AuthenticatorTransport::kInternal,
+      AuthenticatorTransport::kUsbHumanInterfaceDevice};
+
+  int num_called = 0;
+  AuthenticatorRequestDialogModel model;
+  model.SetRequestCallback(base::BindRepeating(
+      [](int* i, const std::string& authenticator_id) { ++(*i); },
+      &num_called));
+  model.saved_authenticators().emplace_back(
+      AuthenticatorRequestDialogModel::AuthenticatorReference(
+          "authenticator", AuthenticatorTransport::kInternal));
+
+  model.StartFlow(std::move(transports_info), base::nullopt);
+  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,
+            model.current_step());
+  EXPECT_EQ(0, num_called);
+
+  // Simulate switching back and forth between transports. The request callback
+  // should only be invoked once (USB is not dispatched through the UI).
+  model.StartGuidedFlowForTransport(AuthenticatorTransport::kInternal);
+  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTouchId,
+            model.current_step());
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, num_called);
+  model.StartGuidedFlowForTransport(
+      AuthenticatorTransport::kUsbHumanInterfaceDevice);
+  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate,
+            model.current_step());
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, num_called);
+  model.StartGuidedFlowForTransport(AuthenticatorTransport::kInternal);
+  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTouchId,
+            model.current_step());
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1, num_called);
 }
