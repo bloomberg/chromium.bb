@@ -43,6 +43,10 @@
 #include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
 
+#if !defined(OS_NACL_NONSFI)
+#include "services/service_manager/sandbox/chromecast_sandbox_whitelist_buildflags.h"
+#endif  // !defined(OS_NACL_NONSFI)
+
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
@@ -77,6 +81,14 @@ inline bool IsChromeOS() {
 #endif
 }
 
+inline bool UseChromecastSandboxWhitelist() {
+#if BUILDFLAG(ENABLE_CHROMECAST_GPU_SANDBOX_WHITELIST)
+  return true;
+#else
+  return false;
+#endif
+}
+
 inline bool IsArchitectureArm() {
 #if defined(ARCH_CPU_ARM_FAMILY)
   return true;
@@ -87,7 +99,7 @@ inline bool IsArchitectureArm() {
 
 std::unique_ptr<BPFBasePolicy> GetGpuProcessSandbox(
     bool use_amd_specific_policies) {
-  if (IsChromeOS()) {
+  if (IsChromeOS() || UseChromecastSandboxWhitelist()) {
     if (IsArchitectureArm()) {
       return std::make_unique<CrosArmGpuProcessPolicy>(
           base::CommandLine::ForCurrentProcess()->HasSwitch(

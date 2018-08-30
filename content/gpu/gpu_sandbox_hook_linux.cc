@@ -24,6 +24,7 @@
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "services/service_manager/embedder/set_process_title.h"
+#include "services/service_manager/sandbox/chromecast_sandbox_whitelist_buildflags.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
@@ -38,6 +39,14 @@ namespace {
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline bool UseChromecastSandboxWhitelist() {
+#if BUILDFLAG(ENABLE_CHROMECAST_GPU_SANDBOX_WHITELIST)
   return true;
 #else
   return false;
@@ -154,6 +163,31 @@ void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   AddArmMaliGpuWhitelist(permissions);
 }
 
+// Need to look in vendor paths for custom vendor implementations.
+static const char* const kWhitelistedChromecastPaths[] = {
+    "/oem_cast_shlib/", "/system/vendor/lib/", "/system/lib/"};
+
+void AddChromecastArmGpuWhitelist(
+    std::vector<BrokerFilePermission>* permissions) {
+  // Device file needed by the ARM GPU userspace.
+  static const char kMali0Path[] = "/dev/mali0";
+  permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
+
+  // Files needed by the ARM GPU userspace.
+  static const char* const kReadOnlyLibraries[] = {"libGLESv2.so.2",
+                                                   "libEGL.so.1"};
+
+  for (const char* library : kReadOnlyLibraries) {
+    for (const char* path : kWhitelistedChromecastPaths) {
+      const std::string library_path(std::string(path) + std::string(library));
+      permissions->push_back(BrokerFilePermission::ReadOnly(library_path));
+    }
+  }
+
+  static const char kLdSoCache[] = "/etc/ld.so.cache";
+  permissions->push_back(BrokerFilePermission::ReadOnly(kLdSoCache));
+}
+
 void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
   static const char kDriCardBasePath[] = "/dev/dri/card";
   static const char kNvidiaCtlPath[] = "/dev/nvidiactl";
@@ -202,16 +236,31 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
       return permissions;
     }
   }
+
+  if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
+    AddChromecastArmGpuWhitelist(&permissions);
+    return permissions;
+  }
+
   AddStandardGpuWhiteList(&permissions);
   return permissions;
 }
 
 void LoadArmGpuLibraries() {
   // Preload the Mali library.
-  dlopen("/usr/lib/libmali.so", dlopen_flag);
+  if (UseChromecastSandboxWhitelist()) {
+    for (const char* path : kWhitelistedChromecastPaths) {
+      const std::string library_path(std::string(path) +
+                                     std::string("libMali.so"));
+      if (dlopen(library_path.c_str(), dlopen_flag))
+        break;
+    }
+  } else {
+    dlopen("/usr/lib/libmali.so", dlopen_flag);
 
-  // Preload the Tegra V4L2 (video decode acceleration) library.
-  dlopen("/usr/lib/libtegrav4l2.so", dlopen_flag);
+    // Preload the Tegra V4L2 (video decode acceleration) library.
+    dlopen("/usr/lib/libtegrav4l2.so", dlopen_flag);
+  }
 }
 
 bool LoadAmdGpuLibraries() {
@@ -261,6 +310,8 @@ bool LoadLibrariesForGpu(
     }
     if (options.use_amd_specific_policies)
       return LoadAmdGpuLibraries();
+  } else if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
+    LoadArmGpuLibraries();
   }
   return true;
 }
