@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/async_operation.h"
 #include "base/win/scoped_hstring.h"
+#include "device/bluetooth/test/fake_device_watcher_winrt.h"
 
 namespace device {
 
@@ -164,7 +165,7 @@ HRESULT FakeDeviceInformationStaticsWinrt::CreateWatcherDeviceClass(
 HRESULT FakeDeviceInformationStaticsWinrt::CreateWatcherAqsFilter(
     HSTRING aqs_filter,
     IDeviceWatcher** watcher) {
-  return E_NOTIMPL;
+  return Make<FakeDeviceWatcherWinrt>().CopyTo(watcher);
 }
 
 HRESULT FakeDeviceInformationStaticsWinrt::

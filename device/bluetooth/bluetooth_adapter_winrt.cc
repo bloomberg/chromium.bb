@@ -74,6 +74,8 @@ using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
 using ABI::Windows::Devices::Enumeration::DeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationUpdate;
+using ABI::Windows::Devices::Enumeration::IDeviceWatcher;
 using ABI::Windows::Devices::Radios::IRadio;
 using ABI::Windows::Devices::Radios::IRadioStatics;
 using ABI::Windows::Devices::Radios::Radio;
@@ -99,6 +101,15 @@ bool ResolveCoreWinRT() {
   return base::win::ResolveCoreWinRTDelayload() &&
          base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
 }
+
+// Query string for powered Bluetooth radios. GUID Reference:
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/install/guid-bthport-device-interface
+// TODO(https://crbug.com/821766): Consider adding WindowsCreateStringReference
+// to base::win::ScopedHString to avoid allocating memory for this string.
+constexpr wchar_t kPoweredRadiosAqsFilter[] =
+    L"System.Devices.InterfaceClassGuid:=\"{0850302A-B344-4fda-9BE9-"
+    L"90576B8D46F0}\" AND "
+    L"System.Devices.InterfaceEnabled:=System.StructuredQueryType.Boolean#True";
 
 // Utility functions to pretty print enum values.
 constexpr const char* ToCString(RadioAccessStatus access_status) {
@@ -479,7 +490,7 @@ bool BluetoothAdapterWinrt::IsPowered() const {
   // Due to an issue on WoW64 we might fail to obtain the radio in OnGetRadio().
   // This is why it can be null here.
   if (!radio_)
-    return false;
+    return num_powered_radios_ != 0;
 
   RadioState state;
   HRESULT hr = radio_->get_State(&state);
@@ -576,6 +587,10 @@ IRadio* BluetoothAdapterWinrt::GetRadioForTesting() {
   return radio_.Get();
 }
 
+IDeviceWatcher* BluetoothAdapterWinrt::GetPoweredRadioWatcherForTesting() {
+  return powered_radio_watcher_.Get();
+}
+
 BluetoothAdapterWinrt::BluetoothAdapterWinrt() : weak_ptr_factory_(this) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
@@ -590,6 +605,15 @@ BluetoothAdapterWinrt::~BluetoothAdapterWinrt() {
 
   if (radio_)
     TryRemoveRadioStateChangedHandler();
+
+  if (powered_radio_watcher_) {
+    TryRemovePoweredRadioEventHandlers();
+    HRESULT hr = powered_radio_watcher_->Stop();
+    if (FAILED(hr)) {
+      VLOG(2) << "Stopping powered radio watcher failed: "
+              << logging::SystemErrorCodeToString(hr);
+    }
+  }
 }
 
 void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
@@ -987,20 +1011,75 @@ void BluetoothAdapterWinrt::OnRequestRadioAccess(
 void BluetoothAdapterWinrt::OnGetRadio(base::ScopedClosureRunner on_init,
                                        ComPtr<IRadio> radio) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!radio) {
-    // This happens within WoW64, due to an issue with non-native APIs.
-    VLOG(2) << "Getting Radio failed.";
+  if (radio) {
+    radio_ = std::move(radio);
+    radio_state_changed_token_ = AddTypedEventHandler(
+        radio_.Get(), &IRadio::add_StateChanged,
+        base::BindRepeating(&BluetoothAdapterWinrt::OnRadioStateChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+
+    if (!radio_state_changed_token_)
+      VLOG(2) << "Adding Radio State Changed Handler failed.";
     return;
   }
 
-  radio_ = std::move(radio);
-  radio_state_changed_token_ = AddTypedEventHandler(
-      radio_.Get(), &IRadio::add_StateChanged,
-      base::BindRepeating(&BluetoothAdapterWinrt::OnRadioStateChanged,
+  // This happens within WoW64, due to an issue with non-native APIs.
+  VLOG(2) << "Getting Radio failed. Chrome will be unable to change the power "
+             "state by itself.";
+
+  // Attempt to create a DeviceWatcher for powered radios, so that querying
+  // the power state is still possible.
+  ComPtr<IDeviceInformationStatics> device_information_statics;
+  HRESULT hr =
+      GetDeviceInformationStaticsActivationFactory(&device_information_statics);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetDeviceInformationStaticsActivationFactory failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  auto aqs_filter = base::win::ScopedHString::Create(kPoweredRadiosAqsFilter);
+  hr = device_information_statics->CreateWatcherAqsFilter(
+      aqs_filter.get(), &powered_radio_watcher_);
+  if (FAILED(hr)) {
+    VLOG(2) << "Creating Powered Radios Watcher failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  powered_radio_added_token_ = AddTypedEventHandler(
+      powered_radio_watcher_.Get(), &IDeviceWatcher::add_Added,
+      base::BindRepeating(&BluetoothAdapterWinrt::OnPoweredRadioAdded,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  if (!radio_state_changed_token_)
-    VLOG(2) << "Adding Radio State Changed Handler failed.";
+  powered_radio_removed_token_ = AddTypedEventHandler(
+      powered_radio_watcher_.Get(), &IDeviceWatcher::add_Removed,
+      base::BindRepeating(&BluetoothAdapterWinrt::OnPoweredRadioRemoved,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  powered_radios_enumerated_token_ = AddTypedEventHandler(
+      powered_radio_watcher_.Get(), &IDeviceWatcher::add_EnumerationCompleted,
+      base::BindRepeating(&BluetoothAdapterWinrt::OnPoweredRadiosEnumerated,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  if (!powered_radio_added_token_ || !powered_radio_removed_token_ ||
+      !powered_radios_enumerated_token_) {
+    VLOG(2) << "Failed to Register Powered Radio Event Handlers.";
+    TryRemovePoweredRadioEventHandlers();
+    return;
+  }
+
+  hr = powered_radio_watcher_->Start();
+  if (FAILED(hr)) {
+    VLOG(2) << "Starting the Powered Radio Watcher failed: "
+            << logging::SystemErrorCodeToString(hr);
+    TryRemovePoweredRadioEventHandlers();
+    return;
+  }
+
+  // Store the Closure Runner. It is expected that OnPoweredRadiosEnumerated()
+  // is invoked soon after.
+  on_init_ = std::make_unique<base::ScopedClosureRunner>(std::move(on_init));
 }
 
 void BluetoothAdapterWinrt::OnSetRadioState(RadioAccessStatus access_status) {
@@ -1018,18 +1097,31 @@ void BluetoothAdapterWinrt::OnRadioStateChanged(IRadio* radio,
   NotifyAdapterPoweredChanged(IsPowered());
 }
 
-void BluetoothAdapterWinrt::TryRemoveRadioStateChangedHandler() {
-  DCHECK(radio_);
-  if (!radio_state_changed_token_)
-    return;
+void BluetoothAdapterWinrt::OnPoweredRadioAdded(IDeviceWatcher* watcher,
+                                                IDeviceInformation* info) {
+  if (++num_powered_radios_ == 1)
+    NotifyAdapterPoweredChanged(true);
+  VLOG(2) << "OnPoweredRadioAdded(), Number of Powered Radios: "
+          << num_powered_radios_;
+}
 
-  HRESULT hr = radio_->remove_StateChanged(*radio_state_changed_token_);
-  if (FAILED(hr)) {
-    VLOG(2) << "Removing Radio State Changed Handler failed: "
-            << logging::SystemErrorCodeToString(hr);
-  }
+void BluetoothAdapterWinrt::OnPoweredRadioRemoved(
+    IDeviceWatcher* watcher,
+    IDeviceInformationUpdate* update) {
+  if (--num_powered_radios_ == 0)
+    NotifyAdapterPoweredChanged(false);
+  VLOG(2) << "OnPoweredRadioRemoved(), Number of Powered Radios: "
+          << num_powered_radios_;
+}
 
-  radio_state_changed_token_.reset();
+void BluetoothAdapterWinrt::OnPoweredRadiosEnumerated(IDeviceWatcher* watcher,
+                                                      IInspectable* object) {
+  // Destroy the ScopedClosureRunner, triggering the contained Closure to be
+  // run.
+  DCHECK(on_init_);
+  on_init_.reset();
+  VLOG(2) << "OnPoweredRadiosEnumerated(), Number of Powered Radios: "
+          << num_powered_radios_;
 }
 
 void BluetoothAdapterWinrt::OnAdvertisementReceived(
@@ -1083,6 +1175,56 @@ void BluetoothAdapterWinrt::OnRegisterAdvertisementError(
   // |advertisement|, as this method might be invoked during destruction.
   base::Erase(pending_advertisements_, advertisement);
   error_callback.Run(error_code);
+}
+
+void BluetoothAdapterWinrt::TryRemoveRadioStateChangedHandler() {
+  DCHECK(radio_);
+  if (!radio_state_changed_token_)
+    return;
+
+  HRESULT hr = radio_->remove_StateChanged(*radio_state_changed_token_);
+  if (FAILED(hr)) {
+    VLOG(2) << "Removing Radio State Changed Handler failed: "
+            << logging::SystemErrorCodeToString(hr);
+  }
+
+  radio_state_changed_token_.reset();
+}
+
+void BluetoothAdapterWinrt::TryRemovePoweredRadioEventHandlers() {
+  DCHECK(powered_radio_watcher_);
+  if (powered_radio_added_token_) {
+    HRESULT hr =
+        powered_radio_watcher_->remove_Added(*powered_radio_removed_token_);
+    if (FAILED(hr)) {
+      VLOG(2) << "Removing the Powered Radio Added Handler failed: "
+              << logging::SystemErrorCodeToString(hr);
+    }
+
+    powered_radio_added_token_.reset();
+  }
+
+  if (powered_radio_removed_token_) {
+    HRESULT hr =
+        powered_radio_watcher_->remove_Removed(*powered_radio_removed_token_);
+    if (FAILED(hr)) {
+      VLOG(2) << "Removing the Powered Radio Removed Handler failed: "
+              << logging::SystemErrorCodeToString(hr);
+    }
+
+    powered_radio_removed_token_.reset();
+  }
+
+  if (powered_radios_enumerated_token_) {
+    HRESULT hr = powered_radio_watcher_->remove_EnumerationCompleted(
+        *powered_radios_enumerated_token_);
+    if (FAILED(hr)) {
+      VLOG(2) << "Removing the Powered Radios Enumerated Handler failed: "
+              << logging::SystemErrorCodeToString(hr);
+    }
+
+    powered_radios_enumerated_token_.reset();
+  }
 }
 
 void BluetoothAdapterWinrt::RemoveAdvertisementReceivedHandler() {
