@@ -4,6 +4,7 @@ PASS length
 PASS No arguments
 PASS Calling
 PASS Empty descriptor
+PASS Invalid descriptor argument
 FAIL Undefined initial value in descriptor assert_throws: function "() => new WebAssembly.Table({ "element": "anyfunc", "initial": undefined })" did not throw
 PASS Undefined element value in descriptor
 FAIL Out-of-range initial value in descriptor: NaN assert_throws: function "() => new WebAssembly.Table({ "element": "anyfunc", "initial": value })" did not throw
@@ -18,7 +19,11 @@ FAIL Out-of-range initial value in descriptor: 4294967296 assert_throws: functio
 FAIL Out-of-range maximum value in descriptor: 4294967296 assert_throws: function "() => new WebAssembly.Table({ "element": "anyfunc", "initial": 0, "maximum": value })" threw object "RangeError: WebAssembly.Module(): Property value 4294967296 is above the upper bound 4294967295" ("RangeError") expected object "TypeError" ("TypeError")
 FAIL Out-of-range initial value in descriptor: 68719476736 assert_throws: function "() => new WebAssembly.Table({ "element": "anyfunc", "initial": value })" threw object "RangeError: WebAssembly.Module(): Property value 68719476736 is above the upper bound 10000000" ("RangeError") expected object "TypeError" ("TypeError")
 FAIL Out-of-range maximum value in descriptor: 68719476736 assert_throws: function "() => new WebAssembly.Table({ "element": "anyfunc", "initial": 0, "maximum": value })" threw object "RangeError: WebAssembly.Module(): Property value 68719476736 is above the upper bound 4294967295" ("RangeError") expected object "TypeError" ("TypeError")
+PASS Initial value exceeds maximum
+PASS Basic (zero)
+PASS Basic (non-zero)
 FAIL Proxy descriptor assert_unreached: Should not call [[HasProperty]] with maximum Reached unreachable code
-PASS Prototype
+PASS Type conversion for descriptor.element
+PASS Order of evaluation for descriptor
 Harness: the test ran to completion.
 

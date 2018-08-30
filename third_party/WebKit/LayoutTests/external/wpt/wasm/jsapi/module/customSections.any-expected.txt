@@ -5,5 +5,7 @@ PASS Branding
 PASS Empty module
 PASS Empty module: array caching
 FAIL Custom sections WebAssembly.Module(): Wasm decoding failed: unexpected section: name @+33
+PASS Custom sections with surrogate pairs
+FAIL Custom sections with U+FFFD assert_equals: expected 1 but got 0
 Harness: the test ran to completion.
 

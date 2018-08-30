@@ -3,7 +3,7 @@ PASS name
 PASS length
 PASS No arguments
 PASS Calling
-FAIL Empty descriptor assert_throws: function "() => new WebAssembly.Memory({})" did not throw
+FAIL Invalid descriptor argument assert_throws: new Memory(object "[object Object]") function "() => new WebAssembly.Memory(invalidArgument)" did not throw
 FAIL Undefined initial value in descriptor assert_throws: function "() => new WebAssembly.Memory({ "initial": undefined })" did not throw
 FAIL Out-of-range initial value in descriptor: NaN assert_throws: function "() => new WebAssembly.Memory({ "initial": value })" did not throw
 FAIL Out-of-range maximum value in descriptor: NaN assert_throws: function "() => new WebAssembly.Memory({ "initial": 0, "maximum": value })" did not throw
@@ -18,6 +18,8 @@ FAIL Out-of-range maximum value in descriptor: 4294967296 assert_throws: functio
 FAIL Out-of-range initial value in descriptor: 68719476736 assert_throws: function "() => new WebAssembly.Memory({ "initial": value })" threw object "RangeError: WebAssembly.Memory(): Property value 68719476736 is above the upper bound 32767" ("RangeError") expected object "TypeError" ("TypeError")
 FAIL Out-of-range maximum value in descriptor: 68719476736 assert_throws: function "() => new WebAssembly.Memory({ "initial": 0, "maximum": value })" threw object "RangeError: WebAssembly.Memory(): Property value 68719476736 is above the upper bound 65536" ("RangeError") expected object "TypeError" ("TypeError")
 FAIL Proxy descriptor assert_unreached: Should not call [[HasProperty]] with maximum Reached unreachable code
-PASS Prototype
+PASS Order of evaluation for descriptor
+PASS Zero initial
+PASS Non-zero initial
 Harness: the test ran to completion.
 
