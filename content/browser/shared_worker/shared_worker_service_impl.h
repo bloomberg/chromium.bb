@@ -74,17 +74,18 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int frame_id,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
-  void StartWorker(std::unique_ptr<SharedWorkerInstance> instance,
-                   base::WeakPtr<SharedWorkerHost> host,
-                   mojom::SharedWorkerClientPtr client,
-                   int process_id,
-                   int frame_id,
-                   const blink::MessagePortChannel& message_port,
-                   mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
-                       service_worker_provider_info,
-                   network::mojom::URLLoaderFactoryAssociatedPtrInfo
-                       main_script_loader_factory_info,
-                   std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle);
+  void StartWorker(
+      std::unique_ptr<SharedWorkerInstance> instance,
+      base::WeakPtr<SharedWorkerHost> host,
+      mojom::SharedWorkerClientPtr client,
+      int process_id,
+      int frame_id,
+      const blink::MessagePortChannel& message_port,
+      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+          service_worker_provider_info,
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          main_script_loader_factory,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);

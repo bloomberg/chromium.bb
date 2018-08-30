@@ -173,24 +173,30 @@ void SharedWorkerHost::Start(
       mojom::kNavigation_SharedWorkerSpec, process_id_,
       mojo::MakeRequest(&interface_provider)));
 
-  // Add the network factory to the bundle for subresource loading to pass to
+  // Add the default factory to the bundle for subresource loading to pass to
   // the renderer. The bundle is only provided if
   // NetworkService/S13nServiceWorker is enabled.
+  // TODO(nhiroki): We might need to set the default factory to AppCache
+  // instead, as we do for frames, if requests from this shared worker are
+  // supposed to go through AppCache. Currently, we set the default factory to a
+  // direct network.
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK(subresource_loader_factories);
-    // The default factory is not provided if NetworkService is on.
+    DCHECK(!subresource_loader_factories->default_factory_info());
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      DCHECK(!subresource_loader_factories->default_factory_info());
       network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
       CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
       subresource_loader_factories->default_factory_info() =
           std::move(network_factory_info);
-
-      // TODO(falken): We might need to set the default factory to AppCache
-      // instead, as we do for frames, if requests from this shared worker are
-      // supposed to go through AppCache.
+    } else {
+      // Use the non-NetworkService network factory for the process when
+      // NetworkService is off.
+      network::mojom::URLLoaderFactoryPtr default_factory;
+      RenderProcessHost::FromID(process_id_)
+          ->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory));
+      subresource_loader_factories->default_factory_info() =
+          default_factory.PassInterface();
     }
-    DCHECK(subresource_loader_factories->default_factory_info());
   }
 
   // Send the CreateSharedWorker message.
