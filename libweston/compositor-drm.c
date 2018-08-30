@@ -217,6 +217,7 @@ enum wdrm_connector_property {
 	WDRM_CONNECTOR_EDID = 0,
 	WDRM_CONNECTOR_DPMS,
 	WDRM_CONNECTOR_CRTC_ID,
+	WDRM_CONNECTOR_NON_DESKTOP,
 	WDRM_CONNECTOR__COUNT
 };
 
@@ -251,6 +252,7 @@ static const struct drm_property_info connector_props[] = {
 		.num_enum_values = WDRM_DPMS_STATE__COUNT,
 	},
 	[WDRM_CONNECTOR_CRTC_ID] = { .name = "CRTC_ID", },
+	[WDRM_CONNECTOR_NON_DESKTOP] = { .name = "non-desktop", },
 };
 
 /**
@@ -5159,6 +5161,15 @@ find_and_parse_output_edid(struct drm_head *head,
 	drmModeFreePropertyBlob(edid_blob);
 }
 
+static bool
+check_non_desktop(struct drm_head *head, drmModeObjectPropertiesPtr props)
+{
+	struct drm_property_info *non_desktop_info =
+		&head->props_conn[WDRM_CONNECTOR_NON_DESKTOP];
+
+	return drm_property_get_value(non_desktop_info, props, 0);
+}
+
 static int
 parse_modeline(const char *s, drmModeModeInfo *mode)
 {
@@ -6147,6 +6158,8 @@ drm_head_assign_connector_info(struct drm_head *head,
 				   WDRM_CONNECTOR__COUNT, props);
 	find_and_parse_output_edid(head, props, &make, &model, &serial_number);
 	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
+	weston_head_set_non_desktop(&head->base,
+				    check_non_desktop(head, props));
 	weston_head_set_subpixel(&head->base,
 		drm_subpixel_to_wayland(head->connector->subpixel));
 
