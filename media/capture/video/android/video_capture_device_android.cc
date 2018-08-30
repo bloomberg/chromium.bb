@@ -270,8 +270,10 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
       expected_next_frame_time_ - base::TimeTicks();
 
   // Deliver the frame when it doesn't arrive too early.
-  if (ThrottleFrame(current_time))
+  if (ThrottleFrame(current_time)) {
+    client_->OnFrameDropped(VideoCaptureFrameDropReason::kAndroidThrottling);
     return;
+  }
 
   jbyte* buffer = env->GetByteArrayElements(data, NULL);
   if (!buffer) {
@@ -279,6 +281,8 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
                   "failed to GetByteArrayElements";
     // In case of error, restore back the throttle control value.
     expected_next_frame_time_ -= frame_interval_;
+    client_->OnFrameDropped(
+        VideoCaptureFrameDropReason::kAndroidGetByteArrayElementsFailed);
     return;
   }
 
@@ -313,8 +317,10 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
   ProcessFirstFrameAvailable(current_time);
 
   // Deliver the frame when it doesn't arrive too early.
-  if (ThrottleFrame(current_time))
+  if (ThrottleFrame(current_time)) {
+    client_->OnFrameDropped(VideoCaptureFrameDropReason::kAndroidThrottling);
     return;
+  }
 
   uint8_t* const y_src =
       reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(y_buffer));
@@ -348,6 +354,17 @@ void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
   SetErrorState(
       static_cast<media::VideoCaptureError>(android_video_capture_error),
       FROM_HERE, base::android::ConvertJavaStringToUTF8(env, message));
+}
+
+void VideoCaptureDeviceAndroid::OnFrameDropped(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int android_video_capture_frame_drop_reason) {
+  base::AutoLock lock(lock_);
+  if (!client_)
+    return;
+  client_->OnFrameDropped(static_cast<media::VideoCaptureFrameDropReason>(
+      android_video_capture_frame_drop_reason));
 }
 
 void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(

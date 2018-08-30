@@ -246,6 +246,10 @@ public abstract class VideoCapture {
     public native void nativeOnError(
             long nativeVideoCaptureDeviceAndroid, int androidVideoCaptureError, String message);
 
+    // Method for VideoCapture implementations to signal that a frame was dropped.
+    public native void nativeOnFrameDropped(
+            long nativeVideoCaptureDeviceAndroid, int androidVideoCaptureFrameDropReason);
+
     public native void nativeOnGetPhotoCapabilitiesReply(
             long nativeVideoCaptureDeviceAndroid, long callbackId, PhotoCapabilities result);
 

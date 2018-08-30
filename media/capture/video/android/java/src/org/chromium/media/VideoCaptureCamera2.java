@@ -180,7 +180,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
             assert mCameraThreadHandler.getLooper() == Looper.myLooper() : "called on wrong thread";
 
             try (Image image = reader.acquireLatestImage()) {
-                if (image == null) return;
+                if (image == null) {
+                    nativeOnFrameDropped(mNativeVideoCaptureDeviceAndroid,
+                            AndroidVideoCaptureFrameDropReason
+                                    .ANDROID_API_2_ACQUIRED_IMAGE_IS_NULL);
+                    return;
+                }
 
                 if (image.getFormat() != ImageFormat.YUV_420_888 || image.getPlanes().length != 3) {
                     nativeOnError(mNativeVideoCaptureDeviceAndroid,

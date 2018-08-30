@@ -56,6 +56,11 @@ void ReceiverMediaToMojoAdapter::OnError(media::VideoCaptureError error) {
   receiver_->OnError(error);
 }
 
+void ReceiverMediaToMojoAdapter::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  receiver_->OnFrameDropped(reason);
+}
+
 void ReceiverMediaToMojoAdapter::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }

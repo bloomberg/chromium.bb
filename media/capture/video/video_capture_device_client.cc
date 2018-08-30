@@ -157,8 +157,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     }
   }
 
-  if (!format.IsValid())
+  if (!format.IsValid()) {
+    receiver_->OnFrameDropped(
+        VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
     return;
+  }
 
   if (format.pixel_format == PIXEL_FORMAT_Y16) {
     return OnIncomingCapturedY16Data(data, length, format, reference_time,
@@ -182,15 +185,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   const gfx::Size dimensions(destination_width, destination_height);
   Buffer buffer =
       ReserveOutputBuffer(dimensions, PIXEL_FORMAT_I420, frame_feedback_id);
-#if DCHECK_IS_ON()
-  dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
-  if (dropped_frame_counter_ >= kMaxDroppedFrames)
-    OnError(media::VideoCaptureError::kDeviceClientTooManyFramesDropped,
-            FROM_HERE, "Too many frames dropped");
-#endif
   // Failed to reserve I420 output buffer, so drop the frame.
-  if (!buffer.is_valid())
+  if (!buffer.is_valid()) {
+    receiver_->OnFrameDropped(
+        VideoCaptureFrameDropReason::
+            kDeviceClientFailedToReserveBufferFromBufferPool);
     return;
+  }
 
   DCHECK(dimensions.height());
   DCHECK(dimensions.width());
@@ -299,6 +300,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
           new_unrotated_height, rotation_mode, origin_colorspace) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
                   << VideoPixelFormatToString(format.pixel_format);
+    receiver_->OnFrameDropped(
+        VideoCaptureFrameDropReason::kDeviceClientLibyuvConvertToI420Failed);
     return;
   }
 
@@ -339,8 +342,12 @@ void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
       ReserveOutputBuffer(dimensions, PIXEL_FORMAT_I420, frame_feedback_id);
 
   // Failed to reserve I420 output buffer, so drop the frame.
-  if (!output_buffer.is_valid())
+  if (!output_buffer.is_valid()) {
+    receiver_->OnFrameDropped(
+        VideoCaptureFrameDropReason::
+            kDeviceClientFailedToReserveBufferFromBufferPool);
     return;
+  }
 
   uint8_t* y_plane_data;
   uint8_t* u_plane_data;
@@ -492,6 +499,11 @@ void VideoCaptureDeviceClient::OnError(VideoCaptureError error,
   receiver_->OnError(error);
 }
 
+void VideoCaptureDeviceClient::OnFrameDropped(
+    VideoCaptureFrameDropReason reason) {
+  receiver_->OnFrameDropped(reason);
+}
+
 void VideoCaptureDeviceClient::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
@@ -516,15 +528,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), format.ImageAllocationSize());
-#if DCHECK_IS_ON()
-  dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
-  if (dropped_frame_counter_ >= kMaxDroppedFrames)
-    OnError(media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16,
-            FROM_HERE, "Too many frames dropped");
-#endif
   // Failed to reserve output buffer, so drop the frame.
-  if (!buffer.is_valid())
+  if (!buffer.is_valid()) {
+    receiver_->OnFrameDropped(
+        VideoCaptureFrameDropReason::
+            kDeviceClientFailedToReserveBufferFromBufferPool);
     return;
+  }
   auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
   memcpy(buffer_access->data(), data, length);
   const VideoCaptureFormat output_format = VideoCaptureFormat(

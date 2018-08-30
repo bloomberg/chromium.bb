@@ -16,6 +16,7 @@ interface Receiver {
                        media.mojom.VideoFrameInfo frame_info);
   OnBufferRetired(int32 buffer_id);
   OnError(media.mojom.VideoCaptureError error);
+  OnFrameDropped(media.mojom.VideoCaptureFrameDropReason reason);
   OnLog(string message);
   OnStarted();
   OnStartedUsingGpuDecode();

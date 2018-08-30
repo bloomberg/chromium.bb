@@ -876,12 +876,16 @@ void V4L2CaptureDelegate::DoCapture() {
       LOG(ERROR) << "Dequeued v4l2 buffer contains corrupted data ("
                  << buffer.bytesused << " bytes).";
       buffer.bytesused = 0;
+      client_->OnFrameDropped(
+          VideoCaptureFrameDropReason::kV4L2BufferErrorFlagWasSet);
     } else
 #endif
         if (buffer.bytesused < capture_format_.ImageAllocationSize()) {
       LOG(ERROR) << "Dequeued v4l2 buffer contains invalid length ("
                  << buffer.bytesused << " bytes).";
       buffer.bytesused = 0;
+      client_->OnFrameDropped(
+          VideoCaptureFrameDropReason::kV4L2InvalidNumberOfBytesInBuffer);
     } else
       client_->OnIncomingCapturedData(
           buffer_tracker->start(), buffer_tracker->payload_size(),

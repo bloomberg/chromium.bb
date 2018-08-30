@@ -35,6 +35,7 @@ type_mappings = [
   "media.mojom.VideoCapturePixelFormat=media::VideoPixelFormat",
   "media.mojom.VideoCaptureBufferType=media::VideoCaptureBufferType",
   "media.mojom.VideoCaptureError=media::VideoCaptureError",
+  "media.mojom.VideoCaptureFrameDropReason=media::VideoCaptureFrameDropReason",
   "media.mojom.VideoCaptureFormat=media::VideoCaptureFormat",
   "media.mojom.VideoCaptureParams=media::VideoCaptureParams",
   "media.mojom.VideoCaptureDeviceDescriptorCameraCalibration=media::VideoCaptureDeviceDescriptor::CameraCalibration",

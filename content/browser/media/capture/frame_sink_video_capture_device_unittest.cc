@@ -188,6 +188,7 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
                     const media::mojom::VideoFrameInfo* frame_info));
   MOCK_METHOD1(OnBufferRetired, void(int buffer_id));
   MOCK_METHOD1(OnError, void(media::VideoCaptureError error));
+  MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason reason));
   MOCK_METHOD1(OnLog, void(const std::string& message));
   MOCK_METHOD0(OnStarted, void());
   void OnStartedUsingGpuDecode() final { NOTREACHED(); }

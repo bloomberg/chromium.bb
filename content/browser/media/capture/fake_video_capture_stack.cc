@@ -89,6 +89,8 @@ class FakeVideoCaptureStack::Receiver : public media::VideoFrameReceiver {
     capture_stack_->error_occurred_ = true;
   }
 
+  void OnFrameDropped(media::VideoCaptureFrameDropReason) final {}
+
   void OnLog(const std::string& message) final {
     capture_stack_->log_messages_.push_back(message);
   }

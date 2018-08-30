@@ -906,6 +906,10 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   }
 }
 
+void VideoCaptureDeviceWin::FrameDropped(VideoCaptureFrameDropReason reason) {
+  client_->OnFrameDropped(reason);
+}
+
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetPinCapabilityList(capture_filter_, output_capture_pin_,

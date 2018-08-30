@@ -68,6 +68,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
                               int length,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp);
+  void OnFrameDropped(VideoCaptureFrameDropReason reason);
   void OnEvent(IMFMediaEvent* media_event);
 
   using CreateMFPhotoCallbackCB =
