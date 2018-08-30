@@ -185,6 +185,8 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
