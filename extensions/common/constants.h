@@ -227,6 +227,24 @@ extern const char kQuickOfficeExtensionId[];
 // The extension id used for testing mimeHandlerPrivate.
 extern const char kMimeHandlerPrivateTestExtensionId[];
 
+// The extension id of the Camera application.
+extern const char kCameraAppId[];
+
+// The extension id of the Chrome component application.
+extern const char kChromeAppId[];
+
+// The extension id of the Files Manager application.
+extern const char kFilesManagerAppId[];
+
+// The extension id of the Google Keep application.
+extern const char kGoogleKeepAppId[];
+
+// The extension id of the Youtube application.
+extern const char kYoutubeAppId[];
+
+// The extension id of the genius (Get Help) app.
+extern const char kGeniusAppId[];
+
 // The extension id for the production version of Hangouts.
 extern const char kProdHangoutsExtensionId[];
 

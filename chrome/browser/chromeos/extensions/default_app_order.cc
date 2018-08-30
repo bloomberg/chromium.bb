@@ -16,7 +16,6 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
@@ -63,7 +62,7 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGooglePlusAppId,
     extension_misc::kChromeRemoteDesktopAppId,
     extensions::kWebStoreAppId,
-    genius_app::kGeniusAppId,
+    extension_misc::kGeniusAppId,
 };
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL

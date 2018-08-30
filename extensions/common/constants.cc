@@ -108,6 +108,12 @@ const char kQuickOfficeInternalExtensionId[] =
 const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kMimeHandlerPrivateTestExtensionId[] =
     "oickdpebdnfbgkcaoklfcdhjniefkcji";
+const char kCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
+const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+const char kFilesManagerAppId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
+const char kGoogleKeepAppId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
+const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
+const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
 const char* const kHangoutsExtensionIds[6] = {

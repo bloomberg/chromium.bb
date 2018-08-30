@@ -869,7 +869,6 @@ source_set("chromeos") {
     "first_run/steps/help_step.h",
     "first_run/steps/tray_step.cc",
     "first_run/steps/tray_step.h",
-    "genius_app/app_id.h",
     "hats/hats_dialog.cc",
     "hats/hats_dialog.h",
     "hats/hats_finch_helper.cc",

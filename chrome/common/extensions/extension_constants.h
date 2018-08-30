@@ -27,17 +27,11 @@ extern const char kLaunchSourceAppListInfoDialog[];
 
 namespace extension_misc {
 
-// The extension id of the Camera application.
-extern const char kCameraAppId[];
-
 // The extension id of the Calculator application.
 extern const char kCalculatorAppId[];
 
 // The extension id of the Calendar application.
 extern const char kCalendarAppId[];
-
-// The extension id of the Chrome component application.
-extern const char kChromeAppId[];
 
 // The extension id of the Chrome Remote Desktop application.
 extern const char kChromeRemoteDesktopAppId[];
@@ -60,17 +54,11 @@ extern const char kEasyUnlockAppId[];
 // The extension id of the Enterprise Web Store component application.
 extern const char kEnterpriseWebStoreAppId[];
 
-// The extension id of the Files Manager application.
-extern const char kFilesManagerAppId[];
-
 // The extension id of GMail application.
 extern const char kGmailAppId[];
 
 // The extension id of the Google Doc application.
 extern const char kGoogleDocAppId[];
-
-// The extension id of the Google Keep application.
-extern const char kGoogleKeepAppId[];
 
 // The extension id of the Google Maps application.
 extern const char kGoogleMapsAppId[];
@@ -110,9 +98,6 @@ extern const char kCroshBuiltinAppId[];
 
 // The extension id of the Text Editor application.
 extern const char kTextEditorAppId[];
-
-// The extension id of the Youtube application.
-extern const char kYoutubeAppId[];
 
 // The extension id of the in-app payments support application.
 extern const char kInAppPaymentsSupportAppId[];
