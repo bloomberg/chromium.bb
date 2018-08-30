@@ -433,10 +433,10 @@ int32_t PepperTCPSocketMessageFilter::OnMsgWrite(
     return PP_ERROR_BADARGUMENT;
   }
 
-  write_buffer_base_ = new net::IOBuffer(data_size);
+  write_buffer_base_ = base::MakeRefCounted<net::IOBuffer>(data_size);
   memcpy(write_buffer_base_->data(), data.data(), data_size);
-  write_buffer_ =
-      new net::DrainableIOBuffer(write_buffer_base_.get(), data_size);
+  write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+      write_buffer_base_, data_size);
   DoWrite(context->MakeReplyMessageContext());
   return PP_OK_COMPLETIONPENDING;
 }

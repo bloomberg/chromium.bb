@@ -220,7 +220,7 @@ class SocketTunnel : public network::mojom::ResolveHostClient {
         base::Bind(
             &SocketTunnel::OnRead, base::Unretained(this), from, to, buffer));
     if (result != net::ERR_IO_PENDING)
-      OnRead(from, to, buffer, result);
+      OnRead(from, to, std::move(buffer), result);
   }
 
   void OnRead(net::StreamSocket* from,
@@ -234,7 +234,7 @@ class SocketTunnel : public network::mojom::ResolveHostClient {
 
     int total = result;
     scoped_refptr<net::DrainableIOBuffer> drainable =
-        new net::DrainableIOBuffer(buffer.get(), total);
+        base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer), total);
 
     ++pending_writes_;
     result = to->Write(drainable.get(), total,

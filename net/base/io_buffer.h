@@ -155,8 +155,8 @@ class NET_EXPORT StringIOBuffer : public IOBuffer {
 class NET_EXPORT DrainableIOBuffer : public IOBuffer {
  public:
   // TODO(eroman): Deprecated. Use the size_t flavor instead. crbug.com/488553
-  DrainableIOBuffer(IOBuffer* base, int size);
-  DrainableIOBuffer(IOBuffer* base, size_t size);
+  DrainableIOBuffer(scoped_refptr<IOBuffer> base, int size);
+  DrainableIOBuffer(scoped_refptr<IOBuffer> base, size_t size);
 
   // DidConsume() changes the |data_| pointer so that |data_| always points
   // to the first unconsumed byte.

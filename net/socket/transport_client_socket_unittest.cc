@@ -164,8 +164,9 @@ void TransportClientSocketTest::SendRequestAndResponse() {
   // Send client request.
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   int request_len = strlen(request_text);
-  scoped_refptr<DrainableIOBuffer> request_buffer(
-      new DrainableIOBuffer(new IOBuffer(request_len), request_len));
+  scoped_refptr<DrainableIOBuffer> request_buffer =
+      base::MakeRefCounted<DrainableIOBuffer>(
+          base::MakeRefCounted<IOBuffer>(request_len), request_len);
   memcpy(request_buffer->data(), request_text, request_len);
 
   int bytes_written = 0;
@@ -194,8 +195,9 @@ void TransportClientSocketTest::SendRequestAndResponse() {
 void TransportClientSocketTest::SendServerResponse() {
   // TODO(dkegel): this might not be long enough to tickle some bugs.
   int reply_len = strlen(kServerReply);
-  scoped_refptr<DrainableIOBuffer> write_buffer(
-      new DrainableIOBuffer(new IOBuffer(reply_len), reply_len));
+  scoped_refptr<DrainableIOBuffer> write_buffer =
+      base::MakeRefCounted<DrainableIOBuffer>(
+          base::MakeRefCounted<IOBuffer>(reply_len), reply_len);
   memcpy(write_buffer->data(), kServerReply, reply_len);
   int bytes_written = 0;
   while (write_buffer->BytesRemaining() > 0) {

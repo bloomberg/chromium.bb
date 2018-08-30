@@ -482,7 +482,7 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
   write_command_buf_ =
       base::MakeRefCounted<IOBufferWithSize>(command.length() + 2);
   write_buf_ = base::MakeRefCounted<DrainableIOBuffer>(
-      write_command_buf_.get(), write_command_buf_->size());
+      write_command_buf_, write_command_buf_->size());
   memcpy(write_command_buf_->data(), command.data(), command.length());
   memcpy(write_command_buf_->data() + command.length(), kCRLF, 2);
 

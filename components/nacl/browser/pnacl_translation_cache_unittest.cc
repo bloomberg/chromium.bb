@@ -66,8 +66,9 @@ void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
 void PnaclTranslationCacheTest::StoreNexe(const std::string& key,
                                           const std::string& nexe) {
   net::TestCompletionCallback store_cb;
-  scoped_refptr<net::DrainableIOBuffer> nexe_buf(
-      new net::DrainableIOBuffer(new net::StringIOBuffer(nexe), nexe.size()));
+  scoped_refptr<net::DrainableIOBuffer> nexe_buf =
+      base::MakeRefCounted<net::DrainableIOBuffer>(
+          base::MakeRefCounted<net::StringIOBuffer>(nexe), nexe.size());
   cache_->StoreNexe(key, nexe_buf.get(), store_cb.callback());
   // Using ERR_IO_PENDING here causes the callback to wait for the result
   // which should be harmless even if it returns OK immediately. This is because
@@ -229,9 +230,11 @@ TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
 
 TEST_F(PnaclTranslationCacheTest, InMemSizeLimit) {
   InitBackend(true);
-  scoped_refptr<net::DrainableIOBuffer> large_buffer(new net::DrainableIOBuffer(
-      new net::StringIOBuffer(std::string(kMaxMemCacheSize + 1, 'a')),
-      kMaxMemCacheSize + 1));
+  scoped_refptr<net::DrainableIOBuffer> large_buffer =
+      base::MakeRefCounted<net::DrainableIOBuffer>(
+          base::MakeRefCounted<net::StringIOBuffer>(
+              std::string(kMaxMemCacheSize + 1, 'a')),
+          kMaxMemCacheSize + 1);
   net::TestCompletionCallback store_cb;
   cache_->StoreNexe(test_key, large_buffer.get(), store_cb.callback());
   EXPECT_EQ(net::ERR_FAILED, store_cb.GetResult(net::ERR_IO_PENDING));

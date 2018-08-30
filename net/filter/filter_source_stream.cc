@@ -141,7 +141,7 @@ int FilterSourceStream::DoReadDataComplete(int result) {
 
   if (result >= OK) {
     drainable_input_buffer_ =
-        base::MakeRefCounted<DrainableIOBuffer>(input_buffer_.get(), result);
+        base::MakeRefCounted<DrainableIOBuffer>(input_buffer_, result);
     next_state_ = STATE_FILTER_DATA;
   }
   if (result <= OK)

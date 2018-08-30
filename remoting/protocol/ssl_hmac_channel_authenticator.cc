@@ -355,8 +355,8 @@ void SslHmacChannelAuthenticator::OnConnected(int result) {
   }
 
   // Allocate a buffer to write the digest.
-  auth_write_buf_ = new net::DrainableIOBuffer(
-      new net::StringIOBuffer(auth_bytes), auth_bytes.size());
+  auth_write_buf_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+      base::MakeRefCounted<net::StringIOBuffer>(auth_bytes), auth_bytes.size());
 
   // Read an incoming token.
   auth_read_buf_ = new net::GrowableIOBuffer();

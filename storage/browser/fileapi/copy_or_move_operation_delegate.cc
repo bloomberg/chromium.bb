@@ -661,7 +661,8 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
     return;
   }
 
-  Write(callback, new net::DrainableIOBuffer(io_buffer_.get(), result));
+  Write(callback,
+        base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, result));
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Write(

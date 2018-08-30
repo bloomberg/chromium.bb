@@ -470,7 +470,7 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     InformDelegateDownloadProgress();
 
     const int result = WriteBuffer(
-        base::MakeRefCounted<DrainableIOBuffer>(buffer_.get(), bytes_read));
+        base::MakeRefCounted<DrainableIOBuffer>(buffer_, bytes_read));
     if (result < 0) {
       // Write failed or waiting for write completion.
       return;

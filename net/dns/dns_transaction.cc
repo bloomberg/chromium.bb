@@ -652,7 +652,7 @@ class DnsTCPAttempt : public DnsAttempt {
     if (static_cast<int>(query_size) != query_->io_buffer()->size())
       return ERR_FAILED;
     base::WriteBigEndian<uint16_t>(length_buffer_->data(), query_size);
-    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_.get(),
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_,
                                                       length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
     return OK;
@@ -690,7 +690,7 @@ class DnsTCPAttempt : public DnsAttempt {
           base::BindOnce(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)),
           kTrafficAnnotation);
     }
-    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_.get(),
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_,
                                                       length_buffer_->size());
     next_state_ = STATE_READ_LENGTH;
     return OK;

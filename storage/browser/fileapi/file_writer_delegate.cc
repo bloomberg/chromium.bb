@@ -132,7 +132,8 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
     // This could easily be optimized to rotate between a pool of buffers, so
     // that we could read and write at the same time.  It's not yet clear that
     // it's necessary.
-    cursor_ = new net::DrainableIOBuffer(io_buffer_.get(), bytes_read_);
+    cursor_ =
+        base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, bytes_read_);
     Write();
   }
 }

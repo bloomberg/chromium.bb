@@ -215,15 +215,15 @@ void SetValue(T* address, T value) {
 class FakeFileStreamReader : public FileStreamReader {
  public:
   explicit FakeFileStreamReader(const std::string& contents)
-      : buffer_(new DrainableIOBuffer(
-            new net::StringIOBuffer(
+      : buffer_(base::MakeRefCounted<DrainableIOBuffer>(
+            base::MakeRefCounted<net::StringIOBuffer>(
                 std::unique_ptr<std::string>(new std::string(contents))),
             contents.size())),
         net_error_(net::OK),
         size_(contents.size()) {}
   FakeFileStreamReader(const std::string& contents, uint64_t size)
-      : buffer_(new DrainableIOBuffer(
-            new net::StringIOBuffer(
+      : buffer_(base::MakeRefCounted<DrainableIOBuffer>(
+            base::MakeRefCounted<net::StringIOBuffer>(
                 std::unique_ptr<std::string>(new std::string(contents))),
             contents.size())),
         net_error_(net::OK),

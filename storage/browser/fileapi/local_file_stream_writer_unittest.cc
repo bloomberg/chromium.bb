@@ -49,9 +49,11 @@ class LocalFileStreamWriterTest : public testing::Test {
 
   int WriteStringToWriter(LocalFileStreamWriter* writer,
                           const std::string& data) {
-    scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(data));
-    scoped_refptr<net::DrainableIOBuffer> drainable(
-        new net::DrainableIOBuffer(buffer.get(), buffer->size()));
+    scoped_refptr<net::StringIOBuffer> buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(data);
+    scoped_refptr<net::DrainableIOBuffer> drainable =
+        base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer),
+                                                     data.size());
 
     while (drainable->BytesRemaining() > 0) {
       net::TestCompletionCallback callback;

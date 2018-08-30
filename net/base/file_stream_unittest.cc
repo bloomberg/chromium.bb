@@ -47,8 +47,9 @@ constexpr char kTestData[] = "0123456789";
 constexpr int kTestDataSize = base::size(kTestData) - 1;
 
 // Creates an IOBufferWithSize that contains the kTestDataSize.
-IOBufferWithSize* CreateTestDataBuffer() {
-  IOBufferWithSize* buf = new IOBufferWithSize(kTestDataSize);
+scoped_refptr<IOBufferWithSize> CreateTestDataBuffer() {
+  scoped_refptr<IOBufferWithSize> buf =
+      base::MakeRefCounted<IOBufferWithSize>(kTestDataSize);
   memcpy(buf->data(), kTestData, kTestDataSize);
   return buf;
 }
@@ -351,9 +352,10 @@ TEST_F(FileStreamTest, Write_FromOffset) {
 
   int total_bytes_written = 0;
 
-  scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
+  scoped_refptr<IOBufferWithSize> buffer = CreateTestDataBuffer();
+  int buffer_size = buffer->size();
   scoped_refptr<DrainableIOBuffer> drainable =
-      base::MakeRefCounted<DrainableIOBuffer>(buf.get(), buf->size());
+      base::MakeRefCounted<DrainableIOBuffer>(std::move(buffer), buffer_size);
   while (total_bytes_written != kTestDataSize) {
     rv = stream.Write(drainable.get(), drainable->BytesRemaining(),
                       callback.callback());
@@ -402,9 +404,10 @@ TEST_F(FileStreamTest, BasicReadWrite) {
 
   int total_bytes_written = 0;
 
-  scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
+  scoped_refptr<IOBufferWithSize> buffer = CreateTestDataBuffer();
+  int buffer_size = buffer->size();
   scoped_refptr<DrainableIOBuffer> drainable =
-      base::MakeRefCounted<DrainableIOBuffer>(buf.get(), buf->size());
+      base::MakeRefCounted<DrainableIOBuffer>(std::move(buffer), buffer_size);
   while (total_bytes_written != kTestDataSize) {
     rv = stream->Write(drainable.get(), drainable->BytesRemaining(),
                        callback.callback());
@@ -444,9 +447,10 @@ TEST_F(FileStreamTest, BasicWriteRead) {
 
   int total_bytes_written = 0;
 
-  scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
+  scoped_refptr<IOBufferWithSize> buffer = CreateTestDataBuffer();
+  int buffer_size = buffer->size();
   scoped_refptr<DrainableIOBuffer> drainable =
-      base::MakeRefCounted<DrainableIOBuffer>(buf.get(), buf->size());
+      base::MakeRefCounted<DrainableIOBuffer>(std::move(buffer), buffer_size);
   while (total_bytes_written != kTestDataSize) {
     rv = stream->Write(drainable.get(), drainable->BytesRemaining(),
                        callback.callback());
@@ -505,9 +509,9 @@ class TestWriteReadCompletionCallback {
         total_bytes_written_(total_bytes_written),
         total_bytes_read_(total_bytes_read),
         data_read_(data_read),
-        test_data_(CreateTestDataBuffer()),
-        drainable_(base::MakeRefCounted<DrainableIOBuffer>(test_data_.get(),
-                                                           kTestDataSize)) {}
+        drainable_(
+            base::MakeRefCounted<DrainableIOBuffer>(CreateTestDataBuffer(),
+                                                    kTestDataSize)) {}
 
   int WaitForResult() {
     DCHECK(!waiting_for_result_);
@@ -588,7 +592,6 @@ class TestWriteReadCompletionCallback {
   int* total_bytes_written_;
   int* total_bytes_read_;
   std::string* data_read_;
-  scoped_refptr<IOBufferWithSize> test_data_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWriteReadCompletionCallback);
@@ -646,9 +649,9 @@ class TestWriteCloseCompletionCallback {
         waiting_for_result_(false),
         stream_(stream),
         total_bytes_written_(total_bytes_written),
-        test_data_(CreateTestDataBuffer()),
-        drainable_(base::MakeRefCounted<DrainableIOBuffer>(test_data_.get(),
-                                                           kTestDataSize)) {}
+        drainable_(
+            base::MakeRefCounted<DrainableIOBuffer>(CreateTestDataBuffer(),
+                                                    kTestDataSize)) {}
 
   int WaitForResult() {
     DCHECK(!waiting_for_result_);
@@ -696,7 +699,6 @@ class TestWriteCloseCompletionCallback {
   bool waiting_for_result_;
   FileStream* stream_;
   int* total_bytes_written_;
-  scoped_refptr<IOBufferWithSize> test_data_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWriteCloseCompletionCallback);

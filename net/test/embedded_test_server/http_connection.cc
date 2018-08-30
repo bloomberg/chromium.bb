@@ -27,8 +27,10 @@ HttpConnection::~HttpConnection() {
 void HttpConnection::SendResponseBytes(const std::string& response_string,
                                        const SendCompleteCallback& callback) {
   if (response_string.length() > 0) {
-    scoped_refptr<DrainableIOBuffer> write_buf(new DrainableIOBuffer(
-        new StringIOBuffer(response_string), response_string.length()));
+    scoped_refptr<DrainableIOBuffer> write_buf =
+        base::MakeRefCounted<DrainableIOBuffer>(
+            base::MakeRefCounted<StringIOBuffer>(response_string),
+            response_string.length());
 
     SendInternal(callback, write_buf);
   } else {
