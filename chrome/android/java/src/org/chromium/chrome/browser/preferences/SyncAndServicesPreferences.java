@@ -263,7 +263,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         if (Profile.getLastUsedProfile().isChild()) {
             mGoogleActivityControls.setSummary(
-                    R.string.sign_in_google_activity_controls_message_child_account);
+                    R.string.sign_in_google_activity_controls_summary_child_account);
         }
 
         updatePreferences();
