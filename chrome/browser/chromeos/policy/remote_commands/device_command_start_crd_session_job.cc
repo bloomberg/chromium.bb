@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -18,6 +19,11 @@
 namespace policy {
 
 namespace {
+
+constexpr char kUMADeviceIsIdle[] =
+    "Enterprise.RemoteCommand.RemoteSession.DeviceIsIdle";
+constexpr char kUMAIdlenessOverride[] =
+    "Enterprise.RemoteCommand.RemoteSession.IdlenessOverride";
 
 // Job parameters fields:
 
@@ -191,7 +197,12 @@ void DeviceCommandStartCRDSessionJob::RunImpl(
     return;
   }
 
-  if (delegate_->GetIdlenessPeriod() < idleness_cutoff_) {
+  bool device_is_idle = delegate_->GetIdlenessPeriod() >= idleness_cutoff_;
+
+  UMA_HISTOGRAM_BOOLEAN(kUMADeviceIsIdle, device_is_idle);
+  UMA_HISTOGRAM_BOOLEAN(kUMAIdlenessOverride, idleness_cutoff_.is_zero());
+
+  if (!device_is_idle) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(failed_callback_),
                                   ResultPayload::CreateNonIdlePayload(
