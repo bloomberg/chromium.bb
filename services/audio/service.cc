@@ -136,16 +136,8 @@ void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
 void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
-
-  // Reuse ref if there is an ongoing debug session that will be overriden, to
-  // avoid MaybeRequestQuitDelayed() call.
-  TracedServiceRef service_ref;
-  if (debug_recording_) {
-    service_ref = debug_recording_->ReleaseServiceRef();
-  } else {
-    service_ref = TracedServiceRef(ref_factory_->CreateRef(),
-                                   "audio::DebugRecording Binding");
-  }
+  TracedServiceRef service_ref(ref_factory_->CreateRef(),
+                               "audio::DebugRecording Binding");
 
   // Accept only one bind request at a time. Old request is overwritten.
   // |debug_recording_| must be reset first to disable debug recording, and then

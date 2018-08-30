@@ -34,11 +34,6 @@ class DebugRecording : public mojom::DebugRecording {
   // Enables audio debug recording.
   void Enable(mojom::DebugRecordingFileProviderPtr file_provider) override;
 
-  // Releases and returns service ref. Used when creating a new debug recording
-  // session while there is an ongoing debug recording session. Ref is
-  // transfered to the latest debug recording session.
-  TracedServiceRef ReleaseServiceRef();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugRecordingTest,
                            CreateWavFileCallsFileProviderCreateWavFile);
