@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 #include "chrome/common/chrome_features.h"
@@ -118,9 +119,16 @@ std::unique_ptr<base::DictionaryValue> MakeDictionaryFromNotification(
   result->SetInteger("progress", notification.progress());
   return result;
 }
+
+#else
+
+constexpr char kOnlyAvailableOnChromeOSError[] = "Only available on ChromeOS";
+
 #endif
 
 }  // namespace
+
+AutotestPrivateLogoutFunction::~AutotestPrivateLogoutFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateLogoutFunction::Run() {
   DVLOG(1) << "AutotestPrivateLogoutFunction";
@@ -129,12 +137,16 @@ ExtensionFunction::ResponseAction AutotestPrivateLogoutFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateRestartFunction::~AutotestPrivateRestartFunction() = default;
+
 ExtensionFunction::ResponseAction AutotestPrivateRestartFunction::Run() {
   DVLOG(1) << "AutotestPrivateRestartFunction";
   if (!IsTestMode(browser_context()))
     chrome::AttemptRestart();
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateShutdownFunction::~AutotestPrivateShutdownFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateShutdownFunction::Run() {
   std::unique_ptr<api::autotest_private::Shutdown::Params> params(
@@ -147,6 +159,9 @@ ExtensionFunction::ResponseAction AutotestPrivateShutdownFunction::Run() {
     chrome::AttemptExit();
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateLoginStatusFunction::~AutotestPrivateLoginStatusFunction() =
+    default;
 
 ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
@@ -208,6 +223,9 @@ void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
 }
 #endif
 
+AutotestPrivateLockScreenFunction::~AutotestPrivateLockScreenFunction() =
+    default;
+
 ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";
 #if defined(OS_CHROMEOS)
@@ -216,6 +234,9 @@ ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
 #endif
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateGetExtensionsInfoFunction::
+    ~AutotestPrivateGetExtensionsInfoFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateGetExtensionsInfoFunction::Run() {
@@ -283,6 +304,9 @@ static int AccessArray(const volatile int arr[], const volatile int *index) {
   return arr[*index];
 }
 
+AutotestPrivateSimulateAsanMemoryBugFunction::
+    ~AutotestPrivateSimulateAsanMemoryBugFunction() = default;
+
 ExtensionFunction::ResponseAction
 AutotestPrivateSimulateAsanMemoryBugFunction::Run() {
   DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
@@ -296,6 +320,9 @@ AutotestPrivateSimulateAsanMemoryBugFunction::Run() {
   }
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateSetTouchpadSensitivityFunction::
+    ~AutotestPrivateSetTouchpadSensitivityFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateSetTouchpadSensitivityFunction::Run() {
@@ -312,6 +339,9 @@ AutotestPrivateSetTouchpadSensitivityFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateSetTapToClickFunction::~AutotestPrivateSetTapToClickFunction() =
+    default;
+
 ExtensionFunction::ResponseAction AutotestPrivateSetTapToClickFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTapToClick::Params> params(
       api::autotest_private::SetTapToClick::Params::Create(*args_));
@@ -324,6 +354,9 @@ ExtensionFunction::ResponseAction AutotestPrivateSetTapToClickFunction::Run() {
 #endif
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateSetThreeFingerClickFunction::
+    ~AutotestPrivateSetThreeFingerClickFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateSetThreeFingerClickFunction::Run() {
@@ -340,6 +373,9 @@ AutotestPrivateSetThreeFingerClickFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateSetTapDraggingFunction::
+    ~AutotestPrivateSetTapDraggingFunction() = default;
+
 ExtensionFunction::ResponseAction AutotestPrivateSetTapDraggingFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTapDragging::Params> params(
       api::autotest_private::SetTapDragging::Params::Create(*args_));
@@ -352,6 +388,9 @@ ExtensionFunction::ResponseAction AutotestPrivateSetTapDraggingFunction::Run() {
 #endif
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateSetNaturalScrollFunction::
+    ~AutotestPrivateSetNaturalScrollFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateSetNaturalScrollFunction::Run() {
@@ -368,6 +407,9 @@ AutotestPrivateSetNaturalScrollFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateSetMouseSensitivityFunction::
+    ~AutotestPrivateSetMouseSensitivityFunction() = default;
+
 ExtensionFunction::ResponseAction
 AutotestPrivateSetMouseSensitivityFunction::Run() {
   std::unique_ptr<api::autotest_private::SetMouseSensitivity::Params> params(
@@ -383,6 +425,9 @@ AutotestPrivateSetMouseSensitivityFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateSetPrimaryButtonRightFunction::
+    ~AutotestPrivateSetPrimaryButtonRightFunction() = default;
+
 ExtensionFunction::ResponseAction
 AutotestPrivateSetPrimaryButtonRightFunction::Run() {
   std::unique_ptr<api::autotest_private::SetPrimaryButtonRight::Params> params(
@@ -397,6 +442,9 @@ AutotestPrivateSetPrimaryButtonRightFunction::Run() {
 #endif
   return RespondNow(NoArguments());
 }
+
+AutotestPrivateSetMouseReverseScrollFunction::
+    ~AutotestPrivateSetMouseReverseScrollFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateSetMouseReverseScrollFunction::Run() {
@@ -462,6 +510,9 @@ std::string AutotestPrivateGetPrinterListFunction::GetPrinterType(
   }
 }
 #endif
+
+AutotestPrivateGetPrinterListFunction::
+    ~AutotestPrivateGetPrinterListFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
@@ -546,6 +597,9 @@ ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+AutotestPrivateGetPlayStoreStateFunction::
+    ~AutotestPrivateGetPlayStoreStateFunction() = default;
+
 ExtensionFunction::ResponseAction
 AutotestPrivateGetPlayStoreStateFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetPlayStoreStateFunction";
@@ -564,13 +618,16 @@ AutotestPrivateGetPlayStoreStateFunction::Run() {
   return RespondNow(OneArgument(play_store_state.ToValue()));
 }
 
+AutotestPrivateSetPlayStoreEnabledFunction::
+    ~AutotestPrivateSetPlayStoreEnabledFunction() = default;
+
 ExtensionFunction::ResponseAction
 AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetPlayStoreEnabledFunction";
+#if defined(OS_CHROMEOS)
   std::unique_ptr<api::autotest_private::SetPlayStoreEnabled::Params> params(
       api::autotest_private::SetPlayStoreEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-#if defined(OS_CHROMEOS)
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (arc::IsArcAllowedForProfile(profile)) {
     if (!arc::SetArcPlayStoreEnabledForProfile(profile, params->enabled)) {
@@ -583,9 +640,38 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   } else {
     return RespondNow(Error("ARC is not available for the current user"));
   }
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
 #endif
-  return RespondNow(Error("ARC is not available for the current platform"));
 }
+
+AutotestPrivateIsAppShownFunction::~AutotestPrivateIsAppShownFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
+  DVLOG(1) << "AutotestPrivateIsAppShownFunction";
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<api::autotest_private::IsAppShown::Params> params(
+      api::autotest_private::IsAppShown::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  const ash::ShelfItem* item =
+      controller->GetItem(ash::ShelfID(params->app_id));
+  const bool window_attached =
+      item && item->status == ash::ShelfItemStatus::STATUS_RUNNING;
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(window_attached)));
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
+AutotestPrivateRunCrostiniInstallerFunction::
+    ~AutotestPrivateRunCrostiniInstallerFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateRunCrostiniInstallerFunction::Run() {
@@ -609,8 +695,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
 
   return RespondLater();
 #else
-  return RespondNow(
-      Error("Crostini is not available for the current platform"));
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
 #endif
 }
 

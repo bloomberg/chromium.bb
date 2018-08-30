@@ -86,6 +86,8 @@ namespace autotestPrivate {
   };
   callback PlayStoreStateCallback = void (PlayStoreState result);
 
+  callback IsAppShownCallback = void (boolean appShown);
+
   callback VoidCallback = void ();
 
   interface Functions {
@@ -151,6 +153,9 @@ namespace autotestPrivate {
 
     // Get list of available printers
     static void getPrinterList(PrinterArrayCallback callback);
+
+    // Returns true if requested app is shown in Chrome.
+    static void isAppShown(DOMString appId, IsAppShownCallback callback);
 
     // Update printer. Printer with empty ID is considered new.
     static void updatePrinter(Printer printer);

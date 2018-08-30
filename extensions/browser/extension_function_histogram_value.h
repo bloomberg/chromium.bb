@@ -1329,6 +1329,7 @@ enum HistogramValue {
   ARCAPPSPRIVATE_LAUNCHAPP = 1266,
   AUTOTESTPRIVATE_RUNCROSTINIINSTALLER = 1267,
   AUTOFILLPRIVATE_MIGRATECREDITCARDS = 1268,
+  AUTOTESTPRIVATE_ISAPPSHOWN = 1269,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

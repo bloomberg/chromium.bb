@@ -113,22 +113,43 @@ chrome.test.runTests([
     chrome.autotestPrivate.getVisibleNotifications(function(){});
     chrome.test.succeed();
   },
+  // In this test, ARC is available but not managed and not enabled by default.
   function getPlayStoreState() {
     chrome.autotestPrivate.getPlayStoreState(function(state) {
-      // By default ARC is not available. Field allowed must be set to false;
-      // managed and enabled should be underfined.
-      chrome.test.assertFalse(state.allowed);
-      chrome.test.assertEq(undefined, state.enabled);
-      chrome.test.assertEq(undefined, state.managed);
+      chrome.test.assertTrue(state.allowed);
+      chrome.test.assertFalse(state.enabled);
+      chrome.test.assertFalse(state.managed);
       chrome.test.succeed();
     });
   },
+  // This test turns ARC enabled state to ON.
   function setPlayStoreEnabled() {
-    chrome.autotestPrivate.setPlayStoreEnabled(false, function() {
-      // By default ARC is not available.
-      chrome.test.assertTrue(chrome.runtime.lastError != undefined);
-      chrome.test.succeed();
+    chrome.autotestPrivate.setPlayStoreEnabled(true, function() {
+      chrome.test.assertNoLastError();
+      chrome.autotestPrivate.getPlayStoreState(function(state) {
+        chrome.test.assertTrue(state.allowed);
+        chrome.test.assertTrue(state.enabled);
+        chrome.test.assertFalse(state.managed);
+        chrome.test.succeed();
+      });
     });
+  },
+  // This test verifies that Play Store window is not shown by default but
+  // Chrome is shown.
+  function isAppShown() {
+    chrome.autotestPrivate.isAppShown('cnbgggchhmkkdmeppjobngjoejnihlei',
+        function(appShown) {
+          chrome.test.assertFalse(appShown);
+          chrome.test.assertNoLastError();
+
+          // Chrome is running.
+          chrome.autotestPrivate.isAppShown('mgndgikekgjfcpckkfioiadnlibdjbkf',
+              function(appShown) {
+                 chrome.test.assertTrue(appShown);
+                 chrome.test.assertNoLastError();
+                 chrome.test.succeed();
+            });
+        });
   },
   function runCrostiniInstaller() {
     chrome.autotestPrivate.runCrostiniInstaller(chrome.test.callbackFail(

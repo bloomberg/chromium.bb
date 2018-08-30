@@ -34,7 +34,7 @@ class AutotestPrivateLogoutFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.logout", AUTOTESTPRIVATE_LOGOUT)
 
  private:
-  ~AutotestPrivateLogoutFunction() override {}
+  ~AutotestPrivateLogoutFunction() override;
   ResponseAction Run() override;
 };
 
@@ -43,7 +43,7 @@ class AutotestPrivateRestartFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.restart", AUTOTESTPRIVATE_RESTART)
 
  private:
-  ~AutotestPrivateRestartFunction() override {}
+  ~AutotestPrivateRestartFunction() override;
   ResponseAction Run() override;
 };
 
@@ -53,7 +53,7 @@ class AutotestPrivateShutdownFunction : public UIThreadExtensionFunction {
                              AUTOTESTPRIVATE_SHUTDOWN)
 
  private:
-  ~AutotestPrivateShutdownFunction() override {}
+  ~AutotestPrivateShutdownFunction() override;
   ResponseAction Run() override;
 };
 
@@ -63,7 +63,7 @@ class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
                              AUTOTESTPRIVATE_LOGINSTATUS)
 
  private:
-  ~AutotestPrivateLoginStatusFunction() override {}
+  ~AutotestPrivateLoginStatusFunction() override;
   ResponseAction Run() override;
 
 #if defined(OS_CHROMEOS)
@@ -77,7 +77,7 @@ class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
                              AUTOTESTPRIVATE_LOCKSCREEN)
 
  private:
-  ~AutotestPrivateLockScreenFunction() override {}
+  ~AutotestPrivateLockScreenFunction() override;
   ResponseAction Run() override;
 };
 
@@ -88,7 +88,7 @@ class AutotestPrivateGetExtensionsInfoFunction
                              AUTOTESTPRIVATE_GETEXTENSIONSINFO)
 
  private:
-  ~AutotestPrivateGetExtensionsInfoFunction() override {}
+  ~AutotestPrivateGetExtensionsInfoFunction() override;
   ResponseAction Run() override;
 };
 
@@ -99,7 +99,7 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
                              AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG)
 
  private:
-  ~AutotestPrivateSimulateAsanMemoryBugFunction() override {}
+  ~AutotestPrivateSimulateAsanMemoryBugFunction() override;
   ResponseAction Run() override;
 };
 
@@ -110,7 +110,7 @@ class AutotestPrivateSetTouchpadSensitivityFunction
                              AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY)
 
  private:
-  ~AutotestPrivateSetTouchpadSensitivityFunction() override {}
+  ~AutotestPrivateSetTouchpadSensitivityFunction() override;
   ResponseAction Run() override;
 };
 
@@ -120,7 +120,7 @@ class AutotestPrivateSetTapToClickFunction : public UIThreadExtensionFunction {
                              AUTOTESTPRIVATE_SETTAPTOCLICK)
 
  private:
-  ~AutotestPrivateSetTapToClickFunction() override {}
+  ~AutotestPrivateSetTapToClickFunction() override;
   ResponseAction Run() override;
 };
 
@@ -131,7 +131,7 @@ class AutotestPrivateSetThreeFingerClickFunction
                              AUTOTESTPRIVATE_SETTHREEFINGERCLICK)
 
  private:
-  ~AutotestPrivateSetThreeFingerClickFunction() override {}
+  ~AutotestPrivateSetThreeFingerClickFunction() override;
   ResponseAction Run() override;
 };
 
@@ -141,7 +141,7 @@ class AutotestPrivateSetTapDraggingFunction : public UIThreadExtensionFunction {
                              AUTOTESTPRIVATE_SETTAPDRAGGING)
 
  private:
-  ~AutotestPrivateSetTapDraggingFunction() override {}
+  ~AutotestPrivateSetTapDraggingFunction() override;
   ResponseAction Run() override;
 };
 
@@ -152,7 +152,7 @@ class AutotestPrivateSetNaturalScrollFunction
                              AUTOTESTPRIVATE_SETNATURALSCROLL)
 
  private:
-  ~AutotestPrivateSetNaturalScrollFunction() override {}
+  ~AutotestPrivateSetNaturalScrollFunction() override;
   ResponseAction Run() override;
 };
 
@@ -163,7 +163,7 @@ class AutotestPrivateSetMouseSensitivityFunction
                              AUTOTESTPRIVATE_SETMOUSESENSITIVITY)
 
  private:
-  ~AutotestPrivateSetMouseSensitivityFunction() override {}
+  ~AutotestPrivateSetMouseSensitivityFunction() override;
   ResponseAction Run() override;
 };
 
@@ -174,7 +174,7 @@ class AutotestPrivateSetPrimaryButtonRightFunction
                              AUTOTESTPRIVATE_SETPRIMARYBUTTONRIGHT)
 
  private:
-  ~AutotestPrivateSetPrimaryButtonRightFunction() override {}
+  ~AutotestPrivateSetPrimaryButtonRightFunction() override;
   ResponseAction Run() override;
 };
 
@@ -185,7 +185,7 @@ class AutotestPrivateSetMouseReverseScrollFunction
                              AUTOTESTPRIVATE_SETMOUSEREVERSESCROLL)
 
  private:
-  ~AutotestPrivateSetMouseReverseScrollFunction() override {}
+  ~AutotestPrivateSetMouseReverseScrollFunction() override;
   ResponseAction Run() override;
 };
 
@@ -216,7 +216,7 @@ class AutotestPrivateGetPlayStoreStateFunction
                              AUTOTESTPRIVATE_GETPLAYSTORESTATE)
 
  private:
-  ~AutotestPrivateGetPlayStoreStateFunction() override {}
+  ~AutotestPrivateGetPlayStoreStateFunction() override;
   ResponseAction Run() override;
 };
 
@@ -227,7 +227,17 @@ class AutotestPrivateSetPlayStoreEnabledFunction
                              AUTOTESTPRIVATE_SETPLAYSTOREENABLED)
 
  private:
-  ~AutotestPrivateSetPlayStoreEnabledFunction() override {}
+  ~AutotestPrivateSetPlayStoreEnabledFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isAppShown",
+                             AUTOTESTPRIVATE_ISAPPSHOWN)
+
+ private:
+  ~AutotestPrivateIsAppShownFunction() override;
   ResponseAction Run() override;
 };
 
@@ -239,7 +249,7 @@ class AutotestPrivateRunCrostiniInstallerFunction
                              AUTOTESTPRIVATE_RUNCROSTINIINSTALLER)
 
  private:
-  ~AutotestPrivateRunCrostiniInstallerFunction() override = default;
+  ~AutotestPrivateRunCrostiniInstallerFunction() override;
   ResponseAction Run() override;
 #if defined(OS_CHROMEOS)
   void CrostiniRestarted(crostini::ConciergeClientResult);
@@ -259,7 +269,7 @@ class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {
   static std::string GetPrinterType(
       chromeos::CupsPrintersManager::PrinterClass type);
 #endif
-  ~AutotestPrivateGetPrinterListFunction() override = default;
+  ~AutotestPrivateGetPrinterListFunction() override;
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateGetPrinterListFunction);
