@@ -3884,10 +3884,10 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS" desc="The label in an extension's context menu for the submenu specifying whether or not the extension can run on the current page (sentence case).">
-            Allow access
+            This can read and change site data
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK" desc="The label in an extension's context menu to allow the extension access to the page only when the user clicks on the extension action (sentence case).">
-            On click
+            When you click the extension
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE" desc="The label in an extension's context menu to always allow the extension access to the current origin (sentence case).">
             On <ph name="ORIGIN">$1<ex>google.com</ex></ph>
@@ -3922,10 +3922,10 @@ are declared in tools/grit/grit_rule.gni.
         </if>
         <if expr="use_titlecase">
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS" desc="The label in an extension's context menu for the submenu specifying whether or not the extension can run on the current page (title case).">
-            Allow Access
+            This Can Read and Change Site Data
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK" desc="The label in an extension's context menu to allow the extension access to the page only when the user clicks on the extension action (title case).">
-            On Click
+            When You Click the Extension
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE" desc="The label in an extension's context menu to always allow the extension access to the current origin (title case).">
             On <ph name="ORIGIN">$1<ex>google.com</ex></ph>
