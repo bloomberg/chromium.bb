@@ -9,22 +9,28 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 
 namespace chromeos {
 
 class ReadyScreenHandler : public BaseWebUIHandler {
  public:
-  ReadyScreenHandler();
+  explicit ReadyScreenHandler(OnAssistantOptInScreenExitCallback callback);
   ~ReadyScreenHandler() override;
 
   // BaseWebUIHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void RegisterMessages() override;
   void Initialize() override;
 
  private:
+  void HandleUserAction(const std::string& action);
+  void HandleScreenShown();
+
+  OnAssistantOptInScreenExitCallback exit_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(ReadyScreenHandler);
 };
 

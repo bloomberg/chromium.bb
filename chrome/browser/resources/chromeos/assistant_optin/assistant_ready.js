@@ -19,7 +19,7 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    chrome.send('dialogClose');
+    chrome.send('assistant.ReadyScreen.userActed', ['next-pressed']);
   },
 
   /**
@@ -27,5 +27,6 @@ Polymer({
    */
   onShow: function() {
     this.$['next-button'].focus();
+    chrome.send('assistant.ReadyScreen.screenShown');
   },
 });

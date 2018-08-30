@@ -40,6 +40,13 @@ Polymer({
   consentStringLoaded_: false,
 
   /**
+   * Whether the screen has been shown to the user.
+   * @type {boolean}
+   * @private
+   */
+  screenShown_: false,
+
+  /**
    * On-tap event handler for next button.
    *
    * @private
@@ -53,7 +60,7 @@ Polymer({
     // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
     chrome.send('hotwordResult', [hotword]);
     chrome.send(
-        'AssistantGetMoreScreen.userActed', [screenContext, emailOptedIn]);
+        'assistant.GetMoreScreen.userActed', [screenContext, emailOptedIn]);
   },
 
   /**
@@ -131,6 +138,10 @@ Polymer({
     this.fire('loaded');
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
+    if (!this.hidden && !this.screenShown_) {
+      chrome.send('assistant.GetMoreScreen.screenShown');
+      this.screenShown_ = true;
+    }
   },
 
   /**
@@ -141,6 +152,8 @@ Polymer({
       this.reloadPage();
     } else {
       this.$['next-button'].focus();
+      chrome.send('assistant.GetMoreScreen.screenShown');
+      this.screenShown_ = true;
     }
   },
 });

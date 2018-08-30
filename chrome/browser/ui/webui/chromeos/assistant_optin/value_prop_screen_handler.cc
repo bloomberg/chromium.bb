@@ -10,7 +10,7 @@
 
 namespace {
 
-constexpr char kJsScreenPath[] = "AssistantValuePropScreen";
+constexpr char kJsScreenPath[] = "assistant.ValuePropScreen";
 
 constexpr char kUserActionSkipPressed[] = "skip-pressed";
 constexpr char kUserActionNextPressed[] = "next-pressed";
@@ -49,6 +49,8 @@ void ValuePropScreenHandler::DeclareLocalizedValues(
 
 void ValuePropScreenHandler::RegisterMessages() {
   AddPrefixedCallback("userActed", &ValuePropScreenHandler::HandleUserAction);
+  AddPrefixedCallback("screenShown",
+                      &ValuePropScreenHandler::HandleScreenShown);
 }
 
 void ValuePropScreenHandler::Initialize() {}
@@ -61,6 +63,10 @@ void ValuePropScreenHandler::HandleUserAction(const std::string& action) {
   else if (action == kUserActionNextPressed)
     std::move(exit_callback_)
         .Run(AssistantOptInScreenExitCode::VALUE_PROP_ACCEPTED);
+}
+
+void ValuePropScreenHandler::HandleScreenShown() {
+  RecordAssistantOptInStatus(ACTIVITY_CONTROL_SHOWN);
 }
 
 }  // namespace chromeos

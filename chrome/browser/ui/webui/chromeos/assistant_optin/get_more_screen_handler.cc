@@ -13,7 +13,7 @@
 
 namespace {
 
-constexpr char kJsScreenPath[] = "AssistantGetMoreScreen";
+constexpr char kJsScreenPath[] = "assistant.GetMoreScreen";
 
 }  // namespace
 
@@ -32,6 +32,7 @@ void GetMoreScreenHandler::DeclareLocalizedValues(
 
 void GetMoreScreenHandler::RegisterMessages() {
   AddPrefixedCallback("userActed", &GetMoreScreenHandler::HandleUserAction);
+  AddPrefixedCallback("screenShown", &GetMoreScreenHandler::HandleScreenShown);
 }
 
 void GetMoreScreenHandler::Initialize() {}
@@ -42,6 +43,7 @@ void GetMoreScreenHandler::HandleUserAction(const bool screen_context,
   prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled,
                     screen_context);
 
+  RecordAssistantOptInStatus(GET_MORE_CONTINUED);
   DCHECK(exit_callback_);
   if (email_opted_in) {
     std::move(exit_callback_).Run(AssistantOptInScreenExitCode::EMAIL_OPTED_IN);
@@ -49,6 +51,10 @@ void GetMoreScreenHandler::HandleUserAction(const bool screen_context,
     std::move(exit_callback_)
         .Run(AssistantOptInScreenExitCode::EMAIL_OPTED_OUT);
   }
+}
+
+void GetMoreScreenHandler::HandleScreenShown() {
+  RecordAssistantOptInStatus(GET_MORE_SHOWN);
 }
 
 }  // namespace chromeos
