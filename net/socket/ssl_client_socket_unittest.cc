@@ -1841,8 +1841,10 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
   std::string request_text = "GET / HTTP/1.1\r\nUser-Agent: long browser name ";
   request_text.append(20 * 1024, '*');
   request_text.append("\r\n\r\n");
-  scoped_refptr<DrainableIOBuffer> request_buffer(new DrainableIOBuffer(
-      new StringIOBuffer(request_text), request_text.size()));
+  scoped_refptr<DrainableIOBuffer> request_buffer =
+      base::MakeRefCounted<DrainableIOBuffer>(
+          base::MakeRefCounted<StringIOBuffer>(request_text),
+          request_text.size());
 
   // Simulate errors being returned from the underlying Read() and Write() ...
   raw_error_socket->SetNextReadError(ERR_CONNECTION_RESET);
@@ -1949,8 +1951,10 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
       "GET / HTTP/1.1\r\nUser-Agent: long browser name ";
   long_request_text.append(20 * 1024, '*');
   long_request_text.append("\r\n\r\n");
-  scoped_refptr<DrainableIOBuffer> long_request_buffer(new DrainableIOBuffer(
-      new StringIOBuffer(long_request_text), long_request_text.size()));
+  scoped_refptr<DrainableIOBuffer> long_request_buffer =
+      base::MakeRefCounted<DrainableIOBuffer>(
+          base::MakeRefCounted<StringIOBuffer>(long_request_text),
+          long_request_text.size());
 
   raw_error_socket->SetNextWriteError(ERR_CONNECTION_RESET);
 

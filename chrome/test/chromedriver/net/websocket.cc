@@ -63,8 +63,10 @@ WebSocket::WebSocket(const GURL& url, WebSocketListener* listener)
     : url_(url),
       listener_(listener),
       state_(INITIALIZED),
-      write_buffer_(new net::DrainableIOBuffer(new net::IOBuffer(0), 0)),
-      read_buffer_(new net::IOBufferWithSize(4096)) {}
+      write_buffer_(base::MakeRefCounted<net::DrainableIOBuffer>(
+          base::MakeRefCounted<net::IOBuffer>(0),
+          0)),
+      read_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(4096)) {}
 
 WebSocket::~WebSocket() {
   CHECK(thread_checker_.CalledOnValidThread());
@@ -189,8 +191,8 @@ void WebSocket::ContinueWritingIfNecessary() {
   if (!write_buffer_->BytesRemaining()) {
     if (pending_write_.empty())
       return;
-    write_buffer_ = new net::DrainableIOBuffer(
-        new net::StringIOBuffer(pending_write_),
+    write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+        base::MakeRefCounted<net::StringIOBuffer>(pending_write_),
         pending_write_.length());
     pending_write_.clear();
   }

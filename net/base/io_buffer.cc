@@ -92,16 +92,13 @@ StringIOBuffer::~StringIOBuffer() {
   data_ = NULL;
 }
 
-DrainableIOBuffer::DrainableIOBuffer(IOBuffer* base, int size)
-    : IOBuffer(base->data()),
-      base_(base),
-      size_(size),
-      used_(0) {
+DrainableIOBuffer::DrainableIOBuffer(scoped_refptr<IOBuffer> base, int size)
+    : IOBuffer(base->data()), base_(std::move(base)), size_(size), used_(0) {
   AssertValidBufferSize(size);
 }
 
-DrainableIOBuffer::DrainableIOBuffer(IOBuffer* base, size_t size)
-    : IOBuffer(base->data()), base_(base), size_(size), used_(0) {
+DrainableIOBuffer::DrainableIOBuffer(scoped_refptr<IOBuffer> base, size_t size)
+    : IOBuffer(base->data()), base_(std::move(base)), size_(size), used_(0) {
   AssertValidBufferSize(size);
 }
 

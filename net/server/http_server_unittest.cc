@@ -75,8 +75,8 @@ class TestHttpClient {
   }
 
   void Send(const std::string& data) {
-    write_buffer_ =
-        new DrainableIOBuffer(new StringIOBuffer(data), data.length());
+    write_buffer_ = base::MakeRefCounted<DrainableIOBuffer>(
+        base::MakeRefCounted<StringIOBuffer>(data), data.length());
     Write();
   }
 

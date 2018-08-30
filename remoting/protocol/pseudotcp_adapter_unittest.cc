@@ -205,8 +205,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   }
 
   void InitBuffers() {
-    output_buffer_ = new net::DrainableIOBuffer(
-        new net::IOBuffer(kTestDataSize), kTestDataSize);
+    output_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+        base::MakeRefCounted<net::IOBuffer>(kTestDataSize), kTestDataSize);
     memset(output_buffer_->data(), 123, kTestDataSize);
 
     input_buffer_ = new net::GrowableIOBuffer();

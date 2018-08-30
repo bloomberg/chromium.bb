@@ -43,7 +43,8 @@ struct BufferedSocketWriter::PendingPacket {
 std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     net::Socket* socket,
     const WriteFailedCallback& write_failed_callback) {
-  std::unique_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
+  std::unique_ptr<BufferedSocketWriter> result =
+      std::make_unique<BufferedSocketWriter>();
   result->Start(base::Bind(&WriteNetSocket, socket), write_failed_callback);
   return result;
 }
@@ -63,7 +64,7 @@ void BufferedSocketWriter::Start(
 }
 
 void BufferedSocketWriter::Write(
-    const scoped_refptr<net::IOBufferWithSize>& data,
+    scoped_refptr<net::IOBufferWithSize> data,
     const base::Closure& done_task,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -73,9 +74,10 @@ void BufferedSocketWriter::Write(
   if (closed_)
     return;
 
+  int data_size = data->size();
   queue_.push_back(std::make_unique<PendingPacket>(
-      new net::DrainableIOBuffer(data.get(), data->size()), done_task,
-      traffic_annotation));
+      base::MakeRefCounted<net::DrainableIOBuffer>(std::move(data), data_size),
+      done_task, traffic_annotation));
 
   DoWrite();
 }

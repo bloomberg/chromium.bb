@@ -62,7 +62,7 @@ class SocketDataPump {
     }
 
     write_buffer_ =
-        base::MakeRefCounted<DrainableIOBuffer>(read_buffer_.get(), result);
+        base::MakeRefCounted<DrainableIOBuffer>(read_buffer_, result);
     Write();
   }
 

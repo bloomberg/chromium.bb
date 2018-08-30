@@ -298,8 +298,11 @@ void NativeMessageProcessHost::DoWrite() {
         !current_write_buffer_->BytesRemaining()) {
       if (write_queue_.empty())
         return;
-      current_write_buffer_ = new net::DrainableIOBuffer(
-          write_queue_.front().get(), write_queue_.front()->size());
+      scoped_refptr<net::IOBufferWithSize> buffer =
+          std::move(write_queue_.front());
+      int buffer_size = buffer->size();
+      current_write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+          std::move(buffer), buffer_size);
       write_queue_.pop();
     }
 

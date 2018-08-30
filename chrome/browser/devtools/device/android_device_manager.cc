@@ -191,9 +191,10 @@ class HttpRequest {
 
     std::string request = base::StrCat(pieces);
     scoped_refptr<net::IOBuffer> base_buffer =
-        new net::IOBuffer(request.size());
+        base::MakeRefCounted<net::IOBuffer>(request.size());
     memcpy(base_buffer->data(), request.data(), request.size());
-    request_ = new net::DrainableIOBuffer(base_buffer.get(), request.size());
+    request_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+        std::move(base_buffer), request.size());
 
     DoSendRequest(net::OK);
   }

@@ -48,7 +48,7 @@ class BufferedSocketWriter {
 
   // Puts a new data chunk in the buffer. If called before Start() then all data
   // is buffered until Start().
-  void Write(const scoped_refptr<net::IOBufferWithSize>& buffer,
+  void Write(scoped_refptr<net::IOBufferWithSize> buffer,
              const base::Closure& done_task,
              const net::NetworkTrafficAnnotationTag& traffic_annotation);
 

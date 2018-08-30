@@ -25,9 +25,10 @@ SocketInputStream::SocketInputStream(mojo::ScopedDataPipeConsumerHandle stream)
     : stream_(std::move(stream)),
       stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       read_size_(0),
-      io_buffer_(new net::IOBuffer(kDefaultBufferSize)),
+      io_buffer_(base::MakeRefCounted<net::IOBuffer>(kDefaultBufferSize)),
       read_buffer_(
-          new net::DrainableIOBuffer(io_buffer_.get(), kDefaultBufferSize)),
+          base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_,
+                                                       kDefaultBufferSize)),
       next_pos_(0),
       last_error_(net::OK),
       weak_ptr_factory_(this) {

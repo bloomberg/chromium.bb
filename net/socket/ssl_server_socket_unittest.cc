@@ -137,8 +137,8 @@ class FakeDataChannel {
       return ERR_IO_PENDING;
     }
     // This function returns synchronously, so make a copy of the buffer.
-    data_.push(new DrainableIOBuffer(
-        new StringIOBuffer(std::string(buf->data(), buf_len)),
+    data_.push(base::MakeRefCounted<DrainableIOBuffer>(
+        base::MakeRefCounted<StringIOBuffer>(std::string(buf->data(), buf_len)),
         buf_len));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
@@ -923,7 +923,8 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
   scoped_refptr<StringIOBuffer> write_buf =
       base::MakeRefCounted<StringIOBuffer>("testing123");
   scoped_refptr<DrainableIOBuffer> read_buf =
-      new DrainableIOBuffer(new IOBuffer(kReadBufSize), kReadBufSize);
+      base::MakeRefCounted<DrainableIOBuffer>(
+          base::MakeRefCounted<IOBuffer>(kReadBufSize), kReadBufSize);
 
   // Write then read.
   TestCompletionCallback write_callback;

@@ -275,7 +275,7 @@ int HttpStreamParser::SendRequest(
     // We'll repurpose |request_headers_| to store the merged headers and
     // body.
     request_headers_ = base::MakeRefCounted<DrainableIOBuffer>(
-        merged_request_headers_and_body.get(), merged_size);
+        merged_request_headers_and_body, merged_size);
 
     memcpy(request_headers_->data(), request.data(), request_headers_length_);
     request_headers_->DidConsume(request_headers_length_);
@@ -308,7 +308,7 @@ int HttpStreamParser::SendRequest(
     scoped_refptr<StringIOBuffer> headers_io_buf =
         base::MakeRefCounted<StringIOBuffer>(request);
     request_headers_ = base::MakeRefCounted<DrainableIOBuffer>(
-        headers_io_buf.get(), headers_io_buf->size());
+        std::move(headers_io_buf), request.size());
   }
 
   result = DoLoop(OK);

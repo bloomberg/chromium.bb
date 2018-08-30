@@ -125,7 +125,7 @@ class SocketPump {
 
     int total = result;
     scoped_refptr<net::DrainableIOBuffer> drainable =
-        new net::DrainableIOBuffer(buffer.get(), total);
+        base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer), total);
 
     ++pending_writes_;
     result =

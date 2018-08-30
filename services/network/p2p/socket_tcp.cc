@@ -480,10 +480,10 @@ void P2PSocketTcp::DoSend(
     const rtc::PacketOptions& options,
     const net::NetworkTrafficAnnotationTag traffic_annotation) {
   int size = kPacketHeaderSize + data.size();
-  SendBuffer send_buffer(
-      options.packet_id,
-      new net::DrainableIOBuffer(new net::IOBuffer(size), size),
-      traffic_annotation);
+  SendBuffer send_buffer(options.packet_id,
+                         base::MakeRefCounted<net::DrainableIOBuffer>(
+                             base::MakeRefCounted<net::IOBuffer>(size), size),
+                         traffic_annotation);
   *reinterpret_cast<uint16_t*>(send_buffer.buffer->data()) =
       base::HostToNet16(data.size());
   memcpy(send_buffer.buffer->data() + kPacketHeaderSize, &data[0], data.size());
@@ -565,10 +565,10 @@ void P2PSocketStunTcp::DoSend(
   // Add any pad bytes to the total size.
   int size = data.size() + pad_bytes;
 
-  SendBuffer send_buffer(
-      options.packet_id,
-      new net::DrainableIOBuffer(new net::IOBuffer(size), size),
-      traffic_annotation);
+  SendBuffer send_buffer(options.packet_id,
+                         base::MakeRefCounted<net::DrainableIOBuffer>(
+                             base::MakeRefCounted<net::IOBuffer>(size), size),
+                         traffic_annotation);
   memcpy(send_buffer.buffer->data(), &data[0], data.size());
 
   cricket::ApplyPacketOptions(

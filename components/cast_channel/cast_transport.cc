@@ -108,8 +108,8 @@ CastTransportImpl::WriteRequest::WriteRequest(
     const net::CompletionCallback& callback)
     : message_namespace(namespace_), callback(callback) {
   VLOG(2) << "WriteRequest size: " << payload.size();
-  io_buffer = new net::DrainableIOBuffer(new net::StringIOBuffer(payload),
-                                         payload.size());
+  io_buffer = base::MakeRefCounted<net::DrainableIOBuffer>(
+      base::MakeRefCounted<net::StringIOBuffer>(payload), payload.size());
 }
 
 CastTransportImpl::WriteRequest::WriteRequest(const WriteRequest& other) =
