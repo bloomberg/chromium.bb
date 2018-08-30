@@ -1,23 +1,32 @@
 This is a testharness.js-based test.
-Found 63 tests; 48 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 72 tests; 57 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS WebAssembly: property descriptor
+PASS WebAssembly: calling
 PASS WebAssembly: constructing
 PASS WebAssembly.Module: property descriptor
 PASS WebAssembly.Module: prototype
+PASS WebAssembly.Module: prototype.constructor
 PASS WebAssembly.Instance: property descriptor
 PASS WebAssembly.Instance: prototype
+PASS WebAssembly.Instance: prototype.constructor
 PASS WebAssembly.Memory: property descriptor
 PASS WebAssembly.Memory: prototype
+PASS WebAssembly.Memory: prototype.constructor
 PASS WebAssembly.Table: property descriptor
 PASS WebAssembly.Table: prototype
+PASS WebAssembly.Table: prototype.constructor
 PASS WebAssembly.Global: property descriptor
 PASS WebAssembly.Global: prototype
+PASS WebAssembly.Global: prototype.constructor
 PASS WebAssembly.CompileError: property descriptor
 PASS WebAssembly.CompileError: prototype
+PASS WebAssembly.CompileError: prototype.constructor
 PASS WebAssembly.LinkError: property descriptor
 PASS WebAssembly.LinkError: prototype
+PASS WebAssembly.LinkError: prototype.constructor
 PASS WebAssembly.RuntimeError: property descriptor
 PASS WebAssembly.RuntimeError: prototype
+PASS WebAssembly.RuntimeError: prototype.constructor
 FAIL WebAssembly.validate assert_true: enumerable expected true got false
 PASS WebAssembly.validate: name
 PASS WebAssembly.validate: length
