@@ -157,7 +157,7 @@ void PaymentRequest::Show(bool is_user_gesture) {
     LOG(ERROR) << "A PaymentRequest UI is already showing";
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
-    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING);
     OnConnectionTerminated();
     return;
   }

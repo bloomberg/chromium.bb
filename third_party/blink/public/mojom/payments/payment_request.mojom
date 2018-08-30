@@ -30,7 +30,8 @@ struct PaymentResponse {
 enum PaymentErrorReason {
   UNKNOWN,
   USER_CANCEL,
-  NOT_SUPPORTED
+  NOT_SUPPORTED,
+  ALREADY_SHOWING
 };
 
 enum CanMakePaymentQueryResult {
