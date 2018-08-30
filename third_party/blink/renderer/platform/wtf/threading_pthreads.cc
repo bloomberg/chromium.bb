@@ -86,6 +86,8 @@ void MutexBase::lock() {
   int result = pthread_mutex_lock(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
 #if DCHECK_IS_ON()
+  DCHECK(!mutex_.recursion_count_)
+      << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
 #endif
 }
@@ -110,7 +112,8 @@ bool Mutex::TryLock() {
 #if DCHECK_IS_ON()
     // The Mutex class is not recursive, so the recursionCount should be
     // zero after getting the lock.
-    DCHECK(!mutex_.recursion_count_);
+    DCHECK(!mutex_.recursion_count_)
+        << "WTF does not support recursive mutex acquisition!";
     ++mutex_.recursion_count_;
 #endif
     return true;
@@ -126,6 +129,8 @@ bool RecursiveMutex::TryLock() {
   int result = pthread_mutex_trylock(&mutex_.internal_mutex_);
   if (result == 0) {
 #if DCHECK_IS_ON()
+    DCHECK(!mutex_.recursion_count_)
+        << "WTF does not support recursive mutex acquisition!";
     ++mutex_.recursion_count_;
 #endif
     return true;
@@ -148,6 +153,9 @@ ThreadCondition::~ThreadCondition() {
 void ThreadCondition::Wait(Mutex& mutex) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
+#if DCHECK_IS_ON()
+  --platform_mutex.recursion_count_;
+#endif
   int result = pthread_cond_wait(&condition_, &platform_mutex.internal_mutex_);
   DCHECK_EQ(result, 0);
 #if DCHECK_IS_ON()
@@ -173,6 +181,9 @@ bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
+#if DCHECK_IS_ON()
+  --platform_mutex.recursion_count_;
+#endif
   int result = pthread_cond_timedwait(
       &condition_, &platform_mutex.internal_mutex_, &target_time);
 #if DCHECK_IS_ON()

@@ -122,6 +122,8 @@ MutexBase::~MutexBase() {
 
 void MutexBase::lock() {
   EnterCriticalSection(&mutex_.internal_mutex_);
+  DCHECK(!mutex_.recursion_count_)
+      << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
 }
 
@@ -147,6 +149,8 @@ bool Mutex::TryLock() {
     // check in the lock method (presumably due to performance?). This
     // means lock() will succeed even if the current thread has already
     // entered the critical section.
+    DCHECK(!mutex_.recursion_count_)
+        << "WTF does not support recursive mutex acquisition!";
     if (mutex_.recursion_count_ > 0) {
       LeaveCriticalSection(&mutex_.internal_mutex_);
       return false;
@@ -165,6 +169,8 @@ bool RecursiveMutex::TryLock() {
   if (result == 0) {  // We didn't get the lock.
     return false;
   }
+  DCHECK(!mutex_.recursion_count_)
+      << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
   return true;
 }
@@ -178,6 +184,7 @@ ThreadCondition::~ThreadCondition() {}
 void ThreadCondition::Wait(Mutex& mutex) {
   PlatformMutex& platform_mutex = mutex.Impl();
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  --platform_mutex.recursion_count_;
   BOOL result = SleepConditionVariableCS(
       &condition_, &platform_mutex.internal_mutex_, INFINITE);
   DCHECK_NE(result, 0);
@@ -203,6 +210,7 @@ bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
+  --platform_mutex.recursion_count_;
   BOOL result = SleepConditionVariableCS(
       &condition_, &platform_mutex.internal_mutex_, interval);
   ++platform_mutex.recursion_count_;
