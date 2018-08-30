@@ -322,26 +322,38 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   EXPECT_TRUE(
       AreEqual(reference_icon_app_list.image_skia(), *app_list_item_image));
 
-  // Load reference icon sized for the shelf and search results.
-  TestAppIcon reference_icon(profile(), kTestAppId,
-                             extension_misc::EXTENSION_ICON_MEDIUM);
+  // Load reference icon sized for the search result.
+  TestAppIcon reference_icon_search(
+      profile(), kTestAppId,
+      app_list::AppListConfig::instance().recommended_app_icon_dimension());
 
   // Wait until reference data is loaded.
-  reference_icon.image_skia().EnsureRepsForSupportedScales();
-  reference_icon.WaitForIconUpdates();
-  EXPECT_FALSE(IsBlankImage(reference_icon.image_skia()));
+  reference_icon_search.image_skia().EnsureRepsForSupportedScales();
+  reference_icon_search.WaitForIconUpdates();
+  EXPECT_FALSE(IsBlankImage(reference_icon_search.image_skia()));
 
   app_list::ExtensionAppResult search(profile(), kTestAppId,
-                                      app_list_controller(), true);
+                                      app_list_controller(),
+                                      /* is_recommendation */ true);
   WaitForIconUpdates<app_list::ExtensionAppResult>(search);
-  EXPECT_TRUE(AreEqual(reference_icon.image_skia(), search.icon()));
+  EXPECT_TRUE(AreEqual(reference_icon_search.image_skia(), search.icon()));
+
+  // Load reference icon sized for the shelf.
+  TestAppIcon reference_icon_shelf(profile(), kTestAppId,
+                                   extension_misc::EXTENSION_ICON_MEDIUM);
+
+  // Wait until reference data is loaded.
+  reference_icon_shelf.image_skia().EnsureRepsForSupportedScales();
+  reference_icon_shelf.WaitForIconUpdates();
+  EXPECT_FALSE(IsBlankImage(reference_icon_shelf.image_skia()));
 
   TestAppIconLoader loader_delegate;
   ChromeAppIconLoader loader(profile(), extension_misc::EXTENSION_ICON_MEDIUM,
                              &loader_delegate);
   loader.FetchImage(kTestAppId);
   WaitForIconUpdates<TestAppIconLoader>(loader_delegate);
-  EXPECT_TRUE(AreEqual(reference_icon.image_skia(), loader_delegate.icon()));
+  EXPECT_TRUE(
+      AreEqual(reference_icon_shelf.image_skia(), loader_delegate.icon()));
 
   ResetBuilder();
 }
