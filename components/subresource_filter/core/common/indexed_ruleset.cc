@@ -97,9 +97,19 @@ bool IndexedRulesetMatcher::Verify(const uint8_t* buffer,
   // once.  The verifier detects a subset of the errors detected by the
   // checksum, and is unneeded once expected_checksum is consistently nonzero.
   flatbuffers::Verifier verifier(buffer, size);
-  bool valid = (!expected_checksum ||
-                expected_checksum == LocalGetChecksum(buffer, size)) &&
-               flat::VerifyIndexedRulesetBuffer(verifier);
+  VerifyStatus status = VerifyStatus::kPass;
+  if (expected_checksum &&
+      expected_checksum != LocalGetChecksum(buffer, size)) {
+    status = flat::VerifyIndexedRulesetBuffer(verifier)
+                 ? VerifyStatus::kChecksumFailVerifierPass
+                 : VerifyStatus::kChecksumFailVerifierFail;
+  } else if (!flat::VerifyIndexedRulesetBuffer(verifier)) {
+    status = expected_checksum == 0 ? VerifyStatus::kVerifierFailChecksumZero
+                                    : VerifyStatus::kVerifierFailChecksumPass;
+  }
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.IndexRuleset.Verify.Status",
+                            status);
+  bool valid = (status == VerifyStatus::kPass);
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "IndexedRulesetMatcher::Verify", "valid", valid);
   return valid;

@@ -46126,6 +46126,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="NoRedirectsHit"/>
 </enum>
 
+<enum name="SubresourceFilterVerifyStatus">
+  <int value="0" label="Pass"/>
+  <int value="1" label="Checksum Failed, Verifier Passed"/>
+  <int value="2" label="Checksum Failed, Verifier Failed"/>
+  <int value="3" label="Checksum Passed, Verifier Failed"/>
+  <int value="4" label="Checksum Zero, Verifier Failed"/>
+</enum>
+
 <enum name="SubresourceFilterWriteRulesetResult">
   <int value="0" label="Success"/>
   <int value="1" label="FailedCreatingScratchDir"/>
