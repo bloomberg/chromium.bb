@@ -91,7 +91,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 #endif
 
  protected:
-  PaintPropertyNode(const NodeType* parent) : parent_(parent) {}
+  PaintPropertyNode(const NodeType* parent)
+      : parent_(parent), changed_(!!parent) {}
 
   bool SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
@@ -104,14 +105,17 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     return true;
   }
 
-  void SetChanged() { changed_ = true; }
+  void SetChanged() {
+    DCHECK(!IsRoot());
+    changed_ = true;
+  }
   bool NodeChanged() const { return changed_; }
 
  private:
   friend class PaintPropertyNodeTest;
 
   scoped_refptr<const NodeType> parent_;
-  mutable bool changed_ = true;
+  mutable bool changed_;
 
 #if DCHECK_IS_ON()
   String debug_name_;
