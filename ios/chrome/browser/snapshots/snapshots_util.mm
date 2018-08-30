@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,7 +28,6 @@ const char* kOrientationDescriptions[] = {
 
 // Delete all files in |paths|.
 void DeleteAllFiles(std::vector<base::FilePath> paths) {
-  base::AssertBlockingAllowed();
   for (const auto& path : paths) {
     ignore_result(base::DeleteFile(path, false));
   }
