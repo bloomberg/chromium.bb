@@ -236,7 +236,7 @@ const base::Feature kChromeMemexFeature{"ChromeMemex",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeModernAlternateCardLayout{
-    "ChromeModernAlternateCardLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeModernAlternateCardLayout", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeModernFullRoll{"ChromeModernFullRoll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
