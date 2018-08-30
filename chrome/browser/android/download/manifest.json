@@ -3,12 +3,14 @@
 {
   "name": "download_manager",
   "display_name": "Download Manager",
+  "options" : {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {},
       "requires": {
-        "network": [ "network_service"],
-        "service_manager": [ "service_manager:singleton" ]
+        "network": [ "network_service"]
       }
     }
   }

@@ -1,6 +1,9 @@
 {
   "name": "device",
   "display_name": "Device Service",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -24,9 +27,6 @@
         "device:time_zone_monitor": [ "device.mojom.TimeZoneMonitor" ],
         "device:vibration": [ "device.mojom.VibrationManager" ],
         "device:wake_lock": [ "device.mojom.WakeLockProvider" ]
-      },
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

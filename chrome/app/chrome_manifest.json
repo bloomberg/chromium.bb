@@ -1,6 +1,9 @@
 {
   "name": "chrome",
   "display_name": "Chrome",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -21,7 +24,6 @@
       "requires": {
         "chrome_renderer": [ "browser" ],
         "service_manager": [
-          "service_manager:all_users",
           "service_manager:client_process",
           "service_manager:instance_name"
         ]

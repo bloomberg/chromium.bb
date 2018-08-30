@@ -1,11 +1,11 @@
 {
   "name": "connect_test_singleton_app",
   "display_name": "Connect Test Singleton App",
+  "options": {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
-    "service_manager:connector": {
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
-      }
+    "service_manager:connector" : {
     }
   }
 }

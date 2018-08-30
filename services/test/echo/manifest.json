@@ -1,13 +1,13 @@
 {
   "name": "echo",
   "display_name": "Echo Service",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "echo" : [ "echo.mojom.Echo" ]
-      },
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

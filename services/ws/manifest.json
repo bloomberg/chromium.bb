@@ -2,6 +2,9 @@
   "name": "ui",
   "sandbox_type": "none",
   "display_name": "UI Service",
+  "options" : {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -59,7 +62,6 @@
       "requires": {
         "*": [ "app" ],
         "catalog": [ "directory" ],
-        "service_manager": [ "service_manager:singleton" ],
         "ui": [ "ozone" ],
         "viz": [ "viz_host" ]
       }

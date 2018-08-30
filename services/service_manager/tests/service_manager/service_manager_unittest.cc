@@ -466,7 +466,8 @@ TEST_F(ServiceManagerTest, CreatePackagedRegularInstances) {
 // starting that service again, a new service is created only when a different
 // instance name is specified.
 TEST_F(ServiceManagerTest, CreatePackagedAllUsersInstances) {
-  constexpr char kAllUsersServiceName[] = "service_manager_unittest_all_users";
+  constexpr char kAllUsersServiceName[] =
+      "service_manager_unittest_shared_instance_across_users";
 
   AddListenerAndWaitForApplications();
 

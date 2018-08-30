@@ -50,8 +50,6 @@ namespace {
 const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
-const char kCapability_Singleton[] = "service_manager:singleton";
-const char kCapability_AllUsers[] = "service_manager:all_users";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
@@ -113,20 +111,6 @@ InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
 
 Identity CreateCatalogIdentity() {
   return Identity(catalog::mojom::kServiceName, mojom::kRootUserID);
-}
-
-InterfaceProviderSpec CreatePermissiveInterfaceProviderSpec() {
-  InterfaceProviderSpec spec;
-  InterfaceSet interfaces;
-  interfaces.insert("*");
-  spec.requires["*"] = std::move(interfaces);
-  return spec;
-}
-
-const InterfaceProviderSpec& GetPermissiveInterfaceProviderSpec() {
-  CR_DEFINE_STATIC_LOCAL(InterfaceProviderSpec, spec,
-                         (CreatePermissiveInterfaceProviderSpec()));
-  return spec;
 }
 
 const InterfaceProviderSpec& GetEmptyInterfaceProviderSpec() {
@@ -211,12 +195,12 @@ class ServiceManager::Instance
   Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
            const InterfaceProviderSpecMap& interface_provider_specs,
-           // TODO(crbug.com/866967) this parameter will be used in the future
            const catalog::ServiceOptions& options)
       : service_manager_(service_manager),
         id_(GenerateUniqueID()),
         identity_(identity),
         interface_provider_specs_(interface_provider_specs),
+        options_(options),
         allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
         control_binding_(this),
@@ -493,6 +477,7 @@ class ServiceManager::Instance
     Identity target = in_target;
     mojom::ConnectResult result =
         ValidateConnectParams(&target, nullptr, nullptr, nullptr);
+
     if (!Succeeded(result)) {
       std::move(callback).Run(result, Identity());
       return;
@@ -624,8 +609,11 @@ class ServiceManager::Instance
     // whether this instance is allowed to connect using:
     // - non-null client process info.
     bool skip_user_check =
-        HasCapability(connection_spec, kCapability_Singleton) ||
-        HasCapability(connection_spec, kCapability_AllUsers) ||
+        options_.instance_sharing ==
+            catalog::ServiceOptions::InstanceSharingType::SINGLETON ||
+        options_.instance_sharing ==
+            catalog::ServiceOptions::InstanceSharingType::
+                SHARED_INSTANCE_ACROSS_USERS ||
         HasCapability(connection_spec, kCapability_UserID);
 
     if (!skip_user_check && target.user_id() != identity_.user_id() &&
@@ -729,6 +717,7 @@ class ServiceManager::Instance
   const uint32_t id_;
   Identity identity_;
   const InterfaceProviderSpecMap interface_provider_specs_;
+  const catalog::ServiceOptions options_;
   const bool allow_any_application_;
 #if !defined(OS_IOS)
   std::unique_ptr<ServiceProcessLauncher> runner_;
@@ -953,15 +942,12 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   const catalog::ServiceOptions& options = entry->options();
 
-  auto it = interface_provider_specs.find(mojom::kServiceManager_ConnectorSpec);
-  const InterfaceProviderSpec& connection_spec =
-      it != interface_provider_specs.end()
-          ? it->second
-          : GetPermissiveInterfaceProviderSpec();
-
-  bool all_user_instance = HasCapability(connection_spec, kCapability_AllUsers);
+  bool all_user_instance = entry->options().instance_sharing ==
+                           catalog::ServiceOptions::InstanceSharingType::
+                               SHARED_INSTANCE_ACROSS_USERS;
   bool singleton_instance =
-      HasCapability(connection_spec, kCapability_Singleton);
+      entry->options().instance_sharing ==
+      catalog::ServiceOptions::InstanceSharingType::SINGLETON;
   const Identity original_target(params->target());
 
   // Services that request "all_users" class from the Service Manager are

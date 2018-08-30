@@ -2,6 +2,9 @@
   "name": "network",
   "display_name": "Network Service",
   "sandbox_type": "network",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -14,9 +17,6 @@
         "url_loader": [
           "network.mojom.URLLoaderFactory"
         ]
-      },
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }
