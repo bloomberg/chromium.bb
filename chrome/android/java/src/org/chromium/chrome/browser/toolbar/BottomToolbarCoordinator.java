@@ -81,9 +81,6 @@ public class BottomToolbarCoordinator {
                         model, new ViewHolder(toolbarRoot), new BottomToolbarViewBinder());
         model.addObserver(processor);
 
-        mMediator = new BottomToolbarMediator(
-                model, fullscreenManager, root.getResources(), firstSlotData, secondSlotData);
-
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
 
@@ -96,6 +93,9 @@ public class BottomToolbarCoordinator {
                 ApiCompatibilityUtils.getColor(root.getResources(), R.color.modern_primary_color);
         mIncognitoPrimaryColor = ApiCompatibilityUtils.getColor(
                 root.getResources(), R.color.incognito_modern_primary_color);
+
+        mMediator = new BottomToolbarMediator(model, fullscreenManager, root.getResources(),
+                firstSlotData, secondSlotData, mNormalPrimaryColor);
     }
 
     /**
