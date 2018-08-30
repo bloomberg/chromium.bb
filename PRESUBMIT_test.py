@@ -1820,17 +1820,20 @@ class CheckUniquePtrTest(unittest.TestCase):
         'bar = std::unique_ptr<T>(',
         '    fooVeryVeryVeryLongStillGoingWellThisWillTakeAWhileFinallyThere);'
       ]),
+      MockFile('dir/multi_arg.cc', [
+          'auto p = std::unique_ptr<std::pair<T, D>>(new std::pair(T, D));']),
     ]
 
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(results))
     self.assertTrue('std::make_unique' in results[0].message)
-    self.assertEqual(5, len(results[0].items))
+    self.assertEqual(6, len(results[0].items))
     self.assertTrue('foo.cc' in results[0].items[0])
     self.assertTrue('bar.mm' in results[0].items[1])
     self.assertTrue('mult.cc' in results[0].items[2])
     self.assertTrue('mult2.cc' in results[0].items[3])
     self.assertTrue('mult3.cc' in results[0].items[4])
+    self.assertTrue('multi_arg.cc' in results[0].items[5])
 
   def testFalsePositives(self):
     mock_input_api = MockInputApi()
@@ -1846,6 +1849,11 @@ class CheckUniquePtrTest(unittest.TestCase):
       ]),
       MockFile('dir/nested.cc', ['set<std::unique_ptr<T>>();']),
       MockFile('dir/nested2.cc', ['map<U, std::unique_ptr<T>>();']),
+
+      # Two-argument invocation of std::unique_ptr is exempt because there is
+      # no equivalent using std::make_unique.
+      MockFile('dir/multi_arg.cc', [
+        'auto p = std::unique_ptr<T, D>(new T(), D());']),
     ]
 
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())

@@ -1681,6 +1681,20 @@ def _CheckForAnonymousVariables(input_api, output_api):
 
 
 def _CheckUniquePtr(input_api, output_api):
+  # Returns whether |template_str| is of the form <T, U...> for some types T
+  # and U. Assumes that |template_str| is already in the form <...>.
+  def HasMoreThanOneArg(template_str):
+    # Level of <...> nesting.
+    nesting = 0
+    for c in template_str:
+      if c == '<':
+        nesting += 1
+      elif c == '>':
+        nesting -= 1
+      elif c == ',' and nesting == 1:
+        return True
+    return False
+
   file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
@@ -1716,10 +1730,13 @@ def _CheckUniquePtr(input_api, output_api):
   # Suffix saying that what follows are call parentheses with a non-empty list
   # of arguments.
   nonempty_arg_list_pattern = r'\(([^)]|$)'
+  # Put the template argument into a capture group for deeper examination later.
   return_construct_pattern = input_api.re.compile(
       start_of_expr_pattern
       + r'std::unique_ptr'
+      + '(?P<template_arg>'
       + template_arg_no_array_pattern
+      + ')'
       + nonempty_arg_list_pattern)
 
   problems_constructor = []
@@ -1732,8 +1749,14 @@ def _CheckUniquePtr(input_api, output_api):
       # But allow:
       # return std::unique_ptr<T[]>(foo);
       # bar = std::unique_ptr<T[]>(foo);
+      # And also allow cases when the second template argument is present. Those
+      # cases cannot be handled by std::make_unique:
+      # return std::unique_ptr<T, U>(foo);
+      # bar = std::unique_ptr<T, U>(foo);
       local_path = f.LocalPath()
-      if return_construct_pattern.search(line):
+      return_construct_result = return_construct_pattern.search(line)
+      if return_construct_result and not HasMoreThanOneArg(
+          return_construct_result.group('template_arg')):
         problems_constructor.append(
           '%s:%d\n    %s' % (local_path, line_number, line.strip()))
       # Disallow:
