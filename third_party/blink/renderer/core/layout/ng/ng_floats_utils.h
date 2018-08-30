@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -48,21 +49,19 @@ PositionFloat(LayoutUnit origin_block_offset,
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit container_block_offset,
-    const Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
+    NGUnpositionedFloatVector& unpositioned_floats,
     const NGConstraintSpace& space,
     NGExclusionSpace* exclusion_space);
 
 // Add a pending float to the list. It will be committed (positioned) once we
 // have resolved the BFC block offset.
-void AddUnpositionedFloat(
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGContainerFragmentBuilder* fragment_builder,
-    scoped_refptr<NGUnpositionedFloat> unpositioned_float);
+void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
+                          NGContainerFragmentBuilder* fragment_builder,
+                          NGUnpositionedFloat unpositioned_float);
 
 // Remove a pending float from the list.
-bool RemoveUnpositionedFloat(
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGBlockNode float_node);
+bool RemoveUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
+                             NGBlockNode float_node);
 
 NGFloatTypes ToFloatTypes(EClear clear);
 

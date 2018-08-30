@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
 
 namespace blink {
 
@@ -298,7 +300,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool has_processed_first_child_ = false;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
-  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
+  NGUnpositionedFloatVector unpositioned_floats_;
 };
 
 }  // namespace blink

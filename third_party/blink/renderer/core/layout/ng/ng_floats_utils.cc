@@ -278,42 +278,39 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
 const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit parent_bfc_block_offset,
-    const Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
+    NGUnpositionedFloatVector& unpositioned_floats,
     const NGConstraintSpace& space,
     NGExclusionSpace* exclusion_space) {
   Vector<NGPositionedFloat> positioned_floats;
   positioned_floats.ReserveCapacity(unpositioned_floats.size());
 
-  for (auto& unpositioned_float : unpositioned_floats) {
+  for (NGUnpositionedFloat& unpositioned_float : unpositioned_floats) {
     positioned_floats.push_back(
         PositionFloat(origin_block_offset, parent_bfc_block_offset,
-                      unpositioned_float.get(), space, exclusion_space));
+                      &unpositioned_float, space, exclusion_space));
   }
 
   return positioned_floats;
 }
 
-void AddUnpositionedFloat(
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGContainerFragmentBuilder* fragment_builder,
-    scoped_refptr<NGUnpositionedFloat> unpositioned_float) {
+void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
+                          NGContainerFragmentBuilder* fragment_builder,
+                          NGUnpositionedFloat unpositioned_float) {
   // The same float node should not be added more than once.
   DCHECK(
-      !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float->node));
+      !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float.node));
 
   if (fragment_builder && !fragment_builder->BfcBlockOffset()) {
     fragment_builder->AddAdjoiningFloatTypes(
-        unpositioned_float->IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
+        unpositioned_float.IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
   }
   unpositioned_floats->push_back(std::move(unpositioned_float));
 }
 
-bool RemoveUnpositionedFloat(
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGBlockNode float_node) {
-  for (scoped_refptr<NGUnpositionedFloat>& unpositioned_float :
-       *unpositioned_floats) {
-    if (unpositioned_float->node == float_node) {
+bool RemoveUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
+                             NGBlockNode float_node) {
+  for (NGUnpositionedFloat& unpositioned_float : *unpositioned_floats) {
+    if (unpositioned_float.node == float_node) {
       unpositioned_floats->erase(&unpositioned_float);
       return true;
     }

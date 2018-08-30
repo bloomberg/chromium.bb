@@ -41,7 +41,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
             .ToConstraintSpace(WritingMode::kHorizontalTb);
 
     Vector<NGPositionedFloat> positioned_floats;
-    Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
+    NGUnpositionedFloatVector unpositioned_floats;
 
     scoped_refptr<NGInlineBreakToken> break_token;
 

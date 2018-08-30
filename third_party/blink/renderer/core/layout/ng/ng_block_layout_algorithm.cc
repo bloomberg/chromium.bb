@@ -714,12 +714,11 @@ void NGBlockLayoutAlgorithm::HandleFloat(
       ConstraintSpace().BfcOffset().line_offset +
       border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction());
 
-  scoped_refptr<NGUnpositionedFloat> unpositioned_float =
-      NGUnpositionedFloat::Create(
+  AddUnpositionedFloat(
+      &unpositioned_floats_, &container_builder_,
+      NGUnpositionedFloat(
           child_available_size_, child_percentage_size_, origin_inline_offset,
-          ConstraintSpace().BfcOffset().line_offset, child, child_break_token);
-  AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
-                       unpositioned_float);
+          ConstraintSpace().BfcOffset().line_offset, child, child_break_token));
 
   // If there is a break token for a float we must be resuming layout, we must
   // always know our position in the BFC.
