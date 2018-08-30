@@ -33,8 +33,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_import_step.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
@@ -81,10 +79,6 @@ void HTMLImportChild::DidFinish() {
 
 void HTMLImportChild::DidFinishLoading() {
   StateWillChange();
-  if (GetDocument() && GetDocument()->GetStyleEngine().HasStyleSheets()) {
-    Deprecation::CountDeprecation(Root()->GetDocument(),
-                                  WebFeature::kHTMLImportsHasStyleSheets);
-  }
   V0CustomElement::DidFinishLoadingImport(*(Root()->GetDocument()));
 }
 

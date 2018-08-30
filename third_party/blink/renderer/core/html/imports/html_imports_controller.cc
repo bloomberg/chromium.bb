@@ -41,9 +41,7 @@
 namespace blink {
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(HTMLImportTreeRoot::Create(&master)) {
-  UseCounter::Count(master, WebFeature::kHTMLImports);
-}
+    : root_(HTMLImportTreeRoot::Create(&master)) {}
 
 void HTMLImportsController::Dispose() {
   for (const auto& loader : loaders_)
