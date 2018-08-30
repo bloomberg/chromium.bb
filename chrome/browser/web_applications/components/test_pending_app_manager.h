@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -18,14 +19,20 @@ class TestPendingAppManager : public PendingAppManager {
   TestPendingAppManager();
   ~TestPendingAppManager() override;
   const std::vector<AppInfo>& installed_apps() const { return installed_apps_; }
+  const std::vector<GURL>& uninstalled_apps() const {
+    return uninstalled_apps_;
+  }
 
   // PendingAppManager:
   void Install(AppInfo app_to_install, OnceInstallCallback callback) override;
   void InstallApps(std::vector<AppInfo> apps_to_install,
                    const RepeatingInstallCallback& callback) override;
+  void UninstallApps(std::vector<GURL> apps_to_uninstall,
+                     const UninstallCallback& callback) override;
 
  private:
   std::vector<AppInfo> installed_apps_;
+  std::vector<GURL> uninstalled_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPendingAppManager);
 };

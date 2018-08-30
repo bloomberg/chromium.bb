@@ -4,12 +4,17 @@
 
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
+#include <string>
+#include <vector>
+
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -39,6 +44,32 @@ bool ExtensionIdsMap::HasExtensionId(const PrefService* pref_service,
     }
   }
   return false;
+}
+
+// static
+std::vector<GURL> ExtensionIdsMap::GetPolicyInstalledAppUrls(Profile* profile) {
+  const base::DictionaryValue* urls_to_ids =
+      profile->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs);
+
+  std::vector<GURL> policy_installed_app_urls;
+
+  if (!urls_to_ids)
+    return policy_installed_app_urls;
+
+  for (const auto& url_to_id : urls_to_ids->DictItems()) {
+    const std::string& extension_id = url_to_id.second.GetString();
+    auto* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            extension_id, extensions::ExtensionRegistry::EVERYTHING);
+    if (!extension)
+      continue;
+    if (extension->location() != extensions::Manifest::EXTERNAL_POLICY)
+      continue;
+
+    policy_installed_app_urls.emplace_back(url_to_id.first);
+  }
+
+  return policy_installed_app_urls;
 }
 
 ExtensionIdsMap::ExtensionIdsMap(PrefService* pref_service)
