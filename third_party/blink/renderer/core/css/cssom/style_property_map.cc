@@ -208,7 +208,7 @@ const CSSValue* CoerceStyleValueOrString(
   } else {
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
-        property.PropertyID(), value.GetAsString(),
+        property.PropertyID(), registration, value.GetAsString(),
         CSSParserContext::Create(execution_context));
     if (values.size() != 1U)
       return nullptr;
@@ -242,7 +242,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
         parser_context = CSSParserContext::Create(execution_context);
 
       const auto subvalues = StyleValueFactory::FromString(
-          property.PropertyID(), value.GetAsString(), parser_context);
+          property.PropertyID(), nullptr, value.GetAsString(), parser_context);
       if (subvalues.IsEmpty())
         return nullptr;
 
