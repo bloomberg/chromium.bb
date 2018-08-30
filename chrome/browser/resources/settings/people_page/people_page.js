@@ -262,6 +262,15 @@ Polymer({
     }
   },
 
+  /**
+   * @return {!Element}
+   * @private
+   */
+  getEditPersonAssocControl_: function() {
+    return this.diceEnabled_ ? assert(this.$$('#edit-profile')) :
+                               assert(this.$$('#picture-subpage-trigger'));
+  },
+
   // <if expr="chromeos">
   /** @private */
   getPasswordState_: function(hasPin, enableScreenLock) {
