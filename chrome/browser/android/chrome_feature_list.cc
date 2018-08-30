@@ -107,6 +107,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kExploreSites,
     &kFullscreenActivity,
     &kHandleMediaIntents,
+    &kHideUserDataFromIncognitoNotifications,
     &kHomePageButtonForceEnabled,
     &kHomepageTile,
     &kHorizontalTabSwitcherAndroid,
@@ -298,6 +299,10 @@ const base::Feature kFullscreenActivity{"FullscreenActivity",
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kHideUserDataFromIncognitoNotifications{
+    "HideUserDataFromIncognitoNotifications",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHomePageButtonForceEnabled{
     "HomePageButtonForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
