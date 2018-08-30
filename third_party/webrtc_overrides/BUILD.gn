@@ -40,9 +40,6 @@ group("jingle_deps") {
 }
 
 static_library("webrtc") {
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   public_deps = [
     ":jingle_deps",
 
