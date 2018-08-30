@@ -135,9 +135,7 @@ function RunFetchAnExpectAnException() {
 }
 
 function StartFetchFromServiceWorker() {
-  navigator.serviceWorker.ready.then(() => {
-    navigator.serviceWorker.controller.postMessage('fetch');
-  });
+  navigator.serviceWorker.ready.then(reg => reg.active.postMessage('fetch'));
 }
 
 function StartFetchFromIframe() {
