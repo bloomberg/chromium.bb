@@ -140,7 +140,7 @@ class CORE_EXPORT HTMLImageElement final
 
   void SetIsFallbackImage() { is_fallback_image_ = true; }
 
-  FetchParameters::ResourceWidth GetResourceWidth();
+  FetchParameters::ResourceWidth GetResourceWidth() const;
   float SourceSize(Element&);
 
   void ForceReload() const;
@@ -234,6 +234,7 @@ class CORE_EXPORT HTMLImageElement final
   unsigned element_created_by_parser_ : 1;
   unsigned is_fallback_image_ : 1;
   bool should_invert_color_;
+  bool sizes_set_width_;
 
   ReferrerPolicy referrer_policy_;
 
