@@ -524,6 +524,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         handle_wheel_event_(false),
         handle_wheel_event_called_(false),
         unresponsive_timer_fired_(false),
+        ignore_input_events_(false),
         render_view_host_delegate_view_(new MockRenderViewHostDelegateView()) {}
   ~MockRenderWidgetHostDelegate() override {}
 
@@ -582,6 +583,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return mock_delegate_view();
   }
 
+  void SetIgnoreInputEvents(bool ignore_input_events) {
+    ignore_input_events_ = ignore_input_events;
+  }
+
  protected:
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override {
@@ -610,6 +615,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     unresponsive_timer_fired_ = true;
   }
 
+  bool ShouldIgnoreInputEvents() override { return ignore_input_events_; }
+
   void ExecuteEditCommand(
       const std::string& command,
       const base::Optional<base::string16>& value) override {}
@@ -632,6 +639,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool handle_wheel_event_called_;
 
   bool unresponsive_timer_fired_;
+
+  bool ignore_input_events_;
 
   std::unique_ptr<MockRenderViewHostDelegateView>
       render_view_host_delegate_view_;
@@ -1694,7 +1703,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
   host_->SetupForInputRouterTest();
 
-  host_->SetIgnoreInputEvents(true);
+  delegate_->SetIgnoreInputEvents(true);
 
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
   EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);

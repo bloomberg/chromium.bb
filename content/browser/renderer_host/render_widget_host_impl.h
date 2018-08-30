@@ -343,9 +343,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Notifies the RenderWidget that it lost the mouse lock.
   void SendMouseLockLost();
 
-  // Sets a flag that causes the widget to ignore input events.
-  void SetIgnoreInputEvents(bool ignore_input_events);
-
   bool is_last_unlocked_by_target() const {
     return is_last_unlocked_by_target_;
   }
@@ -1014,9 +1011,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;
-
-  // Set to true if we shouldn't send input events from the render widget.
-  bool ignore_input_events_;
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_;
