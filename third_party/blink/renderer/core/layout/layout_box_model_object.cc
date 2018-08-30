@@ -1017,18 +1017,12 @@ bool LayoutBoxModelObject::IsSlowRepaintConstrainedObject() const {
 }
 
 FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
-  if (Layer()->AncestorOverflowLayer()->IsRootLayer()) {
-    return FloatRect(
-        View()->GetFrameView()->LayoutViewport()->VisibleContentRect());
-  }
-
   LayoutBox* enclosing_clipping_box =
       Layer()->AncestorOverflowLayer()->GetLayoutBox();
   DCHECK(enclosing_clipping_box);
   FloatRect constraining_rect;
-  constraining_rect = FloatRect(
-      enclosing_clipping_box->OverflowClipRect(LayoutPoint(DoublePoint(
-          enclosing_clipping_box->GetScrollableArea()->ScrollPosition()))));
+  constraining_rect =
+      FloatRect(enclosing_clipping_box->OverflowClipRect(LayoutPoint()));
   constraining_rect.Move(-enclosing_clipping_box->BorderLeft() +
                              enclosing_clipping_box->PaddingLeft(),
                          -enclosing_clipping_box->BorderTop() +
@@ -1058,6 +1052,8 @@ LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
   FloatRect constraining_rect = ComputeStickyConstrainingRect();
+  constraining_rect.MoveBy(
+      ancestor_overflow_layer->GetScrollableArea()->ScrollPosition());
   return LayoutSize(
       constraints->ComputeStickyOffset(constraining_rect, constraints_map));
 }
