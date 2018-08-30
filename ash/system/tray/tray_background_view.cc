@@ -68,12 +68,18 @@ void MirrorInsetsIfNecessary(gfx::Insets* insets) {
 // mirrored if RTL mode is active.
 gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
   gfx::Insets insets;
+  // "Primary" is the same direction as the shelf, "secondary" is orthogonal.
+  const int primary_padding =
+      chromeos::switches::ShouldUseShelfNewUi() ? 0 : ash::kHitRegionPadding;
+  const int secondary_padding =
+      chromeos::switches::ShouldUseShelfNewUi() ? -ash::kHitRegionPadding : 0;
+
   if (is_shelf_horizontal) {
-    insets.Set(0, ash::kHitRegionPadding, 0,
-               ash::kHitRegionPadding + ash::kSeparatorWidth);
+    insets.Set(secondary_padding, primary_padding, secondary_padding,
+               primary_padding + ash::kSeparatorWidth);
   } else {
-    insets.Set(ash::kHitRegionPadding, 0,
-               ash::kHitRegionPadding + ash::kSeparatorWidth, 0);
+    insets.Set(primary_padding, secondary_padding,
+               primary_padding + ash::kSeparatorWidth, secondary_padding);
   }
   MirrorInsetsIfNecessary(&insets);
   return insets;
@@ -125,12 +131,18 @@ class TrayBackground : public views::Background {
     gfx::ScopedCanvas scoped_canvas(canvas);
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
-    background_flags.setColor(color_);
+    int border_radius = kTrayRoundedBorderRadius;
+    if (chromeos::switches::ShouldUseShelfNewUi()) {
+      background_flags.setColor(kShelfControlPermanentHighlightBackground);
+      border_radius = ShelfConstants::control_border_radius();
+    } else {
+      background_flags.setColor(color_);
+    }
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
     const float dsf = canvas->UndoDeviceScaleFactor();
     canvas->DrawRoundRect(gfx::ScaleToRoundedRect(bounds, dsf),
-                          kTrayRoundedBorderRadius * dsf, background_flags);
+                          border_radius * dsf, background_flags);
   }
 
   // Reference to the TrayBackgroundView for which this is a background.
@@ -541,8 +553,11 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
 
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
+  const int border_radius = chromeos::switches::ShouldUseShelfNewUi()
+                                ? ShelfConstants::control_border_radius()
+                                : kTrayRoundedBorderRadius;
   return std::make_unique<views::RoundRectInkDropMask>(
-      size(), GetBackgroundInsets(), kTrayRoundedBorderRadius);
+      size(), GetBackgroundInsets(), border_radius);
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {
