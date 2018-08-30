@@ -43,6 +43,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
+// Enables the redesigned shelf UI.
+const base::Feature kEnableShelfNewUi{"ShelfNewUi",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether to enable Chrome OS Account Manager.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -540,9 +544,6 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
 
-// Resdesigned shelf UI.
-const char kShelfNewUi[] = "shelf-new-ui";
-
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 
@@ -729,7 +730,7 @@ bool ShouldShowShelfHoverPreviews() {
 }
 
 bool ShouldUseShelfNewUi() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfNewUi);
+  return base::FeatureList::IsEnabled(kEnableShelfNewUi);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

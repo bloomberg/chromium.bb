@@ -7,6 +7,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -238,6 +239,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   // will shrink to fit to the work area.
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
                              display::Screen::GetScreen()->GetPrimaryDisplay());
+  const int shelf_inset = 300 - ShelfConstants::shelf_size();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
@@ -249,7 +251,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window size should be adjusted to fit to the work area
-    EXPECT_EQ(gfx::Size(400, 252).ToString(),
+    EXPECT_EQ(gfx::Size(400, shelf_inset).ToString(),
               window_->bounds().size().ToString());
     gfx::Rect window_bounds_in_screen = window_->GetBoundsInScreen();
     gfx::Rect intersect(window_->GetRootWindow()->GetBoundsInScreen());
@@ -277,7 +279,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window size should be adjusted to fit to the work area
-    EXPECT_EQ(gfx::Size(400, 252).ToString(),
+    EXPECT_EQ(gfx::Size(400, shelf_inset).ToString(),
               window_->bounds().size().ToString());
     gfx::Rect window_bounds_in_screen = window_->GetBoundsInScreen();
     gfx::Rect intersect(window_->GetRootWindow()->GetBoundsInScreen());

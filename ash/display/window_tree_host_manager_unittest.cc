@@ -9,6 +9,7 @@
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -711,6 +712,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200,300x300");
+  const int shelf_inset_first = 200 - ShelfConstants::shelf_size();
+  const int shelf_inset_second = 300 - ShelfConstants::shelf_size();
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display secondary_display = display_manager()->GetSecondaryDisplay();
@@ -739,10 +742,10 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(nullptr).id());
 
   EXPECT_EQ("0,0 200x200", primary_display.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 200, 152).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 200, shelf_inset_first).ToString(),
             primary_display.work_area().ToString());
   EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(200, 0, 300, 252).ToString(),
+  EXPECT_EQ(gfx::Rect(200, 0, 300, shelf_inset_second).ToString(),
             secondary_display.work_area().ToString());
   EXPECT_EQ("id=2200000001, parent=2200000000, right, 50",
             display_manager()
@@ -776,10 +779,10 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display swapped_secondary = display_manager()->GetSecondaryDisplay();
   EXPECT_EQ("0,0 300x300", swapped_primary.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 252).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 300, shelf_inset_second).ToString(),
             swapped_primary.work_area().ToString());
   EXPECT_EQ("-200,-50 200x200", swapped_secondary.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(-200, -50, 200, 152).ToString(),
+  EXPECT_EQ(gfx::Rect(-200, -50, 200, shelf_inset_first).ToString(),
             swapped_secondary.work_area().ToString());
 
   // Calling the same ID don't do anything.
