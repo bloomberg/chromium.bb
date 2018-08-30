@@ -8,31 +8,24 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
-class NGBlockBreakToken;
-class NGLayoutResult;
-
 // Struct that keeps all information needed to position floats in LayoutNG.
-struct CORE_EXPORT NGUnpositionedFloat
-    : public RefCounted<NGUnpositionedFloat> {
- public:
-  static scoped_refptr<NGUnpositionedFloat> Create(
-      NGLogicalSize available_size,
-      NGLogicalSize percentage_size,
-      LayoutUnit origin_bfc_line_offset,
-      LayoutUnit bfc_line_offset,
-      NGBlockNode node,
-      NGBlockBreakToken* token) {
-    return base::AdoptRef(new NGUnpositionedFloat(
-        available_size, percentage_size, origin_bfc_line_offset,
-        bfc_line_offset, node, token));
-  }
+struct CORE_EXPORT NGUnpositionedFloat final {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
+ public:
+  NGUnpositionedFloat(const NGLogicalSize& available_size,
+                      const NGLogicalSize& percentage_size,
+                      LayoutUnit origin_bfc_line_offset,
+                      LayoutUnit bfc_line_offset,
+                      NGBlockNode node,
+                      NGBlockBreakToken* token);
   ~NGUnpositionedFloat();
 
   NGBlockNode node;
@@ -63,14 +56,6 @@ struct CORE_EXPORT NGUnpositionedFloat
   bool IsLeft() const;
   bool IsRight() const;
   EClear ClearType() const;
-
- private:
-  NGUnpositionedFloat(const NGLogicalSize& available_size,
-                      const NGLogicalSize& percentage_size,
-                      LayoutUnit origin_bfc_line_offset,
-                      LayoutUnit bfc_line_offset,
-                      NGBlockNode node,
-                      NGBlockBreakToken* token);
 };
 
 }  // namespace blink

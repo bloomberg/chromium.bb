@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
@@ -40,17 +41,16 @@ inline bool ShouldCreateLineBox(const NGInlineItemResults& item_results) {
 
 }  // namespace
 
-NGLineBreaker::NGLineBreaker(
-    NGInlineNode node,
-    NGLineBreakerMode mode,
-    const NGConstraintSpace& space,
-    Vector<NGPositionedFloat>* positioned_floats,
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGContainerFragmentBuilder* container_builder,
-    NGExclusionSpace* exclusion_space,
-    unsigned handled_float_index,
-    const NGLineLayoutOpportunity& line_opportunity,
-    const NGInlineBreakToken* break_token)
+NGLineBreaker::NGLineBreaker(NGInlineNode node,
+                             NGLineBreakerMode mode,
+                             const NGConstraintSpace& space,
+                             Vector<NGPositionedFloat>* positioned_floats,
+                             NGUnpositionedFloatVector* unpositioned_floats,
+                             NGContainerFragmentBuilder* container_builder,
+                             NGExclusionSpace* exclusion_space,
+                             unsigned handled_float_index,
+                             const NGLineLayoutOpportunity& line_opportunity,
+                             const NGInlineBreakToken* break_token)
     : line_opportunity_(line_opportunity),
       node_(node),
       is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
@@ -831,12 +831,12 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
-  scoped_refptr<NGUnpositionedFloat> unpositioned_float =
-      NGUnpositionedFloat::Create(constraint_space_.AvailableSize(),
-                                  constraint_space_.PercentageResolutionSize(),
-                                  constraint_space_.BfcOffset().line_offset,
-                                  constraint_space_.BfcOffset().line_offset,
-                                  node, /* break_token */ nullptr);
+  NGUnpositionedFloat unpositioned_float(
+      constraint_space_.AvailableSize(),
+      constraint_space_.PercentageResolutionSize(),
+      constraint_space_.BfcOffset().line_offset,
+      constraint_space_.BfcOffset().line_offset, node,
+      /* break_token */ nullptr);
 
   // If we are currently computing our min/max-content size simply append
   // to the unpositioned floats list and abort.
@@ -848,7 +848,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
 
   LayoutUnit inline_margin_size =
       ComputeMarginBoxInlineSizeForUnpositionedFloat(constraint_space_,
-                                                     unpositioned_float.get());
+                                                     &unpositioned_float);
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
 
@@ -884,7 +884,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   } else {
     NGPositionedFloat positioned_float = PositionFloat(
         bfc_block_offset, constraint_space_.BfcOffset().block_offset,
-        unpositioned_float.get(), constraint_space_, exclusion_space_);
+        &unpositioned_float, constraint_space_, exclusion_space_);
     positioned_floats_->push_back(positioned_float);
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(

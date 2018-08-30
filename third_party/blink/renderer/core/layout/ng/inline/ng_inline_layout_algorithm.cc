@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
@@ -820,13 +821,12 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     if (item.Type() == NGInlineItem::kFloating) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 
-      scoped_refptr<NGUnpositionedFloat> unpositioned_float =
-          NGUnpositionedFloat::Create(
-              ConstraintSpace().AvailableSize(),
-              ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
-              bfc_line_offset, node, /* break_token */ nullptr);
-      AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
-                           std::move(unpositioned_float));
+      AddUnpositionedFloat(
+          &unpositioned_floats_, &container_builder_,
+          NGUnpositionedFloat(ConstraintSpace().AvailableSize(),
+                              ConstraintSpace().PercentageResolutionSize(),
+                              bfc_line_offset, bfc_line_offset, node,
+                              /* break_token */ nullptr));
     }
 
     // Abort if we've found something that makes this a non-empty inline.

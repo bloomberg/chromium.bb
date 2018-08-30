@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -739,7 +740,7 @@ static LayoutUnit ComputeContentSize(
           .ToConstraintSpace(writing_mode);
 
   Vector<NGPositionedFloat> positioned_floats;
-  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
+  NGUnpositionedFloatVector unpositioned_floats;
 
   scoped_refptr<NGInlineBreakToken> break_token;
   NGExclusionSpace empty_exclusion_space;
@@ -779,7 +780,7 @@ static LayoutUnit ComputeContentSize(
     previous_floats_inline_size = LayoutUnit();
 
     for (const auto& unpositioned_float : unpositioned_floats) {
-      NGBlockNode float_node = unpositioned_float->node;
+      NGBlockNode float_node = unpositioned_float.node;
       const ComputedStyle& float_style = float_node.Style();
 
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
