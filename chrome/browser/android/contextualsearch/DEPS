@@ -1,3 +1,0 @@
-include_rules = [
-  "+components/contextual_search/content/common",
-]

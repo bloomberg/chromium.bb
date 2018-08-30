@@ -1,8 +1,4 @@
 include_rules = [
-  "+components/captive_portal",
-  "+components/login",
-  "+components/toolbar",
-  "+components/user_manager",
   "+extensions/components/native_app_window",
   "+services/audio/public/cpp",
   "+services/device/public/mojom",

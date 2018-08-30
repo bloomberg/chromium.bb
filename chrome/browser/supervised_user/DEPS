@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/data_use_measurement/core",
-  "+components/user_manager",
-]

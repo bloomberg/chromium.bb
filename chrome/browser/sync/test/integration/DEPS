@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/onc",  # wifi_credentials tests
-  # TODO(akalin): Figure out finer-grained dependencies.
-  "+components/sync",
-]
