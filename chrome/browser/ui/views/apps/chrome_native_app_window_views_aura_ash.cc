@@ -125,8 +125,13 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
       ash::wm::WindowState* window_state,
       ash::mojom::WindowStateType old_type) override {
     DCHECK_EQ(window_state, window_state_);
-    if (!window_state_->IsFullscreen() && !window_state->IsMinimized() &&
-        immersive_fullscreen_controller_ &&
+    TabletModeClient* client = TabletModeClient::Get();
+    const bool is_tablet_mode = client && client->tablet_mode_enabled();
+    // Except in tablet mode, disable immersive mode if the window exits
+    // fullscreen and is not minimized. In tablet mode, the titlebar should
+    // remain hidden and allow dragging from the top of the screen.
+    if (!is_tablet_mode && !window_state_->IsFullscreen() &&
+        !window_state->IsMinimized() && immersive_fullscreen_controller_ &&
         immersive_fullscreen_controller_->IsEnabled()) {
       immersive_fullscreen_controller_->SetEnabled(
           ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);

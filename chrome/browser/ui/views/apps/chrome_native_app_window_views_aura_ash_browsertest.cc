@@ -152,8 +152,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
 }
 
-// Verifies that apps in immersive fullscreen will correctly exit
-// immersive mode when Restore is called.
+// Verifies that apps in clamshell mode with immersive fullscreen enabled will
+// correctly exit immersive mode if exit fullscreen.
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        RestoreImmersiveMode) {
   extensions::AppWindow* app_window = CreateTestAppWindow("{}");
@@ -162,6 +162,26 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   ASSERT_TRUE(window != nullptr);
   ASSERT_TRUE(window->immersive_fullscreen_controller_.get());
 
+  // Should not disable immersive fullscreen in tablet mode if |window| exits
+  // fullscreen.
+  EXPECT_FALSE(window->IsFullscreen());
+  app_window->OSFullscreen();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window->GetRestoredState());
+  EXPECT_TRUE(window->IsFullscreen());
+  EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
+  EXPECT_TRUE(window->IsFullscreen());
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window->GetRestoredState());
+
+  window->Restore();
+  // Restoring a window inside tablet mode should deactivate fullscreen, but not
+  // disable immersive mode.
+  EXPECT_FALSE(window->IsFullscreen());
+  ASSERT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+
+  // Immersive fullscreen should be disabled if window exits fullscreen in
+  // clamshell mode.
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   app_window->OSFullscreen();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window->GetRestoredState());
   EXPECT_TRUE(window->IsFullscreen());
