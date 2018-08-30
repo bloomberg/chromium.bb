@@ -85,18 +85,15 @@ bool InspectorTaskRunner::IsRunningTask() {
 InspectorTaskRunner::Task InspectorTaskRunner::TakeNextTask(
     InspectorTaskRunner::WaitMode wait_mode) {
   MutexLocker lock(mutex_);
-  bool timed_out = false;
 
-  static double infinite_time = std::numeric_limits<double>::max();
-  double absolute_time = wait_mode == kWaitForTask ? infinite_time : 0.0;
-  while (!disposed_ && !timed_out && queue_.IsEmpty())
-    timed_out = !condition_.TimedWait(mutex_, absolute_time);
-  DCHECK(!timed_out || absolute_time != infinite_time);
+  if (wait_mode == kWaitForTask) {
+    while (!disposed_ && queue_.IsEmpty())
+      condition_.Wait(mutex_);
+  }
 
-  if (disposed_ || timed_out)
+  if (disposed_ || queue_.IsEmpty())
     return Task();
 
-  SECURITY_DCHECK(!queue_.IsEmpty());
   return queue_.TakeFirst();
 }
 
