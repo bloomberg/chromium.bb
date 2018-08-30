@@ -2832,11 +2832,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   CGRect omniboxFrame =
       [NamedGuide guideWithName:kOmniboxGuide view:self.view].layoutFrame;
-  [_findBarController addFindBarView:animate
-                            intoView:self.view
-                           withFrame:referenceFrame
-                      alignWithFrame:omniboxFrame
-                          selectText:selectText];
+  [_findBarController
+      addFindBarViewToParentView:self.view
+                usingToolbarView:_primaryToolbarCoordinator.viewController.view
+                  alignWithFrame:omniboxFrame
+                           frame:referenceFrame
+                      selectText:selectText
+                        animated:animate];
   [self updateFindBar:YES shouldFocus:shouldFocus];
 }
 
@@ -2867,8 +2869,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     (id<UIViewControllerTransitionCoordinator>)coordinator {
   if (![_findBarController isFindInPageShown])
     return;
-  // FindBar uses AutoLayout for compact mode. Only reshow find bar for iPad.
-  if (ShouldShowCompactToolbar())
+  // FindBar uses AutoLayout under UIRefreshPhase1Enabled, and also for compact
+  // mode in legacy view. Only reshow find bar for iPad in legacy view.
+  if (IsUIRefreshPhase1Enabled() || ShouldShowCompactToolbar())
     return;
 
   // Record focused state.
