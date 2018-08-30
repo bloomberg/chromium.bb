@@ -102,6 +102,7 @@ jumbo_source_set("browser_sources") {
     "content_browser_client.h",
     "context_factory.h",
     "cookie_store_factory.h",
+    "delegate_to_browser_gpu_service_accelerator_factory.h",
     "desktop_capture.cc",
     "desktop_capture.h",
     "desktop_media_id.cc",
