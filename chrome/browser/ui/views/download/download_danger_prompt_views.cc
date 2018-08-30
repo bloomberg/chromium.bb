@@ -292,20 +292,8 @@ void DownloadDangerPromptViews::RunDone(Action action) {
 
 }  // namespace
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
-    download::DownloadItem* item,
-    content::WebContents* web_contents,
-    bool show_context,
-    const OnDone& done) {
-  return DownloadDangerPrompt::CreateDownloadDangerPromptViews(
-      item, web_contents, show_context, done);
-}
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
-
-// static
-DownloadDangerPrompt* DownloadDangerPrompt::CreateDownloadDangerPromptViews(
     download::DownloadItem* item,
     content::WebContents* web_contents,
     bool show_context,

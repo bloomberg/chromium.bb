@@ -70,13 +70,6 @@ class DownloadDangerPrompt {
       bool did_proceed,
       const download::DownloadItem& download);
 
- private:
-  // Returns a toolkit-views based download danger prompt.
-  static DownloadDangerPrompt* CreateDownloadDangerPromptViews(
-      download::DownloadItem* item,
-      content::WebContents* web_contents,
-      bool show_context,
-      const OnDone& done);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DANGER_PROMPT_H_

@@ -183,7 +183,6 @@ jumbo_split_static_library("ui") {
       "cocoa/device_chooser_content_view_cocoa.mm",
       "cocoa/download/background_theme.h",
       "cocoa/download/background_theme.mm",
-      "cocoa/download/download_danger_prompt_impl.cc",
       "cocoa/download/download_item_button.h",
       "cocoa/download/download_item_button.mm",
       "cocoa/download/download_item_cell.h",
@@ -2535,7 +2534,6 @@ jumbo_split_static_library("ui") {
       # linked in at all.
       sources -= [
         "cocoa/constrained_web_dialog_delegate_mac.mm",
-        "cocoa/download/download_danger_prompt_impl.cc",
         "cocoa/importer/import_lock_dialog_cocoa.mm",
         "cocoa/login_handler_cocoa.h",
         "cocoa/login_handler_cocoa.mm",
