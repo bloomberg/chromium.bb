@@ -17,11 +17,6 @@ import models
 import path_util
 
 
-_SYMBOL_TYPE_VTABLE = 'v'
-_SYMBOL_TYPE_GENERATED = '*'
-_SYMBOL_TYPE_DEX_METHOD = 'm'
-_SYMBOL_TYPE_OTHER = 'o'
-
 _COMPACT_FILE_PATH_KEY = 'p'
 _COMPACT_FILE_COMPONENT_INDEX_KEY = 'c'
 _COMPACT_FILE_SYMBOLS_KEY = 's'
@@ -31,19 +26,6 @@ _COMPACT_SYMBOL_TYPE_KEY = 't'
 _COMPACT_SYMBOL_COUNT_KEY = 'u'
 _COMPACT_SYMBOL_FLAGS_KEY = 'f'
 
-_SMALL_SYMBOL_DESCRIPTIONS = {
-  'b': 'Other small uninitialized data',
-  'd': 'Other small initialized data',
-  'r': 'Other small readonly data',
-  't': 'Other small code',
-  'v': 'Other small vtable entries',
-  'x': 'Other small dex non-method entries',
-  'm': 'Other small dex methods',
-  'p': 'Other small locale pak entries',
-  'P': 'Other small non-locale pak entries',
-  'o': 'Other small entries',
-}
-
 # Always emit this many distict symbols (if present), even when small.
 # No need to optimize file size at this point).
 _MIN_SYMBOL_COUNT = 1000
@@ -52,15 +34,6 @@ _MIN_SYMBOL_COUNT = 1000
 _MAX_OTHER_SYMBOL_COVERAGE = .05
 # Don't insert "other" symbols smaller than this (just noise at this point).
 _MIN_OTHER_PSS = 1
-
-
-def _GetSymbolType(symbol):
-  symbol_type = symbol.section
-  if symbol.name.endswith('[vtable]'):
-    symbol_type = _SYMBOL_TYPE_VTABLE
-  if symbol_type not in _SMALL_SYMBOL_DESCRIPTIONS:
-    symbol_type = _SYMBOL_TYPE_OTHER
-  return symbol_type
 
 
 def _GetOrAddFileNode(path, component, file_nodes, components):
@@ -97,10 +70,11 @@ class IndexedSet(object):
 
 
 def _PartitionSymbols(symbols):
-  # Dex methods (type "m") are whitelisted for the method_count mode on the
-  # UI. It's important to see details on all the methods.
-  dex_symbols = symbols.WhereIsDex()
-  ordered_symbols = dex_symbols.Inverted().Sorted()
+  # Dex methods are whitelisted for the method_count mode in the UI.
+  # Vtable entries are interesting to query for, so whitelist them as well.
+  interesting_symbols = symbols.Filter(
+      lambda s: s.IsDex() or '[vtable]' in s.name)
+  ordered_symbols = interesting_symbols.Inverted().Sorted()
 
   abs_pss_target = (1 - _MAX_OTHER_SYMBOL_COVERAGE) * sum(
       abs(s.pss) for s in ordered_symbols)
@@ -111,11 +85,12 @@ def _PartitionSymbols(symbols):
     if running_abs_pss > abs_pss_target and ordered_count >= _MIN_SYMBOL_COUNT:
       break
 
-  main_symbols = itertools.chain(dex_symbols, ordered_symbols[:ordered_count])
+  main_symbols = itertools.chain(interesting_symbols,
+                                 ordered_symbols[:ordered_count])
   extra_symbols = ordered_symbols[ordered_count:]
 
   logging.info('Found %d large symbols, %s small symbols',
-               len(dex_symbols) + ordered_count, len(extra_symbols))
+               len(interesting_symbols) + ordered_count, len(extra_symbols))
   return main_symbols, extra_symbols
 
 
@@ -144,7 +119,6 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   # Bundle symbols by the file they belong to.
   # Add all the file buckets into file_nodes.
   for symbol in main_symbols:
-    symbol_type = _GetSymbolType(symbol)
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
@@ -156,10 +130,10 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     file_node = _GetOrAddFileNode(
         path, symbol.component, file_nodes, components)
 
-    is_dex_method = symbol_type == _SYMBOL_TYPE_DEX_METHOD
+    is_dex_method = symbol.section_name == models.SECTION_DEX_METHOD
     symbol_entry = {
       _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
-      _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
+      _COMPACT_SYMBOL_TYPE_KEY: symbol.section,
       _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
     }
     # We use symbol count for the method count mode in the diff mode report.
@@ -175,10 +149,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
 
   # Collect small symbols into a per-path dict.
   for symbol in extra_symbols:
-    symbol_type = _GetSymbolType(symbol)
     path = symbol.source_path or symbol.object_path
     tup = (path, symbol.component)
-    small_symbol_pss[tup][symbol_type] += symbol.pss
+    small_symbol_pss[tup][symbol.section_name] += symbol.pss
 
   # Insert small symbols.
   inserted_smalls_count = 0
@@ -187,7 +160,7 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   skipped_smalls_abs_pss = 0
   for tup, type_to_pss in small_symbol_pss.iteritems():
     path, component = tup
-    for symbol_type, pss in type_to_pss.iteritems():
+    for section_name, pss in type_to_pss.iteritems():
       if abs(pss) < _MIN_OTHER_PSS:
         skipped_smalls_count += 1
         skipped_smalls_abs_pss += abs(pss)
@@ -196,8 +169,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
         inserted_smalls_abs_pss += abs(pss)
         file_node = _GetOrAddFileNode(path, component, file_nodes, components)
         file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
-          _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
-          _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
+          _COMPACT_SYMBOL_NAME_KEY: 'Other ' + section_name,
+          _COMPACT_SYMBOL_TYPE_KEY:
+              models.SECTION_NAME_TO_SECTION[section_name],
           _COMPACT_SYMBOL_BYTE_SIZE_KEY: pss,
         })
   logging.debug(

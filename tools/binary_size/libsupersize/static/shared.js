@@ -112,7 +112,7 @@ const _DEX_METHOD_SYMBOL_TYPE = 'm';
 const _OTHER_SYMBOL_TYPE = 'o';
 
 /** Set of all known symbol types. Container types are not included. */
-const _SYMBOL_TYPE_SET = new Set('bdrtvxmpP' + _OTHER_SYMBOL_TYPE);
+const _SYMBOL_TYPE_SET = new Set('bdrtRxmopP');
 
 /** Name used by a directory created to hold symbols with no name. */
 const _NO_NAME = '(No path)';

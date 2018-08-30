@@ -18,7 +18,7 @@ body {
 }
 .appbar-inner {
   height: 100%;
-  padding: 0 48px;
+  padding: 0 66px 0 48px;
   display: flex;
   align-items: center;
 }

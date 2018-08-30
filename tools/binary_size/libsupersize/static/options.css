@@ -35,7 +35,7 @@
   right: 0;
   top: 0;
   bottom: 0;
-  width: 224px;
+  width: 280px;
   background: #fffffff5;
   box-shadow: 0 1px 2px #3c40434d, 0 2px 6px 2px #3c404326;
 }
@@ -302,7 +302,6 @@ input[type='file'] {
     display: block;
   }
 
-  .appbar-inner,
   .symbols {
     padding: 0 16px;
   }

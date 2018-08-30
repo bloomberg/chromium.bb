@@ -264,7 +264,7 @@ function _makeIconTemplateGetter() {
     d: _icons.querySelector('.dataicon'),
     r: _icons.querySelector('.readonlyicon'),
     t: _icons.querySelector('.codeicon'),
-    v: _icons.querySelector('.vtableicon'),
+    R: _icons.querySelector('.relroicon'),
     '*': _icons.querySelector('.generatedicon'),
     x: _icons.querySelector('.dexicon'),
     m: _icons.querySelector('.dexmethodicon'),
