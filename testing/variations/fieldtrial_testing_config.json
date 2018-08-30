@@ -3665,7 +3665,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_bg_limit_3_2",
+                    "name": "Enabled_v3_bg_limit_3_2",
                     "params": {
                         "bg_limit": "3",
                         "bg_sub_limit": "2"
