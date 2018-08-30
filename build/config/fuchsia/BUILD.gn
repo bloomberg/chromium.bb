@@ -121,7 +121,7 @@ action("blobstore_extended_qcow2") {
   ]
 
   args = [
-    rebase_path("//third_party/qemu/bin/qemu-img", root_build_dir),
+    rebase_path("${qemu_root}/bin/qemu-img", root_build_dir),
     "convert",
     "-f",
     "raw",

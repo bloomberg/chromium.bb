@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 
-from common import QEMU_ROOT, EnsurePathExists
+from common import GetQemuRootForPlatform, EnsurePathExists
 
 
 # Virtual networking configuration data for QEMU.
@@ -57,7 +57,7 @@ class QemuTarget(target.Target):
       self._qemu_process.kill()
 
   def Start(self):
-    qemu_path = os.path.join(QEMU_ROOT, 'bin',
+    qemu_path = os.path.join(GetQemuRootForPlatform(), 'bin',
                              'qemu-system-' + self._GetTargetSdkLegacyArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
@@ -100,24 +100,27 @@ class QemuTarget(target.Target):
       ]
 
     # Configure the machine & CPU to emulate, based on the target architecture.
-    # Enable lightweight virtualization (KVM) if the host and guest OS run on
-    # the same architecture.
     if self._target_cpu == 'arm64':
       qemu_command.extend([
           '-machine','virt',
           '-cpu', 'cortex-a53',
       ])
       netdev_type = 'virtio-net-pci'
-      if platform.machine() == 'aarch64':
-        qemu_command.append('-enable-kvm')
     else:
       qemu_command.extend([
           '-machine', 'q35',
-          '-cpu', 'host,migratable=no',
       ])
       netdev_type = 'e1000'
-      if platform.machine() == 'x86_64':
+
+    # On Linux, enable lightweight virtualization (KVM) if the host and guest
+    # architectures are the same.
+    if sys.platform.startswith('linux'):
+      if self._target_cpu == 'arm64' and platform.machine() == 'aarch64':
         qemu_command.append('-enable-kvm')
+      elif self._target_cpu == 'x64' and platform.machine() == 'x86_64':
+        qemu_command.extend([
+            '-enable-kvm', '-cpu', 'host,migratable=no',
+        ])
 
     # Configure virtual network. It is used in the tests to connect to
     # testserver running on the host.
