@@ -5,6 +5,8 @@
 #include "components/history/core/common/thumbnail_score.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace history {
+
 // Tests that the different types of thumbnails are compared properly.
 TEST(ThumbnailScoreTest, ShouldReplaceThumbnailWithType) {
   base::Time now = base::Time::Now();
@@ -85,3 +87,5 @@ TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
   score.time_at_snapshot -= ThumbnailScore::kUpdateThumbnailTime;
   EXPECT_TRUE(score.ShouldConsiderUpdating());
 }
+
+}  // namespace history

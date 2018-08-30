@@ -10,6 +10,8 @@
 #include <string>
 #include "base/time/time.h"
 
+namespace history {
+
 // A set of metadata about a Thumbnail.
 struct ThumbnailScore {
   // Initializes the ThumbnailScore to the absolute worst possible values
@@ -105,5 +107,7 @@ struct ThumbnailScore {
 // Checks whether we should replace one thumbnail with another.
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
                                 const ThumbnailScore& replacement);
+
+}  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_

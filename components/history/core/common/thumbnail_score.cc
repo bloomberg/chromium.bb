@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
+namespace history {
+
 using base::Time;
 using base::TimeDelta;
 
@@ -142,3 +144,5 @@ bool ThumbnailScore::ShouldConsiderUpdating() {
   // The current thumbnail should be updated.
   return true;
 }
+
+}  // namespace history
