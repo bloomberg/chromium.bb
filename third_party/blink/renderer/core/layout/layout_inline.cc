@@ -1541,15 +1541,9 @@ LayoutSize LayoutInline::OffsetForInFlowPositionedInline(
 
   // Per http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-width an
   // absolute positioned box with a static position should locate itself as
-  // though it is a normal flow box in relation to its containing block. If this
-  // relative-positioned inline has a negative offset we need to compensate for
-  // it so that we align the positioned object with the edge of its containing
-  // block.
-  if (child.StyleRef().HasStaticInlinePosition(
+  // though it is a normal flow box in relation to its containing block.
+  if (!child.StyleRef().HasStaticInlinePosition(
           StyleRef().IsHorizontalWritingMode()))
-    logical_offset.SetWidth(
-        std::max(LayoutUnit(), -OffsetForInFlowPosition().Width()));
-  else
     logical_offset.SetWidth(inline_position);
 
   if (!child.StyleRef().HasStaticBlockPosition(
