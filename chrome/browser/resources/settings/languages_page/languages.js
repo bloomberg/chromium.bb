@@ -174,6 +174,12 @@ Polymer({
   // <if expr="chromeos">
   /** @private {?InputMethodPrivate} */
   inputMethodPrivate_: null,
+
+  /** @private {?Function} */
+  boundOnInputMethodAdded_: null,
+
+  /** @private {?Function} */
+  boundOnInputMethodRemoved_: null,
   // </if>
 
   /** @override */
@@ -251,6 +257,12 @@ Polymer({
       this.boundOnInputMethodChanged_ = this.onInputMethodChanged_.bind(this);
       this.inputMethodPrivate_.onChanged.addListener(
           assert(this.boundOnInputMethodChanged_));
+      this.boundOnInputMethodAdded_ = this.onInputMethodAdded_.bind(this);
+      this.languageSettingsPrivate_.onInputMethodAdded.addListener(
+          this.boundOnInputMethodAdded_);
+      this.boundOnInputMethodRemoved_ = this.onInputMethodRemoved_.bind(this);
+      this.languageSettingsPrivate_.onInputMethodRemoved.addListener(
+          this.boundOnInputMethodRemoved_);
     }
   },
 
@@ -260,6 +272,12 @@ Polymer({
       this.inputMethodPrivate_.onChanged.removeListener(
           assert(this.boundOnInputMethodChanged_));
       this.boundOnInputMethodChanged_ = null;
+      this.languageSettingsPrivate_.onInputMethodAdded.removeListener(
+          assert(this.boundOnInputMethodAdded_));
+      this.boundOnInputMethodAdded_ = null;
+      this.languageSettingsPrivate_.onInputMethodRemoved.removeListener(
+          assert(this.boundOnInputMethodRemoved_));
+      this.boundOnInputMethodRemoved_ = null;
     }
 
     // <if expr="not is_macosx">
