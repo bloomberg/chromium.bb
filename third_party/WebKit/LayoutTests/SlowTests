@@ -1488,3 +1488,5 @@ crbug.com/877104 external/wpt/editing/run/forwarddelete.html?3001-4000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/forwarddelete.html?4001-5000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/forwarddelete.html?5001-6000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/forwarddelete.html?6001-last [ Slow ]
+
+crbug.com/878995 [ Win ] external/wpt/async-local-storage/key-types.tentative.https.html [ Slow ]
