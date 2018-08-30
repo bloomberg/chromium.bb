@@ -26,6 +26,7 @@ class BitstreamBuffer;
 struct JpegParseResult;
 class UnalignedSharedMemory;
 class VaapiWrapper;
+class VaapiJpegDecodeAcceleratorTest;
 
 // Class to provide JPEG decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
@@ -49,6 +50,8 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   bool IsSupported() override;
 
  private:
+  friend class VaapiJpegDecodeAcceleratorTest;
+
   // Notifies the client that an error has occurred and decoding cannot
   // continue. The client is notified on the |task_runner_|, i.e., the thread in
   // which |*this| was created.

@@ -22,17 +22,28 @@
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "mojo/core/embedder/embedder.h"
 
 namespace media {
 namespace {
 
-constexpr char* kTestFilename = "pixel-1280x720.jpg";
-constexpr char* kExpectedMd5Sum = "6e9e1716073c9a9a1282e3f0e0dab743";
+constexpr const char* kTestFilename = "pixel-1280x720.jpg";
+constexpr const char* kExpectedMd5Sum = "6e9e1716073c9a9a1282e3f0e0dab743";
 
 void LogOnError() {
   LOG(FATAL) << "Oh noes! Decoder failed";
 }
+
+// Find the location of the specified test file. If a file with specified path
+// is not found, treat the path as being relative to the standard test file
+// directory.
+base::FilePath FindTestDataFilePath(const std::string& file_name) {
+  base::FilePath file_path = base::FilePath(file_name);
+  return PathExists(file_path) ? file_path : GetTestDataFilePath(file_name);
+}
+
+}  // namespace
 
 class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
@@ -44,7 +55,7 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
                                     VAProfileJPEGBaseline, report_error_cb);
     ASSERT_TRUE(wrapper_);
 
-    base::FilePath input_file = GetTestDataFilePath(kTestFilename);
+    base::FilePath input_file = FindTestDataFilePath(kTestFilename);
 
     ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data_))
         << "failed to read input data from " << input_file.value();
@@ -54,6 +65,9 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
 
   bool VerifyDecode(const JpegParseResult& parse_result,
                     const std::string& md5sum);
+  bool Decode(VaapiWrapper* vaapi_wrapper,
+              const JpegParseResult& parse_result,
+              VASurfaceID va_surface);
 
  protected:
   scoped_refptr<VaapiWrapper> wrapper_;
@@ -70,8 +84,7 @@ bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
   if (!wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces))
     return false;
 
-  if (!VaapiJpegDecodeAccelerator::DoDecode(wrapper_.get(), parse_result,
-                                            va_surfaces[0])) {
+  if (!Decode(wrapper_.get(), parse_result, va_surfaces[0])) {
     LOG(ERROR) << "Decode failed";
     return false;
   }
@@ -101,6 +114,13 @@ bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
   return true;
 }
 
+bool VaapiJpegDecodeAcceleratorTest::Decode(VaapiWrapper* vaapi_wrapper,
+                                            const JpegParseResult& parse_result,
+                                            VASurfaceID va_surface) {
+  return VaapiJpegDecodeAccelerator::DoDecode(vaapi_wrapper, parse_result,
+                                              va_surface);
+}
+
 TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeSuccess) {
   JpegParseResult parse_result;
   ASSERT_TRUE(
@@ -127,17 +147,7 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
   ASSERT_TRUE(
       wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces));
 
-  EXPECT_FALSE(VaapiJpegDecodeAccelerator::DoDecode(
-      wrapper_.get(), parse_result, va_surfaces[0]));
+  EXPECT_FALSE(Decode(wrapper_.get(), parse_result, va_surfaces[0]));
 }
 
-}  // namespace
 }  // namespace media
-
-int main(int argc, char** argv) {
-  mojo::core::Init();
-  testing::InitGoogleTest(&argc, argv);
-  base::AtExitManager exit_manager;
-  media::VaapiWrapper::PreSandboxInitialization();
-  return RUN_ALL_TESTS();
-}
