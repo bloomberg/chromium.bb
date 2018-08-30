@@ -1061,12 +1061,13 @@ bool NGBoxFragmentPainter::HitTestChildren(
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
     const scoped_refptr<NGPaintFragment>& child = *iter;
+    const NGPhysicalOffset offset = child->Offset();
     if (child->HasSelfPaintingLayer())
       continue;
 
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
     const LayoutPoint child_physical_offset =
-        accumulated_offset + fragment.Offset().ToLayoutPoint();
+        accumulated_offset + offset.ToLayoutPoint();
 
     bool stop_hit_testing = false;
     if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {

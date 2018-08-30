@@ -32,7 +32,7 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  NGPhysicalBoxFragment* fragment =
+  const NGPhysicalBoxFragment* fragment =
       ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
 
   const LayoutBox* section = LocationContainer();
@@ -46,7 +46,7 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
         constraint_space->GetWritingMode(), constraint_space->Direction(),
         section_size, fragment->Size());
   }
-  fragment->SetOffset(physical_offset);
+  result->SetOffset(physical_offset);
 }
 
 }  // namespace blink

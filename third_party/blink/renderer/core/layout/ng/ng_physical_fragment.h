@@ -45,7 +45,7 @@ struct CORE_EXPORT NGPhysicalFragmentTraits {
 // NGFragment wrapper classes which transforms information into the logical
 // coordinate system.
 class CORE_EXPORT NGPhysicalFragment
-    : public RefCounted<NGPhysicalFragment, NGPhysicalFragmentTraits> {
+    : public RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
  public:
   enum NGFragmentType {
     kFragmentBox = 0,
@@ -144,13 +144,6 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned BorderEdges() const { return border_edge_; }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
-  // Returns the offset relative to the parent fragment's content-box.
-  NGPhysicalOffset Offset() const {
-    DCHECK(is_placed_) << "this=" << this << " for layout object "
-                       << layout_object_;
-    return offset_;
-  }
-
   NGBreakToken* BreakToken() const { return break_token_.get(); }
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
@@ -181,16 +174,8 @@ class CORE_EXPORT NGPhysicalFragment
   NGPhysicalOffsetRect ScrollableOverflow() const;
 
   // Unite visual rect to propagate to parent's ContentsVisualRect.
-  void PropagateContentsInkOverflow(NGPhysicalOffsetRect*) const;
-
-  // Should only be used by the parent fragment's layout.
-  void SetOffset(NGPhysicalOffset offset) {
-    DCHECK(!is_placed_);
-    offset_ = offset;
-    is_placed_ = true;
-  }
-
-  bool IsPlaced() const { return is_placed_; }
+  void PropagateContentsInkOverflow(NGPhysicalOffsetRect*,
+                                    NGPhysicalOffset) const;
 
   // Returns the bidi level of a text or atomic inline fragment.
   virtual UBiDiLevel BidiLevel() const;
@@ -198,8 +183,6 @@ class CORE_EXPORT NGPhysicalFragment
   // Returns the resolved direction of a text or atomic inline fragment. Not to
   // be confused with the CSS 'direction' property.
   virtual TextDirection ResolvedDirection() const;
-
-  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 
   String ToString() const;
 
@@ -218,7 +201,9 @@ class CORE_EXPORT NGPhysicalFragment
   };
   typedef int DumpFlags;
 
-  String DumpFragmentTree(DumpFlags, unsigned indent = 2) const;
+  String DumpFragmentTree(DumpFlags,
+                          base::Optional<NGPhysicalOffset> = base::nullopt,
+                          unsigned indent = 2) const;
 
 #ifndef NDEBUG
   void ShowFragmentTree() const;
@@ -238,13 +223,11 @@ class CORE_EXPORT NGPhysicalFragment
   LayoutObject* const layout_object_;
   scoped_refptr<const ComputedStyle> style_;
   const NGPhysicalSize size_;
-  NGPhysicalOffset offset_;
   scoped_refptr<NGBreakToken> break_token_;
 
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
   unsigned is_old_layout_root_ : 1;
-  unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   const unsigned style_variant_ : 2;  // NGStyleVariant
   unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment

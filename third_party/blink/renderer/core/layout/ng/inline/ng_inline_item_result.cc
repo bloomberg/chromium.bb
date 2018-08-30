@@ -81,7 +81,7 @@ LayoutUnit NGLineInfo::ComputeWidth() const {
 }
 
 void NGLineInfo::SetLineEndFragment(
-    scoped_refptr<NGPhysicalTextFragment> fragment) {
+    scoped_refptr<const NGPhysicalTextFragment> fragment) {
   line_end_fragment_ = std::move(fragment);
 }
 

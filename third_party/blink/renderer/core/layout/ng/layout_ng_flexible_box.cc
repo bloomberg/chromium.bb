@@ -32,7 +32,7 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  NGPhysicalBoxFragment* fragment =
+  const NGPhysicalBoxFragment* fragment =
       ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
 
   // Pasted from layout_ng_block_flow. TODO(dgrogan): Factor a utility method.
@@ -46,7 +46,7 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
         constraint_space->GetWritingMode(), constraint_space->Direction(),
         containing_block_size, fragment->Size());
   }
-  fragment->SetOffset(physical_offset);
+  result->SetOffset(physical_offset);
 }
 
 }  // namespace blink

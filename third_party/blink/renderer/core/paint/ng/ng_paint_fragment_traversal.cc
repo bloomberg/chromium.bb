@@ -30,7 +30,7 @@ void CollectPaintFragments(const NGPaintFragment& container,
       result->push_back(fragment_with_offset);
     }
     if (filter.IsTraverse(child.get())) {
-      CollectPaintFragments(*child.get(), fragment_with_offset.container_offset,
+      CollectPaintFragments(*child, fragment_with_offset.container_offset,
                             filter, result);
     }
   }

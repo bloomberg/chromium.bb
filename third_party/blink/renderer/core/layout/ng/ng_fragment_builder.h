@@ -47,7 +47,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   using NGContainerFragmentBuilder::AddChild;
 
   // Our version of AddChild captures any child NGBreakTokens.
-  NGContainerFragmentBuilder& AddChild(scoped_refptr<NGPhysicalFragment>,
+  NGContainerFragmentBuilder& AddChild(scoped_refptr<const NGPhysicalFragment>,
                                        const NGLogicalOffset&) final;
 
   // Remove all children.
@@ -63,7 +63,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   // Update if we have fragmented in this flow.
   NGFragmentBuilder& PropagateBreak(scoped_refptr<NGLayoutResult>);
-  NGFragmentBuilder& PropagateBreak(scoped_refptr<NGPhysicalFragment>);
+  NGFragmentBuilder& PropagateBreak(scoped_refptr<const NGPhysicalFragment>);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,

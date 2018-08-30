@@ -133,14 +133,15 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
 
   NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
-  for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragment* child = children_[i].get();
-    child->SetOffset(offsets_[i].ConvertToPhysical(
-        line_writing_mode, Direction(), physical_size, child->Size()));
-    child->PropagateContentsInkOverflow(&contents_ink_overflow);
+  DCHECK_EQ(children_.size(), offsets_.size());
+  for (size_t i = 0; i < children_.size(); i++) {
+    auto& child = children_[i];
+    child.offset_ = offsets_[i].ConvertToPhysical(
+        line_writing_mode, Direction(), physical_size, child->Size());
+    child->PropagateContentsInkOverflow(&contents_ink_overflow, child.Offset());
   }
 
-  scoped_refptr<NGPhysicalLineBoxFragment> fragment =
+  scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), style_variant_, physical_size, children_,
           contents_ink_overflow, metrics_, base_direction_,

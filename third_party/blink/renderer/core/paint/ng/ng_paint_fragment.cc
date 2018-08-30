@@ -152,8 +152,11 @@ bool IsLastBRInPage(const NGPhysicalTextFragment& text_fragment) {
 
 NGPaintFragment::NGPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset,
     NGPaintFragment* parent)
-    : physical_fragment_(std::move(fragment)), parent_(parent) {
+    : physical_fragment_(std::move(fragment)),
+      offset_(offset),
+      parent_(parent) {
   DCHECK(physical_fragment_);
 }
 
@@ -162,11 +165,12 @@ NGPaintFragment::~NGPaintFragment() {
 }
 
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
-    scoped_refptr<const NGPhysicalFragment> fragment) {
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset) {
   DCHECK(fragment);
 
   scoped_refptr<NGPaintFragment> paint_fragment =
-      base::AdoptRef(new NGPaintFragment(std::move(fragment), nullptr));
+      base::AdoptRef(new NGPaintFragment(std::move(fragment), offset, nullptr));
 
   HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
   paint_fragment->PopulateDescendants(NGPhysicalOffset(),
@@ -262,8 +266,8 @@ void NGPaintFragment::PopulateDescendants(
   children_.ReserveCapacity(container.Children().size());
 
   for (const auto& child_fragment : container.Children()) {
-    scoped_refptr<NGPaintFragment> child =
-        base::AdoptRef(new NGPaintFragment(child_fragment, this));
+    scoped_refptr<NGPaintFragment> child = base::AdoptRef(new NGPaintFragment(
+        child_fragment.get(), child_fragment.Offset(), this));
 
     if (!child_fragment->IsFloating() &&
         !child_fragment->IsOutOfFlowPositioned() &&
@@ -273,7 +277,7 @@ void NGPaintFragment::PopulateDescendants(
       }
 
       child->inline_offset_to_container_box_ =
-          inline_offset_to_container_box + child_fragment->Offset();
+          inline_offset_to_container_box + child_fragment.Offset();
     }
 
     // Recurse children, except when this is a block formatting context root.

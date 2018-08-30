@@ -73,7 +73,7 @@ class NGPhysicalFragmentCollectorBase {
     for (const auto& child :
          ToNGPhysicalContainerFragment(fragment).Children()) {
       base::AutoReset<NGPhysicalOffset> offset_resetter(
-          &current_offset_to_root_, current_offset_to_root_ + child->Offset());
+          &current_offset_to_root_, current_offset_to_root_ + child.Offset());
       base::AutoReset<const NGPhysicalFragment*> fragment_resetter(
           &current_fragment_, child.get());
       Visit();

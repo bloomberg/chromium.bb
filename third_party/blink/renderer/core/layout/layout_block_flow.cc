@@ -2536,13 +2536,14 @@ void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
                                             NGBreakToken*,
                                             scoped_refptr<NGLayoutResult>) {}
 
-void LayoutBlockFlow::SetPaintFragment(
-    const NGBreakToken*,
-    scoped_refptr<const NGPhysicalFragment>) {}
+void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
+                                       scoped_refptr<const NGPhysicalFragment>,
+                                       NGPhysicalOffset) {}
 
 void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
     const NGBreakToken*,
-    scoped_refptr<const NGPhysicalFragment>) {}
+    scoped_refptr<const NGPhysicalFragment>,
+    NGPhysicalOffset) {}
 
 void LayoutBlockFlow::ComputeOverflow(LayoutUnit old_client_after_edge,
                                       bool recompute_floats) {

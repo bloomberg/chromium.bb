@@ -68,7 +68,7 @@ class CORE_EXPORT NGLineBreaker {
 
   NGInlineItemResult* AddItem(const NGInlineItem&, unsigned end_offset);
   NGInlineItemResult* AddItem(const NGInlineItem&);
-  void SetLineEndFragment(scoped_refptr<NGPhysicalTextFragment>);
+  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
   void ComputeCanBreakAfter(NGInlineItemResult*) const;
 
   void BreakLine();

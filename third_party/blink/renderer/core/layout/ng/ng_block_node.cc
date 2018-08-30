@@ -89,7 +89,7 @@ void UpdateLegacyMultiColumnFlowThread(
   bool has_processed_first_child = false;
 
   // Stitch the columns together.
-  for (const scoped_refptr<NGPhysicalFragment> child : fragment.Children()) {
+  for (const auto& child : fragment.Children()) {
     NGFragment child_fragment(writing_mode, *child);
     flow_end += child_fragment.BlockSize();
     // Non-uniform fragmentainer widths not supported by legacy layout.
@@ -98,8 +98,8 @@ void UpdateLegacyMultiColumnFlowThread(
     if (!has_processed_first_child) {
       // The offset of the flow thread should be the same as that of the first
       // first column.
-      flow_thread->SetX(child->Offset().left);
-      flow_thread->SetY(child->Offset().top);
+      flow_thread->SetX(child.Offset().left);
+      flow_thread->SetY(child.Offset().top);
       flow_thread->SetLogicalWidth(child_fragment.InlineSize());
       column_block_size = child_fragment.BlockSize();
       has_processed_first_child = true;
@@ -180,7 +180,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       if (!constraint_space.IsIntermediateLayout() && first_child &&
           first_child.IsInline()) {
         block_flow->UpdatePaintFragmentFromCachedLayoutResult(
-            break_token, layout_result->PhysicalFragment());
+            break_token, layout_result->PhysicalFragment(),
+            layout_result->Offset());
       }
       return layout_result;
     }
@@ -247,7 +248,6 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);
-
     NGLayoutInputNode first_child = FirstChild();
     if (first_child && first_child.IsInline()) {
       NGBoxStrut scrollbars = GetScrollbarSizes();
@@ -258,11 +258,12 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
           Style().IsFlippedBlocksWritingMode());
 
       block_flow->SetPaintFragment(break_token,
-                                   layout_result->PhysicalFragment());
+                                   layout_result->PhysicalFragment(),
+                                   layout_result->Offset());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
-      block_flow->SetPaintFragment(break_token, nullptr);
+      block_flow->SetPaintFragment(break_token, nullptr, NGPhysicalOffset());
     }
   }
 
@@ -535,7 +536,6 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGPhysicalOffset& offset_from_start) {
   for (const auto& child_fragment : physical_fragment.Children()) {
     auto* child_object = child_fragment->GetLayoutObject();
-    DCHECK(child_fragment->IsPlaced());
 
     // Skip any line-boxes we have as children, this is handled within
     // NGInlineNode at the moment.
@@ -543,9 +543,10 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
       continue;
 
     const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.get());
-    if (IsFirstFragment(constraint_space, box_fragment))
-      CopyChildFragmentPosition(box_fragment, offset_from_start);
-
+    if (IsFirstFragment(constraint_space, box_fragment)) {
+      CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
+                                offset_from_start);
+    }
     if (child_object->IsLayoutBlockFlow())
       ToLayoutBlockFlow(child_object)->AddOverflowFromFloats();
   }
@@ -557,7 +558,6 @@ void NGBlockNode::PlaceChildrenInFlowThread(
   LayoutUnit flowthread_offset;
   for (const auto& child : physical_fragment.Children()) {
     // Each anonymous child of a multicol container constitutes one column.
-    DCHECK(child->IsPlaced());
     DCHECK(child->GetLayoutObject() == box_);
 
     // TODO(mstensho): writing modes
@@ -575,6 +575,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
 // Copies data back to the legacy layout tree for a given child fragment.
 void NGBlockNode::CopyChildFragmentPosition(
     const NGPhysicalFragment& fragment,
+    const NGPhysicalOffset& fragment_offset,
     const NGPhysicalOffset& additional_offset) {
   LayoutBox* layout_box = ToLayoutBox(fragment.GetLayoutObject());
   if (!layout_box)
@@ -596,8 +597,7 @@ void NGBlockNode::CopyChildFragmentPosition(
   // the layout object, except when in vertical-rl: Then it will be the offset
   // from the right edge of the container to the right edge of the layout
   // object.
-  LayoutUnit horizontal_offset =
-      fragment.Offset().left + additional_offset.left;
+  LayoutUnit horizontal_offset = fragment_offset.left + additional_offset.left;
   bool has_flipped_x_axis =
       containing_block->StyleRef().IsFlippedBlocksWritingMode();
   if (has_flipped_x_axis) {
@@ -608,7 +608,7 @@ void NGBlockNode::CopyChildFragmentPosition(
         container_width - horizontal_offset - fragment.Size().width;
   }
   layout_box->SetX(horizontal_offset);
-  layout_box->SetY(fragment.Offset().top + additional_offset.top);
+  layout_box->SetY(fragment_offset.top + additional_offset.top);
 
   // Floats need an associated FloatingObject for painting.
   if (IsFloatFragment(fragment) && containing_block->IsLayoutBlockFlow()) {
@@ -621,7 +621,7 @@ void NGBlockNode::CopyChildFragmentPosition(
     else
       horizontal_margin_edge_offset -= layout_box->MarginLeft();
     floating_object->SetX(horizontal_margin_edge_offset);
-    floating_object->SetY(fragment.Offset().top + additional_offset.top -
+    floating_object->SetY(fragment_offset.top + additional_offset.top -
                           layout_box->MarginTop());
     floating_object->SetIsPlaced(true);
     floating_object->SetIsInPlacedTree(true);
@@ -638,7 +638,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
     NGPhysicalOffset offset) {
   for (const auto& child : container.Children()) {
     if (child->IsContainer()) {
-      NGPhysicalOffset child_offset = offset + child->Offset();
+      NGPhysicalOffset child_offset = offset + child.Offset();
 
       // Replaced elements and inline blocks need Location() set relative to
       // their block container.

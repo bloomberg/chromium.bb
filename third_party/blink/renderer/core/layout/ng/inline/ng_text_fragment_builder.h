@@ -38,7 +38,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
                scoped_refptr<const ShapeResult>);
 
   // Creates the fragment. Can only be called once.
-  scoped_refptr<NGPhysicalTextFragment> ToTextFragment();
+  scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();
 
  private:
   NGInlineNode inline_node_;

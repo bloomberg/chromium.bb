@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -74,12 +75,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // This version of AddChild will not propagate floats/out_of_flow.
   // Use the AddChild(NGLayoutResult) variant if NGLayoutResult is available.
   virtual NGContainerFragmentBuilder& AddChild(
-      scoped_refptr<NGPhysicalFragment>,
+      scoped_refptr<const NGPhysicalFragment>,
       const NGLogicalOffset&);
 
-  const Vector<scoped_refptr<NGPhysicalFragment>>& Children() const {
-    return children_;
-  }
+  const Vector<NGLink>& Children() const { return children_; }
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -207,7 +206,14 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   NGUnpositionedListMarker unpositioned_list_marker_;
 
-  Vector<scoped_refptr<NGPhysicalFragment>> children_;
+  // Store NGLinks rather than NGPhysicalOffsets even though we don't have the
+  // offsets yet to allow us to move the entire vector to the fragment at
+  // construction time.
+  Vector<NGLink> children_;
+
+  // Logical offsets for the children. Stored as logical offsets as we can't
+  // convert to physical offsets until layout of all children has been
+  // determined.
   Vector<NGLogicalOffset> offsets_;
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;

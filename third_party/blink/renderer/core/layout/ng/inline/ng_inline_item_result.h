@@ -184,16 +184,16 @@ class CORE_EXPORT NGLineInfo {
   }
 
   // Fragment to append to the line end. Used by 'text-overflow: ellipsis'.
-  scoped_refptr<NGPhysicalTextFragment>& LineEndFragment() {
+  scoped_refptr<const NGPhysicalTextFragment>& LineEndFragment() {
     return line_end_fragment_;
   }
-  void SetLineEndFragment(scoped_refptr<NGPhysicalTextFragment>);
+  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
 
  private:
   const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
-  scoped_refptr<NGPhysicalTextFragment> line_end_fragment_;
+  scoped_refptr<const NGPhysicalTextFragment> line_end_fragment_;
 
   NGBfcOffset bfc_offset_;
 

@@ -115,7 +115,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
-      scoped_refptr<NGPhysicalBoxFragment> column(
+      scoped_refptr<const NGPhysicalBoxFragment> column(
           ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
 
       NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
@@ -261,8 +261,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire
   // fragment tree, not just the root.
-  NGFragment fragment(space->GetWritingMode(),
-                      *result->PhysicalFragment().get());
+  NGFragment fragment(space->GetWritingMode(), *result->PhysicalFragment());
   LayoutUnit single_strip_block_size = fragment.BlockSize();
 
   // Some extra care is required the division here. We want a the resulting

@@ -90,7 +90,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetPadding(
 }
 
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
-    scoped_refptr<NGPhysicalFragment> child,
+    scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   switch (child->Type()) {
     case NGPhysicalBoxFragment::kFragmentBox:
@@ -187,7 +187,7 @@ NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
-    scoped_refptr<NGPhysicalFragment> child_fragment) {
+    scoped_refptr<const NGPhysicalFragment> child_fragment) {
   if (!did_break_) {
     const auto* token = child_fragment->BreakToken();
     did_break_ = token && !token->IsFinished();
@@ -285,11 +285,12 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
   NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
-  for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragment* child = children_[i].get();
-    child->SetOffset(offsets_[i].ConvertToPhysical(
-        block_or_line_writing_mode, Direction(), physical_size, child->Size()));
-    child->PropagateContentsInkOverflow(&contents_ink_overflow);
+  DCHECK_EQ(children_.size(), offsets_.size());
+  for (size_t i = 0; i < children_.size(); i++) {
+    auto& child = children_[i];
+    child.offset_ = offsets_[i].ConvertToPhysical(
+        block_or_line_writing_mode, Direction(), physical_size, child->Size());
+    child->PropagateContentsInkOverflow(&contents_ink_overflow, child.Offset());
   }
 
   scoped_refptr<NGBreakToken> break_token;
@@ -309,7 +310,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
     }
   }
 
-  scoped_refptr<NGPhysicalBoxFragment> fragment =
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
           borders_.ConvertToPhysical(GetWritingMode(), Direction()),

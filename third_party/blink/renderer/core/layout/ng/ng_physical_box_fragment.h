@@ -21,7 +21,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         const ComputedStyle& style,
                         NGStyleVariant style_variant,
                         NGPhysicalSize size,
-                        Vector<scoped_refptr<NGPhysicalFragment>>& children,
+                        Vector<NGLink>& children,
                         const NGPhysicalBoxStrut& border,
                         const NGPhysicalBoxStrut& padding,
                         const NGPhysicalOffsetRect& contents_ink_overflow,
@@ -72,7 +72,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   UBiDiLevel BidiLevel() const override;
 
-  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
+  scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
  private:
   Vector<NGBaseline> baselines_;
