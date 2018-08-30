@@ -75,6 +75,17 @@ class LookalikeUrlNavigationObserverBrowserTest
         ->ResetBaseScoreForURL(url, score);
   }
 
+  // Simulates a link click navigation. We don't use
+  // ui_test_utils::NavigateToURL(const GURL&) because it simulates the user
+  // typing the URL, causing the site to have a site engagement score of at
+  // least LOW.
+  void NavigateToURL(const GURL& url) {
+    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::CURRENT_TAB;
+    params.is_renderer_initiated = true;
+    ui_test_utils::NavigateToURL(&params);
+  }
+
   void TestInfobarNotShown(const GURL& navigated_url) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -82,7 +93,7 @@ class LookalikeUrlNavigationObserverBrowserTest
         InfoBarService::FromWebContents(web_contents);
 
     content::TestNavigationObserver navigation_observer(web_contents, 1);
-    ui_test_utils::NavigateToURL(browser(), navigated_url);
+    NavigateToURL(navigated_url);
     navigation_observer.Wait();
     EXPECT_EQ(0u, infobar_service->infobar_count());
   }
@@ -105,7 +116,7 @@ class LookalikeUrlNavigationObserverBrowserTest
         InfoBarService::FromWebContents(web_contents);
     InfoBarObserver infobar_added_observer(
         infobar_service, InfoBarObserver::Type::kInfoBarAdded);
-    ui_test_utils::NavigateToURL(browser(), navigated_url);
+    NavigateToURL(navigated_url);
     infobar_added_observer.Wait();
 
     infobars::InfoBar* infobar = infobar_service->infobar_at(0);
