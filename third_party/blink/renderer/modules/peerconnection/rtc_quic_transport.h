@@ -15,6 +15,7 @@ class ExceptionState;
 class RTCCertificate;
 class RTCIceTransport;
 class RTCQuicParameters;
+class RTCQuicStream;
 
 enum class RTCQuicTransportState {
   kNew,
@@ -43,6 +44,7 @@ class MODULES_EXPORT RTCQuicTransport final : public ScriptWrappable {
   const HeapVector<Member<RTCCertificate>>& getCertificates() const;
   const HeapVector<Member<DOMArrayBuffer>>& getRemoteCertificates() const;
   void stop();
+  RTCQuicStream* createStream(ExceptionState& exception_state);
 
   // For garbage collection.
   void Trace(blink::Visitor* visitor) override;
@@ -52,10 +54,14 @@ class MODULES_EXPORT RTCQuicTransport final : public ScriptWrappable {
                    const HeapVector<Member<RTCCertificate>>& certificates,
                    ExceptionState& exception_state);
 
+  bool IsClosed() const { return state_ == RTCQuicTransportState::kClosed; }
+  bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
+
   Member<RTCIceTransport> transport_;
   RTCQuicTransportState state_ = RTCQuicTransportState::kNew;
   HeapVector<Member<RTCCertificate>> certificates_;
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
+  HeapHashSet<Member<RTCQuicStream>> streams_;
 };
 
 }  // namespace blink

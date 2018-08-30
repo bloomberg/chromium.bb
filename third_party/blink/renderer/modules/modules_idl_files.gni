@@ -222,6 +222,7 @@ modules_idl_files =
           "peerconnection/rtc_legacy_stats_report.idl",
           "peerconnection/rtc_peer_connection.idl",
           "peerconnection/rtc_peer_connection_ice_event.idl",
+          "peerconnection/rtc_quic_stream.idl",
           "peerconnection/rtc_quic_transport.idl",
           "peerconnection/rtc_rtp_contributing_source.idl",
           "peerconnection/rtc_rtp_receiver.idl",

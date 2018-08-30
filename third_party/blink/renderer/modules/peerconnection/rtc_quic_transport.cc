@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_parameters.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 
 namespace blink {
 
@@ -89,13 +90,38 @@ RTCQuicTransport::getRemoteCertificates() const {
 }
 
 void RTCQuicTransport::stop() {
+  for (RTCQuicStream* stream : streams_) {
+    stream->Stop();
+  }
+  streams_.clear();
   state_ = RTCQuicTransportState::kClosed;
+}
+
+RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return nullptr;
+  }
+  RTCQuicStream* stream = new RTCQuicStream(this);
+  streams_.insert(stream);
+  return stream;
+}
+
+bool RTCQuicTransport::RaiseExceptionIfClosed(
+    ExceptionState& exception_state) const {
+  if (IsClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport's state is 'closed'.");
+    return true;
+  }
+  return false;
 }
 
 void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(transport_);
   visitor->Trace(certificates_);
   visitor->Trace(remote_certificates_);
+  visitor->Trace(streams_);
   ScriptWrappable::Trace(visitor);
 }
 
