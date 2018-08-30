@@ -169,8 +169,6 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
 
 void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
                                                bool powered) {
-  FidoBleDiscoveryBase::AdapterPoweredChanged(adapter, powered);
-
   // If Bluetooth adapter is powered on, resume scanning for nearby Cable
   // devices and start advertising client EIDs.
   if (powered) {

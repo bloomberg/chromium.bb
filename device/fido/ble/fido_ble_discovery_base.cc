@@ -63,17 +63,8 @@ void FidoBleDiscoveryBase::OnGetAdapter(
   DVLOG(2) << "Got adapter " << adapter_->GetAddress();
 
   adapter_->AddObserver(this);
-  if (adapter_->IsPowered()) {
+  if (adapter_->IsPowered())
     OnSetPowered();
-  } else {
-    adapter_->SetPowered(
-        true,
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            &FidoBleDiscoveryBase::OnSetPowered, weak_factory_.GetWeakPtr())),
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&FidoBleDiscoveryBase::OnSetPoweredError,
-                           weak_factory_.GetWeakPtr())));
-  }
 }
 
 void FidoBleDiscoveryBase::StartInternal() {

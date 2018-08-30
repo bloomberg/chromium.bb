@@ -46,6 +46,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(false));
+  EXPECT_CALL(*mock_adapter, SetPowered).Times(0);
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
   discovery.Start();
@@ -58,9 +59,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
-  EXPECT_CALL(*mock_adapter, SetPowered)
-      .WillOnce(::testing::WithArg<2>(
-          [](const auto& error_callback) { error_callback.Run(); }));
+  EXPECT_CALL(*mock_adapter, IsPowered()).WillOnce(::testing::Return(false));
+
   // After BluetoothAdapter is powered on, we expect that discovery session
   // starts again.
   EXPECT_CALL(*mock_adapter, StartDiscoverySessionWithFilterRaw);
