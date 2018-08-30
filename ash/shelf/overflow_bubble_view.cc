@@ -25,10 +25,13 @@ namespace ash {
 namespace {
 
 // Padding at the two ends of the bubble.
-constexpr int kEndPadding = 16;
+const int kEndPadding = 16;
 
 // Distance between overflow bubble and the main shelf.
-constexpr int kDistanceToMainShelf = 4;
+const int kDistanceToMainShelf = 4;
+
+// The bubble's border radius (when the new shelf UI is enabled).
+const int kBorderRadius = kShelfSize / 2;
 
 }  // namespace
 
@@ -78,8 +81,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 
   // This can only be set after bubble creation:
   if (chromeos::switches::ShouldUseShelfNewUi())
-    GetBubbleFrameView()->bubble_border()->SetCornerRadius(
-        ShelfConstants::shelf_size() / 2);
+    GetBubbleFrameView()->bubble_border()->SetCornerRadius(kBorderRadius);
 
   AddChildView(shelf_view_);
 }

@@ -131,8 +131,7 @@ TEST_F(AccessibilityPanelLayoutManagerTest, DisplayBoundsChange) {
   EXPECT_EQ(widget->GetNativeWindow()->bounds(), expected_bounds);
 
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().bounds();
-  expected_work_area.Inset(0, kDefaultPanelHeight, 0,
-                           ShelfConstants::shelf_size());
+  expected_work_area.Inset(0, kDefaultPanelHeight, 0, kShelfSize);
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
 }
 

@@ -974,11 +974,9 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
       // area widget.
       int centered_shelf_items_size = GetDimensionOfCenteredShelfItemsInNewUi();
       StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
-      int status_widget_size =
-          status_widget ? shelf_->PrimaryAxisValue(
-                              status_widget->GetWindowBoundsInScreen().width(),
-                              status_widget->GetWindowBoundsInScreen().height())
-                        : 0;
+      int status_widget_size = shelf_->PrimaryAxisValue(
+          status_widget->GetWindowBoundsInScreen().width(),
+          status_widget->GetWindowBoundsInScreen().height());
       int padding_for_centering =
           (available_size + status_widget_size - centered_shelf_items_size) / 2;
       if (padding_for_centering >

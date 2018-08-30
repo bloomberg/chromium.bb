@@ -6,7 +6,6 @@
 
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
@@ -442,7 +441,6 @@ class TestWindowStateDelegate : public wm::WindowStateDelegate {
 // Tests dragging to resize two snapped windows.
 TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   UpdateDisplay("400x300");
-  const int bottom_inset = 300 - ShelfConstants::shelf_size();
   // Create two snapped windows, one left snapped, one right snapped.
   aura::test::TestWindowDelegate delegate1;
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
@@ -492,15 +490,15 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
 
   // Check snapped states and bounds.
   EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, w1_state->GetStateType());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, bottom_inset), w1->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 252), w1->bounds());
   EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
-  EXPECT_EQ(gfx::Rect(300, 0, 100, bottom_inset), w2->bounds());
+  EXPECT_EQ(gfx::Rect(300, 0, 100, 252), w2->bounds());
   EXPECT_EQ(0.75f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.25f, *w2_state->snapped_width_ratio());
 
   // Dragging should call the WindowStateDelegate.
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
-  EXPECT_EQ(gfx::Point(300, bottom_inset - 75),
+  EXPECT_EQ(gfx::Point(300, 173),
             window_state_delegate1->GetLocationAndReset());
 }
 

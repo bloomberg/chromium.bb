@@ -55,9 +55,7 @@ AppListConfig::AppListConfig()
       folder_background_color_(SkColorSetRGB(0xFA, 0xFA, 0xFC)),
       page_flip_zone_size_(40),
       grid_tile_spacing_in_folder_(12),
-      // TODO(manucornet): Share the value with ShelfConstants and use
-      // 48 when the new shelf UI is turned off.
-      shelf_height_(56) {
+      shelf_height_(48) {
   if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;

@@ -54,77 +54,71 @@ using ShelfWidgetTest = AshTestBase;
 
 TEST_F(ShelfWidgetTest, TestAlignment) {
   UpdateDisplay("400x400");
-  const int bottom_inset = 400 - ShelfConstants::shelf_size();
   {
     SCOPED_TRACE("Single Bottom");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(0, 0, 400, bottom_inset));
+                          gfx::Rect(0, 0, 400, 352));
   }
   {
     SCOPED_TRACE("Single Locked");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(0, 0, 400, bottom_inset));
+                          gfx::Rect(0, 0, 400, 352));
   }
   {
     SCOPED_TRACE("Single Right");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(0, 0, bottom_inset, 400));
+                          gfx::Rect(0, 0, 352, 400));
   }
   {
     SCOPED_TRACE("Single Left");
-    TestLauncherAlignment(
-        Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT,
-        gfx::Rect(ShelfConstants::shelf_size(), 0, bottom_inset, 400));
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT,
+                          gfx::Rect(kShelfSize, 0, 352, 400));
   }
 }
 
 TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   UpdateDisplay("300x300,500x500");
-  const int shelf_inset_first = 300 - ShelfConstants::shelf_size();
-  const int shelf_inset_second = 500 - ShelfConstants::shelf_size();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   {
     SCOPED_TRACE("Primary Bottom");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(0, 0, 300, shelf_inset_first));
+                          gfx::Rect(0, 0, 300, 252));
   }
   {
     SCOPED_TRACE("Primary Locked");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(0, 0, 300, shelf_inset_first));
+                          gfx::Rect(0, 0, 300, 252));
   }
   {
     SCOPED_TRACE("Primary Right");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(0, 0, shelf_inset_first, 300));
+                          gfx::Rect(0, 0, 252, 300));
   }
   {
     SCOPED_TRACE("Primary Left");
-    TestLauncherAlignment(
-        root_windows[0], SHELF_ALIGNMENT_LEFT,
-        gfx::Rect(ShelfConstants::shelf_size(), 0, shelf_inset_first, 300));
+    TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_LEFT,
+                          gfx::Rect(kShelfSize, 0, 252, 300));
   }
   {
     SCOPED_TRACE("Secondary Bottom");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(300, 0, 500, shelf_inset_second));
+                          gfx::Rect(300, 0, 500, 452));
   }
   {
     SCOPED_TRACE("Secondary Locked");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(300, 0, 500, shelf_inset_second));
+                          gfx::Rect(300, 0, 500, 452));
   }
   {
     SCOPED_TRACE("Secondary Right");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(300, 0, shelf_inset_second, 500));
+                          gfx::Rect(300, 0, 452, 500));
   }
   {
     SCOPED_TRACE("Secondary Left");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_LEFT,
-                          gfx::Rect(300 + ShelfConstants::shelf_size(), 0,
-                                    shelf_inset_second, 500));
+                          gfx::Rect(300 + kShelfSize, 0, 452, 500));
   }
 }
 

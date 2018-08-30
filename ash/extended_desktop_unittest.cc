@@ -877,22 +877,22 @@ TEST_F(ExtendedDesktopTest, PassiveGrab) {
 
   views::Widget* widget = CreateTestWidget(gfx::Rect(50, 50, 200, 200));
   widget->Show();
-  ASSERT_EQ("50,44 200x200", widget->GetWindowBoundsInScreen().ToString());
+  ASSERT_EQ("50,50 200x200", widget->GetWindowBoundsInScreen().ToString());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(150, 150);
-  EXPECT_EQ("100,106 150,150", event_handler.GetLocationsAndReset());
+  EXPECT_EQ("100,100 150,150", event_handler.GetLocationsAndReset());
 
   generator->PressLeftButton();
   generator->MoveMouseTo(400, 150);
 
-  EXPECT_EQ("350,106 400,150", event_handler.GetLocationsAndReset());
+  EXPECT_EQ("350,100 400,150", event_handler.GetLocationsAndReset());
 
   generator->ReleaseLeftButton();
   EXPECT_EQ("-999,-999 -999,-999", event_handler.GetLocationsAndReset());
 
   generator->MoveMouseTo(400, 150);
-  EXPECT_EQ("100,6 100,150", event_handler.GetLocationsAndReset());
+  EXPECT_EQ("100,150 100,150", event_handler.GetLocationsAndReset());
 
   ash::Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
