@@ -10,10 +10,13 @@
 #include "ui/gfx/geometry/size.h"
 
 enum LayoutConstant {
-  // The minimum height of Bookmarks Bar, when attached to the toolbar. The
-  // height of the toolbar may grow to more than this value if the embedded
-  // views need more space, for example, when the font is larger than normal.
+  // The height of Bookmarks Bar when attached to the toolbar. The height of the
+  // Bookmarks Bar is larger than the BOOKMARK_BAR_BUTTON_HEIGHT by a fixed
+  // amount.
   BOOKMARK_BAR_HEIGHT,
+
+  // The height of a button within the Bookmarks Bar.
+  BOOKMARK_BAR_BUTTON_HEIGHT,
 
 #if defined(OS_MACOSX)
   // This is a little smaller than the bookmarkbar height because of the visual
