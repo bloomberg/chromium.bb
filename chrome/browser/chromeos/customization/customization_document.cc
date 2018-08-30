@@ -100,12 +100,13 @@ const char kServicesCustomizationKey[] = "customization.manifest_cache";
 // Empty customization document that doesn't customize anything.
 const char kEmptyServicesCustomizationManifest[] = "{ \"version\": \"1.0\" }";
 
-// Global overrider for ServicesCustomizationDocument for tests.
-ServicesCustomizationDocument* g_test_services_customization_document = NULL;
+struct CustomizationDocumentTestOverride {
+  ServicesCustomizationDocument* customization_document = nullptr;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+};
 
-// network::SharedURLLoaderFactory used by tests.
-scoped_refptr<network::SharedURLLoaderFactory>
-    g_shared_url_loader_factory_for_testing = nullptr;
+// Global overrider for ServicesCustomizationDocument for tests.
+CustomizationDocumentTestOverride* g_test_overrides = nullptr;
 
 // Services customization document load results reported via the
 // "ServicesCustomization.LoadResult" histogram.
@@ -446,8 +447,8 @@ ServicesCustomizationDocument::~ServicesCustomizationDocument() {}
 
 // static
 ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
-  if (g_test_services_customization_document)
-    return g_test_services_customization_document;
+  if (g_test_overrides)
+    return g_test_overrides->customization_document;
 
   return base::Singleton<
       ServicesCustomizationDocument,
@@ -584,9 +585,8 @@ void ServicesCustomizationDocument::DoStartFileFetch() {
                                                  NO_TRAFFIC_ANNOTATION_YET);
 
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      g_shared_url_loader_factory_for_testing
-          ? g_shared_url_loader_factory_for_testing.get()
-          : g_browser_process->shared_url_loader_factory().get(),
+      g_test_overrides ? g_test_overrides->url_loader_factory.get()
+                       : g_browser_process->shared_url_loader_factory().get(),
       base::BindOnce(&ServicesCustomizationDocument::OnSimpleLoaderComplete,
                      base::Unretained(this)));
 }
@@ -796,15 +796,17 @@ std::string ServicesCustomizationDocument::GetOemAppsFolderNameImpl(
 // static
 void ServicesCustomizationDocument::InitializeForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
-  g_test_services_customization_document = new ServicesCustomizationDocument;
-  g_test_services_customization_document->network_delay_ = base::TimeDelta();
-  g_shared_url_loader_factory_for_testing = std::move(factory);
+  g_test_overrides = new CustomizationDocumentTestOverride;
+  g_test_overrides->customization_document = new ServicesCustomizationDocument;
+  g_test_overrides->customization_document->network_delay_ = base::TimeDelta();
+  g_test_overrides->url_loader_factory = std::move(factory);
 }
 
 // static
 void ServicesCustomizationDocument::ShutdownForTesting() {
-  delete g_test_services_customization_document;
-  g_test_services_customization_document = NULL;
+  delete g_test_overrides->customization_document;
+  delete g_test_overrides;
+  g_test_overrides = nullptr;
 }
 
 void ServicesCustomizationDocument::StartOEMWallpaperDownload(

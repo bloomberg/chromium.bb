@@ -533,7 +533,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     wizard_controller->is_official_build_ = true;
     wizard_controller->SetSharedURLLoaderFactoryForTesting(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory));
+            &test_url_loader_factory_));
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -590,7 +590,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   void TearDownOnMainThread() override {
     mock_welcome_screen_ = nullptr;
     device_disabled_screen_view_.reset();
-    test_url_loader_factory.ClearResponses();
+    test_url_loader_factory_.ClearResponses();
     WizardControllerTest::TearDownOnMainThread();
   }
 
@@ -622,12 +622,13 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   void WaitUntilTimezoneResolved() {
-    std::unique_ptr<TimeZoneTestRunner> runner(new TimeZoneTestRunner);
+    auto runner = std::make_unique<TimeZoneTestRunner>();
     if (!WizardController::default_controller()
              ->SetOnTimeZoneResolvedForTesting(
                  base::Bind(&TimeZoneTestRunner::OnResolved,
-                            base::Unretained(runner.get()))))
+                            base::Unretained(runner.get())))) {
       return;
+    }
 
     runner->Run();
   }
@@ -642,21 +643,21 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     WaitUntilJSIsReady();
 
-    test_url_loader_factory.SetInterceptor(base::BindLambdaForTesting(
+    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           if (base::StartsWith(
                   request.url.spec(),
                   SimpleGeolocationProvider::DefaultGeolocationProviderURL()
                       .spec(),
                   base::CompareCase::SENSITIVE)) {
-            test_url_loader_factory.AddResponse(request.url.spec(),
-                                                kGeolocationResponseBody);
+            test_url_loader_factory_.AddResponse(request.url.spec(),
+                                                 kGeolocationResponseBody);
           } else if (base::StartsWith(
                          request.url.spec(),
                          chromeos::DefaultTimezoneProviderURL().spec(),
                          base::CompareCase::SENSITIVE)) {
-            test_url_loader_factory.AddResponse(request.url.spec(),
-                                                kTimezoneResponseBody);
+            test_url_loader_factory_.AddResponse(request.url.spec(),
+                                                 kTimezoneResponseBody);
           }
         }));
 
@@ -734,7 +735,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 
-  network::TestURLLoaderFactory test_url_loader_factory;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };

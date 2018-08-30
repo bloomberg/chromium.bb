@@ -392,8 +392,6 @@ class WizardController : public BaseScreenDelegate,
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
 
-  static bool zero_delay_enabled_;
-
   static bool skip_enrollment_prompts_;
 
   // Screen that's currently active.
