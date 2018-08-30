@@ -195,6 +195,9 @@ bool CrashpadCrashClient::InitializeCrashReporting(Mode mode,
     case SandboxType::kEset:
       SetCrashKey(kProcessType, "eset");
       break;
+    case SandboxType::kJsonParser:
+      SetCrashKey(kProcessType, "json_parser");
+      break;
     default:
       NOTREACHED();
   }

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
+
 source_set("scoped_timed_task_logger") {
   sources = [
     "scoped_timed_task_logger.cc",
@@ -66,10 +68,19 @@ source_set("logging_definitions") {
   ]
 }
 
-source_set("dummy_api_keys") {
+source_set("api_keys_header") {
   sources = [
     "api_keys.h",
+  ]
+}
+
+source_set("dummy_api_keys") {
+  sources = [
     "dummy_api_keys.cc",
+  ]
+
+  deps = [
+    ":api_keys_header",
   ]
 }
 
@@ -84,7 +95,7 @@ static_library("cleaner_logging") {
   ]
 
   deps = [
-    ":dummy_api_keys",
+    ":api_keys_header",
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:chrome_cleanup_tool_branding_header",
@@ -101,6 +112,12 @@ static_library("cleaner_logging") {
     "//components/chrome_cleaner/public/constants:constants",
   ]
 
+  if (is_official_chrome_cleaner_build) {
+    deps += [ "//chrome_cleaner_internal/logging:api_keys" ]
+  } else {
+    deps += [ ":dummy_api_keys" ]
+  }
+
   public_deps = [
     ":common",
   ]
@@ -113,7 +130,7 @@ static_library("reporter_logging") {
   ]
 
   deps = [
-    ":dummy_api_keys",
+    ":api_keys_header",
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:common_strings",
@@ -126,6 +143,12 @@ static_library("reporter_logging") {
     "//chrome/chrome_cleaner/settings:settings",
     "//components/chrome_cleaner/public/constants:constants",
   ]
+
+  if (is_official_chrome_cleaner_build) {
+    deps += [ "//chrome_cleaner_internal/logging:api_keys" ]
+  } else {
+    deps += [ ":dummy_api_keys" ]
+  }
 
   public_deps = [
     ":common",

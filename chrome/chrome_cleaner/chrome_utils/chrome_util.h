@@ -32,6 +32,14 @@ bool RetrieveChromeVersionAndInstalledDomain(base::string16* chrome_version,
 // path exists.
 bool RetrieveChromeExePathFromCommandLine(base::FilePath* chrome_exe_path);
 
+// Search for all Chrome executable paths, for example
+// "C:\Program Files\Google\Chrome\Application".
+void ListChromeExePaths(std::set<base::FilePath>* paths);
+
+// Search for all Chrome versioned installation paths, for example
+// "C:\Program Files\Google\Chrome\Application\68.0.3440.84".
+void ListChromeInstallationPaths(std::set<base::FilePath>* paths);
+
 }  // namespace chrome_cleaner
 
 #endif  // CHROME_CHROME_CLEANER_CHROME_UTILS_CHROME_UTIL_H_

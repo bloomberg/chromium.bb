@@ -250,6 +250,9 @@ ProcessInformation GetProcessInformationProtoObject(
     case SandboxType::kEset:
       process_info.set_process(ProcessInformation::ESET_SANDBOX);
       break;
+    case SandboxType::kJsonParser:
+      process_info.set_process(ProcessInformation::JSON_PARSER_SANDBOX);
+      break;
     default:
       NOTREACHED() << "Unknown sandbox type " << static_cast<int>(process_type);
   }
