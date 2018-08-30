@@ -12,9 +12,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/web/public/web_thread.h"
@@ -23,7 +21,6 @@
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -63,7 +60,6 @@ WebViewProfileSyncServiceFactory::WebViewProfileSyncServiceFactory()
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(WebViewIdentityManagerFactory::GetInstance());
-  DependsOn(WebViewSigninManagerFactory::GetInstance());
   DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
   DependsOn(WebViewPersonalDataManagerFactory::GetInstance());
   DependsOn(WebViewWebDataServiceWrapperFactory::GetInstance());
@@ -83,13 +79,10 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   identity::IdentityManager* identity_manager =
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state);
-  SigninManagerBase* signin =
-      WebViewSigninManagerFactory::GetForBrowserState(browser_state);
   WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state);
 
   ProfileSyncService::InitParams init_params;
-  init_params.signin_wrapper =
-      std::make_unique<SigninManagerWrapper>(identity_manager, signin);
+  init_params.identity_manager = identity_manager;
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::make_unique<WebViewSyncClient>(browser_state);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();

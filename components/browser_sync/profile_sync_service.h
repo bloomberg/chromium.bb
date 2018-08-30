@@ -46,10 +46,12 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
 
-class SigninManagerWrapper;
-
 namespace base {
 class MessageLoop;
+}
+
+namespace identity {
+class IdentityManager;
 }
 
 namespace network {
@@ -208,7 +210,7 @@ class ProfileSyncService : public syncer::SyncService,
     ~InitParams();
 
     std::unique_ptr<syncer::SyncClient> sync_client;
-    std::unique_ptr<SigninManagerWrapper> signin_wrapper;
+    identity::IdentityManager* identity_manager;
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
@@ -622,8 +624,8 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncPrefs sync_prefs_;
 
   // Encapsulates user signin - used to set/get the user's authenticated
-  // email address.
-  const std::unique_ptr<SigninManagerWrapper> signin_;
+  // email address and sign-out upon error.
+  identity::IdentityManager* const identity_manager_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().

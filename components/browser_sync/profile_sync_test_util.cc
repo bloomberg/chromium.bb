@@ -18,7 +18,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
@@ -284,8 +283,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
 
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
-  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
-      identity_manager(), signin_manager());
+  init_params.identity_manager = identity_manager();
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
   init_params.network_time_update_callback = base::DoNothing();
