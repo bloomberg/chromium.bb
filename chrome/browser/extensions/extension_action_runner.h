@@ -43,6 +43,11 @@ class ExtensionRegistry;
 class ExtensionActionRunner : public content::WebContentsObserver,
                               public ExtensionRegistryObserver {
  public:
+  class TestObserver {
+   public:
+    virtual void OnBlockedActionAdded() = 0;
+  };
+
   explicit ExtensionActionRunner(content::WebContents* web_contents);
   ~ExtensionActionRunner() override;
 
@@ -87,6 +92,9 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   void set_default_bubble_close_action_for_testing(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
     default_bubble_close_action_for_testing_ = std::move(action);
+  }
+  void set_observer_for_testing(TestObserver* observer) {
+    test_observer_ = observer;
   }
 
 #if defined(UNIT_TEST)
@@ -207,6 +215,8 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // If non-null, the bubble action to simulate for testing.
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
       default_bubble_close_action_for_testing_;
+
+  TestObserver* test_observer_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
