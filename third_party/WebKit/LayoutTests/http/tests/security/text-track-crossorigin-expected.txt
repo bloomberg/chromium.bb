@@ -1,6 +1,8 @@
-CONSOLE ERROR: Text track from origin 'http://localhost:8000' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Unsafe attempt to load URL http://localhost:8000/security/resources/captions-with-access-control-headers.php from frame with URL http://127.0.0.1:8000/security/text-track-crossorigin.html. Domains, protocols and ports must match.
+
 CONSOLE ERROR: Access to text track at 'http://localhost:8000/security/resources/captions-with-access-control-headers.php?count=0' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-CONSOLE ERROR: Text track from origin 'http://localhost:8000' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Unsafe attempt to load URL http://localhost:8000/security/resources/captions-with-access-control-headers.php from frame with URL http://127.0.0.1:8000/security/text-track-crossorigin.html. Domains, protocols and ports must match.
+
 Tests loading cross-domain <track>.
 
 Loading without Access-Control-Allow-Origin header, no "crossorigin" attribute on <video>
