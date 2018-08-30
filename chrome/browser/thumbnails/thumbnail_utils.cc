@@ -78,9 +78,10 @@ gfx::Rect GetClippingRect(const gfx::Size& source_size,
       int new_width = static_cast<int>(source_size.height() * desired_aspect);
       int x_offset = (source_size.width() - new_width) / 2;
       clipping_rect.SetRect(x_offset, 0, new_width, source_size.height());
-      *clip_result = (src_aspect >= ThumbnailScore::kTooWideAspectRatio)
-                         ? thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL
-                         : thumbnails::CLIP_RESULT_WIDER_THAN_TALL;
+      *clip_result =
+          (src_aspect >= history::ThumbnailScore::kTooWideAspectRatio)
+              ? thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL
+              : thumbnails::CLIP_RESULT_WIDER_THAN_TALL;
     } else if (src_aspect < desired_aspect) {
       clipping_rect =
           gfx::Rect(source_size.width(), source_size.width() / desired_aspect);

@@ -20,7 +20,7 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
   GURL url;
   ClipResult clip_result;
   gfx::Size requested_copy_size;
-  ThumbnailScore score;
+  history::ThumbnailScore score;
 
  private:
   ~ThumbnailingContext();

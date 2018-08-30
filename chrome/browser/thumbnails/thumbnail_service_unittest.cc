@@ -43,8 +43,9 @@ class MockTopSites : public history::TopSitesImpl {
   bool IsKnownURL(const GURL& url) override {
     return known_url_map_.find(url.spec()) != known_url_map_.end();
   }
-  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) override {
-    std::map<std::string, ThumbnailScore>::const_iterator iter =
+  bool GetPageThumbnailScore(const GURL& url,
+                             history::ThumbnailScore* score) override {
+    std::map<std::string, history::ThumbnailScore>::const_iterator iter =
         known_url_map_.find(url.spec());
     if (iter == known_url_map_.end()) {
       return false;
@@ -55,7 +56,7 @@ class MockTopSites : public history::TopSitesImpl {
   }
 
   // Adds a known URL with the associated thumbnail score.
-  void AddKnownURL(const GURL& url, const ThumbnailScore& score) {
+  void AddKnownURL(const GURL& url, const history::ThumbnailScore& score) {
     known_url_map_[url.spec()] = score;
   }
 
@@ -63,7 +64,7 @@ class MockTopSites : public history::TopSitesImpl {
   ~MockTopSites() override {}
 
   const size_t capacity_;
-  std::map<std::string, ThumbnailScore> known_url_map_;
+  std::map<std::string, history::ThumbnailScore> known_url_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTopSites);
 };
@@ -82,7 +83,7 @@ class MockProfile : public TestingProfile {
     TopSitesFactory::GetInstance()->SetTestingFactory(this, BuildMockTopSites);
   }
 
-  void AddKnownURL(const GURL& url, const ThumbnailScore& score) {
+  void AddKnownURL(const GURL& url, const history::ThumbnailScore& score) {
     scoped_refptr<history::TopSites> top_sites =
         TopSitesFactory::GetForProfile(this);
     static_cast<MockTopSites*>(top_sites.get())->AddKnownURL(url, score);
@@ -129,7 +130,7 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   // in that case anyway.
 
   // Add a known URL. This makes the top sites data full.
-  ThumbnailScore bad_score;
+  history::ThumbnailScore bad_score;
   bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
   profile.AddKnownURL(kGoodURL, bad_score);
   scoped_refptr<history::TopSites> top_sites =
@@ -147,7 +148,7 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
       thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL, transition));
 
   // Replace the thumbnail score with a really good one.
-  ThumbnailScore good_score;
+  history::ThumbnailScore good_score;
   good_score.time_at_snapshot = base::Time::Now();  // Very new.
   good_score.at_top = true;
   good_score.good_clipping = true;
@@ -182,7 +183,7 @@ TEST_F(ThumbnailServiceTest,
 
   // Add a known URL. This makes the top sites data full.
   const GURL kKnownURL("http://www.known.com/");
-  ThumbnailScore bad_score;
+  history::ThumbnailScore bad_score;
   bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
   profile.AddKnownURL(kKnownURL, bad_score);
   scoped_refptr<history::TopSites> top_sites =

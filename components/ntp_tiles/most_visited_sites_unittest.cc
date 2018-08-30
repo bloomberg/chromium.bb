@@ -158,11 +158,11 @@ class MockTopSites : public TopSites {
   MOCK_METHOD3(SetPageThumbnail,
                bool(const GURL& url,
                     const gfx::Image& thumbnail,
-                    const ThumbnailScore& score));
+                    const history::ThumbnailScore& score));
   MOCK_METHOD3(SetPageThumbnailToJPEGBytes,
                bool(const GURL& url,
                     const base::RefCountedMemory* memory,
-                    const ThumbnailScore& score));
+                    const history::ThumbnailScore& score));
   MOCK_METHOD2(GetMostVisitedURLs,
                void(const GetMostVisitedURLsCallback& callback,
                     bool include_forced_urls));
@@ -171,9 +171,9 @@ class MockTopSites : public TopSites {
                     bool prefix_match,
                     scoped_refptr<base::RefCountedMemory>* bytes));
   MOCK_METHOD2(GetPageThumbnailScore,
-               bool(const GURL& url, ThumbnailScore* score));
+               bool(const GURL& url, history::ThumbnailScore* score));
   MOCK_METHOD2(GetTemporaryPageThumbnailScore,
-               bool(const GURL& url, ThumbnailScore* score));
+               bool(const GURL& url, history::ThumbnailScore* score));
   MOCK_METHOD0(SyncWithHistory, void());
   MOCK_CONST_METHOD0(HasBlacklistedItems, bool());
   MOCK_METHOD1(AddBlacklistedURL, void(const GURL& url));

@@ -38,8 +38,9 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  bool SetPageThumbnail(const GURL& url, const gfx::Image& thumbnail,
-                        const ThumbnailScore& score) override {
+  bool SetPageThumbnail(const GURL& url,
+                        const gfx::Image& thumbnail,
+                        const history::ThumbnailScore& score) override {
     return false;
   }
   void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
@@ -48,11 +49,12 @@ class FakeEmptyTopSites : public history::TopSites {
                         scoped_refptr<base::RefCountedMemory>* bytes) override {
     return false;
   }
-  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) override {
+  bool GetPageThumbnailScore(const GURL& url,
+                             history::ThumbnailScore* score) override {
     return false;
   }
-  bool GetTemporaryPageThumbnailScore(const GURL& url, ThumbnailScore* score)
-      override {
+  bool GetTemporaryPageThumbnailScore(const GURL& url,
+                                      history::ThumbnailScore* score) override {
     return false;
   }
   void SyncWithHistory() override {}
