@@ -172,7 +172,9 @@ ImmersiveFocusWatcherMus::ImmersiveFocusWatcherMus(
 ImmersiveFocusWatcherMus::~ImmersiveFocusWatcherMus() {
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
   GetWidget()->GetFocusManager()->RemoveFocusChangeListener(this);
-  ::wm::GetActivationClient(GetWidgetWindow())->RemoveObserver(this);
+  auto* activation_client = ::wm::GetActivationClient(GetWidgetWindow());
+  if (activation_client)
+    activation_client->RemoveObserver(this);
 }
 
 void ImmersiveFocusWatcherMus::UpdateFocusRevealedLock() {
