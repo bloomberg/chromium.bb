@@ -134,6 +134,18 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * Whether user has a Google Payments account.
+     * @private
+     */
+    hasGooglePaymentsAccount_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('hasGooglePaymentsAccount');
+      },
+      readOnly: true,
+    },
   },
 
   listeners: {
@@ -373,11 +385,15 @@ Polymer({
     if (syncStatus == undefined)
       return false;
 
-    if (this.eitherIsDisabled_(autofillEnabled, creditCardEnabled))
-      return false;
-
     // If user not enable migration experimental flag, return false.
     if (!this.migrationEnabled_)
+      return false;
+
+    // If user does not have Google Payments Account, return false.
+    if (!this.hasGooglePaymentsAccount_)
+      return false;
+
+    if (this.eitherIsDisabled_(autofillEnabled, creditCardEnabled))
       return false;
 
     // If user not signed-in and synced, return false.

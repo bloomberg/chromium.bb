@@ -390,8 +390,10 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyMigrationButtonNotShownIfMigrationNotEnabled', function() {
-      // Disable the migration experimental flag. Won't show migration button.
-      loadTimeData.overrideValues({migrationEnabled: false});
+      // Mock the Google Payments account. Disable the migration experimental
+      // flag. Won't show migration button.
+      loadTimeData.overrideValues(
+          {migrationEnabled: false, hasGooglePaymentsAccount: true});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -406,12 +408,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
+      // All migration requirements are met but migration experimental flag is
+      // not enabled, verify migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
     test('verifyMigrationButtonNotShownIfNotSignedIn', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -426,12 +432,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
+      // All migration requirements are met but not signed in, verify migration
+      // button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
     test('verifyMigrationButtonNotShownIfNotSynced', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -446,12 +456,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: false,
       });
 
+      // All migration requirements are met but not Synced, verify migration
+      // button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
     test('verifyMigrationButtonNotShownIfNoMigratableCard', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
 
       // Add one credit card but not migratable. Won't show migration button.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -466,12 +480,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
+      // All migration requirements are met but no migratable credi card, verify
+      // migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
     test('verifyMigrationButtonNotShownWhenCreditCardDisabled', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -486,14 +504,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
-      // All migration requirements meet but credit card is disable, verify
+      // All migration requirements are met but credit card is disable, verify
       // migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
     test('verifyMigrationButtonNotShownWhenAutofillDisabled', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -508,14 +528,16 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
-      // All migration requirements meet but credit card is disable, verify
+      // All migration requirements are met but credit card is disable, verify
       // migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
-    test('verifyMigrationButtonShown', function() {
-      // Enable the migration experimental flag.
-      loadTimeData.overrideValues({migrationEnabled: true});
+    test('verifyMigrationButtonNotShownIfNoGooglePaymentsAccount', function() {
+      // Enable the migration experimental flag and mocks no Google payments
+      // account. Won't show migration button.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: false});
 
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
@@ -530,7 +552,31 @@ cr.define('settings_payments_section', function() {
         syncSystemEnabled: true,
       });
 
-      // All migration requirements meet, verify migration button is shown.
+      // All migration requirements are met but no Google Payments account,
+      // verify migration button is hidden.
+      assertTrue(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyMigrationButtonShown', function() {
+      // Enable the migration experimental flag and mock Google payments
+      // account.
+      loadTimeData.overrideValues(
+          {migrationEnabled: true, hasGooglePaymentsAccount: true});
+
+      // Add one migratable credit card.
+      const creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isMigratable = true;
+      const section = createPaymentsSection(
+          [creditCard],
+          {enabled: {value: true}, credit_card_enabled: {value: true}});
+
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met, verify migration button is shown.
       assertFalse(section.$$('#migrateCreditCards').hidden);
     });
   });
