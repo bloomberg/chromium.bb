@@ -84,7 +84,7 @@ class PaintPropertyNodeTest : public testing::Test {
 
   template <typename NodeType>
   void ExpectInitialState(const Tree<NodeType>& tree) {
-    EXPECT_TRUE(tree.root->NodeChanged());
+    EXPECT_FALSE(tree.root->NodeChanged());
     EXPECT_TRUE(tree.ancestor->NodeChanged());
     EXPECT_TRUE(tree.child1->NodeChanged());
     EXPECT_TRUE(tree.child2->NodeChanged());
