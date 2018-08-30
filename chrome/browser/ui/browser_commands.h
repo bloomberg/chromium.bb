@@ -150,9 +150,6 @@ void CopyURL(Browser* browser);
 // the tabbed Browser.
 Browser* OpenInChrome(Browser* hosted_app_browser);
 bool CanViewSource(const Browser* browser);
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-void ToggleConfirmToQuitOption(Browser* browser);
-#endif
 
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser);
 bool CanCreateBookmarkApp(const Browser* browser);

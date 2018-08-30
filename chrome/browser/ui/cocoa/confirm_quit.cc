@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/confirm_quit.h"
+#include "chrome/browser/ui/cocoa/confirm_quit.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/common/pref_names.h"
@@ -11,11 +11,7 @@
 namespace confirm_quit {
 
 void RecordHistogram(ConfirmQuitMetric sample) {
-#if defined(OS_MACOSX)
   UMA_HISTOGRAM_ENUMERATION("OSX.ConfirmToQuit", sample, kSampleCount);
-#else
-  UMA_HISTOGRAM_ENUMERATION("ConfirmToQuit", sample, kSampleCount);
-#endif
 }
 
 void RegisterLocalState(PrefRegistrySimple* registry) {

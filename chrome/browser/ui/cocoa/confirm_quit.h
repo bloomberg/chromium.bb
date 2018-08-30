@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_CONFIRM_QUIT_H_
-#define CHROME_BROWSER_UI_CONFIRM_QUIT_H_
+#ifndef CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_H_
+#define CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_H_
 
 #include "base/time/time.h"
 
@@ -47,4 +47,4 @@ void RegisterLocalState(PrefRegistrySimple* registry);
 
 }  // namespace confirm_quit
 
-#endif  // CHROME_BROWSER_UI_CONFIRM_QUIT_H_
+#endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_H_
