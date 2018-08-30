@@ -80,18 +80,32 @@ void FillAudioFifoWithDataOfBufferFormat(
 
 class AudioOutputImpl : public assistant_client::AudioOutput {
  public:
-  AudioOutputImpl(service_manager::Connector* connector,
-                  scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                  assistant_client::OutputStreamType type,
-                  assistant_client::OutputStreamFormat format)
+  AudioOutputImpl(
+      service_manager::Connector* connector,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+      assistant_client::OutputStreamType type,
+      assistant_client::OutputStreamFormat format)
       : connector_(connector),
         main_thread_task_runner_(task_runner),
+        background_thread_task_runner_(background_task_runner),
         stream_type_(type),
         format_(format),
-        device_owner_(std::make_unique<AudioDeviceOwner>(task_runner)) {}
+        device_owner_(
+            std::make_unique<AudioDeviceOwner>(task_runner,
+                                               background_task_runner)) {}
 
   ~AudioOutputImpl() override {
-    main_thread_task_runner_->DeleteSoon(FROM_HERE, device_owner_.release());
+    // This ensures that it will be executed after StartOnMainThread.
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::unique_ptr<AudioDeviceOwner> device_owner,
+               scoped_refptr<base::SingleThreadTaskRunner> background_runner) {
+              // Ensures |device_owner| is destructed on the correct thread.
+              background_runner->DeleteSoon(FROM_HERE, device_owner.release());
+            },
+            std::move(device_owner_), background_thread_task_runner_));
   }
 
   // assistant_client::AudioOutput overrides:
@@ -105,14 +119,15 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   }
 
   void Stop() override {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AudioDeviceOwner::StopOnMainThread,
+    background_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&AudioDeviceOwner::StopOnBackgroundThread,
                                   base::Unretained(device_owner_.get())));
   }
 
  private:
   service_manager::Connector* connector_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> background_thread_task_runner_;
 
   const assistant_client::OutputStreamType stream_type_;
   assistant_client::OutputStreamFormat format_;
@@ -171,10 +186,12 @@ void VolumeControlImpl::OnMuteStateChanged(bool mute) {
 }
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
-    service_manager::Connector* connector)
+    service_manager::Connector* connector,
+    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner)
     : volume_control_impl_(connector),
       connector_(connector),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      background_task_runner_(background_task_runner) {}
 
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;
 
@@ -185,8 +202,8 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
   // TODO(muyuanli): Handle encoded stream: OutputStreamEncoding::STREAM_MP3 /
   // OGG.
-  return new AudioOutputImpl(connector_, main_thread_task_runner_, type,
-                             stream_format);
+  return new AudioOutputImpl(connector_, main_thread_task_runner_,
+                             background_task_runner_, type, stream_format);
 }
 
 std::vector<assistant_client::OutputStreamEncoding>
@@ -220,10 +237,14 @@ void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
 }
 
 AudioDeviceOwner::AudioDeviceOwner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : main_thread_task_runner_(task_runner) {}
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+    : main_thread_task_runner_(task_runner),
+      background_task_runner_(background_task_runner) {}
 
-AudioDeviceOwner::~AudioDeviceOwner() = default;
+AudioDeviceOwner::~AudioDeviceOwner() {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+}
 
 void AudioDeviceOwner::StartOnMainThread(
     assistant_client::AudioOutput::Delegate* delegate,
@@ -254,18 +275,29 @@ void AudioDeviceOwner::StartOnMainThread(
 
   // |connector| is null in unittest.
   if (connector) {
-    output_device_ = std::make_unique<audio::OutputDevice>(
-        connector->Clone(), audio_param_, this,
-        media::AudioDeviceDescription::kDefaultDeviceId);
-    output_device_->Play();
+    // |AudioDeviceOwner| is destroyed on background thread. Thus, it's safe to
+    // use base::Unretained.
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioDeviceOwner::StartDeviceOnBackgroundThread,
+                       base::Unretained(this), connector->Clone()));
   }
 }
 
-void AudioDeviceOwner::StopOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+void AudioDeviceOwner::StopOnBackgroundThread() {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
   output_device_.reset();
   delegate_->OnStopped();
+}
+
+void AudioDeviceOwner::StartDeviceOnBackgroundThread(
+    std::unique_ptr<service_manager::Connector> connector) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  output_device_ = std::make_unique<audio::OutputDevice>(
+      std::move(connector), audio_param_, this,
+      media::AudioDeviceDescription::kDefaultDeviceId);
+  output_device_->Play();
 }
 
 int AudioDeviceOwner::Render(base::TimeDelta delay,
@@ -301,7 +333,7 @@ int AudioDeviceOwner::Render(base::TimeDelta delay,
 
   audio_fifo_->Consume()->CopyTo(dest);
 
-  ScheduleFillLocked(base::TimeTicks::Now());
+  ScheduleFillLocked(base::TimeTicks::Now() - delay);
   return dest->frames();
 }
 
