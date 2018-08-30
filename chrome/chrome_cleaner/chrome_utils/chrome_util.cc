@@ -79,4 +79,42 @@ bool RetrieveChromeExePathFromCommandLine(base::FilePath* chrome_exe_path) {
   return true;
 }
 
+void ListChromeExePaths(std::set<base::FilePath>* paths) {
+  DCHECK(paths);
+
+  static const unsigned int install_paths[] = {
+      base::DIR_PROGRAM_FILESX86, base::DIR_PROGRAM_FILES,
+      base::DIR_LOCAL_APP_DATA,
+  };
+
+  for (unsigned int path : install_paths) {
+    base::FilePath install_path;
+    bool success = base::PathService::Get(path, &install_path);
+    if (!success) {
+      LOG(ERROR) << "Can't get path from PathService '" << path << "'.";
+      continue;
+    }
+
+    base::FilePath chrome_path =
+        install_path.Append(L"google\\chrome\\application");
+    if (!base::PathExists(chrome_path))
+      continue;
+    paths->insert(chrome_path);
+  }
+}
+
+void ListChromeInstallationPaths(std::set<base::FilePath>* paths) {
+  DCHECK(paths);
+
+  std::set<base::FilePath> exe_paths;
+  ListChromeExePaths(&exe_paths);
+
+  for (const base::FilePath& exe_path : exe_paths) {
+    base::FilePath pattern = exe_path.Append(L"??.*.*.*");
+    std::vector<base::FilePath> matches;
+    CollectMatchingPaths(pattern, &matches);
+    paths->insert(matches.begin(), matches.end());
+  }
+}
+
 }  // namespace chrome_cleaner

@@ -192,17 +192,18 @@ message UwS {
     FOUND_IN_STARTUP = 1;
     FOUND_IN_MEMORY = 2;
     FOUND_IN_UNINSTALLSTRING = 3;  // Contents of HKEY_LOCAL_MACHINE\SOFTWARE\
-                                  // Wow6432Node\Microsoft\Windows\
-                                  // CurrentVersion\Uninstall\<SoftwareName>\
-                                  // UninstallString
+                                   // Wow6432Node\Microsoft\Windows\
+                                   // CurrentVersion\Uninstall\<SoftwareName>\
+                                   // UninstallString
     FOUND_IN_INSTALLLOCATION = 4;  // InstallLocation
     FOUND_IN_MUICACHE = 5;         // HKEY_CLASSES_ROOT\Local Settings\Software\
-                                  // Microsoft\Windows\Shell\MuiCache
+                                   // Microsoft\Windows\Shell\MuiCache
     FOUND_IN_SERVICE = 6;          // Services
     FOUND_IN_SHELL = 7;            // Menu Start, Startup, Desktop
     FOUND_IN_SCHEDULED_TASK = 8;   // Task scheduler
     FOUND_IN_CLSID = 9;            // CLSID
     FOUND_IN_MODULES = 10;         // Loaded modules of a process
+    FOUND_IN_PROGRAMFILES = 11;    // "Program Files" directory
   }
   repeated TraceLocation trace_locations = 9;
 
@@ -244,6 +245,7 @@ message ProcessInformation {
     MAIN = 1;
     DEPRECATED_SIGNATURE_MATCHER_SANDBOX = 2;
     ESET_SANDBOX = 3;
+    JSON_PARSER_SANDBOX = 4;
   }
   optional Process process = 1;
 

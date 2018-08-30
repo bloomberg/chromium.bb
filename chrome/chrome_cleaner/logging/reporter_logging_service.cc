@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
@@ -27,7 +26,7 @@
 namespace chrome_cleaner {
 
 namespace {
-// TODO(joenotcharles): refer to the report definition in the "data" section.
+// TODO(joenotcharles): Refer to the report definition in the "data" section.
 constexpr net::NetworkTrafficAnnotationTag kReporterTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("unwanted_software_report", R"(
           semantics {
