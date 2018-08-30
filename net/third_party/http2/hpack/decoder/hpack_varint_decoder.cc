@@ -11,7 +11,7 @@ namespace http2 {
 DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
                                        uint8_t prefix_mask,
                                        DecodeBuffer* db) {
-  DCHECK_LE(15, prefix_mask) << std::hex << prefix_mask;
+  DCHECK_LE(7, prefix_mask) << std::hex << prefix_mask;
   DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
   // Confirm that |prefix_mask| is a contiguous sequence of bits.
   DCHECK_EQ(0, (prefix_mask + 1) & prefix_mask) << std::hex << prefix_mask;
@@ -30,7 +30,7 @@ DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
 
 DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_mask,
                                                DecodeBuffer* db) {
-  DCHECK_LE(15, prefix_mask) << std::hex << prefix_mask;
+  DCHECK_LE(7, prefix_mask) << std::hex << prefix_mask;
   DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
   // Confirm that |prefix_mask| is a contiguous sequence of bits.
   DCHECK_EQ(0, prefix_mask & (prefix_mask + 1)) << std::hex << prefix_mask;

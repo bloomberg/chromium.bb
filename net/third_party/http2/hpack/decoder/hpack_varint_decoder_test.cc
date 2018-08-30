@@ -85,7 +85,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
   }
 
   void EncodeNoRandom(uint32_t value, uint8_t prefix_length) {
-    DCHECK_LE(4, prefix_length);
+    DCHECK_LE(3, prefix_length);
     DCHECK_LE(prefix_length, 7);
     prefix_length_ = prefix_length;
 
@@ -242,7 +242,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
 // To help me and future debuggers of varint encodings, this LOGs out the
 // transition points where a new extension byte is added.
 TEST_F(HpackVarintDecoderTest, Encode) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint32_t a = (1 << prefix_length) - 1;
     const uint32_t b = a + 128;
     const uint32_t c = b + (127 << 7);
@@ -296,7 +296,7 @@ TEST_F(HpackVarintDecoderTest, FromSpec1337) {
 
 // Test all the values that fit into the prefix (one less than the mask).
 TEST_F(HpackVarintDecoderTest, ValidatePrefixOnly) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     EncodeAndDecodeValuesInRange(0, prefix_mask, prefix_length, 1);
   }
@@ -304,7 +304,7 @@ TEST_F(HpackVarintDecoderTest, ValidatePrefixOnly) {
 
 // Test all values that require exactly 1 extension byte.
 TEST_F(HpackVarintDecoderTest, ValidateOneExtensionByte) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint32_t start = (1 << prefix_length) - 1;
     EncodeAndDecodeValuesInRange(start, 128, prefix_length, 2);
   }
@@ -312,7 +312,7 @@ TEST_F(HpackVarintDecoderTest, ValidateOneExtensionByte) {
 
 // Test *some* values that require exactly 2 extension bytes.
 TEST_F(HpackVarintDecoderTest, ValidateTwoExtensionBytes) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128;
     const uint32_t range = 127 << 7;
@@ -323,7 +323,7 @@ TEST_F(HpackVarintDecoderTest, ValidateTwoExtensionBytes) {
 
 // Test *some* values that require 3 extension bytes.
 TEST_F(HpackVarintDecoderTest, ValidateThreeExtensionBytes) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128 + (127 << 7);
     const uint32_t range = 127 << 14;
@@ -334,7 +334,7 @@ TEST_F(HpackVarintDecoderTest, ValidateThreeExtensionBytes) {
 
 // Test *some* values that require 4 extension bytes.
 TEST_F(HpackVarintDecoderTest, ValidateFourExtensionBytes) {
-  for (int prefix_length = 4; prefix_length <= 7; ++prefix_length) {
+  for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128 + (127 << 7) + (127 << 14);
     const uint32_t range = 127 << 21;
@@ -346,7 +346,7 @@ TEST_F(HpackVarintDecoderTest, ValidateFourExtensionBytes) {
 // Test *some* values that require too many extension bytes.
 TEST_F(HpackVarintDecoderTest, ValueTooLarge) {
   const uint32_t expected_offset = HpackVarintDecoder::MaxExtensionBytes() + 1;
-  for (prefix_length_ = 4; prefix_length_ <= 7; ++prefix_length_) {
+  for (prefix_length_ = 3; prefix_length_ <= 7; ++prefix_length_) {
     prefix_mask_ = (1 << prefix_length_) - 1;
     uint64_t too_large = HiValueOfExtensionBytes(
         HpackVarintDecoder::MaxExtensionBytes() + 3, prefix_length_);

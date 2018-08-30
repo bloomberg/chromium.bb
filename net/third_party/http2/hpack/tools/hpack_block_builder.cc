@@ -13,7 +13,7 @@ namespace test {
 void HpackBlockBuilder::AppendHighBitsAndVarint(uint8_t high_bits,
                                                 uint8_t prefix_length,
                                                 uint64_t varint) {
-  EXPECT_LE(4, prefix_length);
+  EXPECT_LE(3, prefix_length);
   EXPECT_LE(prefix_length, 7);
 
   // prefix_mask defines the sequence of low-order bits of the first byte
