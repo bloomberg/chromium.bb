@@ -8,6 +8,7 @@ source_set("eg_tests") {
   sources = [
     "automation_action.h",
     "automation_action.mm",
+    "automation_action_egtest.mm",
     "automation_egtest.mm",
   ]
 
@@ -25,6 +26,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web:earl_grey_test_support",
+    "//ios/web/public/test/http_server:http_server",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
