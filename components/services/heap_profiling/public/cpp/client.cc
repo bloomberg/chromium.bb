@@ -5,6 +5,7 @@
 #include "components/services/heap_profiling/public/cpp/client.h"
 
 #include "base/allocator/allocator_interception_mac.h"
+#include "base/command_line.h"
 #include "base/files/platform_file.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,7 @@
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
@@ -69,6 +71,13 @@ void Client::BindToInterface(mojom::ProfilingClientRequest request) {
 }
 
 void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
+  // Never allow profiling of the profiling process. That would cause deadlock.
+  std::string sandbox_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          service_manager::switches::kServiceSandboxType);
+  if (sandbox_type == service_manager::switches::kProfilingSandbox)
+    return;
+
   if (started_profiling_)
     return;
   started_profiling_ = true;

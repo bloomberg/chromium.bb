@@ -74,8 +74,14 @@ std::string GetMessageString() {
 
     case Mode::kRendererSampling:
       return std::string(
-          "Memory logging is enabled for an automatic sample of renderer "
-          "processes. This UI is disabled.");
+          "Memory logging is enabled for at most one renderer process. Each "
+          "renderer process has a fixed probability of being sampled at "
+          "startup.");
+
+    case Mode::kUtilitySampling:
+      return std::string(
+          "Each utility process has a fixed probability of being profiled at "
+          "startup.");
 
     case Mode::kNone:
     case Mode::kManual:
@@ -272,13 +278,14 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     base::WeakPtr<MemoryInternalsDOMHandler> dom_handler) {
   std::vector<base::Value> result;
 
-  // The only non-renderer child process that currently supports out-of-process
-  // heap profiling is GPU.
+  // The only non-renderer child processes that currently support out-of-process
+  // heap profiling are GPU and UTILITY.
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     // Note that ChildProcessData.id is a child ID and not an OS PID.
     const content::ChildProcessData& data = iter.GetData();
 
-    if (data.process_type == content::PROCESS_TYPE_GPU) {
+    if (data.process_type == content::PROCESS_TYPE_GPU ||
+        data.process_type == content::PROCESS_TYPE_UTILITY) {
       result.push_back(MakeProcessInfo(base::GetProcId(data.GetHandle()),
                                        GetChildDescription(data)));
     }

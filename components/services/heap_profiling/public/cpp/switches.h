@@ -16,6 +16,8 @@ extern const char kMemlogModeGpu[];
 extern const char kMemlogModeManual[];
 extern const char kMemlogModeMinimal[];
 extern const char kMemlogModeRendererSampling[];
+extern const char kMemlogModeUtilityAndBrowser[];
+extern const char kMemlogModeUtilitySampling[];
 extern const char kMemlogSampling[];
 extern const char kMemlogSamplingRate[];
 extern const char kMemlogStackMode[];

@@ -871,8 +871,7 @@ bool TestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   base::Value* heaps_v2 =
       FindArgDump(base::Process::Current().Pid(), dump_json, "heaps_v2");
 
-  if (options_.mode != Mode::kAll && options_.mode != Mode::kBrowser &&
-      options_.mode != Mode::kMinimal) {
+  if (!ShouldProfileBrowser()) {
     if (heaps_v2) {
       LOG(ERROR) << "There should be no heap dump for the browser.";
       return false;
@@ -994,7 +993,8 @@ bool TestDriver::ValidateRendererAllocations(base::Value* dump_json) {
 
 bool TestDriver::ShouldProfileBrowser() {
   return options_.mode == Mode::kAll || options_.mode == Mode::kBrowser ||
-         options_.mode == Mode::kMinimal;
+         options_.mode == Mode::kMinimal ||
+         options_.mode == Mode::kUtilityAndBrowser;
 }
 
 bool TestDriver::ShouldProfileRenderer() {

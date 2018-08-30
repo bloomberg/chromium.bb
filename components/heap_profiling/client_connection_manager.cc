@@ -85,6 +85,16 @@ bool ShouldProfileNonRendererProcessType(Mode mode, int process_type) {
       // Renderer logic is handled in ClientConnectionManager::Observe.
       return false;
 
+    case Mode::kUtilitySampling:
+      // Sample each utility process with 1/3 probability.
+      if (process_type == content::ProcessType::PROCESS_TYPE_UTILITY)
+        return (base::RandUint64() % 3) < 1;
+      return false;
+
+    case Mode::kUtilityAndBrowser:
+      return process_type == content::ProcessType::PROCESS_TYPE_UTILITY ||
+             process_type == content::ProcessType::PROCESS_TYPE_BROWSER;
+
     case Mode::kNone:
       return false;
 

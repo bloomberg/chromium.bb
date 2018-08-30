@@ -30,6 +30,7 @@ static_library("cpp") {
     "//base/allocator:buildflags",
     "//services/resource_coordinator/public/mojom:",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/sandbox",
   ]
 
   if (is_posix) {

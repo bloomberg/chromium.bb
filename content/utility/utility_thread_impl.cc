@@ -148,8 +148,10 @@ void UtilityThreadImpl::Init() {
 
   service_factory_.reset(new UtilityServiceFactory);
 
-  if (connection)
+  if (connection) {
     connection->Start();
+    GetContentClient()->OnServiceManagerConnected(connection);
+  }
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

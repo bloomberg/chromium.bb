@@ -94,4 +94,11 @@ public class ProfilingProcessHostAndroidTest {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false));
     }
+
+    @Test
+    @MediumTest
+    public void testModeBrowserAndAllUtility() throws Exception {
+        HeapProfilingTestShim shim = new HeapProfilingTestShim();
+        Assert.assertTrue(shim.runTestForMode("utility-and-browser", true, "pseudo", true, false));
+    }
 }
