@@ -499,6 +499,12 @@ def DescribeSizeInfoCoverage(size_info):
            '{} symbols. {} bytes are unaccounted for.').format(
                section_name, size_percent, actual_size, len(in_section),
                expected_size - actual_size)
+
+    sources_count = sum(1 for s in in_section if s.source_path)
+    sources_fraction = _Divide(sources_count, len(in_section))
+    yield '* {} have source paths assigned ({:.1%})'.format(
+        sources_count, sources_fraction)
+
     star_syms = in_section.WhereNameMatches(r'^\*')
     padding = in_section.padding - star_syms.padding
     anonymous_syms = star_syms.Inverted().WhereHasAnyAttribution().Inverted()

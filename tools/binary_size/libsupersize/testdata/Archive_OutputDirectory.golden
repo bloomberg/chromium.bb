@@ -1,25 +1,30 @@
 Section .text: has 100.0% of 35900712 bytes accounted for from 15 symbols. 0 bytes are unaccounted for.
+* 12 have source paths assigned (80.0%)
 * Padding accounts for 48 bytes (0.0%)
 * 3 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 10 symbols. 0 bytes are unaccounted for.
+* 5 have source paths assigned (50.0%)
 * Padding accounts for 675996 bytes (11.4%)
 * 5 placeholders (symbols that start with **) account for 5251524 bytes (88.6%)
 * Contains 0 string literals. Total size=0, padding=0
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .data.rel.ro: has 100.0% of 1065224 bytes accounted for from 4 symbols. 0 bytes are unaccounted for.
+* 3 have source paths assigned (75.0%)
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 1065132 bytes (100.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .data: has 100.0% of 101768 bytes accounted for from 6 symbols. 0 bytes are unaccounted for.
+* 5 have source paths assigned (83.3%)
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 101600 bytes (99.8%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for.
+* 6 have source paths assigned (100.0%)
 * Padding accounts for 196 bytes (0.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
