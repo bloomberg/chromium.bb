@@ -23,14 +23,11 @@ using content::WebContents;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    LocationBarView* location_bar)
-    : IconLabelBubbleView(font_list),
-      location_bar_(location_bar),
-      animation_(this) {
+    : IconLabelBubbleView(font_list), location_bar_(location_bar) {
   label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   set_id(VIEW_ID_LOCATION_ICON);
   Update();
-
-  animation_.SetSlideDuration(kOpenTimeMS);
+  SetUpForInOutAnimation();
 }
 
 LocationIconView::~LocationIconView() {
@@ -141,13 +138,13 @@ gfx::Size LocationIconView::GetMinimumSizeForLabelText(
 
 void LocationIconView::SetTextVisibility(bool should_show,
                                          bool should_animate) {
-  if (!should_animate) {
-    animation_.Reset(should_show);
-  } else if (should_show) {
-    animation_.Show();
-  } else {
-    animation_.Hide();
-  }
+  if (!should_animate)
+    ResetSlideAnimation(should_show);
+  else if (should_show)
+    AnimateIn(base::nullopt);
+  else
+    AnimateOut();
+
   // The label text color may have changed.
   OnNativeThemeChanged(GetNativeTheme());
 }
@@ -188,12 +185,7 @@ bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 double LocationIconView::WidthMultiplier() const {
-  return animation_.GetCurrentValue();
-}
-
-void LocationIconView::AnimationProgressed(const gfx::Animation*) {
-  location_bar_->Layout();
-  location_bar_->SchedulePaint();
+  return GetAnimationValue();
 }
 
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
@@ -202,4 +194,9 @@ gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
   size.SetToMin(
       GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
   return size;
+}
+
+int LocationIconView::GetSlideDurationTime() const {
+  constexpr int kSlideDurationTimeMs = 150;
+  return kSlideDurationTimeMs;
 }
