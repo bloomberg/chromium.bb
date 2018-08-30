@@ -33,6 +33,9 @@
     <message name="IDS_ERRORPAGES_BUTTON_DOWNLOADING" desc="Label for the button on an error page when it is clicked to queue the download for the failed-to-load page">
       Waiting for connection…
     </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON" desc="Label for the button on the error page popup that describes detailed error status and debugging tips">
+      OK
+    </message>
   </if>
 
   <message name="IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE" desc="When a page fails to load, sometimes we viewing a version of the page cached on Google's servers.">

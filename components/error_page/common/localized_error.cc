@@ -1085,6 +1085,10 @@ void LocalizedError::GetStrings(
                                IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
   }
 
+  error_strings->SetString(
+      "closeDescriptionPopup",
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
+
   if (IsOfflineError(error_domain, error_code) && !is_incognito) {
     switch (offline_content_feature_state) {
       case OfflineContentOnNetErrorFeatureState::kDisabled:

@@ -154,6 +154,11 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
+function toggleErrorInformationPopup() {
+  document.getElementById('error-information-popup-container')
+      .classList.toggle(HIDDEN_CLASS);
+}
+
 function getSuggestedContentDiv(item) {
   var visual = '';
     if (item.thumbnail_data_uri) {
@@ -189,6 +194,7 @@ function offlineContentSummaryAvailable(summary) {
 // Populates suggested offline content. Note: this UI is in development.
 // See https://crbug.com/852872.
 function offlineContentAvailable(content) {
+  if (!content) return;
   var div = document.getElementById('offline-suggestions');
   var suggestionsHTML = [];
   for (var c of content)
@@ -260,6 +266,15 @@ function onDocumentLoad() {
         showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }
+  }
+
+  if (loadTimeData.valueExists('suggestedOfflineContentPresentationMode')) {
+    document.getElementById('error-information-popup-container').classList.
+      add('use-popup-container');
+    document.getElementById('error-information-popup-container').classList.
+      add(HIDDEN_CLASS)
+    document.getElementById('error-information-button')
+      .classList.remove(HIDDEN_CLASS);
   }
 }
 
