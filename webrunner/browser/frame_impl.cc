@@ -165,6 +165,10 @@ void FrameImpl::LoadUrl(fidl::StringPtr url,
   }
 
   content::NavigationController::LoadURLParams params_converted(validated_url);
+
+  if (validated_url.scheme() == url::kDataScheme)
+    params_converted.load_type = content::NavigationController::LOAD_TYPE_DATA;
+
   params_converted.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   web_contents_->GetController().LoadURLWithParams(params_converted);
