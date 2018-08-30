@@ -2,6 +2,8 @@ d5dfb0151c9051f8c85999255645d7a23916d3c0 *hantro_collage_w352h288.yuv
 b87815bf86020c592ccc7a846ba2e28ec8043902 *hantro_odd.yuv
 26b7f64399b84db4b4c9c915d743ec5c2619d4b9 *invalid-bug-1814.ivf
 d3964f9dad9f60363c81b688324d95b4ec7c8038 *invalid-bug-1814.ivf.res
+c9e06c4c7fb7d69fd635a1f606a5e478d60e99cf *invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf
+88e18e61bd2b7457b4c71ebefbdff0029c41cc04 *invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf.res
 c0960f032484579f967881cc025b71cfd7a79ee1 *invalid-oss-fuzz-9463.ivf
 d3964f9dad9f60363c81b688324d95b4ec7c8038 *invalid-oss-fuzz-9463.ivf.res
 f448caf378e250b7eea4fa2d1c3cd7ef4a3211ce *invalid-oss-fuzz-9482.ivf

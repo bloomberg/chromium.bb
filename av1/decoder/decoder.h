@@ -55,6 +55,8 @@ typedef struct ThreadData {
   CB_BUFFER cb_buffer_base;
   uint8_t *mc_buf[2];
   int32_t mc_buf_size;
+  int mc_buf_use_highbd;  // Boolean: whether the byte pointers stored in
+                          // mc_buf were converted from highbd pointers.
 
   decode_block_visitor_fn_t read_coeffs_tx_intra_block_visit;
   decode_block_visitor_fn_t predict_and_recon_intra_block_visit;

@@ -3349,16 +3349,17 @@ static void alloc_dec_jobs(AV1DecTileMT *tile_mt_info, AV1_COMMON *cm,
                   aom_malloc(sizeof(*tile_mt_info->job_queue) * num_tiles));
 }
 
-void av1_free_mc_tmp_buf(ThreadData *thread_data, int use_highbd) {
+void av1_free_mc_tmp_buf(ThreadData *thread_data) {
   int ref;
   for (ref = 0; ref < 2; ref++) {
-    if (use_highbd)
+    if (thread_data->mc_buf_use_highbd)
       aom_free(CONVERT_TO_SHORTPTR(thread_data->mc_buf[ref]));
     else
       aom_free(thread_data->mc_buf[ref]);
     thread_data->mc_buf[ref] = NULL;
   }
   thread_data->mc_buf_size = 0;
+  thread_data->mc_buf_use_highbd = 0;
 }
 
 static void allocate_mc_tmp_buf(AV1_COMMON *const cm, ThreadData *thread_data,
@@ -3374,6 +3375,7 @@ static void allocate_mc_tmp_buf(AV1_COMMON *const cm, ThreadData *thread_data,
     }
   }
   thread_data->mc_buf_size = buf_size;
+  thread_data->mc_buf_use_highbd = use_highbd;
 }
 
 static void reset_dec_workers(AV1Decoder *pbi, AVxWorkerHook worker_hook,
@@ -3474,7 +3476,7 @@ static void decode_mt_init(AV1Decoder *pbi) {
   for (worker_idx = 0; worker_idx < pbi->max_threads - 1; ++worker_idx) {
     DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
     if (thread_data->td->mc_buf_size != buf_size) {
-      av1_free_mc_tmp_buf(thread_data->td, use_highbd);
+      av1_free_mc_tmp_buf(thread_data->td);
       allocate_mc_tmp_buf(cm, thread_data->td, buf_size, use_highbd);
     }
   }
@@ -5151,7 +5153,7 @@ static void setup_frame_info(AV1Decoder *pbi) {
   const int use_highbd = cm->seq_params.use_highbitdepth ? 1 : 0;
   const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
   if (pbi->td.mc_buf_size != buf_size) {
-    av1_free_mc_tmp_buf(&pbi->td, use_highbd);
+    av1_free_mc_tmp_buf(&pbi->td);
     allocate_mc_tmp_buf(cm, &pbi->td, buf_size, use_highbd);
   }
 }

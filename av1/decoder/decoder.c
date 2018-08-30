@@ -166,8 +166,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   if (pbi->thread_data) {
     for (int worker_idx = 0; worker_idx < pbi->max_threads - 1; worker_idx++) {
       DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
-      const int use_highbd = pbi->common.seq_params.use_highbitdepth ? 1 : 0;
-      av1_free_mc_tmp_buf(thread_data->td, use_highbd);
+      av1_free_mc_tmp_buf(thread_data->td);
       aom_free(thread_data->td);
     }
     aom_free(pbi->thread_data);
@@ -204,8 +203,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);
 #endif
-  const int use_highbd = pbi->common.seq_params.use_highbitdepth ? 1 : 0;
-  av1_free_mc_tmp_buf(&pbi->td, use_highbd);
+  av1_free_mc_tmp_buf(&pbi->td);
 
   aom_free(pbi);
 }

@@ -14,6 +14,8 @@ list(APPEND AOM_TEST_DATA_FILE_NAMES
             "hantro_odd.yuv"
             "invalid-bug-1814.ivf"
             "invalid-bug-1814.ivf.res"
+            "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf"
+            "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf.res"
             "invalid-oss-fuzz-9463.ivf"
             "invalid-oss-fuzz-9463.ivf.res"
             "invalid-oss-fuzz-9482.ivf"
