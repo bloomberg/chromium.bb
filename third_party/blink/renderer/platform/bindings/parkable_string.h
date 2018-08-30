@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
 
 #include <map>
 #include <set>
@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-// MovableString represents a string that may be moved in memory, that it its
+// ParkableString represents a string that may be parked in memory, that it its
 // underlying memory address may change. Its content can be retrieved with the
 // |ToString()| method.
 // As a consequence, the inner pointer should never be cached, and only touched
@@ -25,13 +25,13 @@
 // As with WTF::AtomicString, this class is *not* thread-safe, and strings
 // created on a thread must always be used on the same thread.
 //
-// Implementation note: the string content is not moved yet, it is merely
+// Implementation note: the string content is not parked yet, it is merely
 // used to gather statistics.
 
 namespace blink {
 
-class PLATFORM_EXPORT MovableStringImpl final
-    : public RefCounted<MovableStringImpl> {
+class PLATFORM_EXPORT ParkableStringImpl final
+    : public RefCounted<ParkableStringImpl> {
  public:
   // Histogram buckets, exported for testing.
   enum class ParkingAction {
@@ -41,9 +41,9 @@ class PLATFORM_EXPORT MovableStringImpl final
     kMaxValue = kUnparkedInForeground
   };
 
-  MovableStringImpl();
-  explicit MovableStringImpl(scoped_refptr<StringImpl>&& impl);
-  ~MovableStringImpl();
+  ParkableStringImpl();
+  explicit ParkableStringImpl(scoped_refptr<StringImpl>&& impl);
+  ~ParkableStringImpl();
 
   // The returned string may be used as a normal one, as long as the
   // returned value (or a copy of it) is alive.
@@ -67,21 +67,21 @@ class PLATFORM_EXPORT MovableStringImpl final
   String string_;
   bool is_parked_;
 
-  DISALLOW_COPY_AND_ASSIGN(MovableStringImpl);
+  DISALLOW_COPY_AND_ASSIGN(ParkableStringImpl);
 };
 
-class PLATFORM_EXPORT MovableString final {
+class PLATFORM_EXPORT ParkableString final {
  public:
-  MovableString() : impl_(base::MakeRefCounted<MovableStringImpl>(nullptr)) {}
-  explicit MovableString(scoped_refptr<StringImpl>&& impl);
-  MovableString(const MovableString& rhs) : impl_(rhs.impl_) {}
-  ~MovableString();
+  ParkableString() : impl_(base::MakeRefCounted<ParkableStringImpl>(nullptr)) {}
+  explicit ParkableString(scoped_refptr<StringImpl>&& impl);
+  ParkableString(const ParkableString& rhs) : impl_(rhs.impl_) {}
+  ~ParkableString();
 
   // See the matching String methods.
   bool Is8Bit() const;
   bool IsNull() const;
   unsigned length() const { return impl_->length(); }
-  MovableStringImpl* Impl() const { return impl_.get(); }
+  ParkableStringImpl* Impl() const { return impl_.get(); }
   // Returns an unparked version of the string.
   // The string is guaranteed to be valid for
   // max(lifetime of a copy of the returned reference, current thread task).
@@ -94,20 +94,20 @@ class PLATFORM_EXPORT MovableString final {
   const UChar* Characters16() const { return ToString().Characters16(); }
 
  private:
-  scoped_refptr<MovableStringImpl> impl_;
+  scoped_refptr<ParkableStringImpl> impl_;
 };
 
-// Per-thread registry of all MovableString instances. NOT thread-safe.
-class PLATFORM_EXPORT MovableStringTable final {
+// Per-thread registry of all ParkableString instances. NOT thread-safe.
+class PLATFORM_EXPORT ParkableStringTable final {
  public:
-  MovableStringTable();
-  ~MovableStringTable();
+  ParkableStringTable();
+  ~ParkableStringTable();
 
-  static MovableStringTable& Instance();
+  static ParkableStringTable& Instance();
 
-  scoped_refptr<MovableStringImpl> Add(scoped_refptr<StringImpl>&&);
+  scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
 
-  // This is for ~MovableStringImpl to unregister a string before
+  // This is for ~ParkableStringImpl to unregister a string before
   // destruction since the table is holding raw pointers. It should not be used
   // directly.
   void Remove(StringImpl*);
@@ -121,15 +121,15 @@ class PLATFORM_EXPORT MovableStringTable final {
  private:
   bool backgrounded_;
   // Could bet a set where the hashing function is
-  // MovableStringImpl::string_.Impl(), but clearer this way.
-  std::map<StringImpl*, MovableStringImpl*> table_;
+  // ParkableStringImpl::string_.Impl(), but clearer this way.
+  std::map<StringImpl*, ParkableStringImpl*> table_;
 
-  FRIEND_TEST_ALL_PREFIXES(MovableStringTest, TableSimple);
-  FRIEND_TEST_ALL_PREFIXES(MovableStringTest, TableMultiple);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableSimple);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableMultiple);
 
-  DISALLOW_COPY_AND_ASSIGN(MovableStringTable);
+  DISALLOW_COPY_AND_ASSIGN(ParkableStringTable);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_

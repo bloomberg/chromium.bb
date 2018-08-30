@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -20,7 +20,7 @@ class ModuleScriptCreationParams {
  public:
   ModuleScriptCreationParams(
       const KURL& response_url,
-      const MovableString& source_text,
+      const ParkableString& source_text,
       network::mojom::FetchCredentialsMode fetch_credentials_mode,
       AccessControlStatus access_control_status)
       : response_url_(response_url),
@@ -40,9 +40,9 @@ class ModuleScriptCreationParams {
   }
 
   const KURL& GetResponseUrl() const { return response_url_; }
-  const MovableString& GetSourceText() const {
+  const ParkableString& GetSourceText() const {
     if (is_isolated_) {
-      source_text_ = MovableString(isolated_source_text_.ReleaseImpl());
+      source_text_ = ParkableString(isolated_source_text_.ReleaseImpl());
       isolated_source_text_ = String();
       is_isolated_ = false;
     }
@@ -78,7 +78,7 @@ class ModuleScriptCreationParams {
   // Mutable because an isolated copy can become bound to a thread when
   // calling GetSourceText().
   mutable bool is_isolated_;
-  mutable MovableString source_text_;
+  mutable ParkableString source_text_;
   mutable String isolated_source_text_;
 
   const network::mojom::FetchCredentialsMode fetch_credentials_mode_;

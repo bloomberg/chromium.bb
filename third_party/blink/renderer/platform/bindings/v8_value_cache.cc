@@ -61,26 +61,26 @@ void StringCacheMapTraits::OnWeakCallback(
       ->InvalidateLastString();
 }
 
-MovableStringCacheMapTraits::MapType*
-MovableStringCacheMapTraits::MapFromWeakCallbackInfo(
+ParkableStringCacheMapTraits::MapType*
+ParkableStringCacheMapTraits::MapFromWeakCallbackInfo(
     const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
   return &(V8PerIsolateData::From(data.GetIsolate())
                ->GetStringCache()
-               ->movable_string_cache_);
+               ->parkable_string_cache_);
 }
 
-void MovableStringCacheMapTraits::Dispose(v8::Isolate* isolate,
-                                          v8::Global<v8::String> value,
-                                          MovableStringImpl* key) {
+void ParkableStringCacheMapTraits::Dispose(v8::Isolate* isolate,
+                                           v8::Global<v8::String> value,
+                                           ParkableStringImpl* key) {
   key->Release();
 }
 
-void MovableStringCacheMapTraits::DisposeWeak(
+void ParkableStringCacheMapTraits::DisposeWeak(
     const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
   data.GetParameter()->Release();
 }
 
-void MovableStringCacheMapTraits::OnWeakCallback(
+void ParkableStringCacheMapTraits::OnWeakCallback(
     const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {}
 
 void StringCache::Dispose() {
@@ -114,9 +114,9 @@ static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
 }
 
 static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
-                                                const MovableString& string) {
+                                                const ParkableString& string) {
   if (string.Is8Bit()) {
-    auto* string_resource = new MovableStringResource8(string);
+    auto* string_resource = new ParkableStringResource8(string);
     v8::Local<v8::String> new_string;
     if (!v8::String::NewExternalOneByte(isolate, string_resource)
              .ToLocal(&new_string)) {
@@ -126,7 +126,7 @@ static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
     return new_string;
   }
 
-  auto* string_resource = new MovableStringResource16(string);
+  auto* string_resource = new ParkableStringResource16(string);
   v8::Local<v8::String> new_string;
   if (!v8::String::NewExternalTwoByte(isolate, string_resource)
            .ToLocal(&new_string)) {
@@ -157,12 +157,12 @@ v8::Local<v8::String> StringCache::V8ExternalStringSlow(
 
 v8::Local<v8::String> StringCache::V8ExternalString(
     v8::Isolate* isolate,
-    const MovableString& string) {
+    const ParkableString& string) {
   if (!string.length())
     return v8::String::Empty(isolate);
 
-  MovableStringCacheMapTraits::MapType::PersistentValueReference
-      cached_v8_string = movable_string_cache_.GetReference(string.Impl());
+  ParkableStringCacheMapTraits::MapType::PersistentValueReference
+      cached_v8_string = parkable_string_cache_.GetReference(string.Impl());
   if (!cached_v8_string.IsEmpty()) {
     return cached_v8_string.NewLocal(isolate);
   }
@@ -216,23 +216,23 @@ v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
 
 v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
     v8::Isolate* isolate,
-    const MovableString& string) {
-  MovableStringImpl* string_impl = string.Impl();
-  DCHECK(!movable_string_cache_.Contains(string_impl));
+    const ParkableString& string) {
+  ParkableStringImpl* string_impl = string.Impl();
+  DCHECK(!parkable_string_cache_.Contains(string_impl));
   DCHECK(string_impl->length());
 
   v8::Local<v8::String> new_string =
-      MakeExternalString(isolate, MovableString(string));
+      MakeExternalString(isolate, ParkableString(string));
   DCHECK(!new_string.IsEmpty());
   DCHECK(new_string->Length());
 
   v8::UniquePersistent<v8::String> wrapper(isolate, new_string);
 
   string_impl->AddRef();
-  // MovableStringImpl objects are not cache in |string_cache_| or
+  // ParkableStringImpl objects are not cache in |string_cache_| or
   // |last_string_impl_|.
-  MovableStringCacheMapTraits::MapType::PersistentValueReference unused;
-  movable_string_cache_.Set(string_impl, std::move(wrapper), &unused);
+  ParkableStringCacheMapTraits::MapType::PersistentValueReference unused;
+  parkable_string_cache_.Set(string_impl, std::move(wrapper), &unused);
 
   return new_string;
 }

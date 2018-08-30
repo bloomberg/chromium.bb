@@ -10,7 +10,7 @@ include_rules = [
     "+base/strings/string_number_conversions.h",  # for fetch/ResourceLoadScheduler.cpp
     "+components/link_header_util",  # for LinkHeader.cpp
     "+services/network/public",  # for Fetch API and CORS
-    "+third_party/blink/renderer/platform/bindings/movable_string.h",
+    "+third_party/blink/renderer/platform/bindings/parkable_string.h",
     "+third_party/blink/renderer/platform/bindings/script_forbidden_scope.h",
     "+third_party/blink/renderer/platform/blob/blob_data.h",
     "+third_party/blink/renderer/platform/cross_origin_attribute_value.h",

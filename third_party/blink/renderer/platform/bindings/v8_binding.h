@@ -291,7 +291,7 @@ inline v8::Local<v8::Value> V8StringOrNull(v8::Isolate* isolate,
 }
 
 inline v8::Local<v8::String> V8String(v8::Isolate* isolate,
-                                      const MovableString& string) {
+                                      const ParkableString& string) {
   if (string.IsNull())
     return v8::String::Empty(isolate);
   return V8PerIsolateData::From(isolate)->GetStringCache()->V8ExternalString(
