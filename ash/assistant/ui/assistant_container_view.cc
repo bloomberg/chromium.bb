@@ -4,8 +4,7 @@
 
 #include "ash/assistant/ui/assistant_container_view.h"
 
-#include <iostream>
-#include <memory>
+#include <algorithm>
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -22,6 +21,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
@@ -34,6 +34,7 @@ namespace {
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kCornerRadiusDip = 20;
+constexpr int kMiniUiCornerRadiusDip = 24;
 constexpr int kMarginBottomDip = 8;
 
 // Animation.
@@ -164,6 +165,15 @@ AssistantContainerView::AssistantContainerView(
   // These attributes can only be set after bubble creation:
   GetBubbleFrameView()->bubble_border()->SetCornerRadius(kCornerRadiusDip);
 
+  // Update the initial shadow layer with correct corner radius.
+  UpdateShadow();
+
+  // Add the shadow layer on top of the non-client view layer.
+  shadow_layer_.SetFillsBoundsOpaquely(false);
+  GetBubbleFrameView()->SetPaintToLayer();
+  GetBubbleFrameView()->layer()->SetFillsBoundsOpaquely(false);
+  GetBubbleFrameView()->layer()->Add(&shadow_layer_);
+
   // The AssistantController owns the view hierarchy to which
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
@@ -199,6 +209,12 @@ void AssistantContainerView::PreferredSizeChanged() {
       assistant_controller_->ui_controller()->model()->visibility() ==
       AssistantVisibility::kVisible;
 
+  // Calculate the target radius value with or without animation.
+  radius_end_ = assistant_controller_->ui_controller()->model()->ui_mode() ==
+                        AssistantUiMode::kMiniUi
+                    ? kMiniUiCornerRadiusDip
+                    : kCornerRadiusDip;
+
   // When visible, size changes are animated.
   if (visible) {
     resize_animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -208,6 +224,9 @@ void AssistantContainerView::PreferredSizeChanged() {
     resize_start_ = gfx::SizeF(size());
     resize_end_ = gfx::SizeF(GetPreferredSize());
 
+    radius_start_ =
+        GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+
     // Start animation.
     resize_animation_->Show();
     return;
@@ -215,6 +234,9 @@ void AssistantContainerView::PreferredSizeChanged() {
 
   // Clear any existing animation.
   resize_animation_.reset();
+
+  // Update corner radius value without animation.
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(radius_end_);
 
   SizeToContents();
 }
@@ -229,17 +251,12 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
   params->context = Shell::Get()->GetRootWindowForNewWindows();
   params->corner_radius = kCornerRadiusDip;
   params->keep_on_top = true;
-  params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
-  params->shadow_elevation = wm::kShadowElevationActiveWindow;
 }
 
 void AssistantContainerView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Apply a clip path to ensure children do not extend outside container
-  // boundaries. The clip path also enforces our round corners on child views.
-  gfx::Path clip_path;
-  clip_path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), kCornerRadiusDip,
-                         kCornerRadiusDip);
-  set_clip_path(clip_path);
+  // Update the shadow layer when resizing the window.
+  UpdateShadow();
+
   SchedulePaint();
 }
 
@@ -355,6 +372,14 @@ void AssistantContainerView::AnimationProgressed(
   bounds.set_x(center_x - (bounds.width() / 2));
   bounds.set_y(bottom - bounds.height());
 
+  // Interpolate the correct radius.
+  const int corner_radius = gfx::Tween::LinearIntValueBetween(
+      animation->GetCurrentValue(), radius_start_, radius_end_);
+
+  // Clip round corners on child views by directly changing the non-client
+  // view corner radius of this bubble widget.
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(corner_radius);
+
   GetWidget()->SetBounds(bounds);
 }
 
@@ -369,6 +394,21 @@ void AssistantContainerView::OnDisplayMetricsChanged(
 void AssistantContainerView::OnKeyboardWorkspaceDisplacingBoundsChanged(
     const gfx::Rect& new_bounds) {
   SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
+}
+
+void AssistantContainerView::UpdateShadow() {
+  // Initialize shadow parameters in painting.
+  gfx::ShadowValues shadow_values =
+      gfx::ShadowValue::MakeMdShadowValues(wm::kShadowElevationActiveWindow);
+
+  const int corner_radius =
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+  border_shadow_delegate_ = std::make_unique<views::BorderShadowLayerDelegate>(
+      shadow_values, GetLocalBounds(), SK_ColorWHITE, corner_radius);
+
+  shadow_layer_.set_delegate(border_shadow_delegate_.get());
+  shadow_layer_.SetBounds(
+      gfx::ToEnclosingRect(border_shadow_delegate_->GetPaintedBounds()));
 }
 
 }  // namespace ash

@@ -5,11 +5,15 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 
+#include <memory>
+
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace aura {
@@ -71,6 +75,9 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   // result of GetRootWindowForNewWindows() will be used.
   void SetAnchor(aura::Window* root_window);
 
+  // Update the shadow layer.
+  void UpdateShadow();
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   AssistantMainView* assistant_main_view_;  // Owned by view hierarchy.
@@ -80,6 +87,18 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   std::unique_ptr<gfx::SlideAnimation> resize_animation_;
   gfx::SizeF resize_start_;
   gfx::SizeF resize_end_;
+
+  // Cache the corner radius start value.
+  int radius_start_ = 0;
+
+  // Cache the corner radius target value.
+  int radius_end_ = 0;
+
+  // ui::LayerDelegate to paint rounded rectangle with shadow.
+  std::unique_ptr<views::BorderShadowLayerDelegate> border_shadow_delegate_;
+
+  // This layer shows a rounded rectangle with drop shadow.
+  ui::Layer shadow_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
