@@ -7,6 +7,7 @@
 
 #include <unordered_set>
 
+#include "base/cancelable_callback.h"
 #include "media/base/media_export.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
@@ -36,14 +37,54 @@ class CAPTURE_EXPORT Camera3AController
   // Enable the auto-focus mode suitable for still capture.
   void SetAutoFocusModeForStillCapture();
 
+  // TODO(shik): This function is unused now.
   // Enable the auto-focus mode suitable for video recording.
   void SetAutoFocusModeForVideoRecording();
+
+  bool IsPointOfInterestSupported();
+
+  // Set point of interest. The coordinate system is based on the active
+  // pixel array.
+  void SetPointOfInterest(gfx::Point point);
 
   base::WeakPtr<Camera3AController> GetWeakPtr();
 
  private:
   void Set3AMode(cros::mojom::CameraMetadataTag tag, uint8_t target_mode);
+
+  // Sometimes it might take long time to stabilize 3A.  Fire the
+  // callback artificially after |time_limit| passed.
+  void Set3aStabilizedCallback(base::OnceClosure callback,
+                               base::TimeDelta time_limit);
+
   bool Is3AStabilized();
+
+  // Intermediate steps of setting point of interest.
+  void SetPointOfInterestOn3AModeSet();
+  void SetPointOfInterestOn3AStabilized();
+  void SetPointOfInterestUnlockAe();
+
+  // Helper functions for manipulating metadata.
+  template <typename T>
+  void SetCaptureMetadata(cros::mojom::CameraMetadataTag tag, T value);
+
+  template <typename T>
+  void SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
+                          const std::vector<T>& value);
+
+  template <typename T>
+  void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag, T value);
+
+  template <typename T>
+  void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag,
+                                   const std::vector<T>& value);
+
+  void ClearRepeatingCaptureMetadata();
+
+  const cros::mojom::CameraMetadataPtr& static_metadata_;
+  bool ae_region_supported_;
+  bool af_region_supported_;
+  bool point_of_interest_supported_;
 
   CaptureMetadataDispatcher* capture_metadata_dispatcher_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -51,15 +92,15 @@ class CAPTURE_EXPORT Camera3AController
   std::unordered_set<cros::mojom::AndroidControlAfMode> available_af_modes_;
   cros::mojom::AndroidControlAfMode af_mode_;
   cros::mojom::AndroidControlAfState af_state_;
-  // |af_mode_set_| is set to true when the AF mode is synchronized between the
-  // HAL and the Camera3AController.
+  // |af_mode_set_| is set to true when the AF mode is synchronized between
+  // the HAL and the Camera3AController.
   bool af_mode_set_;
 
   std::unordered_set<cros::mojom::AndroidControlAeMode> available_ae_modes_;
   cros::mojom::AndroidControlAeMode ae_mode_;
   cros::mojom::AndroidControlAeState ae_state_;
-  // |ae_mode_set_| is set to true when the AE mode is synchronized between the
-  // HAL and the Camera3AController.
+  // |ae_mode_set_| is set to true when the AE mode is synchronized between
+  // the HAL and the Camera3AController.
   bool ae_mode_set_;
 
   std::unordered_set<cros::mojom::AndroidControlAwbMode> available_awb_modes_;
@@ -69,9 +110,29 @@ class CAPTURE_EXPORT Camera3AController
   // the HAL and the Camera3AController.
   bool awb_mode_set_;
 
+  bool set_point_of_interest_running_;
+
+  bool ae_locked_for_point_of_interest_;
+
+  base::TimeDelta latest_sensor_timestamp_;
+
+  std::unordered_set<cros::mojom::CameraMetadataTag> repeating_metadata_tags_;
+
+  // TODO(shik): There are potential races in |on.*callback_| due to processing
+  // pipeline.  Here are some possible solutions/mitgations used in GCA:
+  // 1. Record the frame number.
+  // 2. Wait for some frames before checking.
+  // 3. Wait for more complex patterns (like TriggerStateMachine.java in GCA).
   base::OnceClosure on_3a_mode_set_callback_;
 
   base::OnceClosure on_3a_stabilized_callback_;
+  base::TimeDelta artificial_3a_stabilized_deadline_;
+
+  base::OnceClosure on_ae_locked_for_point_of_interest_callback_;
+
+  base::OnceClosure on_af_trigger_cancelled_callback_;
+
+  base::CancelableOnceClosure delayed_ae_unlock_callback_;
 
   base::WeakPtrFactory<Camera3AController> weak_ptr_factory_;
 

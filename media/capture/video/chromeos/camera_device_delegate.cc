@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/numerics/ranges.h"
 #include "base/posix/safe_strerror.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
@@ -70,7 +71,7 @@ void GetMaxBlobStreamResolution(
 // VideoCaptureDevice::TakePhotoCallback is given by the application and is used
 // to return the captured JPEG blob buffer.  The second base::OnceClosure is
 // created locally by the caller of TakePhoto(), and can be used to, for
-// exmaple, restore some settings to the values before TakePhoto() is called to
+// example, restore some settings to the values before TakePhoto() is called to
 // facilitate the switch between photo and non-photo modes.
 void TakePhotoCallbackBundle(VideoCaptureDevice::TakePhotoCallback callback,
                              base::OnceClosure on_photo_taken_callback,
@@ -239,12 +240,23 @@ void CameraDeviceDelegate::GetPhotoState(
   std::move(callback).Run(std::move(photo_state));
 }
 
+// On success, invokes |callback| with value |true|. On failure, drops
+// callback without invoking it.
 void CameraDeviceDelegate::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  // Not supported at the moment.
+  if (device_context_->GetState() != CameraDeviceContext::State::kCapturing) {
+    return;
+  }
+
+  bool ret = SetPointsOfInterest(settings->points_of_interest);
+  if (!ret) {
+    LOG(ERROR) << "Failed to set points of interest";
+    return;
+  }
+
   std::move(callback).Run(true);
 }
 
@@ -276,7 +288,7 @@ void CameraDeviceDelegate::OnMojoConnectionError() {
         media::VideoCaptureError::kCrosHalV3DeviceDelegateMojoConnectionError,
         FROM_HERE, "Mojo connection error");
     ResetMojoInterface();
-    // We cannnot reset |device_context_| here because
+    // We cannot reset |device_context_| here because
     // |device_context_->SetErrorState| above will call StopAndDeAllocate later
     // to handle the class destruction.
   }
@@ -614,6 +626,68 @@ void CameraDeviceDelegate::ProcessCaptureRequest(
     return;
   }
   device_ops_->ProcessCaptureRequest(std::move(request), std::move(callback));
+}
+
+bool CameraDeviceDelegate::SetPointsOfInterest(
+    const std::vector<mojom::Point2DPtr>& points_of_interest) {
+  if (points_of_interest.empty()) {
+    return true;
+  }
+
+  if (!camera_3a_controller_->IsPointOfInterestSupported()) {
+    LOG(WARNING) << "Point of interest is not supported on this device.";
+    return false;
+  }
+
+  if (points_of_interest.size() > 1) {
+    LOG(WARNING) << "Setting more than one point of interest is not "
+                    "supported, only the first one is used.";
+  }
+
+  // A Point2D Point of Interest is interpreted to represent a pixel position in
+  // a normalized square space (|{x,y} ∈ [0.0, 1.0]|). The origin of coordinates
+  // |{x,y} = {0.0, 0.0}| represents the upper leftmost corner whereas the
+  // |{x,y} = {1.0, 1.0}| represents the lower rightmost corner: the x
+  // coordinate (columns) increases rightwards and the y coordinate (rows)
+  // increases downwards. Values beyond the mentioned limits will be clamped to
+  // the closest allowed value.
+  // ref: https://www.w3.org/TR/image-capture/#points-of-interest
+
+  float x = base::ClampToRange(points_of_interest[0]->x, 0.0f, 1.0f);
+  float y = base::ClampToRange(points_of_interest[0]->y, 0.0f, 1.0f);
+
+  // Handle rotation, still in normalized square space.
+  std::tie(x, y) = [&]() -> std::pair<float, float> {
+    switch (device_context_->GetCameraFrameOrientation()) {
+      case 0:
+        return {x, y};
+      case 90:
+        return {y, 1.0 - x};
+      case 180:
+        return {1.0 - x, 1.0 - y};
+      case 270:
+        return {1.0 - y, x};
+      default:
+        NOTREACHED() << "Invalid orientation";
+    }
+    return {x, y};
+  }();
+
+  // TODO(shik): Respect to SCALER_CROP_REGION, which is unused now.
+
+  auto active_array_size = [&]() {
+    auto rect = GetMetadataEntryAsSpan<int32_t>(
+        static_metadata_,
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+    // (xmin, ymin, width, height)
+    return gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
+  }();
+
+  x *= active_array_size.width() - 1;
+  y *= active_array_size.height() - 1;
+  gfx::Point point = {static_cast<int>(x), static_cast<int>(y)};
+  camera_3a_controller_->SetPointOfInterest(point);
+  return true;
 }
 
 }  // namespace media
