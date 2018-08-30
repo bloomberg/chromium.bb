@@ -192,7 +192,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
       }
     }
     ReleaseStgMedium(&medium);
-    return true;
+    return !filenames->empty();
   }
 
   if (GetData(data_object, Clipboard::GetFilenameWFormatType(), &medium)) {
