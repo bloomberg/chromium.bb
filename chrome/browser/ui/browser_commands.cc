@@ -1251,14 +1251,6 @@ bool CanViewSource(const Browser* browser) {
           CanViewSource();
 }
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-void ToggleConfirmToQuitOption(Browser* browser) {
-  PrefService* pref_service = browser->profile()->GetPrefs();
-  bool enabled = pref_service->GetBoolean(prefs::kConfirmToQuitEnabled);
-  pref_service->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
-}
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));

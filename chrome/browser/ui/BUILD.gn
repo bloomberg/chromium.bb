@@ -2336,13 +2336,6 @@ jumbo_split_static_library("ui") {
     }
   }
 
-  if (is_mac || is_win || (is_linux && !is_chromeos)) {
-    sources += [
-      "confirm_quit.cc",
-      "confirm_quit.h",
-    ]
-  }
-
   if (is_mac) {
     sources += [
       "browser_commands_mac.cc",
@@ -2397,6 +2390,8 @@ jumbo_split_static_library("ui") {
       "cocoa/chrome_style.h",
       "cocoa/color_chooser_mac.h",
       "cocoa/color_chooser_mac.mm",
+      "cocoa/confirm_quit.cc",
+      "cocoa/confirm_quit.h",
       "cocoa/confirm_quit_panel_controller.h",
       "cocoa/confirm_quit_panel_controller.mm",
       "cocoa/dock_icon.h",

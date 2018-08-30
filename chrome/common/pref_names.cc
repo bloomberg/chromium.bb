@@ -408,14 +408,11 @@ const char kContextualSearchDisabledValue[] = "false";
 const char kContextualSearchEnabledValue[] = "true";
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-// Boolean that indicates whether the browser should put up a confirmation
-// window when the user is attempting to quit. Only on Mac, Windows, and Linux.
-const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
-#endif
-
 #if defined(OS_MACOSX)
+// Boolean that indicates whether the browser should put up a confirmation
+// window when the user is attempting to quit. Only on Mac.
+const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
+
 // Boolean that indicates whether the browser should show the toolbar when it's
 // in fullscreen. Mac only.
 const char kShowFullscreenToolbar[] = "browser.show_fullscreen_toolbar";
