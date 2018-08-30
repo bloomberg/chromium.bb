@@ -1909,27 +1909,10 @@ test("browser_tests") {
     }
 
     if (is_mac) {
-      # Other platforms only need .pak files, and can build this target
-      # standalone much faster.
-      deps += [
+      deps += [ "//third_party/ocmock" ]
+      data_deps += [
         "//chrome",
-        "//chrome/common:app_mode_app_support",
-
-        # TODO(GYP) Mac: GYP has this dependency. Uncommenting this line
-        # generates duplicate symbols between
-        #   obj/components/crash/content/app/breakpad_stubs/crash_reporter_client.o
-        #   obj/components/crash/content/app/lib/crash_reporter_client.o
-        # It's not clear how this is supposed to work. The intent seems to be
-        # to not link breakpad in the tests. The dependency on .../app:lib
-        # seems to come from //chrome/app:test_support. That reference maybe
-        # should be a dependency on the stubs instead because it could be all
-        # tests might want them. Or it could be that we need to make a new
-        # "headers" target to make GN check happy, and then force each
-        # executable to link the correct implementation. Somebody with a
-        # higher-level understanding of Mac crash reporting needs to think
-        # about this.
-        # "//components/crash/content/app:breakpad_stubs",
-        "//third_party/ocmock",
+        "//chrome:chrome_framework",
       ]
       sources += [
         "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h",
@@ -1967,11 +1950,6 @@ test("browser_tests") {
           "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
         ]
       }
-
-      data_deps += [
-        "//chrome",
-        "//chrome:chrome_framework",
-      ]
 
       # The browser window can be views or Cocoa on Mac, but this is chosen at
       # runtime. This block captures tests that only run with a Cocoa browser.
