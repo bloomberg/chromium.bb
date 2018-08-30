@@ -4,6 +4,9 @@
 
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 
+#include <utility>
+
+#include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -18,21 +21,21 @@ void OnEstablishGpuChannel(
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    GpuProcessHost::EstablishChannelStatus status) {
+    viz::GpuHostImpl::EstablishChannelStatus status) {
   if (!callback)
     return;
 
   viz::GpuClientDelegate::EstablishGpuChannelStatus delegate_status;
   switch (status) {
-    case GpuProcessHost::EstablishChannelStatus::GPU_ACCESS_DENIED:
+    case viz::GpuHostImpl::EstablishChannelStatus::kGpuAccessDenied:
       delegate_status =
           viz::GpuClientDelegate::EstablishGpuChannelStatus::kGpuAccessDenied;
       break;
-    case GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID:
+    case viz::GpuHostImpl::EstablishChannelStatus::kGpuHostInvalid:
       delegate_status =
           viz::GpuClientDelegate::EstablishGpuChannelStatus::kGpuHostInvalid;
       break;
-    case GpuProcessHost::EstablishChannelStatus::SUCCESS:
+    case viz::GpuHostImpl::EstablishChannelStatus::kSuccess:
       delegate_status =
           viz::GpuClientDelegate::EstablishGpuChannelStatus::kSuccess;
       break;
@@ -66,7 +69,7 @@ void BrowserGpuClientDelegate::EstablishGpuChannel(
   }
 
   const bool is_gpu_host = false;
-  host->EstablishGpuChannel(
+  host->gpu_host()->EstablishGpuChannel(
       client_id, client_tracing_id, is_gpu_host,
       base::BindOnce(&OnEstablishGpuChannel, std::move(callback)));
 }

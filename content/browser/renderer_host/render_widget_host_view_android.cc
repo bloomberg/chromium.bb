@@ -150,7 +150,7 @@ void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
 }
 
 void WakeUpGpu(GpuProcessHost* host) {
-  if (host && host->wake_up_gpu_before_drawing()) {
+  if (host && host->gpu_host()->wake_up_gpu_before_drawing()) {
     host->gpu_service()->WakeUpGpu();
   }
 }

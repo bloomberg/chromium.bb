@@ -14,6 +14,8 @@ viz_component("host") {
     "gpu_client.cc",
     "gpu_client.h",
     "gpu_client_delegate.h",
+    "gpu_host_impl.cc",
+    "gpu_host_impl.h",
     "hit_test/hit_test_query.cc",
     "hit_test/hit_test_query.h",
     "hit_test/hit_test_region_observer.h",

@@ -233,8 +233,8 @@ class CompositorDependencies {
     // GpuProcessHost::Get() can return null.
     auto* gpu_process_host = GpuProcessHost::Get();
     if (gpu_process_host) {
-      gpu_process_host->ConnectFrameSinkManager(std::move(request),
-                                                std::move(client));
+      gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
+                                                            std::move(client));
     }
   }
 };

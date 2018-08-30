@@ -22,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -43,14 +44,6 @@ namespace base {
 class Thread;
 }
 
-namespace gfx {
-struct FontRenderParams;
-}
-
-namespace gpu {
-class ShaderDiskCache;
-}
-
 namespace content {
 class BrowserChildProcessHostImpl;
 
@@ -60,29 +53,13 @@ class CATransactionGPUCoordinator;
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
-                       public viz::mojom::GpuHost {
+                       public viz::GpuHostImpl::Delegate {
  public:
   enum GpuProcessKind {
     GPU_PROCESS_KIND_UNSANDBOXED,
     GPU_PROCESS_KIND_SANDBOXED,
     GPU_PROCESS_KIND_COUNT
   };
-
-  enum class EstablishChannelStatus {
-    GPU_ACCESS_DENIED,  // GPU access was not allowed.
-    GPU_HOST_INVALID,   // Request failed because the gpu host became invalid
-                        // while processing the request (e.g. the gpu process
-                        // may have been killed). The caller should normally
-                        // make another request to establish a new channel.
-    SUCCESS
-  };
-  using EstablishChannelCallback =
-      base::OnceCallback<void(mojo::ScopedMessagePipeHandle channel_handle,
-                              const gpu::GPUInfo&,
-                              const gpu::GpuFeatureInfo&,
-                              EstablishChannelStatus status)>;
-
-  using RequestHDRStatusCallback = base::RepeatingCallback<void(bool)>;
 
   static int GetGpuCrashCount();
 
@@ -108,8 +85,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       bool force_create,
       const base::Callback<void(GpuProcessHost*)>& callback);
 
-  static void InitFontRenderParamsOnIO(const gfx::FontRenderParams& params);
-
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
   void TerminateGpuProcess(const std::string& message);
@@ -118,7 +93,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // null if the process no longer exists.
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
-  base::ProcessId GetProcessId() const;
+  base::ProcessId process_id() const { return process_id_; }
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
@@ -126,40 +101,17 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Adds a connection error handler for the GpuService.
   void AddConnectionErrorHandler(base::OnceClosure handler);
 
-  // Tells the GPU process to create a new channel for communication with a
-  // client. Once the GPU process responds asynchronously with the IPC handle
-  // and GPUInfo, we call the callback.
-  void EstablishGpuChannel(int client_id,
-                           uint64_t client_tracing_id,
-                           bool is_gpu_host,
-                           EstablishChannelCallback callback);
-
-  // Connects to FrameSinkManager running in the viz process. In this
-  // configuration the display compositor runs in the viz process and the
-  // browser must submit CompositorFrames over IPC.
-  void ConnectFrameSinkManager(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtrInfo client);
-
-  void RequestHDRStatus(RequestHDRStatusCallback request_cb);
-
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 
   // Forcefully terminates the GPU process.
   void ForceShutdown();
 
-  void LoadedShader(int32_t client_id,
-                    const std::string& key,
-                    const std::string& data);
-
   CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
 
-  bool wake_up_gpu_before_drawing() const {
-    return wake_up_gpu_before_drawing_;
-  }
-
   CONTENT_EXPORT int GetIDForTesting() const;
+
+  viz::GpuHostImpl* gpu_host() { return gpu_host_.get(); }
 
  private:
   class ConnectionFilterImpl;
@@ -193,8 +145,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
-  // viz::mojom::GpuHost:
-  void DidInitialize(
+  // viz::GpuHostImpl::Delegate:
+  gpu::GPUInfo GetGPUInfo() const override;
+  gpu::GpuFeatureInfo GetGpuFeatureInfo() const override;
+  void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
@@ -202,32 +156,23 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
           gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
-  void DidCreateOffscreenContext(const GURL& url) override;
-  void DidDestroyOffscreenContext(const GURL& url) override;
-  void DidDestroyChannel(int32_t client_id) override;
-  void DidLoseContext(bool offscreen,
-                      gpu::error::ContextLostReason reason,
-                      const GURL& active_url) override;
+  void BlockDomainFrom3DAPIs(const GURL& url,
+                             Delegate::DomainGuilt guilt) override;
   void DisableGpuCompositing() override;
-  void SetChildSurface(gpu::SurfaceHandle parent,
-                       gpu::SurfaceHandle child) override;
-  void StoreShaderToDisk(int32_t client_id,
-                         const std::string& key,
-                         const std::string& shader) override;
+  bool GpuAccessAllowed() const override;
+  gpu::ShaderCacheFactory* GetShaderCacheFactory() override;
   void RecordLogMessage(int32_t severity,
                         const std::string& header,
                         const std::string& message) override;
-
-  void OnChannelEstablished(int client_id,
-                            mojo::ScopedMessagePipeHandle channel_handle);
+  void BindDiscardableMemoryRequest(
+      discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request)
+      override;
 
   // Message handlers.
 #if defined(OS_ANDROID)
   void OnDestroyingVideoSurfaceAck();
 #endif
   void OnFieldTrialActivated(const std::string& trial_name);
-
-  void CreateChannelCache(int32_t client_id);
 
   bool LaunchGpuProcess();
 
@@ -238,17 +183,14 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
   void RecordProcessCrash();
 
-  std::string GetShaderPrefixKey();
-
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
 
+  // GPU process id in case GPU is not in-process.
+  base::ProcessId process_id_ = base::kNullProcessId;
+
   // List of connection error handlers for the GpuService.
   std::vector<base::OnceClosure> connection_error_handlers_;
-
-  // These are the channel requests that we have already sent to
-  // the GPU process, but haven't heard back about yet.
-  base::queue<EstablishChannelCallback> channel_requests_;
 
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;
@@ -269,8 +211,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Whether we actually launched a GPU process.
   bool process_launched_;
-
-  bool initialized_;
 
   GpuTerminationOrigin termination_origin_ =
       GpuTerminationOrigin::kUnknownOrigin;
@@ -303,22 +243,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // automatic execution of 3D content from those domains.
   std::multiset<GURL> urls_with_live_offscreen_contexts_;
 
-  typedef std::map<int32_t, scoped_refptr<gpu::ShaderDiskCache>>
-      ClientIdToShaderCacheMap;
-  ClientIdToShaderCacheMap client_id_to_shader_cache_;
-
-  std::string shader_prefix_key_;
-
-  // The following are a list of driver bug workarounds that will only be
-  // set to true in DidInitialize(), where GPU process has started and GPU
-  // driver bug workarounds have been computed and sent back.
-  bool wake_up_gpu_before_drawing_ = false;
-  bool dont_disable_webgl_when_compositor_context_lost_ = false;
-
-  viz::mojom::VizMainAssociatedPtr gpu_main_ptr_;
-  viz::mojom::GpuServicePtr gpu_service_ptr_;
-  mojo::Binding<viz::mojom::GpuHost> gpu_host_binding_;
-  gpu::GpuProcessHostActivityFlags activity_flags_;
+  std::unique_ptr<viz::GpuHostImpl> gpu_host_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

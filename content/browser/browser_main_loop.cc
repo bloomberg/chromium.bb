@@ -54,6 +54,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -500,8 +501,9 @@ class HDRProxy {
     auto* gpu_process_host =
         GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
     if (gpu_process_host) {
-      gpu_process_host->RequestHDRStatus(
-          base::BindRepeating(&HDRProxy::GotResultOnIOThread));
+      auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
+      gpu_service->RequestHDRStatus(
+          base::BindOnce(&HDRProxy::GotResultOnIOThread));
     } else {
       bool hdr_enabled = false;
       GotResultOnIOThread(hdr_enabled);
@@ -1266,7 +1268,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          &GpuProcessHost::InitFontRenderParamsOnIO,
+          &viz::GpuHostImpl::InitFontRenderParams,
           gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
 
   // If ash/ws is not hosting viz, then the browser must.

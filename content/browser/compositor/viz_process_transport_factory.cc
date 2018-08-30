@@ -17,6 +17,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -165,8 +166,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
           // return null.
           auto* gpu_process_host = GpuProcessHost::Get();
           if (gpu_process_host) {
-            gpu_process_host->ConnectFrameSinkManager(std::move(request),
-                                                      std::move(client));
+            gpu_process_host->gpu_host()->ConnectFrameSinkManager(
+                std::move(request), std::move(client));
           }
         };
     BrowserThread::PostTask(
