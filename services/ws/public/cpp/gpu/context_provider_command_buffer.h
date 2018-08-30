@@ -34,13 +34,19 @@ struct GpuFeatureInfo;
 class GpuMemoryBufferManager;
 class ImplementationBase;
 class TransferBuffer;
+
 namespace gles2 {
 class GLES2Implementation;
 class GLES2TraceImplementation;
 }  // namespace gles2
+
 namespace raster {
 class RasterInterface;
 }  // namespace raster
+
+namespace webgpu {
+class WebGPUInterface;
+}  // namespace webgpu
 }  // namespace gpu
 
 namespace skia_bindings {
@@ -90,6 +96,8 @@ class ContextProviderCommandBuffer
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   void AddObserver(viz::ContextLostObserver* obs) override;
   void RemoveObserver(viz::ContextLostObserver* obs) override;
+
+  gpu::webgpu::WebGPUInterface* WebGPUInterface();
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -149,6 +157,7 @@ class ContextProviderCommandBuffer
   std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_interface_;
+  std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu_interface_;
 
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;

@@ -192,6 +192,8 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
       return gpu::CONTEXT_TYPE_OPENGLES2;
     case blink::Platform::kGLES3ContextType:
       return gpu::CONTEXT_TYPE_OPENGLES3;
+    case blink::Platform::kWebGPUContextType:
+      return gpu::CONTEXT_TYPE_WEBGPU;
   }
   NOTREACHED();
   return gpu::CONTEXT_TYPE_OPENGLES2;
@@ -1081,6 +1083,45 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
   if (!host)
     return nullptr;
 
+  return std::make_unique<WebGraphicsContext3DProviderImpl>(
+      std::move(provider));
+}
+
+//------------------------------------------------------------------------------
+
+std::unique_ptr<blink::WebGraphicsContext3DProvider>
+RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
+    const blink::WebURL& top_document_web_url,
+    blink::Platform::GraphicsInfo* gl_info) {
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
+      RenderThreadImpl::current()->EstablishGpuChannelSync());
+  if (!gpu_channel_host) {
+    std::string error_message(
+        "OffscreenContext Creation failed, GpuChannelHost creation failed");
+    gl_info->error_message = WebString::FromUTF8(error_message);
+    return nullptr;
+  }
+  Collect3DContextInformation(gl_info, gpu_channel_host->gpu_info());
+
+  gpu::ContextCreationAttribs attributes;
+  // TODO(kainino): It's not clear yet how GPU preferences work for WebGPU.
+  attributes.gpu_preference = gl::PreferDiscreteGpu;
+  attributes.enable_gles2_interface = false;
+  attributes.context_type = gpu::CONTEXT_TYPE_WEBGPU;
+
+  constexpr bool automatic_flushes = true;
+  constexpr bool support_locking = false;
+  constexpr bool support_grcontext = false;
+
+  scoped_refptr<ws::ContextProviderCommandBuffer> provider(
+      new ws::ContextProviderCommandBuffer(
+          std::move(gpu_channel_host),
+          RenderThreadImpl::current()->GetGpuMemoryBufferManager(),
+          kGpuStreamIdDefault, kGpuStreamPriorityDefault,
+          gpu::kNullSurfaceHandle, GURL(top_document_web_url),
+          automatic_flushes, support_locking, support_grcontext,
+          gpu::SharedMemoryLimits(), attributes,
+          ws::command_buffer_metrics::ContextType::WEBGPU));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider));
 }

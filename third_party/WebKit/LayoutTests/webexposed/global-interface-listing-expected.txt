@@ -9843,6 +9843,7 @@ interface WebGPUDevice
     attribute @@toStringTag
     getter adapter
     method constructor
+    method dummy
 interface WebKitAnimationEvent : Event
     attribute @@toStringTag
     getter animationName

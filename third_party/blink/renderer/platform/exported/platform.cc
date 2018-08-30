@@ -261,6 +261,12 @@ Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
   return nullptr;
 }
 
+std::unique_ptr<WebGraphicsContext3DProvider>
+Platform::CreateWebGPUGraphicsContext3DProvider(const WebURL& top_document_url,
+                                                GraphicsInfo*) {
+  return nullptr;
+}
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 Platform::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,

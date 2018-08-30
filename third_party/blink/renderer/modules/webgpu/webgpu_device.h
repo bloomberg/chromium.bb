@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_DEVICE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_DEVICE_H_
 
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -16,16 +18,21 @@ class WebGPUDevice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGPUDevice* Create(WebGPUAdapter*);
+  static WebGPUDevice* Create(ExecutionContext*, WebGPUAdapter*);
 
   WebGPUAdapter* adapter() const;
+
+  void dummy() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  WebGPUDevice(WebGPUAdapter*);
+  WebGPUDevice(WebGPUAdapter*, std::unique_ptr<WebGraphicsContext3DProvider>);
+
+  gpu::webgpu::WebGPUInterface* Interface() const;
 
   Member<WebGPUAdapter> adapter_;
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
 };
 
 }  // namespace blink

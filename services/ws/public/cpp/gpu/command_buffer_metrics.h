@@ -26,6 +26,7 @@ enum class ContextType {
   VIDEO_ACCELERATOR,
   VIDEO_CAPTURE,
   WEBGL,
+  WEBGPU,
   MEDIA,
   MUS_CLIENT,
   UNKNOWN,

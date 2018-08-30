@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_H_
 
+#include <cstdint>
 #include "base/callback_forward.h"
 
 class GrContext;
@@ -46,6 +47,10 @@ struct GpuFeatureInfo;
 namespace gles2 {
 class GLES2Interface;
 }
+
+namespace webgpu {
+class WebGPUInterface;
+}
 }
 
 namespace viz {
@@ -59,6 +64,7 @@ class WebGraphicsContext3DProvider {
   virtual ~WebGraphicsContext3DProvider() = default;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+  virtual gpu::webgpu::WebGPUInterface* WebGPUInterface() = 0;
   virtual bool BindToCurrentThread() = 0;
   virtual GrContext* GetGrContext() = 0;
   virtual const gpu::Capabilities& GetCapabilities() const = 0;
