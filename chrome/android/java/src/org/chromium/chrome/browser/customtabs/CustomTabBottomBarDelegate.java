@@ -225,11 +225,13 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
                             .alpha(0)
                             .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                             .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                            .withEndAction(() -> mBottomBarView.setVisibility(View.GONE))
                             .start();
                 }
                 @Override
                 public void onHideContextualSearch() {
                     if (mBottomBarView == null) return;
+                    mBottomBarView.setVisibility(View.VISIBLE);
                     mBottomBarView.animate()
                             .alpha(1)
                             .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
