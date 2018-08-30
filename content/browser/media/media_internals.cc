@@ -138,6 +138,7 @@ class MediaInternals::AudioLogImpl : public media::mojom::AudioLog,
   void OnError() override;
   void OnSetVolume(double volume) override;
   void OnLogMessage(const std::string& message) override;
+  void OnProcessingStateChanged(const std::string& message) override;
 
  private:
   // If possible, i.e. a WebContents exists for the given RenderFrameHostID,
@@ -236,6 +237,11 @@ void MediaInternals::AudioLogImpl::OnSetVolume(double volume) {
   media_internals_->UpdateAudioLog(MediaInternals::UPDATE_IF_EXISTS,
                                    FormatCacheKey(), kAudioLogUpdateFunction,
                                    &dict);
+}
+
+void MediaInternals::AudioLogImpl::OnProcessingStateChanged(
+    const std::string& message) {
+  SendSingleStringUpdate("processing state", message);
 }
 
 void MediaInternals::AudioLogImpl::OnLogMessage(const std::string& message) {

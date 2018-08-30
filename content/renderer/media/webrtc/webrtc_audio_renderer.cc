@@ -197,7 +197,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   }
 
   media::AudioSinkParameters sink_params(session_id_, output_device_id_);
-  /* TODO(ossu): Add processing id */
+  sink_params.processing_id = source->GetAudioProcessingId();
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_, sink_params);
 
@@ -386,7 +386,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   }
 
   media::AudioSinkParameters sink_params(session_id_, device_id);
-  /* TODO(ossu): Add processing id */
+  sink_params.processing_id = source_->GetAudioProcessingId();
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_,

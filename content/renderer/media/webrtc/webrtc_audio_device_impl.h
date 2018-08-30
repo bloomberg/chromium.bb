@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
 #include "ipc/ipc_platform_file.h"
@@ -66,6 +67,10 @@ class WebRtcAudioRendererSource {
 
   // Callback to notify the client of the output device the renderer is using.
   virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
+  // Returns the UnguessableToken used to connect this stream to an input stream
+  // for echo cancellation.
+  virtual base::UnguessableToken GetAudioProcessingId() const = 0;
 
  protected:
   virtual ~WebRtcAudioRendererSource() {}
@@ -186,11 +191,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
     return renderer_;
   }
 
- private:
-  typedef std::list<ProcessedLocalAudioSource*> CapturerList;
-  typedef std::list<WebRtcPlayoutDataSource::Sink*> PlayoutDataSinkList;
-  class RenderBuffer;
-
   // WebRtcAudioRendererSource implementation.
 
   // Called on the AudioOutputDevice worker thread.
@@ -203,10 +203,17 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) override;
   void AudioRendererThreadStopped() override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
+  base::UnguessableToken GetAudioProcessingId() const override;
 
   // WebRtcPlayoutDataSource implementation.
   void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
   void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
+
+ private:
+  using CapturerList = std::list<ProcessedLocalAudioSource*>;
+  using PlayoutDataSinkList = std::list<WebRtcPlayoutDataSource::Sink*>;
+
+  class RenderBuffer;
 
   // Used to check methods that run on the main render thread.
   base::ThreadChecker main_thread_checker_;
@@ -214,6 +221,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   base::ThreadChecker signaling_thread_checker_;
   base::ThreadChecker worker_thread_checker_;
   base::ThreadChecker audio_renderer_thread_checker_;
+
+  const base::UnguessableToken audio_processing_id_;
 
   // List of captures which provides access to the native audio input layer
   // in the browser process.  The last capturer in this list is considered the

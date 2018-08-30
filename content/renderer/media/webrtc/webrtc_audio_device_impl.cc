@@ -21,7 +21,8 @@ using media::ChannelLayout;
 namespace content {
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
-    : audio_transport_callback_(nullptr),
+    : audio_processing_id_(base::UnguessableToken::Create()),
+      audio_transport_callback_(nullptr),
       output_delay_ms_(0),
       initialized_(false),
       playing_(false),
@@ -128,6 +129,10 @@ void WebRtcAudioDeviceImpl::SetOutputDeviceForAec(
   for (auto* capturer : capturers_) {
     capturer->SetOutputDeviceForAec(output_device_id);
   }
+}
+
+base::UnguessableToken WebRtcAudioDeviceImpl::GetAudioProcessingId() const {
+  return audio_processing_id_;
 }
 
 int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(

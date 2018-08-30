@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/audio/audio_processing.h"
 #include "media/base/audio_point.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -58,6 +59,11 @@ struct CONTENT_EXPORT AudioProcessingProperties {
 
   // Returns whether WebRTC-provided echo cancellation is enabled.
   bool EchoCancellationIsWebRtcProvided() const;
+
+  // Converts this struct to an equivalent media::AudioProcessingSettings.
+  // TODO(https://crbug.com/878757): Eliminate this class in favor of the media
+  // one.
+  media::AudioProcessingSettings ToAudioProcessingSettings() const;
 
   EchoCancellationType echo_cancellation_type =
       EchoCancellationType::kEchoCancellationAec2;

@@ -117,6 +117,7 @@ InputController::ProcessingHelper::~ProcessingHelper() {
 
 void InputController::ProcessingHelper::ChangeStreamMonitor(Snoopable* stream) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  TRACE_EVENT1("audio", "AIC ChangeStreamMonitor", "stream", stream);
   if (!audio_processor_)
     return;
   if (monitored_output_stream_ == stream)
@@ -143,6 +144,7 @@ void InputController::ProcessingHelper::ChangeStreamMonitor(Snoopable* stream) {
 void InputController::ProcessingHelper::OnData(const media::AudioBus& audio_bus,
                                                base::TimeTicks reference_time,
                                                double volume) {
+  TRACE_EVENT0("audio", "APM AnalyzePlayout");
   // OnData gets called when the InputController is snooping on an output stream
   // for audio processing purposes. |audio_bus| contains the data from the
   // snooped-upon output stream, not the input stream's data.
@@ -154,6 +156,7 @@ void InputController::ProcessingHelper::OnData(const media::AudioBus& audio_bus,
 void InputController::ProcessingHelper::GetStats(GetStatsCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(audio_processor_);
+  TRACE_EVENT0("audio", "APM GetStats");
   audio_processor_->GetStats(std::move(callback));
 }
 
@@ -244,6 +247,7 @@ class InputController::AudioCallback
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
     base::Optional<double> new_volume;
     if (audio_processor_) {
+      TRACE_EVENT0("audio", "APM ProcessCapture");
       auto result = audio_processor_->ProcessCapture(*source, capture_time,
                                                      volume, key_pressed);
       source = &result.audio;

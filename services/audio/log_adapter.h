@@ -30,6 +30,7 @@ class LogAdapter : public media::AudioLog {
   void OnClosed() override;
   void OnError() override;
   void OnSetVolume(double volume) override;
+  void OnProcessingStateChanged(const std::string& message) override;
   void OnLogMessage(const std::string& message) override;
 
  private:

@@ -42,6 +42,10 @@ class AudioLog {
   // Called when an audio component changes volume.  |volume| is the new volume.
   virtual void OnSetVolume(double volume) = 0;
 
+  // Called with information about audio processing set-up for an audio
+  // component.
+  virtual void OnProcessingStateChanged(const std::string& message) = 0;
+
   // Called when an audio component wants to forward a log message.
   virtual void OnLogMessage(const std::string& message) = 0;
 };

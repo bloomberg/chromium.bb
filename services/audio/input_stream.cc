@@ -77,8 +77,13 @@ InputStream::InputStream(CreatedCallback created_callback,
   if (observer_)
     observer_.set_connection_error_handler(std::move(error_handler));
 
-  if (log_)
+  if (log_) {
     log_->get()->OnCreated(params, device_id);
+    if (processing_config) {
+      log_->get()->OnProcessingStateChanged(
+          processing_config->settings.ToString());
+    }
+  }
 
   // Only MONO, STEREO and STEREO_AND_KEYBOARD_MIC channel layouts are expected,
   // see AudioManagerBase::MakeAudioInputStream().
