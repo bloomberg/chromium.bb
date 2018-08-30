@@ -511,25 +511,33 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
         event.stopPropagation();
         tileInteraction(event);
       }
-
-      var target = null;
-      if (event.keyCode === customBackgrounds.KEYCODES.LEFT) {
-        target = customBackgrounds.getNextTile(
-            document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-            this.dataset.tile_num);
-      } else if (event.keyCode === customBackgrounds.KEYCODES.UP) {
-        target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
-      } else if (event.keyCode === customBackgrounds.KEYCODES.RIGHT) {
-        target = customBackgrounds.getNextTile(
-            document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-            this.dataset.tile_num);
-      } else if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
-        target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
-      }
-      if (target) {
+      // Handle arrow key navigation.
+      else if (
+          event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+          event.keyCode === customBackgrounds.KEYCODES.UP ||
+          event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+          event.keyCode === customBackgrounds.KEYCODES.DOWN) {
         event.preventDefault();
         event.stopPropagation();
-        target.focus();
+
+        let target = null;
+        if (event.keyCode === customBackgrounds.KEYCODES.LEFT) {
+          target = customBackgrounds.getNextTile(
+              document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+              this.dataset.tile_num);
+        } else if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+          target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
+        } else if (event.keyCode === customBackgrounds.KEYCODES.RIGHT) {
+          target = customBackgrounds.getNextTile(
+              document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+              this.dataset.tile_num);
+        } else if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+          target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
+        }
+        if (target)
+          target.focus();
+        else
+          this.focus();
       }
     };
 
@@ -688,21 +696,29 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
         event.stopPropagation();
         tileInteraction(event);
       }
-
-      var target = null;
-      if (event.keyCode == customBackgrounds.KEYCODES.LEFT) {
-        target = customBackgrounds.getNextTile(-1, 0, this.dataset.tile_num);
-      } else if (event.keyCode == customBackgrounds.KEYCODES.UP) {
-        target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
-      } else if (event.keyCode == customBackgrounds.KEYCODES.RIGHT) {
-        target = customBackgrounds.getNextTile(1, 0, this.dataset.tile_num);
-      } else if (event.keyCode == customBackgrounds.KEYCODES.DOWN) {
-        target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
-      }
-      if (target) {
+      // Handle arrow key navigation.
+      else if (
+          event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+          event.keyCode === customBackgrounds.KEYCODES.UP ||
+          event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+          event.keyCode === customBackgrounds.KEYCODES.DOWN) {
         event.preventDefault();
         event.stopPropagation();
-        target.focus();
+
+        let target = null;
+        if (event.keyCode == customBackgrounds.KEYCODES.LEFT) {
+          target = customBackgrounds.getNextTile(-1, 0, this.dataset.tile_num);
+        } else if (event.keyCode == customBackgrounds.KEYCODES.UP) {
+          target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
+        } else if (event.keyCode == customBackgrounds.KEYCODES.RIGHT) {
+          target = customBackgrounds.getNextTile(1, 0, this.dataset.tile_num);
+        } else if (event.keyCode == customBackgrounds.KEYCODES.DOWN) {
+          target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
+        }
+        if (target)
+          target.focus();
+        else
+          this.focus();
       }
     };
 
