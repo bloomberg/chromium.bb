@@ -57,6 +57,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
+namespace webrtc_event_logging {
+
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
 #else
@@ -4320,3 +4322,5 @@ TEST_F(WebRtcEventLogManagerTestOnMobileDevices, RemoteBoundLoggingDisabled) {
 }
 
 #endif
+
+}  // namespace webrtc_event_logging

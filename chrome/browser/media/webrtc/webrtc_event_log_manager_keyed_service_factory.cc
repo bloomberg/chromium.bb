@@ -9,6 +9,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
+namespace webrtc_event_logging {
+
 // static
 WebRtcEventLogManagerKeyedServiceFactory*
 WebRtcEventLogManagerKeyedServiceFactory::GetInstance() {
@@ -34,3 +36,5 @@ KeyedService* WebRtcEventLogManagerKeyedServiceFactory::BuildServiceInstanceFor(
   DCHECK(!context->IsOffTheRecord());
   return new WebRtcEventLogManagerKeyedService(context);
 }
+
+}  // namespace webrtc_event_logging

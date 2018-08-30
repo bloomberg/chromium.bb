@@ -395,7 +395,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   web_app::WebAppProviderFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
-  WebRtcEventLogManagerKeyedServiceFactory::GetInstance();
+  webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();
 }
 
 void ChromeBrowserMainExtraPartsProfiles::PreProfileInit() {

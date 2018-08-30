@@ -16,6 +16,8 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 
+namespace webrtc_event_logging {
+
 namespace {
 
 using BrowserContext = content::BrowserContext;
@@ -912,3 +914,5 @@ void WebRtcEventLogManager::ShutDownForTesting(base::OnceClosure reply) {
                      base::Unretained(&remote_logs_manager_),
                      std::move(reply)));
 }
+
+}  // namespace webrtc_event_logging

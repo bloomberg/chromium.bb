@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace webrtc_event_logging {
+
 // Produce a LogFileWriter::Factory object.
 std::unique_ptr<LogFileWriter::Factory> CreateLogFileWriterFactory(
     WebRtcEventLogCompression compression) {
@@ -92,3 +94,5 @@ size_t GzippedSize(const std::vector<std::string>& uncompressed) {
 
   return result;
 }
+
+}  // namespace webrtc_event_logging

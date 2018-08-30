@@ -9,6 +9,8 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "content/public/browser/browser_context.h"
 
+namespace webrtc_event_logging {
+
 WebRtcEventLogManagerKeyedService::WebRtcEventLogManagerKeyedService(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
@@ -30,3 +32,5 @@ void WebRtcEventLogManagerKeyedService::Shutdown() {
     manager->DisableForBrowserContext(browser_context_, base::OnceClosure());
   }
 }
+
+}  // namespace webrtc_event_logging

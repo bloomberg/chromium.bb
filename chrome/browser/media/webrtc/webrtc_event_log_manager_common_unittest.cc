@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
+namespace webrtc_event_logging {
+
 namespace {
 constexpr LogCompressor::Result OK = LogCompressor::Result::OK;
 constexpr LogCompressor::Result DISALLOWED = LogCompressor::Result::DISALLOWED;
@@ -649,3 +651,5 @@ TEST_F(GzippedLogFileWriterTest,
   EXPECT_FALSE(writer->Close());
   EXPECT_FALSE(base::PathExists(path_));  // Errored files deleted by Close().
 }
+
+}  // namespace webrtc_event_logging

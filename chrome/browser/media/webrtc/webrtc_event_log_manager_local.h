@@ -15,6 +15,8 @@
 #include "base/time/clock.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
+namespace webrtc_event_logging {
+
 class WebRtcLocalEventLogManager final {
   using LogFilesMap =
       std::map<WebRtcEventLogPeerConnectionKey, std::unique_ptr<LogFileWriter>>;
@@ -90,5 +92,7 @@ class WebRtcLocalEventLogManager final {
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalEventLogManager);
 };
+
+}  // namespace webrtc_event_logging
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_LOCAL_H_

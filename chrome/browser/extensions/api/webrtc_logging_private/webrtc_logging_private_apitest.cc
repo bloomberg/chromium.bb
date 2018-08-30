@@ -38,16 +38,26 @@ using compression::GzipUncompress;
 using extensions::Extension;
 using extensions::WebrtcLoggingPrivateDiscardFunction;
 using extensions::WebrtcLoggingPrivateSetMetaDataFunction;
+using extensions::WebrtcLoggingPrivateStartAudioDebugRecordingsFunction;
+using extensions::WebrtcLoggingPrivateStartEventLoggingFunction;
 using extensions::WebrtcLoggingPrivateStartFunction;
 using extensions::WebrtcLoggingPrivateStartRtpDumpFunction;
+using extensions::WebrtcLoggingPrivateStopAudioDebugRecordingsFunction;
 using extensions::WebrtcLoggingPrivateStopFunction;
 using extensions::WebrtcLoggingPrivateStopRtpDumpFunction;
 using extensions::WebrtcLoggingPrivateStoreFunction;
 using extensions::WebrtcLoggingPrivateUploadFunction;
 using extensions::WebrtcLoggingPrivateUploadStoredFunction;
-using extensions::WebrtcLoggingPrivateStartAudioDebugRecordingsFunction;
-using extensions::WebrtcLoggingPrivateStopAudioDebugRecordingsFunction;
-using extensions::WebrtcLoggingPrivateStartEventLoggingFunction;
+using webrtc_event_logging::kMaxRemoteLogFileSizeBytes;
+using webrtc_event_logging::kStartRemoteLoggingFailureAlreadyLogging;
+using webrtc_event_logging::kStartRemoteLoggingFailureFeatureDisabled;
+using webrtc_event_logging::kStartRemoteLoggingFailureMaxSizeTooLarge;
+using webrtc_event_logging::kStartRemoteLoggingFailureMaxSizeTooSmall;
+using webrtc_event_logging::
+    kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+using webrtc_event_logging::kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
+using webrtc_event_logging::kWebRtcEventLogManagerUnlimitedFileSize;
+using webrtc_event_logging::WebRtcEventLogManager;
 
 namespace utils = extension_function_test_utils;
 
