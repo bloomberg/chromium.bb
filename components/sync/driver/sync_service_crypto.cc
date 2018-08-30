@@ -112,13 +112,20 @@ bool CheckPassphraseAgainstPendingKeys(
     const std::string& passphrase) {
   DCHECK(pending_keys.has_blob());
   DCHECK(!passphrase.empty());
+  if (key_derivation_method == KeyDerivationMethod::UNSUPPORTED) {
+    DLOG(ERROR) << "Cannot derive keys using an unsupported key derivation "
+                   "method. Rejecting passphrase.";
+    return false;
+  }
+
   Nigori nigori;
-  nigori.InitByDerivation(key_derivation_method, "localhost", "dummy",
-                          passphrase);
+  bool derivation_result = nigori.InitByDerivation(
+      key_derivation_method, "localhost", "dummy", passphrase);
+  DCHECK(derivation_result);
   std::string plaintext;
-  bool result = nigori.Decrypt(pending_keys.blob(), &plaintext);
-  DVLOG_IF(1, !result) << "Passphrase failed to decrypt pending keys.";
-  return result;
+  bool decrypt_result = nigori.Decrypt(pending_keys.blob(), &plaintext);
+  DVLOG_IF(1, !decrypt_result) << "Passphrase failed to decrypt pending keys.";
+  return decrypt_result;
 }
 
 }  // namespace
@@ -130,7 +137,8 @@ SyncServiceCrypto::SyncServiceCrypto(
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
-      passphrase_key_derivation_method_(KeyDerivationMethod::UNKNOWN),
+      passphrase_key_derivation_method_(
+          KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003),
       weak_factory_(this) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);
@@ -209,6 +217,13 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 
   // This should only be called when we have cached pending keys.
   DCHECK(cached_pending_keys_.has_blob());
+
+  // For types other than CUSTOM_PASSPHRASE, we should be using the old PBKDF2
+  // key derivation method.
+  if (cached_passphrase_type_ != PassphraseType::CUSTOM_PASSPHRASE) {
+    DCHECK_EQ(passphrase_key_derivation_method_,
+              KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
+  }
 
   // Check the passphrase that was provided against our local cache of the
   // cryptographer's pending keys (which we cached during a previous

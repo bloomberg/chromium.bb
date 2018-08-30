@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
@@ -176,6 +177,17 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   bool UpdateEncryptedTypesFromNigori(const sync_pb::NigoriSpecifics& nigori,
                                       syncable::BaseTransaction* const trans);
 
+  // If the Nigori node doesn't contain an explicit custom passphrase key
+  // derivation method, it means it was committed with a previous version
+  // which was unaware of this field and implicitly used PBKDF2. This method
+  // checks for this condition and explicitly writes PBKDF2 as the key
+  // derivation method.
+  void ReplaceImplicitKeyDerivationMethodInNigori(WriteTransaction* trans);
+
+  // Same as ReplaceImplicitKeyDerivationMethodInNigori, just
+  // wrapped in a write transaction.
+  void ReplaceImplicitKeyDerivationMethodInNigoriWithTransaction();
+
   // TODO(zea): make these public and have them replace SetEncryptionPassphrase
   // and SetDecryptionPassphrase.
   // Helper methods for handling passphrases once keystore migration has taken
@@ -185,8 +197,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // is not already set.
   // Triggers OnPassphraseAccepted on success, OnPassphraseRequired if a custom
   // passphrase already existed.
-  void SetCustomPassphrase(KeyDerivationMethod key_derivation_method,
-                           const std::string& passphrase,
+  void SetCustomPassphrase(const std::string& passphrase,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
   // Decrypt the encryption keybag using a user provided passphrase.
@@ -194,7 +205,6 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // passphrase or a custom passphrase.
   // Triggers OnPassphraseAccepted on success, OnPassphraseRequired on failure.
   void DecryptPendingKeysWithExplicitPassphrase(
-      KeyDerivationMethod key_derivation_method,
       const std::string& passphrase,
       WriteTransaction* trans,
       WriteNode* nigori_node);
@@ -209,10 +219,8 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // |is_explicit|: used to differentiate between a custom passphrase (true) and
   //                a GAIA passphrase that is implicitly used for encryption
   //                (false).
-  // |trans| and |nigori_node|: used to access data in the cryptographer.
   void FinishSetPassphrase(bool success,
                            const std::string& bootstrap_token,
-                           KeyDerivationMethod key_derivation_method,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
 
@@ -316,6 +324,11 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // if there is no custom passphrase or the custom passphrase was set
   // before support for this field was added.
   base::Time custom_passphrase_time_;
+
+  // The key derivation method we are using for the custom passphrase. This can
+  // end up not being set e.g. in cases when we reach a CUSTOM_PASSPHRASE state
+  // through a legacy code path.
+  base::Optional<KeyDerivationMethod> custom_passphrase_key_derivation_method_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 

@@ -144,9 +144,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // The key derivation method for the passphrase. We save it when we receive a
   // passphrase required event, as it is a necessary piece of information to be
   // able to properly perform a decryption attempt, and we want to be able to
-  // synchronously do that from the UI thread. This is needed only for custom
-  // passphrase users, as for all other passphrase types we will only ever
-  // receive PBKDF2 as the key derivation method.
+  // synchronously do that from the UI thread. For passphrase types other than
+  // CUSTOM_PASSPHRASE, this will always be PBKDF2.
   KeyDerivationMethod passphrase_key_derivation_method_;
 
   // If an explicit passphrase is in use, the time at which the passphrase was
