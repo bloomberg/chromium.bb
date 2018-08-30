@@ -163,9 +163,10 @@ a {
 }
 
 .link-button {
-  color: rgb(50, 102, 213);
-  text-transform: uppercase;
+  color: rgb(66, 133, 244);
+  display: inline-block;
   font-weight: bold;
+  text-transform: uppercase;
 }
 
 #sub-frame-error-details {
@@ -311,7 +312,15 @@ a {
   }
 }
 
-.offline-suggestion-image {
+#download-link, #download-link-clicked {
+  margin-bottom: 15px;
+}
+
+#download-link-clicked {
+  color: #BBB;
+}
+
+.offline-content-suggestion-image {
   height: 35vw;
   line-height: 0;
   width: 35vw;
@@ -320,7 +329,7 @@ a {
   flex-shrink: 0;
 }
 
-.offline-suggestion-image > img {
+.offline-content-suggestion-image > img {
   border-bottom-left-radius: 15px;
   border-top-left-radius: 15px;
   height: 35vw;
@@ -328,7 +337,7 @@ a {
   width: 35vw;
 }
 
-.offline-suggestion-title {
+.offline-content-suggestion-title {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   display: -webkit-box;
@@ -338,7 +347,7 @@ a {
   text-overflow: ellipsis;
 }
 
-.offline-suggestion-freshness, .offline-suggestion-attribution {
+.offline-content-suggestion-freshness, .offline-content-suggestion-attribution {
   color: #646464;
   display: inline-block;
   font-size: small;
@@ -347,21 +356,66 @@ a {
   white-space: nowrap;
 }
 
-.offline-suggestion-attribution {
+.offline-content-suggestion-attribution {
   margin-left: 5%;
   max-width: 35%;
   overflow: hidden;
   white-space: nowrap;
 }
 
-div.offline-suggestion {
-  background-color: #F1F3F4;
+div.offline-content-suggestion {
+  background-color: rgb(241, 243, 244);
   border-radius: 15px;
   display: flex;
   margin-bottom: 5%;
   margin-left: 0;
   margin-right: 0;
   margin-top: 5%;
+}
+
+#offline-content-summary {
+  border-color: rgb(241, 243, 244);
+  border-radius: 12px;
+  border-style: solid;
+  border-width: 2px;
+  padding: 12px;
+  text-align: center;
+}
+
+.offline-content-summary-images {
+  padding-bottom: 12px;
+  transform: translateX(22.5px);
+}
+
+.offline-content-summary-images > img {
+  background: rgb(241, 243, 244);
+  border-radius: 50%;
+  box-shadow:
+    0px 1px 2px 0px rgb(155, 155, 155),
+    0px 1px 3px 0px rgb(155, 155, 155);
+  padding: 12px;
+  width: 32px;
+}
+
+img#music-note {
+  transform: translateX(-15px);
+}
+
+img#video {
+  transform: translateX(-30px);
+}
+
+img#image {
+  transform: translateX(-45px);
+}
+
+.offline-content-summary-description {
+  border-top: 2px solid rgb(241, 243, 244);
+  padding-top: 12px;
+}
+
+.offline-content-summary-action {
+  padding-top: 12px;
 }
 
 /* Don't allow overflow when in a subframe. */

@@ -120,6 +120,11 @@ function downloadButtonClick() {
     var downloadButton = document.getElementById('download-button');
     downloadButton.disabled = true;
     downloadButton.textContent = downloadButton.disabledText;
+
+    document.getElementById('download-link-wrapper')
+        .classList.add(HIDDEN_CLASS);
+    document.getElementById('download-link-clicked-wrapper')
+        .classList.remove(HIDDEN_CLASS);
   }
 }
 
@@ -167,14 +172,18 @@ function getSuggestedContentDiv(item) {
       var src = 'src';
       visual = `<img ${src}="${item.thumbnail_data_uri}">`;
     }
-  return `
-<div class="offline-suggestion"
+    return `
+<div class="offline-content-suggestion"
   onclick="launchOfflineItem('${item.ID}', '${item.name_space}')">
-  <div class="offline-suggestion-image">${visual}</div>
+  <div class="offline-content-suggestion-image">${visual}</div>
   <div>
-    <div class="offline-suggestion-title">${item.title}</div>
-    <span class="offline-suggestion-attribution">${item.attribution}</span>
-    <span class="offline-suggestion-freshness">${item.date_modified}</span>
+    <div class="offline-content-suggestion-title">${item.title}</div>
+    <span class="offline-content-suggestion-attribution">${
+                                                           item.attribution
+                                                         }</span>
+    <span class="offline-content-suggestion-freshness">${
+                                                         item.date_modified
+                                                       }</span>
   </div>
 </div>`;
 }
@@ -187,28 +196,36 @@ function launchDownloadsPage() {
   errorPageController.launchDownloadsPage();
 }
 
-// TODO(https://crbug.com/852872): Implement offline content summary UI.
+// Populates a summary of suggested offline content.
 function offlineContentSummaryAvailable(summary) {
+  if (!summary || !loadTimeData.valueExists('offlineContentSummary'))
+    return;
+
+  document.getElementById('offline-content-summary').hidden = false;
 }
 
-// Populates suggested offline content. Note: this UI is in development.
-// See https://crbug.com/852872.
+// Populates a list of suggested offline content.
+// TODO(https://crbug.com/852872): Finish implementing offline content list UI.
 function offlineContentAvailable(content) {
-  if (!content) return;
-  var div = document.getElementById('offline-suggestions');
+  if (!content || !loadTimeData.valueExists('offlineContentList'))
+    return;
+
+  var contentTitle = loadTimeData.getValue('offlineContentList').title;
+  var contentOpenAllButton =
+      loadTimeData.getValue('offlineContentList').actionText;
   var suggestionsHTML = [];
+  suggestionsHTML.push(`<p style="text-align: center;">${contentTitle}</p>`);
   for (var c of content)
     suggestionsHTML.push(getSuggestedContentDiv(c));
-
   suggestionsHTML.push(`
 <div>
-  <a onclick="launchDownloadsPage()">See All Offline Content [PLACEHOLDER]</a>
+  <a class="link-button" onclick="launchDownloadsPage()">${
+                                                           contentOpenAllButton
+                                                         }</a>
 </div>`);
-  var htmlList = document.getElementById('offline-content-list');
-  htmlList.innerHTML = suggestionsHTML.join('\n');
-  div.hidden = false;
-  document.getElementById('scroll-spacer').hidden = false;
-  document.getElementById('suggestions-list').hidden = true;
+  var offlineContentDiv = document.getElementById('offline-content-list');
+  offlineContentDiv.innerHTML = suggestionsHTML.join('\n');
+  offlineContentDiv.hidden = false;
 }
 
 function onDocumentLoad() {
@@ -226,6 +243,27 @@ function onDocumentLoad() {
   var downloadButtonVisible =
       loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
+
+  // If offline content suggestions will be visible, the usual buttons will not
+  // be presented.
+  var offlineContentVisible =
+      loadTimeData.valueExists('suggestedOfflineContentPresentationMode');
+  if (offlineContentVisible) {
+    document.querySelector('.nav-wrapper').classList.add(HIDDEN_CLASS);
+    detailsButton.classList.add(HIDDEN_CLASS);
+
+    if (downloadButtonVisible)
+      document.getElementById('download-link').hidden = false;
+
+    document.getElementById('download-links-wrapper')
+        .classList.remove(HIDDEN_CLASS);
+    document.getElementById('error-information-popup-container')
+        .classList.add('use-popup-container', HIDDEN_CLASS)
+    document.getElementById('error-information-button')
+        .classList.remove(HIDDEN_CLASS);
+
+    return;
+  }
 
   var primaryButton, secondaryButton;
   if (showSavedCopyButton.primary) {
@@ -266,15 +304,6 @@ function onDocumentLoad() {
         showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }
-  }
-
-  if (loadTimeData.valueExists('suggestedOfflineContentPresentationMode')) {
-    document.getElementById('error-information-popup-container').classList.
-      add('use-popup-container');
-    document.getElementById('error-information-popup-container').classList.
-      add(HIDDEN_CLASS)
-    document.getElementById('error-information-button')
-      .classList.remove(HIDDEN_CLASS);
   }
 }
 
