@@ -559,6 +559,10 @@ if (use_v4l2_codec || use_vaapi) {
       "//media/test/data/peach_pi-41x22.jpg",
       "//media/test/data/peach_pi-41x23.jpg",
     ]
+    if (use_vaapi) {
+      sources += [ "vaapi/vaapi_jpeg_decode_accelerator_unittest.cc" ]
+      data += [ "//media/test/data/pixel-1280x720.jpg" ]
+    }
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
     }
