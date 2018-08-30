@@ -105,16 +105,18 @@ class MockStreamFactory : public audio::FakeStreamFactory {
   }
 
  private:
-  void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
-                         media::mojom::AudioInputStreamClientPtr client,
-                         media::mojom::AudioInputStreamObserverPtr observer,
-                         media::mojom::AudioLogPtr log,
-                         const std::string& device_id,
-                         const media::AudioParameters& params,
-                         uint32_t shared_memory_count,
-                         bool enable_agc,
-                         mojo::ScopedSharedBufferHandle key_press_count_buffer,
-                         CreateInputStreamCallback created_callback) final {
+  void CreateInputStream(
+      media::mojom::AudioInputStreamRequest stream_request,
+      media::mojom::AudioInputStreamClientPtr client,
+      media::mojom::AudioInputStreamObserverPtr observer,
+      media::mojom::AudioLogPtr log,
+      const std::string& device_id,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool enable_agc,
+      mojo::ScopedSharedBufferHandle key_press_count_buffer,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
+      CreateInputStreamCallback created_callback) final {
     // No way to cleanly exit the test here in case of failure, so use CHECK.
     CHECK(stream_request_data_);
     EXPECT_EQ(stream_request_data_->device_id, device_id);
@@ -144,6 +146,7 @@ struct TestEnvironment {
             TestParams(),
             kShMemCount,
             kEnableAgc,
+            nullptr,
             deleter.Get(),
             renderer_factory_client.MakePtr())) {}
 
@@ -166,7 +169,7 @@ TEST(AudioInputStreamBrokerTest, StoresProcessAndFrameId) {
 
   AudioInputStreamBroker broker(
       kRenderProcessId, kRenderFrameId, kDeviceId, TestParams(), kShMemCount,
-      kEnableAgc, deleter.Get(), renderer_factory_client.MakePtr());
+      kEnableAgc, nullptr, deleter.Get(), renderer_factory_client.MakePtr());
 
   EXPECT_EQ(kRenderProcessId, broker.render_process_id());
   EXPECT_EQ(kRenderFrameId, broker.render_frame_id());

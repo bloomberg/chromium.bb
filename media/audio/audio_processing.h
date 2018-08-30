@@ -38,6 +38,15 @@ struct MEDIA_EXPORT AudioProcessingSettings {
            typing_detection == b.typing_detection &&
            stereo_mirroring == b.stereo_mirroring;
   }
+
+  // Indicates whether WebRTC will be required to perform the audio processing.
+  bool requires_apm() {
+    return echo_cancellation == EchoCancellationType::kAec2 ||
+           echo_cancellation == EchoCancellationType::kAec3 ||
+           noise_suppression != NoiseSuppressionType::kDisabled ||
+           automatic_gain_control != AutomaticGainControlType::kDisabled ||
+           high_pass_filter || typing_detection || stereo_mirroring;
+  }
 };
 
 }  // namespace media

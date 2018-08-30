@@ -64,6 +64,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
 
   void AssociateInputAndOutputForAec(

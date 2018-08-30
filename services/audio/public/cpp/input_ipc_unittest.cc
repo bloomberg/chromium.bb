@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/device_factory.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,6 +48,7 @@ class TestStreamFactory : public audio::FakeStreamFactory {
                          uint32_t shared_memory_count,
                          bool enable_agc,
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
+                         mojom::AudioProcessingConfigPtr processing_config,
                          CreateInputStreamCallback created_callback) {
     if (should_fail_) {
       std::move(created_callback).Run(nullptr, initially_muted_, base::nullopt);

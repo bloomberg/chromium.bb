@@ -41,6 +41,10 @@ media::AudioParameters Params() {
   return media::AudioParameters::UnavailableDeviceParams();
 }
 
+media::AudioSourceParameters SourceParams() {
+  return media::AudioSourceParameters(1234);
+}
+
 class MockStream : public media::mojom::AudioInputStream {
  public:
   MOCK_METHOD0(Record, void());
@@ -71,12 +75,15 @@ class FakeStreamCreator {
                     bool initially_muted)
       : stream_(stream), binding_(stream_), initially_muted_(initially_muted) {}
 
-  void Create(mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+  void Create(const media::AudioSourceParameters& source_params,
+              mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+              audio::mojom::AudioProcessorControlsRequest controls_request,
               const media::AudioParameters& params,
               bool automatic_gain_control,
               uint32_t total_segments) {
     EXPECT_FALSE(binding_.is_bound());
     EXPECT_NE(stream_, nullptr);
+    EXPECT_EQ(source_params.session_id, SourceParams().session_id);
     std::swap(factory_client_, factory_client);
     media::mojom::AudioInputStreamPtr stream_ptr;
     binding_.Bind(mojo::MakeRequest(&stream_ptr));
@@ -132,7 +139,8 @@ TEST(MojoAudioInputIPC, OnStreamCreated_Propagates) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, GotOnStreamCreated(false));
 
@@ -149,8 +157,11 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
+          SourceParams(),
           base::BindRepeating(
-              [](mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+              [](const media::AudioSourceParameters&,
+                 mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+                 audio::mojom::AudioProcessorControlsRequest controls_request,
                  const media::AudioParameters& params,
                  bool automatic_gain_control, uint32_t total_segments) {}),
           base::BindRepeating(&AssociateOutputForAec));
@@ -172,7 +183,8 @@ TEST(MojoAudioInputIPC, OnStreamCreated_PropagatesInitiallyMuted) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, GotOnStreamCreated(true));
 
@@ -191,7 +203,8 @@ TEST(MojoAudioInputIPC, IsReusable) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   for (int i = 0; i < 5; ++i) {
     creator.Rearm();
@@ -215,7 +228,8 @@ TEST(MojoAudioInputIPC, IsReusableAfterError) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   for (int i = 0; i < 5; ++i) {
     creator.Rearm();
@@ -244,7 +258,8 @@ TEST(MojoAudioInputIPC, Record_Records) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   EXPECT_CALL(stream, Record());
@@ -266,7 +281,8 @@ TEST(MojoAudioInputIPC, SetVolume_SetsVolume) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   EXPECT_CALL(stream, SetVolume(kNewVolume));
@@ -288,7 +304,8 @@ TEST(MojoAudioInputIPC, SetOutputDeviceForAec_AssociatesInputAndOutputForAec) {
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(
-          creator.GetCallback(), base::BindRepeating(&AssociateOutputForAec));
+          SourceParams(), creator.GetCallback(),
+          base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
 

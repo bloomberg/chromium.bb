@@ -35,6 +35,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool enable_agc,
+    audio::mojom::AudioProcessingConfigPtr processing_config,
     AudioStreamBroker::DeleterCallback deleter,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
@@ -43,6 +44,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
       shared_memory_count_(shared_memory_count),
       enable_agc_(enable_agc),
       deleter_(std::move(deleter)),
+      processing_config_(std::move(processing_config)),
       renderer_factory_client_(std::move(renderer_factory_client)),
       observer_binding_(this),
       weak_ptr_factory_(this) {
@@ -159,6 +161,7 @@ void AudioInputStreamBroker::CreateStream(
           log_component_id, render_process_id(), render_frame_id()),
       device_id_, params_, shared_memory_count_, enable_agc_,
       mojo::WrapReadOnlySharedMemoryRegion(std::move(key_press_count_buffer)),
+      std::move(processing_config_),
       base::BindOnce(&AudioInputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }

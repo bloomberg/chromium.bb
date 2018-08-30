@@ -4,5 +4,6 @@
 
 typemaps = [
   "//services/audio/public/cpp/audio_device_description.typemap",
+  "//services/audio/public/cpp/audio_processing.typemap",
   "//services/audio/public/cpp/debug_recording.typemap",
 ]

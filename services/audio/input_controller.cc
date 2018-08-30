@@ -24,6 +24,10 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_bus.h"
 #include "media/base/user_input_monitor.h"
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+#include "media/webrtc/audio_processor.h"
+#include "media/webrtc/webrtc_switches.h"
+#endif
 
 namespace audio {
 namespace {
@@ -88,7 +92,91 @@ float AveragePower(const media::AudioBus& buffer) {
 }
 #endif  // AUDIO_POWER_MONITORING
 
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+bool CanRunApm() {
+  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
+}
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+
 }  // namespace
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+InputController::ProcessingHelper::ProcessingHelper(
+    const media::AudioParameters& params,
+    media::AudioProcessingSettings processing_settings,
+    mojom::AudioProcessorControlsRequest controls_request)
+    : binding_(this, std::move(controls_request)),
+      params_(params),
+      audio_processor_(
+          std::make_unique<media::AudioProcessor>(params,
+                                                  processing_settings)) {}
+
+InputController::ProcessingHelper::~ProcessingHelper() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+}
+
+void InputController::ProcessingHelper::ChangeStreamMonitor(Snoopable* stream) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  if (!audio_processor_)
+    return;
+  if (monitored_output_stream_ == stream)
+    return;
+
+  if (monitored_output_stream_) {
+    monitored_output_stream_->StopSnooping(this,
+                                           Snoopable::SnoopingMode::kRealtime);
+    if (!stream) {
+      audio_processor_->set_has_reverse_stream(false);
+    }
+  }
+  monitored_output_stream_ = stream;
+  if (!monitored_output_stream_) {
+    output_params_ = media::AudioParameters();
+    return;
+  }
+  output_params_ = monitored_output_stream_->GetAudioParameters();
+  audio_processor_->set_has_reverse_stream(true);
+  monitored_output_stream_->StartSnooping(this,
+                                          Snoopable::SnoopingMode::kRealtime);
+}
+
+void InputController::ProcessingHelper::OnData(const media::AudioBus& audio_bus,
+                                               base::TimeTicks reference_time,
+                                               double volume) {
+  // OnData gets called when the InputController is snooping on an output stream
+  // for audio processing purposes. |audio_bus| contains the data from the
+  // snooped-upon output stream, not the input stream's data.
+  // |volume| is applied in the WebRTC mixer in the renderer, so we don't have
+  // to inform the |audio_processor_| of the new volume.
+  audio_processor_->AnalyzePlayout(audio_bus, output_params_, reference_time);
+}
+
+void InputController::ProcessingHelper::GetStats(GetStatsCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(audio_processor_);
+  audio_processor_->GetStats(std::move(callback));
+}
+
+void InputController::ProcessingHelper::StartEchoCancellationDump(
+    base::File file) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(audio_processor_);
+  audio_processor_->StartEchoCancellationDump(std::move(file));
+}
+
+void InputController::ProcessingHelper::StopEchoCancellationDump() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(audio_processor_);
+  audio_processor_->StopEchoCancellationDump();
+}
+
+media::AudioProcessor* InputController::ProcessingHelper::GetAudioProcessor() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(audio_processor_);
+  return audio_processor_.get();
+}
+
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
 
 // Private subclass of AIC that covers the state while capturing audio.
 // This class implements the callback interface from the lower level audio
@@ -111,12 +199,21 @@ float AveragePower(const media::AudioBus& buffer) {
 class InputController::AudioCallback
     : public media::AudioInputStream::AudioInputCallback {
  public:
-  explicit AudioCallback(InputController* controller)
+  AudioCallback(
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+      media::AudioProcessor* audio_processor,
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+      InputController* controller)
       : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+        audio_processor_(audio_processor),
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
         controller_(controller),
-        weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {}
+        weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {
+  }
   ~AudioCallback() override = default;
 
+  // These should not be called when the stream is live.
   bool received_callback() const { return received_callback_; }
   bool error_during_callback() const { return error_during_callback_; }
 
@@ -142,11 +239,22 @@ class InputController::AudioCallback
   void DeliverDataToSyncWriter(const media::AudioBus* source,
                                base::TimeTicks capture_time,
                                double volume) {
-    bool key_pressed = controller_->CheckForKeyboardInput();
+    const bool key_pressed = controller_->CheckForKeyboardInput();
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+    base::Optional<double> new_volume;
+    if (audio_processor_) {
+      auto result = audio_processor_->ProcessCapture(*source, capture_time,
+                                                     volume, key_pressed);
+      source = &result.audio;
+      new_volume = result.new_volume;
+    }
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+
     controller_->sync_writer_->Write(source, volume, key_pressed, capture_time);
 
     // The way the two classes interact here, could be done in a nicer way.
-    // As is, we call the AIC here to check the audio power, return  and then
+    // As is, we call the AIC here to check the audio power, return and then
     // post a task to the AIC based on what the AIC said.
     // The reason for this is to keep all PostTask calls from the hw callback
     // thread to the AIC, that use a weak pointer, in the same class.
@@ -161,9 +269,22 @@ class InputController::AudioCallback
           base::BindOnce(&InputController::DoLogAudioLevels, weak_controller_,
                          average_power_dbfs, mic_volume_percent));
     }
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+    // Updates APM stats and stream volume (if needed). Post through
+    // weak_controller, in case we're just shutting down.
+    if (audio_processor_) {
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&InputController::UpdateVolumeAndAPMStats,
+                                    weak_controller_, new_volume));
+    }
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  media::AudioProcessor* const audio_processor_;
+#endif
   InputController* const controller_;
   // We do not want any pending posted tasks generated from the callback class
   // to keep the controller object alive longer than it should. So we use
@@ -173,20 +294,38 @@ class InputController::AudioCallback
   bool error_during_callback_ = false;
 };
 
-InputController::InputController(EventHandler* handler,
-                                 SyncWriter* sync_writer,
-                                 media::UserInputMonitor* user_input_monitor,
-                                 const media::AudioParameters& params,
-                                 StreamType type)
+InputController::InputController(
+    EventHandler* handler,
+    SyncWriter* sync_writer,
+    media::UserInputMonitor* user_input_monitor,
+    const media::AudioParameters& params,
+    StreamType type,
+    StreamMonitorCoordinator* stream_monitor_coordinator,
+    mojom::AudioProcessingConfigPtr processing_config)
     : handler_(handler),
       stream_(nullptr),
       sync_writer_(sync_writer),
       type_(type),
       user_input_monitor_(user_input_monitor),
+      stream_monitor_coordinator_(stream_monitor_coordinator),
+      processing_config_(std::move(processing_config)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(handler_);
   DCHECK(sync_writer_);
+  DCHECK(stream_monitor_coordinator);
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  if (processing_config_) {
+    if (processing_config_->settings.requires_apm() && CanRunApm()) {
+      processing_helper_.emplace(
+          params, processing_config_->settings,
+          std::move(processing_config_->controls_request));
+    } else {
+      processing_config_->controls_request.ResetWithReason(0, "");
+    }
+  }
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
 }
 
 InputController::~InputController() {
@@ -204,7 +343,9 @@ std::unique_ptr<InputController> InputController::Create(
     media::UserInputMonitor* user_input_monitor,
     const media::AudioParameters& params,
     const std::string& device_id,
-    bool enable_agc) {
+    bool enable_agc,
+    StreamMonitorCoordinator* stream_monitor_coordinator,
+    mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK(audio_manager);
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(sync_writer);
@@ -216,9 +357,10 @@ std::unique_ptr<InputController> InputController::Create(
 
   // Create the InputController object and ensure that it runs on
   // the audio-manager thread.
-  std::unique_ptr<InputController> controller(
-      new InputController(event_handler, sync_writer, user_input_monitor,
-                          params, ParamsToStreamType(params)));
+  std::unique_ptr<InputController> controller(new InputController(
+      event_handler, sync_writer, user_input_monitor, params,
+      ParamsToStreamType(params), stream_monitor_coordinator,
+      std::move(processing_config)));
 
   controller->DoCreate(audio_manager, params, device_id, enable_agc);
   return controller;
@@ -240,7 +382,16 @@ void InputController::Record() {
 
   stream_create_time_ = base::TimeTicks::Now();
 
-  audio_callback_.reset(new AudioCallback(this));
+  audio_callback_.reset(new AudioCallback(
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+      processing_helper_ ? processing_helper_->GetAudioProcessor() : nullptr,
+#endif
+      this));
+  if (ShouldRegisterWithStreamMonitorCoordinator()) {
+    stream_monitor_coordinator_->RegisterMember(
+        processing_config_->processing_id, this);
+    registered_to_coordinator_ = true;
+  }
   stream_->Start(audio_callback_.get());
   return;
 }
@@ -253,6 +404,20 @@ void InputController::Close() {
     return;
 
   check_muted_state_timer_.AbandonAndStop();
+
+  if (registered_to_coordinator_) {
+    // We should only unregister ourselves from the coordinator if we previously
+    // registered.
+    stream_monitor_coordinator_->UnregisterMember(
+        processing_config_->processing_id, this);
+    registered_to_coordinator_ = false;
+  }
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  // Disconnect from any output stream, so we don't get called when we're gone.
+  if (processing_helper_)
+    processing_helper_->ChangeStreamMonitor(nullptr);
+#endif
 
   std::string log_string;
   static const char kLogStringPrefix[] = "AIC::DoClose:";
@@ -343,6 +508,45 @@ void InputController::SetOutputDeviceForAec(
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   if (stream_)
     stream_->SetOutputDeviceForAec(output_device_id);
+}
+
+bool InputController::ShouldRegisterWithStreamMonitorCoordinator() const {
+  // We register with the coordinator if we need it for AEC and we have a
+  // processing_id to monitor.
+  return processing_config_ && !processing_config_->processing_id.is_empty() &&
+         processing_config_->settings.echo_cancellation !=
+             media::EchoCancellationType::kDisabled;
+}
+
+void InputController::OnStreamActive(Snoopable* output_stream) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  // Always pick the last stream that becomes active. There should be just one
+  // active at a time, but in-case the creation of and old stream overlaps with
+  // the destruction of a new stream, we still want to be ok.
+  switch (processing_config_->settings.echo_cancellation) {
+    case media::EchoCancellationType::kSystemAec:
+      if (output_stream)
+        stream_->SetOutputDeviceForAec(output_stream->GetDeviceId());
+      break;
+    case media::EchoCancellationType::kAec2:
+    case media::EchoCancellationType::kAec3:
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+      if (processing_helper_)
+        processing_helper_->ChangeStreamMonitor(output_stream);
+#endif
+      break;
+    case media::EchoCancellationType::kDisabled:
+      // Do nothing.
+      break;
+  }
+}
+
+void InputController::OnStreamInactive(Snoopable* output_stream) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  if (processing_helper_)
+    processing_helper_->ChangeStreamMonitor(nullptr);
+#endif
 }
 
 void InputController::DoCreate(media::AudioManager* audio_manager,
@@ -568,6 +772,16 @@ void InputController::CheckMutedState() {
     handler_->OnMuted(is_muted_);
   }
 }
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+void InputController::UpdateVolumeAndAPMStats(
+    base::Optional<double> new_volume) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  processing_helper_->GetAudioProcessor()->UpdateInternalStats();
+  if (new_volume)
+    SetVolume(*new_volume);
+}
+#endif
 
 // static
 InputController::StreamType InputController::ParamsToStreamType(

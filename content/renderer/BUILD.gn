@@ -707,6 +707,7 @@ target(link_target_type, "renderer") {
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//sandbox",
+    "//services/audio/public/mojom",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/mojom",
     "//services/device/public/mojom:constants",

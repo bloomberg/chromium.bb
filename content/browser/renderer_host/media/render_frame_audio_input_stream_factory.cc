@@ -90,7 +90,8 @@ void RenderFrameAudioInputStreamFactory::CreateStream(
     int32_t session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
-    uint32_t shared_memory_count) {
+    uint32_t shared_memory_count,
+    audio::mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT_INSTANT1("audio",
                        "RenderFrameAudioInputStreamFactory::CreateStream",
@@ -105,7 +106,7 @@ void RenderFrameAudioInputStreamFactory::CreateStream(
                              CreateStreamAfterLookingUpDevice,
                          weak_ptr_factory_.GetWeakPtr(), std::move(client),
                          audio_params, automatic_gain_control,
-                         shared_memory_count)));
+                         shared_memory_count, std::move(processing_config))));
 }
 
 void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
@@ -113,6 +114,7 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,
+    audio::mojom::AudioProcessingConfigPtr processing_config,
     const MediaStreamDevice& device) {
   TRACE_EVENT1(
       "audio",
@@ -149,7 +151,7 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
   } else {
     factory->CreateInputStream(render_frame_host_, device.id, audio_params,
                                shared_memory_count, automatic_gain_control,
-                               std::move(client));
+                               std::move(processing_config), std::move(client));
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.

@@ -91,6 +91,7 @@ void ForwardingAudioStreamFactory::CreateInputStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool enable_agc,
+    audio::mojom::AudioProcessingConfigPtr processing_config,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -99,7 +100,7 @@ void ForwardingAudioStreamFactory::CreateInputStream(
   inputs_
       .insert(broker_factory_->CreateAudioInputStreamBroker(
           process_id, frame_id, device_id, params, shared_memory_count,
-          enable_agc,
+          enable_agc, std::move(processing_config),
           base::BindOnce(&ForwardingAudioStreamFactory::RemoveInput,
                          base::Unretained(this)),
           std::move(renderer_factory_client)))
@@ -112,7 +113,7 @@ void ForwardingAudioStreamFactory::AssociateInputAndOutputForAec(
     const std::string& raw_output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Avoid spawning a factory if this for some reason gets called with an
-  // invalid input_stream_id before any streams are created.
+  // invalid |input_stream_id| before any streams are created.
   if (!inputs_.empty()) {
     GetFactory()->AssociateInputAndOutputForAec(input_stream_id,
                                                 raw_output_device_id);
@@ -198,9 +199,10 @@ void ForwardingAudioStreamFactory::CreateInProcessLoopbackStream(
                          std::move(client));
   } else {
     // A null |frame_of_source_web_contents| requests system-wide loopback.
-    CreateInputStream(
-        nullptr, media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
-        params, shared_memory_count, false /* enable_agc*/, std::move(client));
+    CreateInputStream(nullptr,
+                      media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
+                      params, shared_memory_count, false /* enable_agc */,
+                      nullptr /* processing_config */, std::move(client));
   }
 }
 

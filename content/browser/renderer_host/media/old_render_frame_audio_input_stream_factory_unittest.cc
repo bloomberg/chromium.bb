@@ -154,8 +154,8 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
 
 TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
   factory_ptr_->CreateStream(std::move(client_ptr_), kSessionId,
-                             GetTestAudioParameters(), kAGC,
-                             kSharedMemoryCount);
+                             GetTestAudioParameters(), kAGC, kSharedMemoryCount,
+                             nullptr);
 
   // Wait for delegate to be created and |event_handler| set.
   base::RunLoop().RunUntilIdle();

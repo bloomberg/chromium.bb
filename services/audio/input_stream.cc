@@ -36,7 +36,9 @@ InputStream::InputStream(CreatedCallback created_callback,
                          const std::string& device_id,
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count,
-                         bool enable_agc)
+                         bool enable_agc,
+                         StreamMonitorCoordinator* stream_monitor_coordinator,
+                         mojom::AudioProcessingConfigPtr processing_config)
     : id_(base::UnguessableToken::Create()),
       binding_(this, std::move(request)),
       client_(std::move(client)),
@@ -90,9 +92,10 @@ InputStream::InputStream(CreatedCallback created_callback,
     return;
   }
 
-  controller_ = InputController::Create(audio_manager, this, writer_.get(),
-                                        user_input_monitor_.get(), params,
-                                        device_id, enable_agc);
+  controller_ = InputController::Create(
+      audio_manager, this, writer_.get(), user_input_monitor_.get(), params,
+      device_id, enable_agc, stream_monitor_coordinator,
+      std::move(processing_config));
 }
 
 InputStream::~InputStream() {
