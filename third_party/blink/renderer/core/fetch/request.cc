@@ -69,6 +69,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetRedirect(original->Redirect());
   request->SetIntegrity(original->Integrity());
   request->SetImportance(original->Importance());
+  request->SetPriority(original->Priority());
   request->SetKeepalive(original->Keepalive());
   request->SetIsHistoryNavigation(original->IsHistoryNavigation());
   if (original->URLLoaderFactory()) {

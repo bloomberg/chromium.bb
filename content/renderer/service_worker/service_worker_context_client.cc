@@ -203,6 +203,30 @@ blink::WebBackgroundFetchRegistration ToWebBackgroundFetchRegistration(
       registration.failure_reason);
 }
 
+// This is complementary to ConvertWebKitPriorityToNetPriority, defined in
+// web_url_loader_impl.cc.
+WebURLRequest::Priority ConvertNetPriorityToWebKitPriority(
+    const net::RequestPriority priority) {
+  switch (priority) {
+    case net::HIGHEST:
+      return WebURLRequest::Priority::kVeryHigh;
+    case net::MEDIUM:
+      return WebURLRequest::Priority::kHigh;
+    case net::LOW:
+      return WebURLRequest::Priority::kMedium;
+    case net::LOWEST:
+      return WebURLRequest::Priority::kLow;
+    case net::IDLE:
+      return WebURLRequest::Priority::kVeryLow;
+    case net::THROTTLED:
+      NOTREACHED();
+      return WebURLRequest::Priority::kVeryLow;
+  }
+
+  NOTREACHED();
+  return WebURLRequest::Priority::kVeryLow;
+}
+
 // If |is_for_fetch_event| is true, some headers may be omitted according
 // to the embedder. It's always true now, but it might change with
 // more Onion Souping, and future callsites like Background Fetch probably don't
@@ -269,6 +293,8 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
       ui::PAGE_TRANSITION_RELOAD));
   web_request->SetIntegrity(
       blink::WebString::FromUTF8(request.fetch_integrity));
+  web_request->SetPriority(
+      ConvertNetPriorityToWebKitPriority(request.priority));
   web_request->SetKeepalive(request.keepalive);
   web_request->SetIsHistoryNavigation(request.transition_type &
                                       ui::PAGE_TRANSITION_FORWARD_BACK);

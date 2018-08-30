@@ -37,6 +37,7 @@ class WebServiceWorkerRequestPrivate
   network::mojom::RequestContextFrameType frame_type_ =
       network::mojom::RequestContextFrameType::kNone;
   WebString integrity_;
+  WebURLRequest::Priority priority_ = WebURLRequest::Priority::kUnresolved;
   bool keepalive_ = false;
   WebString client_id_;
   bool is_reload_ = false;
@@ -60,6 +61,10 @@ void WebServiceWorkerRequest::SetURL(const WebURL& url) {
 
 const WebString& WebServiceWorkerRequest::Integrity() const {
   return private_->integrity_;
+}
+
+WebURLRequest::Priority WebServiceWorkerRequest::Priority() const {
+  return private_->priority_;
 }
 
 bool WebServiceWorkerRequest::Keepalive() const {
@@ -187,6 +192,10 @@ void WebServiceWorkerRequest::SetCredentialsMode(
 
 void WebServiceWorkerRequest::SetIntegrity(const WebString& integrity) {
   private_->integrity_ = integrity;
+}
+
+void WebServiceWorkerRequest::SetPriority(WebURLRequest::Priority priority) {
+  private_->priority_ = priority;
 }
 
 void WebServiceWorkerRequest::SetKeepalive(bool keepalive) {
