@@ -15,6 +15,23 @@
 
 namespace web_app {
 
+namespace icon_size {
+
+// An iteration of valid icon sizes in pixels. Allows client code to declare a
+// subset of supported sizes that are guaranteed to be valid.
+enum {
+  k512 = 512,
+  k256 = 256,
+  k128 = 128,
+  k48 = 48,
+  k32 = 32,
+  k24 = 24,
+  k16 = 16,
+  kInvalid = 0,
+};
+
+}  // namespace icon_size
+
 struct BitmapAndSource {
   BitmapAndSource();
   BitmapAndSource(const GURL& source_url_p, const SkBitmap& bitmap_p);

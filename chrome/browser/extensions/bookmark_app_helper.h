@@ -68,15 +68,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
                                            WebApplicationInfo* web_app_info,
                                            ForInstallableSite installable_site);
 
-  // Adds a square container icon of |output_size| and 2 * |output_size| pixels
-  // to |bitmaps| by drawing the given |letter| into a rounded background of
-  // |color|. For each size, if an icon of the requested size already exists in
-  // |bitmaps|, nothing will happen. The generated icon is returned in a
-  // `WebApplicationInfo::IconInfo`.
-  static WebApplicationInfo::IconInfo GenerateIconInfo(int output_size,
-                                                       SkColor color,
-                                                       char letter);
-
   // It is important that the linked app information in any extension that
   // gets created from sync matches the linked app information that came from
   // sync. If there are any changes, they will be synced back to other devices
