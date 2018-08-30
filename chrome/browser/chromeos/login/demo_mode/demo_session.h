@@ -135,6 +135,10 @@ class DemoSession : public session_manager::SessionManagerObserver {
   // |mount_path| is the path at which the resources were loaded.
   void OnOfflineResourcesLoaded(base::Optional<base::FilePath> mounted_path);
 
+  // Installs resources for Demo Mode from the offline demo mode resources, such
+  // as apps and media.
+  void InstallDemoResources();
+
   // Loads and launches the highlights app.
   void LoadAndLaunchHighlightsApp();
 

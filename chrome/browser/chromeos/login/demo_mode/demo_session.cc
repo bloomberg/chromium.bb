@@ -10,16 +10,20 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -59,6 +63,10 @@ constexpr char kHighlightsAppPath[] = "chrome_apps/highlights/dist";
 // highlights app, used when a board-specific version is not available.
 constexpr char kDefaultHighlightsAppResourcesPath[] = "default";
 
+// Path relative to the path at which offline demo resources are loaded that
+// contains sample photos.
+constexpr char kPhotosPath[] = "media/photos";
+
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
   return DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOffline;
@@ -74,6 +82,23 @@ std::vector<std::string> GetIgnorePinPolicyApps() {
       // TODO(michaelpg): YouTube is also pinned as a *default* app.
       extension_misc::kYoutubeAppId,
   };
+}
+
+// Copies photos into the Downloads directory.
+// TODO(michaelpg): Test this behavior (requires overriding the Downloads
+// directory).
+void InstallDemoMedia(base::FilePath offline_resources_path) {
+  if (offline_resources_path.empty()) {
+    LOG(ERROR) << "Offline resources not loaded - no media available.";
+    return;
+  }
+
+  base::FilePath src_path = offline_resources_path.Append(kPhotosPath);
+  base::FilePath dest_path = file_manager::util::GetDownloadsFolderForProfile(
+      ProfileManager::GetPrimaryUserProfile());
+
+  if (!base::CopyDirectory(src_path, dest_path, false /* recursive */))
+    LOG(ERROR) << "Failed to install demo mode media.";
 }
 
 }  // namespace
@@ -319,6 +344,14 @@ void DemoSession::OnOfflineResourcesLoaded(
     std::move(callback).Run();
 }
 
+void DemoSession::InstallDemoResources() {
+  DCHECK(offline_resources_loaded_);
+  LoadAndLaunchHighlightsApp();
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&InstallDemoMedia, offline_resources_path_));
+}
+
 void DemoSession::LoadAndLaunchHighlightsApp() {
   DCHECK(offline_resources_loaded_);
   if (offline_resources_path_.empty()) {
@@ -352,9 +385,8 @@ void DemoSession::OnSessionStateChanged() {
       !IsDeviceInDemoMode()) {
     return;
   }
-  EnsureOfflineResourcesLoaded(
-      base::BindOnce(&DemoSession::LoadAndLaunchHighlightsApp,
-                     weak_ptr_factory_.GetWeakPtr()));
+  EnsureOfflineResourcesLoaded(base::BindOnce(
+      &DemoSession::InstallDemoResources, weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos
