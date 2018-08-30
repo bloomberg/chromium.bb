@@ -1476,6 +1476,7 @@ crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merg
 
 crbug.com/877104 external/wpt/editing/run/delete.html?1-1000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/delete.html?1001-2000 [ Slow ]
+crbug.com/877104 external/wpt/editing/run/delete.html?2001-3000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/delete.html?3001-4000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/delete.html?4001-5000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/delete.html?5001-6000 [ Slow ]
