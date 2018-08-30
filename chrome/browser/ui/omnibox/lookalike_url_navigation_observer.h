@@ -8,6 +8,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace content {
+class NavigationHandle;
+}
+
 class SiteEngagementService;
 
 // Observes navigations and shows an infobar if the navigated domain name
@@ -37,8 +41,8 @@ class LookalikeUrlNavigationObserver
   ~LookalikeUrlNavigationObserver() override;
 
   // content::WebContentsObserver:
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   // Returns a site that the user has used before that |url| may be attempting

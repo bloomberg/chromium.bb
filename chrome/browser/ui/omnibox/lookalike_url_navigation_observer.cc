@@ -16,8 +16,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/url_formatter/idn_spoof_checker.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
@@ -54,9 +53,18 @@ LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
 
 LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
 
-void LookalikeUrlNavigationObserver::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  const GURL url = load_details.entry->GetVirtualURL();
+void LookalikeUrlNavigationObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(navigation_handle->IsInMainFrame());
+  // If the navigation was not committed, it means either the page was a
+  // download or error 204/205, or the navigation never left the previous
+  // URL. Basically, this isn't a problem since we stayed at the existing URL.
+  // Also ignore same document navigations.
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
+    return;
+
+  const GURL url = navigation_handle->GetURL();
+
   // If the user has engaged with this site, don't show any lookalike
   // navigation suggestions.
   Profile* profile =
@@ -91,8 +99,7 @@ void LookalikeUrlNavigationObserver::NavigationEntryCommitted(
   if (kMetricsOnly.Get().empty()) {
     RecordEvent(NavigationSuggestionEvent::kInfobarShown);
     AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
-        web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url,
-        load_details.entry->GetVirtualURL(),
+        web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
         base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
   }
 }
