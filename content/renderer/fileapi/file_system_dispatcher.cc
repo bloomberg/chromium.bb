@@ -217,7 +217,7 @@ void FileSystemDispatcher::OpenFileSystemSync(
       CallbackDispatcher::Create(success_callback, error_callback));
   std::string name;
   GURL root_url;
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Open(
       origin_url, mojo::ConvertTo<blink::mojom::FileSystemType>(type), &name,
       &root_url, &error_code);
@@ -244,7 +244,7 @@ void FileSystemDispatcher::ResolveURLSync(
   blink::mojom::FileSystemInfoPtr info;
   base::FilePath file_path;
   bool is_directory;
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ResolveURL(filesystem_url, &info, &file_path,
                                     &is_directory, &error_code);
   DidResolveURL(request_id, std::move(info), std::move(file_path), is_directory,
@@ -265,7 +265,7 @@ void FileSystemDispatcher::MoveSync(const GURL& src_path,
                                     const GURL& dest_path,
                                     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Move(src_path, dest_path, &error_code);
   DidFinish(request_id, error_code);
 }
@@ -284,7 +284,7 @@ void FileSystemDispatcher::CopySync(const GURL& src_path,
                                     const GURL& dest_path,
                                     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Copy(src_path, dest_path, &error_code);
   DidFinish(request_id, error_code);
 }
@@ -303,7 +303,7 @@ void FileSystemDispatcher::RemoveSync(const GURL& path,
                                       bool recursive,
                                       const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Remove(path, recursive, &error_code);
   DidFinish(request_id, error_code);
 }
@@ -326,7 +326,7 @@ void FileSystemDispatcher::ReadMetadataSync(
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
   base::File::Info file_info;
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ReadMetadata(path, &file_info, &error_code);
   DidReadMetadata(request_id, std::move(file_info), error_code);
 }
@@ -345,7 +345,7 @@ void FileSystemDispatcher::CreateFileSync(const GURL& path,
                                           bool exclusive,
                                           const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Create(path, exclusive, /*is_directory=*/false,
                                 /*is_recursive=*/false, &error_code);
   DidFinish(request_id, error_code);
@@ -367,7 +367,7 @@ void FileSystemDispatcher::CreateDirectorySync(const GURL& path,
                                                bool recursive,
                                                const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Create(path, exclusive, true, recursive, &error_code);
   DidFinish(request_id, error_code);
 }
@@ -386,7 +386,7 @@ void FileSystemDispatcher::ExistsSync(const GURL& path,
                                       bool is_directory,
                                       const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Exists(path, is_directory, &error_code);
   DidFinish(request_id, error_code);
 }
@@ -413,7 +413,7 @@ void FileSystemDispatcher::ReadDirectorySync(
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
   std::vector<filesystem::mojom::DirectoryEntryPtr> entries;
-  base::File::Error result;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ReadDirectorySync(path, &entries, &result);
   if (result == base::File::FILE_OK)
     DidReadDirectory(request_id, std::move(entries), /*has_more=*/false);
@@ -445,7 +445,7 @@ void FileSystemDispatcher::Truncate(const GURL& path,
 void FileSystemDispatcher::TruncateSync(const GURL& path,
                                         int64_t offset,
                                         const StatusCallback& callback) {
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().TruncateSync(path, offset, &error_code);
   std::move(callback).Run(error_code);
 }
@@ -487,7 +487,7 @@ void FileSystemDispatcher::WriteSync(const GURL& path,
                                      const WriteCallback& success_callback,
                                      const StatusCallback& error_callback) {
   int64_t byte_count;
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().WriteSync(path, blob_id, offset, &byte_count,
                                    &error_code);
   if (error_code == base::File::FILE_OK)
@@ -539,7 +539,7 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
       CallbackDispatcher::Create(success_callback, error_callback));
   base::File::Info file_info;
   base::FilePath platform_path;
-  base::File::Error error_code;
+  base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   blink::mojom::ReceivedSnapshotListenerPtr listener;
   GetFileSystemManager().CreateSnapshotFile(
       file_path, &file_info, &platform_path, &error_code, &listener);
