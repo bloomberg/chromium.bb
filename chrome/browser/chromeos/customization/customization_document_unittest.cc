@@ -164,8 +164,8 @@ TEST(StartupCustomizationDocumentTest, BadManifest) {
 class TestURLLoaderFactoryInterceptor {
  public:
   explicit TestURLLoaderFactoryInterceptor(
-      network::TestURLLoaderFactory& factory) {
-    factory.SetInterceptor(base::BindRepeating(
+      network::TestURLLoaderFactory* factory) {
+    factory->SetInterceptor(base::BindRepeating(
         &TestURLLoaderFactoryInterceptor::Intercept, base::Unretained(this)));
   }
   MOCK_METHOD1(Intercept, void(const network::ResourceRequest&));
@@ -223,7 +223,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     RegisterLocalState(local_state_.registry());
 
     interceptor_ =
-        std::make_unique<TestURLLoaderFactoryInterceptor>(loader_factory_);
+        std::make_unique<TestURLLoaderFactoryInterceptor>(&loader_factory_);
   }
 
   void TearDown() override {
@@ -275,8 +275,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   std::unique_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder profile_builder;
     sync_preferences::PrefServiceMockFactory factory;
-    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-        new user_prefs::PrefRegistrySyncable);
+    auto registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     RegisterUserProfilePrefs(registry.get());
@@ -348,12 +347,11 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
   EXPECT_TRUE(loader);
 
   MockExternalProviderVisitor visitor;
-  std::unique_ptr<extensions::ExternalProviderImpl> provider(
-      new extensions::ExternalProviderImpl(
-          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
-          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
-          extensions::Extension::FROM_WEBSTORE |
-              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+  auto provider = std::make_unique<extensions::ExternalProviderImpl>(
+      &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
+      extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+      extensions::Extension::FROM_WEBSTORE |
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
@@ -389,12 +387,11 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
           &app_list::AppListSyncableServiceFactory::BuildInstanceFor);
 
   MockExternalProviderVisitor visitor;
-  std::unique_ptr<extensions::ExternalProviderImpl> provider(
-      new extensions::ExternalProviderImpl(
-          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
-          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
-          extensions::Extension::FROM_WEBSTORE |
-              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+  auto provider = std::make_unique<extensions::ExternalProviderImpl>(
+      &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
+      extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+      extensions::Extension::FROM_WEBSTORE |
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
@@ -434,12 +431,11 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
   EXPECT_TRUE(loader);
 
   MockExternalProviderVisitor visitor;
-  std::unique_ptr<extensions::ExternalProviderImpl> provider(
-      new extensions::ExternalProviderImpl(
-          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
-          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
-          extensions::Extension::FROM_WEBSTORE |
-              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+  auto provider = std::make_unique<extensions::ExternalProviderImpl>(
+      &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
+      extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+      extensions::Extension::FROM_WEBSTORE |
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);

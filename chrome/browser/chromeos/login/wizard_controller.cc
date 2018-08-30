@@ -128,7 +128,7 @@ using content::BrowserThread;
 
 namespace {
 // Interval in ms which is used for smooth screen showing.
-static int kShowDelayMs = 400;
+static int g_show_delay_ms = 400;
 
 // Total timezone resolving process timeout.
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
@@ -158,8 +158,8 @@ bool CanShowHIDDetectionScreen() {
 }
 
 bool IsResumableScreen(chromeos::OobeScreen screen) {
-  for (size_t i = 0; i < arraysize(kResumableScreens); ++i) {
-    if (screen == kResumableScreens[i])
+  for (const auto& resumable_screen : kResumableScreens) {
+    if (screen == resumable_screen)
       return true;
   }
   return false;
@@ -272,8 +272,11 @@ chromeos::OobeUI* GetOobeUI() {
   return host ? host->GetOobeUI() : nullptr;
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-    g_shared_url_loader_factory_for_testing = nullptr;
+scoped_refptr<network::SharedURLLoaderFactory>&
+GetSharedURLLoaderFactoryForTesting() {
+  static scoped_refptr<network::SharedURLLoaderFactory> loader;
+  return loader;
+}
 
 }  // namespace
 
@@ -287,9 +290,6 @@ bool WizardController::skip_post_login_screens_ = false;
 
 // static
 bool WizardController::skip_enrollment_prompts_ = false;
-
-// static
-bool WizardController::zero_delay_enabled_ = false;
 
 // static
 WizardController* WizardController::default_controller() {
@@ -314,7 +314,7 @@ WizardController::WizardController()
     // accessibility_manager could be null in Tests.
     accessibility_subscription_ = accessibility_manager->RegisterCallback(
         base::Bind(&WizardController::OnAccessibilityStatusChanged,
-                   base::Unretained(this)));
+                   weak_factory_.GetWeakPtr()));
   }
   oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
   OobeConfiguration::Get()->AddObserver(this);
@@ -356,7 +356,8 @@ void WizardController::Init(OobeScreen first_screen) {
     if (status == PrefService::INITIALIZATION_STATUS_ERROR) {
       OnLocalStateInitialized(false);
       return;
-    } else if (status == PrefService::INITIALIZATION_STATUS_WAITING) {
+    }
+    if (status == PrefService::INITIALIZATION_STATUS_WAITING) {
       GetLocalState()->AddPrefInitObserver(
           base::BindOnce(&WizardController::OnLocalStateInitialized,
                          weak_factory_.GetWeakPtr()));
@@ -469,8 +470,8 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
         this, oobe_ui->GetAutoEnrollmentCheckScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING) {
     if (!shark_controller_) {
-      shark_controller_.reset(
-          new pairing_chromeos::BluetoothControllerPairingController());
+      shark_controller_ = std::make_unique<
+          pairing_chromeos::BluetoothControllerPairingController>();
     }
     return std::make_unique<ControllerPairingScreen>(
         this, this, oobe_ui->GetControllerPairingScreenView(),
@@ -481,8 +482,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
       DCHECK(content::ServiceManagerConnection::GetForProcess());
       service_manager::Connector* connector =
           content::ServiceManagerConnection::GetForProcess()->GetConnector();
-      remora_controller_.reset(
-          new pairing_chromeos::BluetoothHostPairingController(connector));
+      remora_controller_ =
+          std::make_unique<pairing_chromeos::BluetoothHostPairingController>(
+              connector);
       remora_controller_->StartPairing();
     }
     return std::make_unique<HostPairingScreen>(
@@ -519,7 +521,8 @@ void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
 
 void WizardController::SetSharedURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
-  g_shared_url_loader_factory_for_testing = std::move(factory);
+  auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
+  testing_factory = std::move(factory);
 }
 
 void WizardController::ShowWelcomeScreen() {
@@ -1232,14 +1235,15 @@ void WizardController::StartOOBEUpdate() {
 void WizardController::StartTimezoneResolve() {
   if (!g_browser_process->platform_part()
            ->GetTimezoneResolverManager()
-           ->TimeZoneResolverShouldBeRunning())
+           ->TimeZoneResolverShouldBeRunning()) {
     return;
+  }
 
-  geolocation_provider_.reset(new SimpleGeolocationProvider(
-      g_shared_url_loader_factory_for_testing
-          ? g_shared_url_loader_factory_for_testing
-          : g_browser_process->shared_url_loader_factory(),
-      SimpleGeolocationProvider::DefaultGeolocationProviderURL()));
+  auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
+  geolocation_provider_ = std::make_unique<SimpleGeolocationProvider>(
+      testing_factory ? testing_factory
+                      : g_browser_process->shared_url_loader_factory(),
+      SimpleGeolocationProvider::DefaultGeolocationProviderURL());
   geolocation_provider_->RequestGeolocation(
       base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds),
       false /* send_wifi_geolocation_data */,
@@ -1333,7 +1337,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   if (use_smoothing) {
     smooth_show_timer_.Start(FROM_HERE,
-                             base::TimeDelta::FromMilliseconds(kShowDelayMs),
+                             base::TimeDelta::FromMilliseconds(g_show_delay_ms),
                              this, &WizardController::ShowCurrentScreen);
   } else {
     ShowCurrentScreen();
@@ -1772,13 +1776,12 @@ void WizardController::AutoLaunchKioskApp() {
 
 // static
 void WizardController::SetZeroDelays() {
-  kShowDelayMs = 0;
-  zero_delay_enabled_ = true;
+  g_show_delay_ms = 0;
 }
 
 // static
 bool WizardController::IsZeroDelayEnabled() {
-  return zero_delay_enabled_;
+  return g_show_delay_ms == 0;
 }
 
 // static
@@ -1845,10 +1848,7 @@ void WizardController::OnTimezoneResolved(
     std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(timezone.get());
-  // To check that "this" is not destroyed try to access some member
-  // (timezone_provider_) in this case. Expect crash here.
-  DCHECK(timezone_provider_.get());
+  DCHECK(timezone);
 
   timezone_resolved_ = true;
   base::ScopedClosureRunner inform_test(on_timezone_resolved_for_testing_);
@@ -1884,11 +1884,11 @@ void WizardController::OnTimezoneResolved(
 
 TimeZoneProvider* WizardController::GetTimezoneProvider() {
   if (!timezone_provider_) {
-    timezone_provider_.reset(new TimeZoneProvider(
-        g_shared_url_loader_factory_for_testing
-            ? g_shared_url_loader_factory_for_testing
-            : g_browser_process->shared_url_loader_factory(),
-        DefaultTimezoneProviderURL()));
+    auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
+    timezone_provider_ = std::make_unique<TimeZoneProvider>(
+        testing_factory ? testing_factory
+                        : g_browser_process->shared_url_loader_factory(),
+        DefaultTimezoneProviderURL());
   }
   return timezone_provider_.get();
 }
@@ -1921,7 +1921,7 @@ void WizardController::OnLocationResolved(const Geoposition& position,
   GetTimezoneProvider()->RequestTimezone(
       position, timeout - elapsed,
       base::Bind(&WizardController::OnTimezoneResolved,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool WizardController::SetOnTimeZoneResolvedForTesting(
@@ -1973,10 +1973,10 @@ void WizardController::MaybeStartListeningForSharkConnection() {
     DCHECK(content::ServiceManagerConnection::GetForProcess());
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    shark_connection_listener_.reset(
-        new pairing_chromeos::SharkConnectionListener(
+    shark_connection_listener_ =
+        std::make_unique<pairing_chromeos::SharkConnectionListener>(
             connector, base::Bind(&WizardController::OnSharkConnected,
-                                  weak_factory_.GetWeakPtr())));
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
