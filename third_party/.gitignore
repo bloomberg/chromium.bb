@@ -179,7 +179,8 @@
 /python_26
 /pywebsocket/src
 /pywebsocket/src
-/qemu
+/qemu-linux-x64
+/qemu-mac-x64
 /quic_trace/src
 /r8/lib
 /re2/src

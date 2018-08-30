@@ -69,7 +69,7 @@ template("fuchsia_package_runner") {
       _manifest_path,
       "//build/fuchsia/",
       "//build/util/lib/",
-      "//third_party/qemu",
+      "${qemu_root}/",
       "${fuchsia_sdk}/",
     ]
 

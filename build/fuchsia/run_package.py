@@ -10,12 +10,13 @@ import json
 import logging
 import multiprocessing
 import os
+import select
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import uuid
-import select
 
 from symbolizer import FilterStream
 
@@ -40,47 +41,33 @@ def _ReadMergedLines(streams):
   signals EOF. Absolute output ordering is not guaranteed."""
 
   assert len(streams) > 0
-  poll = select.poll()
   streams_by_fd = {}
   primary_fd = streams[0].fileno()
   for s in streams:
-    poll.register(s.fileno(), select.POLLIN)
     streams_by_fd[s.fileno()] = s
 
-  try:
-    while primary_fd != None:
-      events = poll.poll(1)
-      for fileno, event in events:
-        if event & select.POLLIN:
-          yield streams_by_fd[fileno].readline()
-
-        elif event & select.POLLHUP:
-          poll.unregister(fileno)
-          del streams_by_fd[fileno]
-
-          if fileno == primary_fd:
-            primary_fd = None
-  finally:
-    for fd_to_cleanup, _ in streams_by_fd.iteritems():
-      poll.unregister(fd_to_cleanup)
+  while primary_fd != None:
+    rlist, _, _ = select.select(streams_by_fd, [], [], 0.1)
+    for fileno in rlist:
+      line = streams_by_fd[fileno].readline()
+      if line:
+        yield line
+      elif fileno == primary_fd:
+        primary_fd = None
+      else:
+        del streams_by_fd[fileno]
 
 
 def DrainStreamToStdout(stream, quit_event):
   """Outputs the contents of |stream| until |quit_event| is set."""
 
-  poll = select.poll()
-  poll.register(stream.fileno(), select.POLLIN)
-  try:
-    while not quit_event.is_set():
-      events = poll.poll(1)
-      for fileno, event in events:
-        if event & select.POLLIN:
-          print stream.readline().rstrip()
-        elif event & select.POLLHUP:
-          break
-
-  finally:
-    poll.unregister(stream.fileno())
+  while not quit_event.is_set():
+    rlist, _, _ = select.select([ stream ], [], [], 0.1)
+    if rlist:
+      line = rlist[0].readline()
+      if not line:
+        return
+      print line.rstrip()
 
 
 def RunPackage(output_dir, target, package_path, package_name, package_deps,

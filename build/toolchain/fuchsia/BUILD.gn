@@ -9,14 +9,17 @@ import("//build/config/fuchsia/config.gni")
 # the different target architectures.
 template("fuchsia_clang_toolchain") {
   clang_toolchain(target_name) {
-    assert(host_os == "linux")
+    assert(host_os == "linux" || host_os == "mac")
     assert(defined(invoker.toolchain_args),
            "toolchain_args must be defined for fuchsia_clang_toolchain()")
 
     # We want to build and strip binaries, but retain the unstripped binaries
     # in runtime_deps to make them available for isolates.
-    strip = rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir)
-    use_unstripped_as_runtime_outputs = true
+    # TODO(https://crbug.com/877080): Switch to llvm-strip.
+    if (host_os == "linux") {
+      strip = rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir)
+      use_unstripped_as_runtime_outputs = true
+    }
 
     toolchain_args = invoker.toolchain_args
     toolchain_args.current_os = "fuchsia"

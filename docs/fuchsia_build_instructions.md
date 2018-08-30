@@ -13,7 +13,8 @@ There are instructions for other platforms linked from the
 *   At least 100GB of free disk space.
 *   You must have Git and Python installed already.
 
-Most development is done on Ubuntu.
+Most development is done on Ubuntu. Mac build is supported on a best-effort
+basis.
 
 ## Install `depot_tools`
 
@@ -80,6 +81,16 @@ The remaining instructions assume you have switched to the `src` directory:
 
 ```shell
 $ cd src
+```
+
+## (Mac-only) Download additional required Clang binaries
+
+Go to [this page](https://chrome-infra-packages.appspot.com/p/fuchsia/clang/mac-amd64/+/)
+and download the most recent build. Extract `bin/llvm-ar` to the clang folder
+in Chromium:
+
+```shell
+$ unzip /path/to/clang.zip bin/llvm-ar -d ${CHROMIUM_SRC}/third_party/llvm-build/Release+Asserts
 ```
 
 ## Setting up the build

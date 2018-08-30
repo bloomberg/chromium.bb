@@ -976,14 +976,25 @@ deps = {
   'src/third_party/pywebsocket/src':
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
 
-  'src/third_party/qemu': {
+  'src/third_party/qemu-linux-x64': {
       'packages': [
           {
               'package': 'fuchsia/qemu/linux-amd64',
               'version': '9cc486c5b18a0be515c39a280ca9a309c54cf994'
           },
       ],
-      'condition': 'checkout_fuchsia',
+      'condition': 'host_os == "linux" and checkout_fuchsia',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/qemu-mac-x64': {
+      'packages': [
+          {
+              'package': 'fuchsia/qemu/mac-amd64',
+              'version': '2d3358ae9a569b2d4a474f498b32b202a152134f'
+          },
+      ],
+      'condition': 'host_os == "mac" and checkout_fuchsia',
       'dep_type': 'cipd',
   },
 
@@ -1986,11 +1997,11 @@ hooks = [
   },
   {
     # Mac doesn't use lld so it's not included in the default clang bundle
-    # there.  lld is however needed in win cross builds, so download it there.
-    # Should run after the clang hook.
+    # there.  lld is however needed in win and Fuchsia cross builds, so
+    # download it there. Should run after the clang hook.
     'name': 'lld/mac',
     'pattern': '.',
-    'condition': 'host_os == "mac" and checkout_win',
+    'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
     'action': ['python', 'src/tools/clang/scripts/download_lld_mac.py'],
   },
   {
