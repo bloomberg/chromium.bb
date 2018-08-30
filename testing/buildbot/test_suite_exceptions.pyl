@@ -1482,6 +1482,11 @@
         'experiment_percentage': 100, # crbug.com/824539
       },
       # chromium.fyi
+      'linux-blink-animation-use-time-delta': {
+        'args': [
+          '--debug',
+        ],
+      },
       'linux-blink-gen-property-trees': {
         'args': [
           '--debug',
