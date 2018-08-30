@@ -85,6 +85,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // If called, the installed extension will be considered policy installed.
   void set_is_policy_installed_app() { is_policy_installed_app_ = true; }
 
+  bool is_policy_installed_app() { return is_policy_installed_app_; }
+
   // If called, the installed extension will be considered default installed.
   void set_is_default_app() { is_default_app_ = true; }
 

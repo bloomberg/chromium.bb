@@ -117,11 +117,19 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
       break;
   }
 
+  switch (app_info_.installation_flag) {
+    case web_app::PendingAppManager::InstallationFlag::kNone:
+      break;
+    case web_app::PendingAppManager::InstallationFlag::kDefaultApp:
+      helper_->set_is_default_app();
+      break;
+    case web_app::PendingAppManager::InstallationFlag::kFromPolicy:
+      helper_->set_is_policy_installed_app();
+      break;
+  }
+
   if (!app_info_.create_shortcuts)
     helper_->set_skip_shortcut_creation();
-
-  if (app_info_.is_default_app)
-    helper_->set_is_default_app();
 
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),

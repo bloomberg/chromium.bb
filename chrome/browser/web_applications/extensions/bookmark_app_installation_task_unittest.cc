@@ -321,6 +321,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
   EXPECT_TRUE(test_helper().create_shortcuts());
   EXPECT_FALSE(test_helper().forced_launch_type().has_value());
   EXPECT_FALSE(test_helper().is_default_app());
+  EXPECT_FALSE(test_helper().is_policy_installed_app());
 }
 
 TEST_F(BookmarkAppInstallationTaskTest,
@@ -438,6 +439,28 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   EXPECT_TRUE(app_installed());
   EXPECT_TRUE(test_helper().is_default_app());
+}
+
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_AppFromPolicy) {
+  const GURL app_url(kWebAppUrl);
+
+  auto app_info = web_app::PendingAppManager::AppInfo::CreateForPolicy(
+      app_url, web_app::PendingAppManager::LaunchContainer::kDefault);
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(app_info));
+  SetTestingFactories(task.get(), app_url);
+
+  task->InstallWebAppOrShortcutFromWebContents(
+      web_contents(),
+      base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
+                     base::Unretained(this), base::DoNothing().Once()));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+
+  EXPECT_TRUE(app_installed());
+  EXPECT_TRUE(test_helper().is_policy_installed_app());
 }
 
 }  // namespace extensions
