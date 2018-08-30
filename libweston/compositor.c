@@ -4939,6 +4939,25 @@ weston_head_set_monitor_strings(struct weston_head *head,
 	weston_head_set_device_changed(head);
 }
 
+/** Store display non-desktop status
+ *
+ * \param head The head to modify.
+ * \param non_desktop Whether the head connects to a non-desktop display.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_non_desktop(struct weston_head *head, bool non_desktop)
+{
+	if (head->non_desktop == non_desktop)
+		return;
+
+	head->non_desktop = non_desktop;
+
+	weston_head_set_device_changed(head);
+}
+
 /** Store physical image size
  *
  * \param head The head to modify.
@@ -5101,6 +5120,22 @@ WL_EXPORT bool
 weston_head_is_device_changed(struct weston_head *head)
 {
 	return head->device_changed;
+}
+
+/** Does the head represent a non-desktop display?
+ *
+ * \param head The head to query.
+ * \return True if the device is a non-desktop display.
+ *
+ * Non-desktop heads are not attached to outputs by default.
+ * This stops weston from extending the desktop onto head mounted displays.
+ *
+ * \memberof weston_head
+ */
+WL_EXPORT bool
+weston_head_is_non_desktop(struct weston_head *head)
+{
+	return head->non_desktop;
 }
 
 /** Acknowledge device information change

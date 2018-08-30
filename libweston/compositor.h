@@ -196,6 +196,7 @@ struct weston_head {
 
 	char *name;			/**< head name, e.g. connector name */
 	bool connected;			/**< is physically connected */
+	bool non_desktop;		/**< non-desktop display, e.g. HMD */
 };
 
 struct weston_output {
@@ -2223,6 +2224,9 @@ weston_head_set_monitor_strings(struct weston_head *head,
 				const char *serialno);
 
 void
+weston_head_set_non_desktop(struct weston_head *head, bool non_desktop);
+
+void
 weston_head_set_physical_size(struct weston_head *head,
 			      int32_t mm_width, int32_t mm_height);
 
@@ -2244,6 +2248,9 @@ weston_head_is_enabled(struct weston_head *head);
 
 bool
 weston_head_is_device_changed(struct weston_head *head);
+
+bool
+weston_head_is_non_desktop(struct weston_head *head);
 
 void
 weston_head_reset_device_changed(struct weston_head *head);
