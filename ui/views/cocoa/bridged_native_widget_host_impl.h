@@ -17,6 +17,12 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
 
+namespace views_bridge_mac {
+namespace mojom {
+class BridgedNativeWidget;
+}  // namespace mojom
+}  // namespace views_bridge_mac
+
 namespace ui {
 class RecyclableCompositorMac;
 }  // namespace ui
@@ -24,7 +30,6 @@ class RecyclableCompositorMac;
 namespace views {
 
 class BridgedNativeWidget;
-class BridgedNativeWidgetPublic;
 class NativeWidgetMac;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
@@ -47,7 +52,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
   BridgedNativeWidget* bridge_impl() const { return bridge_impl_.get(); }
-  BridgedNativeWidgetPublic* bridge() const;
+  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
 
   void InitWindow(const Widget::InitParams& params);
 

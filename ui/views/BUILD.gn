@@ -505,6 +505,7 @@ jumbo_component("views") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/views/resources",
+    "//ui/views_bridge_mac:mojo",
   ]
 
   if (use_x11) {

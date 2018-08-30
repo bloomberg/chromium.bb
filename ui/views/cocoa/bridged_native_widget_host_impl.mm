@@ -22,6 +22,9 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
+using views_bridge_mac::mojom::BridgedNativeWidgetInitParams;
+using views_bridge_mac::mojom::WindowVisibilityState;
+
 namespace views {
 
 namespace {
@@ -54,7 +57,8 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   DestroyCompositor();
 }
 
-BridgedNativeWidgetPublic* BridgedNativeWidgetHostImpl::bridge() const {
+views_bridge_mac::mojom::BridgedNativeWidget*
+BridgedNativeWidgetHostImpl::bridge() const {
   return bridge_impl_.get();
 }
 
@@ -68,10 +72,10 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
 
   // Initialize the window.
   {
-    BridgedNativeWidgetPublic::InitParams bridge_params;
-    bridge_params.modal_type =
+    auto bridge_params = BridgedNativeWidgetInitParams::New();
+    bridge_params->modal_type =
         native_widget_mac_->GetWidget()->widget_delegate()->GetModalType();
-    bridge_params.is_translucent_window =
+    bridge_params->is_translucent =
         params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
 
     // OSX likes to put shadows on most things. However, frameless windows (with
@@ -80,25 +84,25 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
     // Mac.
     switch (params.shadow_type) {
       case Widget::InitParams::SHADOW_TYPE_NONE:
-        bridge_params.has_shadow = false;
+        bridge_params->has_window_server_shadow = false;
         break;
       case Widget::InitParams::SHADOW_TYPE_DEFAULT:
         // Controls should get views shadows instead of native shadows.
-        bridge_params.has_shadow =
+        bridge_params->has_window_server_shadow =
             params.type != Widget::InitParams::TYPE_CONTROL;
         break;
       case Widget::InitParams::SHADOW_TYPE_DROP:
-        bridge_params.has_shadow = true;
+        bridge_params->has_window_server_shadow = true;
         break;
     }  // No default case, to pick up new types.
 
     // Include "regular" windows without the standard frame in the window cycle.
     // These use NSBorderlessWindowMask so do not get it by default.
-    bridge_params.force_into_collection_cycle =
+    bridge_params->force_into_collection_cycle =
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
 
-    bridge()->InitWindow(bridge_params);
+    bridge()->InitWindow(std::move(bridge_params));
   }
 
   // Set a meaningful initial bounds. Note that except for frameless widgets
@@ -113,7 +117,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
 
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
-    bridge()->SetVisibilityState(BridgedNativeWidgetPublic::SHOW_INACTIVE);
+    bridge()->SetVisibilityState(WindowVisibilityState::kShowInactive);
 }
 
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
