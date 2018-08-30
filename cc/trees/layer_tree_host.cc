@@ -284,6 +284,8 @@ void LayerTreeHost::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
   DCHECK(task_runner_provider_->IsImplThread());
 
+  TRACE_EVENT0("cc,benchmark", "LayerTreeHost::FinishCommitOnImplThread");
+
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
   sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
 
@@ -709,8 +711,8 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
 }
 
 bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
-  TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
-               SourceFrameNumber());
+  TRACE_EVENT1("cc,benchmark", "LayerTreeHost::DoUpdateLayers",
+               "source_frame_number", SourceFrameNumber());
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 

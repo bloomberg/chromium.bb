@@ -1163,7 +1163,8 @@ bool Layer::IsSnappedToPixelGridInTarget() {
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
-  TRACE_EVENT0("cc", "Layer::PushPropertiesTo");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
   // The element id should be set first because other setters may
