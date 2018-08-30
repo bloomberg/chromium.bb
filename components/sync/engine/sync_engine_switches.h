@@ -10,6 +10,7 @@
 namespace switches {
 
 extern const base::Feature kSyncResetPollIntervalOnStart;
+extern const base::Feature kSyncUseScryptForNewCustomPassphrases;
 
 }  // namespace switches
 

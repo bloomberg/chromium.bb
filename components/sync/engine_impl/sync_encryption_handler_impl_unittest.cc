@@ -18,6 +18,7 @@
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/entry.h"
@@ -98,9 +99,25 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
 
  protected:
-  void SetScryptForceDisabled(bool new_value) {
-    feature_list_.InitWithFeatureState(
-        switches::kSyncForceDisableScryptForCustomPassphrase, new_value);
+  void SetScryptFeaturesState(bool force_disabled,
+                              bool use_for_new_passphrases) {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (force_disabled) {
+      enabled_features.push_back(
+          switches::kSyncForceDisableScryptForCustomPassphrase);
+    } else {
+      disabled_features.push_back(
+          switches::kSyncForceDisableScryptForCustomPassphrase);
+    }
+    if (use_for_new_passphrases) {
+      enabled_features.push_back(
+          switches::kSyncUseScryptForNewCustomPassphrases);
+    } else {
+      disabled_features.push_back(
+          switches::kSyncUseScryptForNewCustomPassphrases);
+    }
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   void SetUpEncryption() {
@@ -2550,15 +2567,16 @@ TEST_F(SyncEncryptionHandlerImplTest,
       kCustomPassphrase);
 }
 
-// TODO(davidovic): When scrypt is introduced, also test the new default
-// behavior of using it, by toggling the feature.
 TEST_F(SyncEncryptionHandlerImplTest,
-       SetEncryptionPassphraseShouldSetPbkdf2InNigori) {
+       SetEncryptionPassphraseShouldSetPbkdf2InNigoriIfScryptForNewDisabled) {
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/false);
   TearDown();
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
 
   IgnoreAllObserverCalls();
   encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
@@ -2567,15 +2585,16 @@ TEST_F(SyncEncryptionHandlerImplTest,
                        {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003});
 }
 
-// TODO(davidovic): When scrypt is introduced, also test the new default
-// behavior of using it, by toggling the feature.
 TEST_F(SyncEncryptionHandlerImplTest,
-       SetEncryptionPassphraseShouldAddPbkdf2DerivedKeyToCryptographer) {
+       SetEncryptionPassphraseShouldAddPbkdf2KeyIfScryptForNewDisabled) {
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/false);
   TearDown();
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
 
   IgnoreAllObserverCalls();
   encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
@@ -2585,9 +2604,89 @@ TEST_F(SyncEncryptionHandlerImplTest,
             GetCryptographer()->GetDefaultNigoriKeyData());
 }
 
-// If we set a decryption passphrase and the Nigori contains UNSPECIFIED as the
-// key derivation method (implying an old version which used PBKDF2 for key
-// derivation implicitly), we should derive the key using PBKDF2.
+// Regardless of the state of the "scrypt for new passphrases" feature, turning
+// on the "force-disable scrypt" should lead to using PBKDF2.
+TEST_F(SyncEncryptionHandlerImplTest,
+       SetEncryptionPassphraseShouldSetPbkdf2InNigoriIfScryptForceDisabled) {
+  SetScryptFeaturesState(/*force_disabled=*/true,
+                         /*use_for_new_passphrases=*/true);
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+  SetupKeystoreKeys({kRawKeystoreKey});
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
+
+  IgnoreAllObserverCalls();
+  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
+
+  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPassphrase,
+                       {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003});
+}
+
+TEST_F(SyncEncryptionHandlerImplTest,
+       SetEncryptionPassphraseShouldAddPbkdf2KeyIfScryptForceDisabled) {
+  SetScryptFeaturesState(/*force_disabled=*/true,
+                         /*use_for_new_passphrases=*/true);
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+  SetupKeystoreKeys({kRawKeystoreKey});
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
+
+  IgnoreAllObserverCalls();
+  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
+
+  EXPECT_EQ(GetSerializedNigoriKeyForCustomPassphrase(
+                KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, kCustomPassphrase),
+            GetCryptographer()->GetDefaultNigoriKeyData());
+}
+
+// TODO(davidovic): Merge ...ShouldSet*InNigori and ...ShouldAdd*Key test pairs
+// into a single test that checks both. This is not trivial because (a) there
+// are a lot of such pairs in this file and (b) a good name for them needs to be
+// found, and that is tricky because of the 80-character line limit which limits
+// how descriptive the names can be (and the tests will then have two behaviors
+// that they are testing, which will be harder to explain in test names).
+TEST_F(SyncEncryptionHandlerImplTest,
+       SetEncryptionPassphraseShouldSetScryptInNigoriIfScryptForNewEnabled) {
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/true);
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+  SetupKeystoreKeys({kRawKeystoreKey});
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
+
+  IgnoreAllObserverCalls();
+  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
+
+  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPassphrase,
+                       {KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT});
+}
+
+TEST_F(SyncEncryptionHandlerImplTest,
+       SetEncryptionPassphraseShouldAddScryptKeyIfScryptForNewEnabled) {
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/true);
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+  SetupKeystoreKeys({kRawKeystoreKey});
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+                                      kKeystoreKey);
+
+  IgnoreAllObserverCalls();
+  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase, true);
+
+  EXPECT_EQ(
+      GetSerializedNigoriKeyForCustomPassphrase(
+          KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT, kCustomPassphrase),
+      GetCryptographer()->GetDefaultNigoriKeyData());
+}
+
 TEST_F(SyncEncryptionHandlerImplTest,
        SetDecryptionPassphraseShouldUsePbkdf2WhenUnspecifiedInNigori) {
   InitAndVerifyCustomPassphraseMigratedNigori(
@@ -2642,7 +2741,8 @@ TEST_F(
 
 TEST_F(SyncEncryptionHandlerImplTest,
        SetDecryptionPassphraseShouldUseScryptFromNigoriWhenScryptEnabled) {
-  SetScryptForceDisabled(false);
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/false);
 
   InitAndVerifyCustomPassphraseMigratedNigori(
       /*migration_time=*/1,
@@ -2652,7 +2752,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
   IgnoreAllObserverCalls();
   encryption_handler()->SetDecryptionPassphrase(kCustomPassphrase);
 
-  Mock::VerifyAndClearExpectations(observer());
   EXPECT_EQ(
       GetSerializedNigoriKeyForCustomPassphrase(
           KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT, kCustomPassphrase),
@@ -2664,7 +2763,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
 // unsupported method.
 TEST_F(SyncEncryptionHandlerImplTest,
        SetDecryptionPassphraseShouldNotUseScryptFromNigoriWhenScryptDisabled) {
-  SetScryptForceDisabled(true);
+  SetScryptFeaturesState(/*force_disabled=*/true,
+                         /*use_for_new_passphrases=*/false);
 
   InitAndVerifyCustomPassphraseMigratedNigori(
       /*migration_time=*/1,
@@ -2676,7 +2776,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
               OnPassphraseRequired(_, KeyDerivationMethod::UNSUPPORTED, _));
   encryption_handler()->SetDecryptionPassphrase(kCustomPassphrase);
 
-  Mock::VerifyAndClearExpectations(observer());
   EXPECT_FALSE(GetCryptographer()->is_ready());
 }
 
@@ -2728,7 +2827,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
 TEST_F(SyncEncryptionHandlerImplTest,
        ApplyNigoriUpdateShouldPassScryptToObserverWhenEnabled) {
-  SetScryptForceDisabled(false);
+  SetScryptFeaturesState(/*force_disabled=*/false,
+                         /*use_for_new_passphrases=*/false);
 
   TearDown();
   test_user_share_.SetUp();
@@ -2750,12 +2850,13 @@ TEST_F(SyncEncryptionHandlerImplTest,
                                             trans.GetWrappedTrans());
   }
   PumpLoop();
-
-  Mock::VerifyAndClearExpectations(observer());
 }
 
 TEST_F(SyncEncryptionHandlerImplTest,
        ApplyNigoriUpdateShouldPassScryptAsUnsupportedToObserverWhenDisabled) {
+  SetScryptFeaturesState(/*force_disabled=*/true,
+                         /*use_for_new_passphrases=*/false);
+
   TearDown();
   test_user_share_.SetUp();
   SetUpEncryption();
@@ -2766,7 +2867,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
       sync_pb::NigoriSpecifics::SCRYPT_8192_8_11_CONST_SALT, kCustomPassphrase);
   WriteNigori(new_nigori);
 
-  SetScryptForceDisabled(true);
   IgnoreAllObserverCalls();
   EXPECT_CALL(*observer(),
               OnPassphraseRequired(_, KeyDerivationMethod::UNSUPPORTED, _));
@@ -2775,8 +2875,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
     encryption_handler()->ApplyNigoriUpdate(new_nigori,
                                             trans.GetWrappedTrans());
   }
-
-  Mock::VerifyAndClearExpectations(observer());
 }
 
 TEST_F(SyncEncryptionHandlerImplTest,

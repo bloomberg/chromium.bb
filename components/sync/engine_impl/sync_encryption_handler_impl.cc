@@ -23,6 +23,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
@@ -159,8 +160,13 @@ bool UnpackKeystoreBootstrapToken(const std::string& keystore_bootstrap_token,
 // Returns the key derivation method to be used when a user sets a new
 // custom passphrase.
 KeyDerivationMethod GetDefaultKeyDerivationMethodForCustomPassphrase() {
-  // TODO(davidovic): When scrypt is introduced, check if the feature is enabled
-  // and return scrypt if so.
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncUseScryptForNewCustomPassphrases) &&
+      !base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase)) {
+    return KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT;
+  }
+
   return KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003;
 }
 
