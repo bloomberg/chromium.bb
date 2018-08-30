@@ -20,10 +20,7 @@ class MockBaseScreenDelegate : public BaseScreenDelegate {
   MockBaseScreenDelegate();
   virtual ~MockBaseScreenDelegate();
 
-  MOCK_METHOD3(OnExit,
-               void(BaseScreen&,
-                    ScreenExitCode,
-                    const ::login::ScreenContext*));
+  MOCK_METHOD1(OnExit, void(ScreenExitCode));
   MOCK_METHOD0(ShowCurrentScreen, void());
   MOCK_METHOD0(GetErrorScreen, ErrorScreen*());
   MOCK_METHOD0(ShowErrorScreen, void());

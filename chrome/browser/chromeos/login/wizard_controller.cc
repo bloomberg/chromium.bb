@@ -1499,9 +1499,7 @@ void WizardController::SimulateDemoModeSetupForTesting() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
-void WizardController::OnExit(BaseScreen& /* screen */,
-                              ScreenExitCode exit_code,
-                              const ::login::ScreenContext* /* context */) {
+void WizardController::OnExit(ScreenExitCode exit_code) {
   VLOG(1) << "Wizard screen exit code: " << ExitCodeToString(exit_code);
   const OobeScreen previous_screen = current_screen_->screen_id();
   if (IsOOBEStepToTrack(previous_screen)) {

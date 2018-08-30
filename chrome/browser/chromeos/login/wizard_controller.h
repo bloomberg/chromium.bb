@@ -264,9 +264,7 @@ class WizardController : public BaseScreenDelegate,
   void PerformOOBECompletedActions();
 
   // Overridden from BaseScreenDelegate:
-  void OnExit(BaseScreen& screen,
-              ScreenExitCode exit_code,
-              const ::login::ScreenContext* context) override;
+  void OnExit(ScreenExitCode exit_code) override;
   void ShowCurrentScreen() override;
   ErrorScreen* GetErrorScreen() override;
   void ShowErrorScreen() override;
