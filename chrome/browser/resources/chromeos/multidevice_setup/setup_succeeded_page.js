@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('multidevice_setup');
+
 Polymer({
   is: 'setup-succeeded-page',
 
@@ -29,12 +31,17 @@ Polymer({
     UiPageContainerBehavior,
   ],
 
+  /** @private {?multidevice_setup.BrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = multidevice_setup.BrowserProxyImpl.getInstance();
+  },
+
   /** @private */
   openSettings_: function() {
-    // TODO(jordynass): Open MultiDevice settings when that page is built.
-    console.log('Opening MultiDevice Settings');
-    // This method is just for testing that the method was called
-    this.fire('settings-opened');
+    this.browserProxy_.openMultiDeviceSettings();
   },
 
   /** @override */

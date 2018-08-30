@@ -6,26 +6,44 @@
  * @fileoverview Suite of tests for page-specific behaviors of
  * SetupSucceededPage.
  */
+
+/**
+ * @implements {multidevice_setup.BrowserProxy}
+ */
+class TestMultideviceSetupBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super(['openMultiDeviceSettings']);
+  }
+
+  /** @override */
+  openMultiDeviceSettings() {
+    this.methodCalled('openMultiDeviceSettings');
+  }
+}
+
 cr.define('multidevice_setup', () => {
   function registerSetupSucceededPageTests() {
     suite('MultiDeviceSetup', () => {
       /**
        * SetupSucceededPage created before each test. Defined in setUp.
-       * @type {SetupSucceededPage|undefined}
+       * @type {?SetupSucceededPage}
        */
-      let setupSucceededPageElement;
+      let setupSucceededPageElement = null;
+      /** @type {?TestMultideviceSetupBrowserProxy} */
+      let browserProxy = null;
 
       setup(() => {
+        browserProxy = new TestMultideviceSetupBrowserProxy();
+        multidevice_setup.BrowserProxyImpl.instance_ = browserProxy;
+
         setupSucceededPageElement =
             document.createElement('setup-succeeded-page');
         document.body.appendChild(setupSucceededPageElement);
       });
 
-      test('Settings link opens settings page', done => {
-        setupSucceededPageElement.addEventListener(
-            'settings-opened', () => done());
-        let settingsLink = setupSucceededPageElement.$$('#settings-link');
-        settingsLink.click();
+      test('Settings link opens settings page', () => {
+        setupSucceededPageElement.$$('#settings-link').click();
+        return browserProxy.whenCalled('openMultiDeviceSettings');
       });
     });
   }

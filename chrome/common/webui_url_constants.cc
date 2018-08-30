@@ -294,6 +294,8 @@ const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
+// 'multidevice/features' is a child of the 'multidevice' route
+const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
 const char kSmbSharesPage[] = "smbShares";

@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/multidevice_setup_resources.h"
@@ -150,6 +151,7 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
                             kMultideviceSetupResources[i].value);
   }
 
+  web_ui->AddMessageHandler(std::make_unique<MultideviceSetupHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.

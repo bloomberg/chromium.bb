@@ -10,12 +10,19 @@ js_type_check("closure_compile") {
     ":fake_mojo_service",
     ":mojo_api_behavior",
     ":multidevice_setup",
+    ":multidevice_setup_browser_proxy",
     ":multidevice_setup_dialog",
     ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
     ":ui_mode",
     ":ui_page_container_behavior",
+  ]
+}
+
+js_library("multidevice_setup_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
   ]
 }
 
