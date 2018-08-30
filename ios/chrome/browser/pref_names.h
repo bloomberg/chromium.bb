@@ -22,7 +22,7 @@ extern const char kDefaultCharset[];
 extern const char kEnableDoNotTrack[];
 extern const char kHttpServerProperties[];
 extern const char kIosBookmarkCachedFolderId[];
-extern const char kIosBookmarkCachedScrollPosition[];
+extern const char kIosBookmarkCachedTopMostRow[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
 extern const char kIosBookmarkSigninPromoDisplayedCount[];
