@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +100,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
                      fidl::InterfaceRequest<chromium::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
+      focus_controller_(std::make_unique<wm::FocusController>(this)),
       context_(context),
       binding_(this, std::move(frame_request)) {
   binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
@@ -106,8 +108,16 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 
 FrameImpl::~FrameImpl() {
   if (window_tree_host_) {
+    aura::client::SetFocusClient(root_window(), nullptr);
+    wm::SetActivationClient(root_window(), nullptr);
+
     window_tree_host_->Hide();
     window_tree_host_->compositor()->SetVisible(false);
+
+    // Allows posted focus events to process before the FocusController
+    // is torn down.
+    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                       focus_controller_.release());
   }
 }
 
@@ -124,11 +134,21 @@ void FrameImpl::CreateView(
   window_tree_host_ =
       std::make_unique<aura::WindowTreeHostPlatform>(std::move(properties));
   window_tree_host_->InitHost();
-  window_tree_host_->window()->SetLayoutManager(new LayoutManagerImpl());
-  window_tree_host_->window()->AddChild(web_contents_->GetNativeView());
-  window_tree_host_->window()->Show();
-  window_tree_host_->Show();
+
+  aura::client::SetFocusClient(root_window(), focus_controller_.get());
+  wm::SetActivationClient(root_window(), focus_controller_.get());
+
+  // Add hooks which automatically set the focus state when input events are
+  // received.
+  root_window()->AddPreTargetHandler(focus_controller_.get());
+
+  // Track child windows for enforcement of window management policies and
+  // propagate window manager events to them (e.g. window resizing).
+  root_window()->SetLayoutManager(new LayoutManagerImpl());
+
+  root_window()->AddChild(web_contents_->GetNativeView());
   web_contents_->GetNativeView()->Show();
+  window_tree_host_->Show();
 }
 
 void FrameImpl::GetNavigationController(
@@ -247,6 +267,12 @@ void FrameImpl::MaybeSendNavigationEvent() {
     // No more changes to report.
     waiting_for_navigation_event_ack_ = false;
   }
+}
+
+bool FrameImpl::SupportsChildActivation(aura::Window*) const {
+  // TODO(crbug.com/878439): Return a result based on window properties such as
+  // visibility.
+  return true;
 }
 
 }  // namespace webrunner

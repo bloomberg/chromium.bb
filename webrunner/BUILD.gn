@@ -81,6 +81,7 @@ component("service_lib") {
     "//ui/display",
     "//ui/ozone",
     "//ui/platform_window",
+    "//ui/wm",
   ]
 
   data_deps = [
