@@ -112,6 +112,7 @@ source_set("external_url_eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
     "//net",
