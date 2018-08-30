@@ -4290,7 +4290,6 @@ crbug.com/843945 external/wpt/cookies/samesite/iframe.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/img.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/window-open.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/secure/create-cookie-http.html [ Failure ]
 
 # Client hint tests that fail in content_shell but pass when run manually using
 # full browser.
