@@ -540,7 +540,8 @@ public class ToolbarPhone extends ToolbarLayout
                     return getMenuButtonHelper().onEnterKeyPress(getMenuButton());
                 }
             });
-        onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
+        onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
+                || FeatureUtilities.isNewTabPageButtonEnabled());
 
         if (mNewTabButton != null) mNewTabButton.postNativeInitialization();
 
