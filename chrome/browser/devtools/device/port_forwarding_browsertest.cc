@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   AndroidDeviceManager::DeviceProviders device_providers;
 
   device_providers.push_back(
-      TCPDeviceProvider::CreateForLocalhost(kDefaultDebuggingPort, profile));
+      TCPDeviceProvider::CreateForLocalhost(kDefaultDebuggingPort));
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
       set_device_providers_for_test(device_providers);
 
@@ -145,8 +145,7 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
   AndroidDeviceManager::DeviceProviders device_providers;
 
   scoped_refptr<TCPDeviceProvider> self_provider(
-      TCPDeviceProvider::CreateForLocalhost(kAlternativeDebuggingPort,
-                                            profile));
+      TCPDeviceProvider::CreateForLocalhost(kAlternativeDebuggingPort));
   device_providers.push_back(self_provider);
 
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->

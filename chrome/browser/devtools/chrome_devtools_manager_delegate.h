@@ -34,7 +34,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   ~ChromeDevToolsManagerDelegate() override;
 
   static ChromeDevToolsManagerDelegate* GetInstance();
-  void UpdateDeviceDiscovery(content::BrowserContext* context);
+  void UpdateDeviceDiscovery();
 
   // |web_contents| may be null, in which case this function just checks
   // the settings for |profile|.

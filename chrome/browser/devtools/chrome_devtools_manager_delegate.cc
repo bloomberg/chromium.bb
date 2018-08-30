@@ -259,8 +259,7 @@ void ChromeDevToolsManagerDelegate::DevicesAvailable(
   remote_agent_hosts_.swap(remote_targets);
 }
 
-void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery(
-    content::BrowserContext* context) {
+void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
   RemoteLocations remote_locations;
   for (const auto& it : sessions_) {
     TargetHandler* target_handler = it.second->target_handler();
@@ -295,7 +294,7 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery(
       device_manager_ = AndroidDeviceManager::Create();
 
     AndroidDeviceManager::DeviceProviders providers;
-    providers.push_back(new TCPDeviceProvider(remote_locations, context));
+    providers.push_back(new TCPDeviceProvider(remote_locations));
     device_manager_->SetDeviceProviders(providers);
 
     device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
