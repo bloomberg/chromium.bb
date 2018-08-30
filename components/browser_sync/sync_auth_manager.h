@@ -141,12 +141,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // delayed startup.
   SyncAccountInfo sync_account_;
 
-  // Whether we're currently switching the active account, or its |is_primary|
-  // bit. During this time, |sync_account_| won't necessarily match
-  // |DetermineAccountToUse()|. This is set while we're updating the observers
-  // of an account change during UpdateSyncAccountIfNecessary.
-  bool currently_switching_account_ = false;
-
   // This is a cache of the last authentication response we received either
   // from the sync server or from Chrome's identity/token management system.
   // TODO(crbug.com/839834): Differentiate between these types of auth errors,
