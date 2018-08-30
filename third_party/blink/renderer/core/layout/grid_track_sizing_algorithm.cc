@@ -251,6 +251,12 @@ bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
     GridTrackSize track_size = RawGridTrackSize(direction, track_position);
     // We consider fr units as 'auto' for the min sizing function.
     // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
+    //
+    // The use of AvailableSize function may imply different results
+    // for the same item when assuming indefinite or definite size
+    // constraints depending on the phase we evaluate the item's
+    // baseline participation.
+    // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/3046
     if (track_size.IsContentSized() || track_size.IsFitContent() ||
         track_size.MinTrackBreadth().IsFlex() ||
         (track_size.MaxTrackBreadth().IsFlex() && !AvailableSpace(direction)))
@@ -1587,8 +1593,6 @@ void GridTrackSizingAlgorithm::Setup(
 }
 
 void GridTrackSizingAlgorithm::ComputeBaselineAlignmentContext() {
-  if (sizing_state_ > kRowSizingFirstIteration)
-    return;
   GridAxis axis = GridAxisForDirection(direction_);
   baseline_alignment_.Clear(axis);
   baseline_alignment_.SetBlockFlow(layout_grid_->StyleRef().GetWritingMode());
