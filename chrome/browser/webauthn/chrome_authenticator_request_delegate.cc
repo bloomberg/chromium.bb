@@ -133,6 +133,9 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
   transient_dialog_model_holder_ =
       std::make_unique<AuthenticatorRequestDialogModel>();
   transient_dialog_model_holder_->SetRequestCallback(request_callback);
+  transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
+      bluetooth_adapter_power_on_callback);
+
   weak_dialog_model_ = transient_dialog_model_holder_.get();
   weak_dialog_model_->AddObserver(this);
 }

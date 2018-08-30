@@ -154,6 +154,10 @@ void AuthenticatorRequestDialogModel::TryIfBleAdapterIsPowered() {
 
 void AuthenticatorRequestDialogModel::PowerOnBleAdapter() {
   DCHECK_EQ(current_step(), Step::kBlePowerOnAutomatic);
+  if (!bluetooth_adapter_power_on_callback_)
+    return;
+
+  bluetooth_adapter_power_on_callback_.Run();
 }
 
 void AuthenticatorRequestDialogModel::StartBleDiscovery() {
@@ -250,4 +254,9 @@ void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
 void AuthenticatorRequestDialogModel::SetRequestCallback(
     device::FidoRequestHandlerBase::RequestCallback request_callback) {
   request_callback_ = request_callback;
+}
+
+void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
+    base::RepeatingClosure bluetooth_adapter_power_on_callback) {
+  bluetooth_adapter_power_on_callback_ = bluetooth_adapter_power_on_callback;
 }
