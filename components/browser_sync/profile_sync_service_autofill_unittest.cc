@@ -383,7 +383,6 @@ class ProfileSyncServiceAutofillTest
                                  profile_sync_service_bundle()->pref_service(),
                                  /*identity_manager=*/nullptr,
                                  /*is_off_the_record=*/false);
-    personal_data_manager_->SetUseAccountStorageForServerCards(false);
 
     web_data_service_->StartSyncableService();
 

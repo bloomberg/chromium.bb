@@ -112,7 +112,12 @@ void ExpectSameElements(const std::vector<T*>& expectations,
 
 class PersonalDataManagerTestBase {
  protected:
-  PersonalDataManagerTestBase() : profile_autofill_table_(nullptr) {}
+  PersonalDataManagerTestBase() : profile_autofill_table_(nullptr) {
+    // Enable account storage by default, some tests will override this to be
+    // false.
+    scoped_features_.InitAndEnableFeature(
+        features::kAutofillEnableAccountWalletStorage);
+  }
 
   void SetUpTest() {
     OSCryptMocker::SetUp();
@@ -175,8 +180,8 @@ class PersonalDataManagerTestBase {
         prefs_.get(), identity_test_env_.identity_manager(), is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
     personal_data_->OnSyncServiceInitialized(&sync_service_);
-    personal_data_->SetUseAccountStorageForServerCards(
-        use_account_server_storage);
+    sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
+    personal_data_->OnStateChanged(&sync_service_);
 
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -368,6 +373,7 @@ class PersonalDataManagerTestBase {
   AutofillTable* account_autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
   std::unique_ptr<PersonalDataManager> personal_data_;
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 class PersonalDataManagerTest : public PersonalDataManagerTestBase,
@@ -6550,6 +6556,42 @@ TEST_F(PersonalDataManagerTest, UsePersistentServerStorage) {
                     ->GetCreditCardsToSuggest(/*include_server_cards=*/false)
                     .size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+}
+
+// Verify that PDM can switch at runtime between the different storages.
+TEST_F(PersonalDataManagerTest, SwitchServerStorages) {
+  // Start with account storage.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  SetUpThreeCardTypes();
+
+  // Check that we do have 2 server cards, as expected.
+  ASSERT_EQ(2U, personal_data_->GetServerCreditCards().size());
+
+  // Switch to persistent storage.
+  sync_service_.SetIsAuthenticatedAccountPrimary(true);
+  personal_data_->OnStateChanged(&sync_service_);
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(0U, personal_data_->GetServerCreditCards().size());
+
+  CreditCard server_card;
+  test::SetCreditCardInfo(&server_card, "Server Card",
+                          "4234567890123456",  // Visa
+                          "04", "2999", "1");
+  server_card.set_guid("00000000-0000-0000-0000-000000000007");
+  server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  server_card.set_server_id("server_id");
+  personal_data_->AddFullServerCreditCard(server_card);
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
+
+  // Switch back to the account storage.
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+  personal_data_->OnStateChanged(&sync_service_);
+  WaitForOnPersonalDataChanged();
+
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }
 

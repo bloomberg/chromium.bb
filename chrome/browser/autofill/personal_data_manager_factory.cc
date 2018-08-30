@@ -52,10 +52,6 @@ KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 IdentityManagerFactory::GetForProfile(profile),
                 profile->IsOffTheRecord());
-  // For now, just tell the PersonalDataManager to use the account storage if
-  // the feature flag is enabled.
-  // TODO(feuunk): Set this based on whether we're in lightweight sync mode.
-  service->SetUseAccountStorageForServerCards(account_storage != nullptr);
   return service;
 }
 
