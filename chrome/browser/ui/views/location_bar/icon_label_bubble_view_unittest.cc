@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -34,6 +36,10 @@ const int kNumberOfSteps = 300;
 
 class TestIconLabelBubbleView : public IconLabelBubbleView {
  public:
+  using IconLabelBubbleView::AnimateIn;
+  using IconLabelBubbleView::AnimateOut;
+  using IconLabelBubbleView::ResetSlideAnimation;
+
   enum State {
     GROWING,
     STEADY,
@@ -360,6 +366,37 @@ TEST_F(IconLabelBubbleViewTest, GestureInkDropState) {
   EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop()->GetTargetInkDropState());
 }
 #endif
+
+TEST_F(IconLabelBubbleViewTest, LabelVisibilityAfterAnimation) {
+  view()->AnimateIn(base::nullopt);
+  EXPECT_TRUE(view()->IsLabelVisible());
+  view()->AnimateOut();
+  EXPECT_FALSE(view()->IsLabelVisible());
+  // Label should reappear if animated in after being animated out.
+  view()->AnimateIn(base::nullopt);
+  EXPECT_TRUE(view()->IsLabelVisible());
+}
+
+TEST_F(IconLabelBubbleViewTest, LabelVisibilityAfterAnimationReset) {
+  view()->ResetSlideAnimation(true);
+  EXPECT_TRUE(view()->IsLabelVisible());
+  view()->ResetSlideAnimation(false);
+  EXPECT_FALSE(view()->IsLabelVisible());
+  // Label should reappear if animated in after being reset out.
+  view()->AnimateIn(base::nullopt);
+  EXPECT_TRUE(view()->IsLabelVisible());
+}
+
+TEST_F(IconLabelBubbleViewTest,
+       LabelVisibilityAfterAnimationWithDefinedString) {
+  view()->AnimateIn(IDS_AUTOFILL_CARD_SAVED);
+  EXPECT_TRUE(view()->IsLabelVisible());
+  view()->AnimateOut();
+  EXPECT_FALSE(view()->IsLabelVisible());
+  // Label should reappear if animated in after being animated out.
+  view()->AnimateIn(IDS_AUTOFILL_CARD_SAVED);
+  EXPECT_TRUE(view()->IsLabelVisible());
+}
 
 #if defined(OS_CHROMEOS)
 // Verifies IconLabelBubbleView::CalculatePreferredSize() doesn't crash when

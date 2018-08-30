@@ -47,16 +47,11 @@ constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 // The type of tweening for the animation.
 const gfx::Tween::Type kIconLabelBubbleTweenType = gfx::Tween::EASE_IN_OUT;
 
-// The time for the text to animate out, as well as in.
-constexpr int kIconLabelBubbleSlideTimeMs = 600;
-
 // The total time for the in and out text animation.
 constexpr int kIconLabelBubbleAnimationDurationMs = 3000;
 
-// The fraction of time taken for the text to animate out, as well as in.
-const double kIconLabelBubbleOpenTimeFraction =
-    static_cast<double>(kIconLabelBubbleSlideTimeMs) /
-    kIconLabelBubbleAnimationDurationMs;
+// The ratio of text animation duration to total animation duration.
+const double kIconLabelBubbleOpenTimeFraction = 0.2;
 }  // namespace
 
 //////////////////////////////////////////////////////////////////
@@ -413,7 +408,6 @@ void IconLabelBubbleView::OnBlur() {
 }
 
 void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
-  slide_animation_.Reset();
   if (!is_animation_paused_) {
     // If there is no separator to show, then that means we want the text to
     // disappear after animating.
@@ -515,6 +509,10 @@ int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
              : 0;
 }
 
+int IconLabelBubbleView::GetSlideDurationTime() const {
+  return kIconLabelBubbleAnimationDurationMs;
+}
+
 int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
   int end_padding = ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator
                                           : GetInsets().right();
@@ -543,19 +541,31 @@ void IconLabelBubbleView::SetUpForInOutAnimation() {
   image_->EnableCanvasFlippingForRTLUI(true);
   label_->SetElideBehavior(gfx::NO_ELIDE);
   label_->SetVisible(false);
-
-  slide_animation_.SetSlideDuration(kIconLabelBubbleAnimationDurationMs);
+  slide_animation_.SetSlideDuration(GetSlideDurationTime());
   slide_animation_.SetTweenType(kIconLabelBubbleTweenType);
   open_state_fraction_ = gfx::Tween::CalculateValue(
       kIconLabelBubbleTweenType, kIconLabelBubbleOpenTimeFraction);
 }
 
-void IconLabelBubbleView::AnimateIn(int string_id) {
+void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
   if (!label()->visible()) {
-    SetLabel(l10n_util::GetStringUTF16(string_id));
+    if (string_id)
+      SetLabel(l10n_util::GetStringUTF16(string_id.value()));
     label()->SetVisible(true);
     ShowAnimation();
   }
+}
+
+void IconLabelBubbleView::AnimateOut() {
+  if (label()->visible()) {
+    label()->SetVisible(false);
+    HideAnimation();
+  }
+}
+
+void IconLabelBubbleView::ResetSlideAnimation(bool show) {
+  label()->SetVisible(show);
+  slide_animation_.Reset(show);
 }
 
 void IconLabelBubbleView::PauseAnimation() {
@@ -585,8 +595,18 @@ void IconLabelBubbleView::UnpauseAnimation() {
   }
 }
 
+double IconLabelBubbleView::GetAnimationValue() const {
+  return slide_animation_.GetCurrentValue();
+}
+
 void IconLabelBubbleView::ShowAnimation() {
   slide_animation_.Show();
+  GetInkDrop()->SetShowHighlightOnHover(false);
+  GetInkDrop()->SetShowHighlightOnFocus(false);
+}
+
+void IconLabelBubbleView::HideAnimation() {
+  slide_animation_.Hide();
   GetInkDrop()->SetShowHighlightOnHover(false);
   GetInkDrop()->SetShowHighlightOnFocus(false);
 }
