@@ -158,7 +158,6 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // RenderThreadObserver implementation:
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void IdleNotification() override;
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
@@ -270,10 +269,6 @@ class Dispatcher : public content::RenderThreadObserver,
   std::unique_ptr<UserScriptSetManager> user_script_set_manager_;
 
   std::unique_ptr<ScriptInjectionManager> script_injection_manager_;
-
-  // Same as above, but on a longer timer and will run even if the process is
-  // not idle, to ensure that IdleHandle gets called eventually.
-  std::unique_ptr<base::RepeatingTimer> forced_idle_timer_;
 
   // The extensions and apps that are active in this process.
   ExtensionIdSet active_extension_ids_;

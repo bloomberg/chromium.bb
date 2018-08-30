@@ -37,8 +37,6 @@ class CONTENT_EXPORT RenderThreadObserver {
   // Called when the renderer cache of the plugin list has changed.
   virtual void PluginListChanged() {}
 
-  virtual void IdleNotification() {}
-
   // Called when the network state changes.
   virtual void NetworkStateChanged(bool online) {}
 

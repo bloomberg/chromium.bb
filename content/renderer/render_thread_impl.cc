@@ -1338,9 +1338,6 @@ void RenderThreadImpl::IdleHandler() {
   } else {
     idle_timer_.Stop();
   }
-
-  for (auto& observer : observers_)
-    observer.IdleNotification();
 }
 
 int64_t RenderThreadImpl::GetIdleNotificationDelayInMs() const {
