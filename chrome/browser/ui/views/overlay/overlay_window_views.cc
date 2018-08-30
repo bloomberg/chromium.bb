@@ -593,12 +593,6 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
-void OverlayWindowViews::OnNativeWidgetBeginUserBoundsChange() {
-  // Hide the controls when the window is being dragged or resized. The
-  // controls will reappear when the user hovers over the window again.
-  UpdateControlsVisibility(false);
-}
-
 void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
   // Every time a user uses a keyboard to interact on the window, restart the
   // timer to automatically hide the controls.
@@ -722,6 +716,11 @@ void OverlayWindowViews::OnNativeBlur() {
 }
 
 void OverlayWindowViews::OnNativeWidgetMove() {
+  // Hide the controls when the window is moving. The controls will reappear
+  // when the user interacts with the window again.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
   // Update the existing |window_bounds_| when the window moves. This allows
   // the window to reappear with the same origin point when a new video is
   // shown.
@@ -729,6 +728,11 @@ void OverlayWindowViews::OnNativeWidgetMove() {
 }
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
+  // Hide the controls when the window is being resized. The controls will
+  // reappear when the user interacts with the window again.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
   // Update the view layers to scale to |new_size|.
   UpdateCustomControlsSize(first_custom_controls_view_.get());
   UpdateCustomControlsSize(second_custom_controls_view_.get());
