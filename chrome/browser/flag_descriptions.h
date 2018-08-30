@@ -991,6 +991,9 @@ extern const char kServiceWorkerServicificationDescription[];
 extern const char kServiceWorkerScriptFullCodeCacheName[];
 extern const char kServiceWorkerScriptFullCodeCacheDescription[];
 
+extern const char kServiceWorkerLongRunningMessageName[];
+extern const char kServiceWorkerLongRunningMessageDescription[];
+
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 

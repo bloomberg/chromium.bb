@@ -3255,6 +3255,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
 
+    // NOTE: This feature is generic and marked kOsAll but is used only in CrOS
+    // for AndroidMessagesIntegration feature.
+    {"enable-service-worker-long-running-message",
+     flag_descriptions::kServiceWorkerLongRunningMessageName,
+     flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
+
 #if defined(OS_MACOSX)
     {"tab-strip-keyboard-focus", flag_descriptions::kTabStripKeyboardFocusName,
      flag_descriptions::kTabStripKeyboardFocusDescription, kOsMac,
