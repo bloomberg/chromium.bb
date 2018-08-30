@@ -12,6 +12,9 @@
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
@@ -32,7 +35,8 @@ class ContextImpl;
 // Implements a Frame service, which is a wrapper for a WebContents instance.
 class FrameImpl : public chromium::web::Frame,
                   public chromium::web::NavigationController,
-                  public content::WebContentsObserver {
+                  public content::WebContentsObserver,
+                  public wm::BaseFocusRules {
  public:
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
             ContextImpl* context,
@@ -70,6 +74,9 @@ class FrameImpl : public chromium::web::Frame,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
+  // wm::BaseFocusRules implementation.
+  bool SupportsChildActivation(aura::Window*) const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, DelayedNavigationEventAck);
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NavigationObserverDisconnected);
@@ -77,12 +84,15 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, Stop);
 
+  aura::Window* root_window() const { return window_tree_host_->window(); }
+
   // Sends |pending_navigation_event_| to the observer if there are any changes
   // to be reported.
   void MaybeSendNavigationEvent();
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<wm::FocusController> focus_controller_;
 
   chromium::web::NavigationEventObserverPtr navigation_observer_;
   chromium::web::NavigationEntry cached_navigation_state_;

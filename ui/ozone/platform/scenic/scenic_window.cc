@@ -4,9 +4,11 @@
 
 #include "ui/ozone/platform/scenic/scenic_window.h"
 
-#include <string>
-
 #include <fuchsia/sys/cpp/fidl.h>
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "ui/events/event.h"
@@ -276,6 +278,11 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
       break;
 
     case fuchsia::ui::input::InputEvent::Tag::kFocus:
+      // TODO(crbug.com/878439): Implement this once Scenic adds support for
+      // sending FocusEvents.
+      NOTIMPLEMENTED();
+      break;
+
     case fuchsia::ui::input::InputEvent::Tag::Invalid:
       break;
   }
