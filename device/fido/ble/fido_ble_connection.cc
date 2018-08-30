@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
@@ -107,7 +108,9 @@ void FidoBleConnection::Connect() {
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
     DLOG(ERROR) << "Failed to get Device.";
-    OnConnectionError();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FidoBleConnection::OnConnectionError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -122,7 +125,8 @@ void FidoBleConnection::ReadControlPointLength(
     ControlPointLengthCallback callback) {
   const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
-    std::move(callback).Run(base::nullopt);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
 
@@ -130,7 +134,8 @@ void FidoBleConnection::ReadControlPointLength(
       u2f_service->GetCharacteristic(*control_point_length_id_);
   if (!control_point_length) {
     DLOG(ERROR) << "No Control Point Length characteristic present.";
-    std::move(callback).Run(base::nullopt);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
 
@@ -144,7 +149,9 @@ void FidoBleConnection::ReadServiceRevisions(
     ServiceRevisionsCallback callback) {
   const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
-    std::move(callback).Run({});
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::set<ServiceRevision>()));
     return;
   }
 
@@ -161,7 +168,9 @@ void FidoBleConnection::ReadServiceRevisions(
 
   if (!service_revision && !service_revision_bitfield) {
     DLOG(ERROR) << "Service Revision Characteristics do not exist.";
-    std::move(callback).Run({});
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::set<ServiceRevision>()));
     return;
   }
 
@@ -223,7 +232,8 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
                                           WriteCallback callback) {
   const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
-    std::move(callback).Run(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -231,7 +241,8 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
       u2f_service->GetCharacteristic(*control_point_id_);
   if (!control_point) {
     DLOG(ERROR) << "Control Point characteristic not present.";
-    std::move(callback).Run(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -241,7 +252,8 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
   // provide the required property.
   if (control_point->WriteWithoutResponse(data)) {
     DVLOG(2) << "Write without response succeeded.";
-    std::move(callback).Run(true);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
     return;
   }
 #endif  // defined(OS_MACOSX)
@@ -256,7 +268,8 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
                                              WriteCallback callback) {
   const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
-    std::move(callback).Run(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -264,7 +277,8 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
       u2f_service->GetCharacteristic(*service_revision_bitfield_id_);
   if (!service_revision_bitfield) {
     DLOG(ERROR) << "Service Revision Bitfield characteristic not present.";
-    std::move(callback).Run(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -279,7 +293,8 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
     default:
       DLOG(ERROR)
           << "Write Service Revision Failed: Unsupported Service Revision.";
-      std::move(callback).Run(false);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), false));
       return;
   }
 
@@ -314,7 +329,9 @@ void FidoBleConnection::ConnectToU2fService() {
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
     DLOG(ERROR) << "Failed to get Device.";
-    OnConnectionError();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FidoBleConnection::OnConnectionError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -328,7 +345,9 @@ void FidoBleConnection::ConnectToU2fService() {
 
   if (found == services.end()) {
     DLOG(ERROR) << "Failed to get U2F Service.";
-    OnConnectionError();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FidoBleConnection::OnConnectionError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -362,7 +381,9 @@ void FidoBleConnection::ConnectToU2fService() {
   if (!control_point_length_id_ || !control_point_id_ || !status_id_ ||
       (!service_revision_id_ && !service_revision_bitfield_id_)) {
     DLOG(ERROR) << "U2F characteristics missing.";
-    OnConnectionError();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FidoBleConnection::OnConnectionError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
