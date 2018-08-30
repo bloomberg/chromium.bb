@@ -242,6 +242,7 @@ jumbo_component("gfx") {
     ":selection_bound_sources",
     "//base",
     "//skia",
+    "//skia:skcms",
     "//third_party/icu",
     "//ui/gfx/animation",
     "//ui/gfx/codec",
