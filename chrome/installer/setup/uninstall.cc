@@ -901,7 +901,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // there). This is due to a Google Update behaviour where an uninstall and a
   // rapid reinstall might result in stale values from the old ClientState key
   // being picked up on reinstall.
-  product.SetMsiMarker(installer_state.system_install(), false);
+  InstallUtil::DeleteRegistryValue(
+      installer_state.root_key(), install_static::GetClientStateKeyPath(),
+      KEY_WOW64_32KEY, google_update::kRegMSIField);
 
   InstallStatus ret = installer::UNKNOWN_STATUS;
 

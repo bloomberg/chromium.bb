@@ -63,29 +63,11 @@ TEST(ProductTest, ProductInstallBasic) {
                            base::UTF8ToWide(
                                current_version.GetString()).c_str());
 
-    // We started out with a non-msi product.
     machine_state.Initialize();
     const installer::ProductState* chrome_state =
         machine_state.GetProductState(system_level);
-    EXPECT_NE(nullptr, chrome_state);
-    if (chrome_state) {
-      EXPECT_EQ(chrome_state->version(), current_version);
-      EXPECT_FALSE(chrome_state->is_msi());
-    }
-
-    // Create a make-believe client state key.
-    RegKey key;
-    std::wstring state_key_path(distribution->GetStateKey());
-    ASSERT_EQ(ERROR_SUCCESS,
-        key.Create(root, state_key_path.c_str(), KEY_ALL_ACCESS));
-
-    // Set the MSI marker, refresh, and verify that we now see the MSI marker.
-    EXPECT_TRUE(product->SetMsiMarker(system_level, true));
-    machine_state.Initialize();
-    chrome_state = machine_state.GetProductState(system_level);
-    EXPECT_NE(nullptr, chrome_state);
-    if (chrome_state)
-      EXPECT_TRUE(chrome_state->is_msi());
+    ASSERT_NE(nullptr, chrome_state);
+    EXPECT_EQ(chrome_state->version(), current_version);
   }
 }
 

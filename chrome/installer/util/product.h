@@ -56,11 +56,6 @@ class Product {
                            const base::CommandLine& options,
                            int32_t* exit_code) const;
 
-  // Sets the boolean MSI marker for this installation if set is true or clears
-  // it otherwise. The MSI marker is stored in the registry under the
-  // ClientState key.
-  bool SetMsiMarker(bool system_install, bool set) const;
-
   // See ProductOperations::AddKeyFiles.
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
 
@@ -70,10 +65,6 @@ class Product {
       ShellUtil::ShortcutProperties* properties) const;
 
  protected:
-  enum CacheStateFlags {
-    MSI_STATE = 0x01
-  };
-
   BrowserDistribution* const distribution_;
   const std::unique_ptr<ProductOperations> operations_;
 
