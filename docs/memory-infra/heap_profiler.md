@@ -26,10 +26,12 @@ along with sufficient metadata to identify the code that made the allocation.
 
  7. Save the trace.
 
- 8. Run the command `./third_party/catapult/tracing/bin/symbolize_trace
-    <path_to_trace>` to symbolize the trace. If you haven't yet done so, this
-    will require you to authenticate with google cloud storage to obtain access
-    to symbol files.
+ 8. To symbolize the trace:
+   * Windows only: build `addr2line-pdb` from the chromium repository. For subsequent commands, add the flag `--addr2line-executable=<path_to_addr2lin-pdb>`
+   * If this is a local build, run the command `./third_party/catapult/tracing/bin/symbolize_trace --is-local-build <path_to_trace>`
+   * If this is an official Chrome build,  run `./third_party/catapult/tracing/bin/symbolize_trace <path_to_trace>`. This will request authentication with google cloud storage to obtain symbol files [googlers only].
+   * If this is an official macOS or Linux Chrome build, add the flag `--use-breakpad-symbols`.
+   * If the trace is from a different device, add the flag `--only-symbolize-chrome-symbols`.
 
  9. Turn off heap profiling in chrome://flags. Restart Chrome.
 
