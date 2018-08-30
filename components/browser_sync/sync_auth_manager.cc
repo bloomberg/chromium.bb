@@ -103,18 +103,12 @@ SyncAuthManager::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
     // just return |sync_account_| here instead of re-querying.
     return DetermineAccountToUse();
   }
-#else
-  // Note: This check should apply to all platforms including ChromeOS, but many
-  // tests on ChromeOS set up the primary account *after* initializing the Sync
-  // service (https://crbug.com/814787), which cannot happen in real life and
-  // thus doesn't send any notification, which means we can end up in an
-  // inconsistent state *only in tests on ChromeOS*.
-  DCHECK(currently_switching_account_ ||
-         sync_account_.account_info.account_id ==
-             DetermineAccountToUse().account_info.account_id)
-      << sync_account_.account_info.account_id << " vs "
-      << DetermineAccountToUse().account_info.account_id;
 #endif  // !defined(OS_CHROMEOS)
+  // Note: At this point, |sync_account_| should generally be identical to the
+  // result of a DetermineAccountToUse() call, but there are a few edge cases
+  // when it isn't: E.g. when another identity observer gets notified before us
+  // and calls in here, or when we're currently switching accounts in
+  // UpdateSyncAccountIfNecessary(). So unfortunately we can't verify this.
 
   return sync_account_;
 }
@@ -375,9 +369,6 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
   // Something has changed: Either this is a sign-in or sign-out, or the account
   // changed, or the account stayed the same but its |is_primary| bit changed.
 
-  DCHECK(!currently_switching_account_);
-  currently_switching_account_ = true;
-
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {
     sync_account_ = SyncAccountInfo();
@@ -393,8 +384,6 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
     sync_account_ = new_account;
     account_state_changed_callback_.Run();
   }
-
-  currently_switching_account_ = false;
 
   return true;
 }
