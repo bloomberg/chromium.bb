@@ -5,7 +5,6 @@
 #include "chrome/common/extensions/sync_helper.h"
 
 #include "base/logging.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"

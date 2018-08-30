@@ -46,7 +46,6 @@
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "extensions/browser/extension_registry.h"
 #endif
@@ -87,7 +86,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          genius_app::kGeniusAppId,
+          extension_misc::kGeniusAppId,
           extensions::ExtensionRegistry::EVERYTHING);
   if (!extension) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(

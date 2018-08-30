@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -28,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {

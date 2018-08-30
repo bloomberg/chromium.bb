@@ -15,8 +15,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
