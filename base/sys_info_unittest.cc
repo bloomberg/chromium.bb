@@ -4,12 +4,20 @@
 
 #include <stdint.h>
 
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "base/process/process_metrics.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -130,6 +138,31 @@ TEST_F(SysInfoTest, HardwareModelNameFormatMacAndiOS) {
   EXPECT_TRUE(StringToInt(pieces[1], &value)) << hardware_model;
 }
 #endif
+
+TEST_F(SysInfoTest, GetHardwareInfo) {
+  test::ScopedTaskEnvironment task_environment;
+  base::Optional<SysInfo::HardwareInfo> hardware_info;
+
+  auto callback = base::BindOnce(
+      [](base::Optional<SysInfo::HardwareInfo>* target_info,
+         SysInfo::HardwareInfo info) { *target_info = std::move(info); },
+      &hardware_info);
+  SysInfo::GetHardwareInfo(std::move(callback));
+  task_environment.RunUntilIdle();
+
+  ASSERT_TRUE(hardware_info.has_value());
+  EXPECT_TRUE(IsStringUTF8(hardware_info->manufacturer));
+  EXPECT_TRUE(IsStringUTF8(hardware_info->model));
+  bool empty_result_expected =
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN) || \
+    defined(OS_LINUX)
+      false;
+#else
+      true;
+#endif
+  EXPECT_EQ(hardware_info->manufacturer.empty(), empty_result_expected);
+  EXPECT_EQ(hardware_info->model.empty(), empty_result_expected);
+}
 
 #if defined(OS_CHROMEOS)
 
