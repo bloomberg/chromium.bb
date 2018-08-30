@@ -162,6 +162,10 @@ class TestRunner : public WebTestRunner {
   midi::mojom::Result midiAccessorResult();
 
   bool ShouldDumpConsoleMessages() const;
+  // Controls whether console messages produced by the page are dumped
+  // to test output.
+  void SetDumpConsoleMessages(bool value);
+
   bool ShouldDumpJavaScriptDialogs() const;
 
   blink::WebEffectiveConnectionType effective_connection_type() const {
@@ -421,10 +425,6 @@ class TestRunner : public WebTestRunner {
   // Sets a flag that tells the WebViewTestProxy to dump the default navigation
   // policy passed to the decidePolicyForNavigation callback.
   void DumpNavigationPolicy();
-
-  // Controls whether console messages produced by the page are dumped
-  // to test output.
-  void SetDumpConsoleMessages(bool value);
 
   // Controls whether JavaScript dialogs such as alert() are dumped to test
   // output.
