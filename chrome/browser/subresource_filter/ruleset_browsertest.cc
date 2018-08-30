@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
@@ -13,6 +14,7 @@
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
@@ -60,10 +62,14 @@ RulesetVerificationStatus GetRulesetVerification() {
   return status;
 }
 
+const char kIndexedRulesetVerifyHistogram[] =
+    "SubresourceFilter.IndexRuleset.Verify.Status";
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        RulesetVerified_Activation) {
+  base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ContentRulesetService* service =
@@ -79,12 +85,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::ENABLED));
+  histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
+                                      VerifyStatus::kPass, 1);
 }
 
 // TODO(ericrobinson): Add a test using a PRE_ phase that corrupts the ruleset
 // on disk to test something closer to an actual execution path for checksum.
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
+  base::HistogramTester histogram_tester;
   // Do not set the ruleset, which results in an invalid ruleset.
   ContentRulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
@@ -99,9 +108,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
+  histogram_tester.ExpectTotalCount(kIndexedRulesetVerifyHistogram, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
+  base::HistogramTester histogram_tester;
   const char kTestRulesetSuffix[] = "foo";
   const int kNumberOfRules = 500;
   TestRulesetCreator ruleset_creator;
@@ -137,10 +148,27 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
+  // If AdTagging is enabled, then the initial SetRuleset will trigger
+  // a call to Verify.  Make sure we see that and the later failure.
+  if (base::FeatureList::IsEnabled(kAdTagging)) {
+    histogram_tester.ExpectBucketCount(kIndexedRulesetVerifyHistogram,
+                                       VerifyStatus::kPass, 1);
+    histogram_tester.ExpectBucketCount(kIndexedRulesetVerifyHistogram,
+                                       VerifyStatus::kChecksumFailVerifierPass,
+                                       1);
+    histogram_tester.ExpectTotalCount(kIndexedRulesetVerifyHistogram, 2);
+  } else {
+    // Otherwise we see only a single Verify when the new ruleset is accessed,
+    // and that should be a failure.
+    histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
+                                        VerifyStatus::kChecksumFailVerifierPass,
+                                        1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        InvalidRuleset_NoActivation) {
+  base::HistogramTester histogram_tester;
   const char kTestRulesetSuffix[] = "foo";
   const int kNumberOfRules = 500;
   TestRulesetCreator ruleset_creator;
@@ -169,6 +197,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
+  histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
+                                      VerifyStatus::kVerifierFailChecksumZero,
+                                      1);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, LazyRulesetValidation) {
