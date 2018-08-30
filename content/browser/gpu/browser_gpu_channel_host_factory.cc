@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
+#include <utility>
+
 #include "base/android/orderfile/orderfile_buildflags.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -76,7 +79,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   void OnEstablishedOnIO(mojo::ScopedMessagePipeHandle channel_handle,
                          const gpu::GPUInfo& gpu_info,
                          const gpu::GpuFeatureInfo& gpu_feature_info,
-                         GpuProcessHost::EstablishChannelStatus status);
+                         viz::GpuHostImpl::EstablishChannelStatus status);
   void FinishOnIO();
   void FinishAndRunCallbacksOnMain();
   void FinishOnMain();
@@ -137,7 +140,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
   }
 
   bool is_gpu_host = true;
-  host->EstablishGpuChannel(
+  host->gpu_host()->EstablishGpuChannel(
       gpu_client_id_, gpu_client_tracing_id_, is_gpu_host,
       base::BindOnce(
           &BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO,
@@ -148,9 +151,9 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    GpuProcessHost::EstablishChannelStatus status) {
+    viz::GpuHostImpl::EstablishChannelStatus status) {
   if (!channel_handle.is_valid() &&
-      status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID &&
+      status == viz::GpuHostImpl::EstablishChannelStatus::kGpuHostInvalid &&
       // Ask client every time instead of passing this down from UI thread to
       // avoid having the value be stale.
       GetContentClient()->browser()->AllowGpuLaunchRetryOnIOThread()) {

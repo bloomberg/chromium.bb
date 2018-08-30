@@ -1,14 +1,17 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 include_rules = [
+  "+components/discardable_memory/public/interfaces",
   "+components/viz/common/features.h",
   "-components/viz/common/switches.h",
   "+media/base/video_types.h",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
+  "+gpu/config",
   "+gpu/ipc/client",
   "+gpu/ipc/common",
   "+gpu/ipc/host",
+  "+ipc",
   "+mojo/public/cpp",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
