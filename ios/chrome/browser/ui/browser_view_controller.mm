@@ -3670,7 +3670,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
       action = ^{
         Record(ACTION_COPY_IMAGE, isImage, isLink);
-        [weakSelf copyImageAtURL:imageUrl referrer:referrer];
+        DCHECK(imageUrl.is_valid());
+        [weakSelf.imageCopier copyImageAtURL:imageUrl
+                                    referrer:referrer
+                                    webState:weakSelf.currentWebState];
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
     }
@@ -3835,23 +3838,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         [self.imageSaver saveImageData:data withMetadata:metadata];
-      };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
-}
-
-// Copies the image at the given URL to system's Pasteboard. The referrer is
-// used to download the image.
-- (void)copyImageAtURL:(const GURL&)url
-              referrer:(const web::Referrer&)referrer {
-  DCHECK(url.is_valid());
-
-  ImageCopierSessionID sessionID = [self.imageCopier beginSession];
-
-  image_fetcher::ImageDataFetcherBlock callback =
-      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        [self.imageCopier endSession:sessionID withImageData:data];
       };
   _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),

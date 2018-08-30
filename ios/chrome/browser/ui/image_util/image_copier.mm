@@ -7,6 +7,7 @@
 #include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -16,13 +17,12 @@
 #endif
 
 namespace {
-
 // Time Period between "Copy Image" is clicked and "Copying..." alert is
 // launched.
 const int kAlertDelayInMs = 300;
-// A unique id indicates that last session is finished or canceled and next
-// session has not started.
-const ImageCopierSessionID ImageCopierNoSession = -1;
+// A speical id indicates that last copy is finished or canceled and next
+// copy has not started.
+const int kNoActiveCopy = 0;
 }
 
 @interface ImageCopier ()
@@ -30,30 +30,37 @@ const ImageCopierSessionID ImageCopierNoSession = -1;
 @property(nonatomic, weak) UIViewController* baseViewController;
 // Alert coordinator to give feedback to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
-// ID of current copying session.
-@property(nonatomic) ImageCopierSessionID currentSessionID;
+// A counter which generates one ID for each call on
+// CopyImageAtURL:referrer:webState.
+@property(nonatomic) int idGenerator;
+// ID of current active copy. A copy is active after
+// CopyImageAtURL:referrer:webState is called, and before user cancels the
+// copy or the copy finishes.
+@property(nonatomic) int activeID;
 @end
 
 @implementation ImageCopier
 
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize baseViewController = _baseViewController;
-@synthesize currentSessionID = _currentSessionID;
+@synthesize idGenerator = _idGenerator;
+@synthesize activeID = _activeID;
 
 - (instancetype)initWithBaseViewController:
     (UIViewController*)baseViewController {
   self = [super init];
   if (self) {
+    self.idGenerator = 1;
+    self.activeID = kNoActiveCopy;
     self.baseViewController = baseViewController;
   }
   return self;
 }
 
-// Use current timestamp as identifier for the session. The "Copying..." alert
-// will be launched after |kAlertDelayInMs| so that user won't notice a fast
-// download.
-- (ImageCopierSessionID)beginSession {
-  // Dismiss current alert.
+- (void)copyImageAtURL:(const GURL&)url
+              referrer:(const web::Referrer&)referrer
+              webState:(web::WebState*)webState {
+  // Dismisses current alert.
   [self.alertCoordinator stop];
 
   __weak ImageCopier* weakSelf = self;
@@ -66,40 +73,47 @@ const ImageCopierSessionID ImageCopierNoSession = -1;
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)
                 action:^() {
-                  // Cancel current session and close the alert.
-                  weakSelf.currentSessionID = ImageCopierNoSession;
+                  // Cancels current copy and closes the alert.
+                  weakSelf.activeID = kNoActiveCopy;
                   [weakSelf.alertCoordinator stop];
                 }
                  style:UIAlertActionStyleCancel];
 
-  double time = [NSDate timeIntervalSinceReferenceDate];
-  ImageCopierSessionID sessionID = *(int64_t*)(&time);
-  self.currentSessionID = sessionID;
+  // |idGenerator| is initiated to 1 and incremented by 2, so it will always be
+  // odd number and won't collides with |kNoActiveCopy| or nil.activeID, which
+  // are 0s.
+  self.idGenerator += 2;
+  self.activeID = self.idGenerator;
+  // This var is to be captured by blocks in ImageFetchTabHelper::GetImageData
+  // and web::WebThread::PostDelayedTask. When a block is invoked, it uses the
+  // captured |callbackID| to check if the copy from where it's started is still
+  // alive or has been finished/canceled.
+  int callbackID = self.idGenerator;
 
-  // Delay launching alert by |IMAGE_COPIER_ALERT_DELAY_MS|.
+  ImageFetchTabHelper* tabHelper = ImageFetchTabHelper::FromWebState(webState);
+  DCHECK(tabHelper);
+  tabHelper->GetImageData(url, referrer, ^(NSData* data) {
+    // Checks that the copy has not been canceled.
+    if (callbackID == weakSelf.activeID) {
+      UIImage* image = [UIImage imageWithData:data];
+      if (image) {
+        UIPasteboard.generalPasteboard.image = image;
+      }
+      // Finishes this copy.
+      weakSelf.activeID = kNoActiveCopy;
+      [weakSelf.alertCoordinator stop];
+    }
+  });
+
+  // Delays launching alert by |kAlertDelayInMs|.
   web::WebThread::PostDelayedTask(
       web::WebThread::UI, FROM_HERE, base::BindOnce(^{
-        // Check that the session has not finished yet.
-        if (sessionID == weakSelf.currentSessionID) {
+        // Checks that the copy has not finished yet.
+        if (callbackID == weakSelf.activeID) {
           [weakSelf.alertCoordinator start];
         }
       }),
       base::TimeDelta::FromMilliseconds(kAlertDelayInMs));
-
-  return sessionID;
-}
-
-// End the session. If the session is not canceled, paste the image data to
-// system's pasteboard.
-- (void)endSession:(ImageCopierSessionID)sessionID withImageData:(NSData*)data {
-  // Check that the downloading session is not canceled.
-  if (sessionID == self.currentSessionID) {
-    if (data && data.length > 0) {
-      [UIPasteboard.generalPasteboard setImage:[UIImage imageWithData:data]];
-    }
-    self.currentSessionID = ImageCopierNoSession;
-    [self.alertCoordinator stop];
-  }
 }
 
 @end
