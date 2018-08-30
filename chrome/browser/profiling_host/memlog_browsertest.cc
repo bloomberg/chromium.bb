@@ -152,6 +152,13 @@ std::vector<TestParam> GetParams() {
   // Test thread names for native profiling.
   params.push_back(
       {Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES, false});
+
+  // Profile all utility processes and the browser process. The main goal is to
+  // check that there is no deadlock in the profiling process.
+  params.push_back({Mode::kUtilityAndBrowser,
+                    mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
+                    false /* start_profiling_with_command_line_flag */,
+                    true /* should_sample */, false /* sample_everything*/});
   return params;
 }
 

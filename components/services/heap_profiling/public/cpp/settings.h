@@ -12,8 +12,6 @@
 // return coherent settings to use for the heap profiler at startup.
 namespace heap_profiling {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
 enum class Mode {
   // No profiling enabled.
   kNone = 0,
@@ -30,7 +28,8 @@ enum class Mode {
   // Profile only the gpu process.
   kGpu = 4,
 
-  // Profile a sampled number of renderer processes.
+  // Profile up to 1 renderer process. Each renderer process has a fixed
+  // probability of being profiled at startup.
   kRendererSampling = 5,
 
   // Profile all renderer processes.
@@ -39,6 +38,12 @@ enum class Mode {
   // By default, profile no processes. User may choose to start profiling for
   // processes via chrome://memory-internals.
   kManual = 7,
+
+  // Each utility process has a fixed probability of being profiled at startup.
+  kUtilitySampling = 8,
+
+  // Every utility process and the browser process are profiled.
+  kUtilityAndBrowser = 9,
 
   kCount
 };
