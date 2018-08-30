@@ -47,7 +47,7 @@ namespace http2 {
 class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
  public:
   // |prefix_value| is the first byte of the encoded varint.
-  // |prefix_mask| is the mask of the valid bits, i.e. without the top 1 to 4
+  // |prefix_mask| is the mask of the valid bits, i.e. without the top 1 to 5
   // high-bits set, as appropriate for the item being decoded; must be a
   // contiguous sequence of set bits, starting with the low-order bits.
   DecodeStatus Start(uint8_t prefix_value,
@@ -55,7 +55,7 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
                      DecodeBuffer* db);
 
   // The caller has already determined that the encoding requires multiple
-  // bytes, i.e. that the 4 to 7 low-order bits (the number determined by the
+  // bytes, i.e. that the 3 to 7 low-order bits (the number determined by the
   // prefix length, a value not passed into this function) of the first byte are
   // are all 1. The caller passes in |prefix_mask|, which is 2^prefix_length-1.
   DecodeStatus StartExtended(uint8_t prefix_mask, DecodeBuffer* db);
