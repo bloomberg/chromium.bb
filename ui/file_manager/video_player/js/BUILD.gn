@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":closure_compile_externs",
     ":error_util",
     ":media_controls",
+    ":mouse_inactivity_watcher",
     ":video_player",
     ":video_player_metrics",
   ]
@@ -48,14 +49,17 @@ js_library("media_controls") {
   ]
 }
 
+js_library("mouse_inactivity_watcher") {
+}
+
 js_library("video_player") {
   deps = [
     ":error_util",
     ":media_controls",
+    ":mouse_inactivity_watcher",
     ":video_player_metrics",
     "../../file_manager/common/js:metrics",
     "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:mouse_inactivity_watcher",
     "../../file_manager/foreground/js:volume_manager_wrapper",
     "../../image_loader:image_loader_client",
     "cast:cast_video_element",

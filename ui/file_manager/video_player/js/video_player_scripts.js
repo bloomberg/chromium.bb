@@ -42,7 +42,6 @@
 // <include src="../../file_manager/common/js/file_type.js">
 // <include src="../../file_manager/common/js/util.js">
 // <include src="../../file_manager/common/js/volume_manager_common.js">
-// <include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
 // <include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 
 // <include src="cast/cast_extension_discoverer.js">
@@ -51,6 +50,7 @@
 // <include src="cast/caster.js">
 
 // <include src="media_controls.js">
+// <include src="mouse_inactivity_watcher.js">
 
 // <include src="video_player.js">
 

@@ -14,7 +14,9 @@
 function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   this.container_ = container;
   this.timeout_ = opt_timeout || MouseInactivityWatcher.DEFAULT_TIMEOUT;
-  this.toolsActive_ = opt_toolsActive || function() { return false; };
+  this.toolsActive_ = opt_toolsActive || function() {
+    return false;
+  };
 
   this.onTimeoutBound_ = this.onTimeout_.bind(this);
   this.timeoutID_ = null;
@@ -28,7 +30,7 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
    * and setters.
    * @type {boolean}
    * @private
-   **/
+   */
   this.disabled_ = false;
 
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
@@ -119,8 +121,8 @@ MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
   if (this.timeoutID_)
     clearTimeout(this.timeoutID_);
 
-  this.timeoutID_ = setTimeout(
-      this.onTimeoutBound_, opt_timeout || this.timeout_);
+  this.timeoutID_ =
+      setTimeout(this.onTimeoutBound_, opt_timeout || this.timeout_);
 };
 
 /**
