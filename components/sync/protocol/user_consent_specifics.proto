@@ -92,6 +92,10 @@ message UserConsentSpecifics {
     BACKUP_AND_RESTORE = 3;
     GOOGLE_LOCATION_SERVICE = 4;
     CHROME_UNIFIED_CONSENT = 5;
+    // TODO(markusheintz): ASSISTANT_ACTIVITY_CONTROL was only added for
+    // compatibility with the Feature enum in UserEventSpecifics.UserConsent.
+    // Delete this value once the value is deleted from the other proto.
+    ASSISTANT_ACTIVITY_CONTROL = 6;
   }
   optional Feature feature = 1 [deprecated = true];
   // Ids of the strings of the consent text presented to the user.
