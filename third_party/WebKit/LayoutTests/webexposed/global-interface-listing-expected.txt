@@ -5523,11 +5523,19 @@ interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
     method constructor
+interface RTCQuicStream
+    attribute @@toStringTag
+    getter readBufferedAmount
+    getter state
+    getter transport
+    getter writeBufferedAmount
+    method constructor
 interface RTCQuicTransport
     attribute @@toStringTag
     getter state
     getter transport
     method constructor
+    method createStream
     method getCertificates
     method getLocalParameters
     method getRemoteCertificates

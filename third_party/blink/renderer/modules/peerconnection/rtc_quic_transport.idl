@@ -25,5 +25,6 @@ enum RTCQuicTransportState {
     sequence<RTCCertificate> getCertificates();
     sequence<ArrayBuffer> getRemoteCertificates();
     void stop();
+    [RaisesException, RuntimeEnabled=RTCQuicStream] RTCQuicStream createStream();
     // TODO(crbug.com/868068): Implement remaining control methods + events.
 };
