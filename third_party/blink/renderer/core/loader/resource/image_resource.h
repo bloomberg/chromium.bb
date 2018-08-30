@@ -79,7 +79,7 @@ class CORE_EXPORT ImageResource final
 
   void AllClientsAndObserversRemoved() override;
 
-  bool CanReuse(
+  MatchStatus CanReuse(
       const FetchParameters&,
       scoped_refptr<const SecurityOrigin> new_source_origin) const override;
   bool CanUseCacheValidator() const override;

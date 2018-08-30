@@ -214,6 +214,7 @@ class PLATFORM_EXPORT FetchContext
   }
 
   virtual void AddInfoConsoleMessage(const String&, LogSource) const;
+  virtual void AddWarningConsoleMessage(const String&, LogSource) const;
   virtual void AddErrorConsoleMessage(const String&, LogSource) const;
 
   virtual const SecurityOrigin* GetSecurityOrigin() const { return nullptr; }

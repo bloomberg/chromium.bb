@@ -764,7 +764,7 @@ void Resource::FinishPendingClients() {
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
 }
 
-bool Resource::CanReuse(
+Resource::MatchStatus Resource::CanReuse(
     const FetchParameters& params,
     scoped_refptr<const SecurityOrigin> new_source_origin) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
@@ -778,7 +778,7 @@ bool Resource::CanReuse(
       GetResponse().GetType() == network::mojom::FetchResponseType::kOpaque &&
       new_request.GetFetchRequestMode() !=
           network::mojom::FetchRequestMode::kNoCORS) {
-    return false;
+    return MatchStatus::kUnknownFailure;
   }
 
   // If credentials were sent with the previous request and won't be with this
@@ -788,8 +788,9 @@ bool Resource::CanReuse(
   // "Access-Control-Allow-Origin: *" all the time, but some of the client's
   // requests are made without CORS and some with.
   if (GetResourceRequest().AllowStoredCredentials() !=
-      new_request.AllowStoredCredentials())
-    return false;
+      new_request.AllowStoredCredentials()) {
+    return MatchStatus::kRequestCredentialsModeDoesNotMatch;
+  }
 
   // Certain requests (e.g., XHRs) might have manually set headers that require
   // revalidation. In theory, this should be a Revalidate case. In practice, the
@@ -802,8 +803,9 @@ bool Resource::CanReuse(
   // status code, but for a manual revalidation the response code remains 304.
   // In this case, the Resource likely has insufficient context to provide a
   // useful cache hit or revalidation. See http://crbug.com/643659
-  if (new_request.IsConditional() || response_.HttpStatusCode() == 304)
-    return false;
+  if (new_request.IsConditional() || response_.HttpStatusCode() == 304) {
+    return MatchStatus::kUnknownFailure;
+  }
 
   // Answers the question "can a separate request with different options be
   // re-used" (e.g. preload request). The safe (but possibly slow) answer is
@@ -828,38 +830,39 @@ bool Resource::CanReuse(
   // (crbug.com/618967) and bypassing redirect restriction around revalidation
   // (crbug.com/613971 for 2. and crbug.com/614989 for 3.).
   if (new_options.synchronous_policy == kRequestSynchronously ||
-      options_.synchronous_policy == kRequestSynchronously)
-    return false;
-
-  if (resource_request_.GetKeepalive() || new_request.GetKeepalive()) {
-    return false;
+      options_.synchronous_policy == kRequestSynchronously) {
+    return MatchStatus::kSynchronousFlagDoesNotMatch;
   }
 
+  if (resource_request_.GetKeepalive() || new_request.GetKeepalive())
+    return MatchStatus::kKeepaliveSet;
+
   if (GetResourceRequest().HttpMethod() != new_request.HttpMethod())
-    return false;
+    return MatchStatus::kRequestMethodDoesNotMatch;
 
   if (GetResourceRequest().HttpBody() != new_request.HttpBody())
-    return false;
+    return MatchStatus::kUnknownFailure;
 
   DCHECK(source_origin_);
   DCHECK(new_source_origin);
 
   // Don't reuse an existing resource when the source origin is different.
   if (!source_origin_->IsSameSchemeHostPort(new_source_origin.get()))
-    return false;
+    return MatchStatus::kUnknownFailure;
 
   // securityOrigin has more complicated checks which callers are responsible
   // for.
 
   if (new_request.GetFetchCredentialsMode() !=
-      resource_request_.GetFetchCredentialsMode())
-    return false;
+      resource_request_.GetFetchCredentialsMode()) {
+    return MatchStatus::kRequestCredentialsModeDoesNotMatch;
+  }
 
   const auto new_mode = new_request.GetFetchRequestMode();
   const auto existing_mode = resource_request_.GetFetchRequestMode();
 
   if (new_mode != existing_mode)
-    return false;
+    return MatchStatus::kRequestModeDoesNotMatch;
 
   switch (new_mode) {
     case network::mojom::FetchRequestMode::kNoCORS:
@@ -878,7 +881,7 @@ bool Resource::CanReuse(
         // new one is handled in ResourceLoader, reusing the existing one will
         // lead to CORS violations.
         if (!options_.cors_handling_by_resource_fetcher)
-          return false;
+          return MatchStatus::kUnknownFailure;
 
         // Otherwise (i.e., if the existing one is handled in ResourceLoader
         // and the new one is handled in ThreadableLoader), reusing
@@ -887,7 +890,7 @@ bool Resource::CanReuse(
       break;
   }
 
-  return true;
+  return MatchStatus::kOk;
 }
 
 void Resource::Prune() {

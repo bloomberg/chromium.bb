@@ -112,6 +112,8 @@ void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
 void FetchContext::AddInfoConsoleMessage(const String&, LogSource) const {}
 
+void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
+
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
 
 void FetchContext::PopulateResourceRequest(
