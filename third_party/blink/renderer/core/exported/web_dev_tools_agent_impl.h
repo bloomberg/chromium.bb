@@ -74,8 +74,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   void WillBeDestroyed();
   void FlushProtocolNotifications();
-  void PaintOverlay();
-  void LayoutOverlay();
+  void UpdateOverlays();
   bool HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
   void BindRequest(mojom::blink::DevToolsAgentAssociatedRequest);

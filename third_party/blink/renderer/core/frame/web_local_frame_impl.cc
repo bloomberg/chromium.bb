@@ -1863,6 +1863,11 @@ void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {
     GetTextFinder()->IncreaseMarkerVersion();
 }
 
+void WebLocalFrameImpl::UpdateDevToolsOverlays() {
+  if (dev_tools_agent_)
+    dev_tools_agent_->UpdateOverlays();
+}
+
 void WebLocalFrameImpl::CreateFrameView() {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::createFrameView");
 

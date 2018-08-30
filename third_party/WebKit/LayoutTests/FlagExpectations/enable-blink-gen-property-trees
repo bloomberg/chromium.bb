@@ -34,7 +34,6 @@ Bug(none) http/ [ Skip ]
 Bug(none) idle-callback/ [ Skip ]
 Bug(none) ietestcenter/ [ Skip ]
 Bug(none) external/wpt/imagecapture/ [ Skip ]
-Bug(none) inspector-protocol/ [ Skip ]
 Bug(none) installedapp/ [ Skip ]
 Bug(none) jquery/ [ Skip ]
 Bug(none) loader/ [ Skip ]
@@ -124,6 +123,13 @@ Bug(none) webmidi/ [ Skip ]
 Bug(none) webshare/ [ Skip ]
 Bug(none) xmlviewer/ [ Skip ]
 Bug(none) xr/ [ Skip ]
+
+# These inspector tests should pass.
+Bug(none) http/tests/devtools/ [ Pass ]
+Bug(none) http/tests/inspector-protocol/ [ Pass ]
+Bug(none) inspector-protocol/ [ Pass ]
+# Suspect this is the same issue as the animation timeouts in crbug.com/855688.
+Bug(none) inspector-protocol/animation/animation-multiple-frames.js [ Timeout ]
 
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]

@@ -371,6 +371,8 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void DidChangeContentsSize(const IntSize&);
 
+  void UpdateDevToolsOverlays();
+
   void CreateFrameView();
 
   static WebLocalFrameImpl* FromFrame(LocalFrame*);

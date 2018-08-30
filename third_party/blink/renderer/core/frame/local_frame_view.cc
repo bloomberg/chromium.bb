@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element.h"
@@ -2792,8 +2793,7 @@ void LocalFrameView::PaintTree() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
 
-  DCHECK(GetFrame() == GetPage()->MainFrame() ||
-         (!GetFrame().Tree().Parent()->IsLocalFrame()));
+  DCHECK(GetFrame().IsLocalRoot());
 
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
@@ -2863,6 +2863,18 @@ void LocalFrameView::PaintTree() {
   frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
   frame_->GetPage()->PaintPageColorOverlay();
 
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
+    if (auto* layout_view = frame_view.GetLayoutView())
+      layout_view->Layer()->ClearNeedsRepaintRecursively();
+  });
+
+  // Devtools overlays query the inspected page's paint data so this update
+  // needs to be after the lifecycle advance to kPaintClean. Because devtools
+  // overlays can add layers, this needs to be before layers are collected.
+  if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
+    web_local_frame_impl->UpdateDevToolsOverlays();
+
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to
     // collect the foreign layers which doesn't need caching. It also
@@ -2892,12 +2904,6 @@ void LocalFrameView::PaintTree() {
       CollectLinkHighlightLayersForLayerListRecursively(context, root);
     paint_controller_->CommitNewDisplayItems();
   }
-
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
-    if (auto* layout_view = frame_view.GetLayoutView())
-      layout_view->Layer()->ClearNeedsRepaintRecursively();
-  });
 }
 
 void LocalFrameView::PushPaintArtifactToCompositor(

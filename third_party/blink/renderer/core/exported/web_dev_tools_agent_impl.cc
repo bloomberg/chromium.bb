@@ -657,14 +657,9 @@ String WebDevToolsAgentImpl::EvaluateInOverlayForTesting(const String& script) {
   return result;
 }
 
-void WebDevToolsAgentImpl::PaintOverlay() {
+void WebDevToolsAgentImpl::UpdateOverlays() {
   for (auto& session : sessions_)
-    session->overlay_agent()->PaintOverlay();
-}
-
-void WebDevToolsAgentImpl::LayoutOverlay() {
-  for (auto& session : sessions_)
-    session->overlay_agent()->LayoutOverlay();
+    session->overlay_agent()->UpdateAllOverlayLifecyclePhases();
 }
 
 void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {

@@ -522,7 +522,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DisablePopupMouseWheelEventListener();
 
   void CancelPagePopup();
-  void UpdatePageOverlays();
 
   float DeviceScaleFactor() const;
 

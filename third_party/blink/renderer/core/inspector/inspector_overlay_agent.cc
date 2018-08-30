@@ -477,32 +477,25 @@ void InspectorOverlayAgent::Invalidate() {
   page_overlay_->Update();
 }
 
-void InspectorOverlayAgent::PaintOverlay() {
-  UpdateAllLifecyclePhases();
-  // TODO(chrishtr): integrate paint into the overlay's lifecycle.
+void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
+  if (page_overlay_)
+    page_overlay_->Update();
+
+  if (!IsEmpty()) {
+    base::AutoReset<bool> scoped(&in_layout_, true);
+    if (needs_update_) {
+      needs_update_ = false;
+      RebuildOverlayPage();
+    }
+    OverlayMainFrame()->View()->UpdateAllLifecyclePhases();
+  }
+
   if (page_overlay_ && page_overlay_->GetGraphicsLayer())
     page_overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
-void InspectorOverlayAgent::LayoutOverlay() {
-  if (page_overlay_)
-    page_overlay_->Update();
-}
-
 bool InspectorOverlayAgent::IsInspectorLayer(GraphicsLayer* layer) {
   return page_overlay_ && page_overlay_->GetGraphicsLayer() == layer;
-}
-
-void InspectorOverlayAgent::UpdateAllLifecyclePhases() {
-  if (IsEmpty())
-    return;
-
-  base::AutoReset<bool> scoped(&in_layout_, true);
-  if (needs_update_) {
-    needs_update_ = false;
-    RebuildOverlayPage();
-  }
-  OverlayMainFrame()->View()->UpdateAllLifecyclePhases();
 }
 
 void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
