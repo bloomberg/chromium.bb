@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_SCENIC_SCREEN_H_
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_SCREEN_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -19,9 +21,11 @@ class ScenicScreen : public PlatformScreen {
   ScenicScreen();
   ~ScenicScreen() override;
 
+  // Processes window state change events for the ScenicWindow |window_id_|.
   void OnWindowAdded(int32_t window_id);
   void OnWindowRemoved(int32_t window_id);
   void OnWindowMetrics(int32_t window_id, float device_pixel_ratio);
+  void OnWindowBoundsChanged(int32_t window_id, gfx::Rect bounds);
 
   base::WeakPtr<ScenicScreen> GetWeakPtr();
 
@@ -42,8 +46,6 @@ class ScenicScreen : public PlatformScreen {
 
  private:
   using DisplayVector = std::vector<display::Display>;
-
-  DisplayVector::const_iterator FindDisplayById(int32_t id) const;
 
   DisplayVector displays_;
 

@@ -15,6 +15,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -206,11 +207,17 @@ gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
 void ScenicWindow::UpdateSize() {
   gfx::SizeF scaled = ScaleSize(size_dips_, device_pixel_ratio_);
   size_pixels_ = gfx::Size(ceilf(scaled.width()), ceilf(scaled.height()));
+  gfx::Rect size_rect(size_pixels_);
+
+  // Update this window's Screen's dimensions to match the new size.
+  ScenicScreen* screen = manager_->screen();
+  if (screen)
+    screen->OnWindowBoundsChanged(window_id_, size_rect);
 
   // Translate the node by half of the view dimensions to put it in the center
   // of the view.
-  float translation[] = {size_dips_.width() / 2.0, size_dips_.height() / 2.0,
-                         0.f};
+  const float translation[] = {size_dips_.width() / 2.0,
+                               size_dips_.height() / 2.0, 0.f};
 
   // Set node shape to rectangle that matches size of the view.
   ScenicSession::ResourceId rect_id =
@@ -219,7 +226,7 @@ void ScenicWindow::UpdateSize() {
   scenic_session_.SetNodeTranslation(shape_id_, translation);
   scenic_session_.ReleaseResource(rect_id);
 
-  delegate_->OnBoundsChanged(gfx::Rect(size_pixels_));
+  delegate_->OnBoundsChanged(size_rect);
 }
 
 void ScenicWindow::OnPropertiesChanged(
@@ -268,9 +275,18 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
 
   switch (event.Which()) {
     case fuchsia::ui::input::InputEvent::Tag::kPointer:
-      // TODO(crbug.com/829980): Add touch support.
-      if (event.pointer().type == fuchsia::ui::input::PointerEventType::MOUSE)
-        result = OnMouseEvent(event.pointer());
+      switch (event.pointer().type) {
+        case fuchsia::ui::input::PointerEventType::MOUSE:
+          result = OnMouseEvent(event.pointer());
+          break;
+        case fuchsia::ui::input::PointerEventType::TOUCH:
+          result = OnTouchEvent(event.pointer());
+          break;
+        case fuchsia::ui::input::PointerEventType::STYLUS:
+        case fuchsia::ui::input::PointerEventType::INVERTED_STYLUS:
+          NOTIMPLEMENTED() << "Stylus input is not yet supported.";
+          break;
+      }
       break;
 
     case fuchsia::ui::input::InputEvent::Tag::kKeyboard:
@@ -278,9 +294,7 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
       break;
 
     case fuchsia::ui::input::InputEvent::Tag::kFocus:
-      // TODO(crbug.com/878439): Implement this once Scenic adds support for
-      // sending FocusEvents.
-      NOTIMPLEMENTED();
+      result = OnFocusEvent(event.focus());
       break;
 
     case fuchsia::ui::input::InputEvent::Tag::Invalid:
@@ -336,6 +350,43 @@ bool ScenicWindow::OnMouseEvent(const fuchsia::ui::input::PointerEvent& event) {
   return true;
 }
 
+bool ScenicWindow::OnTouchEvent(const fuchsia::ui::input::PointerEvent& event) {
+  EventType event_type;
+
+  switch (event.phase) {
+    case fuchsia::ui::input::PointerEventPhase::DOWN:
+      event_type = ET_TOUCH_PRESSED;
+      break;
+    case fuchsia::ui::input::PointerEventPhase::MOVE:
+      event_type = ET_TOUCH_MOVED;
+      break;
+    case fuchsia::ui::input::PointerEventPhase::CANCEL:
+      event_type = ET_TOUCH_CANCELLED;
+      break;
+    case fuchsia::ui::input::PointerEventPhase::UP:
+      event_type = ET_TOUCH_RELEASED;
+      break;
+    case fuchsia::ui::input::PointerEventPhase::ADD:
+    case fuchsia::ui::input::PointerEventPhase::REMOVE:
+    case fuchsia::ui::input::PointerEventPhase::HOVER:
+      return false;
+  }
+
+  // TODO(crbug.com/876933): Add more detailed fields such as
+  // force/orientation/tilt once they are added to PointerEvent.
+  ui::PointerDetails pointer_details(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                     event.pointer_id);
+
+  gfx::Point location =
+      gfx::Point(event.x * device_pixel_ratio_, event.y * device_pixel_ratio_);
+  ui::TouchEvent touch_event(event_type, location,
+                             base::TimeTicks::FromZxTime(event.event_time),
+                             pointer_details);
+
+  delegate_->DispatchEvent(&touch_event);
+  return true;
+}
+
 bool ScenicWindow::OnKeyboardEvent(
     const fuchsia::ui::input::KeyboardEvent& event) {
   EventType event_type;
@@ -377,6 +428,11 @@ bool ScenicWindow::OnKeyboardEvent(
                      KeyModifiersToFlags(event.modifiers), dom_key,
                      base::TimeTicks::FromZxTime(event.event_time));
   delegate_->DispatchEvent(&key_event);
+  return true;
+}
+
+bool ScenicWindow::OnFocusEvent(const fuchsia::ui::input::FocusEvent& event) {
+  delegate_->OnActivationChanged(event.focused);
   return true;
 }
 
