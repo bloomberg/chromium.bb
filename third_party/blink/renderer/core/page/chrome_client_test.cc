@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -31,7 +32,6 @@ class ChromeClientToolTipLogger : public EmptyChromeClient {
  private:
   String tool_tip_for_last_set_tool_tip_;
 };
-
 }  // anonymous namespace
 
 class ChromeClientTest : public testing::Test {};
@@ -68,6 +68,34 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
   // setToolTip(String,TextDirection) should be called because tooltip string
   // is different from the last one.
   EXPECT_EQ("updated", logger.ToolTipForLastSetToolTip());
+}
+
+TEST_F(ChromeClientTest, SetToolTipEmptyString) {
+  ChromeClient* client = EmptyChromeClient::Create();
+  HitTestLocation location(LayoutPoint(10, 20));
+  HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
+  auto& doc = *Document::CreateForTest();
+  auto& input_element = *HTMLInputElement::Create(doc, CreateElementFlags());
+  input_element.setAttribute(HTMLNames::typeAttr, "file");
+
+  result.SetInnerNode(&input_element);
+  client->SetToolTip(*doc.GetFrame(), location, result);
+  EXPECT_EQ("<<NoFileChosenLabel>>", client->last_tool_tip_text_);
+
+  client->last_tool_tip_text_ = String();
+  input_element.removeAttribute(HTMLNames::titleAttr);
+  client->SetToolTip(*doc.GetFrame(), location, result);
+  EXPECT_EQ("<<NoFileChosenLabel>>", client->last_tool_tip_text_);
+
+  client->last_tool_tip_text_ = String();
+  input_element.setAttribute(HTMLNames::titleAttr, g_empty_atom);
+  client->SetToolTip(*doc.GetFrame(), location, result);
+  EXPECT_EQ(g_empty_atom, client->last_tool_tip_text_);
+
+  client->last_tool_tip_text_ = String();
+  input_element.setAttribute(HTMLNames::titleAttr, "test");
+  client->SetToolTip(*doc.GetFrame(), location, result);
+  EXPECT_EQ("test", client->last_tool_tip_text_);
 }
 
 }  // namespace blink

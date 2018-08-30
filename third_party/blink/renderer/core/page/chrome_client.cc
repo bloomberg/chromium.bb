@@ -187,7 +187,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
 
   // Lastly, some elements provide default tooltip strings.  e.g. <input
   // type="file" multiple> shows a tooltip for the selected filenames.
-  if (tool_tip.IsEmpty()) {
+  if (tool_tip.IsNull()) {
     if (Node* node = result.InnerNode()) {
       if (node->IsElementNode()) {
         tool_tip = ToElement(node)->DefaultToolTip();
