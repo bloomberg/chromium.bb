@@ -24,6 +24,7 @@
 // order, to complete the authentication flow.
 class AuthenticatorRequestDialogModel {
  public:
+  using RequestCallback = device::FidoRequestHandlerBase::RequestCallback;
   using TransportAvailabilityInfo =
       device::FidoRequestHandlerBase::TransportAvailabilityInfo;
 
@@ -83,6 +84,7 @@ class AuthenticatorRequestDialogModel {
 
     std::string authenticator_id;
     device::FidoTransportProtocol transport;
+    bool dispatched = false;
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -220,8 +222,7 @@ class AuthenticatorRequestDialogModel {
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
-  void SetRequestCallback(
-      device::FidoRequestHandlerBase::RequestCallback request_callback);
+  void SetRequestCallback(RequestCallback request_callback);
 
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
@@ -231,6 +232,9 @@ class AuthenticatorRequestDialogModel {
   }
 
  private:
+  void DispatchRequestAsync(AuthenticatorReference* authenticator,
+                            base::TimeDelta delay);
+
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;
 
@@ -245,7 +249,7 @@ class AuthenticatorRequestDialogModel {
   // that the WebAuthN request for the corresponding authenticators can be
   // dispatched lazily after the user interacts with the UI element.
   std::vector<AuthenticatorReference> saved_authenticators_;
-  device::FidoRequestHandlerBase::RequestCallback request_callback_;
+  RequestCallback request_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);

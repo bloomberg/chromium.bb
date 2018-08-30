@@ -186,27 +186,19 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
 
   SetCurrentStep(Step::kTouchId);
 
-  if (!request_callback_)
-    return;
-
-  auto touch_id_authenticator =
+  auto touch_id_authenticator_it =
       std::find_if(saved_authenticators_.begin(), saved_authenticators_.end(),
                    [](const auto& authenticator) {
                      return authenticator.transport ==
                             device::FidoTransportProtocol::kInternal;
                    });
 
-  if (touch_id_authenticator == saved_authenticators_.end())
+  if (touch_id_authenticator_it == saved_authenticators_.end())
     return;
 
   static base::TimeDelta kTouchIdDispatchDelay =
       base::TimeDelta::FromMilliseconds(1250);
-
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(request_callback_,
-                     touch_id_authenticator->authenticator_id),
-      kTouchIdDispatchDelay);
+  DispatchRequestAsync(&*touch_id_authenticator_it, kTouchIdDispatchDelay);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
@@ -263,11 +255,29 @@ void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
 }
 
 void AuthenticatorRequestDialogModel::SetRequestCallback(
-    device::FidoRequestHandlerBase::RequestCallback request_callback) {
+    RequestCallback request_callback) {
   request_callback_ = request_callback;
 }
 
 void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
     base::RepeatingClosure bluetooth_adapter_power_on_callback) {
   bluetooth_adapter_power_on_callback_ = bluetooth_adapter_power_on_callback;
+}
+
+void AuthenticatorRequestDialogModel::DispatchRequestAsync(
+    AuthenticatorReference* authenticator,
+    base::TimeDelta delay) {
+  if (!request_callback_)
+    return;
+
+  // Dispatching to the same authenticator twice may result in unexpected
+  // behavior.
+  if (authenticator->dispatched)
+    return;
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(request_callback_, authenticator->authenticator_id),
+      delay);
+  authenticator->dispatched = true;
 }
