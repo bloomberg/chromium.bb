@@ -3366,6 +3366,10 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
   ])
 
+  _chrome_pfq_skylab_boards = frozenset([
+      'reef',
+  ])
+
   _chrome_pfq_tryjob_boards = (
       (boards_dict['all_release_boards'] & _chrome_boards) -
       (_chrome_pfq_important_boards | _chrome_pfq_experimental_boards)
@@ -3374,7 +3378,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'chrome-pfq',
-          _chrome_pfq_important_boards,
+          _chrome_pfq_important_boards - _chrome_pfq_skylab_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
           active_waterfall=waterfall.WATERFALL_SWARMING,
@@ -3383,10 +3387,20 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'chrome-pfq',
-          _chrome_pfq_experimental_boards,
+          _chrome_pfq_experimental_boards - _chrome_pfq_skylab_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=False,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
+      )
+  )
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chrome-pfq',
+          _chrome_pfq_skylab_boards,
+          internal_board_configs,
+          site_config.templates.chrome_pfq,
+          enable_skylab_hw_tests=True,
           active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
