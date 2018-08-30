@@ -838,9 +838,8 @@ void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
                                                           std::move(callback));
 }
 
-void WebMediaPlayerImpl::SetSinkId(
-    const blink::WebString& sink_id,
-    blink::WebSetSinkIdCallbacks* web_callback) {
+void WebMediaPlayerImpl::SetSinkId(const blink::WebString& sink_id,
+                                   blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
@@ -1568,6 +1567,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   }
 #endif
 
+  MaybeSetContainerName();
   ReportPipelineError(load_type_, status, media_log_.get());
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
   media_metrics_provider_->OnError(status);
@@ -1620,6 +1620,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   time_to_metadata_ = base::TimeTicks::Now() - load_start_time_;
   media_metrics_provider_->SetTimeToMetadata(time_to_metadata_);
   RecordTimingUMA("Media.TimeToMetadata", time_to_metadata_);
+
+  MaybeSetContainerName();
 
   pipeline_metadata_ = metadata;
 
@@ -3263,6 +3265,26 @@ bool WebMediaPlayerImpl::IsInPictureInPicture() const {
   DCHECK(client_);
   return client_->DisplayType() ==
          WebMediaPlayer::DisplayType::kPictureInPicture;
+}
+
+void WebMediaPlayerImpl::MaybeSetContainerName() {
+  // MSE does not provide container information.
+  if (chunk_demuxer_)
+    return;
+
+  // Pipeline startup failed before even getting a demuxer setup.
+  if (!demuxer_)
+    return;
+
+  // Container has already been set.
+  if (highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveMetadata)
+    return;
+
+// If ffmpeg isn't enabled, we can't get the container name.
+#if BUILDFLAG(ENABLE_FFMPEG)
+  media_metrics_provider_->SetContainerName(
+      static_cast<FFmpegDemuxer*>(demuxer_.get())->container());
+#endif
 }
 
 }  // namespace media

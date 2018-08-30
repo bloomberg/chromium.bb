@@ -47,6 +47,9 @@ interface MediaMetricsProvider {
   SetTimeToFirstFrame(mojo_base.mojom.TimeDelta elapsed);
   SetTimeToPlayReady(mojo_base.mojom.TimeDelta elapsed);
 
+  // For src= playbacks, this is the container (".mp4", ".webm", etc).
+  SetContainerName(MediaContainerName container_name);
+
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.
   AcquireWatchTimeRecorder(PlaybackProperties properties,

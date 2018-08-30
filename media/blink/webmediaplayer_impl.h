@@ -588,6 +588,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // The player MUST have a `client_` when this call happen.
   bool IsInPictureInPicture() const;
 
+  // Sets the UKM container name if needed.
+  void MaybeSetContainerName();
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate

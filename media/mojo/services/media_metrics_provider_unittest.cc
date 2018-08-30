@@ -88,6 +88,9 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       // This is an MSE playback so the URL scheme should not be set.
       EXPECT_NO_UKM(UkmEntry::kURLSchemeName);
 
+      // This is an MSE playback so no container is available.
+      EXPECT_NO_UKM(UkmEntry::kContainerNameName);
+
       EXPECT_NO_UKM(UkmEntry::kTimeToMetadataName);
       EXPECT_NO_UKM(UkmEntry::kTimeToFirstFrameName);
       EXPECT_NO_UKM(UkmEntry::kTimeToPlayReadyName);
@@ -106,6 +109,7 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
   provider_->SetTimeToMetadata(kMetadataTime);
   provider_->SetTimeToFirstFrame(kFirstFrameTime);
   provider_->SetTimeToPlayReady(kPlayReadyTime);
+  provider_->SetContainerName(container_names::CONTAINER_MOV);
   provider_->OnError(PIPELINE_ERROR_DECODE);
   provider_.reset();
   base::RunLoop().RunUntilIdle();
@@ -128,6 +132,7 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
                  kFirstFrameTime.InMilliseconds());
       EXPECT_UKM(UkmEntry::kTimeToPlayReadyName,
                  kPlayReadyTime.InMilliseconds());
+      EXPECT_UKM(UkmEntry::kContainerNameName, container_names::CONTAINER_MOV);
     }
   }
 }
