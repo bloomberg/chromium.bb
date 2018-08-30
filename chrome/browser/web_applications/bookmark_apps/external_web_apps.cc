@@ -13,7 +13,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +36,7 @@ const base::FilePath::CharType kWebAppsSubDirectory[] =
 #endif
 
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
                                   false,  // Recursive.
