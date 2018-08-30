@@ -39,6 +39,10 @@ issues]].
 - Improvements to UEB such as handling of /BLT/, /BLVD/ and /LLC/,
   number sign placement, final-letter groupsign usage and final-letter
   back-translation thanks to Mike Gray.
+- Significant changes to Bopomofo-based Chinese Braille. Among other
+  things there is now complete the support of /CJK Unified Ideographs
+  Extension A/ and some symbols were added for Nemeth. Thanks to
+  Sponge Jhan and 黃偉豪.
 
 ** Other changes
 - Test suite improvements: In addition to checking the translation the
