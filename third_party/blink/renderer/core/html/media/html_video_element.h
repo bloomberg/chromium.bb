@@ -66,6 +66,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   IntSize videoVisibleSize() const;
 
+  IntSize GetOverriddenIntrinsicSize() const;
+
   // Fullscreen
   void webkitEnterFullscreen();
   void webkitExitFullscreen();
@@ -218,6 +220,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
 
+  void ParseIntrinsicSizeAttribute(const String& value);
+
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
       custom_controls_fullscreen_detector_;
@@ -247,6 +251,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // to display type and other UI features. This does not mean the DOM element
   // is fullscreen.
   bool is_effectively_fullscreen_ = false;
+
+  IntSize overridden_intrinsic_size_;
 };
 
 }  // namespace blink

@@ -1125,6 +1125,7 @@ html element video
     property error
     property getVideoPlaybackQuality
     property height
+    property intrinsicSize
     property load
     property loop
     property mediaKeys

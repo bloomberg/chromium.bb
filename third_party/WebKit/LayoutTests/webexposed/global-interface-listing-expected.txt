@@ -3763,6 +3763,7 @@ interface HTMLVideoElement : HTMLMediaElement
     attribute @@toStringTag
     getter disablePictureInPicture
     getter height
+    getter intrinsicSize
     getter onenterpictureinpicture
     getter onleavepictureinpicture
     getter onpictureinpicturecontrolclick
@@ -3784,6 +3785,7 @@ interface HTMLVideoElement : HTMLMediaElement
     method webkitExitFullscreen
     setter disablePictureInPicture
     setter height
+    setter intrinsicSize
     setter onenterpictureinpicture
     setter onleavepictureinpicture
     setter onpictureinpicturecontrolclick
