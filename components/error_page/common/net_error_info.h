@@ -62,6 +62,8 @@ enum NetworkErrorPageEvent {
   NETWORK_ERROR_PAGE_OFFLINE_SUGGESTION_CLICKED = 25,
   // A link that opens the downloads page was clicked.
   NETWORK_ERROR_PAGE_OFFLINE_DOWNLOADS_PAGE_CLICKED = 26,
+  // A summary of available offline content was shown.
+  NETWORK_ERROR_PAGE_OFFLINE_CONTENT_SUMMARY_SHOWN = 27,
 
   NETWORK_ERROR_PAGE_EVENT_MAX,
 };

@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/error_page/common/error.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -66,7 +67,8 @@ class NetErrorHelperCore {
         bool* show_saved_copy_button_shown,
         bool* show_cached_copy_button_shown,
         bool* download_button_shown,
-        bool* offline_content_suggestions_allowed,
+        error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
+            offline_content_feature_state,
         std::string* html) const = 0;
 
     // Loads the given HTML in the frame for use as an error page.
@@ -119,6 +121,10 @@ class NetErrorHelperCore {
     // Signals that offline content is available.
     virtual void OfflineContentAvailable(
         const std::string& offline_content_json) = 0;
+
+    // Signals that offline content summary is available.
+    virtual void OfflineContentSummaryAvailable(
+        const std::string& offline_content_summary_json) = 0;
 
    protected:
     virtual ~Delegate() {}
