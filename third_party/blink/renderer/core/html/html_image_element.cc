@@ -581,7 +581,7 @@ void HTMLImageElement::ParseIntrinsicSizeAttribute(const String& value) {
        !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
     GetDocument().AddConsoleMessage(
         ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                               "Unable to parse intrinsicsize: expected "
+                               "Unable to parse intrinsicSize: expected "
                                "[unsigned] x [unsigned], got " +
                                    value));
     new_width = 0;

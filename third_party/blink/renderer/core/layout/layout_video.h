@@ -48,10 +48,11 @@ class LayoutVideo final : public LayoutMedia {
 
   const char* GetName() const override { return "LayoutVideo"; }
 
+  void IntrinsicSizeChanged() override;
+
  private:
   void UpdateFromElement() override;
 
-  void IntrinsicSizeChanged() override;
   LayoutSize CalculateIntrinsicSize();
   void UpdateIntrinsicSize();
 

@@ -70,6 +70,11 @@ void LayoutVideo::UpdateIntrinsicSize() {
 
 LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   HTMLVideoElement* video = VideoElement();
+  DCHECK(video);
+
+  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+      !video->GetOverriddenIntrinsicSize().IsEmpty())
+    return LayoutSize(video->GetOverriddenIntrinsicSize());
 
   // Spec text from 4.8.6
   //

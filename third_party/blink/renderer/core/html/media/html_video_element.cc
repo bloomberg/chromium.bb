@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -207,18 +208,26 @@ void HTMLVideoElement::ParseAttribute(
       remoting_interstitial_->OnPosterImageChanged();
     if (picture_in_picture_interstitial_)
       picture_in_picture_interstitial_->OnPosterImageChanged();
+  } else if (params.name == intrinsicsizeAttr &&
+             RuntimeEnabledFeatures::
+                 ExperimentalProductivityFeaturesEnabled()) {
+    ParseIntrinsicSizeAttribute(params.new_value);
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }
 }
 
 unsigned HTMLVideoElement::videoWidth() const {
+  if (overridden_intrinsic_size_.Width() > 0)
+    return overridden_intrinsic_size_.Width();
   if (!GetWebMediaPlayer())
     return 0;
   return GetWebMediaPlayer()->NaturalSize().width;
 }
 
 unsigned HTMLVideoElement::videoHeight() const {
+  if (overridden_intrinsic_size_.Height() > 0)
+    return overridden_intrinsic_size_.Height();
   if (!GetWebMediaPlayer())
     return 0;
   return GetWebMediaPlayer()->NaturalSize().height;
@@ -227,6 +236,35 @@ unsigned HTMLVideoElement::videoHeight() const {
 IntSize HTMLVideoElement::videoVisibleSize() const {
   return GetWebMediaPlayer() ? IntSize(GetWebMediaPlayer()->VisibleRect())
                              : IntSize();
+}
+
+IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
+  return overridden_intrinsic_size_;
+}
+
+void HTMLVideoElement::ParseIntrinsicSizeAttribute(const String& value) {
+  unsigned new_width = 0, new_height = 0;
+  Vector<String> size;
+  value.Split('x', size);
+  if (!value.IsEmpty() &&
+      (size.size() != 2 ||
+       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
+       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
+    GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
+                               "Unable to parse intrinsicSize: expected "
+                               "[unsigned] x [unsigned], got " +
+                                   value));
+    new_width = 0;
+    new_height = 0;
+  }
+
+  IntSize new_size(new_width, new_height);
+  if (overridden_intrinsic_size_ != new_size) {
+    overridden_intrinsic_size_ = new_size;
+    if (GetLayoutObject() && GetLayoutObject()->IsVideo())
+      ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
+  }
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
