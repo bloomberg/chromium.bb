@@ -28,7 +28,7 @@ WebAppProvider::WebAppProvider(Profile* profile)
           std::make_unique<extensions::PendingBookmarkAppManager>(profile)) {
   if (WebAppPolicyManager::ShouldEnableForProfile(profile)) {
     web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
-        profile->GetPrefs(), pending_app_manager_.get());
+        profile, pending_app_manager_.get());
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,

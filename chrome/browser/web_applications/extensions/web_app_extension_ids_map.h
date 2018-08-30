@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_WEB_APP_EXTENSION_IDS_MAP_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
 
 class GURL;
 class PrefService;
+class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -29,6 +31,9 @@ class ExtensionIdsMap {
 
   static bool HasExtensionId(const PrefService* pref_service,
                              const std::string& extension_id);
+
+  // Returns the URLs of the apps that were installed as policy-installed apps.
+  static std::vector<GURL> GetPolicyInstalledAppUrls(Profile* profile);
 
   explicit ExtensionIdsMap(PrefService* pref_service);
 

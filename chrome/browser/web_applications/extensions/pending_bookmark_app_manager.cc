@@ -104,6 +104,13 @@ void PendingBookmarkAppManager::SetTimerForTesting(
   timer_ = std::move(timer);
 }
 
+void PendingBookmarkAppManager::UninstallApps(
+    std::vector<GURL> apps_to_uninstall,
+    const UninstallCallback& callback) {
+  // TODO(crbug.com/876174) implement this method.
+  NOTIMPLEMENTED();
+}
+
 // Returns (as the base::Optional part) whether or not there is already a known
 // extension for the given ID. The bool inside the base::Optional is, when
 // known, whether the extension is installed (true) or uninstalled (false).

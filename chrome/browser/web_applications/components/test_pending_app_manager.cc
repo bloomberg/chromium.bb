@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "url/gurl.h"
 
@@ -31,6 +33,15 @@ void TestPendingAppManager::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& app : apps_to_install)
     Install(std::move(app), callback);
+}
+
+void TestPendingAppManager::UninstallApps(std::vector<GURL> apps_to_uninstall,
+                                          const UninstallCallback& callback) {
+  for (auto& app : apps_to_uninstall) {
+    const GURL url(app);
+    uninstalled_apps_.push_back(std::move(app));
+    callback.Run(url, true /* succeeded */);
+  }
 }
 
 }  // namespace web_app
