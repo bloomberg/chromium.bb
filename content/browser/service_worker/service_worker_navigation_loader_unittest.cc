@@ -1015,5 +1015,16 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
   EXPECT_FALSE(loader_weakptr);
 }
 
+TEST_F(ServiceWorkerNavigationLoaderTest, DetachedDuringFetchEvent) {
+  LoaderResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+
+  // Detach the loader immediately after it started. This results in
+  // DidDispatchFetchEvent() being invoked later with null |delegate_|.
+  loader_.release()->DetachedFromRequest();
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+}
+
 }  // namespace service_worker_navigation_loader_unittest
 }  // namespace content

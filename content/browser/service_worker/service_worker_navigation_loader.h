@@ -119,12 +119,10 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      scoped_refptr<ServiceWorkerVersion> version,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
-  void StartErrorResponse();
 
-  // Calls url_loader_client_->OnReceiveResopnse() with |response_head_|.
+  // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();
-  // Calls url_loader_client_->OnComplete(). Expected to be called after
-  // CommitResponseHeaders (i.e. status_ == kSentHeader).
+  // Calls url_loader_client_->OnComplete().
   void CommitCompleted(int error_code);
 
   // network::mojom::URLLoader:
@@ -150,7 +148,15 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   NavigationLoaderInterceptor::LoaderCallback loader_callback_;
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
-  Delegate* delegate_;
+  // |delegate_| is non-null and owns |this| until DetachedFromRequest() is
+  // called. Once that is called, |delegate_| is reset to null and |this| owns
+  // itself, self-destructing when a connection error on |binding_| occurs.
+  //
+  // Note: A WeakPtr wouldn't be super safe here because the delegate can
+  // conceivably still be alive and used for another loader, after calling
+  // DetachedFromRequest() for this loader.
+  Delegate* delegate_ = nullptr;
+
   network::ResourceRequest resource_request_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
@@ -173,8 +179,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
     kCancelled
   };
   Status status_ = Status::kNotStarted;
-
-  bool detached_from_request_ = false;
 
   base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_;
 
