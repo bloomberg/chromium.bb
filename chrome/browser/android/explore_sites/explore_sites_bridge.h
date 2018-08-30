@@ -38,6 +38,20 @@ JNI_ExploreSitesBridge_GetCatalogUrl(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller);
 
+static void JNI_ExploreSitesBridge_GetNtpCatalog(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jobject>& j_result_obj,
+    const base::android::JavaParamRef<jobject>& j_callback_obj);
+
+static void JNI_ExploreSitesBridge_GetEspCatalog(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jobject>& j_result_obj,
+    const base::android::JavaParamRef<jobject>& j_callback_obj);
+
 }  // namespace explore_sites
 
 #endif  // CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_

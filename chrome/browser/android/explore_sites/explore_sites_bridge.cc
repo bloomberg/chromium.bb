@@ -139,4 +139,24 @@ ScopedJavaLocalRef<jstring> JNI_ExploreSitesBridge_GetCatalogUrl(
   return base::android::ConvertUTF8ToJavaString(env, GetCatalogURL().spec());
 }
 
+// static
+static void JNI_ExploreSitesBridge_GetNtpCatalog(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jobject>& j_result_obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  // TODO(chili): fill this in
+}
+
+// static
+static void JNI_ExploreSitesBridge_GetEspCatalog(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jobject>& j_result_obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  // TODO(chili): fill this in
+}
+
 }  // namespace explore_sites
