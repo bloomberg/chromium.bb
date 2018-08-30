@@ -102,13 +102,19 @@ MATCHER_P2(IsAdvertisementContent,
 
 #elif defined(OS_WIN)
   const auto manufacturer_data = arg->manufacturer_data();
-  const auto manufacturer_data_value = manufacturer_data->find(0xFFFD);
+  const auto manufacturer_data_value = manufacturer_data->find(0x00E0);
 
   if (manufacturer_data_value == manufacturer_data->end())
     return false;
 
-  return fido_parsing_utils::ExtractSuffixSpan(manufacturer_data_value->second,
-                                               2) == expected_client_eid;
+  const auto& manufacturer_data_payload = manufacturer_data_value->second;
+  return manufacturer_data_payload.size() >= 4u &&
+         manufacturer_data_payload[0] == manufacturer_data_payload.size() - 1 &&
+         manufacturer_data_payload[1] == 0x15 &&  // Manufacturer Data Type
+         manufacturer_data_payload[2] == 0x20 &&  // Cable Flags
+         manufacturer_data_payload[3] == kTestCableVersionNumber &&
+         base::make_span(manufacturer_data_payload).subspan(4) ==
+             expected_client_eid;
 
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   const auto service_data = arg->service_data();
