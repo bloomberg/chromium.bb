@@ -1,0 +1,42 @@
+<body>
+Schedules several dozen tasks, then cancels all but the last.<br>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+
+var queue = new WorkerTaskQueue("background");
+
+var stop = 11;
+var next = 0;
+function print(result) {
+  document.body.appendChild(document.createTextNode("Fibonnaci #" + next++ + " is " +result));
+  document.body.appendChild(document.createElement("br"));
+  if (next == stop) {
+    if (window.testRunner)
+      testRunner.notifyDone();
+  }
+};
+
+function fail() {
+  next++;
+}
+
+function fib(n) {
+  if (n == 0 || n == 1)
+    return n;
+  return fib(n - 1) + fib(n - 2);
+}
+
+const controller = new AbortController();
+const signal = controller.signal;
+
+for (var i = 0; i < stop; i++) {
+  queue.postTask(fib, i < stop - 1 ? signal : undefined, i)
+     .then(print, fail);
+}
+
+controller.abort();
+</script>
+</body>

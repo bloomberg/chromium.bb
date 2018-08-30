@@ -9972,6 +9972,10 @@ interface Worker : EventTarget
     method terminate
     setter onerror
     setter onmessage
+interface WorkerTaskQueue
+    attribute @@toStringTag
+    method constructor
+    method postTask
 interface Worklet
     attribute @@toStringTag
     method addModule

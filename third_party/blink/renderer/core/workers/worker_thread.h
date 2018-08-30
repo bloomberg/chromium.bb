@@ -206,6 +206,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_scheduler_->GetTaskRunner(type);
   }
 
+  // TODO(japhet): Hack to support an experimental worker scheduling API.
+  scoped_refptr<base::SingleThreadTaskRunner> GetControlTaskRunner();
+
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
 
