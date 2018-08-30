@@ -59,6 +59,7 @@
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
+#include "components/arc/property/arc_property_bridge.h"
 #include "components/arc/rotation_lock/arc_rotation_lock_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/arc/timer/arc_timer_bridge.h"
@@ -170,6 +171,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcPowerBridge::GetForBrowserContext(profile);
   ArcPrintService::GetForBrowserContext(profile);
   ArcProcessService::GetForBrowserContext(profile);
+  ArcPropertyBridge::GetForBrowserContext(profile);
   ArcProvisionNotificationService::GetForBrowserContext(profile);
   ArcRotationLockBridge::GetForBrowserContext(profile);
   ArcScreenCaptureBridge::GetForBrowserContext(profile);

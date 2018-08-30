@@ -52,6 +52,8 @@ static_library("arc") {
     "obb_mounter/arc_obb_mounter_bridge.h",
     "power/arc_power_bridge.cc",
     "power/arc_power_bridge.h",
+    "property/arc_property_bridge.cc",
+    "property/arc_property_bridge.h",
     "rotation_lock/arc_rotation_lock_bridge.cc",
     "rotation_lock/arc_rotation_lock_bridge.h",
     "storage_manager/arc_storage_manager.cc",

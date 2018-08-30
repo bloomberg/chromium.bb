@@ -98,6 +98,9 @@ void FakeArcBridgeHost::OnPrintInstanceReady(
 void FakeArcBridgeHost::OnProcessInstanceReady(
     mojom::ProcessInstancePtr process_ptr) {}
 
+void FakeArcBridgeHost::OnPropertyInstanceReady(
+    mojom::PropertyInstancePtr property_ptr) {}
+
 void FakeArcBridgeHost::OnRotationLockInstanceReady(
     mojom::RotationLockInstancePtr rotation_lock_ptr) {}
 

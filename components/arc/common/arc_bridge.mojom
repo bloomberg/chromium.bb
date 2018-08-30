@@ -35,6 +35,7 @@ import "components/arc/common/policy.mojom";
 import "components/arc/common/power.mojom";
 import "components/arc/common/print.mojom";
 import "components/arc/common/process.mojom";
+import "components/arc/common/property.mojom";
 import "components/arc/common/rotation_lock.mojom";
 import "components/arc/common/screen_capture.mojom";
 import "components/arc/common/storage_manager.mojom";
@@ -49,9 +50,9 @@ import "components/arc/common/volume_mounter.mojom";
 import "components/arc/common/wake_lock.mojom";
 import "components/arc/common/wallpaper.mojom";
 
-// Next MinVersion: 42
+// Next MinVersion: 43
 // Deprecated method IDs: 101, 105
-// Next method ID: 147
+// Next method ID: 148
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -158,6 +159,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the ProcessInstance interface is ready.
   OnProcessInstanceReady@104(ProcessInstance instance_ptr);
+
+  // Notifies Chrome that the PropertyInstance interface is ready.
+  [MinVersion=42] OnPropertyInstanceReady@147(PropertyInstance instance_ptr);
 
   // Notifies Chrome that the RotationLockInstance interface is ready.
   [MinVersion=32] OnRotationLockInstanceReady@137(RotationLockInstance instance_ptr);
