@@ -61,6 +61,9 @@ interface DriveFsDelegate {
 
   // Invoked when server-side file changes are received.
   OnFilesChanged(array<FileChange> changes);
+
+  // Invoked when a supported error occurs.
+  OnError(DriveError error);
 };
 
 struct DriveFsConfiguration {
@@ -101,6 +104,18 @@ enum FileError {
   kNoConnection = -16,
   kNoLocalSpace = -17,
   kServiceUnavailable = -18,
+};
+
+// Errors received from DriveFS to be forwarded to the file manager UI.
+struct DriveError {
+  [Extensible] enum Type {
+    kCantUploadStorageFull,
+  };
+
+  Type type;
+
+  // The path to the file where an error was encountered, if there was one.
+  mojo_base.mojom.FilePath path;
 };
 
 struct FileMetadata {
