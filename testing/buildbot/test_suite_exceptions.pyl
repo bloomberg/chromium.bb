@@ -923,60 +923,6 @@
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
   },
-  'not_site_per_process_components_browsertests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_components_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_content_browsertests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_content_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_extensions_browsertests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_extensions_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
   'site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
