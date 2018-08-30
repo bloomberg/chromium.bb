@@ -932,36 +932,9 @@ void RecordSavePackageEvent(SavePackageEvent event) {
                             SAVE_PACKAGE_LAST_ENTRY);
 }
 
-namespace {
-
-// Enumeration for histogramming purposes.
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum DownloadConnectionSecurity {
-  DOWNLOAD_SECURE = 0,  // Final download url and its redirects all use https
-  DOWNLOAD_TARGET_INSECURE =
-      1,  // Final download url uses http, redirects are all
-          // https
-  DOWNLOAD_REDIRECT_INSECURE =
-      2,  // Final download url uses https, but at least
-          // one redirect uses http
-  DOWNLOAD_REDIRECT_TARGET_INSECURE =
-      3,                      // Final download url uses http, and at
-                              // least one redirect uses http
-  DOWNLOAD_TARGET_OTHER = 4,  // Final download url uses a scheme not present in
-                              // this enumeration
-  DOWNLOAD_TARGET_BLOB = 5,   // Final download url uses blob scheme
-  DOWNLOAD_TARGET_DATA = 6,   //  Final download url uses data scheme
-  DOWNLOAD_TARGET_FILE = 7,   //  Final download url uses file scheme
-  DOWNLOAD_TARGET_FILESYSTEM = 8,  //  Final download url uses filesystem scheme
-  DOWNLOAD_TARGET_FTP = 9,         // Final download url uses ftp scheme
-  DOWNLOAD_CONNECTION_SECURITY_MAX
-};
-
-}  // namespace
-
-void RecordDownloadConnectionSecurity(const GURL& download_url,
-                                      const std::vector<GURL>& url_chain) {
+DownloadConnectionSecurity CheckDownloadConnectionSecurity(
+    const GURL& download_url,
+    const std::vector<GURL>& url_chain) {
   DownloadConnectionSecurity state = DOWNLOAD_TARGET_OTHER;
   if (download_url.SchemeIsHTTPOrHTTPS()) {
     bool is_final_download_secure = download_url.SchemeIsCryptographic();
@@ -990,9 +963,15 @@ void RecordDownloadConnectionSecurity(const GURL& download_url,
   } else if (download_url.SchemeIs(url::kFtpScheme)) {
     state = DOWNLOAD_TARGET_FTP;
   }
+  return state;
+}
 
-  UMA_HISTOGRAM_ENUMERATION("Download.TargetConnectionSecurity", state,
-                            DOWNLOAD_CONNECTION_SECURITY_MAX);
+void RecordDownloadConnectionSecurity(const GURL& download_url,
+                                      const std::vector<GURL>& url_chain) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.TargetConnectionSecurity",
+      CheckDownloadConnectionSecurity(download_url, url_chain),
+      DOWNLOAD_CONNECTION_SECURITY_MAX);
 }
 
 void RecordDownloadContentTypeSecurity(

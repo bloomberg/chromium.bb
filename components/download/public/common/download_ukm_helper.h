@@ -10,6 +10,7 @@
 #include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/resume_mode.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -29,7 +30,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUkmHelper {
   static void RecordDownloadStarted(int download_id,
                                     ukm::SourceId source_id,
                                     DownloadContent file_type,
-                                    DownloadSource download_source);
+                                    DownloadSource download_source,
+                                    DownloadConnectionSecurity state,
+                                    bool is_same_host_download);
 
   // Record when the download is interrupted.
   static void RecordDownloadInterrupted(int download_id,

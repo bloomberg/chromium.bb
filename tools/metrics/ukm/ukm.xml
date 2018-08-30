@@ -1078,6 +1078,12 @@ be describing additional metrics about the same event.
     Metrics taken when a download begins. It has one Download.Ended and none to
     multiple Download.Interrupted/Download.Resumed events associated with it.
   </summary>
+  <metric name="DownloadConnectionSecurity">
+    <summary>
+      The state of the security of the final download URL and all the redirects
+      leading to it. Expressed as an enum defined in DownloadConnectionSecurity.
+    </summary>
+  </metric>
   <metric name="DownloadId">
     <summary>
       The id of the download that is used to associate separate events.
@@ -1092,6 +1098,13 @@ be describing additional metrics about the same event.
     <summary>
       The type of file that is downloaded, expressed as an enum defined in
       DownloadContentType.
+    </summary>
+  </metric>
+  <metric name="IsSameHostDownload">
+    <summary>
+      A boolean denoting if the final download URL is the same host as the
+      initiating frame (i.e., whether the initiating site likely controls the
+      download itself).
     </summary>
   </metric>
 </event>

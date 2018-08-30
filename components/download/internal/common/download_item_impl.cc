@@ -36,6 +36,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1470,9 +1471,14 @@ void DownloadItemImpl::Start(
     DownloadContent file_type = DownloadContentFromMimeType(mime_type_, false);
     auto in_progress_entry = delegate_->GetInProgressEntry(this);
     if (in_progress_entry) {
+      bool is_same_host_download =
+          base::StringPiece(new_create_info.url().host())
+              .ends_with(new_create_info.site_url.host());
+      DownloadConnectionSecurity state = CheckDownloadConnectionSecurity(
+          new_create_info.url(), new_create_info.url_chain);
       DownloadUkmHelper::RecordDownloadStarted(
           in_progress_entry->ukm_download_id, new_create_info.ukm_source_id,
-          file_type, download_source_);
+          file_type, download_source_, state, is_same_host_download);
     }
 
     if (!delegate_->IsOffTheRecord()) {

@@ -263,7 +263,11 @@ void SavePackage::InternalInit() {
   ukm_download_id_ = download::GetUniqueDownloadId();
   download::DownloadUkmHelper::RecordDownloadStarted(
       ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,
-      download::DownloadSource::UNKNOWN);
+      download::DownloadSource::UNKNOWN,
+      download::CheckDownloadConnectionSecurity(
+          web_contents()->GetLastCommittedURL(),
+          std::vector<GURL>{web_contents()->GetLastCommittedURL()}),
+      true /* is_same_host_download */);
 }
 
 bool SavePackage::Init(
