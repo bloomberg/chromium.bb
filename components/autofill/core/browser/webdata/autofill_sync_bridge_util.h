@@ -85,7 +85,8 @@ void CopyRelevantWalletMetadataFromDisk(
     std::vector<CreditCard>* cards_from_server);
 
 // Populates the wallet datatypes from the sync data and uses the sync data to
-// link the card to its billing address.
+// link the card to its billing address. If |wallet_addresses| is a nullptr,
+// this function will not extract addresses.
 void PopulateWalletTypesFromSyncData(
     const ::syncer::EntityChangeList& entity_data,
     std::vector<CreditCard>* wallet_cards,

@@ -384,12 +384,17 @@ void PopulateWalletTypesFromSyncData(
             CardFromSpecifics(autofill_specifics.masked_card()));
         break;
       case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
-        wallet_addresses->push_back(
-            ProfileFromSpecifics(autofill_specifics.address()));
+        // Unlike other pointers, |wallet_addresses| can be nullptr. This means
+        // that addresses should not get populated (and billing address ids not
+        // get translated to local profile ids).
+        if (wallet_addresses) {
+          wallet_addresses->push_back(
+              ProfileFromSpecifics(autofill_specifics.address()));
 
-        // Map the sync billing address id to the profile's id.
-        ids[autofill_specifics.address().id()] =
-            wallet_addresses->back().server_id();
+          // Map the sync billing address id to the profile's id.
+          ids[autofill_specifics.address().id()] =
+              wallet_addresses->back().server_id();
+        }
         break;
       case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
         customer_data->push_back(

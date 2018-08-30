@@ -197,7 +197,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
 
   void ResetBridge() {
     bridge_.reset(new AutofillWalletSyncBridge(
-        mock_processor_.CreateForwardingProcessor(), &backend_));
+        mock_processor_.CreateForwardingProcessor(), UseFullSync(), &backend_));
   }
 
   void StartSyncing(
@@ -263,6 +263,8 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   AutofillTable* table() { return &table_; }
 
   FakeAutofillBackend* backend() { return &backend_; }
+
+  virtual bool UseFullSync() { return true; }
 
  private:
   autofill::TestAutofillClock test_clock_;
@@ -554,6 +556,100 @@ TEST_F(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
                                     /*state=*/HasInitialSyncDone(),
                                     /*entities=*/SizeIs(1))));
   ResetBridge();
+}
+
+class AutofillWalletEphemeralSyncBridgeTest
+    : public AutofillWalletSyncBridgeTest {
+ public:
+  AutofillWalletEphemeralSyncBridgeTest() {}
+  ~AutofillWalletEphemeralSyncBridgeTest() override {}
+
+  bool UseFullSync() override { return false; }
+};
+
+// Tests that when the server sends no cards, the client should
+// delete all it's existing data.
+TEST_F(AutofillWalletEphemeralSyncBridgeTest,
+       MergeSyncData_NoWalletAddressOrCard) {
+  // Create one card on the client.
+  CreditCard local_card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({local_card});
+
+  StartSyncing({});
+
+  EXPECT_TRUE(GetAllLocalData().empty());
+}
+
+// Test that when the server sends the same card as the client has, nothing
+// changes on the client.
+TEST_F(AutofillWalletEphemeralSyncBridgeTest, MergeSyncData_SameWalletCard) {
+  // Create one card on the client.
+  CreditCard card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card});
+
+  // Create the same card on the server.
+  AutofillWalletSpecifics card_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
+
+  StartSyncing({card_specifics});
+
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(card_specifics)));
+}
+
+// Tests that when a new wallet card is sent by the server, the client only
+// keeps the new data.
+TEST_F(AutofillWalletEphemeralSyncBridgeTest, MergeSyncData_NewWalletCard) {
+  // Create one card on the client.
+  CreditCard card1 = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card1});
+  PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
+  table()->SetPaymentsCustomerData(&customer_data);
+
+  // Create a different card on the server.
+  CreditCard card2 = test::GetMaskedServerCardAmex();
+  AutofillWalletSpecifics card_specifics2;
+  SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+  AutofillWalletSpecifics customer_data_specifics;
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     &customer_data_specifics);
+
+  StartSyncing({card_specifics2, customer_data_specifics});
+
+  // Only the server card should be present on the client.
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(card_specifics2),
+                                   EqualsSpecifics(customer_data_specifics)));
+}
+
+// Tests that when a new wallet card and new wallet address are sent by the
+// server, the client only keeps the new data.
+TEST_F(AutofillWalletEphemeralSyncBridgeTest,
+       MergeSyncData_AddressesAreDropped) {
+  // Create one card on the client.
+  CreditCard card1 = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card1});
+  PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
+  table()->SetPaymentsCustomerData(&customer_data);
+
+  // Create a new profile and a different card on the server.
+  AutofillProfile address = test::GetServerProfile();
+  AutofillWalletSpecifics profile_specifics;
+  SetAutofillWalletSpecificsFromServerProfile(address, &profile_specifics);
+  CreditCard card2 = test::GetMaskedServerCardAmex();
+  AutofillWalletSpecifics card_specifics2;
+  SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+  AutofillWalletSpecifics customer_data_specifics;
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     &customer_data_specifics);
+
+  StartSyncing({profile_specifics, card_specifics2, customer_data_specifics});
+
+  // Only the server card should be present on the client; the server profile is
+  // ignored.
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(card_specifics2),
+                                   EqualsSpecifics(customer_data_specifics)));
 }
 
 }  // namespace autofill

@@ -63,6 +63,7 @@ std::string GetClientTagForWalletDataSpecificsId(
 // static
 void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
     const std::string& app_locale,
+    bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend,
     AutofillWebDataService* web_data_service) {
   web_data_service->GetDBUserData()->SetUserData(
@@ -71,7 +72,7 @@ void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
               /*dump_stack=*/base::RepeatingClosure()),
-          web_data_backend));
+          has_persistent_storage, web_data_backend));
 }
 
 // static
@@ -84,8 +85,11 @@ syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
 
 AutofillWalletSyncBridge::AutofillWalletSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+    bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
+      has_persistent_storage_(has_persistent_storage),
+      initial_sync_done_(false),
       web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
 
@@ -106,7 +110,10 @@ AutofillWalletSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  SetSyncData(entity_data, /*is_initial_data=*/true);
+  SetSyncData(entity_data);
+
+  // After the first sync, we are sure that initial sync is done.
+  initial_sync_done_ = true;
   return base::nullopt;
 }
 
@@ -172,16 +179,57 @@ std::string AutofillWalletSyncBridge::GetStorageKey(
       entity_data.specifics.autofill_wallet()));
 }
 
+bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
+  // The payments server always returns the full dataset whenever there's any
+  // change to the user's payments data. Therefore, we don't implement full
+  // incremental-update support in this bridge, and clear all data
+  // before inserting new instead.
+  return false;
+}
+
 void AutofillWalletSyncBridge::SetSyncData(
-    const syncer::EntityChangeList& entity_data,
-    bool is_initial_data) {
+    const syncer::EntityChangeList& entity_data) {
+  bool wallet_data_changed = false;
+
   // Extract the Autofill types from the sync |entity_data|.
   std::vector<CreditCard> wallet_cards;
-  std::vector<AutofillProfile> wallet_addresses;
   std::vector<PaymentsCustomerData> customer_data;
-  PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
-                                  &customer_data);
+  if (has_persistent_storage_) {
+    // When in persistent storage mode, we update wallet addresses.
+    std::vector<AutofillProfile> wallet_addresses;
+    PopulateWalletTypesFromSyncData(entity_data, &wallet_cards,
+                                    &wallet_addresses, &customer_data);
+    wallet_data_changed |= SetWalletAddresses(std::move(wallet_addresses));
+  } else {
+    // When in ephemeral storage mode, we ignore wallet addresses.
+    PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, nullptr,
+                                    &customer_data);
+  }
 
+  // In both cases, we need to update wallet cards and payments customer data.
+  wallet_data_changed |= SetWalletCards(std::move(wallet_cards));
+
+  // Changes to payments customer data do not have to be notified to the backend
+  // so we do not need to load the previous value before writing.
+  if (customer_data.empty()) {
+    // Clear the data in the DB.
+    GetAutofillTable()->SetPaymentsCustomerData(nullptr);
+  } else {
+    // In case there were multiple entries (and there shouldn't!), we take the
+    // pointer to the first entry in the vector.
+    GetAutofillTable()->SetPaymentsCustomerData(customer_data.data());
+    if (customer_data.size() > 1) {
+      DLOG(WARNING) << "Sync wallet_data update has " << customer_data.size()
+                    << " payments-customer-data entries; expected 0 or 1.";
+    }
+  }
+
+  if (web_data_backend_ && wallet_data_changed)
+    web_data_backend_->NotifyOfMultipleAutofillChanges();
+}
+
+bool AutofillWalletSyncBridge::SetWalletCards(
+    std::vector<CreditCard> wallet_cards) {
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
   // server. To preserve user's preferred billing address and most recent use
@@ -195,53 +243,51 @@ void AutofillWalletSyncBridge::SetSyncData(
   // only do the writes if something changed.
   std::vector<std::unique_ptr<CreditCard>> existing_cards;
   table->GetServerCreditCards(&existing_cards);
-  AutofillWalletDiff cards_diff =
+  AutofillWalletDiff diff =
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
-  if (!cards_diff.IsEmpty())
-    table->SetServerCreditCards(wallet_cards);
 
-  std::vector<std::unique_ptr<AutofillProfile>> existing_addresses;
-  table->GetServerProfiles(&existing_addresses);
-  AutofillWalletDiff addresses_diff =
-      ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
-  if (!addresses_diff.IsEmpty())
-    table->SetServerProfiles(wallet_addresses);
-
-  if (customer_data.empty()) {
-    // Clears the data only.
-    table->SetPaymentsCustomerData(nullptr);
-  } else {
-    // In case there were multiple entries (and there shouldn't!), we take the
-    // first entry in the vector.
-    table->SetPaymentsCustomerData(&customer_data.front());
-  }
-
-  if (!is_initial_data) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded",
-                             cards_diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsRemoved",
-                             cards_diff.items_removed);
+  // Record only local changes that correspond to changes in the payments
+  // backend and not local changes due to initial sync.
+  if (initial_sync_done_) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded", diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsRemoved", diff.items_removed);
     UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAddedOrRemoved",
-                             cards_diff.items_added + cards_diff.items_removed);
-
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAdded",
-                             addresses_diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesRemoved",
-                             addresses_diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100(
-        "Autofill.WalletAddressesAddedOrRemoved",
-        addresses_diff.items_added + addresses_diff.items_removed);
+                             diff.items_added + diff.items_removed);
   }
 
-  if (web_data_backend_ && (!cards_diff.IsEmpty() || !addresses_diff.IsEmpty()))
-    web_data_backend_->NotifyOfMultipleAutofillChanges();
+  if (!diff.IsEmpty()) {
+    table->SetServerCreditCards(wallet_cards);
+    return true;
+  }
+  return false;
 }
 
-bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
-  // The payments server always returns the full dataset whenever there's any
-  // change to the user's payments data. Therefore, we don't implement full
-  // incremental-update support in this bridge, and clear all data
-  // before inserting new instead.
+bool AutofillWalletSyncBridge::SetWalletAddresses(
+    std::vector<AutofillProfile> wallet_addresses) {
+  // In the common case, the database won't have changed. Committing an update
+  // to the database will require at least one DB page write and will schedule
+  // a fsync. To avoid this I/O, it should be more efficient to do a read and
+  // only do the writes if something changed.
+  AutofillTable* table = GetAutofillTable();
+  std::vector<std::unique_ptr<AutofillProfile>> existing_addresses;
+  table->GetServerProfiles(&existing_addresses);
+  AutofillWalletDiff diff =
+      ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
+
+  // Record only local changes that correspond to changes in the payments
+  // backend and not local changes due to initial sync.
+  if (initial_sync_done_) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAdded", diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesRemoved",
+                             diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAddedOrRemoved",
+                             diff.items_added + diff.items_removed);
+  }
+
+  if (!diff.IsEmpty()) {
+    table->SetServerProfiles(wallet_addresses);
+    return true;
+  }
   return false;
 }
 
@@ -316,6 +362,8 @@ void AutofillWalletSyncBridge::LoadMetadata() {
         {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
     return;
   }
+  initial_sync_done_ = batch->GetModelTypeState().initial_sync_done();
+
   change_processor()->ModelReadyToSync(std::move(batch));
 }
 
