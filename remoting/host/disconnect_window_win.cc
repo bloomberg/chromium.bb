@@ -8,45 +8,61 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/win/current_module.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
+#include "remoting/host/input_monitor/local_input_monitor.h"
 #include "remoting/host/win/core_resource.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
 namespace {
 
-const int DISCONNECT_HOTKEY_ID = 1000;
+constexpr int DISCONNECT_HOTKEY_ID = 1000;
 
 // Maximum length of "Your desktop is shared with ..." message in UTF-16
 // characters.
-const size_t kMaxSharingWithTextLength = 100;
+constexpr size_t kMaxSharingWithTextLength = 100;
 
-const wchar_t kShellTrayWindowName[] = L"Shell_TrayWnd";
-const int kWindowBorderRadius = 14;
+constexpr wchar_t kShellTrayWindowName[] = L"Shell_TrayWnd";
+constexpr int kWindowBorderRadius = 14;
 
 // Margin between dialog controls (in dialog units).
-const int kWindowTextMargin = 8;
+constexpr int kWindowTextMargin = 8;
+
+// The amount of time to wait before hiding the disconnect window.
+constexpr base::TimeDelta kAutoHideTimeout = base::TimeDelta::FromSeconds(10);
+
+// The length of the hide and show animations.
+constexpr DWORD kAnimationDurationMs = 200;
 
 class DisconnectWindowWin : public HostWindow {
  public:
   DisconnectWindowWin();
   ~DisconnectWindowWin() override;
 
+  // Allow dialog to auto-hide after a period of time.  The dialog will be
+  // reshown when local user input is detected.
+  void EnableAutoHide(std::unique_ptr<LocalInputMonitor> local_input_monitor);
+
   // HostWindow overrides.
   void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 
- protected:
+ private:
   static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wparam,
                                      LPARAM lparam);
 
@@ -68,15 +84,43 @@ class DisconnectWindowWin : public HostWindow {
   // Applies localization string and resizes the dialog.
   bool SetStrings();
 
+  // Draws the border around the dialog window.  Can be used to draw the initial
+  // border or to redraw if when the dialog is reshown.  |hwnd| is the window to
+  // have the border applied.  |hdc| is the device context to draw to.
+  void DrawBorder(HWND hwnd, HDC hdc);
+
+  // Shows a previously hidden dialog using an animation.
+  void ShowDialog();
+
+  // Hides the dialog using an animation.
+  void HideDialog();
+
+  // Prevent the dialog from being hidden if local input monitoring fails.
+  void StopAutoHideBehavior();
+
+  // Called when local mouse event is seen and shows the dialog (if hidden).
+  void OnLocalMouseEvent(const webrtc::DesktopVector& mouse_position);
+
+  // Called when local keyboard event is seen and shows the dialog (if hidden).
+  void OnLocalKeyboardEvent();
+
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  // Used to watch for local input which will trigger the dialog to be reshown.
+  std::unique_ptr<LocalInputMonitor> local_input_monitor_;
 
   // Specifies the remote user name.
   std::string username_;
 
-  HWND hwnd_;
-  bool has_hotkey_;
+  bool was_auto_hidden_ = false;
+  base::OneShotTimer auto_hide_timer_;
+
+  HWND hwnd_ = nullptr;
+  bool has_hotkey_ = false;
   base::win::ScopedGDIObject<HPEN> border_pen_;
+
+  base::WeakPtrFactory<DisconnectWindowWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
@@ -110,14 +154,17 @@ bool GetControlTextWidth(HWND control,
 }
 
 DisconnectWindowWin::DisconnectWindowWin()
-    : hwnd_(nullptr),
-      has_hotkey_(false),
-      border_pen_(CreatePen(PS_SOLID, 5,
-                            RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {
-}
+    : border_pen_(
+          CreatePen(PS_SOLID, 5, RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))),
+      weak_factory_(this) {}
 
 DisconnectWindowWin::~DisconnectWindowWin() {
   EndDialog();
+}
+
+void DisconnectWindowWin::EnableAutoHide(
+    std::unique_ptr<LocalInputMonitor> local_input_monitor) {
+  local_input_monitor_ = std::move(local_input_monitor);
 }
 
 void DisconnectWindowWin::Start(
@@ -130,8 +177,24 @@ void DisconnectWindowWin::Start(
 
   std::string client_jid = client_session_control_->client_jid();
   username_ = client_jid.substr(0, client_jid.find('/'));
-  if (!BeginDialog())
+  if (!BeginDialog()) {
     EndDialog();
+    return;
+  }
+
+  if (local_input_monitor_) {
+    local_input_monitor_->StartMonitoring(
+        base::BindRepeating(&DisconnectWindowWin::OnLocalMouseEvent,
+                            weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&DisconnectWindowWin::OnLocalKeyboardEvent,
+                            weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&DisconnectWindowWin::StopAutoHideBehavior,
+                            weak_factory_.GetWeakPtr()));
+
+    auto_hide_timer_.Start(FROM_HERE, kAutoHideTimeout,
+                           base::BindOnce(&DisconnectWindowWin::HideDialog,
+                                          base::Unretained(this)));
+  }
 }
 
 INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd,
@@ -211,17 +274,19 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd,
       return TRUE;
 
     case WM_PAINT: {
+      // Draw the client area after ShowWindow is used to make |hwnd_| visible.
       PAINTSTRUCT ps;
       HDC hdc = BeginPaint(hwnd_, &ps);
-      RECT rect;
-      GetClientRect(hwnd_, &rect);
-      {
-        base::win::ScopedSelectObject border(hdc, border_pen_.get());
-        base::win::ScopedSelectObject brush(hdc, GetStockObject(NULL_BRUSH));
-        RoundRect(hdc, rect.left, rect.top, rect.right - 1, rect.bottom - 1,
-                  kWindowBorderRadius, kWindowBorderRadius);
-      }
+      DrawBorder(hwnd_, hdc);
       EndPaint(hwnd_, &ps);
+      return TRUE;
+    }
+
+    case WM_PRINTCLIENT: {
+      // Refresh the dialog client area.  Called after AnimateWindow is used to
+      // reshow the dialog.
+      HDC hdc = reinterpret_cast<HDC>(wparam);
+      DrawBorder(hwnd_, hdc);
       return TRUE;
     }
   }
@@ -267,6 +332,66 @@ void DisconnectWindowWin::EndDialog() {
 
   if (client_session_control_)
     client_session_control_->DisconnectSession(protocol::OK);
+}
+
+void DisconnectWindowWin::ShowDialog() {
+  // Always reset the hide timer when this method is called.
+  if (local_input_monitor_) {
+    auto_hide_timer_.Start(FROM_HERE, kAutoHideTimeout,
+                           base::BindOnce(&DisconnectWindowWin::HideDialog,
+                                          base::Unretained(this)));
+  }
+
+  if (!was_auto_hidden_)
+    return;
+
+  if (!AnimateWindow(hwnd_, kAnimationDurationMs, AW_BLEND)) {
+    PLOG(ERROR) << "AnimateWindow() failed to show dialog: ";
+    ShowWindow(hwnd_, SW_SHOW);
+
+    // If the windows still isn't visible, then disconnect the session.
+    if (!IsWindowVisible(hwnd_))
+      client_session_control_->DisconnectSession(protocol::OK);
+  }
+  was_auto_hidden_ = false;
+
+  // Make sure the dialog is fully visible when it is reshown.
+  SetDialogPosition();
+}
+
+void DisconnectWindowWin::HideDialog() {
+  if (was_auto_hidden_ || !local_input_monitor_)
+    return;
+
+  if (!AnimateWindow(hwnd_, kAnimationDurationMs, AW_BLEND | AW_HIDE))
+    PLOG(ERROR) << "AnimateWindow() failed to show dialog: ";
+  else
+    was_auto_hidden_ = true;
+}
+
+void DisconnectWindowWin::StopAutoHideBehavior() {
+  auto_hide_timer_.Stop();
+  local_input_monitor_.reset();
+
+  ShowDialog();
+}
+
+void DisconnectWindowWin::OnLocalMouseEvent(
+    const webrtc::DesktopVector& position) {
+  ShowDialog();
+}
+
+void DisconnectWindowWin::OnLocalKeyboardEvent() {
+  ShowDialog();
+}
+
+void DisconnectWindowWin::DrawBorder(HWND hwnd, HDC hdc) {
+  RECT rect;
+  GetClientRect(hwnd, &rect);
+  base::win::ScopedSelectObject border(hdc, border_pen_.get());
+  base::win::ScopedSelectObject brush(hdc, GetStockObject(NULL_BRUSH));
+  RoundRect(hdc, rect.left, rect.top, rect.right - 1, rect.bottom - 1,
+            kWindowBorderRadius, kWindowBorderRadius);
 }
 
 // Returns |control| rectangle in the dialog coordinates.
@@ -399,6 +524,14 @@ bool DisconnectWindowWin::SetStrings() {
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   return std::make_unique<DisconnectWindowWin>();
+}
+
+std::unique_ptr<HostWindow> HostWindow::CreateAutoHidingDisconnectWindow(
+    std::unique_ptr<LocalInputMonitor> local_input_monitor) {
+  auto disconnect_window = std::make_unique<DisconnectWindowWin>();
+  disconnect_window->EnableAutoHide(std::move(local_input_monitor));
+
+  return disconnect_window;
 }
 
 }  // namespace remoting
