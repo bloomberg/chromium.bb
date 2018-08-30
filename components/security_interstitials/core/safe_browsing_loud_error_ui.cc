@@ -113,7 +113,7 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
   }
 
   // Not used by this interstitial.
-  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 
   PopulateExtendedReportingOption(load_time_data);
@@ -343,6 +343,6 @@ void SafeBrowsingLoudErrorUI::PopulateBillingLoadTimeData(
 
 int SafeBrowsingLoudErrorUI::GetHTMLTemplateId() const {
   return IDR_SECURITY_INTERSTITIAL_HTML;
-};
+}
 
-}  // security_interstitials
+}  // namespace security_interstitials
