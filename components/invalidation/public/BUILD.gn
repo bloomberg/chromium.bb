@@ -26,6 +26,8 @@ static_library("public") {
     "object_id_invalidation_map.h",
     "single_object_invalidation_set.cc",
     "single_object_invalidation_set.h",
+    "topic_invalidation_map.cc",
+    "topic_invalidation_map.h",
   ]
   public_deps = [
     "//google_apis",
