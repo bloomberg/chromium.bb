@@ -3450,6 +3450,7 @@
     "QUIC": [
         {
             "platforms": [
+                "android_webview",
                 "android",
                 "chromeos",
                 "ios",
