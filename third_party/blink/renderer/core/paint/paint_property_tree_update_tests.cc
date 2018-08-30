@@ -1277,4 +1277,52 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_EQ(props->Effect()->BlendMode(), SkBlendMode::kLighten);
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      overflow: scroll;
+      scroll-snap-type: both proximity;
+      height: 300px;
+      width: 300px;
+      margin: 0px;
+      padding: 0px;
+    }
+    #container {
+      margin: 0px;
+      padding: 0px;
+      width: 600px;
+      height: 2000px;
+    }
+    #area {
+      position: relative;
+      left: 100px;
+      top: 700px;
+      width: 200px;
+      height: 200px;
+      scroll-snap-align: start;
+    }
+
+    </style>
+
+    <div id="container">
+      <div id="area"></div>
+    </div>
+  )HTML");
+
+  GetDocument().View()->Resize(300, 300);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  auto doc_snap_container_data = DocScroll()->SnapContainerData();
+  ASSERT_TRUE(doc_snap_container_data);
+  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis, SnapAxis::kBoth);
+  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
+            SnapStrictness::kProximity);
+  EXPECT_EQ(doc_snap_container_data->rect(), gfx::RectF(0, 0, 300, 300));
+  EXPECT_EQ(doc_snap_container_data->size(), 1u);
+  EXPECT_EQ(doc_snap_container_data->at(0).rect,
+            gfx::RectF(100, 700, 200, 200));
+}
+
 }  // namespace blink

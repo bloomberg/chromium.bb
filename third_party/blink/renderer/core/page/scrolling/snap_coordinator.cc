@@ -281,6 +281,7 @@ void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
 
 void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
                                              ScrollSnapType scroll_snap_type) {
+  snap_container.SetNeedsPaintPropertyUpdate();
   if (scroll_snap_type.is_none) {
     snap_container_map_.erase(&snap_container);
     snap_container.ClearSnapAreas();
