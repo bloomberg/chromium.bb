@@ -7,14 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 // SettingsRootTableViewController is a base class for integrating UITableViews
 // into the Settings UI.  It handles the configuration and display of the MDC
 // AppBar.
 @interface SettingsRootTableViewController
-    : ChromeTableViewController<AppBarPresenting>
+    : ChromeTableViewController<AppBarViewControllerPresenting>
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_ROOT_TABLE_VIEW_CONTROLLER_H_

@@ -14,6 +14,7 @@
 #endif
 
 @implementation SettingsRootTableViewController
+@synthesize appBarViewController = _appBarViewController;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];

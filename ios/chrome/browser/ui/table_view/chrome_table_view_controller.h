@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
@@ -22,7 +22,8 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 
 // Chrome-specific TableViewController.
 @interface ChromeTableViewController
-    : UITableViewController<AppBarPresenting, ChromeTableViewConsumer>
+    : UITableViewController<AppBarViewControllerPresenting,
+                            ChromeTableViewConsumer>
 
 // The model of this controller.
 @property(nonatomic, readonly, strong)

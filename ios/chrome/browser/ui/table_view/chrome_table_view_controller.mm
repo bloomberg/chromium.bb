@@ -27,7 +27,7 @@
 @end
 
 @implementation ChromeTableViewController
-@synthesize appBar = _appBar;
+@synthesize appBarViewController = _appBarViewController;
 @synthesize emptyView = _emptyView;
 @synthesize loadingView = _loadingView;
 @synthesize styler = _styler;
@@ -40,8 +40,8 @@
     _styler = [[ChromeTableViewStyler alloc] init];
 
     if (appBarStyle == ChromeTableViewControllerStyleWithAppBar) {
-      _appBar = [[MDCAppBar alloc] init];
-      [self addChildViewController:_appBar.headerViewController];
+      _appBarViewController = [[MDCAppBarViewController alloc] init];
+      [self addChildViewController:_appBarViewController];
     }
   }
   return self;
@@ -82,12 +82,12 @@
   [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
 
   // Configure the app bar if needed.
-  if (_appBar) {
-    ConfigureAppBarWithCardStyle(self.appBar);
-    self.appBar.headerViewController.headerView.trackingScrollView =
-        self.tableView;
+  if (_appBarViewController) {
+    ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
+    self.appBarViewController.headerView.trackingScrollView = self.tableView;
     // Add the AppBar's views after all other views have been registered.
-    [self.appBar addSubviewsToParent];
+    [self.view addSubview:self.appBarViewController.view];
+    [self.appBarViewController didMoveToParentViewController:self];
   }
 }
 
@@ -253,24 +253,22 @@
 #pragma mark - MDCAppBar support
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
-  return self.appBar.headerViewController;
+  return self.appBarViewController;
 }
 
 - (UIViewController*)childViewControllerForStatusBarStyle {
-  return self.appBar.headerViewController;
+  return self.appBarViewController;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidScroll];
   }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidEndDecelerating];
   }
@@ -278,8 +276,7 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
   }
@@ -288,8 +285,7 @@
 - (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint*)targetContentOffset {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView
         trackingScrollViewWillEndDraggingWithVelocity:velocity
