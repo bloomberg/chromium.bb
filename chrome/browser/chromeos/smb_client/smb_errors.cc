@@ -117,6 +117,8 @@ SmbMountResult TranslateErrorToMountResult(smbprovider::ErrorType error) {
     case smbprovider::ERROR_ACCESS_DENIED:
     case smbprovider::ERROR_SECURITY:
       return SmbMountResult::AUTHENTICATION_FAILED;
+    case smbprovider::ERROR_SMB1_UNSUPPORTED:
+      return SmbMountResult::UNSUPPORTED_DEVICE;
     case smbprovider::ERROR_FAILED:
     case smbprovider::ERROR_TOO_MANY_OPENED:
     case smbprovider::ERROR_NO_MEMORY:
