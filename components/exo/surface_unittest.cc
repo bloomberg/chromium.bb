@@ -32,6 +32,16 @@
 namespace exo {
 namespace {
 
+std::unique_ptr<std::vector<gfx::Rect>> GetHitTestShapeRects(Surface* surface) {
+  if (surface->hit_test_region().IsEmpty())
+    return nullptr;
+
+  auto rects = std::make_unique<std::vector<gfx::Rect>>();
+  for (gfx::Rect rect : surface->hit_test_region())
+    rects->push_back(rect);
+  return rects;
+}
+
 class SurfaceTest : public test::ExoTestBase,
                     public ::testing::WithParamInterface<float> {
  public:
@@ -270,7 +280,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
 
   {
     // Default input region should match surface bounds.
-    auto rects = surface->GetHitTestShapeRects();
+    auto rects = GetHitTestShapeRects(surface.get());
     ASSERT_TRUE(rects);
     ASSERT_EQ(1u, rects->size());
     ASSERT_EQ(gfx::Rect(512, 512), (*rects)[0]);
@@ -281,7 +291,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(gfx::Rect(256, 256));
     surface->Commit();
 
-    auto rects = surface->GetHitTestShapeRects();
+    auto rects = GetHitTestShapeRects(surface.get());
     ASSERT_TRUE(rects);
     ASSERT_EQ(1u, rects->size());
     ASSERT_EQ(gfx::Rect(256, 256), (*rects)[0]);
@@ -292,7 +302,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(gfx::Rect());
     surface->Commit();
 
-    EXPECT_FALSE(surface->GetHitTestShapeRects());
+    EXPECT_FALSE(GetHitTestShapeRects(surface.get()));
   }
 
   {
@@ -305,7 +315,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(region);
     surface->Commit();
 
-    auto rects = surface->GetHitTestShapeRects();
+    auto rects = GetHitTestShapeRects(surface.get());
     ASSERT_TRUE(rects);
     ASSERT_EQ(10u, rects->size());
     cc::Region result;
@@ -319,7 +329,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(gfx::Rect(-50, -50, 1000, 100));
     surface->Commit();
 
-    auto rects = surface->GetHitTestShapeRects();
+    auto rects = GetHitTestShapeRects(surface.get());
     ASSERT_TRUE(rects);
     ASSERT_EQ(1u, rects->size());
     ASSERT_EQ(gfx::Rect(512, 50), (*rects)[0]);
@@ -341,7 +351,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     child_surface->Commit();
     surface->Commit();
 
-    auto rects = surface->GetHitTestShapeRects();
+    auto rects = GetHitTestShapeRects(surface.get());
     ASSERT_TRUE(rects);
     ASSERT_EQ(2u, rects->size());
     cc::Region result = cc::UnionRegions((*rects)[0], (*rects)[1]);

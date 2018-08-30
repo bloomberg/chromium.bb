@@ -21,7 +21,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
@@ -93,6 +92,7 @@ class Surface final : public ui::PropertyHandler {
   // This sets the region of the surface that can receive pointer and touch
   // events. The region is clipped to the surface bounds.
   void SetInputRegion(const cc::Region& region);
+  const cc::Region& hit_test_region() const { return hit_test_region_; }
 
   // This resets the region of the surface that can receive pointer and touch
   // events to be wide-open. This will be clipped to the surface bounds.
@@ -191,11 +191,6 @@ class Surface final : public ui::PropertyHandler {
 
   // Sets |mask| to the path that delineates the hit test region of the surface.
   void GetHitTestMask(gfx::Path* mask) const;
-
-  // Returns the current input region of surface in the form of a set of
-  // hit-test rects.
-  std::unique_ptr<aura::WindowTargeter::HitTestRects> GetHitTestShapeRects()
-      const;
 
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);
