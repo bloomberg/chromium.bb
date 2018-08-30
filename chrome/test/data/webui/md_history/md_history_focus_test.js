@@ -119,56 +119,69 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       element = app.$.history;
     });
 
-    test('list focus and keyboard nav', function(done) {
+    test('list focus and keyboard nav', function() {
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-      PolymerTest.flushTasks().then(function() {
-        const items = polymerSelectAll(element, 'history-item');
+      let focused;
+      let items;
+      return PolymerTest.flushTasks()
+          .then(function() {
+            Polymer.dom.flush();
+            items = polymerSelectAll(element, 'history-item');
 
-        let focused = items[2].$.checkbox;
-        focused.focus();
+            focused = items[2].$.checkbox;
+            focused.focus();
 
-        // Wait for next render to ensure that focus handlers have been
-        // registered (see HistoryItemElement.attached).
-        Polymer.RenderStatus.afterNextRender(this, function() {
-          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
-          focused = items[2].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+            // Wait for next render to ensure that focus handlers have been
+            // registered (see HistoryItemElement.attached).
+            return new Promise(resolve => {
+              Polymer.RenderStatus.afterNextRender(this, resolve);
+            });
+          })
+          .then(() => {
+            MockInteractions.pressAndReleaseKeyOn(
+                focused, 39, [], 'ArrowRight');
+            Polymer.dom.flush();
+            focused = items[2].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-          focused = items[3].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            Polymer.dom.flush();
+            focused = items[3].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
-          focused = items[3].$['menu-button'];
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(
+                focused, 39, [], 'ArrowRight');
+            Polymer.dom.flush();
+            focused = items[3].$['menu-button'];
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-          focused = items[2].$['menu-button'];
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+            Polymer.dom.flush();
+            focused = items[2].$['menu-button'];
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 37, [], 'ArrowLeft');
-          focused = items[2].$$('#bookmark-star');
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 37, [], 'ArrowLeft');
+            Polymer.dom.flush();
+            focused = items[2].$$('#bookmark-star');
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-          focused = items[3].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
-
-          done();
-        });
-      });
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            Polymer.dom.flush();
+            focused = items[3].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
+          });
     });
   });
 
