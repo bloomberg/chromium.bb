@@ -1379,6 +1379,10 @@
       implied_by: ["WorkerNosniffBlock"],
     },
     {
+      name: "WorkerTaskQueue",
+      status: "experimental"
+    },
+    {
       name: "WorkStealingInScriptRunner",
       status: "experimental",
     },

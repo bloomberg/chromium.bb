@@ -339,6 +339,11 @@ scheduler::WorkerScheduler* WorkerThread::GetScheduler() {
   return worker_scheduler_.get();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThread::GetControlTaskRunner() {
+  return worker_scheduler_->GetWorkerThreadScheduler()->ControlTaskQueue();
+}
+
 void WorkerThread::ChildThreadStartedOnWorkerThread(WorkerThread* child) {
   DCHECK(IsCurrentThread());
 #if DCHECK_IS_ON()
