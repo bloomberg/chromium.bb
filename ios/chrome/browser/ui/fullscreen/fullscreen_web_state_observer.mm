@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -53,6 +54,7 @@ FullscreenWebStateObserver::FullscreenWebStateObserver(
     FullscreenMediator* mediator)
     : controller_(controller),
       model_(model),
+      mediator_(mediator),
       web_view_proxy_observer_([[FullscreenWebViewProxyObserver alloc]
           initWithModel:model_
                mediator:mediator]) {
@@ -73,6 +75,7 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
     // The toolbar should be visible whenever the current tab changes.
     model_->ResetForNavigation();
   }
+  mediator_->SetWebState(web_state);
   // Update the model according to the new WebState.
   SetIsLoading(web_state_ ? web_state->IsLoading() : false);
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state_));

@@ -18,7 +18,12 @@ class FullscreenControllerObserver;
 @class FullscreenResetAnimator;
 @class FullscreenScrollEndAnimator;
 @class FullscreenScrollToTopAnimator;
+@class FullscreenWebViewResizer;
 @class ToolbarRevealAnimator;
+
+namespace web {
+class WebState;
+}
 
 // A helper object that listens to FullscreenModel changes and forwards this
 // information to FullscreenControllerObservers.
@@ -34,6 +39,9 @@ class FullscreenMediator : public FullscreenModelObserver {
   void RemoveObserver(FullscreenControllerObserver* observer) {
     observers_.RemoveObserver(observer);
   }
+
+  // Sets the WebState which view is to be resized.
+  void SetWebState(web::WebState* webState);
 
   // Instructs the mediator that a scroll-to-top animation has been triggered.
   void ScrollToTop();
@@ -76,6 +84,10 @@ class FullscreenMediator : public FullscreenModelObserver {
   // The FullscreenControllerObservers that need to get notified of model
   // changes.
   base::ObserverList<FullscreenControllerObserver>::Unchecked observers_;
+
+  // Fullscreen resizer, used to resize the WebView based on the fullscreen
+  // progress.
+  FullscreenWebViewResizer* resizer_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenMediator);
 };

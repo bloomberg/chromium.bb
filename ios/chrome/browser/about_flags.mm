@@ -378,6 +378,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncSupportSecondaryAccountDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
+    {"out-of-web-fullscreen", flag_descriptions::kOutOfWebFullscreenName,
+     flag_descriptions::kOutOfWebFullscreenDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kOutOfWebFullscreen)},
 };
 
 // Add all switches from experimental flags to |command_line|.

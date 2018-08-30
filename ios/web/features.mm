@@ -29,5 +29,8 @@ const base::Feature kCrashOnUnexpectedURLChange{
 const base::Feature kBrowserContainerFullscreen{
     "BrowserContainerFullscreen", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOutOfWebFullscreen{"OutOfWebFullscreen",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace web
