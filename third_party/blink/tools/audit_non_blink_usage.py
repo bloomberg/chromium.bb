@@ -352,6 +352,16 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/webgpu/',
+        ],
+        # The WebGPU Blink module needs access to the WebGPU control
+        # command buffer interface.
+        'allowed': [
+            'gpu::webgpu::WebGPUInterface',
+        ],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/platform/',
         ],
         # Suppress almost all checks on platform since code in this directory

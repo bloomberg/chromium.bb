@@ -526,8 +526,9 @@ class BLINK_PLATFORM_EXPORT Platform {
     kWebGL2ContextType,  // WebGL 2.0 context, use only for WebGL canvases
     kWebGL2ComputeContextType,  // WebGL 2.0 Compute context, use only for WebGL
                                 // canvases
-    kGLES2ContextType,  // GLES 2.0 context, default, good for using skia
-    kGLES3ContextType,  // GLES 3.0 context
+    kGLES2ContextType,   // GLES 2.0 context, default, good for using skia
+    kGLES3ContextType,   // GLES 3.0 context
+    kWebGPUContextType,  // WebGPU context
   };
   struct ContextAttributes {
     bool fail_if_major_performance_caveat = false;
@@ -573,6 +574,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // the context cannot be created or initialized.
   virtual std::unique_ptr<WebGraphicsContext3DProvider>
   CreateSharedOffscreenGraphicsContext3DProvider();
+
+  // Returns a newly allocated and initialized WebGPU context provider,
+  // backed by an independent context. Returns null if the context cannot be
+  // created or initialized.
+  virtual std::unique_ptr<WebGraphicsContext3DProvider>
+  CreateWebGPUGraphicsContext3DProvider(const WebURL& top_document_url,
+                                        GraphicsInfo*);
 
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() {
     return nullptr;

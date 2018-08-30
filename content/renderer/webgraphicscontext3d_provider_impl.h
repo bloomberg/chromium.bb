@@ -42,6 +42,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   // WebGraphicsContext3DProvider implementation.
   bool BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
   GrContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;

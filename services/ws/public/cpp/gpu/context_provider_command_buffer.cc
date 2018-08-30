@@ -27,6 +27,8 @@
 #include "gpu/command_buffer/client/raster_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/client/webgpu_cmd_helper.h"
+#include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
@@ -140,7 +142,34 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     return bind_result_;
   }
 
-  if (attributes_.enable_oop_rasterization) {
+  if (attributes_.context_type == gpu::CONTEXT_TYPE_WEBGPU) {
+    DCHECK(!attributes_.enable_raster_interface);
+    DCHECK(!attributes_.enable_gles2_interface);
+
+    auto webgpu_helper =
+        std::make_unique<gpu::webgpu::WebGPUCmdHelper>(command_buffer_.get());
+    webgpu_helper->SetAutomaticFlushes(automatic_flushes_);
+    bind_result_ =
+        webgpu_helper->Initialize(memory_limits_.command_buffer_size);
+    if (bind_result_ != gpu::ContextResult::kSuccess) {
+      DLOG(ERROR) << "Failed to initialize WebGPUCmdHelper.";
+      return bind_result_;
+    }
+
+    // The WebGPUImplementation exposes the WebGPUInterface, as well as the
+    // gpu::ContextSupport interface.
+    auto webgpu_impl = std::make_unique<gpu::webgpu::WebGPUImplementation>(
+        webgpu_helper.get());
+
+    std::string type_name =
+        command_buffer_metrics::ContextTypeToString(context_type_);
+    std::string unique_context_name =
+        base::StringPrintf("%s-%p", type_name.c_str(), webgpu_impl.get());
+
+    impl_ = nullptr;
+    webgpu_interface_ = std::move(webgpu_impl);
+    helper_ = std::move(webgpu_helper);
+  } else if (attributes_.enable_oop_rasterization) {
     DCHECK(attributes_.enable_raster_interface);
     DCHECK(!attributes_.enable_gles2_interface);
     DCHECK(!support_grcontext_);
@@ -242,10 +271,14 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   cache_controller_ =
       std::make_unique<viz::ContextCacheController>(impl_, task_runner);
 
-  impl_->SetLostContextCallback(
-      base::Bind(&ContextProviderCommandBuffer::OnLostContext,
-                 // |this| owns the impl_, which holds the callback.
-                 base::Unretained(this)));
+  // TODO(crbug.com/868192): SetLostContextCallback should probably work on
+  // WebGPU contexts too.
+  if (impl_) {
+    impl_->SetLostContextCallback(
+        base::BindOnce(&ContextProviderCommandBuffer::OnLostContext,
+                       // |this| owns the impl_, which holds the callback.
+                       base::Unretained(this)));
+  }
 
   if (gles2_impl_) {
     // Grab the implementation directly instead of going through ContextGL()
@@ -423,6 +456,14 @@ void ContextProviderCommandBuffer::RemoveObserver(
     viz::ContextLostObserver* obs) {
   CheckValidThreadOrLockAcquired();
   observers_.RemoveObserver(obs);
+}
+
+gpu::webgpu::WebGPUInterface* ContextProviderCommandBuffer::WebGPUInterface() {
+  DCHECK(bind_tried_);
+  DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
+  CheckValidThreadOrLockAcquired();
+
+  return webgpu_interface_.get();
 }
 
 bool ContextProviderCommandBuffer::OnMemoryDump(

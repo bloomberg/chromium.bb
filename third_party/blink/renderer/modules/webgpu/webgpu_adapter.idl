@@ -7,5 +7,5 @@
 ] interface WebGPUAdapter {
     readonly attribute DOMString name;
 
-    WebGPUDevice createDevice();
+    [CallWith=ExecutionContext] WebGPUDevice createDevice();
 };
