@@ -44,12 +44,11 @@ bool ArcProcess::IsImportant() const {
          IsArcProtected();
 }
 
-bool ArcProcess::IsKernelKillable() const {
+bool ArcProcess::IsPersistent() const {
   // Protect PERSISTENT, PERSISTENT_UI, our HOME and custom set of ARC processes
-  // since they should never be killed even by the kernel. Returning false for
-  // them allows their OOM adjustment scores to remain negative.
-  return process_state() > arc::mojom::ProcessState::PERSISTENT_UI &&
-         !IsArcProtected();
+  // since they should have lower priority to be killed.
+  return process_state() <= arc::mojom::ProcessState::PERSISTENT_UI ||
+         IsArcProtected();
 }
 
 bool ArcProcess::IsArcProtected() const {

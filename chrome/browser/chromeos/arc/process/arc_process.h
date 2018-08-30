@@ -51,10 +51,11 @@ class ArcProcess {
   // modify this function as needed (crbug.com/719537).
   bool IsImportant() const;
 
-  // Returns true if it is okay for the kernel OOM killer to kill the process.
+  // Returns true if it is persistent process and should have a lower
+  // oom_score_adj.
   // TODO(cylee|yusukes): Consider removing this function. Having only
   // IsImportant() might be good enough.
-  bool IsKernelKillable() const;
+  bool IsPersistent() const;
 
  private:
   // Returns true if this is ARC protected process which we don't allow to kill.

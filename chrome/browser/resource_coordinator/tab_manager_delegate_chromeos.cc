@@ -81,7 +81,7 @@ void OnSetOomScoreAdj(bool success, const std::string& output) {
 }  // namespace
 
 // static
-const int TabManagerDelegate::kLowestOomScore = -1000;
+const int TabManagerDelegate::kPersistentArcAppOomScore = -100;
 
 std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
   switch (type) {
@@ -336,8 +336,8 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
   AdjustOomPriorities();
 }
 
-// If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
-// Otherwise try to kill tabs only.
+// If able to get the list of ARC processes, prioritize tabs and apps as a
+// whole. Otherwise try to kill tabs only.
 void TabManagerDelegate::LowMemoryKill(
     ::mojom::LifecycleUnitDiscardReason reason) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
@@ -654,7 +654,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
 void TabManagerDelegate::AdjustOomPrioritiesImpl(
     std::vector<arc::ArcProcess> arc_processes) {
   std::vector<TabManagerDelegate::Candidate> candidates;
-  std::vector<TabManagerDelegate::Candidate> apps_non_killable;
+  std::vector<TabManagerDelegate::Candidate> apps_persistent;
 
   // Least important first.
   LifecycleUnitVector lifecycle_units = GetLifecycleUnits();
@@ -662,15 +662,15 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
       GetSortedCandidates(std::move(lifecycle_units), arc_processes);
   for (auto& candidate : all_candidates) {
     // TODO(cylee|yusukes): Consider using IsImportant() instead of
-    // IsKernelKillable() for simplicity.
+    // IsPersistent() for simplicity.
     // TODO(cylee): Also consider protecting FOCUSED_TAB from the kernel OOM
     // killer so that Chrome and the kernel do the same regarding OOM handling.
-    if (!candidate.app() || candidate.app()->IsKernelKillable()) {
+    if (candidate.app() && candidate.app()->IsPersistent()) {
+      // Add persistent apps to |apps_persistent|.
+      apps_persistent.emplace_back(std::move(candidate));
+    } else {
       // Add tabs and killable apps to |candidates|.
       candidates.emplace_back(std::move(candidate));
-    } else {
-      // Add non-killable apps to |apps_non_killable|.
-      apps_non_killable.emplace_back(std::move(candidate));
     }
   }
 
@@ -701,9 +701,10 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
 
   ProcessScoreMap new_map;
 
-  // Make the apps non-killable.
-  DistributeOomScoreInRange(apps_non_killable.begin(), apps_non_killable.end(),
-                            kLowestOomScore, kLowestOomScore, &new_map);
+  // Make the apps harder to kill.
+  DistributeOomScoreInRange(apps_persistent.begin(), apps_persistent.end(),
+                            kPersistentArcAppOomScore,
+                            kPersistentArcAppOomScore, &new_map);
 
   // Higher priority part.
   DistributeOomScoreInRange(candidates.begin(), lower_priority_part,

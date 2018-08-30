@@ -125,7 +125,7 @@ int ArcProcessTask::GetChildProcessUniqueID() const {
 
 bool ArcProcessTask::IsKillable() {
   // Do not kill persistent processes.
-  return arc_process_.IsKernelKillable();
+  return !arc_process_.IsPersistent();
 }
 
 void ArcProcessTask::Kill() {

@@ -176,8 +176,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
     return base::TimeDelta::FromSeconds(60);
   }
 
-  // The lowest OOM adjustment score that will make the process non-killable.
-  static const int kLowestOomScore;
+  // The OOM adjustment score for persistent ARC processes.
+  static const int kPersistentArcAppOomScore;
 
   // Holds a reference to the owning TabManager.
   const base::WeakPtr<TabManager> tab_manager_;
