@@ -254,6 +254,34 @@ void StreamBufferManager::SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
   capture_settings_override_.push_back(std::move(setting));
 }
 
+void StreamBufferManager::SetRepeatingCaptureMetadata(
+    cros::mojom::CameraMetadataTag tag,
+    cros::mojom::EntryType type,
+    size_t count,
+    std::vector<uint8_t> value) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  cros::mojom::CameraMetadataEntryPtr setting =
+      cros::mojom::CameraMetadataEntry::New();
+
+  setting->tag = tag;
+  setting->type = type;
+  setting->count = count;
+  setting->data = std::move(value);
+
+  capture_settings_repeating_override_[tag] = std::move(setting);
+}
+
+void StreamBufferManager::UnsetRepeatingCaptureMetadata(
+    cros::mojom::CameraMetadataTag tag) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  auto it = capture_settings_repeating_override_.find(tag);
+  if (it == capture_settings_repeating_override_.end()) {
+    LOG(ERROR) << "Unset a non-existent metadata: " << tag;
+    return;
+  }
+  capture_settings_repeating_override_.erase(it);
+}
+
 // static
 uint64_t StreamBufferManager::GetBufferIpcId(StreamType stream_type,
                                              size_t index) {
@@ -267,25 +295,17 @@ void StreamBufferManager::ApplyCaptureSettings(
     cros::mojom::CameraMetadataPtr* capture_settings) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  if (capture_settings_override_.empty()) {
+  if (capture_settings_override_.empty() &&
+      capture_settings_repeating_override_.empty()) {
     return;
   }
+
+  for (const auto& setting : capture_settings_repeating_override_) {
+    AddOrUpdateMetadataEntry(capture_settings, setting.second.Clone());
+  }
+
   for (auto& s : capture_settings_override_) {
-    auto* entry = GetMetadataEntry(*capture_settings, s->tag);
-    if (entry) {
-      DCHECK_EQ((*entry)->type, s->type);
-      (*entry).Swap(&s);
-    } else {
-      (*capture_settings)->entry_count += 1;
-      (*capture_settings)->entry_capacity += 1;
-      (*capture_settings)->data_count += s->data.size();
-      (*capture_settings)->data_capacity += s->data.size();
-      if (!(*capture_settings)->entries) {
-        (*capture_settings)->entries =
-            std::vector<cros::mojom::CameraMetadataEntryPtr>();
-      }
-      (*capture_settings)->entries.value().push_back(std::move(s));
-    }
+    AddOrUpdateMetadataEntry(capture_settings, std::move(s));
   }
   capture_settings_override_.clear();
   SortCameraMetadata(capture_settings);

@@ -32,6 +32,13 @@ class MockCaptureMetadataDispatcher : public CaptureMetadataDispatcher {
                     cros::mojom::EntryType type,
                     size_t count,
                     std::vector<uint8_t> value));
+  MOCK_METHOD4(SetRepeatingCaptureMetadata,
+               void(cros::mojom::CameraMetadataTag tag,
+                    cros::mojom::EntryType type,
+                    size_t count,
+                    std::vector<uint8_t> value));
+  MOCK_METHOD1(UnsetRepeatingCaptureMetadata,
+               void(cros::mojom::CameraMetadataTag tag));
 };
 
 }  // namespace
@@ -498,5 +505,8 @@ TEST_F(Camera3AControllerTest, SetAutoFocusModeForVideoRecordingTest) {
                      base::Unretained(camera_3a_controller_.get())));
   testing::Mock::VerifyAndClearExpectations(camera_3a_controller_.get());
 }
+
+// TODO(shik): Add tests for SetPointOfInterest().
+// TODO(shik): Add fake timestamps for result metadata.
 
 }  // namespace media

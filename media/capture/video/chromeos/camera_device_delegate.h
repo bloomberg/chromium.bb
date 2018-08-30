@@ -156,6 +156,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,
                              base::OnceCallback<void(int32_t)> callback);
 
+  bool SetPointsOfInterest(
+      const std::vector<mojom::Point2DPtr>& points_of_interest);
+
   const VideoCaptureDeviceDescriptor device_descriptor_;
 
   int32_t camera_id_;

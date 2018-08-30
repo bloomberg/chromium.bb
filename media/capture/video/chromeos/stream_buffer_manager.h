@@ -57,6 +57,12 @@ class CAPTURE_EXPORT CaptureMetadataDispatcher {
                                   cros::mojom::EntryType type,
                                   size_t count,
                                   std::vector<uint8_t> value) = 0;
+  virtual void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag,
+                                           cros::mojom::EntryType type,
+                                           size_t count,
+                                           std::vector<uint8_t> value) = 0;
+  virtual void UnsetRepeatingCaptureMetadata(
+      cros::mojom::CameraMetadataTag tag) = 0;
 };
 
 // StreamBufferManager is responsible for managing the buffers of the
@@ -119,12 +125,21 @@ class CAPTURE_EXPORT StreamBufferManager final
   // CaptureMetadataDispatcher implementations.
   void AddResultMetadataObserver(ResultMetadataObserver* observer) override;
   void RemoveResultMetadataObserver(ResultMetadataObserver* observer) override;
+
   // Queues a capture setting that will be send along with the earliest next
   // capture request.
   void SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
                           cros::mojom::EntryType type,
                           size_t count,
                           std::vector<uint8_t> value) override;
+
+  void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag,
+                                   cros::mojom::EntryType type,
+                                   size_t count,
+                                   std::vector<uint8_t> value) override;
+
+  void UnsetRepeatingCaptureMetadata(
+      cros::mojom::CameraMetadataTag tag) override;
 
   static uint64_t GetBufferIpcId(StreamType stream_type, size_t index);
 
@@ -283,8 +298,13 @@ class CAPTURE_EXPORT StreamBufferManager final
   // observers are responsible for removing itself before self-destruction.
   std::unordered_set<ResultMetadataObserver*> result_metadata_observers_;
 
-  // The list of settings to set/override in the capture request.
+  // The list of settings to set/override once in the capture request.
   std::vector<cros::mojom::CameraMetadataEntryPtr> capture_settings_override_;
+
+  // The settings to set/override repeatedly in the capture request.  In
+  // conflict with |capture_settings_override_|, this one has lower priority.
+  std::map<cros::mojom::CameraMetadataTag, cros::mojom::CameraMetadataEntryPtr>
+      capture_settings_repeating_override_;
 
   base::WeakPtrFactory<StreamBufferManager> weak_ptr_factory_;
 

@@ -7,7 +7,35 @@
 #include <algorithm>
 #include <unordered_set>
 
+#include "base/containers/span.h"
+
 namespace media {
+
+template <>
+const cros::mojom::EntryType entry_type_of<bool>::value =
+    cros::mojom::EntryType::TYPE_BYTE;
+
+template <>
+const cros::mojom::EntryType entry_type_of<uint8_t>::value =
+    cros::mojom::EntryType::TYPE_BYTE;
+
+template <>
+const cros::mojom::EntryType entry_type_of<int32_t>::value =
+    cros::mojom::EntryType::TYPE_INT32;
+
+template <>
+const cros::mojom::EntryType entry_type_of<float>::value =
+    cros::mojom::EntryType::TYPE_FLOAT;
+
+template <>
+const cros::mojom::EntryType entry_type_of<int64_t>::value =
+    cros::mojom::EntryType::TYPE_INT64;
+
+template <>
+const cros::mojom::EntryType entry_type_of<double>::value =
+    cros::mojom::EntryType::TYPE_DOUBLE;
+
+// TODO(shik): support TYPE_RATIONAL
 
 cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
     const cros::mojom::CameraMetadataPtr& camera_metadata,
@@ -41,6 +69,9 @@ void AddOrUpdateMetadataEntry(cros::mojom::CameraMetadataPtr* to,
     (*to)->entry_capacity = std::max((*to)->entry_capacity, (*to)->entry_count);
     (*to)->data_count += entry->data.size();
     (*to)->data_capacity = std::max((*to)->data_capacity, (*to)->data_count);
+    if (!(*to)->entries) {
+      (*to)->entries = std::vector<cros::mojom::CameraMetadataEntryPtr>();
+    }
     (*to)->entries->push_back(std::move(entry));
     SortCameraMetadata(to);
   }
