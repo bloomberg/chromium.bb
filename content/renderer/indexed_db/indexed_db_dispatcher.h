@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"

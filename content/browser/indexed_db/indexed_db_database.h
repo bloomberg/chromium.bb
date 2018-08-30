@@ -296,7 +296,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   virtual ~IndexedDBDatabase();
 
   // May be overridden in tests.
-  virtual size_t GetMaxMessageSizeInBytes() const;
+  virtual size_t GetUsableMessageSizeInBytes() const;
 
  private:
   friend class base::RefCounted<IndexedDBDatabase>;

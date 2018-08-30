@@ -368,9 +368,13 @@
       'filepath': 'third_party/blink/renderer/core/html/parser/'
     },
     'blink_indexed_db': {
-      'filepath': 'third_party/blink/renderer/modules/indexeddb/' \
-                  '|third_party/WebKit/LayoutTests/storage/indexeddb' \
-                  '|third_party/blink/public/platform/.*_idb'
+      'filepath': 'third_party/blink/common/indexeddb' \
+                  '|third_party/blink/public/common/indexeddb' \
+                  '|third_party/blink/public/platform/.*_idb' \
+                  '|third_party/blink/public/platform/modules/indexeddb' \
+                  '|third_party/blink/public/mojom/indexeddb' \
+                  '|third_party/blink/renderer/modules/indexeddb/' \
+                  '|third_party/WebKit/LayoutTests/storage/indexeddb'
     },
     'blink_input': {
       'filepath': 'third_party/blink/renderer/core/input/'
@@ -977,9 +981,8 @@
     },
     'indexed_db': {
       'filepath': 'content/browser/indexed_db|'\
-                  'content/child/indexed_db|'\
-                  'content/common/indexed_db|'\
                   'content/public/browser/indexed_db|'\
+                  'content/renderer/indexed_db|'\
                   'content/test/data/indexeddb',
     },
     'ink_drop': {

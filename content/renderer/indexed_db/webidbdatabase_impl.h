@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_constants.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
@@ -143,7 +142,8 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   // requests larger than this size will be rejected.
   // Used by unit tests to exercise behavior without allocating huge chunks
   // of memory.
-  size_t max_put_value_size_ = kMaxIDBMessageSizeInBytes;
+  size_t max_put_value_size_ =
+      blink::mojom::kIDBMaxMessageSize - blink::mojom::kIDBMaxMessageOverhead;
 
   std::set<int32_t> observer_ids_;
   blink::mojom::IDBDatabaseAssociatedPtr database_;

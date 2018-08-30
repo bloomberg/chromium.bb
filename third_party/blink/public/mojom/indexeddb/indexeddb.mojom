@@ -11,6 +11,15 @@ import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "url/mojom/origin.mojom";
 
+// kIDBMaxMessageSize is 128MB, originally based on
+// IPC::Channel::kMaximumMessageSize.  The "usable" size is this value less
+// the overhead size.
+const int32 kIDBMaxMessageSize = 134217728;
+
+// kIDBMaxMessageOverhead is the size we expect to be used for the rest of
+// the message we will send.  The "usable" size is the max size less this value.
+const int32 kIDBMaxMessageOverhead = 1048576;  // 1MB; arbitrarily chosen.
+
 enum IDBCursorDirection {
   Next,
   NextNoDuplicate,
