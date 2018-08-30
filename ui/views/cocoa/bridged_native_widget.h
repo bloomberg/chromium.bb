@@ -22,6 +22,7 @@
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -40,116 +41,11 @@ class DragDropClientMac;
 class NativeWidgetMac;
 class View;
 
-// The interface through which a NativeWidgetMac may interact with an NSWindow
-// in another process.
-// TODO(ccameron): Rename this to BridgedNativeWidget, and rename
-// BridgedNativeWidget to BridgedNativeWidgetImpl.
-class VIEWS_EXPORT BridgedNativeWidgetPublic {
- public:
-  struct InitParams {
-    ui::ModalType modal_type = ui::MODAL_TYPE_NONE;
-    bool is_translucent_window = false;
-    bool has_shadow = false;
-    bool force_into_collection_cycle = false;
-  };
-
-  // Ways of changing the visibility of the bridged NSWindow.
-  enum WindowVisibilityState {
-    HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
-    SHOW_AND_ACTIVATE_WINDOW,  // Shows with -[NSWindow makeKeyAndOrderFront:].
-    SHOW_INACTIVE,             // Shows with -[NSWindow orderWindow:..]. Orders
-                               // the window above its parent if it has one.
-  };
-
-  // Initialize the window's style.
-  virtual void InitWindow(const InitParams& params) = 0;
-
-  // Initialize the view to display compositor output. This will send the
-  // current visibility and dimensions (and any future updates) to the
-  // BridgedNativeWidgetHost.
-  virtual void InitCompositorView() = 0;
-
-  // Create the NSView to be the content view for the window.
-  virtual void CreateContentView(const gfx::Rect& bounds) = 0;
-
-  // Destroy the content NSView for this window. Note that the window will
-  // become blank once this has been called.
-  virtual void DestroyContentView() = 0;
-
-  // Initiate the closing of the window (the closing may be animated or posted
-  // to be run later).
-  virtual void CloseWindow() = 0;
-
-  // Immediately close the window (which will have the consequence of deleting
-  // |this| and its host).
-  virtual void CloseWindowNow() = 0;
-
-  // Specify initial bounds for the window via |new_bounds| in screen
-  // coordinates. It is invalid for |new_bounds| to have an empty size and
-  // non-zero position. The size of the window will be expanded so that the
-  // content size will be at least |minimum_content_size|. The bounds are offset
-  // by |parent_offset| (this isn't incorporated directly into |new_bounds| for
-  // the aforementioned checks of |new_bounds|' position).
-  virtual void SetInitialBounds(const gfx::Rect& new_bounds,
-                                const gfx::Size& minimum_content_size,
-                                const gfx::Vector2d& parent_offset) = 0;
-
-  // Specify new bounds for the window via |new_bounds| in screen coordinates.
-  // The size of the window will be expanded so that the content size will be
-  // at least |minimum_content_size|.
-  virtual void SetBounds(const gfx::Rect& new_bounds,
-                         const gfx::Size& minimum_content_size) = 0;
-
-  // Sets the desired visibility of the window and updates the visibility of
-  // descendant windows where necessary.
-  virtual void SetVisibilityState(WindowVisibilityState new_state) = 0;
-
-  // Sets the collection behavior so that the window will or will not be visible
-  // on all spaces.
-  virtual void SetVisibleOnAllSpaces(bool always_visible) = 0;
-
-  // Called by NativeWidgetMac to initiate a transition to the specified target
-  // fullscreen state.
-  virtual void SetFullscreen(bool fullscreen) = 0;
-
-  // Miniaturize or deminiaturize the window.
-  virtual void SetMiniaturized(bool miniaturized) = 0;
-
-  // Called by NativeWidgetMac when the window size constraints change.
-  virtual void SetSizeConstraints(const gfx::Size& min_size,
-                                  const gfx::Size& max_size,
-                                  bool is_resizable,
-                                  bool is_maximizable) = 0;
-
-  // Set the opacity of the NSWindow.
-  virtual void SetOpacity(float opacity) = 0;
-
-  // Set the content aspect ratio of the NSWindow.
-  virtual void SetContentAspectRatio(const gfx::SizeF& aspect_ratio) = 0;
-
-  // Specify the content to draw in the NSView.
-  virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
-
-  // Set the NSWindow's title text.
-  virtual void SetWindowTitle(const base::string16& title) = 0;
-
-  // Make the content view be the first responder for the NSWindow.
-  virtual void MakeFirstResponder() = 0;
-
-  // Clear the touchbar.
-  virtual void ClearTouchBar() = 0;
-
-  // Acquiring mouse capture first steals capture from any existing
-  // CocoaMouseCaptureDelegate, then captures all mouse events until released.
-  virtual void AcquireCapture() = 0;
-  virtual void ReleaseCapture() = 0;
-};
-
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget
-    : public BridgedNativeWidgetPublic,
+    : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate,
@@ -304,8 +200,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
 
-  // views::BridgedNativeWidgetPublic:
-  void InitWindow(const InitParams& params) override;
+  // views_bridge_mac::mojom::BridgedNativeWidget:
+  void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
+                      params) override;
   void InitCompositorView() override;
   void CreateContentView(const gfx::Rect& bounds) override;
   void DestroyContentView() override;
@@ -316,7 +213,8 @@ class VIEWS_EXPORT BridgedNativeWidget
                         const gfx::Vector2d& parent_offset) override;
   void SetBounds(const gfx::Rect& new_bounds,
                  const gfx::Size& minimum_content_size) override;
-  void SetVisibilityState(WindowVisibilityState new_state) override;
+  void SetVisibilityState(
+      views_bridge_mac::mojom::WindowVisibilityState new_state) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
   void SetMiniaturized(bool miniaturized) override;
