@@ -221,6 +221,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
     sf->use_accurate_subpel_search = 1;
+    sf->reuse_inter_intra_mode = 1;
   }
 
   if (speed >= 2) {
@@ -469,6 +470,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->optimize_b_precheck = 0;
   sf->jnt_comp_fast_tx_search = 0;
   sf->jnt_comp_skip_mv_search = 0;
+  sf->reuse_inter_intra_mode = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

@@ -638,6 +638,10 @@ typedef struct SPEED_FEATURES {
   // Note: The search order might affect the result. It is better to search same
   // single inter mode as a group.
   int prune_comp_search_by_single_result;
+
+  // Reuse the inter_intra_mode search result from NEARESTMV mode to other
+  // single ref modes
+  int reuse_inter_intra_mode;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
