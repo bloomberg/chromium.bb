@@ -555,12 +555,6 @@ void PersonalDataManager::OnSyncServiceInitialized(
   }
 }
 
-void PersonalDataManager::SetUseAccountStorageForServerCards(
-    bool use_account_storage_for_server_cards) {
-  database_helper_->SetUseAccountStorageForServerCards(
-      use_account_storage_for_server_cards);
-}
-
 void PersonalDataManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
     std::unique_ptr<WDTypedResult> result) {
@@ -688,6 +682,13 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
     // investigation is done.
     ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
         features::kAutofillResetFullServerCardsOnAuthError));
+  }
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage)) {
+    // Use the ephemeral account storage when the user didn't enable the sync
+    // feature explicitly.
+    database_helper_->SetUseAccountStorageForServerCards(
+        !sync_service->IsSyncFeatureEnabled());
   }
 }
 

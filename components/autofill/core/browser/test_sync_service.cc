@@ -38,6 +38,10 @@ bool TestSyncService::IsUsingSecondaryPassphrase() const {
   return is_using_secondary_passphrase_;
 }
 
+bool TestSyncService::IsAuthenticatedAccountPrimary() const {
+  return is_authenticated_account_primary_;
+}
+
 const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
   return auth_error_;
 }

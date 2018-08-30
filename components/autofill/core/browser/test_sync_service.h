@@ -24,9 +24,14 @@ class TestSyncService : public syncer::FakeSyncService {
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
+  bool IsAuthenticatedAccountPrimary() const override;
 
   void SetDisableReasons(int disable_reasons) {
     disable_reasons_ = disable_reasons;
+  }
+
+  void SetIsAuthenticatedAccountPrimary(bool is_authenticated_account_primary) {
+    is_authenticated_account_primary_ = is_authenticated_account_primary;
   }
 
   void SetDataTypes(syncer::ModelTypeSet data_types) {
@@ -49,6 +54,7 @@ class TestSyncService : public syncer::FakeSyncService {
   bool sync_cycle_complete_ = true;
   GoogleServiceAuthError auth_error_;
   bool is_in_auth_error_ = false;
+  bool is_authenticated_account_primary_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };

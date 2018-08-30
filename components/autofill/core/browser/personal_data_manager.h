@@ -95,13 +95,6 @@ class PersonalDataManager : public KeyedService,
   // not be started, but it's preferences can be queried.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
-  // Set whether this should use the passed in account storage for server
-  // cards. If false, this will use the profile_storage.
-  // It's an error to call this if no account storage was passed in at
-  // initialization time.
-  void SetUseAccountStorageForServerCards(
-      bool use_account_storage_for_server_cards);
-
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
