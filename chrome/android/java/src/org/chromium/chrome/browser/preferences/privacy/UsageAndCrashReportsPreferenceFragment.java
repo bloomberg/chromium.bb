@@ -27,7 +27,7 @@ public class UsageAndCrashReportsPreferenceFragment extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.usage_and_crash_reports_preferences);
-        getActivity().setTitle(R.string.usage_and_crash_reports_title);
+        getActivity().setTitle(R.string.usage_and_crash_reports_title_legacy);
         initUsageAndCrashReportsSwitch();
     }
 
