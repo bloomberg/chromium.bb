@@ -61,6 +61,7 @@ static_library("client") {
       "oauth_token_getter_proxy.h",
     ]
     deps += [
+      "//mojo/core/embedder",
       "//remoting/client/input",
       "//remoting/client/ui",
       "//services/network/public/mojom",
