@@ -52,7 +52,7 @@ class DocumentAnimations {
   static void UpdateAnimations(
       Document&,
       DocumentLifecycle::LifecycleState required_lifecycle_state,
-      base::Optional<CompositorElementIdSet>&);
+      const base::Optional<CompositorElementIdSet>&);
 
  private:
   DocumentAnimations() = default;
