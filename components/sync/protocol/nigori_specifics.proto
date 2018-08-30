@@ -159,6 +159,9 @@ message NigoriSpecifics {
     // PBKDF2-HMAC-SHA1 with 1003 iterations and constant hardcoded salt. Was
     // implicitly used in <= M69.
     PBKDF2_HMAC_SHA1_1003 = 1;
+    // scrypt with N = 2^13, r = 8, p = 11 and constant hardcoded salt. Was
+    // added in M70.
+    SCRYPT_8192_8_11_CONST_SALT = 2;
   }
 
   // ID of the method used to derive the encryption key from a custom

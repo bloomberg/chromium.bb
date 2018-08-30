@@ -4,7 +4,10 @@
 
 #include "components/sync/base/nigori.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -206,6 +209,47 @@ TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   EXPECT_TRUE(user_key.empty());
   EXPECT_FALSE(encryption_key.empty());
   EXPECT_FALSE(mac_key.empty());
+}
+
+TEST(SyncNigoriTest, InitByDerivationShouldDeriveCorrectKeyUsingScrypt) {
+  const std::string kHostname = "unused field 1";
+  const std::string kUsername = "unused field 2";
+  const std::string kPassphrase = "hunter2";
+
+  Nigori nigori;
+  EXPECT_TRUE(
+      nigori.InitByDerivation(KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT,
+                              kHostname, kUsername, kPassphrase));
+
+  std::string user_key;
+  std::string encryption_key;
+  std::string mac_key;
+  nigori.ExportKeys(&user_key, &encryption_key, &mac_key);
+  // user_key is not used anymore, but is being set for backwards compatibility
+  // (because legacy clients cannot import a Nigori node without one).
+  // Therefore, we just initialize it to all zeroes.
+  EXPECT_EQ("00000000000000000000000000000000",
+            base::ToLowerASCII(base::HexEncode(&user_key[0], user_key.size())));
+  // These are reference values obtained by running scrypt with Nigori's
+  // parameters and the input values given above.
+  EXPECT_EQ("44544be0c0b8a117756d30fd6bdaaa9e",
+            base::ToLowerASCII(
+                base::HexEncode(&encryption_key[0], encryption_key.size())));
+  EXPECT_EQ("1fd7b6ccb47e0be2715c3f67c500168b",
+            base::ToLowerASCII(base::HexEncode(&mac_key[0], mac_key.size())));
+}
+
+TEST(SyncNigoriTest,
+     InitByDerivationShouldFailWhenGivenUnsupportedKeyDerivationMethod) {
+  const std::string kHostname = "unused field 1";
+  const std::string kUsername = "unused field 2";
+  const std::string kPassphrase = "hunter2";
+
+  Nigori nigori;
+  bool result = nigori.InitByDerivation(KeyDerivationMethod::UNSUPPORTED,
+                                        kHostname, kUsername, kPassphrase);
+
+  EXPECT_FALSE(result);
 }
 
 }  // anonymous namespace
