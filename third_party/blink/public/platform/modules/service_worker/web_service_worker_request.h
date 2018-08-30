@@ -84,6 +84,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetIntegrity(const WebString&);
   const WebString& Integrity() const;
 
+  void SetPriority(WebURLRequest::Priority);
+  WebURLRequest::Priority Priority() const;
+
   void SetCacheMode(mojom::FetchCacheMode);
   mojom::FetchCacheMode CacheMode() const;
 

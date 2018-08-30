@@ -57,6 +57,8 @@ FetchRequestData* FetchRequestData::Create(
   request->SetRedirect(web_request.RedirectMode());
   request->SetMIMEType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(web_request.Integrity());
+  request->SetPriority(
+      static_cast<ResourceLoadPriority>(web_request.Priority()));
   request->SetKeepalive(web_request.Keepalive());
   request->SetIsHistoryNavigation(web_request.IsHistoryNavigation());
   return request;
@@ -79,6 +81,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->response_tainting_ = response_tainting_;
   request->mime_type_ = mime_type_;
   request->integrity_ = integrity_;
+  request->priority_ = priority_;
   request->importance_ = importance_;
   request->keepalive_ = keepalive_;
   request->is_history_navigation_ = is_history_navigation_;
@@ -133,6 +136,7 @@ FetchRequestData::FetchRequestData()
       redirect_(network::mojom::FetchRedirectMode::kFollow),
       importance_(mojom::FetchImportanceMode::kImportanceAuto),
       response_tainting_(kBasicTainting),
+      priority_(ResourceLoadPriority::kUnresolved),
       keepalive_(false) {}
 
 void FetchRequestData::Trace(blink::Visitor* visitor) {

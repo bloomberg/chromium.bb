@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
@@ -92,6 +93,8 @@ class FetchRequestData final
   void SetMIMEType(const String& type) { mime_type_ = type; }
   String Integrity() const { return integrity_; }
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
+  ResourceLoadPriority Priority() const { return priority_; }
+  void SetPriority(ResourceLoadPriority priority) { priority_ = priority; }
   bool Keepalive() const { return keepalive_; }
   void SetKeepalive(bool b) { keepalive_ = b; }
   bool IsHistoryNavigation() const { return is_history_navigation_; }
@@ -137,6 +140,7 @@ class FetchRequestData final
   TraceWrapperMember<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
+  ResourceLoadPriority priority_;
   bool keepalive_;
   bool is_history_navigation_ = false;
   // A specific factory that should be used for this request instead of whatever
