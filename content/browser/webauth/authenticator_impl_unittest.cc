@@ -27,6 +27,8 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/base/features.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -897,6 +899,12 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionU2fDeviceBackwardsCompatibility) {
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent())
+      .WillRepeatedly(::testing::Return(true));
+  device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
@@ -1103,9 +1111,10 @@ class TestAuthenticatorRequestDelegate
         is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
 
-  void RegisterActionCallbacks(base::OnceClosure cancel_callback,
-                               device::FidoRequestHandlerBase::RequestCallback
-                                   request_callback) override {
+  void RegisterActionCallbacks(
+      base::OnceClosure cancel_callback,
+      device::FidoRequestHandlerBase::RequestCallback request_callback,
+      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
         << "RegisterActionCallbacks called twice.";
     std::move(action_callbacks_registered_callback_).Run();
@@ -1845,6 +1854,11 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
 TEST_F(AuthenticatorImplRequestDelegateTest,
        TestRequestDelegateObservesFidoRequestHandler) {
   EnableFeature(features::kWebAuthBle);
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent())
+      .WillRepeatedly(::testing::Return(true));
+  device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
 
   device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
   auto* fake_ble_discovery = discovery_factory.ForgeNextBleDiscovery();
@@ -1869,6 +1883,8 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   const auto device_id = mock_ble_device->GetId();
 
   EXPECT_CALL(*mock_delegate_ptr, OnTransportAvailabilityEnumerated(_));
+  EXPECT_CALL(*mock_delegate_ptr, EmbedderControlsAuthenticatorDispatch(_))
+      .WillOnce(testing::Return(true));
 
   base::RunLoop ble_device_found_done;
   EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_))
@@ -1887,6 +1903,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 
   fake_ble_discovery->RemoveDevice(device_id);
   ble_device_lost_done.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {

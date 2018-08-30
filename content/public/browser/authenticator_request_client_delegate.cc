@@ -21,7 +21,8 @@ void AuthenticatorRequestClientDelegate::DidFailWithInterestingReason(
 
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
-    device::FidoRequestHandlerBase::RequestCallback request_callback) {}
+    device::FidoRequestHandlerBase::RequestCallback request_callback,
+    base::RepeatingClosure bluetooth_adapter_power_on_callback) {}
 
 bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {

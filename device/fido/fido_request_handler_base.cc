@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/fido/ble_adapter_power_manager.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_task.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -66,22 +67,18 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
   // once that part is ready, namely:
   //
   //   1) Once the platform authenticator related fields are filled out.
-  //   2) [Optionally, if BLE enabled] Once BLE related fields are filled out.
-  //   3) [Optionally, if caBLE enabled] Once caBLE related fields are filled
-  //   out.
+  //   2) [Optionally, if BLE or caBLE enabled] if Bluetooth adapter is present.
   //
-  // On top of that, we wait for (4) an invocation that happens when the
+  // On top of that, we wait for (3) an invocation that happens when the
   // |observer_| is set, so that OnTransportAvailabilityEnumerated is never
   // called before the observer is set.
-  size_t transport_info_callback_count = 1u + 0u + 0u + 1u;
+  size_t transport_info_callback_count = 1u + 0u + 1u;
 
   for (const auto transport : available_transports) {
     // Construction of CaBleDiscovery is handled by the implementing class as it
     // requires an extension passed on from the relying party.
-    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
-      ++transport_info_callback_count;
+    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)
       continue;
-    }
 
     if (transport == FidoTransportProtocol::kInternal) {
       // Platform authenticator availability is always indicated by
@@ -96,11 +93,20 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
       continue;
     }
 
-    if (transport == FidoTransportProtocol::kBluetoothLowEnergy)
-      ++transport_info_callback_count;
-
     discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
+  }
+
+  if (base::ContainsKey(
+          available_transports,
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
+      base::ContainsKey(available_transports,
+                        FidoTransportProtocol::kBluetoothLowEnergy)) {
+    ++transport_info_callback_count;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FidoRequestHandlerBase::ConstructBleAdapterPowerManager,
+                       weak_factory_.GetWeakPtr()));
   }
 
   transport_availability_info_.available_transports = available_transports;
@@ -137,6 +143,35 @@ void FidoRequestHandlerBase::CancelOngoingTasks(
   }
 }
 
+void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(bool is_present,
+                                                          bool is_powered_on) {
+  if (!is_present) {
+    transport_availability_info_.available_transports.erase(
+        FidoTransportProtocol::kBluetoothLowEnergy);
+    transport_availability_info_.available_transports.erase(
+        FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+  }
+
+  transport_availability_info_.is_ble_powered = is_powered_on;
+  DCHECK(notify_observer_callback_);
+  notify_observer_callback_.Run();
+}
+
+void FidoRequestHandlerBase::OnBluetoothAdapterPowerChanged(
+    bool is_powered_on) {
+  transport_availability_info_.is_ble_powered = is_powered_on;
+
+  if (observer_)
+    observer_->BluetoothAdapterPowerChanged(is_powered_on);
+}
+
+void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
+  if (!bluetooth_power_manager_)
+    return;
+
+  bluetooth_power_manager_->SetAdapterPower(true /* set_power_on */);
+}
+
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -169,30 +204,6 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
 
   if (observer_)
     observer_->FidoAuthenticatorRemoved(device->GetId());
-}
-
-void FidoRequestHandlerBase::BluetoothAdapterPowerChanged(bool is_powered_on) {
-  transport_availability_info_.is_ble_powered = is_powered_on;
-
-  if (observer_)
-    observer_->BluetoothAdapterPowerChanged(is_powered_on);
-}
-
-void FidoRequestHandlerBase::DiscoveryAvailable(FidoDiscovery* discovery,
-                                                bool is_available) {
-  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy ||
-      discovery->transport() ==
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
-    // For FidoBleDiscovery and FidoCableDiscovery, discovery is available when
-    // BluetoothAdapter is present in the system.
-    if (!is_available) {
-      transport_availability_info_.available_transports.erase(
-          discovery->transport());
-    }
-
-    DCHECK(notify_observer_callback_);
-    notify_observer_callback_.Run();
-  }
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(
@@ -256,6 +267,10 @@ void FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest(
   authenticator->InitializeAuthenticator(
       base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
                      weak_factory_.GetWeakPtr(), authenticator));
+}
+
+void FidoRequestHandlerBase::ConstructBleAdapterPowerManager() {
+  bluetooth_power_manager_ = std::make_unique<BleAdapterPowerManager>(this);
 }
 
 }  // namespace device
