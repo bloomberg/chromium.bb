@@ -51,9 +51,9 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
       end_offset_(end_offset),
       shape_result_(shape_result),
       line_orientation_(static_cast<unsigned>(line_orientation)),
-      end_effect_(static_cast<unsigned>(end_effect)) {
+      end_effect_(static_cast<unsigned>(end_effect)),
+      is_anonymous_text_(IsPhysicalTextFragmentAnonymousText(layout_object)) {
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
-  is_anonymous_text_ = IsPhysicalTextFragmentAnonymousText(layout_object);
 }
 
 // Convert logical cooridnate to local physical coordinate.
