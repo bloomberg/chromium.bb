@@ -66,7 +66,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   void getBaselines(Baselines& baselines) const { baselines = baselines_; }
   Baselines getBaselines() const { return baselines_; }
 
-  static float GetFontBaseline(const TextBaseline&, const FontMetrics&);
+  static float GetFontBaseline(const TextBaseline&, const SimpleFontData&);
 
  private:
   void Update(const Font&,
