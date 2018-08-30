@@ -15,6 +15,7 @@
 namespace remoting {
 
 class ClientSessionControl;
+class LocalInputMonitor;
 
 class HostWindow {
  public:
@@ -25,6 +26,12 @@ class HostWindow {
 
   // Creates a platform-specific instance of the disconnect window.
   static std::unique_ptr<HostWindow> CreateDisconnectWindow();
+
+  // Creates a platform-specific instance of the disconnect window which hides
+  // after a period of inactivity on the local desktop and shows the window when
+  // local input is observed.
+  static std::unique_ptr<HostWindow> CreateAutoHidingDisconnectWindow(
+      std::unique_ptr<LocalInputMonitor> local_input_monitor);
 
   // Starts the UI state machine. |client_session_control| will be used to
   // notify the caller about the local user's actions.

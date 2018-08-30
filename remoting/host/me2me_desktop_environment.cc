@@ -130,7 +130,13 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
         client_session_control);
 
     // Create the disconnect window.
+#if defined(OS_WIN)
+    disconnect_window_ =
+        HostWindow::CreateAutoHidingDisconnectWindow(LocalInputMonitor::Create(
+            caller_task_runner(), input_task_runner(), ui_task_runner()));
+#else
     disconnect_window_ = HostWindow::CreateDisconnectWindow();
+#endif
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner(), ui_task_runner(), std::move(disconnect_window_)));
     disconnect_window_->Start(client_session_control);
