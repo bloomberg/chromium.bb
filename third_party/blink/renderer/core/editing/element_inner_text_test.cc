@@ -27,4 +27,14 @@ TEST_F(ElementInnerTest, SVGElementAsTableCell) {
   EXPECT_EQ("abc", target.innerText());
 }
 
+// http://crbug.com/878725
+TEST_F(ElementInnerTest, SVGElementAsTableRow) {
+  SetBodyContent(
+      "<div id=target>abc"
+      "<svg><rect style='display:table-row'></rect></svg>"
+      "</div>");
+  Element& target = *GetDocument().getElementById("target");
+  EXPECT_EQ("abc", target.innerText());
+}
+
 }  // namespace blink
