@@ -12,50 +12,29 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/nqe/cached_network_quality.h"
-#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_id.h"
-#include "net/nqe/network_quality_estimator.h"
 
 class PrefRegistrySimple;
 class Profile;
 
 namespace net {
-class EffectiveConnectionTypeObserver;
 class NetworkQualitiesPrefsManager;
 }
 
-// UI service to determine the current EffectiveConnectionType.
-class UINetworkQualityEstimatorService
-    : public KeyedService,
-      public net::NetworkQualityEstimator::NetworkQualityProvider {
+// UI service to manage storage of network quality prefs.
+class UINetworkQualityEstimatorService : public KeyedService {
  public:
   explicit UINetworkQualityEstimatorService(Profile* profile);
   ~UINetworkQualityEstimatorService() override;
-
-  // NetworkQualityProvider implementation:
-  // Must be called on the UI thread.
-  net::EffectiveConnectionType GetEffectiveConnectionType() const override;
-  void AddEffectiveConnectionTypeObserver(
-      net::EffectiveConnectionTypeObserver* observer) override;
-  void RemoveEffectiveConnectionTypeObserver(
-      net::EffectiveConnectionTypeObserver* observer) override;
-  base::Optional<base::TimeDelta> GetHttpRTT() const override;
-  base::Optional<base::TimeDelta> GetTransportRTT() const override;
-  base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
 
   // Registers the profile-specific network quality estimator prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Clear the network quality estimator prefs.
   void ClearPrefs();
-
-  // Tests can manually set EffectiveConnectionType, but browser tests should
-  // expect that the EffectiveConnectionType could change.
-  void SetEffectiveConnectionTypeForTesting(net::EffectiveConnectionType type);
 
   // Reads the prefs from the disk, parses them into a map of NetworkIDs and
   // CachedNetworkQualities, and returns the map.
@@ -64,43 +43,8 @@ class UINetworkQualityEstimatorService
   ForceReadPrefsForTesting() const;
 
  private:
-  class IONetworkQualityObserver;
-
-  // Notifies |observer| of the current effective connection type if |observer|
-  // is still registered as an observer.
-  void NotifyEffectiveConnectionTypeObserverIfPresent(
-      net::EffectiveConnectionTypeObserver* observer) const;
-
   // KeyedService implementation:
   void Shutdown() override;
-
-  // Called when the EffectiveConnectionType has updated to |type|.
-  // NetworkQualityEstimator::EffectiveConnectionType is an estimate of the
-  // quality of the network that may differ from the actual network type
-  // reported by NetworkchangeNotifier::GetConnectionType.
-  void EffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
-
-  // Called when the estimated HTTP RTT, estimated transport RTT or estimated
-  // downstream throughput is computed.
-  void RTTOrThroughputComputed(base::TimeDelta http_rtt,
-                               base::TimeDelta transport_rtt,
-                               int32_t downstream_throughput_kbps);
-
-  // The current EffectiveConnectionType.
-  net::EffectiveConnectionType type_;
-
-  // Current network quality metrics.
-  base::TimeDelta http_rtt_;
-  base::TimeDelta transport_rtt_;
-  int32_t downstream_throughput_kbps_;
-
-  // IO thread based observer that is owned by this service. Created on the UI
-  // thread, but used and deleted on the IO thread.
-  std::unique_ptr<IONetworkQualityObserver> io_observer_;
-
-  // Observer list for changes in effective connection type.
-  base::ObserverList<net::EffectiveConnectionTypeObserver>::Unchecked
-      effective_connection_type_observer_list_;
 
   // Prefs manager that is owned by this service. Created on the UI thread, but
   // used and deleted on the IO thread.
