@@ -30,6 +30,7 @@ WebRunnerURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     net::URLRequestContextBuilder builder;
     builder.set_net_log(net_log_);
+    builder.set_data_enabled(true);
 
     for (auto& protocol_handler : protocol_handlers_) {
       builder.SetProtocolHandler(protocol_handler.first,

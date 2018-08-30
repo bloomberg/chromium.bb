@@ -32,6 +32,8 @@ const char kPage1Path[] = "/title1.html";
 const char kPage2Path[] = "/title2.html";
 const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
+const char kDataUrl[] =
+    "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
 
 MATCHER(IsSet, "Checks if an optional field is set.") {
   return !arg.is_null();
@@ -144,6 +146,17 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigateFrame) {
   frame->GetNavigationController(controller.NewRequest());
 
   CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
+
+  frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigateDataFrame) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  CheckLoadUrl(kDataUrl, kDataUrl, controller.get());
 
   frame.Unbind();
 }
