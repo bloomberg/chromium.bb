@@ -30,6 +30,15 @@ class AvailableOfflineContentHelper {
       base::OnceCallback<void(const std::string& offline_content_json)>
           callback);
 
+  // Fetch summary of available content and return a JSON representation.
+  // Calls the callback once with the return value. An empty string
+  // is returned if no offline content is available.
+  // Note: A call to Reset, or deletion of this object will prevent the callback
+  // from running.
+  void FetchSummary(
+      base::OnceCallback<void(const std::string& content_summary_json)>
+          callback);
+
   // These methods just forward to the AvailableOfflineContentProvider.
   void LaunchItem(const std::string& id, const std::string& name_space);
   void LaunchDownloadsPage();
@@ -42,6 +51,11 @@ class AvailableOfflineContentHelper {
       base::OnceCallback<void(const std::string& offline_content_json)>
           callback,
       std::vector<chrome::mojom::AvailableOfflineContentPtr> content);
+
+  void SummaryReceived(
+      base::OnceCallback<void(const std::string& content_summary_json)>
+          callback,
+      chrome::mojom::AvailableOfflineContentSummaryPtr summary);
 
   // Binds |provider_| if necessary. Returns true if the provider is bound.
   bool BindProvider();

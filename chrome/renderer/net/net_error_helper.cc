@@ -70,6 +70,8 @@ using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::LocalizedError;
+using OfflineContentOnNetErrorFeatureState =
+    LocalizedError::OfflineContentOnNetErrorFeatureState;
 
 namespace {
 
@@ -92,22 +94,20 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 }
 
 #if defined(OS_ANDROID)
-LocalizedError::OfflineContentOnNetErrorFeatureState
-GetOfflineContentOnNetErrorFeatureState() {
+OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
   if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI))
-    return LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled;
+    return OfflineContentOnNetErrorFeatureState::kDisabled;
   const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
       features::kNewNetErrorPageUI,
       features::kNewNetErrorPageUIAlternateParameterName);
   if (alternate_ui_name == features::kNewNetErrorPageUIAlternateContentList) {
-    return LocalizedError::OfflineContentOnNetErrorFeatureState::kEnabledList;
+    return OfflineContentOnNetErrorFeatureState::kEnabledList;
   }
-  return LocalizedError::OfflineContentOnNetErrorFeatureState::kEnabledSummary;
+  return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
 }
 #else   // OS_ANDROID
-LocalizedError::OfflineContentOnNetErrorFeatureState
-GetOfflineContentOnNetErrorFeatureState() {
-  return LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled;
+OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
+  return OfflineContentOnNetErrorFeatureState::kDisabled;
 }
 #endif  // OS_ANDROID
 
@@ -350,7 +350,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool* show_saved_copy_button_shown,
     bool* show_cached_copy_button_shown,
     bool* download_button_shown,
-    bool* offline_suggested_content_allowed,
+    OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
     std::string* error_html) const {
   error_html->clear();
 
@@ -361,12 +361,13 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     NOTREACHED() << "unable to load template.";
   } else {
     base::DictionaryValue error_strings;
+    *offline_content_feature_state = GetOfflineContentOnNetErrorFeatureState();
     LocalizedError::GetStrings(
         error.reason(), error.domain(), error.url(), is_failed_post,
         error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
         ChromeRenderThreadObserver::is_incognito_process(),
-        GetOfflineContentOnNetErrorFeatureState(),
-        RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
+        *offline_content_feature_state, RenderThread::Get()->GetLocale(),
+        std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
         error_strings.Get("showSavedCopyButton", nullptr);
@@ -374,8 +375,12 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error_strings.Get("cacheButton", nullptr);
     *download_button_shown =
         error_strings.Get("downloadButton", nullptr);
-    *offline_suggested_content_allowed =
-        error_strings.Get("suggestedOfflineContentPresentationMode", nullptr);
+    if (!error_strings.Get("suggestedOfflineContentPresentationMode",
+                           nullptr)) {
+      *offline_content_feature_state =
+          OfflineContentOnNetErrorFeatureState::kDisabled;
+    }
+
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -517,6 +522,17 @@ void NetErrorHelper::OfflineContentAvailable(
 #if defined(OS_ANDROID)
   render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(
       base::StrCat({"offlineContentAvailable(", offline_content_json, ");"})));
+#endif
+}
+
+void NetErrorHelper::OfflineContentSummaryAvailable(
+    const std::string& offline_content_summary_json) {
+#if defined(OS_ANDROID)
+  if (!offline_content_summary_json.empty()) {
+    render_frame()->ExecuteJavaScript(
+        base::UTF8ToUTF16(base::StrCat({"offlineContentSummaryAvailable(",
+                                        offline_content_summary_json, ");"})));
+  }
 #endif
 }
 

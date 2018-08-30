@@ -40,6 +40,9 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+using OfflineContentOnNetErrorFeatureState =
+    error_page::LocalizedError::OfflineContentOnNetErrorFeatureState;
+
 namespace {
 
 // |NetErrorNavigationCorrectionTypes| enum id for Web search query.
@@ -425,7 +428,8 @@ struct NetErrorHelperCore::ErrorPageInfo {
         download_button_in_page(false),
         is_finished_loading(false),
         auto_reload_triggered(false),
-        offline_content_suggestions_allowed(false) {}
+        offline_content_feature_state(
+            OfflineContentOnNetErrorFeatureState::kDisabled) {}
 
   // Information about the failed page load.
   error_page::Error error;
@@ -468,9 +472,9 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // flight.
   bool auto_reload_triggered;
 
-  // True if the error page is for an offline error and offline content
-  // suggestions are enabled.
-  bool offline_content_suggestions_allowed;
+  // State of the offline content on net error page feature. Only enabled if
+  // the feature is enabled, and the error page is an offline error.
+  OfflineContentOnNetErrorFeatureState offline_content_feature_state;
 };
 
 NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams() {}
@@ -672,9 +676,15 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
       static_cast<net::Error>(committed_error_page_info_->error.reason()));
 
 #if defined(OS_ANDROID)
-  if (committed_error_page_info_->offline_content_suggestions_allowed) {
+  if (committed_error_page_info_->offline_content_feature_state ==
+      OfflineContentOnNetErrorFeatureState::kEnabledList) {
     available_content_helper_.FetchAvailableContent(base::BindOnce(
         &Delegate::OfflineContentAvailable, base::Unretained(delegate_)));
+  } else if (committed_error_page_info_->offline_content_feature_state ==
+             OfflineContentOnNetErrorFeatureState::kEnabledSummary) {
+    available_content_helper_.FetchSummary(
+        base::BindOnce(&Delegate::OfflineContentSummaryAvailable,
+                       base::Unretained(delegate_)));
   }
 #endif
 
@@ -723,14 +733,14 @@ void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
     bool show_saved_copy_button_in_page;
     bool show_cached_copy_button_in_page;
     bool download_button_in_page;
-    bool offline_content_suggestions_allowed;
+    OfflineContentOnNetErrorFeatureState offline_content_feature_state;
     if (error_html) {
       delegate_->GenerateLocalizedErrorPage(
           error, is_failed_post,
           false /* No diagnostics dialogs allowed for subframes. */, nullptr,
           &reload_button_in_page, &show_saved_copy_button_in_page,
           &show_cached_copy_button_in_page, &download_button_in_page,
-          &offline_content_suggestions_allowed, error_html);
+          &offline_content_feature_state, error_html);
     }
   }
 }
@@ -798,8 +808,7 @@ void NetErrorHelperCore::PrepareErrorPageForMainFrame(
         &pending_error_page_info->show_saved_copy_button_in_page,
         &pending_error_page_info->show_cached_copy_button_in_page,
         &pending_error_page_info->download_button_in_page,
-        &pending_error_page_info->offline_content_suggestions_allowed,
-        error_html);
+        &pending_error_page_info->offline_content_feature_state, error_html);
   }
 }
 
@@ -861,8 +870,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
         &pending_error_page_info_->show_saved_copy_button_in_page,
         &pending_error_page_info_->show_cached_copy_button_in_page,
         &pending_error_page_info_->download_button_in_page,
-        &pending_error_page_info_->offline_content_suggestions_allowed,
-        &error_html);
+        &pending_error_page_info_->offline_content_feature_state, &error_html);
   } else {
     // Since |navigation_correction_params| in |pending_error_page_info_| is
     // NULL, this won't trigger another attempt to load corrections.

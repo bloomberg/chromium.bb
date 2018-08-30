@@ -182,6 +182,10 @@ function launchDownloadsPage() {
   errorPageController.launchDownloadsPage();
 }
 
+// TODO(https://crbug.com/852872): Implement offline content summary UI.
+function offlineContentSummaryAvailable(summary) {
+}
+
 // Populates suggested offline content. Note: this UI is in development.
 // See https://crbug.com/852872.
 function offlineContentAvailable(content) {
