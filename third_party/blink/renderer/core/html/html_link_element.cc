@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
@@ -70,6 +71,9 @@ void HTMLLinkElement::ParseAttribute(
   const AtomicString& value = params.new_value;
   if (name == relAttr) {
     rel_attribute_ = LinkRelAttribute(value);
+    if (rel_attribute_.IsImport()) {
+      Deprecation::CountDeprecation(GetDocument(), WebFeature::kHTMLImports);
+    }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
   } else if (name == hrefAttr) {

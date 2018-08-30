@@ -456,12 +456,10 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           WillBeRemoved("The step timing function with step position 'middle'",
                         kM62, "5189363944128512")};
 
-    case WebFeature::kHTMLImportsHasStyleSheets:
-      return {"HTMLImportsHasStyleSheets", kUnknown,
-              "Styling master document from stylesheets defined in "
-              "HTML Imports is deprecated. "
-              "Please refer to "
-              "https://goo.gl/EGXzpw for possible migration paths."};
+    case WebFeature::kHTMLImports:
+      return {"DeprecatedHTMLImports", kM73,
+              ReplacedWillBeRemoved("HTML Imports", "ES modules", kM73,
+                                    "5144752345317376")};
 
     case WebFeature::
         kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
