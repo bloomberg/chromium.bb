@@ -100,7 +100,7 @@ def get_commit_export_state(chromium_commit, local_wpt, wpt_github, verify_merge
         apply (i.e. state=CommitExportState.EXPORTABLE_DIRTY).
     """
     message = chromium_commit.message()
-    if 'NOEXPORT=true' in message or 'No-Export: true' in message or message.startswith('Import'):
+    if 'NOEXPORT=true' in message or 'No-Export: true' in message:
         return CommitExportState.IGNORED, ''
 
     patch = chromium_commit.format_patch()

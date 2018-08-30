@@ -115,10 +115,13 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
         old_revert = MockChromiumCommit(MockHost(), body='Revert of Message\n> NOEXPORT=true')
         self.assertEqual(get_commit_export_state(old_revert, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
 
-    def test_commit_that_starts_with_import_is_not_exportable(self):
+    # "Import" in commit message doesn't by itself make a commit exportable,
+    # see https://crbug.com/879128.
+    def test_commit_that_starts_with_import_is_exportable(self):
         commit = MockChromiumCommit(MockHost(), subject='Import message')
         github = MockWPTGitHub(pull_requests=[])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(True, '')]), github),
+                         (CommitExportState.EXPORTABLE_CLEAN, ''))
 
     def test_commit_that_has_open_pr_is_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='I00decade')

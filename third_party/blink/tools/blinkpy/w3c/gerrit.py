@@ -130,12 +130,6 @@ class GerritCL(object):
             _log.info('Rejecting CL with over 1000 files: %s (ID: %s) ', self.subject, self.change_id)
             return False
 
-        if self.subject.startswith('Import wpt@'):
-            return False
-
-        if 'Import' in self.subject:
-            return False
-
         if 'No-Export: true' in self.current_revision['commit_with_footers']:
             return False
 
