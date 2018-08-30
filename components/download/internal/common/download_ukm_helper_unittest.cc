@@ -56,15 +56,22 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   DownloadContent file_type = DownloadContent::AUDIO;
   DownloadSource download_source = DownloadSource::UNKNOWN;
+  DownloadConnectionSecurity state =
+      DownloadConnectionSecurity::DOWNLOAD_SECURE;
+  bool is_same_host_download = true;
   DownloadUkmHelper::RecordDownloadStarted(download_id_, source_id, file_type,
-                                           download_source);
+                                           download_source, state,
+                                           is_same_host_download);
 
   ExpectUkmMetrics(
       UkmDownloadStarted::kEntryName,
       {UkmDownloadStarted::kDownloadIdName, UkmDownloadStarted::kFileTypeName,
-       UkmDownloadStarted::kDownloadSourceName},
+       UkmDownloadStarted::kDownloadSourceName,
+       UkmDownloadStarted::kDownloadConnectionSecurityName,
+       UkmDownloadStarted::kIsSameHostDownloadName},
       {download_id_, static_cast<int>(file_type),
-       static_cast<int>(download_source)});
+       static_cast<int>(download_source), static_cast<int>(state),
+       is_same_host_download});
 
   // RecordDownloadInterrupted, has change in file size.
   int change_in_file_size = 1000;
