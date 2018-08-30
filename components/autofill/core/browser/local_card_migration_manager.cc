@@ -76,20 +76,13 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
   if (!payments_client_)
     return;
   migration_request_ = payments::PaymentsClient::MigrationRequestDetails();
-  std::vector<const char*> active_experiments;
-
-  // Payments server determines which version of the legal message to show based
-  // on the existence of this experiment flag.
-  if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
-    active_experiments.push_back(
-        features::kAutofillUpstreamUpdatePromptExplanation.name);
-  }
 
   // Don't send pan_first_six, as potentially migrating multiple local cards at
   // once will negate its usefulness.
   payments_client_->GetUploadDetails(
       std::vector<AutofillProfile>(), GetDetectedValues(),
-      /*pan_first_six=*/std::string(), active_experiments, app_locale_,
+      /*pan_first_six=*/std::string(),
+      /*active_experiments=*/std::vector<const char*>(), app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
       payments::kMigrateCardsBillableServiceNumber);
