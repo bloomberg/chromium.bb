@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "components/invalidation/impl/invalidator_registrar.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -53,7 +53,7 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
   std::string client_id_;
   bool self_notify_;
 
-  syncer::InvalidatorRegistrar invalidator_registrar_;
+  syncer::DeprecatedInvalidatorRegistrar invalidator_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerInvalidationService);
 };

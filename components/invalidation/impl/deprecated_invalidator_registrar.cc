@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/invalidator_registrar.h"
+#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 
 #include <cstddef>
 #include <iterator>
@@ -13,23 +13,25 @@
 
 namespace syncer {
 
-InvalidatorRegistrar::InvalidatorRegistrar()
+DeprecatedInvalidatorRegistrar::DeprecatedInvalidatorRegistrar()
     : state_(DEFAULT_INVALIDATION_ERROR) {}
 
-InvalidatorRegistrar::~InvalidatorRegistrar() {
+DeprecatedInvalidatorRegistrar::~DeprecatedInvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler_to_ids_map_.empty());
 }
 
-void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
+void DeprecatedInvalidatorRegistrar::RegisterHandler(
+    InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(!handlers_.HasObserver(handler));
   handlers_.AddObserver(handler);
 }
 
-bool InvalidatorRegistrar::UpdateRegisteredIds(InvalidationHandler* handler,
-                                               const ObjectIdSet& ids) {
+bool DeprecatedInvalidatorRegistrar::UpdateRegisteredIds(
+    InvalidationHandler* handler,
+    const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
@@ -42,10 +44,8 @@ bool InvalidatorRegistrar::UpdateRegisteredIds(InvalidationHandler* handler,
 
     std::vector<invalidation::ObjectId> intersection;
     std::set_intersection(
-        it->second.begin(), it->second.end(),
-        ids.begin(), ids.end(),
-        std::inserter(intersection, intersection.end()),
-        ObjectIdLessThan());
+        it->second.begin(), it->second.end(), ids.begin(), ids.end(),
+        std::inserter(intersection, intersection.end()), ObjectIdLessThan());
     if (!intersection.empty()) {
       LOG(ERROR) << "Duplicate registration: trying to register "
                  << ObjectIdToString(*intersection.begin()) << " for "
@@ -63,7 +63,8 @@ bool InvalidatorRegistrar::UpdateRegisteredIds(InvalidationHandler* handler,
   return true;
 }
 
-void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
+void DeprecatedInvalidatorRegistrar::UnregisterHandler(
+    InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
@@ -71,14 +72,14 @@ void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
   handler_to_ids_map_.erase(handler);
 }
 
-ObjectIdSet InvalidatorRegistrar::GetRegisteredIds(
+ObjectIdSet DeprecatedInvalidatorRegistrar::GetRegisteredIds(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   HandlerIdsMap::const_iterator lookup = handler_to_ids_map_.find(handler);
   return lookup != handler_to_ids_map_.end() ? lookup->second : ObjectIdSet();
 }
 
-ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
+ObjectIdSet DeprecatedInvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet registered_ids;
   for (HandlerIdsMap::const_iterator it = handler_to_ids_map_.begin();
@@ -88,7 +89,7 @@ ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
   return registered_ids;
 }
 
-void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
+void DeprecatedInvalidatorRegistrar::DispatchInvalidationsToHandlers(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we have no handlers, there's nothing to do.
@@ -106,39 +107,39 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
   }
 }
 
-void InvalidatorRegistrar::UpdateInvalidatorState(InvalidatorState state) {
+void DeprecatedInvalidatorRegistrar::UpdateInvalidatorState(
+    InvalidatorState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "New invalidator state: " << InvalidatorStateToString(state_)
-      << " -> " << InvalidatorStateToString(state);
+           << " -> " << InvalidatorStateToString(state);
   state_ = state;
   for (auto& observer : handlers_)
     observer.OnInvalidatorStateChange(state);
 }
 
-InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
+InvalidatorState DeprecatedInvalidatorRegistrar::GetInvalidatorState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return state_;
 }
 
 std::map<std::string, ObjectIdSet>
-InvalidatorRegistrar::GetSanitizedHandlersIdsMap() {
+DeprecatedInvalidatorRegistrar::GetSanitizedHandlersIdsMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::map<std::string, ObjectIdSet> clean_handlers_to_ids;
   for (HandlerIdsMap::const_iterator it = handler_to_ids_map_.begin();
-       it != handler_to_ids_map_.end();
-       ++it) {
+       it != handler_to_ids_map_.end(); ++it) {
     clean_handlers_to_ids[it->first->GetOwnerName()] = ObjectIdSet(it->second);
   }
   return clean_handlers_to_ids;
 }
 
-bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
+bool DeprecatedInvalidatorRegistrar::IsHandlerRegisteredForTest(
     const InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return handlers_.HasObserver(handler);
 }
 
-void InvalidatorRegistrar::DetachFromThreadForTest() {
+void DeprecatedInvalidatorRegistrar::DetachFromThreadForTest() {
   DCHECK(thread_checker_.CalledOnValidThread());
   thread_checker_.DetachFromThread();
 }
