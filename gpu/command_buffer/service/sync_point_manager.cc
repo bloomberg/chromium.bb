@@ -321,6 +321,8 @@ void SyncPointClientState::EnsureWaitReleased(uint64_t release,
 }
 
 SyncPointManager::SyncPointManager() {
+  // Order number 0 is treated as invalid, so increment the generator and return
+  // positive order numbers in GenerateOrderNumber() from now on.
   order_num_generator_.GetNext();
 }
 

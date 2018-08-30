@@ -262,9 +262,9 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   }
 
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
-      gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
-      gpu_service_->mailbox_manager(), gpu_service_->share_group(), format,
-      gpu_service_->gpu_feature_info(),
+      gpu_thread_task_runner_, gpu_service_->scheduler(),
+      gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
+      gpu_service_->share_group(), format, gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences());
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
