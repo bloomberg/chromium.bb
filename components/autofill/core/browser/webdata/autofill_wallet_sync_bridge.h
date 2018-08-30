@@ -24,6 +24,7 @@ class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 class CreditCard;
+struct PaymentsCustomerData;
 
 // Sync bridge responsible for propagating local changes to the processor and
 // applying remote changes to the local database.
@@ -84,6 +85,11 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // data and returns whether any change has been applied (i.e., whether
   // |wallet_addresses| was different from local data).
   bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses);
+
+  // Sets |customer_data| to this client and returns whether any change has been
+  // applied (i.e., whether |customer_data| was different from local data).
+  bool SetPaymentsCustormerData(
+      std::vector<PaymentsCustomerData> customer_data);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for two
