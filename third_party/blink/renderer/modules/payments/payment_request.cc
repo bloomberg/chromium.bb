@@ -1251,6 +1251,14 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
       break;
     }
 
+    case PaymentErrorReason::ALREADY_SHOWING: {
+      exception_code = DOMExceptionCode::kAbortError;
+      message =
+          "Another PaymentRequest UI is already showing in a different tab or "
+          "window";
+      break;
+    }
+
     case PaymentErrorReason::UNKNOWN: {
       exception_code = DOMExceptionCode::kUnknownError;
       message = "Request failed";

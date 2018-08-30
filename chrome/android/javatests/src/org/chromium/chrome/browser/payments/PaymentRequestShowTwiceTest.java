@@ -54,8 +54,9 @@ public class PaymentRequestShowTwiceTest implements MainActivityStartCallback {
     public void testSecondShowRequestCancelled()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Second request: AbortError: Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {
+                "Second request: AbortError: Another PaymentRequest UI is already showing in a "
+                + "different tab or window"});
 
         // The web payments UI was not aborted.
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);

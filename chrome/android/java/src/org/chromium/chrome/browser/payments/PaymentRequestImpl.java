@@ -642,7 +642,8 @@ public class PaymentRequestImpl
             // one. Only the first one will be shown. This also prevents multiple tabs and windows
             // from showing PaymentRequest UI at the same time.
             mJourneyLogger.setNotShown(NotShownReason.CONCURRENT_REQUESTS);
-            disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
+            disconnectFromClientWithDebugMessage(
+                    "A PaymentRequest UI is already showing", PaymentErrorReason.ALREADY_SHOWING);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
