@@ -32,6 +32,11 @@ function runTests() {
 
       chrome.fileManagerPrivate.getProviders(
           chrome.test.callbackPass(function(providers) {
+            providers = providers.filter(function(provider) {
+              // Filter out native providers.
+              return provider.providerId.length == 0 ||
+                     provider.providerId[0] != "@";
+            });
             chrome.test.assertEq(providers.length, 1);
             // For extension based providers, provider id is the same as
             // extension id.
