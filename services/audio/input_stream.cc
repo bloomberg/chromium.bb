@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
@@ -130,7 +131,8 @@ void InputStream::SetOutputDeviceForAec(const std::string& output_device_id) {
   DCHECK(controller_);
   controller_->SetOutputDeviceForAec(output_device_id);
   if (log_)
-    log_->get()->OnLogMessage("SetOutputDeviceForAec");
+    log_->get()->OnLogMessage(
+        base::StrCat({"SetOutputDeviceForAec: ", output_device_id}));
 }
 
 void InputStream::Record() {
