@@ -141,6 +141,9 @@ const char kSettingPageRangeTo[] = "to";
 const char kSettingPageWidth[] = "pageWidth";
 const char kSettingPageHeight[] = "pageHeight";
 
+// Policies affecting printing destination.
+const char kSettingPolicies[] = "policies";
+
 const char kSettingPreviewModifiable[] = "previewModifiable";
 
 // Keys that specifies the printable area details.

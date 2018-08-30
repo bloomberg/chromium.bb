@@ -42,7 +42,8 @@ cr.define('print_preview', function() {
   function parseLocalDestination(destinationInfo) {
     const options = {
       description: destinationInfo.printerDescription,
-      isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter
+      isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter,
+      policies: destinationInfo.policies
     };
     if (destinationInfo.printerOptions) {
       // Convert options into cloud print tags format.

@@ -49,6 +49,7 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                           GetCapabilityCallback cb,
                           chromeos::PrinterSetupResult result);
 
+  Profile* const profile_;
   content::WebContents* const preview_web_contents_;
   chromeos::CupsPrintersManager* printers_manager_;
   scoped_refptr<chromeos::PpdProvider> ppd_provider_;

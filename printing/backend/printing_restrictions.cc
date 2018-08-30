@@ -6,6 +6,7 @@
 
 namespace printing {
 
+const char kAllowedColorModes[] = "allowedColorModes";
 const char kPageWidthUm[] = "WidthUm";
 const char kPageHeightUm[] = "HeightUm";
 

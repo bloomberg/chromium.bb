@@ -4,4 +4,13 @@
 
 Polymer({
   is: 'print-preview-settings-section',
+
+  properties: {
+    /** @type {boolean} */
+    managed: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+  },
 });

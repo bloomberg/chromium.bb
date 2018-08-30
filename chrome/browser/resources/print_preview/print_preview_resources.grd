@@ -195,7 +195,9 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_HTML"
                  file="new/settings_section.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_JS"
                  file="new/settings_section.js"
                  type="chrome_html" />
