@@ -1618,10 +1618,14 @@ void ProfileSyncService::ConfigureDataTypeManager(
   DCHECK(!configure_context.cache_guid.empty());
   DCHECK_NE(configure_context.reason, syncer::CONFIGURE_REASON_UNKNOWN);
 
+  // Note: When local Sync is enabled, then we want full-sync mode (not just
+  // transport), even though Sync-the-feature is not considered enabled.
+  bool use_transport_only_mode =
+      !IsSyncFeatureEnabled() && !IsLocalSyncEnabled();
+
   syncer::ModelTypeSet types = GetPreferredDataTypes();
-  // If Sync-the-feature isn't fully enabled, then only a subset of data types
-  // is supported.
-  if (!IsSyncFeatureEnabled() && !IsLocalSyncEnabled()) {
+  // In transport-only mode, only a subset of data types is supported.
+  if (use_transport_only_mode) {
     DCHECK(IsStandaloneTransportEnabled());
     syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
 
@@ -1645,9 +1649,9 @@ void ProfileSyncService::ConfigureDataTypeManager(
     kMaxValue = kTransport
   };
   UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypeManagerOption",
-                            IsSyncFeatureEnabled()
-                                ? ConfigureDataTypeManagerOption::kFeature
-                                : ConfigureDataTypeManagerOption::kTransport);
+                            use_transport_only_mode
+                                ? ConfigureDataTypeManagerOption::kTransport
+                                : ConfigureDataTypeManagerOption::kFeature);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
