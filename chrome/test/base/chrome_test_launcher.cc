@@ -7,12 +7,14 @@
 #include <memory>
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -34,6 +36,7 @@
 #include "ui/base/test/ui_controls.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif  // defined(OS_MACOSX)
 
@@ -130,7 +133,13 @@ int LaunchChromeTests(size_t parallel_jobs,
                       int argc,
                       char** argv) {
 #if defined(OS_MACOSX)
-  chrome_browser_application_mac::RegisterBrowserCrApp();
+  // Set up the path to the framework so resources can be loaded. This is also
+  // performed in ChromeTestSuite, but in browser tests that only affects the
+  // browser process. Child processes need access to the Framework bundle too.
+  base::FilePath path;
+  CHECK(base::PathService::Get(base::DIR_EXE, &path));
+  path = path.Append(chrome::kFrameworkName);
+  base::mac::SetOverrideFrameworkBundlePath(path);
 #endif
 
 #if defined(OS_WIN)
