@@ -37,6 +37,7 @@ const char kSessionManagerListStoredComponentPolicies[] =
     "ListStoredComponentPolicies";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
+const char kSessionManagerRetrievePrimarySession[] = "RetrievePrimarySession";
 const char kSessionManagerStartTPMFirmwareUpdate[] = "StartTPMFirmwareUpdate";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
 const char kSessionManagerHandleSupervisedUserCreationStarting[] =
