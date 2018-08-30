@@ -1722,6 +1722,13 @@ be describing additional metrics about the same event.
     Final state of WebMediaPlayerImpl instance. Records only immutable playback
     properties. Contains a PlaybackID which links to Media.BasicPlayback events.
   </summary>
+  <metric name="ContainerName">
+    <summary>
+      media::container_names::MediaContainerName enum value. Only recorded for
+      !IsMSE src=URL playbacks, this is the container of the media being played
+      back; E.g., mp4, avi, mp3, etc.
+    </summary>
+  </metric>
   <metric name="FinalPipelineStatus">
     <summary>
       media::PipelineStatus enum value. Always 0 if the playback succeeded; all

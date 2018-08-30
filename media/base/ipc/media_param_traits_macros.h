@@ -13,6 +13,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
+#include "media/base/container_names.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decode_status.h"
 #include "media/base/decrypt_config.h"
@@ -125,6 +126,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoRotation, media::VIDEO_ROTATION_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
+                          media::container_names::CONTAINER_MAX);
 
 IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::PrimaryID,

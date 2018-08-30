@@ -88,7 +88,7 @@ static void JNI_RecordCastAction_RecordCastMediaType(
   UMA_HISTOGRAM_ENUMERATION(
       "Cast.Sender.CastMediaType",
       static_cast<media::container_names::MediaContainerName>(media_type),
-      media::container_names::CONTAINER_MAX);
+      media::container_names::CONTAINER_MAX + 1);
 }
 
 static void JNI_RecordCastAction_RecordCastEndedTimeRemaining(

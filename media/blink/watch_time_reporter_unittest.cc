@@ -242,6 +242,8 @@ class WatchTimeReporterTest
     void SetTimeToMetadata(base::TimeDelta elapsed) override {}
     void SetTimeToFirstFrame(base::TimeDelta elapsed) override {}
     void SetTimeToPlayReady(base::TimeDelta elapsed) override {}
+    void SetContainerName(
+        container_names::MediaContainerName container_name) override {}
 
    private:
     WatchTimeReporterTest* parent_;
