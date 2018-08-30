@@ -29,14 +29,10 @@ class BrowserListRouterHelper : public BrowserListObserver,
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
   // TabStripModelObserver implementation.
-  void TabInsertedAt(TabStripModel* model,
-                     content::WebContents* web_contents,
-                     int index,
-                     bool foreground) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // |router_| owns |this|.
   SyncSessionsWebContentsRouter* router_;
