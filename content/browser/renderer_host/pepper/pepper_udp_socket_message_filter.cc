@@ -622,36 +622,12 @@ void PepperUDPSocketMessageFilter::StartPendingSend() {
   DCHECK(!pending_sends_.empty());
   DCHECK(socket_);
 
-  net::NetworkTrafficAnnotationTag annotation =
-      net::DefineNetworkTrafficAnnotation("pepper_udp_socket_message_filter",
-                                          R"(
-        semantics {
-          sender: "Chrome Plugin UDP Socket API"
-          description:
-            "Chrome plugins can use this API to send and receive data over the "
-            "network using UDP connections."
-          trigger: "A request from a plugin."
-          data: "Any data that the plugin sends."
-          destination: OTHER
-          destination_other:
-            "Data can be sent to any destination."
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "The only remaining plugin is Flash, so disabling it in Content "
-            "settings will prevent all use of UDP sockets by plugins."
-          policy_exception_justification:
-            "There is no single policy related to plugin use of UDP sockets, "
-            "but there are a number of policies that allow disabling plugins."
-        })");
-
   const PendingSend& pending_send = pending_sends_.front();
   // See OnMsgRecvFrom() for the reason why we use base::Unretained(this)
   // when calling |socket_| methods.
   socket_->SendTo(
       net::IPEndPoint(pending_send.address, pending_send.port),
-      pending_send.data, net::MutableNetworkTrafficAnnotationTag(annotation),
+      pending_send.data, pepper_socket_utils::PepperUDPNetworkAnnotationTag(),
       base::BindOnce(&PepperUDPSocketMessageFilter::OnSendToCompleted,
                      base::Unretained(this)));
 }

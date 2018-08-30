@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "content/public/common/socket_permission_request.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/c/pp_stdint.h"
 
 #if defined(OS_CHROMEOS)
@@ -71,6 +72,11 @@ void OpenTCPFirewallHole(const net::IPEndPoint& address,
 void OpenUDPFirewallHole(const net::IPEndPoint& address,
                          FirewallHoleOpenCallback callback);
 #endif  // defined(OS_CHROMEOS)
+
+// Annotations for TCP and UDP network requests. Defined here to make it easier
+// to keep them in sync.
+net::MutableNetworkTrafficAnnotationTag PepperTCPNetworkAnnotationTag();
+net::MutableNetworkTrafficAnnotationTag PepperUDPNetworkAnnotationTag();
 
 }  // namespace pepper_socket_utils
 

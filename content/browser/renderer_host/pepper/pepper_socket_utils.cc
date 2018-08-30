@@ -186,5 +186,94 @@ void OpenUDPFirewallHole(const net::IPEndPoint& address,
 }
 #endif  // defined(OS_CHROMEOS)
 
+net::MutableNetworkTrafficAnnotationTag PepperTCPNetworkAnnotationTag() {
+  return net::MutableNetworkTrafficAnnotationTag(
+      net::DefineNetworkTrafficAnnotation("pepper_tcp_socket",
+                                          R"(
+        semantics {
+          sender: "Pepper TCP Socket"
+          description:
+            "Pepper plugins use this API to send and receive data over the "
+            "network using TCP connections. This inteface is used by Flash and "
+            "PDF viewer, and Chrome Apps which use plugins to send/receive TCP "
+            "traffic (require Chrome Apps TCP socket permission). This "
+            "interface allows creation of client and server sockets."
+          trigger:
+            "A request from a Pepper plugin."
+          data: "Any data that the plugin sends."
+          destination: OTHER
+          destination_other:
+            "Data can be sent to any destination."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "These requests cannot be disabled, but will not happen if user "
+            "does not use Flash, internal PDF Viewer, or Chrome Apps that use "
+            "Pepper interface."
+          chrome_policy {
+            DefaultPluginsSetting {
+              DefaultPluginsSetting: 2
+            }
+          }
+          chrome_policy {
+            AlwaysOpenPdfExternally {
+              AlwaysOpenPdfExternally: true
+            }
+          }
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })"));
+}
+
+net::MutableNetworkTrafficAnnotationTag PepperUDPNetworkAnnotationTag() {
+  return net::MutableNetworkTrafficAnnotationTag(
+      net::DefineNetworkTrafficAnnotation("pepper_udp_socket",
+                                          R"(
+        semantics {
+          sender: "Pepper UDP Socket"
+          description:
+            "Pepper plugins use this API to send and receive data over the "
+            "network using UDP connections. This inteface is used by Flash and "
+            "PDF viewer, and Chrome Apps which use plugins to send/receive UDP "
+            "traffic (require Chrome Apps UDP socket permission)."
+          trigger:
+            "A request from a Pepper plugin."
+          data: "Any data that the plugin sends."
+          destination: OTHER
+          destination_other:
+            "Data can be sent to any destination."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "These requests cannot be disabled, but will not happen if user "
+            "does not use Flash, internal PDF Viewer, or Chrome Apps that use "
+            "Pepper interface."
+          chrome_policy {
+            DefaultPluginsSetting {
+              DefaultPluginsSetting: 2
+            }
+          }
+          chrome_policy {
+            AlwaysOpenPdfExternally {
+              AlwaysOpenPdfExternally: true
+            }
+          }
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })"));
+}
+
 }  // namespace pepper_socket_utils
 }  // namespace content
