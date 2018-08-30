@@ -156,11 +156,21 @@ void TranslateScript::OnScriptFetchComplete(bool success,
     base::StringAppendF(
         &data_, "var securityOrigin = '%s';", security_origin.spec().c_str());
 
-    // Append embedded translate.js and a remote element library.
+    // Load embedded translate.js.
     base::StringPiece str =
         ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_TRANSLATE_JS);
     str.AppendToString(&data_);
+
+#if defined(OS_IOS)
+    // Append snippet to install callbacks on translate.js if available.
+    const char* install_callbacks =
+        "if (installTranslateCallbacks) {"
+        "  installTranslateCallbacks();"
+        "}";
+    base::StringPiece(install_callbacks).AppendToString(&data_);
+#endif  // defined(OS_IOS)
+
     // Wrap |data| in try/catch block to handle unexpected script errors.
     const char* format =
         "try {"

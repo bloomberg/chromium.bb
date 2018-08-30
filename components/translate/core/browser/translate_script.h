@@ -29,7 +29,7 @@ class TranslateScript {
   TranslateScript();
   virtual ~TranslateScript();
 
-  // Returns the feched the translate script.
+  // Returns the fetched translate script.
   const std::string& data() { return data_; }
 
   // Used by unit-tests to override some defaults:
