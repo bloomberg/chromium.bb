@@ -56,6 +56,8 @@ constexpr SessionPreKeyArray kTestSessionPreKey = {
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 
+// TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
+#if !defined(OS_WIN)
 constexpr EidArray kSecondaryClientEid = {{0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
                                            0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
                                            0x03, 0x02, 0x01, 0x00}};
@@ -71,6 +73,7 @@ constexpr SessionPreKeyArray kSecondarySessionPreKey = {
     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
+#endif  // !defined(OS_WIN)
 
 // Below constants are used to construct MockBluetoothDevice for testing.
 constexpr char kTestBleDeviceAddress[] = "11:12:13:14:15:16";
@@ -369,6 +372,11 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
   scoped_task_environment_.RunUntilIdle();
 }
 
+// Windows currently does not support multiple EIDs, so the following tests are
+// not applicable.
+// TODO(https://crbug.com/837088): Support multiple EIDs on Windows and enable
+// these tests.
+#if !defined(OS_WIN)
 // Tests Cable discovery flow when multiple(2) sets of client/authenticator EIDs
 // are passed on from the relying party. We should expect 2 invocations of
 // BluetoothAdapter::RegisterAdvertisement().
@@ -468,6 +476,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(cable_discovery->advertisements_.empty());
 }
+#endif  // !defined(OS_WIN)
 
 TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
   auto cable_discovery = CreateDiscovery();
