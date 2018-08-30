@@ -113,6 +113,18 @@ class SVGMarkerData {
     FloatPoint position;      // The end point of the segment.
   };
 
+  static void ComputeQuadTangents(SegmentData& data,
+                                  const FloatPoint& start,
+                                  const FloatPoint& control,
+                                  const FloatPoint& end) {
+    data.start_tangent = control - start;
+    data.end_tangent = end - control;
+    if (data.start_tangent.IsZero())
+      data.start_tangent = data.end_tangent;
+    else if (data.end_tangent.IsZero())
+      data.end_tangent = data.start_tangent;
+  }
+
   SegmentData ExtractPathElementFeatures(const PathElement& element) const {
     SegmentData data;
     const FloatPoint* points = element.points;
@@ -121,11 +133,14 @@ class SVGMarkerData {
         data.position = points[2];
         data.start_tangent = points[0] - origin_;
         data.end_tangent = points[2] - points[1];
+        if (data.start_tangent.IsZero())
+          ComputeQuadTangents(data, points[0], points[1], points[2]);
+        else if (data.end_tangent.IsZero())
+          ComputeQuadTangents(data, origin_, points[0], points[1]);
         break;
       case kPathElementAddQuadCurveToPoint:
         data.position = points[1];
-        data.start_tangent = points[0] - origin_;
-        data.end_tangent = points[1] - points[0];
+        ComputeQuadTangents(data, origin_, points[0], points[1]);
         break;
       case kPathElementMoveToPoint:
       case kPathElementAddLineToPoint:
