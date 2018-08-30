@@ -83,6 +83,10 @@ std::unique_ptr<MockBluetoothDevice> CreateTestBluetoothDevice() {
       kTestBleDeviceAddress, true /* paired */, true /* connected */);
 }
 
+ACTION_P(ReturnFromAsyncCall, closure) {
+  closure.Run();
+}
+
 // Matcher to compare the content of advertisement data received from the
 // client.
 MATCHER_P2(IsAdvertisementContent,
@@ -218,11 +222,9 @@ class CableMockAdapter : public MockBluetoothAdapter {
             }));
   }
 
-  void ExpectSuccessCallbackToSetPowered() {
+  void ExpectSuccessCallbackToIsPowered() {
     EXPECT_CALL(*this, IsPresent()).WillOnce(::testing::Return(true));
-    EXPECT_CALL(*this, SetPowered(true, _, _))
-        .WillOnce(::testing::WithArg<1>(
-            [](const auto& callback) { callback.Run(); }));
+    EXPECT_CALL(*this, IsPowered()).WillOnce(::testing::Return(true));
   }
 
   void ExpectDiscoveryWithScanCallback() {
@@ -311,7 +313,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
 
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid);
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
@@ -330,7 +332,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
 
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid, true);
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
@@ -351,7 +353,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
   mock_adapter->ExpectDiscoveryWithScanCallback(kInvalidAuthenticatorEid);
@@ -375,7 +377,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
       std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid);
 
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
@@ -413,7 +415,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   Sequence sequence;
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid,
@@ -446,7 +448,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
   Sequence sequence;
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       false /* simulate_success */, kClientEid, kUuidFormattedClientEid,
       sequence);
@@ -469,7 +471,7 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
-  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectSuccessCallbackToIsPowered();
   mock_adapter->ExpectDiscoveryWithScanCallback();
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid,
@@ -506,11 +508,9 @@ TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(*mock_adapter, SetPowered)
-        .WillOnce(::testing::WithArg<2>([&quit](const auto& error_callback) {
-          error_callback.Run();
-          quit.Run();
-        }));
+    EXPECT_CALL(*mock_adapter, IsPowered)
+        .WillOnce(::testing::DoAll(ReturnFromAsyncCall(quit),
+                                   ::testing::Return(false)));
 
     BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
     cable_discovery->Start();
@@ -518,7 +518,6 @@ TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
   }
 
   mock_adapter->NotifyAdapterPoweredChanged(true);
-  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace device
