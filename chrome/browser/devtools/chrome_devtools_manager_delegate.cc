@@ -294,7 +294,8 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
       device_manager_ = AndroidDeviceManager::Create();
 
     AndroidDeviceManager::DeviceProviders providers;
-    providers.push_back(new TCPDeviceProvider(remote_locations));
+    providers.push_back(
+        new TCPDeviceProvider(remote_locations, GetDefaultBrowserContext()));
     device_manager_->SetDeviceProviders(providers);
 
     device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
