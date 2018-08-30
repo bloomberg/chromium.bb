@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

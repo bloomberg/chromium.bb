@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_MOVABLE_STRING_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_MOVABLE_STRING_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_
 
 #include <map>
 #include <set>
@@ -12,7 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 // MovableString represents a string that may be moved in memory, that it its
 // underlying memory address may change. Its content can be retrieved with the
@@ -26,9 +28,9 @@
 // Implementation note: the string content is not moved yet, it is merely
 // used to gather statistics.
 
-namespace WTF {
+namespace blink {
 
-class WTF_EXPORT MovableStringImpl final
+class PLATFORM_EXPORT MovableStringImpl final
     : public RefCounted<MovableStringImpl> {
  public:
   // Histogram buckets, exported for testing.
@@ -68,7 +70,7 @@ class WTF_EXPORT MovableStringImpl final
   DISALLOW_COPY_AND_ASSIGN(MovableStringImpl);
 };
 
-class WTF_EXPORT MovableString final {
+class PLATFORM_EXPORT MovableString final {
  public:
   MovableString() : impl_(base::MakeRefCounted<MovableStringImpl>(nullptr)) {}
   explicit MovableString(scoped_refptr<StringImpl>&& impl);
@@ -96,14 +98,12 @@ class WTF_EXPORT MovableString final {
 };
 
 // Per-thread registry of all MovableString instances. NOT thread-safe.
-class WTF_EXPORT MovableStringTable final {
+class PLATFORM_EXPORT MovableStringTable final {
  public:
   MovableStringTable();
   ~MovableStringTable();
 
-  static MovableStringTable& Instance() {
-    return WtfThreadData().GetMovableStringTable();
-  }
+  static MovableStringTable& Instance();
 
   scoped_refptr<MovableStringImpl> Add(scoped_refptr<StringImpl>&&);
 
@@ -130,10 +130,6 @@ class WTF_EXPORT MovableStringTable final {
   DISALLOW_COPY_AND_ASSIGN(MovableStringTable);
 };
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::MovableStringTable;
-using WTF::MovableString;
-using WTF::MovableStringImpl;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_MOVABLE_STRING_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MOVABLE_STRING_H_

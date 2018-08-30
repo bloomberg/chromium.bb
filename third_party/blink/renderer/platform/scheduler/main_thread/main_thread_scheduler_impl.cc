@@ -27,6 +27,7 @@
 #include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 
 namespace blink {
 namespace scheduler {

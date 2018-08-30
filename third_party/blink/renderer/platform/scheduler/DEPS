@@ -47,6 +47,7 @@ include_rules = [
   "+components/scheduling_metrics",
   "+services/metrics",
 
+  "+third_party/blink/renderer/platform/bindings/movable_string.h",
   "+third_party/blink/renderer/platform/cross_thread_functional.h",
   "+third_party/blink/renderer/platform/histogram.h",
   "+third_party/blink/renderer/platform/instrumentation",

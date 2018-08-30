@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SCRIPT_CACHED_METADATA_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SCRIPT_CACHED_METADATA_HANDLER_H_
 
+#include <memory>
+
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {

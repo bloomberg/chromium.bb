@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
@@ -57,7 +58,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 

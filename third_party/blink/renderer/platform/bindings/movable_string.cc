@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
-namespace WTF {
+namespace blink {
 
 namespace {
 
@@ -93,6 +94,12 @@ unsigned MovableString::CharactersSizeInBytes() const {
   return impl_->CharactersSizeInBytes();
 }
 
+// static
+MovableStringTable& MovableStringTable::Instance() {
+  static auto* table = new WTF::ThreadSpecific<MovableStringTable>();
+  return **table;
+}
+
 MovableStringTable::MovableStringTable() = default;
 MovableStringTable::~MovableStringTable() = default;
 
@@ -144,4 +151,4 @@ void MovableStringTable::MaybeParkAll() {
   UMA_HISTOGRAM_COUNTS_1000("Memory.MovableStringsCount", table_.size());
 }
 
-}  // namespace WTF
+}  // namespace blink
