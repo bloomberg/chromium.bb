@@ -41,6 +41,11 @@ class PaymentsManager {
    * @param {!PaymentsManager.CreditCardEntry} creditCard
    */
   saveCreditCard(creditCard) {}
+
+  /**
+   * Migrate the local credit cards.
+   */
+  migrateCreditCards() {}
 }
 
 /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
@@ -79,6 +84,11 @@ class PaymentsManagerImpl {
   /** @override */
   saveCreditCard(creditCard) {
     chrome.autofillPrivate.saveCreditCard(creditCard);
+  }
+
+  /** @override */
+  migrateCreditCards() {
+    chrome.autofillPrivate.migrateCreditCards();
   }
 }
 
@@ -315,11 +325,11 @@ Polymer({
 
   /**
    * Handles clicking on the "Migrate" button for migrate local credit cards.
-   * TODO(sujiezhu): Call the new autofill api function here to trigger credit
-   * cards migration when new api is ready. (https://crbug.com/852904).
    * @private
    */
-  onMigrateCreditCardsClick_: function() {},
+  onMigrateCreditCardsClick_: function() {
+    this.paymentsManager_.migrateCreditCards();
+  },
 
   /**
    * The 3-dot menu should not be shown if the card is entirely remote.
