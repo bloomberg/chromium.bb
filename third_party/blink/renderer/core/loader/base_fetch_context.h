@@ -61,6 +61,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   CreateWebSocketHandshakeThrottle() = 0;
 
   void AddInfoConsoleMessage(const String&, LogSource) const override;
+  void AddWarningConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;
   bool IsAdResource(const KURL&,
                     Resource::Type,

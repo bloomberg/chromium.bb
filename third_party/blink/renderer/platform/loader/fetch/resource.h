@@ -88,6 +88,53 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   WTF_MAKE_NONCOPYABLE(Resource);
 
  public:
+  // An enum representing whether a resource match with another resource.
+  // There are three kinds of status.
+  // - kOk, which represents the success.
+  // - kUnknownFailure, which represents miscellaneous failures. This includes
+  //   failures which cannot happen for preload matching (for example,
+  //   a failure due to non-cacheable request method cannot be happen for
+  //   preload matching).
+  // - other specific error status
+  enum class MatchStatus {
+    // Match succeeds.
+    kOk,
+
+    // Match fails because of an unknown reason.
+    kUnknownFailure,
+
+    // Subresource integrity value doesn't match.
+    kIntegrityMismatch,
+
+    // Match fails because the new request wants to load the content
+    // as a blob.
+    kBlobRequest,
+
+    // Match fails because loading image is disabled.
+    kImageLoadingDisabled,
+
+    // Match fails due to different synchronous flags.
+    kSynchronousFlagDoesNotMatch,
+
+    // Match fails due to different request modes.
+    kRequestModeDoesNotMatch,
+
+    // Match fails due to different request credentials modes.
+    kRequestCredentialsModeDoesNotMatch,
+
+    // Match fails because keepalive flag is set on either requests.
+    kKeepaliveSet,
+
+    // Match fails due to different request methods.
+    kRequestMethodDoesNotMatch,
+
+    // Match fails due to different request headers.
+    kRequestHeadersDoNotMatch,
+
+    // Match fails due to different image placeholder policies.
+    kImagePlaceholder,
+  };
+
   // |Type| enum values are used in UMAs, so do not change the values of
   // existing |Type|. When adding a new |Type|, append it at the end and update
   // |kLastResourceType|.
@@ -325,8 +372,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     response_.SetDecodedBodyLength(value);
   }
 
-  virtual bool CanReuse(
-      const FetchParameters&,
+  // Returns |kOk| when |this| can be resused for the given arguments.
+  virtual MatchStatus CanReuse(
+      const FetchParameters& params,
       scoped_refptr<const SecurityOrigin> new_source_origin) const;
 
   // If cache-aware loading is activated, this callback is called when the first

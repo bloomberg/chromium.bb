@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -1097,8 +1098,11 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
 
   Resource* resource = it->value;
 
-  if (resource->MustRefetchDueToIntegrityMetadata(params))
+  if (resource->MustRefetchDueToIntegrityMetadata(params)) {
+    if (!params.IsSpeculativePreload() && !params.IsLinkPreload())
+      PrintPreloadWarning(resource, Resource::MatchStatus::kIntegrityMismatch);
     return nullptr;
+  }
 
   if (params.IsSpeculativePreload())
     return resource;
@@ -1108,18 +1112,85 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
   }
 
   const ResourceRequest& request = params.GetResourceRequest();
-  if (request.DownloadToBlob())
+  if (request.DownloadToBlob()) {
+    PrintPreloadWarning(resource, Resource::MatchStatus::kBlobRequest);
     return nullptr;
+  }
 
-  if (IsImageResourceDisallowedToBeReused(*resource) ||
-      !resource->CanReuse(params, GetSourceOrigin(params.Options())))
+  if (IsImageResourceDisallowedToBeReused(*resource)) {
+    PrintPreloadWarning(resource, Resource::MatchStatus::kImageLoadingDisabled);
     return nullptr;
+  }
 
-  if (!resource->MatchPreload(params, Context().GetLoadingTaskRunner().get()))
+  const Resource::MatchStatus match_status =
+      resource->CanReuse(params, GetSourceOrigin(params.Options()));
+  if (match_status != Resource::MatchStatus::kOk) {
+    PrintPreloadWarning(resource, match_status);
     return nullptr;
+  }
+
+  if (!resource->MatchPreload(params, Context().GetLoadingTaskRunner().get())) {
+    PrintPreloadWarning(resource, Resource::MatchStatus::kUnknownFailure);
+    return nullptr;
+  }
+
   preloads_.erase(it);
   matched_preloads_.push_back(resource);
   return resource;
+}
+
+void ResourceFetcher::PrintPreloadWarning(Resource* resource,
+                                          Resource::MatchStatus status) {
+  if (!resource->IsLinkPreload())
+    return;
+
+  StringBuilder builder;
+  builder.Append("A preload for '");
+  builder.Append(resource->Url());
+  builder.Append("' is found, but is not used ");
+
+  switch (status) {
+    case Resource::MatchStatus::kOk:
+      NOTREACHED();
+      break;
+    case Resource::MatchStatus::kUnknownFailure:
+      builder.Append("due to an unknown reason.");
+      break;
+    case Resource::MatchStatus::kIntegrityMismatch:
+      builder.Append("due to an integrity mismatch.");
+      break;
+    case Resource::MatchStatus::kBlobRequest:
+      builder.Append("because the new request loads the content as a blob.");
+      break;
+    case Resource::MatchStatus::kImageLoadingDisabled:
+      builder.Append("because image loading is disabled.");
+      break;
+    case Resource::MatchStatus::kSynchronousFlagDoesNotMatch:
+      builder.Append("because the new request is synchronous.");
+      break;
+    case Resource::MatchStatus::kRequestModeDoesNotMatch:
+      builder.Append("because the request mode does not match. ");
+      builder.Append("Consider taking a look at crossorigin attribute.");
+      break;
+    case Resource::MatchStatus::kRequestCredentialsModeDoesNotMatch:
+      builder.Append("because the request credentials mode does not match. ");
+      builder.Append("Consider taking a look at crossorigin attribute.");
+      break;
+    case Resource::MatchStatus::kKeepaliveSet:
+      builder.Append("because the keepalive flag is set.");
+      break;
+    case Resource::MatchStatus::kRequestMethodDoesNotMatch:
+      builder.Append("because the request HTTP method does not match.");
+      break;
+    case Resource::MatchStatus::kRequestHeadersDoNotMatch:
+      builder.Append("because the request headers do not match.");
+      break;
+    case Resource::MatchStatus::kImagePlaceholder:
+      builder.Append("due to different image placeholder policies.");
+      break;
+  }
+  Context().AddWarningConsoleMessage(builder.ToString(),
+                                     FetchContext::kOtherSource);
 }
 
 void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
@@ -1245,8 +1316,9 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   if (is_static_data)
     return kUse;
 
-  if (!existing_resource.CanReuse(fetch_params,
-                                  GetSourceOrigin(fetch_params.Options()))) {
+  if (existing_resource.CanReuse(fetch_params,
+                                 GetSourceOrigin(fetch_params.Options())) !=
+      Resource::MatchStatus::kOk) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to Resource::CanReuse() "
                                  "returning false.";

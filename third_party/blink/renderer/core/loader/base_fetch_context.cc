@@ -193,6 +193,12 @@ void BaseFetchContext::AddInfoConsoleMessage(const String& message,
       ConvertLogSourceToMessageSource(source), kInfoMessageLevel, message));
 }
 
+void BaseFetchContext::AddWarningConsoleMessage(const String& message,
+                                                LogSource source) const {
+  AddConsoleMessage(ConsoleMessage::Create(
+      ConvertLogSourceToMessageSource(source), kWarningMessageLevel, message));
+}
+
 void BaseFetchContext::AddErrorConsoleMessage(const String& message,
                                               LogSource source) const {
   AddConsoleMessage(ConsoleMessage::Create(

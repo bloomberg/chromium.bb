@@ -184,15 +184,16 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
   return resource;
 }
 
-bool ImageResource::CanReuse(
+Resource::MatchStatus ImageResource::CanReuse(
     const FetchParameters& params,
     scoped_refptr<const SecurityOrigin> new_source_origin) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
   if (params.GetImageRequestOptimization() !=
           FetchParameters::kAllowPlaceholder &&
-      placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
-    return false;
+      placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
+    return MatchStatus::kImagePlaceholder;
+  }
 
   return Resource::CanReuse(params, std::move(new_source_origin));
 }

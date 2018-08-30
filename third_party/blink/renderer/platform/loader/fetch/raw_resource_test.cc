@@ -74,9 +74,9 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
 
   ResourceRequest png_request;
   png_request.SetHTTPAccept("image/png");
-
-  EXPECT_FALSE(
-      jpeg_resource->CanReuse(FetchParameters(png_request), source_origin));
+  EXPECT_NE(
+      jpeg_resource->CanReuse(FetchParameters(png_request), source_origin),
+      Resource::MatchStatus::kOk);
 }
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>,

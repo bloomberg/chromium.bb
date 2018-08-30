@@ -359,7 +359,7 @@ static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
   return headers.Contains(header_name);
 }
 
-bool RawResource::CanReuse(
+Resource::MatchStatus RawResource::CanReuse(
     const FetchParameters& new_fetch_parameters,
     scoped_refptr<const SecurityOrigin> new_source_origin) const {
   const ResourceRequest& new_request =
@@ -375,15 +375,17 @@ bool RawResource::CanReuse(
   for (const auto& header : new_headers) {
     AtomicString header_name = header.key;
     if (!ShouldIgnoreHeaderForCacheReuse(header_name) &&
-        header.value != old_headers.Get(header_name))
-      return false;
+        header.value != old_headers.Get(header_name)) {
+      return MatchStatus::kRequestHeadersDoNotMatch;
+    }
   }
 
   for (const auto& header : old_headers) {
     AtomicString header_name = header.key;
     if (!ShouldIgnoreHeaderForCacheReuse(header_name) &&
-        header.value != new_headers.Get(header_name))
-      return false;
+        header.value != new_headers.Get(header_name)) {
+      return MatchStatus::kRequestHeadersDoNotMatch;
+    }
   }
 
   return Resource::CanReuse(new_fetch_parameters, std::move(new_source_origin));

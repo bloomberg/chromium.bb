@@ -228,6 +228,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                       ResourceClient*);
 
   Resource* MatchPreload(const FetchParameters& params, Resource::Type);
+  void PrintPreloadWarning(Resource*, Resource::MatchStatus);
   void InsertAsPreloadIfNecessary(Resource*,
                                   const FetchParameters& params,
                                   Resource::Type);
