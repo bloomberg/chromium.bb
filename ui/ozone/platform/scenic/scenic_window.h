@@ -7,6 +7,8 @@
 
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <fuchsia/ui/viewsv1/cpp/fidl.h>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -88,8 +90,11 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   void UpdateSize();
 
+  // Handlers for Fuchsia input event specializations.
   bool OnMouseEvent(const fuchsia::ui::input::PointerEvent& event);
   bool OnKeyboardEvent(const fuchsia::ui::input::KeyboardEvent& event);
+  bool OnTouchEvent(const fuchsia::ui::input::PointerEvent& event);
+  bool OnFocusEvent(const fuchsia::ui::input::FocusEvent& event);
 
   ScenicWindowManager* const manager_;
   PlatformWindowDelegate* const delegate_;
