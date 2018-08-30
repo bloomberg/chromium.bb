@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
@@ -625,6 +626,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     if (!IsArcAllowedForProfile(profile))
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED;
   }
+
+  if (chromeos::DemoSession::IsDeviceInDemoMode())
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
   if (chromeos::switches::IsAssistantEnabled()) {
     const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,

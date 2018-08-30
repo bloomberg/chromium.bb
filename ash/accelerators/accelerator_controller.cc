@@ -111,6 +111,7 @@ using message_center::SystemNotificationWarningLevel;
 const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
 const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
 const char kPolicyDisabledToastId[] = "voice_interaction_policy_disabled";
+const char kDemoModeToastId[] = "demo_mode";
 const int kToastDurationMs = 2500;
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
@@ -701,6 +702,13 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       ShowToast(kPolicyDisabledToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
+      // Show a toast if voice interaction is disabled due to being in Demo
+      // Mode.
+      ShowToast(kDemoModeToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
     case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
