@@ -44,6 +44,12 @@ Polymer({
       type: String,
       computed: 'computeSiteDescription_(model)',
     },
+
+    /** @private */
+    showPolicyPrefIndicator_: {
+      type: Boolean,
+      computed: 'computeShowPolicyPrefIndicator_(model)',
+    },
   },
 
   /** @private */
@@ -111,6 +117,16 @@ Polymer({
       return loadTimeData.getString('incognitoSite');
     }
     return displayName;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowPolicyPrefIndicator_: function() {
+    return this.model.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED &&
+        !!this.model.controlledBy;
   },
 
   /** @private */
