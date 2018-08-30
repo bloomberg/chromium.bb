@@ -151,8 +151,8 @@ class URL_EXPORT GURL {
   //
   // It is an error to resolve a URL relative to an invalid URL. The result
   // will be the empty URL.
-  GURL Resolve(const std::string& relative) const;
-  GURL Resolve(const base::string16& relative) const;
+  GURL Resolve(base::StringPiece relative) const;
+  GURL Resolve(base::StringPiece16 relative) const;
 
   // Creates a new GURL by replacing the current URL's components with the
   // supplied versions. See the Replacements class in url_canon.h for more.
