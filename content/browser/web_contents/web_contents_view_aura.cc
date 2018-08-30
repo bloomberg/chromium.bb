@@ -422,12 +422,8 @@ class WebContentsViewAura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    if (key != aura::client::kMirroringEnabledKey)
-      return;
-    if (window->GetProperty(aura::client::kMirroringEnabledKey))
-      view_->web_contents_->IncrementCapturerCount(gfx::Size());
-    else
-      view_->web_contents_->DecrementCapturerCount();
+    if (key == aura::client::kMirroringEnabledKey)
+      view_->UpdateWebContentsVisibility();
   }
 
   // Overridden WindowTreeHostObserver:
@@ -759,6 +755,25 @@ void WebContentsViewAura::CreateAuraWindow(aura::Window* context) {
   // 2) guests' window bounds are supposed to come from its embedder.
   if (!BrowserPluginGuest::IsGuest(web_contents_))
     window_observer_.reset(new WindowObserver(this));
+}
+
+void WebContentsViewAura::UpdateWebContentsVisibility() {
+  web_contents_->UpdateWebContentsVisibility(GetVisibility());
+}
+
+Visibility WebContentsViewAura::GetVisibility() const {
+  // aura::client::kMirroringEnabledKey indicates that the window is displayed
+  // in Alt-Tab view on ChromeOS.
+  if (window_->occlusion_state() == aura::Window::OcclusionState::VISIBLE ||
+      window_->GetProperty(aura::client::kMirroringEnabledKey)) {
+    return Visibility::VISIBLE;
+  }
+
+  if (window_->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
+    return Visibility::OCCLUDED;
+
+  DCHECK_EQ(window_->occlusion_state(), aura::Window::OcclusionState::HIDDEN);
+  return Visibility::HIDDEN;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1100,12 +1115,7 @@ void WebContentsViewAura::OnWindowTargetVisibilityChanged(bool visible) {
 
 void WebContentsViewAura::OnWindowOcclusionChanged(
     aura::Window::OcclusionState occlusion_state) {
-  web_contents_->UpdateWebContentsVisibility(
-      occlusion_state == aura::Window::OcclusionState::VISIBLE
-          ? content::Visibility::VISIBLE
-          : (occlusion_state == aura::Window::OcclusionState::OCCLUDED
-                 ? content::Visibility::OCCLUDED
-                 : content::Visibility::HIDDEN));
+  UpdateWebContentsVisibility();
 }
 
 bool WebContentsViewAura::HasHitTestMask() const {
