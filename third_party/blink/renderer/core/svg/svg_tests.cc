@@ -53,11 +53,18 @@ SVGStringListTearOff* SVGTests::systemLanguage() {
   return system_language_->TearOff();
 }
 
+static bool IsLangTagPrefix(const String& lang_tag, const String& language) {
+  if (!lang_tag.StartsWithIgnoringASCIICase(language))
+    return false;
+  return lang_tag.length() == language.length() ||
+         lang_tag[language.length()] == '-';
+}
+
 bool SVGTests::IsValid() const {
   if (system_language_->IsSpecified()) {
     bool match_found = false;
-    for (const auto& value : system_language_->Value()->Values()) {
-      if (value.length() == 2 && DefaultLanguage().StartsWith(value)) {
+    for (const auto& lang_tag : system_language_->Value()->Values()) {
+      if (IsLangTagPrefix(lang_tag, DefaultLanguage())) {
         match_found = true;
         break;
       }
