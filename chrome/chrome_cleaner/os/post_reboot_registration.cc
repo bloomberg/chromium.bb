@@ -71,8 +71,8 @@ bool PostRebootRegistration::RegisterRunOnceOnRestart(
     return false;
   }
 
-  VLOG(1) << "Successfully registered RunOnce value with: "
-          << SanitizeCommandLine(command_line);
+  LOG(INFO) << "Successfully registered RunOnce value with: "
+            << SanitizeCommandLine(command_line);
 
   return true;
 }

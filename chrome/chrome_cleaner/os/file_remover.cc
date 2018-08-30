@@ -45,7 +45,7 @@ void DeleteEmptyDirectories(base::FilePath directory) {
     // Empty directories deleted in this cleanup are not logged in the matched
     // folders list for the corresponding UwS, because they are not necessarily
     // matched by any rule by the scanner.
-    VLOG(1) << "Deleting empty directory " << SanitizePath(directory);
+    LOG(INFO) << "Deleting empty directory " << SanitizePath(directory);
     if (!base::DeleteFile(directory, /*recursive=*/false))
       break;
     directory = directory.DirName();

@@ -26,9 +26,11 @@ namespace {
 // Construct paths from a randomly-generated GUID, which is unlikely to
 // conflict with anything else.
 const wchar_t kRegistryKeyPathEnvTest[] =
-    L"environment\\4ee21cdb-ecc5-47d6-aadc-342ee9dcb463";
+    L"environment\\chrome-cleanup-tool-test-4ee21cdb-ecc5-47d6-aadc-"
+    L"342ee9dcb463";
 const wchar_t kRegistryKeyPathEnvTestUpCase[] =
-    L"ENVIRONMENT\\4EE21CDB-ECC5-47D6-AADC-342EE9DCB463";
+    L"ENVIRONMENT\\CHROME-CLEANUP-TOOL-TEST-4EE21CDB-ECC5-47D6-AADC-"
+    L"342EE9DCB463";
 
 const wchar_t kRegistryKeyPathClsidTest[] =
     L"software\\classes\\clsid\\{4ee21cdb-ecc5-47d6-aadc-342ee9dcb463}";

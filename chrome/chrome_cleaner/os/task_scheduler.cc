@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -324,7 +325,7 @@ class TaskSchedulerV2 : public TaskScheduler {
     if (!root_task_folder_)
       return false;
 
-    VLOG(1) << "Delete Task '" << task_name << "'.";
+    LOG(INFO) << "Delete Task '" << task_name << "'.";
 
     HRESULT hr =
         root_task_folder_->DeleteTask(base::win::ScopedBstr(task_name), 0);
@@ -490,11 +491,12 @@ class TaskSchedulerV2 : public TaskScheduler {
         task_trigger_type = TASK_TRIGGER_DAILY;
         if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                 kLogUploadRetryIntervalSwitch)) {
-          base::string16 interval_switch(base::StringPrintf(
-              L"PT%lsM",
-              base::CommandLine::ForCurrentProcess()
-                  ->GetSwitchValueNative(kLogUploadRetryIntervalSwitch)
-                  .c_str()));
+          // String format: PT%lsM
+          const base::string16 interval_switch = base::StrCat(
+              {L"PT",
+               base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+                   kLogUploadRetryIntervalSwitch),
+               L"M"});
           LOG(WARNING) << "Command line switch overriding retry interval to: "
                        << interval_switch;
           repetition_interval.Reset(::SysAllocString(interval_switch.c_str()));
@@ -648,7 +650,8 @@ class TaskSchedulerV2 : public TaskScheduler {
 
     DCHECK(IsTaskRegistered(task_name));
 
-    VLOG(1) << "Successfully registered: " << SanitizeCommandLine(run_command);
+    LOG(INFO) << "Successfully registered: "
+              << SanitizeCommandLine(run_command);
     return true;
   }
 

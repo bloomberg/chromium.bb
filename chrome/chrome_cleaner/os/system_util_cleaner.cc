@@ -209,7 +209,7 @@ bool IsPrivilegeEnabled(const wchar_t* privilege_name) {
 
 bool SendStopToService(const wchar_t* service_name) {
   DCHECK(service_name);
-  VLOG(1) << "Stopping service '" << service_name << "'.";
+  LOG(INFO) << "Stopping service '" << service_name << "'.";
 
   ScopedServiceHandle service;
   if (!service.OpenService(service_name, SC_MANAGER_ALL_ACCESS, SERVICE_STOP))
@@ -222,7 +222,7 @@ bool SendStopToService(const wchar_t* service_name) {
   SERVICE_STATUS service_state;
   if (!::ControlService(service.get(), SERVICE_CONTROL_STOP, &service_state)) {
     if (::GetLastError() == ERROR_SERVICE_NOT_ACTIVE) {
-      VLOG(1) << "Service '" << service_name << "' is not active.";
+      LOG(INFO) << "Service '" << service_name << "' is not active.";
       return true;
     }
     PLOG(WARNING) << "Control service failed: could not stop the service.";
@@ -258,7 +258,7 @@ bool IsProcessRunning(const wchar_t* executable) {
 
 bool WaitForProcessesStopped(const wchar_t* executable) {
   DCHECK(executable);
-  VLOG(1) << "Wait for processes '" << executable << "'.";
+  LOG(INFO) << "Wait for processes '" << executable << "'.";
 
   // Wait until the process is completely stopped.
   for (unsigned int iteration = 0; iteration < kMaxProcessQueryIterations;
@@ -294,7 +294,7 @@ bool DoesServiceExist(const wchar_t* service_name) {
 
 bool WaitForServiceStopped(const wchar_t* service_name) {
   DCHECK(service_name);
-  VLOG(1) << "Wait for service '" << service_name << "'.";
+  LOG(INFO) << "Wait for service '" << service_name << "'.";
 
   ScopedServiceHandle service;
   if (!service.OpenService(service_name, SC_MANAGER_ALL_ACCESS,
@@ -348,7 +348,7 @@ bool StopService(const wchar_t* service_name) {
 
 bool DeleteService(const wchar_t* service_name) {
   DCHECK(service_name);
-  VLOG(1) << "Delete service '" << service_name << "'.";
+  LOG(INFO) << "Delete service '" << service_name << "'.";
 
   // Attempt to stop the service before deleting it, but don't worry if it
   // doesn't stop.

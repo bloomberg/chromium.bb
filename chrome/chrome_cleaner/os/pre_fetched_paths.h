@@ -35,6 +35,15 @@ class PreFetchedPaths {
   base::FilePath GetExecutablePath() const;
   base::FilePath GetProgramFilesFolder() const;
   base::FilePath GetWindowsFolder() const;
+  base::FilePath GetCommonAppDataFolder() const;
+  base::FilePath GetLocalAppDataFolder() const;
+  base::FilePath GetCsidlProgramFilesFolder() const;
+  base::FilePath GetCsidlProgramFilesX86Folder() const;
+  base::FilePath GetCsidlWindowsFolder() const;
+  base::FilePath GetCsidlStartupFolder() const;
+  base::FilePath GetCsidlSystemFolder() const;
+  base::FilePath GetCsidlCommonAppDataFolder() const;
+  base::FilePath GetCsidlLocalAppDataFolder() const;
 
  protected:
   PreFetchedPaths();

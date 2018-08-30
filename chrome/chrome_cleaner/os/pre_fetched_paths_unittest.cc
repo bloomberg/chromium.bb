@@ -4,6 +4,12 @@
 
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 
+#include <shlobj.h>
+
+#include "base/base_paths_win.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+#include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -16,6 +22,52 @@ TEST(PreFetchedPathsTest, PathsArePreFetched) {
 
   EXPECT_FALSE(pre_fetched_paths->GetExecutablePath().empty());
   EXPECT_FALSE(pre_fetched_paths->GetProgramFilesFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetWindowsFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCommonAppDataFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetLocalAppDataFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlProgramFilesFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlProgramFilesX86Folder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlWindowsFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlStartupFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlSystemFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlCommonAppDataFolder().empty());
+  EXPECT_FALSE(pre_fetched_paths->GetCsidlLocalAppDataFolder().empty());
+}
+
+TEST(PreFetchedPathsTest, CheckExpectedPaths) {
+  PreFetchedPaths* pre_fetched_paths = PreFetchedPaths::GetInstance();
+  // Note: pre_fetched_paths->Initialized() is already called in test_main.cc.
+
+  auto GetExpectedPath = [](int key) -> base::FilePath {
+    base::FilePath expected_path;
+    CHECK(base::PathService::Get(key, &expected_path));
+    return expected_path;
+  };
+
+  EXPECT_EQ(GetExpectedPath(base::FILE_EXE),
+            pre_fetched_paths->GetExecutablePath());
+  EXPECT_EQ(GetExpectedPath(base::DIR_PROGRAM_FILES),
+            pre_fetched_paths->GetProgramFilesFolder());
+  EXPECT_EQ(GetExpectedPath(base::DIR_WINDOWS),
+            pre_fetched_paths->GetWindowsFolder());
+  EXPECT_EQ(GetExpectedPath(base::DIR_COMMON_APP_DATA),
+            pre_fetched_paths->GetCommonAppDataFolder());
+  EXPECT_EQ(GetExpectedPath(base::DIR_LOCAL_APP_DATA),
+            pre_fetched_paths->GetLocalAppDataFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_PROGRAM_FILES)),
+            pre_fetched_paths->GetCsidlProgramFilesFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_PROGRAM_FILESX86)),
+            pre_fetched_paths->GetCsidlProgramFilesX86Folder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_WINDOWS)),
+            pre_fetched_paths->GetCsidlWindowsFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_STARTUP)),
+            pre_fetched_paths->GetCsidlStartupFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_SYSTEM)),
+            pre_fetched_paths->GetCsidlSystemFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_COMMON_APPDATA)),
+            pre_fetched_paths->GetCsidlCommonAppDataFolder());
+  EXPECT_EQ(GetExpectedPath(CsidlToPathServiceKey(CSIDL_LOCAL_APPDATA)),
+            pre_fetched_paths->GetCsidlLocalAppDataFolder());
 }
 
 }  // namespace
