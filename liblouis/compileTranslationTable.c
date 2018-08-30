@@ -3815,8 +3815,7 @@ _lou_resolveTable(const char *tableList, const char *base) {
  *
  */
 void EXPORT_CALL
-lou_registerTableResolver(
-		char **(*resolver)(const char *tableList, const char *base)) {
+lou_registerTableResolver(char **(*resolver)(const char *tableList, const char *base)) {
 	tableResolver = resolver;
 }
 
