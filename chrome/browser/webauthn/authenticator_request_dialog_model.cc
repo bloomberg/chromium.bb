@@ -15,40 +15,55 @@ namespace {
 // Attempts to auto-select the most likely transport that will be used to
 // service this request, or returns base::nullopt if unsure.
 base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
-    device::FidoRequestHandlerBase::TransportAvailabilityInfo
+    const device::FidoRequestHandlerBase::TransportAvailabilityInfo&
         transport_availability,
     base::Optional<device::FidoTransportProtocol> last_used_transport) {
+  base::flat_set<AuthenticatorTransport> candidate_transports(
+      transport_availability.available_transports);
+
+  // As an exception, we can tell in advance if using Touch Id will succeed. If
+  // yes, always auto-select that transport over all other considerations for
+  // GetAssertion operations; and de-select it if it will not work.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      base::ContainsKey(transport_availability.available_transports,
+      base::ContainsKey(candidate_transports,
                         device::FidoTransportProtocol::kInternal)) {
     // For GetAssertion requests, auto advance to Touch ID if the keychain
     // contains one of the allowedCredentials.
-    if (transport_availability.has_recognized_mac_touch_id_credential) {
+    if (transport_availability.has_recognized_mac_touch_id_credential)
       return device::FidoTransportProtocol::kInternal;
-    }
+
     // Otherwise make sure we never return Touch ID (unless there is no other
     // option, in which case we auto advance to a special error screen).
-    if (transport_availability.available_transports.size() == 1) {
+    candidate_transports.erase(device::FidoTransportProtocol::kInternal);
+    if (candidate_transports.empty())
       return device::FidoTransportProtocol::kInternal;
-    }
-    transport_availability.available_transports.erase(
-        device::FidoTransportProtocol::kInternal);
   }
 
-  // For GetAssertion call, if the |last_used_transport| is available, use that.
+  // If caBLE is listed as one of the allowed transports, it indicates that the
+  // RP has bothered to supply the |cable_extension|. Respect that and always
+  // select caBLE in that case for GetAssertion operations.
+  if (transport_availability.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      base::ContainsKey(
+          candidate_transports,
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
+    return AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy;
+  }
+
+  // Otherwise, for GetAssertion calls, if the |last_used_transport| is
+  // available, use that.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
       last_used_transport &&
-      base::ContainsKey(transport_availability.available_transports,
-                        *last_used_transport)) {
+      base::ContainsKey(candidate_transports, *last_used_transport)) {
     return *last_used_transport;
   }
 
-  // If there is only one transport available we can use, select that, instead
-  // of showing a transport selection screen with only a single transport.
-  if (transport_availability.available_transports.size() == 1) {
-    return *transport_availability.available_transports.begin();
+  // Finally, if there is only one transport available we can use, select that,
+  // instead of showing a transport selection screen with only a single item.
+  if (candidate_transports.size() == 1) {
+    return *candidate_transports.begin();
   }
 
   return base::nullopt;
