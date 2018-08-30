@@ -776,6 +776,13 @@ void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
     enabled_state_observer_list_.erase(it);
 }
 
+void TraceLog::AddOwnedEnabledStateObserver(
+    std::unique_ptr<EnabledStateObserver> listener) {
+  AutoLock lock(lock_);
+  enabled_state_observer_list_.push_back(listener.get());
+  owned_enabled_state_observer_copy_.push_back(std::move(listener));
+}
+
 bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
   AutoLock lock(lock_);
   return ContainsValue(enabled_state_observer_list_, listener);
