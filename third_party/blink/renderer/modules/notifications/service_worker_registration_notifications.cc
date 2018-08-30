@@ -6,7 +6,6 @@
 
 #include <utility>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -55,8 +54,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     return ScriptPromise();
   }
 
-  // Validate the developer-provided options to get the WebNotificationData.
-  WebNotificationData data = CreateWebNotificationData(
+  // Validate the developer-provided options to get the NotificationData.
+  mojom::blink::NotificationDataPtr data = CreateNotificationData(
       execution_context, title, options, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
@@ -74,7 +73,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   ScriptPromise promise = resolver->Promise();
 
   ServiceWorkerRegistrationNotifications::From(execution_context, registration)
-      .PrepareShow(data, resolver);
+      .PrepareShow(std::move(data), resolver);
 
   return promise;
 }
@@ -125,28 +124,28 @@ ServiceWorkerRegistrationNotifications::From(
 }
 
 void ServiceWorkerRegistrationNotifications::PrepareShow(
-    const WebNotificationData& data,
+    mojom::blink::NotificationDataPtr data,
     ScriptPromiseResolver* resolver) {
   scoped_refptr<const SecurityOrigin> origin =
       GetExecutionContext()->GetSecurityOrigin();
   NotificationResourcesLoader* loader = new NotificationResourcesLoader(
       WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
-                WrapWeakPersistent(this), std::move(origin), data,
+                WrapWeakPersistent(this), std::move(origin), data->Clone(),
                 WrapPersistent(resolver)));
   loaders_.insert(loader);
-  loader->Start(GetExecutionContext(), data);
+  loader->Start(GetExecutionContext(), *data);
 }
 
 void ServiceWorkerRegistrationNotifications::DidLoadResources(
     scoped_refptr<const SecurityOrigin> origin,
-    const WebNotificationData& data,
+    mojom::blink::NotificationDataPtr data,
     ScriptPromiseResolver* resolver,
     NotificationResourcesLoader* loader) {
   DCHECK(loaders_.Contains(loader));
 
   NotificationManager::From(GetExecutionContext())
-      ->DisplayPersistentNotification(registration_->WebRegistration(), data,
-                                      loader->GetResources(),
+      ->DisplayPersistentNotification(registration_->WebRegistration(),
+                                      std::move(data), loader->GetResources(),
                                       WrapPersistent(resolver));
   loaders_.erase(loader);
 }

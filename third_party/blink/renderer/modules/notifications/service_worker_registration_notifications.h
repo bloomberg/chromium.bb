@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -26,7 +27,6 @@ class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
 class ServiceWorkerRegistration;
-struct WebNotificationData;
 
 class ServiceWorkerRegistrationNotifications final
     : public GarbageCollected<ServiceWorkerRegistrationNotifications>,
@@ -60,11 +60,11 @@ class ServiceWorkerRegistrationNotifications final
       ExecutionContext* context,
       ServiceWorkerRegistration& registration);
 
-  void PrepareShow(const WebNotificationData& data,
+  void PrepareShow(mojom::blink::NotificationDataPtr data,
                    ScriptPromiseResolver* resolver);
 
   void DidLoadResources(scoped_refptr<const SecurityOrigin> origin,
-                        const WebNotificationData& data,
+                        mojom::blink::NotificationDataPtr data,
                         ScriptPromiseResolver* resolver,
                         NotificationResourcesLoader* loader);
 

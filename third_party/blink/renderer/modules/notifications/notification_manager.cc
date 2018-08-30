@@ -7,7 +7,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
@@ -114,13 +113,13 @@ void NotificationManager::OnPermissionServiceConnectionError() {
 
 void NotificationManager::DisplayNonPersistentNotification(
     const String& token,
-    const WebNotificationData& notification_data,
+    mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
     mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
   DCHECK(!token.IsEmpty());
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
-      token, notification_data, std::move(notification_resources),
+      token, std::move(notification_data), std::move(notification_resources),
       std::move(event_listener));
 }
 
@@ -131,11 +130,14 @@ void NotificationManager::CloseNonPersistentNotification(const String& token) {
 
 void NotificationManager::DisplayPersistentNotification(
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    const blink::WebNotificationData& notification_data,
+    mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
     ScriptPromiseResolver* resolver) {
+  DCHECK(notification_data);
   DCHECK(notification_resources);
-  DCHECK_EQ(notification_data.actions.size(),
+  DCHECK_EQ(notification_data->actions.has_value()
+                ? notification_data->actions->size()
+                : 0,
             notification_resources->action_icons.has_value()
                 ? notification_resources->action_icons->size()
                 : 0);
@@ -148,7 +150,8 @@ void NotificationManager::DisplayPersistentNotification(
   // If the size exceeds this limit, reject the showNotification() promise. This
   // is outside of the boundaries set by the specification, but it gives authors
   // an indication that something has gone wrong.
-  size_t author_data_size = notification_data.data.size();
+  size_t author_data_size =
+      notification_data->data.has_value() ? notification_data->data->size() : 0;
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, notification_data_size_histogram,
@@ -162,8 +165,8 @@ void NotificationManager::DisplayPersistentNotification(
   }
 
   GetNotificationService()->DisplayPersistentNotification(
-      service_worker_registration->RegistrationId(), notification_data,
-      std::move(notification_resources),
+      service_worker_registration->RegistrationId(),
+      std::move(notification_data), std::move(notification_resources),
       WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
                 WrapPersistent(this), WrapPersistent(resolver)));
 }
@@ -202,7 +205,7 @@ void NotificationManager::GetNotifications(
 void NotificationManager::DidGetNotifications(
     ScriptPromiseResolver* resolver,
     const Vector<String>& notification_ids,
-    const Vector<WebNotificationData>& notification_datas) {
+    Vector<mojom::blink::NotificationDataPtr> notification_datas) {
   DCHECK_EQ(notification_ids.size(), notification_datas.size());
 
   HeapVector<Member<Notification>> notifications;
@@ -211,7 +214,7 @@ void NotificationManager::DidGetNotifications(
   for (size_t i = 0; i < notification_ids.size(); ++i) {
     notifications.push_back(Notification::Create(
         resolver->GetExecutionContext(), notification_ids[i],
-        notification_datas[i], true /* showing */));
+        std::move(notification_datas[i]), true /* showing */));
   }
 
   resolver->Resolve(notifications);

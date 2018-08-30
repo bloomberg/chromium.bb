@@ -143,7 +143,7 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
          content::PlatformNotificationData* platform_notification_data) {
   // TODO(https://crbug.com/798466): Read the data directly into
   // platform_notification_data.data once it stores a vector of ints not chars.
-  std::vector<int8_t> data;
+  std::vector<uint8_t> data;
 
   if (!notification_data.ReadTitle(&platform_notification_data->title) ||
       !notification_data.ReadDirection(

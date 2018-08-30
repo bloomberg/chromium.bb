@@ -20,9 +20,8 @@
 namespace blink {
 
 class ExecutionContext;
-struct WebNotificationData;
 
-// Fetches the resources specified in a given WebNotificationData. Uses a
+// Fetches the resources specified in a given NotificationData. Uses a
 // callback to notify the caller when all fetches have finished.
 class MODULES_EXPORT NotificationResourcesLoader final
     : public GarbageCollectedFinalized<NotificationResourcesLoader> {
@@ -38,13 +37,13 @@ class MODULES_EXPORT NotificationResourcesLoader final
   explicit NotificationResourcesLoader(CompletionCallback completion_callback);
   ~NotificationResourcesLoader();
 
-  // Starts fetching the resources specified in the given WebNotificationData.
+  // Starts fetching the resources specified in the given NotificationData.
   // If all the urls for the resources are empty or invalid,
   // |m_completionCallback| will be run synchronously, otherwise it will be
   // run asynchronously when all fetches have finished. Should not be called
   // more than once.
   void Start(ExecutionContext* context,
-             const WebNotificationData& notification_data);
+             const mojom::blink::NotificationData& notification_data);
 
   // Returns a new NotificationResourcesPtr populated with the resources that
   // have been fetched.
