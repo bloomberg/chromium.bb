@@ -942,7 +942,7 @@ void AUAudioInputStream::SetOutputDeviceForAec(
 
     if (output_subdevice_id == kAudioObjectUnknown) {
       log_callback_.Run(base::StringPrintf(
-          "AU in: Unable to find an output subdevice in aggregate devie '%s'",
+          "AU in: Unable to find an output subdevice in aggregate device '%s'",
           output_device_id.c_str()));
       return;
     }
