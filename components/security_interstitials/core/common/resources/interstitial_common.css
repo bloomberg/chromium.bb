@@ -4,7 +4,7 @@
 
 button {
   border: 0;
-  border-radius: 2px;
+  border-radius: 4px;
   box-sizing: border-box;
   color: #fff;
   cursor: pointer;
@@ -28,11 +28,11 @@ button {
 .pdf button,
 .ssl button,
 .safe-browsing-billing button {
-  background: rgb(66, 133, 244);
+  background: var(--google-blue-600);
 }
 
 button:active {
-  background: rgb(50, 102, 213);
+  background: var(--google-blue-700);
   outline: 0;
 }
 
@@ -80,6 +80,7 @@ button:hover {
   color: #646464;
   font-size: .86667em;
   text-transform: uppercase;
+  margin-top: 12px;
 }
 
 #error-debugging-info {
@@ -211,12 +212,6 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 }
 
-@media (max-height: 600px) {
-  .error-code {
-    margin-top: 10px;
-  }
-}
-
 @media (max-width: 420px) {
   button,
   [dir='rtl'] button,
@@ -311,6 +306,14 @@ input[type=checkbox]:checked ~ .checkbox::before {
   #details-button:hover {
     box-shadow: none;
   }
+
+  button {
+    padding: 16px 24px;
+  }
+
+  button.small-link {
+    color: var(--google-blue-600);
+  }
 }
 
 @media (max-width: 420px) and (orientation: portrait),
@@ -334,10 +337,6 @@ input[type=checkbox]:checked ~ .checkbox::before {
     box-sizing: border-box;
     padding-bottom: 8px;
     width: 100%;
-  }
-
-  .error-code {
-    margin-top: 0;
   }
 
   #details {
@@ -460,6 +459,14 @@ input[type=checkbox]:checked ~ .checkbox::before {
     padding-right: 0;
     position: relative;
     width: 100%;
+  }
+
+  button {
+    padding: 16px 24px;
+  }
+
+  button.small-link {
+    color: var(--google-blue-600);
   }
 }
 

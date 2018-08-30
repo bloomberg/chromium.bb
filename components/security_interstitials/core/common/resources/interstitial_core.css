@@ -7,6 +7,8 @@ a {
 }
 
 body {
+  --google-blue-600: #1A73E8;
+  --google-blue-700: #1967D2;
   background-color: #fff;
   color: rgb(100, 100, 100);
   word-wrap: break-word;
