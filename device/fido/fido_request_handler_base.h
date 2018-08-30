@@ -136,7 +136,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   //  per-device tasks are cancelled.
   // https://w3c.github.io/webauthn/#iface-pkcredential
   void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
-  void OnBluetoothAdapterEnumerated(bool is_present, bool is_powered_on);
+  void OnBluetoothAdapterEnumerated(bool is_present,
+                                    bool is_powered_on,
+                                    bool can_power_on);
   void OnBluetoothAdapterPowerChanged(bool is_powered_on);
   void PowerOnBluetoothAdapter();
 
