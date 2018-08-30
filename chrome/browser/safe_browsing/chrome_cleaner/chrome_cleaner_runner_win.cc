@@ -146,6 +146,10 @@ ChromeCleanerRunner::ChromeCleanerRunner(
   std::string reboot_prompt_type = base::IntToString(GetRebootPromptType());
   cleaner_command_line_.AppendSwitchASCII(
       chrome_cleaner::kRebootPromptMethodSwitch, reboot_prompt_type);
+
+  if (base::FeatureList::IsEnabled(kChromeCleanupQuarantineFeature)) {
+    cleaner_command_line_.AppendSwitch(chrome_cleaner::kQuarantineSwitch);
+  }
 }
 
 ChromeCleanerRunner::ProcessStatus

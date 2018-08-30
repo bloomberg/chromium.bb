@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
@@ -64,12 +65,14 @@ enum class ReporterEngine {
 //       process running in scanning mode.
 // - chrome_prompt (ChromePromptValue): indicates if this is a user-initiated
 //       run or if the user was prompted.
+// - quarantine_enabled (bool): indicates if the quarantine feature is enabled.
 class ChromeCleanerRunnerSimpleTest
     : public testing::TestWithParam<
           std::tuple<ChromeCleanerRunner::ChromeMetricsStatus,
                      ReporterEngine,
                      bool,
-                     ChromePromptValue>>,
+                     ChromePromptValue,
+                     bool>>,
       public ChromeCleanerRunnerTestDelegate {
  public:
   ChromeCleanerRunnerSimpleTest()
@@ -77,7 +80,13 @@ class ChromeCleanerRunnerSimpleTest
 
   void SetUp() override {
     std::tie(metrics_status_, reporter_engine_, cleaner_logs_enabled_,
-             chrome_prompt_) = GetParam();
+             chrome_prompt_, quarantine_enabled_) = GetParam();
+
+    std::vector<base::Feature> enabled_features;
+    if (quarantine_enabled_) {
+      enabled_features.push_back(kChromeCleanupQuarantineFeature);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, {});
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
   }
@@ -149,6 +158,7 @@ class ChromeCleanerRunnerSimpleTest
   ReporterEngine reporter_engine_;
   bool cleaner_logs_enabled_ = false;
   ChromePromptValue chrome_prompt_ = ChromePromptValue::kUnspecified;
+  bool quarantine_enabled_ = false;
 
   // Set by LaunchTestProcess.
   base::CommandLine command_line_;
@@ -158,6 +168,9 @@ class ChromeCleanerRunnerSimpleTest
   ChromeCleanerRunner::ProcessStatus process_status_;
 
   base::RunLoop run_loop_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
@@ -200,6 +213,9 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
       chrome_cleaner::kRebootPromptMethodSwitch);
   int reboot_prompt = -1;
   EXPECT_TRUE(base::StringToInt(reboot_prompt_method, &reboot_prompt));
+
+  EXPECT_EQ(quarantine_enabled_,
+            command_line_.HasSwitch(chrome_cleaner::kQuarantineSwitch));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -212,7 +228,8 @@ INSTANTIATE_TEST_CASE_P(
                    ReporterEngine::kNewEngine),
             Bool(),
             Values(ChromePromptValue::kPrompted,
-                   ChromePromptValue::kUserInitiated)));
+                   ChromePromptValue::kUserInitiated),
+            Bool()));
 
 // Enum to be used as parameter for the ChromeCleanerRunnerTest fixture below.
 enum class UwsFoundState {

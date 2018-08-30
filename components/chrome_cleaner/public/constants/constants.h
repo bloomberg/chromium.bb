@@ -73,6 +73,9 @@ extern const char kRebootPromptMethodSwitch[];
 // Indicates that metrics reporting is enabled for the current user.
 extern const char kUmaUserSwitch[];
 
+// Indicates that quarantine feature is enabled.
+extern const char kQuarantineSwitch[];
+
 // Registry paths where the reporter and the cleaner will write metrics data
 // to be reported by Chrome.
 
