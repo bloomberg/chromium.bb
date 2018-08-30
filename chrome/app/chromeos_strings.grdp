@@ -2004,6 +2004,27 @@
   <message name="IDS_DISCOVER_GET_HELP" desc="A label on the button that opens Help App.">
     Get Help
   </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE1" desc="A title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their pin.">
+    Choose your PIN
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE1" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process. Subtitle explains to the user how this feature can be configured.">
+    Use a number (PIN) instead of a password to unlock your device. To set your PIN later, go to Settings.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_LEARN_MORE" desc="A label on the link that leads to the help page.">
+    Learn more
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SKIP" desc="A label on the button that interrupts current setup flow.">
+    Skip
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE2" desc="A title of the dialog that continues 'PIN-unlock' setup process, and asks user to type their pin again for verification.">
+    Type your PIN again
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE3" desc="A title of the dialog that finishes 'PIN-unlock' setup process suggesting that it was successful.">
+    Your PIN is added
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
+    You can use PIN to unlock your device when signed out
+  </message>
   <message name="IDS_APP_START_NETWORK_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Waiting for network connection...
   </message>
