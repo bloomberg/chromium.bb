@@ -37,6 +37,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -920,31 +921,36 @@ void ServiceWorkerProviderHost::Register(
                                     nullptr)) {
     return;
   }
-
-  std::string error_message;
-  if (!IsValidRegisterMessage(script_url, *options, &error_message)) {
-    mojo::ReportBadMessage(error_message);
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+    mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageFromNonWindow);
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
+                            std::string(), nullptr);
+    return;
+  }
+  std::vector<GURL> urls = {document_url(), options->scope, script_url};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
+    mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
     return;
   }
-
   int64_t trace_id = base::TimeTicks::Now().since_origin().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN2(
       "ServiceWorker", "ServiceWorkerProviderHost::Register", trace_id, "Scope",
       options->scope.spec(), "Script URL", script_url.spec());
   context_->RegisterServiceWorker(
       script_url, *options,
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
-                         AsWeakPtr(), std::move(callback), trace_id)));
+      base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
+                     AsWeakPtr(), std::move(callback), trace_id,
+                     mojo::GetBadMessageCallback()));
 }
 
 void ServiceWorkerProviderHost::RegistrationComplete(
     RegisterCallback callback,
     int64_t trace_id,
+    mojo::ReportBadMessageCallback bad_message_callback,
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
@@ -952,6 +958,16 @@ void ServiceWorkerProviderHost::RegistrationComplete(
                          trace_id, "Status",
                          blink::ServiceWorkerStatusToString(status),
                          "Registration ID", registration_id);
+  // kErrorInvalidArguments means the renderer gave unexpectedly bad arguments,
+  // so terminate it.
+  if (status == blink::ServiceWorkerStatusCode::kErrorInvalidArguments) {
+    std::move(bad_message_callback).Run(status_message);
+    // |bad_message_callback| will kill the renderer process, but Mojo complains
+    // if the callback is not run. Just run it with nonsense arguments.
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
+                            std::string(), nullptr);
+    return;
+  }
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
@@ -1187,31 +1203,6 @@ void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
 
   // The destructors notify the ServiceWorkerVersions to update.
   versions_to_update_.clear();
-}
-
-bool ServiceWorkerProviderHost::IsValidRegisterMessage(
-    const GURL& script_url,
-    const blink::mojom::ServiceWorkerRegistrationOptions& options,
-    std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
-    *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
-    return false;
-  }
-  if (!options.scope.is_valid() || !script_url.is_valid()) {
-    *out_error = ServiceWorkerConsts::kBadMessageInvalidURL;
-    return false;
-  }
-  if (ServiceWorkerUtils::ContainsDisallowedCharacter(options.scope, script_url,
-                                                      out_error)) {
-    return false;
-  }
-  std::vector<GURL> urls = {document_url(), options.scope, script_url};
-  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    *out_error = ServiceWorkerConsts::kBadMessageImproperOrigins;
-    return false;
-  }
-
-  return true;
 }
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(

@@ -166,6 +166,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case blink::ServiceWorkerStatusCode::kErrorNetwork:
     case blink::ServiceWorkerStatusCode::kErrorSecurity:
     case blink::ServiceWorkerStatusCode::kErrorState:
+    case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
       NOTREACHED() << "Got unexpected error code: "
                    << static_cast<uint32_t>(service_worker_status) << " "
                    << blink::ServiceWorkerStatusToString(service_worker_status);

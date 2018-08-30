@@ -83,6 +83,7 @@ void ServiceWorkerNotificationEventFinished(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
       status = PersistentNotificationStatus::kServiceWorkerError;
       break;
   }
@@ -137,6 +138,7 @@ void DispatchNotificationEventOnRegistration(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
       status = PersistentNotificationStatus::kServiceWorkerError;
       break;
     case blink::ServiceWorkerStatusCode::kOk:

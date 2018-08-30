@@ -319,6 +319,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int64_t registration_id,
                               blink::ServiceWorkerStatusCode status);
 
+  bool IsValidRegisterRequest(const GURL& script_url,
+                              const GURL& scope_url,
+                              std::string* out_error) const;
+
   void DidGetRegistrationsForDeleteForOrigin(
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
       blink::ServiceWorkerStatusCode status,

@@ -75,11 +75,14 @@ enum class ServiceWorkerStatusCode {
   // Obsolete.
   // kErrorDisabledWorker = 19,
 
+  // The arguments to call the API were invalid.
+  kErrorInvalidArguments = 20,
+
   // Add new status codes here and update kMaxValue and enums.xml. The next new
-  // status code should be 20.
+  // status code should be 21.
 
   // Note: kMaxValue is needed only for histograms.
-  kMaxValue = kErrorDisallowed
+  kMaxValue = kErrorInvalidArguments
 };
 
 BLINK_COMMON_EXPORT const char* ServiceWorkerStatusToString(

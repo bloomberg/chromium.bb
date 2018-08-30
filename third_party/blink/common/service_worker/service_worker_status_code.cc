@@ -49,6 +49,8 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "Redundant worker";
     case ServiceWorkerStatusCode::kErrorDisallowed:
       return "Worker disallowed";
+    case ServiceWorkerStatusCode::kErrorInvalidArguments:
+      return "Invalid arguments";
   }
   NOTREACHED();
   return "";
