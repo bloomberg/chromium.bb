@@ -100,6 +100,7 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationloader", this,
       TRACE_EVENT_FLAG_FLOW_OUT, "url", tentative_resource_request.url.spec());
 
+  DCHECK(delegate_);
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(tentative_resource_request.resource_type)));
 
@@ -158,7 +159,7 @@ bool ServiceWorkerNavigationLoader::WasCanceled() const {
 }
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
-  detached_from_request_ = true;
+  delegate_ = nullptr;
   DeleteIfNeeded();
 }
 
@@ -173,6 +174,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
     network::mojom::URLLoaderClientPtr client) {
   resource_request_ = resource_request;
 
+  DCHECK(delegate_);
   DCHECK(!binding_.is_bound());
   DCHECK(!url_loader_client_.is_bound());
   binding_.Bind(std::move(request));
@@ -197,7 +199,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
     delegate_->ReportDestination(
         ServiceWorkerMetrics::MainResourceRequestDestination::
             kErrorNoActiveWorkerFromDelegate);
-    StartErrorResponse();
+    CommitCompleted(net::ERR_FAILED);
     return;
   }
 
@@ -270,15 +272,6 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
       network::URLLoaderCompletionStatus(error_code));
 }
 
-void ServiceWorkerNavigationLoader::StartErrorResponse() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::StartErrorResponse",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK_EQ(Status::kStarted, status_);
-  CommitCompleted(net::ERR_FAILED);
-}
-
 void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version,
     EmbeddedWorkerStatus initial_worker_status) {
@@ -314,15 +307,19 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
       blink::ServiceWorkerStatusToString(status), "result",
       ComposeFetchEventResultString(fetch_result, *response));
-  delegate_->ReportDestination(
-      ServiceWorkerMetrics::MainResourceRequestDestination::kServiceWorker);
+
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
+  if (delegate_) {
+    delegate_->ReportDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::kServiceWorker);
+  }
 
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
-  if (!delegate_->RequestStillValid(&result)) {
-    StartErrorResponse();
+  if (!delegate_ || !delegate_->RequestStillValid(&result)) {
+    // The navigation or shared worker startup is cancelled. Just abort.
+    CommitCompleted(net::ERR_ABORTED);
     return;
   }
 
@@ -353,7 +350,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   // A response with status code 0 is Blink telling us to respond with
   // network error.
   if (response->status_code == 0) {
-    StartErrorResponse();
+    CommitCompleted(net::ERR_FAILED);
     return;
   }
 
@@ -498,7 +495,7 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
 }
 
 void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
-  if (!binding_.is_bound() && detached_from_request_)
+  if (!binding_.is_bound() && !delegate_)
     delete this;
 }
 
