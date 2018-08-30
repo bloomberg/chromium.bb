@@ -39,6 +39,14 @@ html[dir=rtl] #edit-bg {
   background-color: rgba(32, 33, 36, .16);
 }
 
+.non-white-bg #edit-bg:hover {
+  background-color: rgba(255, 255, 255, .1);
+}
+
+.non-white-bg #edit-bg:active {
+  background-color: rgba(255, 255, 255, .16);
+}
+
 .using-mouse-nav .bg-option:focus {
   outline: none;
 }
