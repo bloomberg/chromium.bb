@@ -122,6 +122,8 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
+  TRACE_EVENT0("cc,benchmark",
+               "AsyncLayerTreeFrameSink::SubmitCompositorFrame");
   TRACE_EVENT_WITH_FLOW1(
       "viz,benchmark", "Graphics.Pipeline",
       TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),

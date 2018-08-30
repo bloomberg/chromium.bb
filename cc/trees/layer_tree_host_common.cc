@@ -608,15 +608,27 @@ void CalculateDrawPropertiesInternal(
                        "LayerTreeHostCommon::CalculateDrawProperties");
   }
 
-  draw_property_utils::FindLayersThatNeedUpdates(
-      inputs->root_layer->layer_tree_impl(), inputs->property_trees,
-      &visible_layer_list);
-  draw_property_utils::ComputeDrawPropertiesOfVisibleLayers(
-      &visible_layer_list, inputs->property_trees);
+  {
+    TRACE_EVENT0("cc", "draw_property_utils::FindLayersThatNeedUpdates");
+    draw_property_utils::FindLayersThatNeedUpdates(
+        inputs->root_layer->layer_tree_impl(), inputs->property_trees,
+        &visible_layer_list);
+  }
 
-  CalculateRenderSurfaceLayerList(
-      inputs->root_layer->layer_tree_impl(), inputs->property_trees,
-      inputs->render_surface_list, inputs->max_texture_size);
+  {
+    TRACE_EVENT1("cc",
+                 "draw_property_utils::ComputeDrawPropertiesOfVisibleLayers",
+                 "visible_layers", visible_layer_list.size());
+    draw_property_utils::ComputeDrawPropertiesOfVisibleLayers(
+        &visible_layer_list, inputs->property_trees);
+  }
+
+  {
+    TRACE_EVENT0("cc", "CalculateRenderSurfaceLayerList");
+    CalculateRenderSurfaceLayerList(
+        inputs->root_layer->layer_tree_impl(), inputs->property_trees,
+        inputs->render_surface_list, inputs->max_texture_size);
+  }
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),

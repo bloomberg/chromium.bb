@@ -1174,6 +1174,8 @@ bool LayerTreeImpl::UpdateDrawProperties(
   if (!needs_update_draw_properties_)
     return true;
 
+  TRACE_EVENT0("cc,benchmark", "LayerTreeImpl::UpdateDrawProperties");
+
   // Ensure the scrollbar geometries are up-to-date for hit testing and quads
   // generation. This may cause damage on the scrollbar layers which is why
   // it occurs before we reset |needs_update_draw_properties_|.
@@ -1197,9 +1199,10 @@ bool LayerTreeImpl::UpdateDrawProperties(
 
   {
     base::ElapsedTimer timer;
-    TRACE_EVENT2(
-        "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
-        "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
+    TRACE_EVENT2("cc,benchmark",
+                 "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
+                 "IsActive", IsActiveTree(), "SourceFrameNumber",
+                 source_frame_number_);
     // We verify visible rect calculations whenever we verify clip tree
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
@@ -1225,9 +1228,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
   }
 
   {
-    TRACE_EVENT2("cc", "LayerTreeImpl::UpdateDrawProperties::Occlusion",
-                 "IsActive", IsActiveTree(), "SourceFrameNumber",
-                 source_frame_number_);
+    TRACE_EVENT2("cc,benchmark",
+                 "LayerTreeImpl::UpdateDrawProperties::Occlusion", "IsActive",
+                 IsActiveTree(), "SourceFrameNumber", source_frame_number_);
     OcclusionTracker occlusion_tracker(RootRenderSurface()->content_rect());
     occlusion_tracker.set_minimum_tracking_size(
         settings().minimum_occlusion_tracking_size);
@@ -1286,9 +1289,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
   // Resourceless draw do not need tiles and should not affect existing tile
   // priorities.
   if (!is_in_resourceless_software_draw_mode()) {
-    TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
-                       "IsActive", IsActiveTree(), "SourceFrameNumber",
-                       source_frame_number_);
+    TRACE_EVENT_BEGIN2(
+        "cc,benchmark", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
+        "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
@@ -1301,7 +1304,8 @@ bool LayerTreeImpl::UpdateDrawProperties(
     if (tile_priorities_updated)
       DidModifyTilePriorities();
 
-    TRACE_EVENT_END1("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
+    TRACE_EVENT_END1("cc,benchmark",
+                     "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
                      "layers_updated_count", layers_updated_count);
   }
 

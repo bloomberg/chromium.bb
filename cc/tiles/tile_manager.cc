@@ -486,7 +486,7 @@ bool TileManager::PrepareTiles(
     const GlobalStateThatImpactsTilePriority& state) {
   ++prepare_tiles_count_;
 
-  TRACE_EVENT1("cc", "TileManager::PrepareTiles", "prepare_tiles_id",
+  TRACE_EVENT1("cc,benchmark", "TileManager::PrepareTiles", "prepare_tiles_id",
                prepare_tiles_count_);
 
   if (!tile_task_manager_) {
@@ -1334,14 +1334,14 @@ bool TileManager::AreRequiredTilesReadyToDraw(
 }
 
 bool TileManager::IsReadyToActivate() const {
-  TRACE_EVENT0("cc", "TileManager::IsReadyToActivate");
+  TRACE_EVENT0("cc,benchmark", "TileManager::IsReadyToActivate");
   return pending_required_for_activation_callback_id_ == 0 &&
          AreRequiredTilesReadyToDraw(
              RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
 }
 
 bool TileManager::IsReadyToDraw() const {
-  TRACE_EVENT0("cc", "TileManager::IsReadyToDraw");
+  TRACE_EVENT0("cc,benchmark", "TileManager::IsReadyToDraw");
   return pending_required_for_draw_callback_id_ == 0 &&
          AreRequiredTilesReadyToDraw(
              RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
