@@ -7,8 +7,11 @@
 
 from __future__ import print_function
 
+import ConfigParser
 import os
 import re
+
+from chromite.lib import cros_logging as logging
 
 
 class KeyPair(object):
@@ -17,35 +20,71 @@ class KeyPair(object):
   Attributes:
     name: name of keypair
     keydir: location of key files
-    basename: common prefix for all key files
     version: version of key
+    subkeys: dictionary of sub keys
     public: public key file complete path
     private: private key file complete path
+    keyblock: keyblock file complete path
   """
 
-  def __init__(self, name, keydir, version=1, basename=None, pub_ext='.vbpubk',
-               priv_ext='.vbprivk'):
+  def __init__(self, name, keydir, version=1, subkeys=(),
+               pub_ext='.vbpubk', priv_ext='.vbprivk'):
     """Initialize KeyPair.
 
     Args:
       name: name of key
       keydir: directory containing key files
       version: version of the key
-      basename: basename of key files, default to use name
+      subkeys: list of subkeys to create
       pub_ext: file extension used for public key
       priv_ext: file extension used for private key
     """
     self.name = name
     self.keydir = keydir
     self.version = version
+    self._pub_ext = pub_ext
+    self._priv_ext = priv_ext
 
-    self.basename = name if basename is None else basename
+    self.subkeys = {}
+    for subkey in subkeys:
+      self.AddSubkey(subkey)
 
-    self.public = os.path.join(self.keydir, self.basename + pub_ext)
-    self.private = os.path.join(self.keydir, self.basename + priv_ext)
+    self.public = os.path.join(keydir, name + pub_ext)
+    self.private = os.path.join(keydir, name + priv_ext)
+
+    #strip '_data_key' from any name, since this is a common convention
+    keyblock_name = ''.join(name.split('_data_key'))
+    self.keyblock = os.path.join(keydir, keyblock_name + '.keyblock')
+
+  def __eq__(self, other):
+    return (isinstance(other, KeyPair)
+            and self.name == other.name
+            and self.version == other.version
+            and self.public == other.public
+            and self.private == other.private
+            and self.subkeys == other.subkeys)
+
+  def AddSubkey(self, sub_id):
+    """Add new Subkey with the given name."""
+    if sub_id in self.subkeys:
+      return
+
+    self.subkeys[sub_id] = KeyPair(self.name + '.' + sub_id,
+                                   self.keydir,
+                                   version=self.version,
+                                   pub_ext=self._pub_ext,
+                                   priv_ext=self._priv_ext)
 
   def Exists(self, require_public=False, require_private=False):
-    """Returns True if either the public or private key exist on disk."""
+    """Returns True if ether key or subkeys exists on disk."""
+
+    if self.subkeys:
+      for sub_key in self.subkeys.values():
+        if not sub_key.Exists(require_public=require_public,
+                              require_private=require_private):
+          return False
+      return True
+
     has_public = os.path.exists(self.public)
     has_private = os.path.exists(self.private)
 
@@ -55,67 +94,15 @@ class KeyPair(object):
       return False
     return has_public or has_private
 
-  def CreateKeyblock(self, name=None, basename=None):
-    """Returns a new Keyblock instance which references this key.
-
-    Args:
-      name: keyblock name, defaults to keypair's striping out _data_key
-      basename: keyblock basename, defaults to keypair's striping out _data_key
-    """
-
-    if name is None:
-      # Use keypair's name, striping out '_data_key' if exists
-      name = ''.join(self.name.split('_data_key'))
-
-    if basename is None:
-      basename = ''.join(self.basename.split('_data_key'))
-
-    return Keyblock(name, basename=basename, data_key=self)
-
-
-class Keyblock(object):
-  """Container for a keyblock.
-
-  A keyblock is a pre-computed file which contains a signed public key which can
-  be used as a link in the chain-of-trust. See:
-  http://www.chromium.org/chromium-os/chromiumos-design-docs/verified-boot-data-structures
-
-  Attributes:
-    name: name of keyblock
-    keydir: location of keyblock
-    filename: complete filename of keyblock
-  """
-
-  def __init__(self, name, keydir=None, basename=None, data_key=None):
-    """Initialize Keyblock.
-
-    Args:
-      name: name of keyblock
-      keydir: directory that contains keyblock file. Default to data_key.keydir
-      basename: basename of keyblock, to which '.keyblock' will be appended.
-        defaults to 'name'
-      data_key: Key contained inside the keyblock.
-    """
-    self.name = name
-
-    if keydir is None:
-      if data_key is not None and data_key.keydir is not None:
-        self.keydir = data_key.keydir
-      else:
-        raise ValueError("No directory defined")
+  def KeyblockExists(self):
+    """Returns if keyblocks or subkeyblocks exist."""
+    if self.subkeys:
+      for sub_key in self.subkeys.values():
+        if not sub_key.KeyblockExists():
+          return False
+      return True
     else:
-      self.keydir = keydir
-
-    self.data_key = data_key
-
-    if basename is None:
-      basename = name
-
-    self.filename = os.path.join(self.keydir, basename + '.keyblock')
-
-  def Exists(self):
-    """Returns True if keyblock exists on disk."""
-    return os.path.exists(self.filename)
+      return os.path.exists(self.keyblock)
 
 
 class Keyset(object):
@@ -123,78 +110,110 @@ class Keyset(object):
 
   Attributes:
     keys: dict of keypairs, indexed on key's name
-    keyblocks: dict of Keyblocks, indexed on keyblock's name
+    subkey_aliases: dict of alias to use for subkeys (i.e. loem -> board)
   """
   def __init__(self):
     self.keys = {}
-    self.keyblocks = {}
+    self.subkey_aliases = {}
+
+  def __eq__(self, other):
+    return (isinstance(other, Keyset)
+            and self.subkey_aliases == other.subkey_aliases
+            and self.keys == other.keys)
 
   def Prune(self):
-    """Check that all keys and keyblocks exists, else remove them."""
+    """Check that all keys exists, else remove them."""
     for k, key in self.keys.items():
       if not key.Exists():
         self.keys.pop(k)
 
-    for k, keyblock in self.keyblocks.items():
-      if not keyblock.Exists():
-        self.keyblocks.pop(k)
+  def AddKey(self, key, key_name=None):
+    """Add the given key to keyset, using key.name if key_name is None."""
+    key_name = key_name if key_name else key.name
 
-  def AddKey(self, new_key, key_name=None):
-    """Add the given key to keyset, using new_key.name if key_name is None."""
-    if key_name is None:
-      self.keys[new_key.name] = new_key
-    else:
-      self.keys[key_name] = new_key
+    self.keys[key_name] = key
 
-  def GetKey(self, key_name):
-    """Returns key from key_name. Returns None if not found."""
-    return self.keys.get(key_name)
+  def AddSubkey(self, key_name, subkey):
+    """Add subkey to key_name, using its alias if available."""
+    subkey = (self.subkey_aliases[subkey] if subkey in self.subkey_aliases
+              else subkey)
+    self.keys[key_name].AddSubkey(subkey)
 
   def KeyExists(self, key_name, require_public=False, require_private=False):
     """Returns if key is in keyset and exists."""
-    key = self.GetKey(key_name)
+    return (key_name in self.keys and
+            self.keys[key_name].Exists(require_public=require_public,
+                                       require_private=require_private))
 
-    return key is not None and key.Exists(require_public=require_public,
-                                          require_private=require_private)
+  def KeyblockExists(self, key_name):
+    """Returns if keyblock exists"""
+    return (key_name in self.keys and
+            self.keys[key_name].KeyblockExists())
 
-  def AddKeyblock(self, keyblock, kb_name=None):
-    """Add keyblock to keyset indexed by kb_name, use keyblock.name if None."""
-    self.keyblocks[kb_name or keyblock.name] = keyblock
+  def GetSubKeyset(self, subkey_name):
+    """Returns new keyset containing keys based on the subkey_name given.
 
-  def GetKeyblock(self, keyblock_name):
-    """Returns keyblock from keyblock_name. Returns None if not found."""
-    return self.keyblocks.get(keyblock_name)
+    Keys are added based on the following rules:
+    * Keys does not have a subkey of the given name
+    * Subkey exists for the given name, or alias. Key will be indexed under
+        it's parent key's name. ex: 'firmware.loem1' -> 'firmware'
+    """
+    ks = Keyset()
 
-  def KeyblockExists(self, keyblock_name):
-    """Returns if the keyblock exists."""
-    keyblock = self.GetKeyblock(keyblock_name)
-    return keyblock is not None and keyblock.Exists()
+    # Use alias if exists
+    subkey_alias = self.subkey_aliases.get(subkey_name, '')
+
+    for key_name, key in self.keys.items():
+      if subkey_alias in key.subkeys:
+        ks.AddKey(key.subkeys[subkey_alias], key_name=key_name)
+      elif subkey_name in key.subkeys:
+        ks.AddKey(key.subkeys[subkey_name], key_name=key_name)
+      else:
+        ks.AddKey(key)
+
+    return ks
 
 
 def KeysetFromDir(key_dir):
-  """Returns a populated keyset generated from given directory
+  """Returns a populated keyset generated from given directory.
 
   Note: every public key and keyblock must have an accompanying private key
   """
+  ks = Keyset()
+
+  # Get all loem subkey mappings
+  loem_config_filename = os.path.join(key_dir, 'loem.ini')
+  if os.path.exists(loem_config_filename):
+    logging.info("Reading loem.ini file")
+    loem_config = ConfigParser.ConfigParser()
+    if loem_config.read(loem_config_filename):
+      if loem_config.has_section('loem'):
+        for loem_id in loem_config.options('loem'):
+          loem_board = loem_config.get('loem', loem_id)
+          loem_alias = 'loem' + loem_id
+          logging.debug('Adding key alias %s %s', loem_board, loem_alias)
+          ks.subkey_aliases[loem_board] = 'loem' + loem_id
+    else:
+      logging.warning("Error reading loem.ini file")
+
+  # TODO (chingcodes): add versions from file - needed for keygen
 
   # Match any private key file name
   # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
-  re_keypair = re.compile(r'(?P<name>\w+(\.loem(?P<loem>\d+))?)\.vbprivk')
-
-  ks = Keyset()
+  keypair_re = re.compile(r'(?P<name>\w+)(\.(?P<subkey>\w+))?\.vbprivk')
 
   for f_name in os.listdir(key_dir):
-    key_match = re_keypair.match(f_name)
+    key_match = keypair_re.match(f_name)
     if key_match:
       key_name = key_match.group('name')
-      #TODO (chingcodes): add version from file
-      key = KeyPair(key_name, key_dir, version=1)
-      ks.AddKey(key)
 
-      #TODO (chingcodes): loem.ini logic here
+      if key_name not in ks.keys:
+        logging.debug('Found new key %s', key_name)
+        ks.AddKey(KeyPair(key_name, key_dir, version=1))
 
-      kb = key.CreateKeyblock()
-      if kb.Exists():
-        ks.AddKeyblock(kb)
+      subkey = key_match.group('subkey')
+      if subkey:
+        logging.debug('Found subkey %s.%s', key_name, subkey)
+        ks.AddSubkey(key_name, subkey)
 
   return ks

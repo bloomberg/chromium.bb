@@ -185,11 +185,11 @@ class TestSigner(cros_test_lib.TempDirTestCase):
 
   def testCheckRequiredKeyblocksEmpty(self):
     ks_empty = keys.Keyset()
-    s0 = MockBaseSigner(required_keyblocks=['keyblock1'])
+    s0 = MockBaseSigner(required_keyblocks=['key1'])
     self.assertFalse(s0.CheckKeyset(ks_empty))
 
   def testCheckRequiredKeyblocks(self):
-    s0 = MockBaseSigner(required_keyblocks=['keyblock1'])
+    s0 = MockBaseSigner(required_keyblocks=['key1'])
     ks0 = KeysetFromSigner(s0, self.tempdir)
     self.assertTrue(s0.CheckKeyset(ks0))
 
@@ -209,15 +209,20 @@ def KeysetFromSigner(s, keydir):
     ks.AddKey(key)
     keys_unittest.CreateDummyPublic(key)
 
+    if key in s._required_keyblocks:
+      keys_unittest.CreateDummyKeyblock(key)
+
   for key_name in s._required_keys_private:
     key = keys.KeyPair(key_name, keydir=keydir)
     ks.AddKey(key)
     keys_unittest.CreateDummyPrivateKey(key)
 
   for keyblock_name in s._required_keyblocks:
-    keyblock = keys.Keyblock(keyblock_name, keydir=keydir)
-    ks.AddKeyblock(keyblock)
-    keys_unittest.CreateDummyKeyblock(keyblock)
+    if keyblock_name not in ks.keys:
+      ks.AddKey(keys.KeyPair(keyblock_name, keydir=keydir))
+
+    key = ks.keys[keyblock_name]
+    keys_unittest.CreateDummyKeyblock(key)
 
   return ks
 

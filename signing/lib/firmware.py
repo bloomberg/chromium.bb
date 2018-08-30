@@ -20,9 +20,9 @@ from chromite.signing.lib.signer import FutilitySigner
 class BiosSigner(FutilitySigner):
   """Sign bios.bin file using futility."""
 
-  _required_keys_private = ('firmware',)
+  _required_keys_private = ('firmware_data_key',)
   _required_keys_public = ('kernel',)
-  _required_keyblocks = ('firmware',)
+  _required_keyblocks = ('firmware_data_key',)
 
   def __init__(self, bios_version=1, sig_dir=None, sig_id=None):
     """Init BiosSigner
@@ -37,8 +37,7 @@ class BiosSigner(FutilitySigner):
     self.sig_id = sig_id
 
   def GetFutilityArgs(self, keyset, input_name, output_name):
-    fw_key = keyset.GetKey('firmware')
-    fw_keyblock = keyset.GetKeyblock('firmware')
+    fw_key = keyset.keys['firmware_data_key']
 
 
     kernel_key = keyset.keys['kernel']
@@ -46,21 +45,20 @@ class BiosSigner(FutilitySigner):
     args = ['sign',
             '--type', 'bios',
             '--signprivate', fw_key.private,
-            '--keyblock', fw_keyblock.filename,
+            '--keyblock', fw_key.keyblock,
             '--kernelkey', kernel_key.public,
             '--version', str(self.version)]
 
     # Add developer key arguments
-    dev_fw_key = keyset.GetKey('dev_firmware')
-    dev_fw_keyblock = keyset.GetKeyblock('dev_firmware')
+    dev_fw_key = keyset.keys.get('dev_firmware_data_key')
 
-    if dev_fw_key is not None and dev_fw_keyblock is not None:
+    if dev_fw_key is not None:
       args += ['--devsign', dev_fw_key.private,
-               '--devkeyblock', dev_fw_keyblock.filename]
+               '--devkeyblock', dev_fw_key.keyblock]
     else:
       # Fallback to fw_key if device key not found (legacy, still needed?)
       args += ['--devsign', fw_key.private,
-               '--devkeyblock', fw_keyblock.filename]
+               '--devkeyblock', fw_key.keyblock]
 
     # Add loem related arguments
     if self.sig_dir is not None and self.sig_id is not None:

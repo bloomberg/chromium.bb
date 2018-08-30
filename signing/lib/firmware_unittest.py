@@ -25,15 +25,17 @@ class TestBiosSigner(cros_test_lib.RunCommandTestCase,
     bs = firmware.BiosSigner()
     ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
 
+    fw_key = ks.keys['firmware_data_key']
+
     self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
                          ['sign',
                           '--type', 'bios',
-                          '--signprivate', ks.keys['firmware'].private,
-                          '--keyblock', ks.keyblocks['firmware'].filename,
+                          '--signprivate', fw_key.private,
+                          '--keyblock', fw_key.keyblock,
                           '--kernelkey', ks.keys['kernel'].public,
                           '--version', str(bs.version),
-                          '--devsign', ks.keys['firmware'].private,
-                          '--devkeyblock', ks.keyblocks['firmware'].filename,
+                          '--devsign', fw_key.private,
+                          '--devkeyblock', fw_key.keyblock,
                           'foo', 'bar'])
 
   def testGetCmdArgsWithDevKeys(self):
@@ -41,22 +43,23 @@ class TestBiosSigner(cros_test_lib.RunCommandTestCase,
     ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
 
     # Add 'dev_firmware' keys and keyblock
-    ks.AddKey(keys.KeyPair('dev_firmware', keydir=self.tempdir))
-    keys_unittest.CreateDummyPrivateKey(ks.GetKey('dev_firmware'))
+    dev_fw_key = keys.KeyPair('dev_firmware_data_key', keydir=self.tempdir)
+    ks.AddKey(dev_fw_key)
+    keys_unittest.CreateDummyPrivateKey(dev_fw_key)
 
-    ks.AddKeyblock(ks.keys['dev_firmware'].CreateKeyblock())
-    keys_unittest.CreateDummyKeyblock(ks.GetKeyblock('dev_firmware'))
+    keys_unittest.CreateDummyKeyblock(dev_fw_key)
+
+    fw_key = ks.keys['firmware_data_key']
 
     self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
                          ['sign',
                           '--type', 'bios',
-                          '--signprivate', ks.keys['firmware'].private,
-                          '--keyblock', ks.keyblocks['firmware'].filename,
+                          '--signprivate', fw_key.private,
+                          '--keyblock', fw_key.keyblock,
                           '--kernelkey', ks.keys['kernel'].public,
                           '--version', str(bs.version),
-                          '--devsign', ks.keys['dev_firmware'].private,
-                          '--devkeyblock',
-                          ks.keyblocks['dev_firmware'].filename,
+                          '--devsign', dev_fw_key.private,
+                          '--devkeyblock', dev_fw_key.keyblock,
                           'foo', 'bar'])
 
   def testGetCmdArgsWithSig(self):
@@ -65,15 +68,17 @@ class TestBiosSigner(cros_test_lib.RunCommandTestCase,
     bs = firmware.BiosSigner(sig_dir=loem_dir, sig_id=loem_id)
     ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
 
+    fw_key = ks.keys['firmware_data_key']
+
     self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
                          ['sign',
                           '--type', 'bios',
-                          '--signprivate', ks.keys['firmware'].private,
-                          '--keyblock', ks.keyblocks['firmware'].filename,
+                          '--signprivate', fw_key.private,
+                          '--keyblock', fw_key.keyblock,
                           '--kernelkey', ks.keys['kernel'].public,
                           '--version', str(bs.version),
-                          '--devsign', ks.keys['firmware'].private,
-                          '--devkeyblock', ks.keyblocks['firmware'].filename,
+                          '--devsign', fw_key.private,
+                          '--devkeyblock', fw_key.keyblock,
                           '--loemdir', loem_dir,
                           '--loemid', loem_id,
                           'foo', 'bar'])
