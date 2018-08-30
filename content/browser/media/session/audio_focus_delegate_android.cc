@@ -46,6 +46,16 @@ void AudioFocusDelegateAndroid::AbandonAudioFocus() {
   Java_AudioFocusDelegate_abandonAudioFocus(env, j_media_session_delegate_);
 }
 
+media_session::mojom::AudioFocusType
+AudioFocusDelegateAndroid::GetCurrentFocusType() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+  return Java_AudioFocusDelegate_isFocusTransient(env,
+                                                  j_media_session_delegate_)
+             ? media_session::mojom::AudioFocusType::kGainTransientMayDuck
+             : media_session::mojom::AudioFocusType::kGain;
+}
+
 void AudioFocusDelegateAndroid::OnSuspend(JNIEnv*,
                                           const JavaParamRef<jobject>&) {
   if (!media_session_->IsActive())

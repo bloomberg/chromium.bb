@@ -51,12 +51,22 @@ const double kDifferentDuckingVolumeMultiplier = 0.018;
 
 class MockAudioFocusDelegate : public AudioFocusDelegate {
  public:
-  MockAudioFocusDelegate() {
-    ON_CALL(*this, RequestAudioFocus(_)).WillByDefault(::testing::Return(true));
+  MockAudioFocusDelegate() {}
+
+  MOCK_METHOD0(AbandonAudioFocus, void());
+
+  bool RequestAudioFocus(AudioFocusType audio_focus_type) {
+    audio_focus_type_ = audio_focus_type;
+    return true;
   }
 
-  MOCK_METHOD1(RequestAudioFocus, bool(AudioFocusType));
-  MOCK_METHOD0(AbandonAudioFocus, void());
+  AudioFocusType GetCurrentFocusType() const {
+    DCHECK(audio_focus_type_.has_value());
+    return audio_focus_type_.value();
+  }
+
+ private:
+  base::Optional<AudioFocusType> audio_focus_type_;
 };
 
 class MockMediaSessionServiceImpl : public content::MediaSessionServiceImpl {
@@ -124,7 +134,7 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   bool IsActive() { return media_session_->IsActive(); }
 
   AudioFocusType GetSessionAudioFocusType() {
-    return media_session_->audio_focus_type();
+    return mock_audio_focus_delegate_->GetCurrentFocusType();
   }
 
   bool IsControllable() { return media_session_->IsControllable(); }
@@ -1070,15 +1080,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, ResumeSuspendFromSystem) {
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, OneShotTakesGainFocus) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
-  EXPECT_CALL(*mock_audio_focus_delegate(),
-              RequestAudioFocus(AudioFocusType::kGain))
-      .Times(1);
-  EXPECT_CALL(*mock_audio_focus_delegate(),
-              RequestAudioFocus(::testing::Ne(AudioFocusType::kGain)))
-      .Times(0);
   StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
   StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+
+  EXPECT_EQ(AudioFocusType::kGain,
+            mock_audio_focus_delegate()->GetCurrentFocusType());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, RemovingOneShotDropsFocus) {

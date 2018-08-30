@@ -90,23 +90,25 @@ class AudioFocusManagerTest : public testing::Test {
   }
 
   MediaSessionImpl* GetAudioFocusedSession() const {
-    const auto& audio_focus_stack =
-        AudioFocusManager::GetInstance()->audio_focus_stack_;
+    const AudioFocusManager* manager = AudioFocusManager::GetInstance();
+    const auto& audio_focus_stack = manager->audio_focus_stack_;
+
     for (auto iter = audio_focus_stack.rbegin();
          iter != audio_focus_stack.rend(); ++iter) {
-      if ((*iter)->audio_focus_type() == AudioFocusType::kGain)
-        return (*iter);
+      if ((*iter).audio_focus_type == AudioFocusType::kGain)
+        return (*iter).media_session;
     }
     return nullptr;
   }
 
   int GetTransientMaybeDuckCount() const {
+    const AudioFocusManager* manager = AudioFocusManager::GetInstance();
+    const auto& audio_focus_stack = manager->audio_focus_stack_;
     int count = 0;
-    const auto& audio_focus_stack =
-        AudioFocusManager::GetInstance()->audio_focus_stack_;
+
     for (auto iter = audio_focus_stack.rbegin();
          iter != audio_focus_stack.rend(); ++iter) {
-      if ((*iter)->audio_focus_type() == AudioFocusType::kGainTransientMayDuck)
+      if ((*iter).audio_focus_type == AudioFocusType::kGainTransientMayDuck)
         ++count;
       else
         break;

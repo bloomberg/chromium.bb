@@ -25,11 +25,20 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   // AudioFocusDelegate implementation.
   bool RequestAudioFocus(AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
+  AudioFocusType GetCurrentFocusType() const override;
 
  private:
   // Weak pointer because |this| is owned by |media_session_|.
   MediaSessionImpl* media_session_;
+
+  // The last requested AudioFocusType by the associated |media_session_|.
+  AudioFocusType audio_focus_type_if_disabled_;
 };
+
+bool IsAudioFocusEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioFocus);
+}
 
 }  // anonymous namespace
 
@@ -41,10 +50,10 @@ AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
 
 bool AudioFocusDelegateDefault::RequestAudioFocus(
     AudioFocusType audio_focus_type) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioFocus)) {
+  audio_focus_type_if_disabled_ = audio_focus_type;
+
+  if (!IsAudioFocusEnabled())
     return true;
-  }
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(media_session_,
                                                       audio_focus_type);
@@ -53,6 +62,15 @@ bool AudioFocusDelegateDefault::RequestAudioFocus(
 
 void AudioFocusDelegateDefault::AbandonAudioFocus() {
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_);
+}
+
+AudioFocusType AudioFocusDelegateDefault::GetCurrentFocusType() const {
+  if (IsAudioFocusEnabled()) {
+    return AudioFocusManager::GetInstance()->GetFocusTypeForSession(
+        media_session_);
+  }
+
+  return audio_focus_type_if_disabled_;
 }
 
 // static

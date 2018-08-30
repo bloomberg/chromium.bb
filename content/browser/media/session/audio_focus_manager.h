@@ -28,6 +28,9 @@ class CONTENT_EXPORT AudioFocusManager {
 
   void AbandonAudioFocus(MediaSessionImpl* media_session);
 
+  media_session::mojom::AudioFocusType GetFocusTypeForSession(
+      MediaSessionImpl* media_session) const;
+
   // Adds/removes audio focus observers.
   mojo::InterfacePtrSetElementId AddObserver(
       media_session::mojom::AudioFocusObserverPtr);
@@ -56,9 +59,16 @@ class CONTENT_EXPORT AudioFocusManager {
   // themselves before being destroyed.
   mojo::InterfacePtrSet<media_session::mojom::AudioFocusObserver> observers_;
 
-  // Weak reference of managed MediaSessions. A MediaSession must abandon audio
-  // focus before its destruction.
-  std::list<MediaSessionImpl*> audio_focus_stack_;
+  // Weak reference of managed MediaSessions and their requested focus type.
+  // A MediaSession must abandon audio focus before its destruction.
+  struct StackRow {
+    StackRow(MediaSessionImpl* media_session,
+             media_session::mojom::AudioFocusType audio_focus_type)
+        : media_session(media_session), audio_focus_type(audio_focus_type) {}
+    MediaSessionImpl* media_session;
+    media_session::mojom::AudioFocusType audio_focus_type;
+  };
+  std::list<StackRow> audio_focus_stack_;
 };
 
 }  // namespace content
