@@ -377,6 +377,13 @@ void AppListItemView::OnContextMenuModelReceived(
   if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
+  // GetContextMenuModel is asynchronous and takes a nontrivial amount of time
+  // to complete. If a menu is shown after the icon has moved, |apps_grid_view_|
+  // gets put in a bad state because the context menu begins to receive drag
+  // events, interrupting the app icon drag.
+  if (apps_grid_view_->IsDragViewMoved(*this))
+    return;
+
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
   int run_types = views::MenuRunner::HAS_MNEMONICS;

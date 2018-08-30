@@ -791,7 +791,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   drag_start_page_ = pagination_model_.selected_page();
   drag_start_grid_view_ = drag_point;
 
-  drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
+  drag_view_start_ = drag_view_->origin();
 
   // Set the flag in root level grid view.
   dragging_for_reparent_item_ = true;
@@ -810,6 +810,10 @@ void AppsGridView::UpdateDragFromReparentItem(Pointer pointer,
 
 bool AppsGridView::IsDraggedView(const AppListItemView* view) const {
   return drag_view_ == view;
+}
+
+bool AppsGridView::IsDragViewMoved(const AppListItemView& view) const {
+  return IsDraggedView(&view) && drag_view_start_ != view.origin();
 }
 
 void AppsGridView::ClearDragState() {
@@ -1101,8 +1105,8 @@ void AppsGridView::UpdatePulsingBlockViews() {
 }
 
 AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
-  // The drag_view_ might be pending for deletion, therefore view_model_
-  // may have one more item than item_list_.
+  // The |drag_view_| might be pending for deletion, therefore |view_model_|
+  // may have one more item than |item_list_|.
   DCHECK_LE(index, item_list_->item_count());
   AppListItemView* view = new AppListItemView(
       this, item_list_->item_at(index),
