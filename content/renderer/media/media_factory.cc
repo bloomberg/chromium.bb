@@ -24,6 +24,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/media_switches.h"
@@ -100,38 +101,26 @@ class FrameFetchContext : public media::ResourceFetchContext {
   DISALLOW_COPY_AND_ASSIGN(FrameFetchContext);
 };
 
-void ObtainAndSetContextProvider(
-    base::OnceCallback<void(bool,
-                            scoped_refptr<ws::ContextProviderCommandBuffer>)>
-        set_context_provider_callback,
-    std::pair<media::GpuVideoAcceleratorFactories*, bool> gpu_info) {
-  if (gpu_info.first) {
-    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider =
-        gpu_info.first->GetMediaContextProvider();
-    std::move(set_context_provider_callback)
-        .Run(gpu_info.second, std::move(context_provider));
-  } else {
-    std::move(set_context_provider_callback).Run(false, nullptr);
-  }
-}
-
 // Obtains the media ContextProvider and calls the given callback on the same
 // thread this is called on. Obtaining the media ContextProvider requires
-// getting GPuVideoAcceleratorFactories, which must be done on the main
-// thread.
-void PostMediaContextProviderToCallback(
+// establishing a GPUChannelHost, which must be done on the main thread.
+void PostContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    base::OnceCallback<void(bool,
-                            scoped_refptr<ws::ContextProviderCommandBuffer>)>
-        set_context_provider_callback) {
-  base::PostTaskAndReplyWithResult(
-      main_task_runner.get(), FROM_HERE, base::BindOnce([]() {
-        return std::pair<media::GpuVideoAcceleratorFactories*, bool>(
-            content::RenderThreadImpl::current()->GetGpuFactories(),
-            !content::RenderThreadImpl::current()->IsGpuCompositingDisabled());
-      }),
-      base::BindOnce(&ObtainAndSetContextProvider,
-                     std::move(set_context_provider_callback)));
+    scoped_refptr<viz::ContextProvider> unwanted_context_provider,
+    blink::WebSubmitterConfigurationCallback set_context_provider_callback) {
+  main_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<viz::ContextProvider> unwanted_context_provider,
+             blink::WebSubmitterConfigurationCallback cb) {
+            auto* rti = content::RenderThreadImpl::current();
+            auto context_provider = rti->GetVideoFrameCompositorContextProvider(
+                unwanted_context_provider);
+            std::move(cb).Run(!rti->IsGpuCompositingDisabled(),
+                              std::move(context_provider));
+          },
+          std::move(unwanted_context_provider),
+          media::BindToCurrentLoop(std::move(set_context_provider_callback))));
 }
 
 }  // namespace
@@ -307,12 +296,11 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
   bool use_surface_layer_for_video = VideoSurfaceLayerEnabled();
   if (use_surface_layer_for_video) {
-    // TODO(lethalantidote): Use a separate task_runner. https://crbug/753605.
     video_frame_compositor_task_runner =
-        render_thread->GetMediaThreadTaskRunner();
+        render_thread->CreateVideoFrameCompositorTaskRunner();
     submitter = blink::WebVideoFrameSubmitter::Create(
         base::BindRepeating(
-            &PostMediaContextProviderToCallback,
+            &PostContextProviderToCallback,
             RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
         settings);
   } else {

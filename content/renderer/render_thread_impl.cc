@@ -31,6 +31,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -1191,6 +1192,21 @@ void RenderThreadImpl::InitializeCompositorThread() {
 #endif
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
+  if (!video_frame_compositor_task_runner_) {
+    // All of Chromium's GPU code must know which thread it's running on, and
+    // be the same thread on which the rendering context was initialized. This
+    // is why this must be a SingleThreadTaskRunner instead of a
+    // SequencedTaskRunner.
+    video_frame_compositor_task_runner_ =
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  }
+
+  return video_frame_compositor_task_runner_;
+}
+
 void RenderThreadImpl::InitializeWebKit(
     service_manager::BinderRegistry* registry) {
   DCHECK(!blink_platform_impl_);
@@ -1432,6 +1448,39 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       enable_video_accelerator, vea_provider.PassInterface()));
   gpu_factories_.back()->SetRenderingColorSpace(rendering_color_space_);
   return gpu_factories_.back().get();
+}
+
+scoped_refptr<viz::ContextProvider>
+RenderThreadImpl::GetVideoFrameCompositorContextProvider(
+    scoped_refptr<viz::ContextProvider> unwanted_context_provider) {
+  if (video_frame_compositor_context_provider_ &&
+      video_frame_compositor_context_provider_ != unwanted_context_provider) {
+    return video_frame_compositor_context_provider_;
+  }
+
+  video_frame_compositor_context_provider_ = nullptr;
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      EstablishGpuChannelSync();
+  if (!gpu_channel_host)
+    return nullptr;
+
+  // This context is only used to create textures and mailbox them, so
+  // use lower limits than the default.
+  gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
+
+  bool support_locking = false;
+  bool support_gles2_interface = true;
+  bool support_raster_interface = false;
+  bool support_oop_rasterization = false;
+  bool support_grcontext = false;
+  video_frame_compositor_context_provider_ = CreateOffscreenContext(
+      gpu_channel_host, GetGpuMemoryBufferManager(), limits, support_locking,
+      support_gles2_interface, support_raster_interface,
+      support_oop_rasterization, support_grcontext,
+      ws::command_buffer_metrics::ContextType::RENDER_COMPOSITOR,
+      kGpuStreamIdMedia, kGpuStreamPriorityMedia);
+  return video_frame_compositor_context_provider_;
 }
 
 scoped_refptr<ws::ContextProviderCommandBuffer>
