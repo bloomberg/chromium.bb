@@ -608,11 +608,16 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     UpdateControlsVisibility(true);
   }
 
+// On Mac, the space key event isn't automatically handled. Only handle space
+// for TogglePlayPause() since tabbing between the buttons is not supported and
+// there is no focus affordance on the buttons.
+#if defined(OS_MACOSX)
   if (event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_SPACE) {
     TogglePlayPause();
     event->SetHandled();
   }
+#endif  // OS_MACOSX
 
 // On Windows, the Alt+F4 keyboard combination closes the window. Only handle
 // closure on key press so Close() is not called a second time when the key
