@@ -34,7 +34,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -129,7 +130,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -312,7 +314,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -407,7 +410,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -590,7 +594,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -1492,7 +1497,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -2259,7 +2265,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -3276,7 +3283,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -3702,7 +3710,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -3840,7 +3849,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -4337,7 +4347,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -4836,7 +4847,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -5455,7 +5467,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -5828,7 +5841,8 @@
               "os": "Mac-10.13.6",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -6252,7 +6266,8 @@
               "os": "Mac-10.13.6",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -6695,7 +6710,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -7159,7 +7175,8 @@
               "os": "Mac-10.13",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -7660,7 +7677,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -8078,7 +8096,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -8648,7 +8667,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -9218,7 +9238,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -9854,7 +9875,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -10612,7 +10634,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 10800,
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -11036,7 +11059,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -11181,7 +11205,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -11343,7 +11368,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -11473,7 +11499,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -11678,7 +11705,8 @@
               "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -11846,7 +11874,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -12188,7 +12217,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -12794,7 +12824,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -13453,7 +13484,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -14170,7 +14202,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -14908,7 +14941,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -16242,7 +16276,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -16329,7 +16364,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -16942,7 +16978,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
@@ -17601,7 +17638,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests",
         "trigger_script": {
@@ -18614,7 +18652,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_end2end_tests"
       },
