@@ -4,6 +4,8 @@
 
 #include "ash/system/unified/notification_counter_view.h"
 
+#include <algorithm>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -25,7 +27,7 @@ namespace {
 // instead if it exceeds this limit.
 constexpr size_t kTrayNotificationMaxCount = 9;
 
-const double kTrayNotificationCircleIconRadius = kTrayIconSize / 2 - 2;
+constexpr double kTrayNotificationCircleIconRadius = kTrayIconSize / 2 - 2;
 
 // The size of the number font inside the icon. Should be updated when
 // kTrayIconSize is changed.
@@ -46,7 +48,7 @@ gfx::FontList GetNumberIconFontList() {
 
 class NumberIconImageSource : public gfx::CanvasImageSource {
  public:
-  NumberIconImageSource(size_t count)
+  explicit NumberIconImageSource(size_t count)
       : CanvasImageSource(gfx::Size(kTrayIconSize, kTrayIconSize), false),
         count_(count) {
     DCHECK_LE(count_, kTrayNotificationMaxCount + 1);

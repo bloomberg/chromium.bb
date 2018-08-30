@@ -91,7 +91,7 @@ extern const SkColor kMenuSeparatorColor;
 
 // The size and foreground color of the icons appearing in the material design
 // system tray.
-extern const int kTrayIconSize;
+constexpr int kTrayIconSize = 16;
 extern const SkColor kTrayIconColor;
 extern const SkColor kOobeTrayIconColor;
 
