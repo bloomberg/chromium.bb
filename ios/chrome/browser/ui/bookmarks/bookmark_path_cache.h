@@ -17,28 +17,29 @@ class PrefRegistrySyncable;
 
 class PrefService;
 
-// Stores and retrieves the bookmark UI position that the user was last viewing.
+// Stores and retrieves the bookmark top most row that the user was last
+// viewing.
 @interface BookmarkPathCache : NSObject
 
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
-// Caches the bookmark UI position that the user was last viewing.
-+ (void)cacheBookmarkUIPositionWithPrefService:(PrefService*)prefService
+// Caches the bookmark top most row that the user was last viewing.
++ (void)cacheBookmarkTopMostRowWithPrefService:(PrefService*)prefService
                                       folderId:(int64_t)folderId
-                                scrollPosition:(double)scrollPosition;
+                                    topMostRow:(int)topMostRow;
 
-// Gets the bookmark UI position that the user was last viewing. Returns YES if
-// a valid cache exists. |folderId| and |scrollPosition| are out variables, only
+// Gets the bookmark top most row that the user was last viewing. Returns YES if
+// a valid cache exists. |folderId| and |topMostRow| are out variables, only
 // populated if the return is YES.
-+ (BOOL)getBookmarkUIPositionCacheWithPrefService:(PrefService*)prefService
++ (BOOL)getBookmarkTopMostRowCacheWithPrefService:(PrefService*)prefService
                                             model:
                                                 (bookmarks::BookmarkModel*)model
                                          folderId:(int64_t*)folderId
-                                   scrollPosition:(double*)scrollPosition;
+                                       topMostRow:(int*)topMostRow;
 
-// Clears the bookmark UI position cache.
-+ (void)clearBookmarkUIPositionCacheWithPrefService:(PrefService*)prefService;
+// Clears the bookmark top most row cache.
++ (void)clearBookmarkTopMostRowCacheWithPrefService:(PrefService*)prefService;
 
 @end
 
