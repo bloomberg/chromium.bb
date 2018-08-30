@@ -6,7 +6,8 @@
 
 namespace syncer {
 
-ModelTypeConfigurer::ConfigureParams::ConfigureParams() = default;
+ModelTypeConfigurer::ConfigureParams::ConfigureParams()
+    : reason(CONFIGURE_REASON_UNKNOWN), is_sync_feature_enabled(false) {}
 ModelTypeConfigurer::ConfigureParams::ConfigureParams(ConfigureParams&& other) =
     default;
 ModelTypeConfigurer::ConfigureParams::~ConfigureParams() = default;

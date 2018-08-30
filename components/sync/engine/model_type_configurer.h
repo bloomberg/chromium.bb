@@ -46,6 +46,9 @@ class ModelTypeConfigurer {
     base::Callback<void(ModelTypeSet, ModelTypeSet)> ready_task;
     base::Closure retry_callback;
 
+    // Whether full sync (or sync the feature) is enabled;
+    bool is_sync_feature_enabled;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(ConfigureParams);
   };

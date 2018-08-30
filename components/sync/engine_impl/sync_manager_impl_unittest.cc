@@ -2719,7 +2719,7 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(
-      reason, types_to_download,
+      reason, types_to_download, SyncManager::SyncFeatureState::ON,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
       base::Bind(&CallbackCounter::Callback,

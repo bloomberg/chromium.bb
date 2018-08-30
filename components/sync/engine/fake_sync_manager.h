@@ -88,6 +88,7 @@ class FakeSyncManager : public SyncManager {
   void StartConfiguration() override;
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
+                       SyncFeatureState sync_feature_state,
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
   void OnIncomingInvalidation(
