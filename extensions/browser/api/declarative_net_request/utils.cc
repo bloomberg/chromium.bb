@@ -47,8 +47,6 @@ namespace dnr_api = extensions::api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-// TODO(crbug.com/755717): Add checks to ensure that we increment this when
-// necessary.
 constexpr int kIndexedRulesetFormatVersion = 1;
 
 // This static assert is meant to catch cases where
@@ -332,6 +330,10 @@ bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum) {
 
 std::string GetVersionHeaderForTesting() {
   return GetVersionHeader();
+}
+
+int GetIndexedRulesetFormatVersionForTesting() {
+  return GetIndexedRulesetFormatVersion();
 }
 
 void SetIndexedRulesetFormatVersionForTesting(int version) {
