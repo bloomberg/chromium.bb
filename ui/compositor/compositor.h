@@ -227,8 +227,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
     return context_factory_private_;
   }
 
-  void AddFrameSink(const viz::FrameSinkId& frame_sink_id);
-  void RemoveFrameSink(const viz::FrameSinkId& frame_sink_id);
+  void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id);
+  void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id);
 
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
 

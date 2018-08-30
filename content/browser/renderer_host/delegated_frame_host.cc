@@ -401,7 +401,7 @@ void DelegatedFrameHost::OnCompositingChildResizing(
 
 void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK_EQ(compositor, compositor_);
-  ResetCompositor();
+  DetachFromCompositor();
   DCHECK(!compositor_);
 }
 
@@ -426,23 +426,23 @@ void DelegatedFrameHost::OnLostVizProcess() {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:
 
-void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
+void DelegatedFrameHost::AttachToCompositor(ui::Compositor* compositor) {
   DCHECK(!compositor_);
   if (!compositor)
     return;
   compositor_ = compositor;
   compositor_->AddObserver(this);
   if (should_register_frame_sink_id_)
-    compositor_->AddFrameSink(frame_sink_id_);
+    compositor_->AddChildFrameSink(frame_sink_id_);
 }
 
-void DelegatedFrameHost::ResetCompositor() {
+void DelegatedFrameHost::DetachFromCompositor() {
   if (!compositor_)
     return;
   if (compositor_->HasObserver(this))
     compositor_->RemoveObserver(this);
   if (should_register_frame_sink_id_)
-    compositor_->RemoveFrameSink(frame_sink_id_);
+    compositor_->RemoveChildFrameSink(frame_sink_id_);
   compositor_ = nullptr;
 }
 
@@ -467,7 +467,7 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root, needs_sync_points);
   if (compositor_ && should_register_frame_sink_id_)
-    compositor_->AddFrameSink(frame_sink_id_);
+    compositor_->AddChildFrameSink(frame_sink_id_);
   if (needs_begin_frame_)
     support_->SetNeedsBeginFrame(true);
 }
@@ -476,7 +476,7 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (!support_)
     return;
   if (compositor_ && should_register_frame_sink_id_)
-    compositor_->RemoveFrameSink(frame_sink_id_);
+    compositor_->RemoveChildFrameSink(frame_sink_id_);
   support_.reset();
 }
 
