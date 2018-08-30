@@ -29,11 +29,6 @@ class ASH_EXPORT WindowStateDelegate {
   // returns false.
   virtual bool ToggleFullscreen(WindowState* window_state);
 
-  // Invoked when workspace fullscreen state changes and a window may need to
-  // reassert its always on top state. Returns true if delegate has handled this
-  // and no additional work is needed, false otherwise.
-  virtual bool RestoreAlwaysOnTop(WindowState* window_state);
-
   // Invoked when the user started drag operation. |component| must be
   // a member of ui::HitTestCompat enum and specifies which part of
   // the window the pointer device was on when the user started drag

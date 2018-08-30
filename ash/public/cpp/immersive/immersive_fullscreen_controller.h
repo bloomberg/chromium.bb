@@ -12,8 +12,10 @@
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/pointer_watcher.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
@@ -41,9 +43,10 @@ class ImmersiveFullscreenControllerTestApi;
 class ImmersiveGestureHandler;
 
 class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
-    : public gfx::AnimationDelegate,
+    : public aura::WindowObserver,
+      public gfx::AnimationDelegate,
       public views::PointerWatcher,
-      public views::WidgetObserver,
+      public views::ViewObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
   // The enum is used for an enumerated histogram. New items should be only
@@ -82,6 +85,8 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // Enables or disables immersive fullscreen.
   // |window_type| is the type of window which is put in immersive fullscreen.
   // It is only used for histogramming.
+  // TODO(estade): make clients use kImmersiveIsActive key and move this method
+  // to private.
   void SetEnabled(WindowType window_type, bool enable);
 
   // Returns true if in immersive fullscreen.
@@ -121,8 +126,15 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
                               const gfx::Point& location_in_screen,
                               gfx::NativeView target) override;
 
-  // views::WidgetObserver overrides:
-  void OnWidgetDestroying(views::Widget* widget) override;
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroying(aura::Window* window) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
+  void OnViewIsDeleting(views::View* observed_view) override;
 
   // gfx::AnimationDelegate overrides:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -131,6 +143,8 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // ash::ImmersiveRevealedLock::Delegate overrides:
   void LockRevealedState(AnimateReveal animate_reveal) override;
   void UnlockRevealedState() override;
+
+  static void EnableForWidget(views::Widget* widget, bool enabled);
 
  private:
   friend class ImmersiveFullscreenControllerTest;
@@ -149,8 +163,12 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   };
   enum SwipeType { SWIPE_OPEN, SWIPE_CLOSE, SWIPE_NONE };
 
-  // Enables or disables observers for mouse, touch, focus, and activation.
+  // Enables or disables observers for the widget's aura::Window and
+  // |top_container_|.
   void EnableWindowObservers(bool enable);
+
+  // Enables or disables observers for mouse, touch, focus, and activation.
+  void EnableEventObservers(bool enable);
 
   // Updates |top_edge_hover_timer_| based on a mouse |event|. If the mouse is
   // hovered at the top of the screen the timer is started. If the mouse moves
@@ -231,7 +249,7 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   views::Widget* widget_;
 
   // True if the observers have been enabled.
-  bool observers_enabled_;
+  bool event_observers_enabled_;
 
   // True when in immersive fullscreen.
   bool enabled_;
