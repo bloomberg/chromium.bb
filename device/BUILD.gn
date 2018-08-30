@@ -316,6 +316,8 @@ test("device_unittests") {
       "bluetooth/test/fake_device_pairing_requested_event_args_winrt.h",
       "bluetooth/test/fake_device_pairing_result_winrt.cc",
       "bluetooth/test/fake_device_pairing_result_winrt.h",
+      "bluetooth/test/fake_device_watcher_winrt.cc",
+      "bluetooth/test/fake_device_watcher_winrt.h",
       "bluetooth/test/fake_gatt_characteristic_winrt.cc",
       "bluetooth/test/fake_gatt_characteristic_winrt.h",
       "bluetooth/test/fake_gatt_characteristics_result_winrt.cc",
