@@ -10,40 +10,48 @@ linker_name=gold
 map_file_name=../../../test.map
 tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 Section .text: has 100.0% of 35900712 bytes accounted for from 19 symbols. 0 bytes are unaccounted for.
+* 15 have source paths assigned (78.9%)
 * Padding accounts for 48 bytes (0.0%)
 * 3 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
 * Contains 6 aliases, mapped to 2 unique addresses (52 bytes saved)
 * 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 12 symbols. 0 bytes are unaccounted for.
+* 8 have source paths assigned (66.7%)
 * Padding accounts for 675996 bytes (11.4%)
 * 4 placeholders (symbols that start with **) account for 5251503 bytes (88.6%)
 * Contains 3 string literals. Total size=21, padding=0
 * Contains 2 aliases, mapped to 1 unique addresses (5 bytes saved)
 * 0 symbols have shared ownership
 Section .data.rel.ro: has 100.0% of 1065224 bytes accounted for from 4 symbols. 0 bytes are unaccounted for.
+* 3 have source paths assigned (75.0%)
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 1065132 bytes (100.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .data: has 100.0% of 101768 bytes accounted for from 6 symbols. 0 bytes are unaccounted for.
+* 5 have source paths assigned (83.3%)
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 101600 bytes (99.8%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for.
+* 6 have source paths assigned (100.0%)
 * Padding accounts for 196 bytes (0.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .dex: has 99.7% of 8365003 bytes accounted for from 93 symbols. 23605 bytes are unaccounted for.
+* 83 have source paths assigned (89.2%)
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 4616803 bytes (55.2%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .pak.translations: has 99.9% of 6821 bytes accounted for from 208 symbols. 9 bytes are unaccounted for.
+* 3 have source paths assigned (1.4%)
 * Padding accounts for 18 bytes (0.3%)
 * Contains 2 aliases, mapped to 1 unique addresses (9 bytes saved)
 * 0 symbols have shared ownership
 Section .other: has 100.0% of 39228723 bytes accounted for from 5 symbols. 0 bytes are unaccounted for.
+* 3 have source paths assigned (60.0%)
 * Padding accounts for 33984819 bytes (86.6%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
@@ -495,8 +503,8 @@ Section .other: has 100.0% of 39228723 bytes accounted for from 5 symbols. 0 byt
 .pak.translations@4f3e(size_without_padding=23,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_REMOTING_CAST_TEXT,object_path=,source_path=,flags={},num_aliases=1,component=)
 .pak.translations@4f3f(size_without_padding=28,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT,object_path=,source_path=,flags={},num_aliases=1,component=)
 .pak.translations@4f40(size_without_padding=14,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_TRACKS_NO_LABEL,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1,component=Internal>Android)
-.pak.translations@4f41(size_without_padding=9,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_TRACKS_OFF,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2,component=Internal>Android)
 .pak.translations@4f41(size_without_padding=9,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_TRACKS_OFF,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2,component=Blink>Internal)
+.pak.translations@4f41(size_without_padding=9,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_MEDIA_TRACKS_OFF,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2,component=Internal>Android)
 .pak.translations@4f42(size_without_padding=27,padding=0,full_name=../../content/app/strings/content_strings.grd: IDS_PLUGIN_INITIALIZATION_ERROR,object_path=,source_path=,flags={},num_aliases=1,component=)
 .pak.translations@5bd6(size_without_padding=27,padding=0,full_name=../../android_webview/ui/aw_strings.grd: IDS_AW_WEBPAGE_NOT_AVAILABLE,object_path=,source_path=,flags={},num_aliases=1,component=)
 .pak.translations@5bd7(size_without_padding=69,padding=0,full_name=../../android_webview/ui/aw_strings.grd: IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED,object_path=,source_path=,flags={},num_aliases=1,component=)

@@ -89,9 +89,10 @@ class _PathsByType:
 
 
 class _BulkObjectFileAnalyzerWorker(object):
-  def __init__(self, tool_prefix, output_directory):
+  def __init__(self, tool_prefix, output_directory, track_string_literals=True):
     self._tool_prefix = _MakeToolPrefixAbsolute(tool_prefix)
     self._output_directory = output_directory
+    self._track_string_literals = track_string_literals
     self._list_of_encoded_elf_string_ranges_by_path = None
     self._paths_by_name = collections.defaultdict(list)
     self._encoded_string_addresses_by_path_chunks = []
@@ -171,7 +172,8 @@ class _BulkObjectFileAnalyzerWorker(object):
                  len(paths_by_type.arch), len(paths_by_type.obj),
                  len(paths_by_type.bc))
     self._RunNm(paths_by_type)
-    self._RunLlvmBcAnalyzer(paths_by_type)
+    if self._track_string_literals:
+      self._RunLlvmBcAnalyzer(paths_by_type)
     logging.debug('worker: AnalyzePaths() completed.')
 
   def SortPaths(self):
@@ -254,11 +256,12 @@ def _TerminateSubprocesses():
 
 class _BulkObjectFileAnalyzerMaster(object):
   """Runs BulkObjectFileAnalyzer in a subprocess."""
-  def __init__(self, tool_prefix, output_directory):
-    self._child_pid = None
-    self._pipe = None
+  def __init__(self, tool_prefix, output_directory, track_string_literals=True):
     self._tool_prefix = tool_prefix
     self._output_directory = output_directory
+    self._track_string_literals = track_string_literals
+    self._child_pid = None
+    self._pipe = None
 
   def _Spawn(self):
     global _active_pids
@@ -276,7 +279,8 @@ class _BulkObjectFileAnalyzerMaster(object):
       logging.root.handlers[0].setFormatter(logging.Formatter(
           'obj_analyzer: %(levelname).1s %(relativeCreated)6d %(message)s'))
       worker_analyzer = _BulkObjectFileAnalyzerWorker(
-          self._tool_prefix, self._output_directory)
+          self._tool_prefix, self._output_directory,
+          track_string_literals=self._track_string_literals)
       slave = _BulkObjectFileAnalyzerSlave(worker_analyzer, child_conn)
       slave.Run()
 

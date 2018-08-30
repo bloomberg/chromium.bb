@@ -787,7 +787,8 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
     # common ancestor of all paths.
     if outdir_context:
       bulk_analyzer = obj_analyzer.BulkObjectFileAnalyzer(
-          tool_prefix, outdir_context.output_directory)
+          tool_prefix, outdir_context.output_directory,
+          track_string_literals=track_string_literals)
       bulk_analyzer.AnalyzePaths(outdir_context.elf_object_paths)
 
   logging.info('Parsing Linker Map')
@@ -831,6 +832,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
   # Demangle prints its own log statement.
   demangle.DemangleRemainingSymbols(raw_symbols, tool_prefix)
 
+  object_paths_by_name = {}
   if elf_path:
     logging.info(
         'Adding symbols removed by identical code folding (as reported by nm)')
@@ -869,7 +871,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
             # is fast enough since len(merge_string_syms) < 10.
             raw_symbols[idx:idx + 1] = literal_syms
 
-  return section_sizes, raw_symbols
+  return section_sizes, raw_symbols, object_paths_by_name
 
 
 def _ComputePakFileSymbols(
@@ -884,7 +886,7 @@ def _ComputePakFileSymbols(
   else:
     section_name = models.SECTION_PAK_NONTRANSLATED
   overhead = (12 + 6) * compression_ratio  # Header size plus extra offset
-  symbols_by_id[file_name] = models.Symbol(
+  symbols_by_id[-1] = models.Symbol(
       section_name, overhead, full_name='Overhead: {}'.format(file_name))
   for resource_id in sorted(contents.resources):
     if resource_id in alias_map:
@@ -972,40 +974,25 @@ def _ParsePakInfoFile(pak_info_path):
 
 
 def _ParsePakSymbols(
-    section_sizes, object_paths, output_directory, symbols_by_id):
-  object_paths_by_id = collections.defaultdict(list)
-  for path in object_paths:
-    whitelist_path = os.path.join(output_directory, path + '.whitelist')
-    if (not os.path.exists(whitelist_path)
-        or os.path.getsize(whitelist_path) == 0):
-      continue
-    with open(whitelist_path, 'r') as f:
-      for line in f:
-        resource_id = int(line.rstrip())
-        # There may be object files in static libraries that are removed by the
-        # linker when there are no external references to its symbols. These
-        # files may be included in object_paths which our apk does not use,
-        # resulting in resource_ids that don't end up being in the final apk.
-        if resource_id not in symbols_by_id:
-          continue
-        object_paths_by_id[resource_id].append(path)
-
+    section_sizes, symbols_by_id, object_paths_by_pak_id):
   raw_symbols = []
   for resource_id, symbol in symbols_by_id.iteritems():
     raw_symbols.append(symbol)
-    paths = set(object_paths_by_id[resource_id])
-    if paths:
-      symbol.object_path = paths.pop()
-      if paths:
-        aliases = symbol.aliases or [symbol]
-        symbol.aliases = aliases
-        for path in paths:
-          new_sym = models.Symbol(
-              symbol.section_name, symbol.size, address=symbol.address,
-              full_name=symbol.full_name, object_path=path, aliases=aliases)
-          aliases.append(new_sym)
-          raw_symbols.append(new_sym)
-  raw_symbols.sort(key=lambda s: (s.section_name, s.address))
+    paths = object_paths_by_pak_id.get(resource_id)
+    if not paths:
+      continue
+    symbol.object_path = paths.pop()
+    if not paths:
+      continue
+    aliases = symbol.aliases or [symbol]
+    symbol.aliases = aliases
+    for path in paths:
+      new_sym = models.Symbol(
+          symbol.section_name, symbol.size, address=symbol.address,
+          full_name=symbol.full_name, object_path=path, aliases=aliases)
+      aliases.append(new_sym)
+      raw_symbols.append(new_sym)
+  raw_symbols.sort(key=lambda s: (s.section_name, s.address, s.object_path))
   raw_total = 0.0
   int_total = 0
   for symbol in raw_symbols:
@@ -1086,6 +1073,22 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
   prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
   section_sizes[models.SECTION_OTHER] = prev + sum(s.size for s in apk_symbols)
   return apk_symbols
+
+
+def _CreatePakObjectMap(object_paths_by_name):
+  # IDS_ macro usages result in templated function calls that contain the
+  # resource ID in them. These names are collected along with all other symbols
+  # by running "nm" on them. We just need to extract the values from them.
+  object_paths_by_pak_id = {}
+  PREFIX = 'void ui::WhitelistedResource<'
+  id_start_idx = len(PREFIX)
+  id_end_idx = -len('>()')
+  for name in object_paths_by_name:
+    if name.startswith(PREFIX):
+      pak_id = int(name[id_start_idx:id_end_idx])
+      logging.info('PAK ID: %d', pak_id)
+      object_paths_by_pak_id[pak_id] = object_paths_by_name[name]
+  return object_paths_by_pak_id
 
 
 def _FindPakSymbolsFromApk(apk_path, output_directory, knobs):
@@ -1203,15 +1206,15 @@ def CreateSectionSizesAndSymbols(
         source_mapper=source_mapper,
         thin_archives=thin_archives)
 
-  section_sizes, raw_symbols = _ParseElfInfo(
+  section_sizes, raw_symbols, object_paths_by_name = _ParseElfInfo(
       map_path, elf_path, tool_prefix, track_string_literals,
       outdir_context=outdir_context, linker_name=linker_name)
   elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
 
   pak_symbols_by_id = None
   if apk_path:
-    pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory,
-                                               knobs)
+    pak_symbols_by_id = _FindPakSymbolsFromApk(
+        apk_path, output_directory, knobs)
     if elf_path:
       section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
           section_sizes, metadata, apk_elf_result)
@@ -1232,9 +1235,10 @@ def CreateSectionSizesAndSymbols(
     raw_symbols.append(elf_overhead_symbol)
 
   if pak_symbols_by_id:
-    object_paths = (p for p in source_mapper.IterAllPaths() if p.endswith('.o'))
+    logging.debug('Extracting pak IDs from symbol names, and creating symbols')
+    object_paths_by_pak_id = _CreatePakObjectMap(object_paths_by_name)
     pak_raw_symbols = _ParsePakSymbols(
-        section_sizes, object_paths, output_directory, pak_symbols_by_id)
+        section_sizes, pak_symbols_by_id, object_paths_by_pak_id)
     raw_symbols.extend(pak_raw_symbols)
 
   _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)

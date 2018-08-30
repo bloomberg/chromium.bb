@@ -39,7 +39,7 @@ Other section sizes:
     .strtab: 0 bytes (0 bytes)
     .symtab: 0 bytes (0 bytes)
 
-2 symbols added (+), 2 changed (~), 3 removed (-), 242 unchanged (not shown)
+2 symbols added (+), 2 changed (~), 3 removed (-), 241 unchanged (not shown)
 Of changed symbols, 3 grew, 4 shrank
 Number of unique symbols 251 -> 250 (-1)
 0 paths added, 0 removed, 2 changed
