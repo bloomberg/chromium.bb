@@ -765,6 +765,16 @@ const char* Tab::GetClassName() const {
   return kViewClassName;
 }
 
+namespace {
+bool IsSelectionModifierDown(const ui::MouseEvent& event) {
+#if defined(OS_MACOSX)
+  return event.IsCommandDown();
+#else
+  return event.IsControlDown();
+#endif
+}
+}  // namespace
+
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
   controller_->OnMouseEventInTab(this, event);
 
@@ -779,11 +789,11 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
     // event after changing so the coordinates are correct.
     ui::MouseEvent event_in_parent(event, static_cast<View*>(this), parent());
     if (controller_->SupportsMultipleSelection()) {
-      if (event.IsShiftDown() && event.IsControlDown()) {
+      if (event.IsShiftDown() && IsSelectionModifierDown(event)) {
         controller_->AddSelectionFromAnchorTo(this);
       } else if (event.IsShiftDown()) {
         controller_->ExtendSelectionTo(this);
-      } else if (event.IsControlDown()) {
+      } else if (IsSelectionModifierDown(event)) {
         controller_->ToggleSelected(this);
         if (!IsSelected()) {
           // Don't allow dragging non-selected tabs.
@@ -838,7 +848,7 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
         controller_->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
     }
   } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
-             !event.IsControlDown()) {
+             !IsSelectionModifierDown(event)) {
     // If the tab was already selected mouse pressed doesn't change the
     // selection. Reset it now to handle the case where multiple tabs were
     // selected.
