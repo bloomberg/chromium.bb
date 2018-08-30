@@ -48,6 +48,10 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(CAN_MAKE_PAYMENT_ENABLED));
   EXPECT_EQ(prefs::kContextualSearchEnabled,
             GetPrefName(CONTEXTUAL_SEARCH_ENABLED));
+  EXPECT_EQ(autofill::prefs::kAutofillProfileEnabled,
+            GetPrefName(AUTOFILL_PROFILE_ENABLED));
+  EXPECT_EQ(autofill::prefs::kAutofillCreditCardEnabled,
+            GetPrefName(AUTOFILL_CREDIT_CARD_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

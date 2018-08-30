@@ -16,8 +16,12 @@ namespace android {
 
 class PreferencesLauncher {
  public:
-  // Opens the autofill settings page.
-  static void ShowAutofillSettings(content::WebContents* web_contents);
+  // Opens the autofill settings page for profiles.
+  static void ShowAutofillProfileSettings(content::WebContents* web_contents);
+
+  // Opens the autofill settings page for credit cards.
+  static void ShowAutofillCreditCardSettings(
+      content::WebContents* web_contents);
 
   // Opens the password settings page.
   static void ShowPasswordSettings();

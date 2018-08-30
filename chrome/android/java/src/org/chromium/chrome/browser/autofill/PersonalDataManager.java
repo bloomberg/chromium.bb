@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.content_public.browser.WebContents;
 
@@ -908,18 +909,33 @@ public class PersonalDataManager {
     }
 
     /**
-     * @return Whether the Autofill feature is enabled.
+     * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
-    public static boolean isAutofillEnabled() {
-        return nativeIsAutofillEnabled();
+    public static boolean isAutofillProfileEnabled() {
+        return nativeGetPref(Pref.AUTOFILL_PROFILE_ENABLED);
     }
 
     /**
-     * Enables or disables the Autofill feature.
-     * @param enable True to disable Autofill, false otherwise.
+     * @return Whether the Autofill feature for Credit Cards is enabled.
      */
-    public static void setAutofillEnabled(boolean enable) {
-        nativeSetAutofillEnabled(enable);
+    public static boolean isAutofillCreditCardEnabled() {
+        return nativeGetPref(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
+    }
+
+    /**
+     * Enables or disables the Autofill feature for Profiles.
+     * @param enable True to disable profile Autofill, false otherwise.
+     */
+    public static void setAutofillProfileEnabled(boolean enable) {
+        nativeSetPref(Pref.AUTOFILL_PROFILE_ENABLED, enable);
+    }
+
+    /**
+     * Enables or disables the Autofill feature for Credit Cards.
+     * @param enable True to disable credit card Autofill, false otherwise.
+     */
+    public static void setAutofillCreditCardEnabled(boolean enable) {
+        nativeSetPref(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
     }
 
     /**
@@ -927,6 +943,20 @@ public class PersonalDataManager {
      */
     public static boolean isAutofillManaged() {
         return nativeIsAutofillManaged();
+    }
+
+    /**
+     * @return Whether the Autofill feature for Profiles (addresses) is managed.
+     */
+    public static boolean isAutofillProfileManaged() {
+        return nativeIsAutofillProfileManaged();
+    }
+
+    /**
+     * @return Whether the Autofill feature for Credit Cards is managed.
+     */
+    public static boolean isAutofillCreditCardManaged() {
+        return nativeIsAutofillCreditCardManaged();
     }
 
     /**
@@ -1030,13 +1060,15 @@ public class PersonalDataManager {
             String regionCode, int timeoutSeconds, GetSubKeysRequestDelegate delegate);
     private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
-    private static native boolean nativeIsAutofillEnabled();
-    private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();
+    private static native boolean nativeIsAutofillProfileManaged();
+    private static native boolean nativeIsAutofillCreditCardManaged();
     private static native boolean nativeIsPaymentsIntegrationEnabled();
     private static native void nativeSetPaymentsIntegrationEnabled(boolean enable);
     private static native String nativeToCountryCode(String countryName);
     private static native void nativeCancelPendingGetSubKeys(long nativePersonalDataManagerAndroid);
     private static native void nativeSetSyncServiceForTesting(
             long nativePersonalDataManagerAndroid);
+    private static native boolean nativeGetPref(int preference);
+    private static native void nativeSetPref(int preference, boolean enable);
 }

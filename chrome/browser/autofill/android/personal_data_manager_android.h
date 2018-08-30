@@ -338,6 +338,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
+  static const char* GetPrefNameExposedToJava(int pref_index);
+
  private:
   ~PersonalDataManagerAndroid() override;
 

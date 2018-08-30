@@ -171,7 +171,13 @@ ChromeAutofillClient::GetSecurityLevelForUmaHistograms() {
 void ChromeAutofillClient::ShowAutofillSettings(
     bool show_credit_card_settings) {
 #if defined(OS_ANDROID)
-  chrome::android::PreferencesLauncher::ShowAutofillSettings(web_contents());
+  if (show_credit_card_settings) {
+    chrome::android::PreferencesLauncher::ShowAutofillCreditCardSettings(
+        web_contents());
+  } else {
+    chrome::android::PreferencesLauncher::ShowAutofillProfileSettings(
+        web_contents());
+  }
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser) {

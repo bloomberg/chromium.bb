@@ -70,7 +70,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference addProfile =
@@ -96,7 +96,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(6 /* One add button + five profiles. */,
+        Assert.assertEquals(7 /* One toggle + one add button + five profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference addedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Alice Doe");
@@ -116,7 +116,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference addProfile =
@@ -158,7 +158,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference sebProfile =
@@ -182,7 +182,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(4 /* One add button + three profile. */,
+        Assert.assertEquals(5 /* One toggle + one add button + three profile. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference remainedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("John Doe");
@@ -204,7 +204,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference johnProfile =
@@ -231,7 +231,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference editedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Emily Doe");
@@ -254,7 +254,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference bobProfile =
@@ -274,7 +274,7 @@ public class AutofillProfilesFragmentTest {
             }
         });
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         activity.finish();
     }
@@ -290,7 +290,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference billProfile =
@@ -311,7 +311,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(5 /* One add button + four profiles. */,
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
     }
 

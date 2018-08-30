@@ -59,6 +59,10 @@ void SetAutofillEnabled(PrefService* prefs, bool enabled);
 
 bool IsAutofillManaged(const PrefService* prefs);
 
+bool IsProfileAutofillManaged(const PrefService* prefs);
+
+bool IsCreditCardAutofillManaged(const PrefService* prefs);
+
 bool IsProfileAutofillEnabled(const PrefService* prefs);
 
 void SetProfileAutofillEnabled(PrefService* prefs, bool enabled);
