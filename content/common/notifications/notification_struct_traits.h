@@ -134,10 +134,10 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
     return data.require_interaction;
   }
 
-  static const base::span<const int8_t> data(
+  static const base::span<const uint8_t> data(
       const content::PlatformNotificationData& data) {
     // TODO(https://crbug.com/798466): Align data types to avoid this cast.
-    return base::make_span(reinterpret_cast<const int8_t*>(data.data.data()),
+    return base::make_span(reinterpret_cast<const uint8_t*>(data.data.data()),
                            data.data.size());
   }
 

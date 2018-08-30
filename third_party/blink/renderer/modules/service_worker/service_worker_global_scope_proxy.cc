@@ -36,6 +36,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -86,8 +87,85 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-namespace blink {
+namespace mojo {
 
+namespace {
+
+blink::mojom::NotificationDirection ToMojomNotificationDirection(
+    blink::WebNotificationData::Direction input) {
+  switch (input) {
+    case blink::WebNotificationData::kDirectionLeftToRight:
+      return blink::mojom::NotificationDirection::LEFT_TO_RIGHT;
+    case blink::WebNotificationData::kDirectionRightToLeft:
+      return blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
+    case blink::WebNotificationData::kDirectionAuto:
+      return blink::mojom::NotificationDirection::AUTO;
+  }
+
+  NOTREACHED();
+  return blink::mojom::NotificationDirection::AUTO;
+}
+
+blink::mojom::NotificationActionType ToMojomNotificationActionType(
+    blink::WebNotificationAction::Type input) {
+  switch (input) {
+    case blink::WebNotificationAction::kButton:
+      return blink::mojom::NotificationActionType::BUTTON;
+    case blink::WebNotificationAction::kText:
+      return blink::mojom::NotificationActionType::TEXT;
+  }
+
+  NOTREACHED();
+  return blink::mojom::NotificationActionType::BUTTON;
+}
+
+}  // namespace
+
+// Inside Blink we're using mojom structs to represent notification data, not
+// WebNotification{Action,Data}, however, we still need WebNotificationData to
+// carry data from Content into Blink, so, for now we need these type
+// converters. They would disappear once we eliminate the abstract interface
+// layer blink::WebServiceWorkerContextProxy via Onion Soup effort later.
+template <>
+struct TypeConverter<blink::mojom::blink::NotificationActionPtr,
+                     blink::WebNotificationAction> {
+  static blink::mojom::blink::NotificationActionPtr Convert(
+      const blink::WebNotificationAction& input) {
+    return blink::mojom::blink::NotificationAction::New(
+        ToMojomNotificationActionType(input.type), input.action, input.title,
+        input.icon, input.placeholder);
+  }
+};
+
+template <>
+struct TypeConverter<blink::mojom::blink::NotificationDataPtr,
+                     blink::WebNotificationData> {
+  static blink::mojom::blink::NotificationDataPtr Convert(
+      const blink::WebNotificationData& input) {
+    Vector<int32_t> vibration_pattern;
+    vibration_pattern.Append(input.vibrate.Data(), input.vibrate.size());
+
+    Vector<uint8_t> data;
+    data.Append(input.data.Data(), input.data.size());
+
+    Vector<blink::mojom::blink::NotificationActionPtr> actions;
+    for (const auto& web_action : input.actions) {
+      actions.push_back(
+          blink::mojom::blink::NotificationAction::From(web_action));
+    }
+
+    return blink::mojom::blink::NotificationData::New(
+        input.title, ToMojomNotificationDirection(input.direction), input.lang,
+        input.body, input.tag, input.image, input.icon, input.badge,
+        std::move(vibration_pattern), input.timestamp, input.renotify,
+        input.silent, input.require_interaction, std::move(data),
+        std::move(actions));
+  }
+};
+
+}  // namespace mojo
+
+namespace blink {
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
     WebServiceWorkerContextClient& client) {
@@ -395,7 +473,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationClickEvent(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClick, event_id);
   NotificationEventInit event_init;
   event_init.setNotification(Notification::Create(
-      WorkerGlobalScope(), notification_id, data, true /* showing */));
+      WorkerGlobalScope(), notification_id,
+      mojom::blink::NotificationData::From(data), true /* showing */));
   if (0 <= action_index && action_index < static_cast<int>(data.actions.size()))
     event_init.setAction(data.actions[action_index].action);
   event_init.setReply(reply);
@@ -414,7 +493,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
   NotificationEventInit event_init;
   event_init.setAction(WTF::String());  // initialize as null.
   event_init.setNotification(Notification::Create(
-      WorkerGlobalScope(), notification_id, data, false /* showing */));
+      WorkerGlobalScope(), notification_id,
+      mojom::blink::NotificationData::From(data), false /* showing */));
   Event* event = NotificationEvent::Create(EventTypeNames::notificationclose,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -510,8 +590,8 @@ void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {
 
 void ServiceWorkerGlobalScopeProxy::CountDeprecation(WebFeature feature) {
   // Go through the same code path with countFeature() because a deprecation
-  // message is already shown on the worker console and a remaining work is just
-  // to record an API use.
+  // message is already shown on the worker console and a remaining work is
+  // just to record an API use.
   CountFeature(feature);
 }
 
@@ -614,10 +694,10 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
       client_(&client),
       worker_global_scope_(nullptr) {
   DCHECK(IsMainThread());
-  // ServiceWorker can sometimes run tasks that are initiated by/associated with
-  // a document's frame but these documents can be from a different process. So
-  // we intentionally populate the task runners with default task runners of the
-  // main thread.
+  // ServiceWorker can sometimes run tasks that are initiated by/associated
+  // with a document's frame but these documents can be from a different
+  // process. So we intentionally populate the task runners with default task
+  // runners of the main thread.
   parent_execution_context_task_runners_ =
       ParentExecutionContextTaskRunners::Create();
 }

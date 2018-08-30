@@ -49,7 +49,7 @@ struct NotificationData {
   mojo_base.mojom.String16 title;
 
   // Hint to determine the directionality of the displayed notification.
-  NotificationDirection direction;
+  NotificationDirection direction = LEFT_TO_RIGHT;
 
   // BCP 47 language tag describing the notification's contents. Optional.
   string? lang;
@@ -82,24 +82,24 @@ struct NotificationData {
   // The time at which the event the notification represents took place,
   // in milliseconds since the Unix epoch.
   // TODO(https://crbug.com/797306): Use base::TimeTicks instead of a double.
-  double timestamp;
+  double timestamp = 0;
 
   // Whether default notification indicators (sound, vibration, light) should
   // be played again if the notification is replacing an older notification.
-  bool renotify;
+  bool renotify = false;
 
   // Whether default notification indicators (sound, vibration, light) should
   // be suppressed.
-  bool silent;
+  bool silent = false;
 
   // Whether the notification should remain onscreen indefinitely, rather than
   // being auto-minimized to the notification center (if allowed by platform).
-  bool require_interaction;
+  bool require_interaction = false;
 
   // Developer-provided data associated with the notification, in the form of
   // a serialized string. Must not exceed the number of bytes specified by
   // |kMaximumDeveloperDataSize|.
-  array<int8>? data;
+  array<uint8>? data;
 
   // Actions that should be shown as buttons on the notification.
   array<NotificationAction>? actions;

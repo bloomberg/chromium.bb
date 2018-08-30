@@ -13,6 +13,13 @@
 namespace blink {
 
 // Structure representing the data associated with a Web Notification.
+// Currently we're using the corresponding mojom struct
+// blink::mojom::blink::NotificationData everywhere inside Blink,
+// WebNotificationData is only used to carry notification data across the
+// boundary between Content layer and Blink (the only two functions:
+// WebServiceWorkerContextProxy::DispatchNotification{Click, Close}Event),
+// ultimately WebNotificationData will also be replaced by the mojom one there
+// via Onion Soup effort.
 struct WebNotificationData {
   enum Direction {
     kDirectionLeftToRight,

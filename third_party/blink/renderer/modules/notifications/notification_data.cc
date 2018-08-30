@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -18,25 +17,26 @@
 namespace blink {
 namespace {
 
-WebNotificationData::Direction ToDirectionEnumValue(const String& direction) {
+mojom::blink::NotificationDirection ToDirectionEnumValue(
+    const String& direction) {
   if (direction == "ltr")
-    return WebNotificationData::kDirectionLeftToRight;
+    return mojom::blink::NotificationDirection::LEFT_TO_RIGHT;
   if (direction == "rtl")
-    return WebNotificationData::kDirectionRightToLeft;
+    return mojom::blink::NotificationDirection::RIGHT_TO_LEFT;
 
-  return WebNotificationData::kDirectionAuto;
+  return mojom::blink::NotificationDirection::AUTO;
 }
 
-WebURL CompleteURL(ExecutionContext* context, const String& string_url) {
-  WebURL url = context->CompleteURL(string_url);
+KURL CompleteURL(ExecutionContext* context, const String& string_url) {
+  KURL url = context->CompleteURL(string_url);
   if (url.IsValid())
     return url;
-  return WebURL();
+  return KURL();
 }
 
 }  // namespace
 
-WebNotificationData CreateWebNotificationData(
+mojom::blink::NotificationDataPtr CreateNotificationData(
     ExecutionContext* context,
     const String& title,
     const NotificationOptions& options,
@@ -45,7 +45,7 @@ WebNotificationData CreateWebNotificationData(
   if (options.hasVibrate() && options.silent()) {
     exception_state.ThrowTypeError(
         "Silent notifications must not specify vibration patterns.");
-    return WebNotificationData();
+    return nullptr;
   }
 
   // If renotify is true, the notification must have a tag.
@@ -53,34 +53,37 @@ WebNotificationData CreateWebNotificationData(
     exception_state.ThrowTypeError(
         "Notifications which set the renotify flag must specify a non-empty "
         "tag.");
-    return WebNotificationData();
+    return nullptr;
   }
 
-  WebNotificationData web_data;
+  auto notification_data = mojom::blink::NotificationData::New();
 
-  web_data.title = title;
-  web_data.direction = ToDirectionEnumValue(options.dir());
-  web_data.lang = options.lang();
-  web_data.body = options.body();
-  web_data.tag = options.tag();
+  notification_data->title = title;
+  notification_data->direction = ToDirectionEnumValue(options.dir());
+  notification_data->lang = options.lang();
+  notification_data->body = options.body();
+  notification_data->tag = options.tag();
 
   if (options.hasImage() && !options.image().IsEmpty())
-    web_data.image = CompleteURL(context, options.image());
+    notification_data->image = CompleteURL(context, options.image());
 
   if (options.hasIcon() && !options.icon().IsEmpty())
-    web_data.icon = CompleteURL(context, options.icon());
+    notification_data->icon = CompleteURL(context, options.icon());
 
   if (options.hasBadge() && !options.badge().IsEmpty())
-    web_data.badge = CompleteURL(context, options.badge());
+    notification_data->badge = CompleteURL(context, options.badge());
 
-  web_data.vibrate =
+  VibrationController::VibrationPattern vibration_pattern =
       VibrationController::SanitizeVibrationPattern(options.vibrate());
-  web_data.timestamp = options.hasTimestamp()
-                           ? static_cast<double>(options.timestamp())
-                           : WTF::CurrentTimeMS();
-  web_data.renotify = options.renotify();
-  web_data.silent = options.silent();
-  web_data.require_interaction = options.requireInteraction();
+  notification_data->vibration_pattern = Vector<int32_t>();
+  notification_data->vibration_pattern->Append(vibration_pattern.data(),
+                                               vibration_pattern.size());
+  notification_data->timestamp = options.hasTimestamp()
+                                     ? static_cast<double>(options.timestamp())
+                                     : WTF::CurrentTimeMS();
+  notification_data->renotify = options.renotify();
+  notification_data->silent = options.silent();
+  notification_data->require_interaction = options.requireInteraction();
 
   if (options.hasData()) {
     const ScriptValue& data = options.data();
@@ -92,47 +95,51 @@ WebNotificationData CreateWebNotificationData(
         SerializedScriptValue::Serialize(isolate, data.V8Value(), options,
                                          exception_state);
     if (exception_state.HadException())
-      return WebNotificationData();
+      return nullptr;
 
-    web_data.data = WebVector<char>(serialized_script_value->GetWireData());
+    notification_data->data = Vector<uint8_t>();
+    notification_data->data->Append(
+        serialized_script_value->Data(),
+        serialized_script_value->DataLengthInBytes());
   }
 
-  Vector<WebNotificationAction> actions;
+  Vector<mojom::blink::NotificationActionPtr> actions;
 
   const size_t max_actions = Notification::maxActions();
   for (const NotificationAction& action : options.actions()) {
     if (actions.size() >= max_actions)
       break;
 
-    WebNotificationAction web_action;
-    web_action.action = action.action();
-    web_action.title = action.title();
+    auto notification_action = mojom::blink::NotificationAction::New();
+    notification_action->action = action.action();
+    notification_action->title = action.title();
 
     if (action.type() == "button")
-      web_action.type = WebNotificationAction::kButton;
+      notification_action->type = mojom::blink::NotificationActionType::BUTTON;
     else if (action.type() == "text")
-      web_action.type = WebNotificationAction::kText;
+      notification_action->type = mojom::blink::NotificationActionType::TEXT;
     else
       NOTREACHED() << "Unknown action type: " << action.type();
 
     if (action.hasPlaceholder() &&
-        web_action.type == WebNotificationAction::kButton) {
+        notification_action->type ==
+            mojom::blink::NotificationActionType::BUTTON) {
       exception_state.ThrowTypeError(
           "Notifications of type \"button\" cannot specify a placeholder.");
-      return WebNotificationData();
+      return nullptr;
     }
 
-    web_action.placeholder = action.placeholder();
+    notification_action->placeholder = action.placeholder();
 
     if (action.hasIcon() && !action.icon().IsEmpty())
-      web_action.icon = CompleteURL(context, action.icon());
+      notification_action->icon = CompleteURL(context, action.icon());
 
-    actions.push_back(web_action);
+    actions.push_back(std::move(notification_action));
   }
 
-  web_data.actions = actions;
+  notification_data->actions = std::move(actions);
 
-  return web_data;
+  return notification_data;
 }
 
 }  // namespace blink

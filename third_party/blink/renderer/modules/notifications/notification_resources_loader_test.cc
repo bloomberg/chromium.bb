@@ -7,10 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
-#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -64,8 +61,8 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 
   // Registers a mocked url. When fetched, |fileName| will be loaded from the
   // test data directory.
-  WebURL RegisterMockedURL(const String& file_name) {
-    WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+  KURL RegisterMockedURL(const String& file_name) {
+    KURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
         kResourcesLoaderBaseUrl,
         test::CoreTestDataPath(kResourcesLoaderBaseDir), file_name,
         "image/png");
@@ -73,8 +70,8 @@ class NotificationResourcesLoaderTest : public PageTestBase {
   }
 
   // Registers a mocked url that will fail to be fetched, with a 404 error.
-  WebURL RegisterMockedErrorURL(const String& file_name) {
-    WebURL url(KURL(kResourcesLoaderBaseUrl + file_name));
+  KURL RegisterMockedErrorURL(const String& file_name) {
+    KURL url(kResourcesLoaderBaseUrl + file_name);
     URLTestHelpers::RegisterMockedErrorURLLoad(url);
     return url;
   }
@@ -87,20 +84,23 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 };
 
 TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
-  WebNotificationData notification_data;
-  notification_data.image = RegisterMockedURL(kResourcesLoaderIcon500x500);
-  notification_data.icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
-  notification_data.badge = RegisterMockedURL(kResourcesLoaderIcon48x48);
-  notification_data.actions =
-      WebVector<WebNotificationAction>(static_cast<size_t>(2));
-  notification_data.actions[0].icon =
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->image = RegisterMockedURL(kResourcesLoaderIcon500x500);
+  notification_data->icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
+  notification_data->badge = RegisterMockedURL(kResourcesLoaderIcon48x48);
+  notification_data->actions = Vector<mojom::blink::NotificationActionPtr>();
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[0]->icon =
       RegisterMockedURL(kResourcesLoaderIcon110x110);
-  notification_data.actions[1].icon =
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[1]->icon =
       RegisterMockedURL(kResourcesLoaderIcon120x120);
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -125,16 +125,17 @@ TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
-  WebNotificationData notification_data;
-  notification_data.icon = RegisterMockedURL(kResourcesLoaderIcon500x500);
-  notification_data.badge = notification_data.icon;
-  notification_data.actions =
-      WebVector<WebNotificationAction>(static_cast<size_t>(1));
-  notification_data.actions[0].icon = notification_data.icon;
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->icon = RegisterMockedURL(kResourcesLoaderIcon500x500);
+  notification_data->badge = notification_data->icon;
+  notification_data->actions = Vector<mojom::blink::NotificationActionPtr>();
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[0]->icon = notification_data->icon;
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -156,12 +157,12 @@ TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
-  WebNotificationData notification_data;
-  notification_data.image = RegisterMockedURL(kResourcesLoaderIcon3000x1000);
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->image = RegisterMockedURL(kResourcesLoaderIcon3000x1000);
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -172,12 +173,12 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
-  WebNotificationData notification_data;
-  notification_data.image = RegisterMockedURL(kResourcesLoaderIcon3000x2000);
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->image = RegisterMockedURL(kResourcesLoaderIcon3000x2000);
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -189,11 +190,11 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
-  WebNotificationData notification_data;
+  auto notification_data = mojom::blink::NotificationData::New();
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -205,17 +206,18 @@ TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
-  WebNotificationData notification_data;
-  notification_data.image = notification_data.icon;
-  notification_data.icon = RegisterMockedErrorURL(kResourcesLoaderIcon100x100);
-  notification_data.badge = notification_data.icon;
-  notification_data.actions =
-      WebVector<WebNotificationAction>(static_cast<size_t>(1));
-  notification_data.actions[0].icon = notification_data.icon;
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->icon = RegisterMockedErrorURL(kResourcesLoaderIcon100x100);
+  notification_data->image = notification_data->icon;
+  notification_data->badge = notification_data->icon;
+  notification_data->actions = Vector<mojom::blink::NotificationActionPtr>();
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[0]->icon = notification_data->icon;
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -230,13 +232,13 @@ TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
-  WebNotificationData notification_data;
-  notification_data.icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
-  notification_data.badge = RegisterMockedErrorURL(kResourcesLoaderIcon48x48);
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
+  notification_data->badge = RegisterMockedErrorURL(kResourcesLoaderIcon48x48);
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
@@ -251,20 +253,23 @@ TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
 }
 
 TEST_F(NotificationResourcesLoaderTest, StopYieldsNoResources) {
-  WebNotificationData notification_data;
-  notification_data.image = RegisterMockedURL(kResourcesLoaderIcon500x500);
-  notification_data.icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
-  notification_data.badge = RegisterMockedURL(kResourcesLoaderIcon48x48);
-  notification_data.actions =
-      WebVector<WebNotificationAction>(static_cast<size_t>(2));
-  notification_data.actions[0].icon =
+  auto notification_data = mojom::blink::NotificationData::New();
+  notification_data->image = RegisterMockedURL(kResourcesLoaderIcon500x500);
+  notification_data->icon = RegisterMockedURL(kResourcesLoaderIcon100x100);
+  notification_data->badge = RegisterMockedURL(kResourcesLoaderIcon48x48);
+  notification_data->actions = Vector<mojom::blink::NotificationActionPtr>();
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[0]->icon =
       RegisterMockedURL(kResourcesLoaderIcon110x110);
-  notification_data.actions[1].icon =
+  notification_data->actions->push_back(
+      mojom::blink::NotificationAction::New());
+  notification_data->actions.value()[1]->icon =
       RegisterMockedURL(kResourcesLoaderIcon120x120);
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), notification_data);
+  Loader()->Start(GetExecutionContext(), *notification_data);
 
   // Check that starting the loader did not synchronously fail, providing
   // empty resources. The requests should be pending now.
