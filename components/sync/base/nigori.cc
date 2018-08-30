@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"
@@ -161,10 +163,19 @@ bool Nigori::InitByDerivation(KeyDerivationMethod method,
                               const std::string& hostname,
                               const std::string& username,
                               const std::string& password) {
-  // Currently, PBKDF2 is the only supported method.
-  DCHECK_EQ(method, KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return keys_.InitByDerivationUsingPbkdf2(hostname, username, password);
+    case KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT:
+      DCHECK(!base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase));
+      return keys_.InitByDerivationUsingScrypt(password);
+    case KeyDerivationMethod::UNSUPPORTED:
+      return false;
+  }
 
-  return keys_.InitByDerivationUsingPbkdf2(hostname, username, password);
+  NOTREACHED();
+  return false;
 }
 
 bool Nigori::InitByImport(const std::string& user_key,

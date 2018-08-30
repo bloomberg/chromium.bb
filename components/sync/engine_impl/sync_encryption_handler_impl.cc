@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +21,7 @@
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/encryption.pb.h"
@@ -166,11 +168,16 @@ KeyDerivationMethod GetKeyDerivationMethodFromNigori(
     const sync_pb::NigoriSpecifics& nigori) {
   ::google::protobuf::int32 proto_key_derivation_method =
       nigori.custom_passphrase_key_derivation_method();
-  // TODO(davidovic): Once scrypt is introduced, add a feature to prevent
-  // reading it from Nigori and just return UNSUPPORTED if we encounter it (in
-  // case we have troubles during rollout).
   KeyDerivationMethod key_derivation_method =
       ProtoKeyDerivationMethodToEnum(proto_key_derivation_method);
+  if (key_derivation_method ==
+          KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT &&
+      base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase)) {
+    // Because scrypt is explicitly disabled, just behave as if it is an
+    // unsupported method.
+    key_derivation_method = KeyDerivationMethod::UNSUPPORTED;
+  }
   if (key_derivation_method == KeyDerivationMethod::UNSUPPORTED) {
     DLOG(WARNING) << "Unsupported key derivation method encountered: "
                   << proto_key_derivation_method;
