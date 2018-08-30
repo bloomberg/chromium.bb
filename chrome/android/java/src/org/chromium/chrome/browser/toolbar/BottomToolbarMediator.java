@@ -48,7 +48,7 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
     /** Whether the swipe layout is currently active. */
     private boolean mIsInSwipeLayout;
 
-    /** The data required to fill in the first (lefmtost) bottom toolbar button slot.*/
+    /** The data required to fill in the first (leftmost) bottom toolbar button slot.*/
     private final ToolbarButtonSlotData mFirstSlotData;
 
     /** The data required to fill in the second bottom toolbar button slot.*/
@@ -60,10 +60,13 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
      * @param fullscreenManager A {@link ChromeFullscreenManager} for events related to the browser
      *                          controls.
      * @param resources Android {@link Resources} to pull dimensions from.
+     * @param firstSlotData The data required to fill in the first bottom toolbar button slot.
+     * @param secondSlotData The data required to fill in the second bottom toolbar button slot.
+     * @param primaryColor The initial color for the bottom toolbar.
      */
     BottomToolbarMediator(BottomToolbarModel model, ChromeFullscreenManager fullscreenManager,
             Resources resources, ToolbarButtonSlotData firstSlotData,
-            ToolbarButtonSlotData secondSlotData) {
+            ToolbarButtonSlotData secondSlotData, int primaryColor) {
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
@@ -75,6 +78,8 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
 
         mFirstSlotData = firstSlotData;
         mSecondSlotData = secondSlotData;
+
+        mModel.setValue(BottomToolbarModel.PRIMARY_COLOR, primaryColor);
 
         mModel.setValue(
                 BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.browsingModeButtonData);
