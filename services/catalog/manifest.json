@@ -1,6 +1,9 @@
 {
   "name": "catalog",
   "display_name": "Application Resolver",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     // NOTE: This manifest is for documentation purposes only. Relevant
     // capability spec is defined inline in the ServiceManager implementation.
@@ -11,9 +14,6 @@
       "provides": {
         "directory": [ "filesystem.mojom.Directory" ],
         "control": [ "catalog.mojom.CatalogControl" ]
-      },
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

@@ -1,6 +1,9 @@
 {
   "name": "service_manager_unittest",
   "display_name": "Service Manager Unittest",
+  "options": {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -10,7 +13,6 @@
       },
       "requires": {
         "service_manager": [
-          "service_manager:singleton",
           "service_manager:service_manager",
           "service_manager:client_process",
           "service_manager:instance_name"
@@ -21,9 +23,7 @@
         "service_manager_unittest_singleton": [
           "service_manager_unittest:singleton"
         ],
-        "service_manager_unittest_all_users": [
-          "service_manager_unittest:all_users"
-        ],
+        "service_manager_unittest_shared_instance_across_users": [ ],
         "service_manager_unittest_regular": [
           "service_manager_unittest:regular"
         ],

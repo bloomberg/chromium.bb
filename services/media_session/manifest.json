@@ -1,6 +1,9 @@
 {
   "name": "media_session",
   "display_name": "Media Session Service",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -8,11 +11,6 @@
           "media_session.mojom.AudioFocus"
         ],
         "tests": [ "*" ]
-      },
-      "requires": {
-        "service_manager": [
-          "service_manager:all_users"
-        ]
       }
     }
   }

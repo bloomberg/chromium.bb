@@ -2,6 +2,9 @@
   "name": "ash",
   "display_name": "Ash Window Manager and Shell",
   "sandbox_type": "none",
+  "options" : {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -68,7 +71,6 @@
         "local_state": [ "pref_client" ],
         "multidevice_setup": [ "multidevice_setup" ],
         "quick_launch_app": [ "mash:launchable" ],
-        "service_manager": [ "service_manager:singleton" ],
         "ui": [
           "ozone",
           "window_manager"

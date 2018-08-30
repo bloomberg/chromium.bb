@@ -1,6 +1,9 @@
 {
   "name": "service_manager_unittest_embedder",
   "display_name": "Service Manager Unittest: Embedder",
+  "options": {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -10,7 +13,6 @@
         ]
       },
       "requires": {
-        "service_manager": [ "service_manager:singleton" ],
         "service_manager_unittest_target": [ ]
       }
     }

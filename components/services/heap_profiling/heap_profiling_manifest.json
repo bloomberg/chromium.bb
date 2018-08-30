@@ -2,6 +2,9 @@
   "name": "heap_profiling",
   "display_name": "Heap Profiling Service",
   "sandbox_type": "profiling",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -10,8 +13,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "resource_coordinator": [ "heap_profiler_helper" ],
-        "service_manager": [ "service_manager:all_users" ]
+        "resource_coordinator": [ "heap_profiler_helper" ]
       }
     }
   }

@@ -2,14 +2,14 @@
   "name": "file_util",
   "display_name": "Chrome File Utilities",
   "sandbox_type": "utility",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "analyze_archive": [ "chrome.mojom.SafeArchiveAnalyzer" ],
         "zip_file": [ "chrome.mojom.ZipFileCreator" ]
-       },
-       "requires": {
-         "service_manager": [ "service_manager:all_users" ]
        }
      }
   }

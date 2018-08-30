@@ -1,14 +1,16 @@
 {
   "name": "service_manager_unittest_singleton",
   "display_name": "Service Manager Unittest: Singleton",
+  "options" : {
+    "instance_sharing" : "singleton"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "service_manager_unittest:singleton": [ ]
       },
       "requires": {
-        "service_manager_unittest_target": [ ],
-        "service_manager": [ "service_manager:singleton" ]
+        "service_manager_unittest_target": [ ]
       }
     }
   }

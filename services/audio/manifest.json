@@ -2,6 +2,9 @@
   "name": "audio",
   "display_name": "Audio",
   "sandbox_type": "audio",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -11,9 +14,6 @@
         "device_notifier": [ "audio.mojom.DeviceNotifier" ],
         "log_factory_manager": [ "audio.mojom.LogFactoryManager" ],
         "testing_api": [ "audio.mojom.TestingApi" ]
-      },
-      "requires": {
-        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

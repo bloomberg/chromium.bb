@@ -19,9 +19,6 @@
         // Clients requesting this class are allowed to connect to other clients
         // in specific process instance groups.
         "service_manager:instance_name": [ ],
-        // Clients requesting this class are run as a unique user id which is
-        // visible to clients run as any user.
-        "service_manager:all_users": [ ],
         "service_manager:block_wildcard": [ ],
 
         "service_manager:service_manager": [
