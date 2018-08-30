@@ -291,8 +291,9 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   // is inside 2nd display.
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
-            window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(
+      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -303,8 +304,9 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
-            window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(
+      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -321,8 +323,9 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   w1->Show();
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
-            w1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(
+      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ("400,0 30x40", w1->GetWindowBoundsInScreen().ToString());
@@ -592,7 +595,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  gfx::Insets insets(0, 0, 50, 0);
+  gfx::Insets insets(0, 0, 56, 0);
   Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);

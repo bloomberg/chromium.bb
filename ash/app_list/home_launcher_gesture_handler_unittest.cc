@@ -174,7 +174,8 @@ TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
   // Tests that after scrolling to the halfway point, the transient child's
   // opacity and transform are halfway to their final values.
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200));
-  EXPECT_EQ(0.5f, child->layer()->opacity());
+  EXPECT_LE(0.45f, child->layer()->opacity());
+  EXPECT_GE(0.55f, child->layer()->opacity());
   EXPECT_NE(gfx::Transform(), child->transform());
 
   // Tests that after releasing on the bottom half, the transient child reverts

@@ -36,12 +36,12 @@ TEST_F(WindowUtilTest, CenterWindow) {
   CenterWindow(window.get());
   // Centring window is considered as a user's action.
   EXPECT_TRUE(window_state->bounds_changed_by_user());
-  EXPECT_EQ("200,126 100x100", window->bounds().ToString());
-  EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("200,122 100x100", window->bounds().ToString());
+  EXPECT_EQ("200,122 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100), GetSecondaryDisplay());
   CenterWindow(window.get());
-  EXPECT_EQ("250,126 100x100", window->bounds().ToString());
-  EXPECT_EQ("750,126 100x100", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("250,122 100x100", window->bounds().ToString());
+  EXPECT_EQ("750,122 100x100", window->GetBoundsInScreen().ToString());
 }
 
 TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
