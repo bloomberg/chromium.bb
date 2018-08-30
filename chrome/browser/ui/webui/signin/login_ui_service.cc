@@ -141,7 +141,8 @@ class ConsentBumpActivator : public BrowserListObserver,
   // This should only be called after the browser has been set up, otherwise
   // this might crash because the profile has not been fully initialized yet.
   static bool ShouldShowConsentBumpFor(Profile* profile) {
-    if (!profile->IsSyncAllowed() || !IsUnifiedConsentBumpEnabled(profile) ||
+    if (!profile->IsSyncAllowed() ||
+        !IsUnifiedConsentFeatureWithBumpEnabled(profile) ||
         !ProfileSyncServiceFactory::HasProfileSyncService(profile))
       return false;
 
@@ -183,7 +184,7 @@ LoginUIService::LoginUIService(Profile* profile)
 #endif
 {
 #if !defined(OS_CHROMEOS)
-  if (IsUnifiedConsentBumpEnabled(profile)) {
+  if (IsUnifiedConsentFeatureWithBumpEnabled(profile)) {
     consent_bump_activator_ =
         std::make_unique<ConsentBumpActivator>(this, profile);
   }

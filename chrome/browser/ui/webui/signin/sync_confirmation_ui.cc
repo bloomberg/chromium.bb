@@ -30,7 +30,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
       consent_feature_(consent_auditor::Feature::CHROME_SYNC) {
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
-  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile);
+  bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);

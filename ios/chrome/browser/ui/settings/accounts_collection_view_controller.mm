@@ -136,7 +136,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
     browser_sync::ProfileSyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
-    if (!IsUnifiedConsentEnabled()) {
+    if (!IsUnifiedConsentFeatureEnabled()) {
       // When unified consent flag is enabled, the sync settings are available
       // in the "Google Services and sync" settings.
       _syncObserver.reset(new SyncObserverBridge(self, syncService));
@@ -237,7 +237,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self addAccountItem]
       toSectionWithIdentifier:SectionIdentifierAccounts];
 
-  if (!IsUnifiedConsentEnabled()) {
+  if (!IsUnifiedConsentFeatureEnabled()) {
     // Sync and Google Activity section.
     // When unified consent flag is enabled, those settings are available in
     // the Google Services and sync settings.

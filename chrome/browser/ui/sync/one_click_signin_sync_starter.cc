@@ -469,7 +469,7 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
 }
 
 void OneClickSigninSyncStarter::EnableUnifiedConsentIfNeeded() {
-  if (IsUnifiedConsentEnabled(profile_)) {
+  if (IsUnifiedConsentFeatureEnabled(profile_)) {
     UnifiedConsentServiceFactory::GetForProfile(profile_)
         ->SetUnifiedConsentGiven(true);
   }

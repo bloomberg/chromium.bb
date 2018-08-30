@@ -103,7 +103,7 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       content::BrowserContext::GetDefaultStoragePartition(context);
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       consent_helper;
-  if (IsUnifiedConsentEnabled(profile)) {
+  if (IsUnifiedConsentFeatureEnabled(profile)) {
     consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
         NewPersonalizedDataCollectionConsentHelper(
             true, /*is_unified_consent_enabled*/

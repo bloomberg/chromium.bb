@@ -92,7 +92,7 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedDataCollectionConsentHelper(
-                  IsUnifiedConsentEnabled(profile_),
+                  IsUnifiedConsentFeatureEnabled(profile_),
                   ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
                       profile_))),
       storage_partition_(nullptr) {}

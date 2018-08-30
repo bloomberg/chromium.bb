@@ -923,7 +923,7 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
     return false;
   }
   ObserveServiceForSyncDisables(sync, profile->GetPrefs(),
-                                IsUnifiedConsentEnabled(profile));
+                                IsUnifiedConsentFeatureEnabled(profile));
   return true;
 }
 

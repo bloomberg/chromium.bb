@@ -352,7 +352,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(OS_CHROMEOS)
 
   html_source->AddBoolean("unifiedConsentEnabled",
-                          IsUnifiedConsentEnabled(profile));
+                          IsUnifiedConsentFeatureEnabled(profile));
 
   // TODO(jdoerrie): https://crbug.com/854562.
   // Remove once Autofill Home is launched.

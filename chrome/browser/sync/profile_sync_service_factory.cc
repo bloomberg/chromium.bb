@@ -185,7 +185,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
   init_params.user_events_separate_pref_group =
-      IsUnifiedConsentEnabled(profile);
+      IsUnifiedConsentFeatureEnabled(profile);
 
   if (!client_factory_) {
     init_params.sync_client =

@@ -392,7 +392,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
       anonymized_unified_consent_url_helper =
           UrlKeyedDataCollectionConsentHelper::
               NewAnonymizedDataCollectionConsentHelper(
-                  IsUnifiedConsentEnabled(profile),
+                  IsUnifiedConsentFeatureEnabled(profile),
                   ProfileManager::GetActiveUserProfile()->GetPrefs(),
                   sync_service);
   // If they have, then allow sending of the URL.

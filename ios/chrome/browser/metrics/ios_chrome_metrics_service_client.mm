@@ -295,7 +295,7 @@ bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
           browser_state);
   ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync),
                                 browser_state->GetPrefs(),
-                                IsUnifiedConsentEnabled());
+                                IsUnifiedConsentFeatureEnabled());
   return (history_service != nullptr && sync != nullptr);
 }
 

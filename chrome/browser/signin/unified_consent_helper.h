@@ -11,10 +11,11 @@ class Profile;
 
 // Returns true if the unified consent feature state is kEnabledNoBump or
 // kEnabledWithBump. Note that the bump may not be enabled, even if this returns
-// true. To check if the bump is enabled, use IsUnifiedConsentBumpEnabled().
-bool IsUnifiedConsentEnabled(Profile* profile);
+// true. To check if the bump is enabled, use
+// IsUnifiedConsentFeatureWithBumpEnabled().
+bool IsUnifiedConsentFeatureEnabled(Profile* profile);
 
 // Returns true if the unified consent feature state is kEnabledWithBump.
-bool IsUnifiedConsentBumpEnabled(Profile* profile);
+bool IsUnifiedConsentFeatureWithBumpEnabled(Profile* profile);
 
 #endif  // CHROME_BROWSER_SIGNIN_UNIFIED_CONSENT_HELPER_H_
