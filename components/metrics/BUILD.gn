@@ -105,7 +105,6 @@ static_library("metrics") {
   ]
 
   public_deps = [
-    ":child_call_stacks",
     "//third_party/metrics_proto",
   ]
 
@@ -257,43 +256,66 @@ static_library("single_sample_metrics") {
   ]
 }
 
-source_set("call_stack_profile") {
-  sources = [
-    "call_stack_profile_builder.cc",
-    "call_stack_profile_builder.h",
-    "call_stack_profile_encoding.cc",
+source_set("call_stack_profile_params") {
+  public = [
     "call_stack_profile_encoding.h",
     "call_stack_profile_params.h",
   ]
+  sources = [
+    "call_stack_profile_encoding.cc",
+  ]
 
   deps = [
-    ":metrics",
     "//base:base",
     "//third_party/metrics_proto",
   ]
 }
 
-source_set("call_stacks") {
+# Dependency for child processes that use the CallStackProfileBuilder.
+source_set("child_call_stack_profile_builder") {
+  public = [
+    "call_stack_profile_builder.h",
+    "child_call_stack_profile_collector.h",
+  ]
+  sources = [
+    "call_stack_profile_builder.cc",
+    "child_call_stack_profile_collector.cc",
+  ]
+  public_deps = [
+    ":call_stack_profile_params",
+  ]
+  deps = [
+    "//base",
+    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//third_party/metrics_proto",
+  ]
+
+  # This target must not depend on :metrics because that code is intended solely
+  # for use in the browser process.
+  assert_no_deps = [ ":metrics" ]
+}
+
+# Dependency for browser process use of the CallStackProfileBuilder.
+source_set("call_stack_profile_builder") {
+  deps = [
+    ":metrics",
+  ]
+  public_deps = [
+    ":child_call_stack_profile_builder",
+  ]
+}
+
+# The browser process mojo service for collecting profiles from child
+# processes.
+source_set("call_stack_profile_collector") {
   sources = [
     "call_stack_profile_collector.cc",
     "call_stack_profile_collector.h",
   ]
   deps = [
-    ":call_stack_profile",
+    ":call_stack_profile_params",
     ":metrics",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-  ]
-}
-
-source_set("child_call_stacks") {
-  sources = [
-    "child_call_stack_profile_collector.cc",
-    "child_call_stack_profile_collector.h",
-  ]
-  deps = [
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-    "//services/service_manager/public/cpp",
-    "//third_party/metrics_proto",
   ]
 }
 
@@ -367,8 +389,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":call_stack_profile",
-    ":child_call_stacks",
+    ":call_stack_profile_builder",
     ":component_metrics",
     ":metrics",
     ":net",
