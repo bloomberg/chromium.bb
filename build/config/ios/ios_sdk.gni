@@ -133,8 +133,11 @@ if (ios_enable_code_signing && !use_ios_simulator) {
                                   find_signing_identity_args,
                                   "list lines")
     if (_ios_identities == []) {
-      print("Tried to prepare a device build without specifying a code signing")
-      print("identity and could not detect one automatically either.")
+      print("Automatic code signing identity selection was enabled but could")
+      print("not find exactly one code signing identity matching")
+      print("$ios_code_signing_identity_description. Check that your keychain")
+      print("is accessible and that there is a valid code signing identity")
+      print("listed by `xcrun security find-identity -v -p codesigning`")
       print("TIP: Simulator builds don't require code signing...")
       assert(false)
     } else {
