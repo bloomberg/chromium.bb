@@ -15,11 +15,11 @@ issues]].
   translation.
 - The returned ~inlen~ and ~outlen~ now always match thanks to the
   above work on input/output positions by Bert Frees.
-- Major improvements on back-translation with capsword and
+- Major improvements on back-translation with ~capsword~ and
   punctuation/math thanks to Bue Vester-Andersen.
 - Fix a problem when defining the same combination of dots as both
-  endcapsword and nocontractsign or letsign during back-translation
-  thanks to Bue Vester-Andersen and Rimas Kudelis.
+  ~endcapsword~ and ~nocontractsign~ or ~letsign~ during
+  back-translation thanks to Bue Vester-Andersen and Rimas Kudelis.
 
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
@@ -52,7 +52,7 @@ issues]].
   built with automake 1.16. This is fixed now thanks to a patch from
   Samuel Thibault.
 - Removal of the code for the /scripting language/ for multipass
-  opcodes. This code was originaly introduced in 2012 but never
+  opcodes. This code was originally introduced in 2012 but never
   documented. Consequently it was never used. Meanwhile the original
   code for multipass opcodes was much improved. So there is no more
   need for this (duplicate) code and we are removing it.
