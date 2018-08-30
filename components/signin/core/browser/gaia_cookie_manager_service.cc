@@ -784,7 +784,7 @@ void GaiaCookieManagerService::OnOAuthMultiloginSuccess(
           << base::JoinString(requests_.front().account_ids(), " ");
   std::vector<std::string> account_ids = requests_.front().account_ids();
   access_tokens_.clear();
-  HandleNextRequest();
+  StartSettingCookies(result);
 }
 
 void GaiaCookieManagerService::OnOAuthMultiloginFailure(
@@ -956,6 +956,16 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
   gaia_auth_fetcher_->StartListAccounts();
+}
+
+void GaiaCookieManagerService::StartSettingCookies(
+    const OAuthMultiloginResult& result) {
+  network::mojom::CookieManager* cookie_manager =
+      signin_client_->GetCookieManager();
+
+  for (net::CanonicalCookie& cookie : result.cookies()) {
+    cookie_manager->SetCanonicalCookie(cookie, true, true, base::DoNothing());
+  }
 }
 
 void GaiaCookieManagerService::HandleNextRequest() {
