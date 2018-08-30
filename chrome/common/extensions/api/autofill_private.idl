@@ -233,6 +233,9 @@ namespace autofillPrivate {
     // in 1234").
     // |guid|: GUID of the credit card to mask.
     static void maskCreditCard(DOMString guid);
+
+    // Triggers local credit cards migration.
+    static void migrateCreditCards();
   };
 
   interface Events {

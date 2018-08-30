@@ -187,6 +187,11 @@ chrome.autofillPrivate.getCreditCardList = function(callback) {};
 chrome.autofillPrivate.maskCreditCard = function(guid) {};
 
 /**
+ * Triggers local credit cards migration.
+ */
+chrome.autofillPrivate.migrateCreditCards = function() {};
+
+/**
  * Fired when the address list has changed, meaning that an entry has been
  * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}

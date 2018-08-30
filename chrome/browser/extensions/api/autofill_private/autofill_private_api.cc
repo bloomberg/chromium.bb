@@ -14,8 +14,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/autofill_private/autofill_util.h"
 #include "chrome/common/extensions/api/autofill_private.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
@@ -529,6 +534,56 @@ AutofillPrivateGetCreditCardListFunction::Run() {
   return RespondNow(
       ArgumentList(api::autofill_private::GetCreditCardList::Results::Create(
           credit_card_list)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateMigrateCreditCardsFunction
+
+AutofillPrivateMigrateCreditCardsFunction::
+    AutofillPrivateMigrateCreditCardsFunction()
+    : chrome_details_(this) {}
+
+AutofillPrivateMigrateCreditCardsFunction::
+    ~AutofillPrivateMigrateCreditCardsFunction() {}
+
+ExtensionFunction::ResponseAction
+AutofillPrivateMigrateCreditCardsFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          chrome_details_.GetProfile());
+  // Get the web contents to get autofill manager.
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!personal_data || !personal_data->IsDataLoaded() || !web_contents)
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  // Get the autofill manager from the web contains. Autofill manager owns an
+  // unique_ptr of form data importer.
+  autofill::AutofillManager* autofill_manager =
+      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
+          ->DriverForFrame(web_contents->GetMainFrame())
+          ->autofill_manager();
+  if (!autofill_manager)
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  // Get the form data importer from autofill manager. Form data importer owns
+  // an unique_ptr of local card migration manager.
+  autofill::FormDataImporter* form_data_importer =
+      autofill_manager->form_data_importer();
+  if (!form_data_importer)
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  // Get local card migration manager from form data importer.
+  autofill::LocalCardMigrationManager* local_card_migration_manager =
+      form_data_importer->local_card_migration_manager();
+  if (!local_card_migration_manager)
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  // Since we already check the migration requirements on the settings page, we
+  // don't check the migration requirements again.
+  local_card_migration_manager->GetMigratableCreditCards();
+  local_card_migration_manager->AttemptToOfferLocalCardMigration(
+      /*is_from_settings_page=*/true);
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions
