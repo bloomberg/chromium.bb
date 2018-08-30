@@ -79,6 +79,8 @@ source_set("internal") {
     "fullscreen_web_state_observer.mm",
     "fullscreen_web_view_proxy_observer.h",
     "fullscreen_web_view_proxy_observer.mm",
+    "fullscreen_web_view_resizer.h",
+    "fullscreen_web_view_resizer.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -127,6 +129,7 @@ source_set("unit_tests") {
     "fullscreen_ui_updater_unittest.mm",
     "fullscreen_web_state_list_observer_unittest.mm",
     "fullscreen_web_state_observer_unittest.mm",
+    "fullscreen_web_view_resizer_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -145,6 +148,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public",
     "//ios/web/public/test/fakes",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

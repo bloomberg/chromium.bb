@@ -204,6 +204,11 @@ const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the omnibox "
     "dropdown.";
 
+const char kOutOfWebFullscreenName[] = "Fullscreen implementation out of web";
+const char kOutOfWebFullscreenDescription[] =
+    "Use the fullscreen implementation living outside of web. Disable the one "
+    "in web.";
+
 const char kPasswordExportName[] = "Password Export";
 const char kPasswordExportDescription[] =
     "Enables password exporting functionality in password settings.";

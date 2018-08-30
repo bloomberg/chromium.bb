@@ -166,6 +166,11 @@ extern const char kNewPasswordFormParsingDescription[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 
+// Title and description for the flag to control the out of web implementation
+// of fullscreen.
+extern const char kOutOfWebFullscreenName[];
+extern const char kOutOfWebFullscreenDescription[];
+
 // Title and description for the flag to enable the ability to export passwords
 // from the password settings.
 extern const char kPasswordExportName[];

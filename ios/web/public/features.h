@@ -35,6 +35,9 @@ extern const base::Feature kCrashOnUnexpectedURLChange;
 // Used to make BrowserContainerViewController fullscreen.
 extern const base::Feature kBrowserContainerFullscreen;
 
+// Used to use the fullscreen implementation out of web.
+extern const base::Feature kOutOfWebFullscreen;
+
 }  // namespace features
 }  // namespace web
 

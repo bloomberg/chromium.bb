@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#import "ios/web/public/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -81,10 +82,12 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  CGRect frame = self.bounds;
-  frame = UIEdgeInsetsInsetRect(frame, _contentInset);
-  frame = CGRectOffset(frame, _contentOffset.x, _contentOffset.y);
-  self.webView.frame = frame;
+  if (!base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    CGRect frame = self.bounds;
+    frame = UIEdgeInsetsInsetRect(frame, _contentInset);
+    frame = CGRectOffset(frame, _contentOffset.x, _contentOffset.y);
+    self.webView.frame = frame;
+  }
 }
 
 - (BOOL)isViewAlive {

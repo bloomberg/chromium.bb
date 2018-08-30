@@ -47,6 +47,8 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   FullscreenController* controller_;
   // The model passed on construction.
   FullscreenModel* model_;
+  // The mediator passed on construction.
+  FullscreenMediator* mediator_ = nullptr;
   // Observer for |web_state_|'s scroll view proxy.
   __strong FullscreenWebViewProxyObserver* web_view_proxy_observer_;
   // The disabler for invalid SSL states.
