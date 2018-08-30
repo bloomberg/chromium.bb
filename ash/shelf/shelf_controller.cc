@@ -94,15 +94,16 @@ void UpdateShelfVisibility() {
 
 // Set each Shelf's auto-hide behavior and alignment from the per-display prefs.
 void SetShelfBehaviorsFromPrefs() {
-  // The shelf should always be bottom-aligned and not hidden in tablet mode;
-  // alignment and auto-hide are assigned from prefs when tablet mode is exited.
+  SetShelfAutoHideFromPrefs();
+
+  // The shelf should always be bottom-aligned in tablet mode; alignment is
+  // assigned from prefs when tablet mode is exited.
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
     return;
   }
 
-  SetShelfAutoHideFromPrefs();
   SetShelfAlignmentFromPrefs();
 }
 
@@ -347,7 +348,6 @@ void ShelfController::OnTabletModeStarted() {
       // Only animate into tablet mode if the shelf alignment will not change.
       if (shelf->IsHorizontalAlignment())
         shelf->set_is_tablet_mode_animation_running(true);
-      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
       shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
       shelf->shelf_widget()->OnTabletModeChanged();
     }

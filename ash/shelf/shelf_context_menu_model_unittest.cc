@@ -282,13 +282,14 @@ TEST_F(ShelfContextMenuModelTest, ExcludeClamshellOptionsOnTabletMode) {
       Shell::Get()->tablet_mode_controller();
   int64_t primary_id = GetPrimaryDisplay().id();
 
-  // In tablet mode, the wallpaper picker should be the only option because the
-  // other options are disabled.
+  // In tablet mode, the wallpaper picker and auto-hide should be the only two
+  // options because other options are disabled.
   tablet_mode_controller->EnableTabletModeWindowManager(true);
   ShelfContextMenuModel menu1(MenuItemList(), nullptr, primary_id);
-  EXPECT_EQ(1, menu1.GetItemCount());
+  EXPECT_EQ(2, menu1.GetItemCount());
+  EXPECT_EQ(ShelfContextMenuModel::MENU_AUTO_HIDE, menu1.GetCommandIdAt(0));
   EXPECT_EQ(ShelfContextMenuModel::MENU_CHANGE_WALLPAPER,
-            menu1.GetCommandIdAt(0));
+            menu1.GetCommandIdAt(1));
 
   // Test that a menu shown out of tablet mode includes all three options:
   // MENU_AUTO_HIDE, MENU_ALIGNMENT_MENU, and MENU_CHANGE_WALLPAPER.
