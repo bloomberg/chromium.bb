@@ -254,14 +254,16 @@ posting order.
 
 ### Posting to the Main Thread or to the IO Thread in the Browser Process
 
-To post tasks to the main thread or to the IO thread, get the appropriate
-SingleThreadTaskRunner using `content::BrowserThread::GetTaskRunnerForThread`.
+To post tasks to the main thread or to the IO thread, use
+`base::PostTaskWithTraits()` or get the appropriate SingleThreadTaskRunner using
+`base::CreateSingleThreadTaskRunnerWithTraits`, supplying a `BrowserThread::ID`
+as trait. For this, you'll also need to include
+[`content/public/browser/browser_task_traits.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_task_traits.h).
 
 ```cpp
-content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-    ->PostTask(FROM_HERE, ...);
+base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, ...);
 
-content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
     ->PostTask(FROM_HERE, ...);
 ```
 
@@ -374,8 +376,12 @@ that:
 Tasks that don’t match this description must be posted with explicit TaskTraits.
 
 [`base/task/task_traits.h`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
-provides exhaustive documentation of available traits. Below are some examples
-of how to specify `TaskTraits`.
+provides exhaustive documentation of available traits. The content layer also
+provides additional traits in
+[`content/public/browser/browser_task_traits.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_task_traits.h)
+to facilitate posting a task onto a BrowserThread.
+
+Below are some examples of how to specify `TaskTraits`.
 
 ```cpp
 // This task has no explicit TaskTraits. It cannot block. Its priority
@@ -400,6 +406,11 @@ base::PostTaskWithTraits(
 // execution is complete.
 base::PostTaskWithTraits(
     FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+    base::BindOnce(...));
+
+// This task will run on the Browser UI thread.
+base::PostTaskWithTraits(
+    FROM_HERE, {content::BrowserThread::UI},
     base::BindOnce(...));
 ```
 
