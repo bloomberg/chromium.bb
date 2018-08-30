@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/payments/payment_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
