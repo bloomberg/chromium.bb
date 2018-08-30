@@ -251,8 +251,8 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   // Non-killable part. AdjustOomPrioritiesImpl() does make a focused app/tab
   // kernel-killable, but does not do that for PERSISTENT and PERSISTENT_UI
   // apps.
-  EXPECT_EQ(TabManagerDelegate::kLowestOomScore, oom_score_map[50]);
-  EXPECT_EQ(TabManagerDelegate::kLowestOomScore, oom_score_map[60]);
+  EXPECT_EQ(TabManagerDelegate::kPersistentArcAppOomScore, oom_score_map[50]);
+  EXPECT_EQ(TabManagerDelegate::kPersistentArcAppOomScore, oom_score_map[60]);
 
   // Higher priority part.
   EXPECT_EQ(300, oom_score_map[10]);

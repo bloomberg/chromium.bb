@@ -129,76 +129,76 @@ TEST(ArcProcess, TestIsImportant) {
                   .IsImportant());
 }
 
-TEST(ArcProcess, TestIsKernelKillable) {
+TEST(ArcProcess, TestIsPersistent) {
   constexpr bool kIsNotFocused = false;
 
-  // PERSISITENT* processes are protected from the kernel OOM killer.
-  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT,
-                          kIsNotFocused, 0)
-                   .IsKernelKillable());
-  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT_UI,
-                          kIsNotFocused, 0)
-                   .IsKernelKillable());
+  // PERSISITENT* processes are persistent and should have lower oom_score_adj.
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT,
+                         kIsNotFocused, 0)
+                  .IsPersistent());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT_UI,
+                         kIsNotFocused, 0)
+                  .IsPersistent());
 
-  // Both TOP+focused and TOP apps are still kernel-killable.
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, true, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, false, 0)
-                  .IsKernelKillable());
+  // Both TOP+focused and TOP apps are not persistent.
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, true, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, false, 0)
+                   .IsPersistent());
 
-  // Others are kernel-killable.
-  EXPECT_TRUE(ArcProcess(0, 0, "process",
-                         mojom::ProcessState::BOUND_FOREGROUND_SERVICE,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process",
-                         mojom::ProcessState::FOREGROUND_SERVICE, kIsNotFocused,
-                         0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP_SLEEPING,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process",
-                         mojom::ProcessState::IMPORTANT_FOREGROUND,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process",
-                         mojom::ProcessState::IMPORTANT_BACKGROUND,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(
+  // Others are not persistent.
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::BOUND_FOREGROUND_SERVICE,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::FOREGROUND_SERVICE,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP_SLEEPING,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::IMPORTANT_FOREGROUND,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::IMPORTANT_BACKGROUND,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(
       ArcProcess(0, 0, "process", mojom::ProcessState::BACKUP, kIsNotFocused, 0)
-          .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::HEAVY_WEIGHT,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::SERVICE,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::RECEIVER,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(
+          .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::HEAVY_WEIGHT,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::SERVICE,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::RECEIVER,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(
       ArcProcess(0, 0, "process", mojom::ProcessState::HOME, kIsNotFocused, 0)
-          .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::LAST_ACTIVITY,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_ACTIVITY,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process",
-                         mojom::ProcessState::CACHED_ACTIVITY_CLIENT,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
-  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
-                         kIsNotFocused, 0)
-                  .IsKernelKillable());
+          .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::LAST_ACTIVITY,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_ACTIVITY,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::CACHED_ACTIVITY_CLIENT,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
+                          kIsNotFocused, 0)
+                   .IsPersistent());
 
-  // Set of custom processes that are protected from the kernel OOM killer.
-  EXPECT_FALSE(ArcProcess(0, 0, "com.google.android.apps.work.clouddpc.arc",
-                          mojom::ProcessState::SERVICE, kIsNotFocused, 0)
-                   .IsKernelKillable());
+  // Set of custom processes that are persistent.
+  EXPECT_TRUE(ArcProcess(0, 0, "com.google.android.apps.work.clouddpc.arc",
+                         mojom::ProcessState::SERVICE, kIsNotFocused, 0)
+                  .IsPersistent());
 }
 
 // Tests operator<<() does not crash and returns non-empty result, at least.
