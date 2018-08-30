@@ -351,7 +351,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_unresponsive_(false),
       in_flight_event_count_(0),
       in_get_backing_store_(false),
-      ignore_input_events_(false),
       text_direction_updated_(false),
       text_direction_(blink::kWebTextDirectionLeftToRight),
       text_direction_canceled_(false),
@@ -2429,10 +2428,6 @@ RenderWidgetHostImpl::GetKeyboardLayoutMap() {
   return view_->GetKeyboardLayoutMap();
 }
 
-void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
-  ignore_input_events_ = ignore_input_events;
-}
-
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.GetType() != WebKeyboardEvent::kRawKeyDown)
@@ -2631,7 +2626,7 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
 }
 
 bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
-  return ignore_input_events_ || process_->IgnoreInputEvents() || !delegate_ ||
+  return process_->IgnoreInputEvents() || !delegate_ ||
          delegate_->ShouldIgnoreInputEvents();
 }
 
