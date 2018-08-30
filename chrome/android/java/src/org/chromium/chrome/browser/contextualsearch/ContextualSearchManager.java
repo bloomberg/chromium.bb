@@ -71,6 +71,15 @@ import java.util.regex.Pattern;
 public class ContextualSearchManager
         implements ContextualSearchManagementDelegate, ContextualSearchTranslateInterface,
                    ContextualSearchNetworkCommunicator, ContextualSearchSelectionHandler {
+    /** A delegate for reporting selected context to GSA for search quality. */
+    public interface ContextReporterDelegate {
+        /**
+         * Reports that the given display selection has been established for the current tab.
+         * @param displaySelection The information about the selection being displayed.
+         */
+        void reportDisplaySelection(@Nullable GSAContextDisplaySelection displaySelection);
+    }
+
     // TODO(donnd): provide an inner class that implements some of these interfaces (like the
     // ContextualSearchTranslateInterface) rather than having the manager itself implement the
     // interface because that exposes all the public methods of that interface at the manager level.
@@ -186,6 +195,9 @@ public class ContextualSearchManager
 
     /** Whether ContextualSearch UI is suppressed for Smart Selection. */
     private boolean mDoSuppressContextualSearchForSmartSelection;
+
+    /** An observer that reports selected context to GSA for search quality. */
+    private ContextualSearchObserver mContextReportingObserver;
 
     /**
      * The delegate that is responsible for promoting a {@link WebContents} to a {@link Tab}
@@ -1712,6 +1724,33 @@ public class ContextualSearchManager
                         InternalState.SHOWING_LONGPRESS_SEARCH);
             }
         };
+    }
+
+    /**
+     * @param reporter A context reporter for the feature to report the current selection when
+     *                 triggered.
+     */
+    public void enableContextReporting(ContextReporterDelegate reporter) {
+        mContextReportingObserver = new ContextualSearchObserver() {
+            @Override
+            public void onShowContextualSearch(GSAContextDisplaySelection contextSelection) {
+                if (contextSelection != null) reporter.reportDisplaySelection(contextSelection);
+            }
+
+            @Override
+            public void onHideContextualSearch() {
+                reporter.reportDisplaySelection(null);
+            }
+        };
+        addObserver(mContextReportingObserver);
+    }
+
+    /**
+     * Disable context reporting for Contextual Search.
+     */
+    public void disableContextReporting() {
+        removeObserver(mContextReportingObserver);
+        mContextReportingObserver = null;
     }
 
     // ============================================================================================
