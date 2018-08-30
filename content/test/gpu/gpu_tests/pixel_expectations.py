@@ -100,8 +100,8 @@ class PixelExpectations(GpuTestExpectations):
     #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
-        ['highsierra', ('intel', 0xa2e)], bug=857578)
+    # self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+    #    ['highsierra', ('intel', 0xa2e)], bug=857578)
 
     # Failing on NVIDIA Shield TV; not sure why yet.
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
@@ -115,8 +115,8 @@ class PixelExpectations(GpuTestExpectations):
               ['linux', 'mac', 'win'], bug=744658)
 
     # TODO(fserb): temporarily suppress this test.
-    self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
-        ['linux', 'mac'], bug=840394)
+    # self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
+    #    ['linux', 'mac'], bug=840394)
     self.Fail('Pixel_WorkerRAF_OOPD', ['android', 'nvidia'], bug=833902)
     self.Fail('Pixel_WorkerRAF_OOPD', ['mac'], bug=851213)
 
@@ -133,8 +133,23 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
 
-    # Failing on FYI Nexus 5: crbug.com/870023
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=870023)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=870023)
+    # Rebaseline for turing off zoom-for-dsf: crbug.com/737777
+    self.Fail('Pixel_2DCanvasWebGL', bug=737777)
+    self.Fail('Pixel_CSS3DBlueBox', bug=737777)
+    self.Fail('Pixel_Canvas2DRedBox', bug=737777)
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=737777)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing', bug=737777)
+    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmap', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmapWorker', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=737777)
+    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=737777)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=737777)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=737777)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha', bug=737777)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', bug=737777)
+    self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear', bug=737777)
+
