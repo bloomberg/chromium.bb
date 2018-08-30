@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/fling_scheduler_mac.h"
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "ui/compositor/compositor.h"
 
@@ -15,16 +16,20 @@ FlingSchedulerMac::FlingSchedulerMac(RenderWidgetHostImpl* host)
 FlingSchedulerMac::~FlingSchedulerMac() = default;
 
 ui::Compositor* FlingSchedulerMac::GetCompositor() {
-  if (!host_->GetView())
+  RenderWidgetHostViewBase* view = host_->GetView();
+  if (!view)
     return nullptr;
 
-  // RWHV_child_frame doesn't have DelegatedFrameHost with ui::Compositor.
-  if (host_->GetView()->IsRenderWidgetHostViewChildFrame())
-    return nullptr;
-  RenderWidgetHostViewMac* view =
-      static_cast<RenderWidgetHostViewMac*>(host_->GetView());
-  if (view->BrowserCompositor())
-    return view->BrowserCompositor()->GetCompositor();
+  if (view->IsRenderWidgetHostViewChildFrame()) {
+    view = view->GetRootView();
+    if (!view)
+      return nullptr;
+  }
+
+  RenderWidgetHostViewMac* mac_view =
+      static_cast<RenderWidgetHostViewMac*>(view);
+  if (mac_view->BrowserCompositor())
+    return mac_view->BrowserCompositor()->GetCompositor();
 
   return nullptr;
 }
