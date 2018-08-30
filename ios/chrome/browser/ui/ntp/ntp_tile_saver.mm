@@ -8,7 +8,7 @@
 #include "base/md5.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
@@ -184,7 +184,8 @@ void UpdateSingleFavicon(const GURL& site_url,
           NSData* imageData = UIImagePNGRepresentation(attributes.faviconImage);
 
           base::OnceCallback<void()> writeImage = base::BindOnce(^{
-            base::AssertBlockingAllowed();
+            base::ScopedBlockingCall scoped_blocking_call(
+                base::BlockingType::WILL_BLOCK);
             [imageData writeToURL:fileURL atomically:YES];
           });
 
@@ -208,7 +209,8 @@ void UpdateSingleFavicon(const GURL& site_url,
           NSURL* fileURL =
               [favicons_directory URLByAppendingPathComponent:faviconFileName];
           base::OnceCallback<void()> removeImage = base::BindOnce(^{
-            base::AssertBlockingAllowed();
+            base::ScopedBlockingCall scoped_blocking_call(
+                base::BlockingType::WILL_BLOCK);
             [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
           });
 
