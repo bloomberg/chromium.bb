@@ -208,21 +208,7 @@ void AutofillWalletSyncBridge::SetSyncData(
 
   // In both cases, we need to update wallet cards and payments customer data.
   wallet_data_changed |= SetWalletCards(std::move(wallet_cards));
-
-  // Changes to payments customer data do not have to be notified to the backend
-  // so we do not need to load the previous value before writing.
-  if (customer_data.empty()) {
-    // Clear the data in the DB.
-    GetAutofillTable()->SetPaymentsCustomerData(nullptr);
-  } else {
-    // In case there were multiple entries (and there shouldn't!), we take the
-    // pointer to the first entry in the vector.
-    GetAutofillTable()->SetPaymentsCustomerData(customer_data.data());
-    if (customer_data.size() > 1) {
-      DLOG(WARNING) << "Sync wallet_data update has " << customer_data.size()
-                    << " payments-customer-data entries; expected 0 or 1.";
-    }
-  }
+  wallet_data_changed |= SetPaymentsCustormerData(std::move(customer_data));
 
   if (web_data_backend_ && wallet_data_changed)
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -286,6 +272,40 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
 
   if (!diff.IsEmpty()) {
     table->SetServerProfiles(wallet_addresses);
+    return true;
+  }
+  return false;
+}
+
+bool AutofillWalletSyncBridge::SetPaymentsCustormerData(
+    std::vector<PaymentsCustomerData> customer_data) {
+  // In the common case, the database won't have changed. Committing an update
+  // to the database will require at least one DB page write and will schedule
+  // a fsync. To avoid this I/O, it should be more efficient to do a read and
+  // only do the writes if something changed.
+  AutofillTable* table = GetAutofillTable();
+  std::unique_ptr<PaymentsCustomerData> existing_entry;
+  table->GetPaymentsCustomerData(&existing_entry);
+
+  // In case there were multiple entries (and there shouldn't!), we take the
+  // pointer to the first entry in the vector.
+  PaymentsCustomerData* new_entry =
+      customer_data.empty() ? nullptr : customer_data.data();
+
+#if DCHECK_IS_ON()
+  if (customer_data.size() > 1) {
+    DLOG(WARNING) << "Sync wallet_data update has " << customer_data.size()
+                  << " payments-customer-data entries; expected 0 or 1.";
+  }
+#endif  // DCHECK_IS_ON()
+
+  if (!new_entry && existing_entry) {
+    // Clear the existing entry in the DB.
+    GetAutofillTable()->SetPaymentsCustomerData(nullptr);
+    return true;
+  } else if (new_entry && (!existing_entry || *new_entry != *existing_entry)) {
+    // Write the new entry in the DB as it differs from the existing one.
+    GetAutofillTable()->SetPaymentsCustomerData(new_entry);
     return true;
   }
   return false;

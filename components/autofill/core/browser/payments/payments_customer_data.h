@@ -17,6 +17,9 @@ struct PaymentsCustomerData {
   bool operator==(const PaymentsCustomerData& other) const {
     return customer_id == other.customer_id;
   }
+  bool operator!=(const PaymentsCustomerData& other) const {
+    return !(*this == other);
+  }
 
   // The identifier by which a Google Payments account is identified.
   std::string customer_id;
