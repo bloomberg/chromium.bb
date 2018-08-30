@@ -273,20 +273,24 @@ customBackgrounds.clearAttribution = function() {
   }
 };
 
+customBackgrounds.unselectTile = function() {
+  $(customBackgrounds.IDS.DONE)
+      .classList.remove(customBackgrounds.CLASSES.DONE_AVAILABLE);
+  customBackgrounds.selectedTile = null;
+  $(customBackgrounds.IDS.DONE).tabIndex = -1;
+};
+
 /**
  * Remove all collection tiles from the container when the dialog
  * is closed.
  */
 customBackgrounds.resetSelectionDialog = function() {
   $(customBackgrounds.IDS.TILES).scrollTop = 0;
-  $(customBackgrounds.IDS.DONE).tabIndex = -1;
   var tileContainer = $(customBackgrounds.IDS.TILES);
   while (tileContainer.firstChild) {
     tileContainer.removeChild(tileContainer.firstChild);
   }
-  $(customBackgrounds.IDS.DONE)
-      .classList.remove(customBackgrounds.CLASSES.DONE_AVAILABLE);
-  customBackgrounds.selectedTile = null;
+  customBackgrounds.unselectTile();
 };
 
 /* Close the collection selection dialog and cleanup the state
@@ -659,10 +663,13 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tile.dataset.tile_num = i;
     tile.tabIndex = -1;
 
-    var tileInteraction = function(event) {
-      var tile = event.target;
+    let tileInteraction = function(tile) {
       if (customBackgrounds.selectedTile) {
         customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
+        if (customBackgrounds.selectedTile.id === tile.id) {
+          customBackgrounds.unselectTile();
+          return ;
+        }
       }
       customBackgrounds.selectedTile = tile;
 
@@ -682,8 +689,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       let clickCount = event.detail;
       // Control + option + space will fire the onclick event with 0 clickCount.
       if (clickCount <= 1) {
-        tileInteraction(event);
-      } else if (clickCount == 2 && customBackgrounds.selectedTile == this) {
+        tileInteraction(this);
+      } else if (clickCount === 2 && customBackgrounds.selectedTile === this) {
         customBackgrounds.setBackground(this.dataset.url,
             this.dataset.attributionLine1, this.dataset.attributionLine2,
             this.dataset.attributionActionUrl);
@@ -694,7 +701,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
         event.preventDefault();
         event.stopPropagation();
-        tileInteraction(event);
+        tileInteraction(this);
       }
       // Handle arrow key navigation.
       else if (
