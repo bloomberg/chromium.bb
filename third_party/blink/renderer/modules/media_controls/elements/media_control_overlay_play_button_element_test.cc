@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -19,28 +18,11 @@
 
 namespace blink {
 
-class MediaControlOverlayPlayButtonElementTest
-    : public PageTestBase,
-      private ScopedModernMediaControlsForTest {
+class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
  public:
-  MediaControlOverlayPlayButtonElementTest()
-      : ScopedModernMediaControlsForTest(true) {}
-
   void SetUp() final {
-    // Create page with video element with controls.
+    // Create page and instance of AnimatedArrow to run tests on.
     PageTestBase::SetUp();
-    HTMLVideoElement* media_element = HTMLVideoElement::Create(GetDocument());
-    media_element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
-    GetDocument().body()->AppendChild(media_element);
-
-    // Create instance of MediaControlOverlayPlayButtonElement for tests.
-    MediaControlsImpl* media_controls =
-        static_cast<MediaControlsImpl*>(media_element->GetMediaControls());
-    ASSERT_NE(nullptr, media_controls);
-    overlay_play_button_ =
-        new MediaControlOverlayPlayButtonElement(*media_controls);
-
-    // Create instance of AnimatedArrow to run tests on.
     arrow_element_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
         "test", GetDocument());
     GetDocument().body()->AppendChild(arrow_element_);
@@ -64,16 +46,6 @@ class MediaControlOverlayPlayButtonElementTest
   void SimulateAnimationIteration() {
     Event* event = Event::Create(EventTypeNames::animationiteration);
     GetElementById("arrow-3")->DispatchEvent(*event);
-  }
-
-  void RemoveInternalButton() {
-    overlay_play_button_->internal_button_ = nullptr;
-  }
-
-  void EnsureNoComputedStyle() {
-    // Due to the nature of the test setup, we already get a null computedstyle
-    // for free :). Just make sure it's actually not there.
-    ASSERT_EQ(nullptr, overlay_play_button_->GetComputedStyle());
   }
 
   Document& CreateTestDocumentWithBody() {
@@ -148,19 +120,8 @@ TEST_F(MediaControlOverlayPlayButtonElementTest, ShowIncrementsCounter) {
 }
 
 TEST_F(MediaControlOverlayPlayButtonElementTest,
-       KeepEventInNodeWithoutInternalButtonDoesntCrash) {
-  RemoveInternalButton();
-  SimulateKeepEventInNode();
-}
-
-TEST_F(MediaControlOverlayPlayButtonElementTest,
-       KeepEventInNodeWithoutComputedStyleDoesntCrash) {
-  EnsureNoComputedStyle();
-  SimulateKeepEventInNode();
-}
-
-TEST_F(MediaControlOverlayPlayButtonElementTest,
        KeepEventInNodeWithoutLayoutViewDoesntCrash) {
+  ScopedModernMediaControlsForTest enable_modern_media_controls(true);
   Document& document_without_layout_view = CreateTestDocumentWithBody();
   CreateTestOverlayPlayButton(document_without_layout_view);
   SimulateKeepEventInNode();
