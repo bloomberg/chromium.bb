@@ -119,20 +119,6 @@ class HTTP2_EXPORT_PRIVATE HpackHuffmanDecoder {
 
   Http2String DebugString() const;
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Alternate implementations of Decode:
-
-  // As above, implemented using a tree of if statements to determine the code
-  // length, etc., which are returned as a tree. See PrefixToInfo. This is the
-  // original implementation, current as of 2016-8-8.
-  bool DecodeWithIfTreeAndStruct(Http2StringPiece input, Http2String* output);
-
-  // Based on DecodeWithIfTreeAndStruct, but adds an optimization for the common
-  // case of short codes (5, 6 or 7), which make up a large fraction of the
-  // frequency distribution on which the HPACK table was based.
-  // TODO(jamessynge): Be precise about that fraction.
-  bool DecodeShortCodesFirst(Http2StringPiece input, Http2String* output);
-
  private:
   HuffmanBitBuffer bit_buffer_;
 };
