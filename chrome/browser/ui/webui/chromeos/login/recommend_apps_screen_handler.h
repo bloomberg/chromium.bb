@@ -43,6 +43,8 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnParseResponseError() override;
 
+  void OnUserSkip();
+
   // Call the JS function to load the list of apps in the WebView.
   void LoadAppListInUI(const base::Value& app_list);
 
@@ -56,6 +58,8 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
 
   base::ObserverList<RecommendAppsScreenViewObserver, true>::Unchecked
       observer_list_;
+
+  int recommended_app_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreenHandler);
 };
