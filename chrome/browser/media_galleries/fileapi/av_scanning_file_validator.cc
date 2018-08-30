@@ -22,7 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/quarantine/quarantine.h"
@@ -41,7 +41,7 @@ constexpr base::Feature kMediaGalleriesQuarantineFile{
     "MediaGalleriesQuarantineFile", base::FEATURE_DISABLED_BY_DEFAULT};
 
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   if (base::FeatureList::IsEnabled(kMediaGalleriesQuarantineFile)) {
     download::QuarantineFileResult quarantine_result = download::QuarantineFile(
