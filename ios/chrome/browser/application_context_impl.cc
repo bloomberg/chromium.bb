@@ -55,8 +55,6 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/network/network_change_manager.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 namespace {
@@ -79,13 +77,6 @@ void RequestProxyResolvingSocketFactory(
       ->PostTask(FROM_HERE,
                  base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                                 app_context, std::move(request)));
-}
-
-// Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
-void BindNetworkChangeManagerRequest(
-    network::NetworkChangeManager* network_change_manager,
-    network::mojom::NetworkChangeManagerRequest request) {
-  network_change_manager->AddRequest(std::move(request));
 }
 
 }  // namespace
@@ -352,21 +343,6 @@ ApplicationContextImpl::GetComponentUpdateService() {
         std::make_unique<component_updater::TimerUpdateScheduler>());
   }
   return component_updater_.get();
-}
-
-network::NetworkConnectionTracker*
-ApplicationContextImpl::GetNetworkConnectionTracker() {
-  if (!network_connection_tracker_) {
-    if (!network_change_manager_) {
-      network_change_manager_ =
-          std::make_unique<network::NetworkChangeManager>(nullptr);
-    }
-    network_connection_tracker_ =
-        std::make_unique<network::NetworkConnectionTracker>(base::BindRepeating(
-            &BindNetworkChangeManagerRequest,
-            base::Unretained(network_change_manager_.get())));
-  }
-  return network_connection_tracker_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {

@@ -39,7 +39,6 @@ class ChromeNetLog;
 }
 
 namespace network {
-class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 namespace mojom {
 class NetworkContext;
@@ -139,9 +138,6 @@ class ApplicationContext {
   // Gets the ComponentUpdateService.
   virtual component_updater::ComponentUpdateService*
   GetComponentUpdateService() = 0;
-
-  // Returns the NetworkConnectionTracker instance for this ApplicationContext.
-  virtual network::NetworkConnectionTracker* GetNetworkConnectionTracker() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

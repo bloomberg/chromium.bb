@@ -55,9 +55,7 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const char* disable_network_switch,
       const ParseJSONCallback& parse_json_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      ResourceRequestAllowedNotifier::NetworkConnectionTrackerGetter
-          network_connection_tracker_getter);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~WebResourceService() override;
 
