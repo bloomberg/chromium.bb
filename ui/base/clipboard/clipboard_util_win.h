@@ -40,6 +40,7 @@ class UI_BASE_EXPORT ClipboardUtil {
                      GURL* url,
                      base::string16* title,
                      bool convert_filenames);
+  // Only returns true if |*filenames| is not empty.
   static bool GetFilenames(IDataObject* data_object,
                            std::vector<base::string16>* filenames);
   static bool GetPlainText(IDataObject* data_object,
