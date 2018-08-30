@@ -52,6 +52,11 @@ class AvailableOfflineContentProvider
 
   content::BrowserContext* browser_context_;
 
+  // Records if the last content fetch indicated that prefetched articles are
+  // available or not.
+  // TODO(carlosk): Directly check the existence of prefetched articles.
+  bool has_prefetched_content_ = false;
+
   base::WeakPtrFactory<AvailableOfflineContentProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvailableOfflineContentProvider);

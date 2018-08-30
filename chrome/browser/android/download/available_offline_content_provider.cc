@@ -219,7 +219,8 @@ void AvailableOfflineContentProvider::LaunchItem(
 }
 
 void AvailableOfflineContentProvider::LaunchDownloadsPage() {
-  DownloadManagerService::GetInstance()->ShowDownloadManager();
+  DownloadManagerService::GetInstance()->ShowDownloadManager(
+      has_prefetched_content_);
 }
 
 void AvailableOfflineContentProvider::Create(
@@ -251,6 +252,7 @@ void AvailableOfflineContentProvider::SummarizeFinalize(
       summary->has_audio = true;
     }
   }
+  has_prefetched_content_ = summary->has_prefetched_page;
   std::move(callback).Run(std::move(summary));
 }
 
