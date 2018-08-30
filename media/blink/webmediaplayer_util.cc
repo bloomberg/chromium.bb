@@ -15,7 +15,58 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 
+namespace {
+
+std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
+  switch (load_type) {
+    case blink::WebMediaPlayer::kLoadTypeURL:
+      return "SRC";
+    case blink::WebMediaPlayer::kLoadTypeMediaSource:
+      return "MSE";
+    case blink::WebMediaPlayer::kLoadTypeMediaStream:
+      return "MS";
+  }
+
+  NOTREACHED();
+  return "Unknown";
+}
+
+}  // namespace
+
 namespace media {
+
+mojom::MediaURLScheme GetMediaURLScheme(const GURL& url) {
+  if (!url.has_scheme())
+    return mojom::MediaURLScheme::kMissing;
+  if (url.SchemeIs(url::kHttpScheme))
+    return mojom::MediaURLScheme::kHttp;
+  if (url.SchemeIs(url::kHttpsScheme))
+    return mojom::MediaURLScheme::kHttps;
+  if (url.SchemeIs(url::kFtpScheme))
+    return mojom::MediaURLScheme::kFtp;
+  if (url.SchemeIs(url::kJavaScriptScheme))
+    return mojom::MediaURLScheme::kJavascript;
+  if (url.SchemeIsFile())
+    return mojom::MediaURLScheme::kFile;
+  if (url.SchemeIsBlob())
+    return mojom::MediaURLScheme::kBlob;
+  if (url.SchemeIs(url::kDataScheme))
+    return mojom::MediaURLScheme::kData;
+  if (url.SchemeIsFileSystem())
+    return mojom::MediaURLScheme::kFileSystem;
+  if (url.SchemeIs(url::kContentScheme))
+    return mojom::MediaURLScheme::kContent;
+  if (url.SchemeIs(url::kContentIDScheme))
+    return mojom::MediaURLScheme::kContentId;
+
+  // Some internals pages and extension pages play media.
+  if (url.SchemeIs("chrome"))
+    return mojom::MediaURLScheme::kChrome;
+  if (url.SchemeIs("chrome-extension"))
+    return mojom::MediaURLScheme::kChromeExtension;
+
+  return mojom::MediaURLScheme::kUnknown;
+}
 
 blink::WebTimeRanges ConvertToWebTimeRanges(
     const Ranges<base::TimeDelta>& ranges) {
@@ -59,64 +110,16 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
   return blink::WebMediaPlayer::kNetworkStateFormatError;
 }
 
-namespace {
-
-// Helper enum for reporting scheme histograms.
-enum URLSchemeForHistogram {
-  kUnknownURLScheme,
-  kMissingURLScheme,
-  kHttpURLScheme,
-  kHttpsURLScheme,
-  kFtpURLScheme,
-  kChromeExtensionURLScheme,
-  kJavascriptURLScheme,
-  kFileURLScheme,
-  kBlobURLScheme,
-  kDataURLScheme,
-  kFileSystemScheme,
-  kMaxURLScheme = kFileSystemScheme  // Must be equal to highest enum value.
-};
-
-URLSchemeForHistogram URLScheme(const GURL& url) {
-  if (!url.has_scheme()) return kMissingURLScheme;
-  if (url.SchemeIs("http")) return kHttpURLScheme;
-  if (url.SchemeIs("https")) return kHttpsURLScheme;
-  if (url.SchemeIs("ftp")) return kFtpURLScheme;
-  if (url.SchemeIs("chrome-extension")) return kChromeExtensionURLScheme;
-  if (url.SchemeIs("javascript")) return kJavascriptURLScheme;
-  if (url.SchemeIs("file")) return kFileURLScheme;
-  if (url.SchemeIs("blob")) return kBlobURLScheme;
-  if (url.SchemeIs("data")) return kDataURLScheme;
-  if (url.SchemeIs("filesystem")) return kFileSystemScheme;
-
-  return kUnknownURLScheme;
-}
-
-std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
-  switch (load_type) {
-    case blink::WebMediaPlayer::kLoadTypeURL:
-      return "SRC";
-    case blink::WebMediaPlayer::kLoadTypeMediaSource:
-      return "MSE";
-    case blink::WebMediaPlayer::kLoadTypeMediaStream:
-      return "MS";
-  }
-
-  NOTREACHED();
-  return "Unknown";
-}
-
-}  // namespace
-
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
                    const blink::WebSecurityOrigin& security_origin,
                    MediaLog* media_log) {
   DCHECK(media_log);
 
-  // Report URL scheme, such as http, https, file, blob etc.
-  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url),
-                            kMaxURLScheme + 1);
+  // Report URL scheme, such as http, https, file, blob etc. Only do this for
+  // URL based loads, otherwise it's not very useful.
+  if (load_type == blink::WebMediaPlayer::kLoadTypeURL)
+    UMA_HISTOGRAM_ENUMERATION("Media.URLScheme2", GetMediaURLScheme(url));
 
   // Report load type, such as URL, MediaSource or MediaStream.
   UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,

@@ -40,6 +40,8 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   builder.SetIsEME(is_eme_);
   builder.SetIsMSE(is_mse_);
   builder.SetFinalPipelineStatus(pipeline_status_);
+  if (!is_mse_)
+    builder.SetURLScheme(static_cast<int64_t>(url_scheme_));
 
   if (time_to_metadata_ != kNoTimestamp)
     builder.SetTimeToMetadata(time_to_metadata_.InMilliseconds());
@@ -62,7 +64,8 @@ void MediaMetricsProvider::Create(bool is_top_frame,
       std::move(request));
 }
 
-void MediaMetricsProvider::Initialize(bool is_mse) {
+void MediaMetricsProvider::Initialize(bool is_mse,
+                                      mojom::MediaURLScheme url_scheme) {
   if (initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
@@ -70,6 +73,7 @@ void MediaMetricsProvider::Initialize(bool is_mse) {
 
   is_mse_ = is_mse;
   initialized_ = true;
+  url_scheme_ = url_scheme;
 }
 
 void MediaMetricsProvider::OnError(PipelineStatus status) {

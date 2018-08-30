@@ -236,7 +236,7 @@ class WatchTimeReporterTest
         mojom::VideoDecodeStatsRecorderRequest request) override {
       FAIL();
     }
-    void Initialize(bool is_mse) override {}
+    void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override {}
     void OnError(PipelineStatus status) override {}
     void SetIsEME() override {}
     void SetTimeToMetadata(base::TimeDelta elapsed) override {}

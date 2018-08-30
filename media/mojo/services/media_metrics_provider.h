@@ -38,7 +38,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
  private:
   // mojom::MediaMetricsProvider implementation:
-  void Initialize(bool is_mse) override;
+  void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override;
   void OnError(PipelineStatus status) override;
   void SetIsEME() override;
   void SetTimeToMetadata(base::TimeDelta elapsed) override;
@@ -68,6 +68,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
   bool is_mse_;
+  mojom::MediaURLScheme url_scheme_;
 
   base::TimeDelta time_to_metadata_ = kNoTimestamp;
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;

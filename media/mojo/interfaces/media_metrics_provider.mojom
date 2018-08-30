@@ -10,13 +10,32 @@ import "media/mojo/interfaces/watch_time_recorder.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
+// Used for reporting to UMA and UKM. Represents the URL scheme of the src URL
+// given to an <audio> or <video> tag. Always add new entries to the end.
+enum MediaURLScheme {
+  kUnknown = 0,
+  kMissing,
+  kHttp,
+  kHttps,
+  kFtp,
+  kChromeExtension,
+  kJavascript,
+  kFile,
+  kBlob,
+  kData,
+  kFileSystem,
+  kChrome,
+  kContent,
+  kContentId,
+};
+
 // Provider interface used to avoid having one time setters on each interface.
 // Each recorder will be stamped with an ID which can be used for linking UKM.
 interface MediaMetricsProvider {
   // Assigns a playback ID and sets up this provider instance with information
   // needed to make UKM reports. No other methods may be called until after
-  // Initialize() has been called.
-  Initialize(bool is_mse);
+  // Initialize() has been called. |url_scheme| is only used if |!is_mse|.
+  Initialize(bool is_mse, MediaURLScheme url_scheme);
 
   // Called when a playback ends in error. The status is reported to UKM when
   // the provider is destructed.
