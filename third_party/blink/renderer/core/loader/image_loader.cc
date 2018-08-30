@@ -451,6 +451,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
           params.SetAllowImagePlaceholder();
           lazy_image_load_state_ = LazyImageLoadState::kDeferred;
         }
+        LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
       }
     }
 
@@ -692,6 +693,9 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   }
 
   DispatchDecodeRequestsIfComplete();
+
+  if (auto* html_image = ToHTMLImageElementOrNull(GetElement()))
+    LazyLoadImageObserver::RecordMetricsOnLoadFinished(html_image);
 
   if (loading_image_document_) {
     CHECK(!pending_load_event_.IsActive());

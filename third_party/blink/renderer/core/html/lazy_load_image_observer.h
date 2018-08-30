@@ -13,6 +13,7 @@ namespace blink {
 
 class Document;
 class Element;
+class HTMLImageElement;
 class IntersectionObserver;
 class IntersectionObserverEntry;
 class Visitor;
@@ -20,19 +21,43 @@ class Visitor;
 class LazyLoadImageObserver final
     : public GarbageCollected<LazyLoadImageObserver> {
  public:
-  explicit LazyLoadImageObserver(Document&);
+  struct VisibleLoadTimeMetrics {
+    // Keeps track of whether the image was initially intersecting the viewport.
+    bool is_initially_intersecting = false;
+    bool has_initial_intersection_been_set = false;
+
+    bool has_visibility_metrics_been_recorded = false;
+
+    // Set when the image first becomes visible (i.e. appears in the viewport).
+    TimeTicks time_when_first_visible;
+  };
+
+  LazyLoadImageObserver();
 
   static void StartMonitoring(Element*);
   static void StopMonitoring(Element*);
 
+  static void StartTrackingVisibilityMetrics(HTMLImageElement*);
+  static void RecordMetricsOnLoadFinished(HTMLImageElement*);
+
   void Trace(Visitor*);
 
  private:
+  void StartMonitoringNearViewport(Document*, Element*);
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);
+
+  void StartMonitoringVisibility(Document*, HTMLImageElement*);
+  void OnLoadFinished(HTMLImageElement*);
+
+  void OnVisibilityChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
 
   // The intersection observer responsible for loading the image once it's near
   // the viewport.
   Member<IntersectionObserver> lazy_load_intersection_observer_;
+
+  // The intersection observer used to track when the image becomes visible.
+  Member<IntersectionObserver> visibility_metrics_observer_;
 };
 
 }  // namespace blink
