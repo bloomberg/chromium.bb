@@ -37,6 +37,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -691,6 +692,11 @@ std::wstring InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   }
 
   return value;
+}
+
+// static
+base::string16 InstallUtil::GetAppDescription() {
+  return installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
 }
 
 InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)

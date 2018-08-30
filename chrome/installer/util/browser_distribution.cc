@@ -111,10 +111,6 @@ base::string16 BrowserDistribution::GetPublisherName() {
   return L"Chromium";
 }
 
-base::string16 BrowserDistribution::GetAppDescription() {
-  return L"Browse the web";
-}
-
 base::string16 BrowserDistribution::GetLongAppDescription() {
   const base::string16& app_description =
       installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);

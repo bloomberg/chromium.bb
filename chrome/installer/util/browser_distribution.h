@@ -62,8 +62,6 @@ class BrowserDistribution {
 
   virtual base::string16 GetPublisherName();
 
-  virtual base::string16 GetAppDescription();
-
   virtual base::string16 GetLongAppDescription();
 
 #if defined(OS_WIN)
