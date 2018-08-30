@@ -15,7 +15,9 @@
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/audio/audio_input_ipc.h"
+#include "media/audio/audio_source_parameters.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/webrtc/audio_processor_controls.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -25,6 +27,7 @@ namespace content {
 // thread.
 class CONTENT_EXPORT MojoAudioInputIPC
     : public media::AudioInputIPC,
+      public media::AudioProcessorControls,
       public mojom::RendererAudioInputStreamFactoryClient,
       public media::mojom::AudioInputStreamClient {
  public:
@@ -32,7 +35,9 @@ class CONTENT_EXPORT MojoAudioInputIPC
   // It is expected that after calling, either client->StreamCreated() is
   // called or |client| is destructed.
   using StreamCreatorCB = base::RepeatingCallback<void(
+      const media::AudioSourceParameters& source_params,
       mojom::RendererAudioInputStreamFactoryClientPtr client,
+      audio::mojom::AudioProcessorControlsRequest controls_request,
       const media::AudioParameters& params,
       bool automatic_gain_control,
       uint32_t total_segments)>;
@@ -41,8 +46,9 @@ class CONTENT_EXPORT MojoAudioInputIPC
       base::RepeatingCallback<void(const base::UnguessableToken& stream_id,
                                    const std::string& output_device_id)>;
 
-  explicit MojoAudioInputIPC(StreamCreatorCB stream_creator,
-                             StreamAssociatorCB stream_associator);
+  MojoAudioInputIPC(const media::AudioSourceParameters& source_params,
+                    StreamCreatorCB stream_creator,
+                    StreamAssociatorCB stream_associator);
   ~MojoAudioInputIPC() override;
 
   // AudioInputIPC implementation
@@ -50,10 +56,17 @@ class CONTENT_EXPORT MojoAudioInputIPC
                     const media::AudioParameters& params,
                     bool automatic_gain_control,
                     uint32_t total_segments) override;
+
   void RecordStream() override;
   void SetVolume(double volume) override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
+  AudioProcessorControls* GetProcessorControls() override;
   void CloseStream() override;
+
+  // AudioProcessorControls implementation
+  void GetStats(GetStatsCB callback) override;
+  void StartEchoCancellationDump(base::File file) override;
+  void StopEchoCancellationDump() override;
 
  private:
   void StreamCreated(
@@ -65,12 +78,15 @@ class CONTENT_EXPORT MojoAudioInputIPC
   void OnError() override;
   void OnMutedStateChanged(bool is_muted) override;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  const media::AudioSourceParameters source_params_;
+
   StreamCreatorCB stream_creator_;
   StreamAssociatorCB stream_associator_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
-
   media::mojom::AudioInputStreamPtr stream_;
+  audio::mojom::AudioProcessorControlsPtr processor_controls_;
   // Initialized on StreamCreated.
   base::Optional<base::UnguessableToken> stream_id_;
   mojo::Binding<AudioInputStreamClient> stream_client_binding_;

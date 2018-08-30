@@ -10,6 +10,7 @@ import "media/mojo/interfaces/audio_logging.mojom";
 import "media/mojo/interfaces/audio_output_stream.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/audio/public/mojom/audio_processing.mojom";
 
 // Mutes a group of AudioOutputStreams while at least one binding to an instance
 // exists. Once the last binding is dropped, all streams in the group are
@@ -23,8 +24,6 @@ interface LocalMuter {};
 //
 // The client must keep the connection to the factory while streams are
 // running.
-// TODO(https://crbug.com/803102): Add other stream creation functionality to
-// this interface.
 interface StreamFactory {
   // Creates an AudioInputStream and returns the AudioDataPipe it writes data to
   // and a bool indicating whether the stream is initially muted. |data_pipe| is
@@ -37,7 +36,8 @@ interface StreamFactory {
   // for enabling automatic gain control. |key_press_count_buffer| is an
   // optional readonly shared memory handle for reading the current key press
   // count, updated by browser process in media::UserInputMonitor
-  // implementation.
+  // implementation. |processing_config| should be set if audio processing by
+  // the service is desired.
   CreateInputStream(
     media.mojom.AudioInputStream& stream,
     media.mojom.AudioInputStreamClient client,
@@ -45,7 +45,8 @@ interface StreamFactory {
     media.mojom.AudioLog? log,
     string device_id, media.mojom.AudioParameters params,
     uint32 shared_memory_count, bool enable_agc,
-    handle<shared_buffer>? key_press_count_buffer)
+    handle<shared_buffer>? key_press_count_buffer,
+    audio.mojom.AudioProcessingConfig? processing_config)
       => (media.mojom.ReadOnlyAudioDataPipe? data_pipe, bool initially_muted,
           mojo_base.mojom.UnguessableToken? stream_id);
 

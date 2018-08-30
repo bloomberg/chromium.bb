@@ -580,6 +580,7 @@ mojom("mojo_bindings") {
     "//ipc:mojom_constants",
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
+    "//services/audio/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//services/video_capture/public/mojom",

@@ -139,6 +139,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         log_.MakePtr(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, enable_agc, mojo::ScopedSharedBufferHandle(),
+        nullptr,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return stream_ptr;
@@ -151,6 +152,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         nullptr, kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, false, mojo::ScopedSharedBufferHandle(),
+        nullptr,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return stream_ptr;
@@ -163,6 +165,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         log_.MakePtr(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, false, mojo::ScopedSharedBufferHandle(),
+        nullptr,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return stream_ptr;

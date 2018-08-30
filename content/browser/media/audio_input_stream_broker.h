@@ -15,6 +15,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace media {
@@ -36,6 +37,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
 
@@ -68,6 +70,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
 
   DeleterCallback deleter_;
 
+  audio::mojom::AudioProcessingConfigPtr processing_config_;
   mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client_;
   mojo::Binding<AudioInputStreamObserver> observer_binding_;
   media::mojom::AudioInputStreamClientRequest client_request_;

@@ -100,6 +100,7 @@ class RenderFrameAudioInputStreamFactoryTest
         uint32_t shared_memory_count,
         bool enable_agc,
         mojo::ScopedSharedBufferHandle key_press_count_buffer,
+        audio::mojom::AudioProcessingConfigPtr processing_config,
         CreateInputStreamCallback created_callback) override {
       last_created_callback = std::move(created_callback);
     }
@@ -198,7 +199,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   mojom::RendererAudioInputStreamFactoryClientPtr client;
   mojo::MakeRequest(&client);
   factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
-                            kSharedMemoryCount);
+                            kSharedMemoryCount, nullptr);
 
   base::RunLoop().RunUntilIdle();
 
@@ -223,7 +224,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   mojom::RendererAudioInputStreamFactoryClientPtr client;
   mojo::MakeRequest(&client);
   factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
-                            kSharedMemoryCount);
+                            kSharedMemoryCount, nullptr);
 
   base::RunLoop().RunUntilIdle();
 
@@ -249,7 +250,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   mojom::RendererAudioInputStreamFactoryClientPtr client;
   mojo::MakeRequest(&client);
   factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
-                            kSharedMemoryCount);
+                            kSharedMemoryCount, nullptr);
 
   base::RunLoop().RunUntilIdle();
 
@@ -268,7 +269,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   mojo::MakeRequest(&client);
 
   factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
-                            kSharedMemoryCount);
+                            kSharedMemoryCount, nullptr);
 
   base::RunLoop().RunUntilIdle();
 

@@ -111,6 +111,7 @@ class MockBrokerFactory : public AudioStreamBrokerFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
       final {
@@ -258,7 +259,8 @@ TEST_F(ForwardingAudioStreamFactoryTest, CreateInputStream_CreatesInputStream) {
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
   factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                            kSharedMemoryCount, kEnableAgc, std::move(client));
+                            kSharedMemoryCount, kEnableAgc, nullptr,
+                            std::move(client));
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
@@ -307,7 +309,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
     factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(client));
     testing::Mock::VerifyAndClear(&*main_rfh_broker);
   }
@@ -315,7 +317,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
     factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(client));
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
@@ -420,7 +422,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
     EXPECT_CALL(*main_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
     factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_input_broker);
   }
@@ -428,7 +430,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
     EXPECT_CALL(*other_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
     factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_input_broker);
   }
@@ -494,7 +496,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyWebContents_DestroysStreams) {
   EXPECT_CALL(*input_broker, CreateStream(NotNull()));
   mojo::MakeRequest(&input_client);
   factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                            kSharedMemoryCount, kEnableAgc,
+                            kSharedMemoryCount, kEnableAgc, nullptr,
                             std::move(input_client));
 
   EXPECT_CALL(*output_broker, CreateStream(NotNull()));
@@ -531,7 +533,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
     EXPECT_CALL(*main_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
     factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_input_broker);
   }
@@ -539,7 +541,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
     EXPECT_CALL(*other_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
     factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc,
+                              kSharedMemoryCount, kEnableAgc, nullptr,
                               std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_input_broker);
   }

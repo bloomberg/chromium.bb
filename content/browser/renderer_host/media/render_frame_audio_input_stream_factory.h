@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_RENDER_FRAME_AUDIO_INPUT_STREAM_FACTORY_H_
 
 #include <cstdint>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -41,17 +42,20 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
 
  private:
   // mojom::RendererAudioInputStreamFactory implementation.
-  void CreateStream(mojom::RendererAudioInputStreamFactoryClientPtr client,
-                    int32_t session_id,
-                    const media::AudioParameters& audio_params,
-                    bool automatic_gain_control,
-                    uint32_t shared_memory_count) override;
+  void CreateStream(
+      mojom::RendererAudioInputStreamFactoryClientPtr client,
+      int32_t session_id,
+      const media::AudioParameters& audio_params,
+      bool automatic_gain_control,
+      uint32_t shared_memory_count,
+      audio::mojom::AudioProcessingConfigPtr processing_config) override;
 
   void CreateStreamAfterLookingUpDevice(
       mojom::RendererAudioInputStreamFactoryClientPtr client,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
       uint32_t shared_memory_count,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
       const MediaStreamDevice& device);
 
   void AssociateInputAndOutputForAec(

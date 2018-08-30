@@ -125,9 +125,12 @@ void OldRenderFrameAudioInputStreamFactory::CreateStream(
     int32_t session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
-    uint32_t shared_memory_count) {
+    uint32_t shared_memory_count,
+    audio::mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+// |processing_config| gets dropped here. It's not supported outside of the
+// audio service. As this class is slated for removal, it will not be updated
+// to support audio processing.
 #if defined(OS_CHROMEOS)
   if (audio_params.channel_layout() ==
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {

@@ -18,12 +18,19 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
-
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
+#include "services/audio/snoopable.h"
+#include "services/audio/stream_monitor.h"
+#include "services/audio/stream_monitor_coordinator.h"
 
 namespace media {
 class AudioBus;
 class AudioInputStream;
 class AudioManager;
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+class AudioProcessor;
+#endif
 class UserInputMonitor;
 }  // namespace media
 
@@ -35,7 +42,7 @@ namespace audio {
 #endif
 
 // All public methods of InputController must be called from the audio thread.
-class InputController final {
+class InputController final : public StreamMonitor {
  public:
   // Error codes to make native logging more clear. These error codes are added
   // to generic error strings to provide a higher degree of details.
@@ -97,7 +104,7 @@ class InputController final {
     FAKE = 3,
   };
 
-  ~InputController();
+  ~InputController() final;
 
   media::AudioInputStream* stream_for_testing() { return stream_; }
 
@@ -109,7 +116,9 @@ class InputController final {
       media::UserInputMonitor* user_input_monitor,
       const media::AudioParameters& params,
       const std::string& device_id,
-      bool agc_is_enabled);
+      bool agc_is_enabled,
+      StreamMonitorCoordinator* stream_monitor_coordinator,
+      mojom::AudioProcessingConfigPtr processing_config);
 
   // Starts recording using the created audio input stream.
   void Record();
@@ -125,6 +134,12 @@ class InputController final {
   // Sets the output device which will be used to cancel audio from, if this
   // input device supports echo cancellation.
   void SetOutputDeviceForAec(const std::string& output_device_id);
+
+  bool ShouldRegisterWithStreamMonitorCoordinator() const;
+
+  // StreamMonitor implementation
+  void OnStreamActive(Snoopable* snoopable) override;
+  void OnStreamInactive(Snoopable* snoopable) override;
 
  private:
   // Used to log the result of capture startup.
@@ -167,11 +182,49 @@ class InputController final {
   };
 #endif
 
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  class ProcessingHelper final : public mojom::AudioProcessorControls,
+                                 public Snoopable::Snooper {
+   public:
+    ProcessingHelper(const media::AudioParameters& params,
+                     media::AudioProcessingSettings processing_settings,
+                     mojom::AudioProcessorControlsRequest controls_request);
+    ~ProcessingHelper() final;
+
+    // Snoopable::Snooper implementation
+    void OnData(const media::AudioBus& audio_bus,
+                base::TimeTicks reference_time,
+                double volume) final;
+
+    // mojom::AudioProcessorControls implementation.
+    void GetStats(GetStatsCallback callback) final;
+    void StartEchoCancellationDump(base::File file) final;
+    void StopEchoCancellationDump() final;
+
+    // Starts and/or stops snooping and updates |monitored_output_stream_|
+    // appropriately.
+    void ChangeStreamMonitor(Snoopable* output_stream);
+
+    media::AudioProcessor* GetAudioProcessor();
+
+   private:
+    THREAD_CHECKER(owning_thread_);
+
+    const mojo::Binding<mojom::AudioProcessorControls> binding_;
+    const media::AudioParameters params_;
+    const std::unique_ptr<media::AudioProcessor> audio_processor_;
+    media::AudioParameters output_params_;
+    Snoopable* monitored_output_stream_ = nullptr;
+  };
+#endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+
   InputController(EventHandler* handler,
                   SyncWriter* sync_writer,
                   media::UserInputMonitor* user_input_monitor,
                   const media::AudioParameters& params,
-                  StreamType type);
+                  StreamType type,
+                  StreamMonitorCoordinator* stream_monitor_coordinator,
+                  mojom::AudioProcessingConfigPtr processing_config);
 
   void DoCreate(media::AudioManager* audio_manager,
                 const media::AudioParameters& params,
@@ -217,6 +270,10 @@ class InputController final {
 
   static StreamType ParamsToStreamType(const media::AudioParameters& params);
 
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  void UpdateVolumeAndAPMStats(base::Optional<double> new_volume);
+#endif
+
   // This class must be used on the audio manager thread.
   THREAD_CHECKER(owning_thread_);
 
@@ -237,6 +294,10 @@ class InputController final {
 
   media::UserInputMonitor* const user_input_monitor_;
 
+  bool registered_to_coordinator_ = false;
+  StreamMonitorCoordinator* const stream_monitor_coordinator_;
+  mojom::AudioProcessingConfigPtr processing_config_;
+
 #if defined(AUDIO_POWER_MONITORING)
   // Whether the silence state and microphone levels should be checked and sent
   // as UMA stats.
@@ -256,6 +317,11 @@ class InputController final {
 
   bool is_muted_ = false;
   base::RepeatingTimer check_muted_state_timer_;
+
+#if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
+  // Holds stats related to audio processing.
+  base::Optional<ProcessingHelper> processing_helper_;
+#endif
 
   class AudioCallback;
   // Holds a pointer to the callback object that receives audio data from

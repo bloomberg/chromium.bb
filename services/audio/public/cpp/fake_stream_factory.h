@@ -26,16 +26,17 @@ class FakeStreamFactory : public mojom::StreamFactory {
 
   void CloseBinding() { binding_.Close(); }
 
-  void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
-                         media::mojom::AudioInputStreamClientPtr client,
-                         media::mojom::AudioInputStreamObserverPtr observer,
-                         media::mojom::AudioLogPtr log,
+  void CreateInputStream(::media::mojom::AudioInputStreamRequest stream,
+                         ::media::mojom::AudioInputStreamClientPtr client,
+                         ::media::mojom::AudioInputStreamObserverPtr observer,
+                         ::media::mojom::AudioLogPtr log,
                          const std::string& device_id,
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count,
                          bool enable_agc,
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
-                         CreateInputStreamCallback created_callback) override {}
+                         mojom::AudioProcessingConfigPtr processing_config,
+                         CreateInputStreamCallback callback) override {}
 
   void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,

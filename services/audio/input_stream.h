@@ -16,6 +16,8 @@
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/input_controller.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
+#include "services/audio/stream_monitor_coordinator.h"
 
 namespace media {
 
@@ -49,7 +51,9 @@ class InputStream final : public media::mojom::AudioInputStream,
               const std::string& device_id,
               const media::AudioParameters& params,
               uint32_t shared_memory_count,
-              bool enable_agc);
+              bool enable_agc,
+              StreamMonitorCoordinator* stream_monitor_coordinator,
+              mojom::AudioProcessingConfigPtr processing_config);
   ~InputStream() override;
 
   const base::UnguessableToken& id() const { return id_; }

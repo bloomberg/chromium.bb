@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {
 namespace mojom {
@@ -104,6 +105,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
+      audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
       mojom::RendererAudioInputStreamFactoryClientPtr
           renderer_factory_client) = 0;
