@@ -53,26 +53,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -309,26 +289,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
