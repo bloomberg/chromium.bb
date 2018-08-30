@@ -123,6 +123,24 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
       ->GetBrowserContext();
 }
 
+void ChromeAuthenticatorRequestDelegate::DidFailWithInterestingReason(
+    InterestingFailureReason reason) {
+  if (!weak_dialog_model_)
+    return;
+
+  switch (reason) {
+    case InterestingFailureReason::kTimeout:
+      weak_dialog_model_->OnRequestTimeout();
+      break;
+    case InterestingFailureReason::kKeyNotRegistered:
+      weak_dialog_model_->OnActivatedKeyNotRegistered();
+      break;
+    case InterestingFailureReason::kKeyAlreadyRegistered:
+      weak_dialog_model_->OnActivatedKeyAlreadyRegistered();
+      break;
+  }
+}
+
 void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,

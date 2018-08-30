@@ -97,6 +97,34 @@ bool AuthenticatorRequestDialogView::Cancel() {
 }
 
 bool AuthenticatorRequestDialogView::Close() {
+  // To keep the UI responsive, always allow immediately closing the dialog when
+  // desired; but still trigger cancelling the AuthenticatorRequest unless it is
+  // already complete.
+  //
+  // Note that on most sheets, cancelling will immediately destroy the request,
+  // so this method will be re-entered like so:
+  //
+  //   AuthenticatorRequestDialogView::Close()
+  //   views::DialogClientView::CanClose()
+  //   views::Widget::Close()
+  //   AuthenticatorRequestDialogView::OnStepTransition()
+  //   AuthenticatorRequestDialogModel::SetCurrentStep()
+  //   AuthenticatorRequestDialogModel::OnRequestComplete()
+  //   ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate()
+  //   content::AuthenticatorImpl::InvokeCallbackAndCleanup()
+  //   content::AuthenticatorImpl::FailWithNotAllowedErrorAndCleanup()
+  //   <<invoke callback>>
+  //   ChromeAuthenticatorRequestDelegate::OnCancelRequest()
+  //   AuthenticatorRequestDialogModel::Cancel()
+  //   AuthenticatorRequestDialogView::Cancel()
+  //   AuthenticatorRequestDialogView::Close()  [initial call]
+  //
+  // This should not be a problem as the native widget will never synchronously
+  // close and hence not synchronously destroy the model while it's iterating
+  // over observers in SetCurrentStep().
+  if (!model_->is_request_complete())
+    Cancel();
+
   return true;
 }
 
@@ -167,8 +195,7 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
 void AuthenticatorRequestDialogView::OnStepTransition() {
   ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
 
-  if (model_->current_step() ==
-      AuthenticatorRequestDialogModel::Step::kCompleted) {
+  if (model_->should_dialog_be_closed()) {
     if (!GetWidget())
       return;
     GetWidget()->Close();

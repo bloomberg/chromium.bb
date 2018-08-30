@@ -118,6 +118,8 @@ class AuthenticatorTimeoutErrorModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -144,13 +146,11 @@ class AuthenticatorNotRegisteredErrorModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
-  bool IsAcceptButtonVisible() const override;
-  bool IsAcceptButtonEnabled() const override;
-  base::string16 GetAcceptButtonLabel() const override;
-  void OnAccept() override;
 };
 
 class AuthenticatorAlreadyRegisteredErrorModel
@@ -160,13 +160,11 @@ class AuthenticatorAlreadyRegisteredErrorModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
-  bool IsAcceptButtonVisible() const override;
-  bool IsAcceptButtonEnabled() const override;
-  base::string16 GetAcceptButtonLabel() const override;
-  void OnAccept() override;
 };
 
 class AuthenticatorInternalUnrecognizedErrorSheetModel

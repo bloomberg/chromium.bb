@@ -210,6 +210,11 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
+  if (is_request_complete()) {
+    SetCurrentStep(Step::kClosed);
+    return;
+  }
+
   for (auto& observer : observers_)
     observer.OnCancelRequest();
 }
@@ -231,11 +236,25 @@ void AuthenticatorRequestDialogModel::RemoveObserver(Observer* observer) {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestComplete() {
-  SetCurrentStep(Step::kCompleted);
+  DCHECK_NE(current_step(), Step::kClosed);
+  if (is_showing_post_mortem())
+    return;
+  SetCurrentStep(Step::kClosed);
 }
 
 void AuthenticatorRequestDialogModel::OnRequestTimeout() {
-  SetCurrentStep(Step::kErrorTimedOut);
+  DCHECK(!is_request_complete());
+  SetCurrentStep(Step::kPostMortemTimedOut);
+}
+
+void AuthenticatorRequestDialogModel::OnActivatedKeyNotRegistered() {
+  DCHECK(!is_request_complete());
+  SetCurrentStep(Step::kPostMortemKeyNotRegistered);
+}
+
+void AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered() {
+  DCHECK(!is_request_complete());
+  SetCurrentStep(Step::kPostMortemKeyAlreadyRegistered);
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(

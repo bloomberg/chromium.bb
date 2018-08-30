@@ -34,12 +34,19 @@ class AuthenticatorRequestDialogModel {
 
     kWelcomeScreen,
     kTransportSelection,
-    kErrorTimedOut,
+
+    // The request is not yet complete, and will only be after user interaction.
     kErrorNoAvailableTransports,
-    kErrorKeyNotRegistered,
-    kErrorKeyAlreadyRegistered,
     kErrorInternalUnrecognized,
-    kCompleted,
+
+    // The request is already complete, but the dialog should remain open with
+    // an explaining of what went wrong.
+    kPostMortemTimedOut,
+    kPostMortemKeyNotRegistered,
+    kPostMortemKeyAlreadyRegistered,
+
+    // The request is completed, and the dialog should be closed.
+    kClosed,
 
     // Universal Serial Bus (USB).
     kUsbInsertAndActivate,
@@ -99,6 +106,20 @@ class AuthenticatorRequestDialogModel {
 
   void SetCurrentStep(Step step);
   Step current_step() const { return current_step_; }
+
+  bool is_showing_post_mortem() const {
+    return current_step() == Step::kPostMortemTimedOut ||
+           current_step() == Step::kPostMortemKeyNotRegistered ||
+           current_step() == Step::kPostMortemKeyAlreadyRegistered;
+  }
+
+  bool is_request_complete() const {
+    return is_showing_post_mortem() || current_step() == Step::kClosed;
+  }
+
+  bool should_dialog_be_closed() const {
+    return current_step() == Step::kClosed;
+  }
 
   TransportListModel* transport_list_model() { return &transport_list_model_; }
   const TransportAvailabilityInfo* transport_availability() const {
@@ -187,6 +208,14 @@ class AuthenticatorRequestDialogModel {
 
   // To be called when Web Authentication request times-out.
   void OnRequestTimeout();
+
+  // To be called when the user activates a security key that does not recognize
+  // any of the allowed credentials (during a GetAssertion request).
+  void OnActivatedKeyNotRegistered();
+
+  // To be called when the user activates a security key that does recognize
+  // one of excluded credentials (during a MakeCredential request).
+  void OnActivatedKeyAlreadyRegistered();
 
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);

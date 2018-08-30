@@ -190,6 +190,14 @@ AuthenticatorInsertAndActivateUsbSheetModel::GetOtherTransportsMenuModel() {
 
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
 
+bool AuthenticatorTimeoutErrorModel::IsBackButtonVisible() const {
+  return false;
+}
+
+base::string16 AuthenticatorTimeoutErrorModel::GetCancelButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
 gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
@@ -231,6 +239,15 @@ AuthenticatorNoAvailableTransportsErrorModel::GetStepDescription() const {
 
 // AuthenticatorNotRegisteredErrorModel ---------------------------------------
 
+bool AuthenticatorNotRegisteredErrorModel::IsBackButtonVisible() const {
+  return false;
+}
+
+base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
 gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration()
     const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
@@ -246,23 +263,16 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetStepDescription()
       IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION);
 }
 
-bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-base::string16 AuthenticatorNotRegisteredErrorModel::GetAcceptButtonLabel()
-    const {
-  // TODO(engedy): This should use a separate string resource.
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_NEXT);
-}
-
-void AuthenticatorNotRegisteredErrorModel::OnAccept() {}
-
 // AuthenticatorAlreadyRegisteredErrorModel -----------------------------------
+
+bool AuthenticatorAlreadyRegisteredErrorModel::IsBackButtonVisible() const {
+  return false;
+}
+
+base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
 
 gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration()
     const {
@@ -278,22 +288,6 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION);
 }
-
-bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetAcceptButtonLabel()
-    const {
-  // TODO(engedy): This should use a separate string resource.
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_NEXT);
-}
-
-void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {}
 
 // AuthenticatorInternalUnrecognizedErrorSheetModel
 // -----------------------------------
