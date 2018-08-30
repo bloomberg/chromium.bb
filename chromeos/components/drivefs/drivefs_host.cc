@@ -221,6 +221,12 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
+  void OnError(mojom::DriveErrorPtr error) override {
+    for (auto& observer : host_->observers_) {
+      observer.OnError(*error);
+    }
+  }
+
   void OnConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (!drivefs_has_terminated_) {

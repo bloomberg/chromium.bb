@@ -233,6 +233,9 @@ class MockDriveFsHostObserver : public DriveFsHostObserver {
  public:
   MOCK_METHOD0(OnUnmounted, void());
   MOCK_METHOD1(OnSyncingStatusUpdate, void(const mojom::SyncingStatus& status));
+  MOCK_METHOD1(OnFilesChanged,
+               void(const std::vector<mojom::FileChange>& changes));
+  MOCK_METHOD1(OnError, void(const mojom::DriveError& error));
 };
 
 ACTION_P(RunQuitClosure, quit) {
@@ -775,8 +778,7 @@ ACTION_P(CloneStruct, output) {
   *output = arg0.Clone();
 }
 
-TEST_F(DriveFsHostTest,
-       GetAccessToken_OnSyncingStatusUpdate_ForwardToObservers) {
+TEST_F(DriveFsHostTest, OnSyncingStatusUpdate_ForwardToObservers) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
   ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
@@ -793,6 +795,50 @@ TEST_F(DriveFsHostTest,
   testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(status, observed_status);
+}
+
+ACTION_P(CloneVectorOfStructs, output) {
+  for (auto& s : arg0) {
+    output->emplace_back(s.Clone());
+  }
+}
+
+TEST_F(DriveFsHostTest, OnFilesChanged_ForwardToObservers) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  std::vector<mojom::FileChangePtr> changes;
+  changes.emplace_back(base::in_place, base::FilePath("/create"),
+                       mojom::FileChange::Type::kCreate);
+  changes.emplace_back(base::in_place, base::FilePath("/delete"),
+                       mojom::FileChange::Type::kDelete);
+  changes.emplace_back(base::in_place, base::FilePath("/modify"),
+                       mojom::FileChange::Type::kModify);
+  std::vector<mojom::FileChangePtr> observed_changes;
+  EXPECT_CALL(observer, OnFilesChanged(_))
+      .WillOnce(CloneVectorOfStructs(&observed_changes));
+  delegate_ptr_->OnFilesChanged(mojo::Clone(changes));
+  delegate_ptr_.FlushForTesting();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_EQ(changes, observed_changes);
+}
+
+TEST_F(DriveFsHostTest, OnError_ForwardToObservers) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  auto error = mojom::DriveError::New(
+      mojom::DriveError::Type::kCantUploadStorageFull, base::FilePath("/foo"));
+  mojom::DriveErrorPtr observed_error;
+  EXPECT_CALL(observer, OnError(_)).WillOnce(CloneStruct(&observed_error));
+  delegate_ptr_->OnError(error.Clone());
+  delegate_ptr_.FlushForTesting();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_EQ(error, observed_error);
 }
 
 }  // namespace
