@@ -17,6 +17,8 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -255,6 +257,17 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       VLOG_IF(2, !pattern_pair.second.IsValid())
           << "Replacing invalid secondary pattern '"
           << pattern_pair.second.ToString() << "' with wildcard";
+
+      // Currently all settings that can set pattern pairs support embedded
+      // exceptions. However if a new content setting is added that doesn't,
+      // this DCHECK should be changed to an actual check which ignores such
+      // patterns for that type.
+      DCHECK(pattern_pair.first == pattern_pair.second ||
+             pattern_pair.second == ContentSettingsPattern::Wildcard() ||
+             content_settings::WebsiteSettingsRegistry::GetInstance()
+                 ->Get(content_type)
+                 ->SupportsEmbeddedExceptions());
+
       // Don't set a timestamp for policy settings.
       value_map->SetValue(
           pattern_pair.first, secondary_pattern, content_type,

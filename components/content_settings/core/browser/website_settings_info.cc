@@ -64,4 +64,16 @@ uint32_t WebsiteSettingsInfo::GetPrefRegistrationFlags() const {
   return flags;
 }
 
+bool WebsiteSettingsInfo::SupportsEmbeddedExceptions() const {
+  // Note that REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE supports embedded
+  // exceptions but because these are deprecated and planned to be removed they
+  // aren't included here.
+  if (scoping_type_ == COOKIES_SCOPE ||
+      scoping_type_ == SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace content_settings

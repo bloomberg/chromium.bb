@@ -27,18 +27,23 @@ class WebsiteSettingsInfo {
   enum LossyStatus { LOSSY, NOT_LOSSY };
 
   enum ScopingType {
-    // Settings scoped to the domain of the requesting frame only. This should
-    // not generally be used.
-    REQUESTING_DOMAIN_ONLY_SCOPE,
+    // Settings scoped to the domain of the requesting frame by default.
+    // Embedded settings can be stored.
+    COOKIES_SCOPE,
 
-    // Settings scoped to the origin of the main frame only.
-    TOP_LEVEL_ORIGIN_ONLY_SCOPE,
+    // Settings scoped to a single origin (generally either the requesting
+    // origin or the top level origin of a frame) for a request. Embedded
+    // exceptions are not allowed.
+    SINGLE_ORIGIN_ONLY_SCOPE,
 
-    // Settings scoped to the origin of the requesting frame only.
-    REQUESTING_ORIGIN_ONLY_SCOPE,
+    // Settings scoped to a single origin (generally either the requesting
+    // origin or the top level origin of a frame) for a request. Embedded
+    // exceptions are allowed. This should only be used after careful thought.
+    // Allowing embedded exceptions requires much more complicated UI.
+    SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
 
     // Settings scoped to the combination of the origin of the requesting
-    // frame and the origin of the top level frame.
+    // frame and the origin of the top level frame by default.
     //
     // This is deprecated with Permission Delegation and should not be used.
     // Specifically, UI (e.g. prompts, page actions, etc.) should generally only
@@ -75,6 +80,8 @@ class WebsiteSettingsInfo {
   }
 
   uint32_t GetPrefRegistrationFlags() const;
+
+  bool SupportsEmbeddedExceptions() const;
 
   ScopingType scoping_type() const { return scoping_type_; }
   IncognitoBehavior incognito_behavior() const { return incognito_behavior_; }
