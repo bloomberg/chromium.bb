@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -53,7 +53,7 @@ void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
 // Reads a PNG image from disk and decodes it. If the reading/decoding attempt
 // was unsuccessful, an empty image is returned.
 gfx::Image ReadImage(const base::FilePath& image_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(image_path))
     return gfx::Image();
@@ -69,7 +69,7 @@ gfx::Image ReadImage(const base::FilePath& image_path) {
 // Saves |png_data| to disk at |image_path|.
 void SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
                const base::FilePath& image_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
   if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
