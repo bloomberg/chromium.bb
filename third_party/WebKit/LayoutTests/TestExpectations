@@ -1827,7 +1827,7 @@ crbug.com/876305 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
 crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 
-crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
+crbug.com/876732 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
