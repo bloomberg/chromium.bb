@@ -330,14 +330,17 @@ bool InProgressDownloadManager::ShouldOpenDownload(
 
 base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
     DownloadItemImpl* download) {
-  if (!download || !download_metadata_cache_ || !download_db_cache_)
+  if (!download)
     return base::Optional<DownloadEntry>();
 
   if (download_metadata_cache_)
     return download_metadata_cache_->RetrieveEntry(download->GetGuid());
 
-  return CreateDownloadEntryFromDownloadDBEntry(
-      download_db_cache_->RetrieveEntry(download->GetGuid()));
+  if (download_db_cache_) {
+    return CreateDownloadEntryFromDownloadDBEntry(
+        download_db_cache_->RetrieveEntry(download->GetGuid()));
+  }
+  return base::Optional<DownloadEntry>();
 }
 
 void InProgressDownloadManager::ReportBytesWasted(DownloadItemImpl* download) {
