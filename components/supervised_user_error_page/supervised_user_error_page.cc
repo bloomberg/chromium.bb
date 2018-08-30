@@ -89,12 +89,12 @@ std::string BuildHtml(bool allow_access_requests,
                     BuildAvatarImageUrl(profile_image_url2, kAvatarSize1x));
   strings.SetString("secondAvatarURL2x",
                     BuildAvatarImageUrl(profile_image_url2, kAvatarSize2x));
+  strings.SetString("custodianName", custodian);
+  strings.SetString("custodianEmail", custodian_email);
+  strings.SetString("secondCustodianName", second_custodian);
+  strings.SetString("secondCustodianEmail", second_custodian_email);
+
   base::string16 custodian16 = base::UTF8ToUTF16(custodian);
-  strings.SetString("custodianName", custodian16);
-  strings.SetString("custodianEmail", base::UTF8ToUTF16(custodian_email));
-  strings.SetString("secondCustodianName", base::UTF8ToUTF16(second_custodian));
-  strings.SetString("secondCustodianEmail",
-                    base::UTF8ToUTF16(second_custodian_email));
   base::string16 block_header;
   base::string16 block_message;
   if (reason == FilteringBehaviorReason::NOT_SIGNED_IN) {

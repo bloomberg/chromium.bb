@@ -54,12 +54,12 @@ void SuperfishErrorUI::PopulateStringsForHTML(
 
   // Fill in empty values for normal SSL error strings that aren't used on this
   // interstitial.
-  load_time_data->SetString("explanationParagraph", std::string());
-  load_time_data->SetString("primaryButtonText", std::string());
-  load_time_data->SetString("finalParagraph", std::string());
-  load_time_data->SetString("openDetails", base::string16());
-  load_time_data->SetString("closeDetails", base::string16());
-  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetString("explanationParagraph", "");
+  load_time_data->SetString("primaryButtonText", "");
+  load_time_data->SetString("finalParagraph", "");
+  load_time_data->SetString("openDetails", "");
+  load_time_data->SetString("closeDetails", "");
+  load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 

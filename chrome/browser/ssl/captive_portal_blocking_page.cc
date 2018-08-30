@@ -204,11 +204,11 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   }
   load_time_data->SetString("primaryParagraph", paragraph);
   // Explicitly specify other expected fields to empty.
-  load_time_data->SetString("openDetails", base::string16());
-  load_time_data->SetString("closeDetails", base::string16());
-  load_time_data->SetString("explanationParagraph", base::string16());
-  load_time_data->SetString("finalParagraph", base::string16());
-  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetString("openDetails", "");
+  load_time_data->SetString("closeDetails", "");
+  load_time_data->SetString("explanationParagraph", "");
+  load_time_data->SetString("finalParagraph", "");
+  load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 
   if (cert_report_helper())

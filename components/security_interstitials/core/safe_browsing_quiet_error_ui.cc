@@ -7,7 +7,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/common_string_util.h"
@@ -78,7 +77,7 @@ void SafeBrowsingQuietErrorUI::PopulateStringsForHtml(
   }
 
   // Not used by this interstitial.
-  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 
@@ -151,6 +150,6 @@ void SafeBrowsingQuietErrorUI::PopulatePhishingLoadTimeData(
 
 int SafeBrowsingQuietErrorUI::GetHTMLTemplateId() const {
   return IDR_SECURITY_INTERSTITIAL_QUIET_HTML;
-};
+}
 
-}  // security_interstitials
+}  // namespace security_interstitials
