@@ -1957,6 +1957,12 @@ const char kTraceUploadUrlChoiceEmloading[] = "emloading";
 const char kTraceUploadUrlChoiceQa[] = "QA";
 const char kTraceUploadUrlChoiceTesting[] = "Testing";
 
+const char kTranslateExplicitLanguageAskName[] =
+    "Explicitly ask for language preferences";
+const char kTranslateExplicitLanguageAskDescription[] =
+    "Explicitly ask the user which languages they can read on Chrome startup, "
+    "on the first run that doesn't already have a promo.";
+
 const char kTranslateForceTriggerOnEnglishName[] =
     "Select which language model to use to trigger translate on English "
     "content";

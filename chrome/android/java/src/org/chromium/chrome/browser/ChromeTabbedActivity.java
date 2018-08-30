@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
+import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -631,8 +632,12 @@ public class ChromeTabbedActivity
         // Only one promo can be shown in one run to avoid nagging users too much.
         if (SigninPromoUtil.launchConsentBumpIfNeeded(this)) return true;
         if (SigninPromoUtil.launchSigninPromoIfNeeded(this)) return true;
-        return DataReductionPromoScreen.launchDataReductionPromo(
-                this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
+        if (DataReductionPromoScreen.launchDataReductionPromo(
+                    this, mTabModelSelectorImpl.getCurrentModel().isIncognito())) {
+            return true;
+        }
+
+        return LanguageAskPrompt.maybeShowLanguageAskPrompt(this);
     }
 
     @Override

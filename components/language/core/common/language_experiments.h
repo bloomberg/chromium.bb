@@ -13,6 +13,10 @@ namespace language {
 // the baseline model is used instead.
 extern const base::Feature kUseHeuristicLanguageModel;
 
+// The feature that enables explicitly asking for user preferences on startup on
+// Android.
+extern const base::Feature kExplicitLanguageAsk;
+
 // This feature controls the activation of the experiment to trigger Translate
 // in India on English pages independent of the user's UI language. The params
 // associated with the experiment dictate which model is used to determine the
