@@ -8,28 +8,23 @@
  * Checks if the files initially added by the C++ side are displayed, and
  * that files subsequently added are also displayed.
  *
- * @param {string} path Directory path to be tested.
+ * @param {string} path Path to be tested, Downloads or Drive.
+ * @param {Array<TestEntryInfo>} defaultEntries Default file entries.
  */
-function fileDisplay(path) {
+function fileDisplay(path, defaultEntries) {
   var appId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
-
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
+  const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
 
   StepsRunner.run([
-    // Open Files app on local downloads.
+    // Open Files app on the given |path| with default file entries.
     function() {
       setupAndWaitUntilReady(null, path, this.next);
     },
-    // Verify the file list.
+    // Verify the default file list.
     function(result) {
       appId = result.windowId;
-      var filesBefore = result.fileList;
-      chrome.test.assertEq(expectedFilesBefore, filesBefore);
+      chrome.test.assertEq(defaultList, result.fileList);
       this.next();
     },
     // Add new file entries.
@@ -38,14 +33,19 @@ function fileDisplay(path) {
     },
     // Wait for the new file entries.
     function() {
-      remoteCall.waitForFileListChange(appId, expectedFilesBefore.length).
-          then(this.next);
+      remoteCall.waitForFileListChange(appId, defaultList.length)
+          .then(this.next);
     },
     // Verify the new file list.
-    function(filesAfter) {
-      chrome.test.assertEq(expectedFilesAfter, filesAfter);
-      checkIfNoErrorsOccured(this.next);
+    function(fileList) {
+      const expectedList =
+          defaultList.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
+      chrome.test.assertEq(expectedList, fileList);
+      this.next();
     },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
   ]);
 }
 
@@ -53,14 +53,14 @@ function fileDisplay(path) {
  * Tests files display in Downloads.
  */
 testcase.fileDisplayDownloads = function() {
-  fileDisplay(RootPath.DOWNLOADS);
+  fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
  * Tests files display in Google Drive.
  */
 testcase.fileDisplayDrive = function() {
-  fileDisplay(RootPath.DRIVE);
+  fileDisplay(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
