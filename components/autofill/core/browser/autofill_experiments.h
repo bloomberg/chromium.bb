@@ -22,14 +22,6 @@ class SyncService;
 
 namespace autofill {
 
-// Boolean Features
-
-extern const base::Feature kAutofillExpandedPopupViews;
-extern const base::Feature kAutofillScanCardholderName;
-extern const base::Feature kAutofillUpstream;
-extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
-extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
-
 // Parameterized Features (grouped with parameter name and options)
 #if !defined(OS_ANDROID)
 extern const base::Feature kAutofillDropdownLayoutExperiment;

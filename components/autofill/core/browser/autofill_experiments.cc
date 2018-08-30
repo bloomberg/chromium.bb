@@ -27,22 +27,6 @@
 
 namespace autofill {
 
-const base::Feature kAutofillExpandedPopupViews{
-    "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillScanCardholderName{
-    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillUpstream{"AutofillUpstream",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillUpstreamAllowAllEmailDomains{
-    "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillUpstreamUpdatePromptExplanation{
-    "AutofillUpstreamUpdatePromptExplanation",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 const base::Feature kAutofillDropdownLayoutExperiment{
     "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};

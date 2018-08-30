@@ -55,6 +55,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -1643,7 +1644,7 @@ class AutofillDevToolsSanityTest : public DevToolsSanityTest,
   void SetUpOnMainThread() override {
     const bool popup_views_enabled = GetParam();
     scoped_feature_list_.InitWithFeatureState(
-        autofill::kAutofillExpandedPopupViews, popup_views_enabled);
+        autofill::features::kAutofillExpandedPopupViews, popup_views_enabled);
   }
 
  private:

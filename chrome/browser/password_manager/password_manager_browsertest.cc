@@ -35,9 +35,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -93,7 +93,7 @@ class PasswordManagerBrowserTestWithViewsFeature
 
     const bool popup_views_enabled = GetParam();
     scoped_feature_list_.InitWithFeatureState(
-        autofill::kAutofillExpandedPopupViews, popup_views_enabled);
+        autofill::features::kAutofillExpandedPopupViews, popup_views_enabled);
   }
 
  private:
@@ -3382,7 +3382,7 @@ class PasswordManagerDialogBrowserTest
 
     const bool popup_views_enabled = GetParam();
     scoped_feature_list_.InitWithFeatureState(
-        autofill::kAutofillExpandedPopupViews, popup_views_enabled);
+        autofill::features::kAutofillExpandedPopupViews, popup_views_enabled);
   }
 
   void ShowUi(const std::string& name) override {
@@ -3568,7 +3568,7 @@ class SitePerProcessPasswordManagerBrowserTest
 
     const bool popup_views_enabled = GetParam();
     scoped_feature_list_.InitWithFeatureState(
-        autofill::kAutofillExpandedPopupViews, popup_views_enabled);
+        autofill::features::kAutofillExpandedPopupViews, popup_views_enabled);
   }
 
  private:

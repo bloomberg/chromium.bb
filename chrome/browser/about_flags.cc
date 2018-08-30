@@ -3118,7 +3118,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillExpandedPopupViews)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillExpandedPopupViews)},
     {"enable-autofill-save-card-dialog-unlabeled-expiration-date",
      flag_descriptions::
          kEnableAutofillSaveCardDialogUnlabeledExpirationDateName,
