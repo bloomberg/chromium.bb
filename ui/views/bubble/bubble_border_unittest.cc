@@ -303,42 +303,21 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const gfx::Insets kInsets = border.GetInsets();
 
     border.set_arrow(BubbleBorder::TOP_LEFT);
-    const gfx::Size kTotalSizeWithHorizArrow =
-        border.GetSizeForContentsSize(kContentSize);
+    const gfx::Size kTotalSize = border.GetSizeForContentsSize(kContentSize);
 
     border.set_arrow(BubbleBorder::RIGHT_BOTTOM);
-    const gfx::Size kTotalSizeWithVertArrow =
-        border.GetSizeForContentsSize(kContentSize);
+    EXPECT_EQ(kTotalSize, border.GetSizeForContentsSize(kContentSize));
 
     border.set_arrow(BubbleBorder::NONE);
-    const gfx::Size kTotalSizeWithNoArrow =
-        border.GetSizeForContentsSize(kContentSize);
-
-    const int kArrowOffsetForHorizCenter = kTotalSizeWithHorizArrow.width() / 2;
-    const int kArrowOffsetForVertCenter = kTotalSizeWithVertArrow.height() / 2;
+    EXPECT_EQ(kTotalSize, border.GetSizeForContentsSize(kContentSize));
 
     const int kStrokeWidth =
         shadow == BubbleBorder::NO_ASSETS ? 0 : BubbleBorder::kStroke;
 
-    const int kArrowShift = 0;
-    const int kHeightDifference =
-        kTotalSizeWithHorizArrow.height() - kTotalSizeWithNoArrow.height();
-    const int kWidthDifference =
-        kTotalSizeWithVertArrow.width() - kTotalSizeWithNoArrow.width();
-    EXPECT_EQ(kHeightDifference, kWidthDifference);
-
-    // The arrow only makes a difference in height if it is longer than the
-    // shadow.
-    const int kExpectedHeightDifference = 0;
-    EXPECT_EQ(kExpectedHeightDifference, kHeightDifference)
-        << "Size with arrow: " << kTotalSizeWithHorizArrow.ToString()
-        << " vs. size without arrow: " << kTotalSizeWithNoArrow.ToString();
-
     const int kTopHorizArrowY = kAnchor.bottom() + kStrokeWidth - kInsets.top();
-    const int kBottomHorizArrowY =
-        kAnchor.y() - kTotalSizeWithHorizArrow.height();
-    const int kLeftVertArrowX = kAnchor.x() + kAnchor.width() + kArrowShift;
-    const int kRightVertArrowX = kAnchor.x() - kTotalSizeWithHorizArrow.width();
+    const int kBottomHorizArrowY = kAnchor.y() - kTotalSize.height();
+    const int kLeftVertArrowX = kAnchor.x() + kAnchor.width();
+    const int kRightVertArrowX = kAnchor.x() - kTotalSize.width();
 
     struct TestCase {
       BubbleBorder::Arrow arrow;
@@ -351,50 +330,38 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
         {BubbleBorder::TOP_LEFT, kAnchor.x() + kStrokeWidth - kInsets.left(),
          kTopHorizArrowY},
         {BubbleBorder::TOP_CENTER,
-         kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
-         kTopHorizArrowY},
+         kAnchor.CenterPoint().x() - (kTotalSize.width() / 2), kTopHorizArrowY},
         {BubbleBorder::BOTTOM_RIGHT,
-         kAnchor.x() + kAnchor.width() - kTotalSizeWithHorizArrow.width() -
-             kStrokeWidth,
+         kAnchor.x() + kAnchor.width() - kTotalSize.width() - kStrokeWidth,
          kBottomHorizArrowY},
 
         // Vertical arrow tests.
         {BubbleBorder::LEFT_TOP, kLeftVertArrowX, kAnchor.y() + kStrokeWidth},
         {BubbleBorder::LEFT_CENTER,
          kLeftVertArrowX - (kInsets.right() - kStrokeWidth),
-         kAnchor.CenterPoint().y() - kArrowOffsetForVertCenter +
+         kAnchor.CenterPoint().y() - (kTotalSize.height() / 2) +
              (2 * kStrokeWidth)},
         {BubbleBorder::RIGHT_BOTTOM, kRightVertArrowX,
-         kAnchor.y() + kAnchor.height() - kTotalSizeWithVertArrow.height() -
-             kStrokeWidth},
+         kAnchor.y() + kAnchor.height() - kTotalSize.height() - kStrokeWidth},
 
         // No arrow tests.
         {BubbleBorder::NONE,
-         kAnchor.x() + (kAnchor.width() - kTotalSizeWithNoArrow.width()) / 2,
+         kAnchor.x() + (kAnchor.width() - kTotalSize.width()) / 2,
          kAnchor.y() + kAnchor.height()},
         {BubbleBorder::FLOAT,
-         kAnchor.x() + (kAnchor.width() - kTotalSizeWithNoArrow.width()) / 2,
-         kAnchor.y() + (kAnchor.height() - kTotalSizeWithNoArrow.height()) / 2},
+         kAnchor.x() + (kAnchor.width() - kTotalSize.width()) / 2,
+         kAnchor.y() + (kAnchor.height() - kTotalSize.height()) / 2},
     };
 
     for (size_t i = 0; i < arraysize(cases); ++i) {
-      SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d", static_cast<int>(i),
-                                      cases[i].arrow));
+      SCOPED_TRACE(base::StringPrintf("shadow=%d i=%d arrow=%d",
+                                      static_cast<int>(shadow),
+                                      static_cast<int>(i), cases[i].arrow));
       const BubbleBorder::Arrow arrow = cases[i].arrow;
       border.set_arrow(arrow);
       gfx::Point origin = border.GetBounds(kAnchor, kContentSize).origin();
-      int expected_x = cases[i].expected_x;
-      int expected_y = cases[i].expected_y;
-      if (border.is_arrow_on_horizontal(arrow) &&
-          !BubbleBorder::is_arrow_on_top(arrow)) {
-        expected_y += kHeightDifference;
-      } else if (BubbleBorder::has_arrow(arrow) &&
-                 !border.is_arrow_on_horizontal(arrow) &&
-                 !BubbleBorder::is_arrow_on_left(arrow)) {
-        expected_x += kWidthDifference;
-      }
-      EXPECT_EQ(expected_x, origin.x());
-      EXPECT_EQ(expected_y, origin.y());
+      EXPECT_EQ(cases[i].expected_x, origin.x());
+      EXPECT_EQ(cases[i].expected_y, origin.y());
     }
   }
 }
