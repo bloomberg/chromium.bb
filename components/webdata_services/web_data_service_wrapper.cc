@@ -82,12 +82,13 @@ void InitSyncableAccountServicesOnDBSequence(
     const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
     const base::FilePath& context_path,
     const std::string& app_locale,
+    bool is_full_sync,
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
     autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
-        app_locale, autofill_backend, autofill_web_data.get());
+        app_locale, is_full_sync, autofill_backend, autofill_web_data.get());
   } else {
     autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
         autofill_web_data.get(), autofill_backend, app_locale);
@@ -176,9 +177,10 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   profile_autofill_web_data_->GetAutofillBackend(base::Bind(
       &InitSyncableProfileServicesOnDBSequence, db_task_runner, flare,
       profile_autofill_web_data_, context_path, application_locale));
-  profile_autofill_web_data_->GetAutofillBackend(base::Bind(
-      &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
-      profile_autofill_web_data_, context_path, application_locale));
+  profile_autofill_web_data_->GetAutofillBackend(
+      base::Bind(&InitSyncableAccountServicesOnDBSequence, db_task_runner,
+                 flare, profile_autofill_web_data_, context_path,
+                 application_locale, /*is_full_sync=*/true));
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -192,9 +194,10 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         account_database_, ui_task_runner, db_task_runner,
         base::Bind(show_error_callback, ERROR_LOADING_ACCOUNT_AUTOFILL));
     account_autofill_web_data_->Init();
-    account_autofill_web_data_->GetAutofillBackend(base::Bind(
-        &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
-        account_autofill_web_data_, context_path, application_locale));
+    account_autofill_web_data_->GetAutofillBackend(
+        base::Bind(&InitSyncableAccountServicesOnDBSequence, db_task_runner,
+                   flare, account_autofill_web_data_, context_path,
+                   application_locale, /*is_full_sync=*/false));
   }
 }
 

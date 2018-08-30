@@ -35,6 +35,7 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // called on |web_data_service|'s DB thread.
   static void CreateForWebDataServiceAndBackend(
       const std::string& app_locale,
+      bool has_persistent_storage_,
       AutofillWebDataBackend* webdata_backend,
       AutofillWebDataService* web_data_service);
 
@@ -43,6 +44,7 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
 
   explicit AutofillWalletSyncBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+      bool has_persistent_storage_,
       AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletSyncBridge() override;
 
@@ -69,10 +71,19 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
     bool IsEmpty() const { return items_added == 0 && items_removed == 0; }
   };
 
-  // Sets the wallet data from |entity_data| to this client. Records metrics
-  // about added/deleted data if not the |is_initial_data|.
-  void SetSyncData(const syncer::EntityChangeList& entity_data,
-                   bool is_initial_data);
+  // Sets the wallet data from |entity_data| to this client and records metrics
+  // about added/deleted data.
+  void SetSyncData(const syncer::EntityChangeList& entity_data);
+
+  // Sets |wallet_cards| to this client, records metrics about added/deleted
+  // data and returns whether any change has been applied (i.e., whether
+  // |wallet_cards| was different from local data).
+  bool SetWalletCards(std::vector<CreditCard> wallet_cards);
+
+  // Sets |wallet_addresses| to this client, records metrics about added/deleted
+  // data and returns whether any change has been applied (i.e., whether
+  // |wallet_addresses| was different from local data).
+  bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for two
@@ -89,13 +100,21 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
 
-  // AutofillProfileSyncBridge is owned by |web_data_backend_| through
-  // SupportsUserData, so it's guaranteed to outlive |this|.
-  AutofillWebDataBackend* const web_data_backend_;
-
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.
   void LoadMetadata();
+
+  // Stores whether this bridge is connected to the persistent storage (as part
+  // of the complete sync feature) or to an ephemeral storage (as part of the
+  // content-area-account-based lightweight sync).
+  const bool has_persistent_storage_;
+
+  // Stores whether initial sync has been done.
+  bool initial_sync_done_;
+
+  // AutofillProfileSyncBridge is owned by |web_data_backend_| through
+  // SupportsUserData, so it's guaranteed to outlive |this|.
+  AutofillWebDataBackend* const web_data_backend_;
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);
