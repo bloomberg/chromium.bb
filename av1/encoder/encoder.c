@@ -527,6 +527,9 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tile_tok[0][0]);
   cpi->tile_tok[0][0] = 0;
 
+  aom_free(cpi->tplist[0][0]);
+  cpi->tplist[0][0] = NULL;
+
   av1_free_pc_tree(&cpi->td, num_planes);
 
   aom_free(cpi->td.mb.palette_buffer);
@@ -785,6 +788,10 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
 
   av1_alloc_context_buffers(cm, cm->width, cm->height);
 
+  int mi_rows_aligned_to_sb =
+      ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+  int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
+
   av1_alloc_txb_buf(cpi);
 
   alloc_context_buffers_ext(cpi);
@@ -797,6 +804,11 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
   }
+  aom_free(cpi->tplist[0][0]);
+
+  CHECK_MEM_ERROR(cm, cpi->tplist[0][0],
+                  aom_calloc(sb_rows * MAX_TILE_ROWS * MAX_TILE_COLS,
+                             sizeof(*cpi->tplist[0][0])));
 
   av1_setup_pc_tree(&cpi->common, &cpi->td);
 }

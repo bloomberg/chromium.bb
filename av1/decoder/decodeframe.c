@@ -2725,31 +2725,13 @@ static INLINE void sync_write(AV1DecRowMTSync *const dec_row_mt_sync, int r,
 #endif  // CONFIG_MULTITHREAD
 }
 
-static INLINE int get_sb_rows_in_tile(AV1Decoder *pbi, TileInfo tile) {
-  AV1_COMMON *cm = &pbi->common;
-  int mi_rows_aligned_to_sb = ALIGN_POWER_OF_TWO(
-      tile.mi_row_end - tile.mi_row_start, cm->seq_params.mib_size_log2);
-  int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
-
-  return sb_rows;
-}
-
-static INLINE int get_sb_cols_in_tile(AV1Decoder *pbi, TileInfo tile) {
-  AV1_COMMON *cm = &pbi->common;
-  int mi_cols_aligned_to_sb = ALIGN_POWER_OF_TWO(
-      tile.mi_col_end - tile.mi_col_start, cm->seq_params.mib_size_log2);
-  int sb_cols = mi_cols_aligned_to_sb >> cm->seq_params.mib_size_log2;
-
-  return sb_cols;
-}
-
 static void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
                                TileInfo tile_info, const int mi_row) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
   TileDataDec *const tile_data =
       pbi->tile_data + tile_info.tile_row * cm->tile_cols + tile_info.tile_col;
-  const int sb_cols_in_tile = get_sb_cols_in_tile(pbi, tile_info);
+  const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
   const int sb_row_in_tile =
       (mi_row - tile_info.mi_row_start) >> cm->seq_params.mib_size_log2;
   int sb_col_in_tile = 0;
@@ -3764,8 +3746,8 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
       TileDataDec *tile_data = pbi->tile_data + row * cm->tile_cols + col;
       av1_tile_init(&tile_data->tile_info, cm, row, col);
 
-      max_sb_rows =
-          AOMMAX(max_sb_rows, get_sb_rows_in_tile(pbi, tile_data->tile_info));
+      max_sb_rows = AOMMAX(max_sb_rows,
+                           av1_get_sb_rows_in_tile(cm, tile_data->tile_info));
     }
   }
 

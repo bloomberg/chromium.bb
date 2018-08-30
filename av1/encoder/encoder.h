@@ -457,6 +457,12 @@ typedef struct TileDataEnc {
 #endif
 } TileDataEnc;
 
+typedef struct {
+  TOKENEXTRA *start;
+  TOKENEXTRA *stop;
+  unsigned int count;
+} TOKENLIST;
+
 typedef struct RD_COUNTS {
   int64_t comp_pred_diff[REFERENCE_MODES];
   // Stores number of 4x4 blocks using global motion per reference frame.
@@ -698,6 +704,7 @@ typedef struct AV1_COMP {
 
   TOKENEXTRA *tile_tok[MAX_TILE_ROWS][MAX_TILE_COLS];
   unsigned int tok_count[MAX_TILE_ROWS][MAX_TILE_COLS];
+  TOKENLIST *tplist[MAX_TILE_ROWS][MAX_TILE_COLS];
 
   TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
@@ -880,6 +887,22 @@ static INLINE unsigned int allocated_tokens(TileInfo tile, int sb_size_log2,
   int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 2) >> 2;
 
   return get_token_alloc(tile_mb_rows, tile_mb_cols, sb_size_log2, num_planes);
+}
+
+static INLINE void get_start_tok(AV1_COMP *cpi, int tile_row, int tile_col,
+                                 int mi_row, TOKENEXTRA **tok, int sb_size_log2,
+                                 int num_planes) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
+  const TileInfo *const tile_info = &this_tile->tile_info;
+
+  const int tile_mb_cols =
+      (tile_info->mi_col_end - tile_info->mi_col_start + 2) >> 2;
+  const int tile_mb_row = (mi_row - tile_info->mi_row_start + 2) >> 2;
+
+  *tok = cpi->tile_tok[tile_row][tile_col] +
+         get_token_alloc(tile_mb_row, tile_mb_cols, sb_size_log2, num_planes);
 }
 
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags);

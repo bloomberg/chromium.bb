@@ -44,6 +44,9 @@ void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
 // tiles horizontally or vertically in the frame.
 int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles);
 
+int av1_get_sb_rows_in_tile(struct AV1Common *cm, TileInfo tile);
+int av1_get_sb_cols_in_tile(struct AV1Common *cm, TileInfo tile);
+
 typedef struct {
   int left, top, right, bottom;
 } AV1PixelRect;

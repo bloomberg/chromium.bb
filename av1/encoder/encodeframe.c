@@ -4346,7 +4346,9 @@ void av1_init_tile_data(AV1_COMP *cpi) {
   const int tile_rows = cm->tile_rows;
   int tile_col, tile_row;
   TOKENEXTRA *pre_tok = cpi->tile_tok[0][0];
+  TOKENLIST *tplist = cpi->tplist[0][0];
   unsigned int tile_tok = 0;
+  int tplist_count = 0;
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {
     if (cpi->tile_data != NULL) aom_free(cpi->tile_data);
@@ -4380,11 +4382,51 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       pre_tok = cpi->tile_tok[tile_row][tile_col];
       tile_tok = allocated_tokens(
           *tile_info, cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
+      cpi->tplist[tile_row][tile_col] = tplist + tplist_count;
+      tplist = cpi->tplist[tile_row][tile_col];
+      tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
       tile_data->allow_update_cdf = !cm->large_scale_tile;
       tile_data->allow_update_cdf =
           tile_data->allow_update_cdf && !cm->disable_cdf_update;
     }
   }
+}
+
+void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
+                       int tile_col, int mi_row) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  const int tile_cols = cm->tile_cols;
+  TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
+  const TileInfo *const tile_info = &this_tile->tile_info;
+  TOKENEXTRA *tok = NULL;
+  int sb_row_in_tile;
+  int tile_mb_cols = (tile_info->mi_col_end - tile_info->mi_col_start + 2) >> 2;
+
+  int num_mb_rows_in_sb =
+      ((1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2)) + 8) >> 4;
+
+  sb_row_in_tile =
+      (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
+
+  get_start_tok(cpi, tile_row, tile_col, mi_row, &tok,
+                cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
+  cpi->tplist[tile_row][tile_col][sb_row_in_tile].start = tok;
+
+  encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
+
+  cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop = tok;
+  cpi->tplist[tile_row][tile_col][sb_row_in_tile].count =
+      (unsigned int)(cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop -
+                     cpi->tplist[tile_row][tile_col][sb_row_in_tile].start);
+
+  assert(tok - cpi->tplist[tile_row][tile_col][sb_row_in_tile].start <=
+         get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
+                         cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
+                         num_planes));
+
+  (void)tile_mb_cols;
+  (void)num_mb_rows_in_sb;
 }
 
 void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
@@ -4393,7 +4435,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TileDataEnc *const this_tile =
       &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
-  TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
   int mi_row;
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
@@ -4420,15 +4461,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params.mib_size) {
-    encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
+    av1_encode_sb_row(cpi, td, tile_row, tile_col, mi_row);
   }
-
-  cpi->tok_count[tile_row][tile_col] =
-      (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
-  assert(cpi->tok_count[tile_row][tile_col] <=
-         allocated_tokens(*tile_info,
-                          cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
-                          av1_num_planes(cm)));
 }
 
 static void encode_tiles(AV1_COMP *cpi) {

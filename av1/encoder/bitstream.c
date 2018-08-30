@@ -1673,15 +1673,14 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
-                        aom_writer *const w, const TOKENEXTRA **tok,
-                        const TOKENEXTRA *const tok_end) {
+                        aom_writer *const w, int tile_row, int tile_col) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int mi_row_start = tile->mi_row_start;
   const int mi_row_end = tile->mi_row_end;
   const int mi_col_start = tile->mi_col_start;
   const int mi_col_end = tile->mi_col_end;
-  int mi_row, mi_col;
+  int mi_row, mi_col, sb_row_in_tile;
 
   av1_zero_above_context(cm, xd, mi_col_start, mi_col_end, tile->tile_row);
   av1_init_above_context(cm, xd, tile->tile_row);
@@ -1695,13 +1694,21 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 
   for (mi_row = mi_row_start; mi_row < mi_row_end;
        mi_row += cm->seq_params.mib_size) {
+    sb_row_in_tile =
+        (mi_row - tile->mi_row_start) >> cm->seq_params.mib_size_log2;
+    const TOKENEXTRA *tok =
+        cpi->tplist[tile_row][tile_col][sb_row_in_tile].start;
+    const TOKENEXTRA *tok_end =
+        tok + cpi->tplist[tile_row][tile_col][sb_row_in_tile].count;
+
     av1_zero_left_context(xd);
 
     for (mi_col = mi_col_start; mi_col < mi_col_end;
          mi_col += cm->seq_params.mib_size) {
-      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col,
+      write_modes_sb(cpi, tile, w, &tok, tok_end, mi_row, mi_col,
                      cm->seq_params.sb_size);
     }
+    assert(tok == cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop);
   }
 }
 
@@ -3585,7 +3592,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   AV1_COMMON *const cm = &cpi->common;
   aom_writer mode_bc;
   int tile_row, tile_col;
-  TOKENEXTRA *(*const tok_buffers)[MAX_TILE_COLS] = cpi->tile_tok;
   TileBufferEnc(*const tile_buffers)[MAX_TILE_COLS] = cpi->tile_buffers;
   uint32_t total_size = 0;
   const int tile_cols = cm->tile_cols;
@@ -3650,8 +3656,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       for (tile_row = 0; tile_row < tile_rows; tile_row++) {
         TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
         const int data_offset = have_tiles ? 4 : 0;
         const int tile_idx = tile_row * tile_cols + tile_col;
         TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
@@ -3669,8 +3673,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         mode_bc.allow_update_cdf =
             mode_bc.allow_update_cdf && !cm->disable_cdf_update;
         aom_start_encode(&mode_bc, buf->data + data_offset);
-        write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-        assert(tok == tok_end);
+        write_modes(cpi, &tile_info, &mode_bc, tile_row, tile_col);
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
         buf->size = tile_size;
@@ -3760,8 +3763,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       const int tile_idx = tile_row * tile_cols + tile_col;
       TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
       TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-      const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-      const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
       int is_last_tile_in_tg = 0;
 
       if (new_tg) {
@@ -3813,7 +3814,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 
       aom_start_encode(&mode_bc, dst + total_size);
-      write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
+      write_modes(cpi, &tile_info, &mode_bc, tile_row, tile_col);
       aom_stop_encode(&mode_bc);
       tile_size = mode_bc.pos;
       assert(tile_size >= AV1_MIN_TILE_SIZE_BYTES);
