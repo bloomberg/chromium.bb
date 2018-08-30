@@ -22,7 +22,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/lru_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
@@ -159,7 +159,6 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
                                      ImageType image_type,
                                      ImageScale image_scale,
                                      const base::FilePath& cache_directory) {
-  base::AssertBlockingAllowed();
   // TODO(crbug.com/295891): consider changing back to -imageWithContentsOfFile
   // instead of -imageWithData if both rdar://15747161 and the bug incorrectly
   // reporting the image as damaged https://stackoverflow.com/q/5081297/5353
@@ -167,6 +166,7 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
   base::FilePath file_path =
       ImagePath(session_id, image_type, image_scale, cache_directory);
   NSString* path = base::SysUTF8ToNSString(file_path.AsUTF8Unsafe());
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   return [UIImage imageWithData:[NSData dataWithContentsOfFile:path]
                           scale:(image_type == IMAGE_TYPE_GREYSCALE
                                      ? 1.0
@@ -174,7 +174,6 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
 }
 
 void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
-  base::AssertBlockingAllowed();
   if (!image)
     return;
 
@@ -189,6 +188,7 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
   }
 
   NSString* path = base::SysUTF8ToNSString(file_path.AsUTF8Unsafe());
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   [UIImageJPEGRepresentation(image, kJPEGImageQuality) writeToFile:path
                                                         atomically:YES];
 
@@ -211,7 +211,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                              ImageScale image_scale,
                              UIImage* color_image,
                              const base::FilePath& cache_directory) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   if (!color_image) {
     color_image = ReadImageForSessionFromDisk(session_id, IMAGE_TYPE_COLOR,
                                               image_scale, cache_directory);
