@@ -375,7 +375,8 @@ SIMD_INLINE uint32_t v128_movemask_8(v128 a) {
   uint64x2_t m = vpaddlq_u32(vpaddlq_u16(vpaddlq_u8(
       vandq_u8(vreinterpretq_u8_s64(a),
                vreinterpretq_u8_u64(vdupq_n_u64(0x8040201008040201ULL))))));
-  return v64_u64(v64_ziplo_8(v128_high_v64((v128)m), v128_low_v64((v128)m)));
+  return v64_low_u32(
+      v64_ziplo_8(v128_high_v64((v128)m), v128_low_v64((v128)m)));
 #endif
 }
 
