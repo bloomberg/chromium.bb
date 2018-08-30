@@ -71,6 +71,11 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorInternalUnrecognizedErrorSheetModel>(
               dialog_model));
       break;
+    case Step::kBlePowerOnAutomatic:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBlePowerOnAutomaticSheetModel>(
+              dialog_model));
+      break;
     case Step::kBlePowerOnManual:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorBlePowerOnManualSheetModel>(
@@ -113,13 +118,11 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       break;
     case Step::kNotStarted:
     case Step::kClosed:
-    case Step::kBlePowerOnAutomatic:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<PlaceholderSheetModel>(dialog_model));
       break;
   }
 
   CHECK(sheet_view);
-  sheet_view->InitChildViews();
   return sheet_view;
 }

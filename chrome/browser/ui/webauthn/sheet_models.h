@@ -192,6 +192,29 @@ class AuthenticatorBlePowerOnManualSheetModel
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+
+  // AuthenticatorRequestDialogModel::Observer:
+  void OnBluetoothPoweredStateChanged() override;
+};
+
+class AuthenticatorBlePowerOnAutomaticSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+
+  bool busy_powering_on_ble_ = false;
 };
 
 class AuthenticatorBlePairingBeginSheetModel

@@ -134,18 +134,43 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       StartTouchIdFlow();
       break;
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      SetCurrentStep(Step::kBleActivate);
+      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kBleActivate);
       break;
     case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      SetCurrentStep(Step::kCableActivate);
+      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kCableActivate);
       break;
     default:
       break;
   }
 }
 
-void AuthenticatorRequestDialogModel::TryIfBleAdapterIsPowered() {
-  DCHECK_EQ(current_step(), Step::kBlePowerOnManual);
+void AuthenticatorRequestDialogModel::
+    EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step next_step) {
+  DCHECK(current_step() == Step::kTransportSelection ||
+         current_step() == Step::kWelcomeScreen ||
+         current_step() == Step::kUsbInsertAndActivate ||
+         current_step() == Step::kTouchId ||
+         current_step() == Step::kBleActivate ||
+         current_step() == Step::kCableActivate ||
+         current_step() == Step::kNotStarted);
+  if (ble_adapter_is_powered()) {
+    SetCurrentStep(next_step);
+  } else {
+    next_step_once_ble_powered_ = next_step;
+    if (transport_availability()->can_power_on_ble_adapter)
+      SetCurrentStep(Step::kBlePowerOnAutomatic);
+    else
+      SetCurrentStep(Step::kBlePowerOnManual);
+  }
+}
+
+void AuthenticatorRequestDialogModel::ContinueWithFlowAfterBleAdapterPowered() {
+  DCHECK(current_step() == Step::kBlePowerOnManual ||
+         current_step() == Step::kBlePowerOnAutomatic);
+  DCHECK(ble_adapter_is_powered());
+  DCHECK(next_step_once_ble_powered_.has_value());
+
+  SetCurrentStep(*next_step_once_ble_powered_);
 }
 
 void AuthenticatorRequestDialogModel::PowerOnBleAdapter() {
@@ -219,6 +244,11 @@ void AuthenticatorRequestDialogModel::Back() {
   }
 }
 
+void AuthenticatorRequestDialogModel::OnSheetModelDidChange() {
+  for (auto& observer : observers_)
+    observer.OnSheetModelChanged();
+}
+
 void AuthenticatorRequestDialogModel::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -252,6 +282,13 @@ void AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered() {
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
     bool powered) {
   transport_availability_.is_ble_powered = powered;
+
+  for (auto& observer : observers_)
+    observer.OnBluetoothPoweredStateChanged();
+
+  // For the manual flow, the user has to click the "next" button explicitly.
+  if (current_step() == Step::kBlePowerOnAutomatic)
+    ContinueWithFlowAfterBleAdapterPowered();
 }
 
 void AuthenticatorRequestDialogModel::SetRequestCallback(

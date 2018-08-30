@@ -56,9 +56,11 @@ class AuthenticatorRequestSheetView : public views::View,
       std::unique_ptr<AuthenticatorRequestSheetModel> model);
   ~AuthenticatorRequestSheetView() override;
 
-  // Creates the standard child views on this sheet, potentially including
-  // step-specific content if any.
-  void InitChildViews();
+  // Recreates the standard child views on this sheet, potentially including
+  // step-specific content if any. This is called once after this SheetView is
+  // constructed, and potentially multiple times afterwards when the SheetModel
+  // changes.
+  void ReInitChildViews();
 
   AuthenticatorRequestSheetModel* model() { return model_.get(); }
 

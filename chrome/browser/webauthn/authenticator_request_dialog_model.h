@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -98,6 +99,13 @@ class AuthenticatorRequestDialogModel {
     // should update.
     virtual void OnStepTransition() {}
 
+    // Called when the model corresponding to the current sheet of the UX flow
+    // was updated, so UI should update.
+    virtual void OnSheetModelChanged() {}
+
+    // Called when the power state of the Bluetooth adapter has changed.
+    virtual void OnBluetoothPoweredStateChanged() {}
+
     // Called when the user cancelled WebAuthN request by clicking the
     // "cancel" button or the back arrow in the UI dialog.
     virtual void OnCancelRequest() {}
@@ -128,6 +136,10 @@ class AuthenticatorRequestDialogModel {
     return &transport_availability_;
   }
 
+  bool ble_adapter_is_powered() const {
+    return transport_availability()->is_ble_powered;
+  }
+
   // Starts the UX flow, by either showing the welcome screen, the transport
   // selection screen, or the guided flow for them most likely transport.
   //
@@ -152,11 +164,22 @@ class AuthenticatorRequestDialogModel {
   // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
   void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
-  // Tries if the BLE adapter is now powered -- the user claims they turned it
-  // on.
+  // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
+  //  -- If the adapter is powered, advanced directly to |step|.
+  //  -- If the adapter is not powered, but Chrome can turn it automatically,
+  //     then advanced to the flow to turn on Bluetooth automatically.
+  //  -- Otherwise advanced to the manual Bluetooth power on flow.
   //
-  // Valid action when at step: kBlePowerOnManual.
-  void TryIfBleAdapterIsPowered();
+  // Valid action when at step: kNotStarted, kWelcomeScreen,
+  // kTransportSelection, and steps where the other transports menu is shown,
+  // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
+  void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
+
+  // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
+  // powered.
+  //
+  // Valid action when at step: kBlePowerOnManual, kBlePowerOnAutomatic.
+  void ContinueWithFlowAfterBleAdapterPowered();
 
   // Turns on the BLE adapter automatically.
   //
@@ -200,6 +223,10 @@ class AuthenticatorRequestDialogModel {
   // Valid action at all steps.
   void Back();
 
+  // Called by the AuthenticatorRequestSheetModel subclasses when their state
+  // changes, which will trigger notifying observers of OnSheetModelChanged.
+  void OnSheetModelDidChange();
+
   // The |observer| must either outlive the object, or unregister itself on its
   // destruction.
   void AddObserver(Observer* observer);
@@ -237,6 +264,11 @@ class AuthenticatorRequestDialogModel {
 
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;
+
+  // Determines which step to continue with once the Blueooth adapter is
+  // powered. Only set while the |current_step_| is either kBlePowerOnManual,
+  // kBlePowerOnAutomatic.
+  base::Optional<Step> next_step_once_ble_powered_;
 
   TransportListModel transport_list_model_;
   base::ObserverList<Observer>::Unchecked observers_;

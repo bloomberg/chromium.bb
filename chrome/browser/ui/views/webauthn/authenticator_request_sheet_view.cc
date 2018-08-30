@@ -42,7 +42,9 @@ AuthenticatorRequestSheetView::AuthenticatorRequestSheetView(
 
 AuthenticatorRequestSheetView::~AuthenticatorRequestSheetView() = default;
 
-void AuthenticatorRequestSheetView::InitChildViews() {
+void AuthenticatorRequestSheetView::ReInitChildViews() {
+  RemoveAllChildViews(true /* delete_children */);
+
   // No need to add further spacing between the upper and lower half. The image
   // is designed to fill the dialog's top half without any border/margins, and
   // the |lower_half| will already contain the standard dialog borders.
@@ -53,6 +55,7 @@ void AuthenticatorRequestSheetView::InitChildViews() {
   std::unique_ptr<views::View> lower_half = CreateContentsBelowIllustration();
   AddChildView(upper_half.release());
   AddChildView(lower_half.release());
+  InvalidateLayout();
 }
 
 std::unique_ptr<views::View>
