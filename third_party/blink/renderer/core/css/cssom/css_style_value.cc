@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class PropertyRegistration;
+
 namespace {
 
 CSSStyleValueVector ParseCSSStyleValue(
@@ -28,8 +30,10 @@ CSSStyleValueVector ParseCSSStyleValue(
     return CSSStyleValueVector();
   }
 
+  // TODO(andruud): Actually get PropertyRegistration and pass it.
   const auto style_values = StyleValueFactory::FromString(
-      property_id, value, CSSParserContext::Create(*execution_context));
+      property_id, nullptr, value,
+      CSSParserContext::Create(*execution_context));
   if (style_values.IsEmpty()) {
     exception_state.ThrowTypeError("The value provided ('" + value +
                                    "') could not be parsed as a '" +

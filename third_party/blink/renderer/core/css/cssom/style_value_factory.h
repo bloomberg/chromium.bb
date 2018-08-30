@@ -13,12 +13,14 @@ namespace blink {
 
 class CSSParserContext;
 class CSSValue;
+class PropertyRegistration;
 
 class CORE_EXPORT StyleValueFactory {
   STATIC_ONLY(StyleValueFactory);
 
  public:
   static CSSStyleValueVector FromString(CSSPropertyID,
+                                        const PropertyRegistration*,
                                         const String&,
                                         const CSSParserContext*);
   static CSSStyleValue* CssValueToStyleValue(CSSPropertyID, const CSSValue&);

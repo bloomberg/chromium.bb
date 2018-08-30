@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
@@ -226,6 +227,7 @@ CSSStyleValueVector UnsupportedCSSValue(CSSPropertyID property_id,
 
 CSSStyleValueVector StyleValueFactory::FromString(
     CSSPropertyID property_id,
+    const PropertyRegistration* registration,
     const String& css_text,
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyInvalid);
@@ -251,6 +253,16 @@ CSSStyleValueVector StyleValueFactory::FromString(
     CSSStyleValueVector result;
     result.push_back(CSSUnsupportedStyleValue::Create(property_id, css_text));
     return result;
+  }
+
+  if (property_id == CSSPropertyVariable && registration) {
+    const bool is_animation_tainted = false;
+    const CSSValue* value = registration->Syntax().Parse(tokens, parser_context,
+                                                         is_animation_tainted);
+    if (!value)
+      return CSSStyleValueVector();
+
+    return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
   }
 
   if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
