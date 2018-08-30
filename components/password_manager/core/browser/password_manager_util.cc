@@ -27,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "url/gurl.h"
 using autofill::PasswordForm;
 
 namespace password_manager_util {
@@ -100,9 +101,11 @@ class HttpMetricsMigrationReporter
   }
 
  private:
-  // This type define a subset of PasswordForm where first argument is the host
-  // and the second argument is the username of the form.
-  typedef std::pair<std::string, base::string16> FormKey;
+  // This type define a subset of PasswordForm where first argument is the
+  // signon-realm excluding the protocol, the second argument is
+  // PasswordForm::scheme (i.e. HTML, BASIC, etc.) and the third argument is the
+  // username of the form.
+  using FormKey = std::tuple<std::string, PasswordForm::Scheme, base::string16>;
 
   // This overrides the PasswordStoreConsumer method.
   void OnGetPasswordStoreResults(
@@ -144,15 +147,24 @@ class HttpMetricsMigrationReporter
 
 void HttpMetricsMigrationReporter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  // Non HTTP or HTTPS credentials are ignored.
+  base::EraseIf(results, [](const std::unique_ptr<PasswordForm>& form) {
+    return !form->origin.SchemeIsHTTPOrHTTPS();
+  });
+
   for (auto& form : results) {
-    FormKey form_key({form->origin.host(), form->username_value});
+    // The next signon-realm has the protocol excluded. For example if original
+    // signon_realm is "https://google.com/". After excluding protocol it
+    // becomes "google.com/".
+    FormKey form_key({GURL(form->signon_realm).GetContent(), form->scheme,
+                      form->username_value});
     if (form->origin.SchemeIs(url::kHttpScheme)) {
       password_manager::PostHSTSQueryForHostAndNetworkContext(
           form->origin, network_context_getter_.Run(),
           base::Bind(&HttpMetricsMigrationReporter::OnHSTSQueryResult,
                      base::Unretained(this), form_key, form->password_value));
       ++total_http_credentials_;
-    } else if (form->origin.SchemeIs(url::kHttpsScheme)) {
+    } else {  // Https
       https_credentials_map_[form_key].insert(form->password_value);
     }
   }
