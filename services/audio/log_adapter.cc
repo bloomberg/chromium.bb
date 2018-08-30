@@ -38,6 +38,10 @@ void LogAdapter::OnSetVolume(double volume) {
   audio_log_->OnSetVolume(volume);
 }
 
+void LogAdapter::OnProcessingStateChanged(const std::string& message) {
+  audio_log_->OnProcessingStateChanged(message);
+}
+
 void LogAdapter::OnLogMessage(const std::string& message) {
   audio_log_->OnLogMessage(message);
 }

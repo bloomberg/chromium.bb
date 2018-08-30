@@ -32,7 +32,7 @@ WebRtcAudioSink::~WebRtcAudioSink() {
 }
 
 void WebRtcAudioSink::SetAudioProcessor(
-    scoped_refptr<MediaStreamAudioProcessor> processor) {
+    scoped_refptr<webrtc::AudioProcessorInterface> processor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(processor.get());
   adapter_->set_processor(std::move(processor));
@@ -94,7 +94,7 @@ void WebRtcAudioSink::DeliverRebufferedAudio(const media::AudioBus& audio_bus,
 namespace {
 // TODO(miu): MediaStreamAudioProcessor destructor requires this nonsense.
 void DereferenceOnMainThread(
-    const scoped_refptr<MediaStreamAudioProcessor>& processor) {}
+    const scoped_refptr<webrtc::AudioProcessorInterface>& processor) {}
 }  // namespace
 
 WebRtcAudioSink::Adapter::Adapter(

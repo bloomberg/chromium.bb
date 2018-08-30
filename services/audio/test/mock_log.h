@@ -39,6 +39,7 @@ class MockLog : public media::mojom::AudioLog {
   MOCK_METHOD0(OnClosed, void());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnSetVolume, void(double));
+  MOCK_METHOD1(OnProcessingStateChanged, void(const std::string&));
   MOCK_METHOD1(OnLogMessage, void(const std::string&));
 
   MOCK_METHOD0(BindingConnectionError, void());

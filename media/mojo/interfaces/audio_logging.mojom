@@ -33,6 +33,10 @@ interface AudioLog {
   // Called when an audio component changes volume.  |volume| is the new volume.
   OnSetVolume(double volume);
 
+  // Called with information about audio processing set-up for an audio
+  // component.
+  OnProcessingStateChanged(string message);
+
   // Called when an audio component wants to forward a log message.
   OnLogMessage(string message);
 };

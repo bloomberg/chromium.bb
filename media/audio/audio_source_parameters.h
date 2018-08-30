@@ -26,7 +26,7 @@ struct MEDIA_EXPORT AudioSourceParameters final {
 
   int session_id = 0;
 
-  struct ProcessingConfig {
+  struct MEDIA_EXPORT ProcessingConfig {
     ProcessingConfig(base::UnguessableToken id,
                      AudioProcessingSettings settings);
     base::UnguessableToken id;

@@ -76,7 +76,7 @@ void MojoAudioInputIPC::SetOutputDeviceForAec(
 }
 
 media::AudioProcessorControls* MojoAudioInputIPC::GetProcessorControls() {
-  return this;
+  return processor_controls_ ? this : nullptr;
 }
 
 void MojoAudioInputIPC::CloseStream() {

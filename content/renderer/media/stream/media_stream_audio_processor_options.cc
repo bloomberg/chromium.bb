@@ -56,6 +56,40 @@ bool AudioProcessingProperties::EchoCancellationIsWebRtcProvided() const {
          echo_cancellation_type == EchoCancellationType::kEchoCancellationAec3;
 }
 
+media::AudioProcessingSettings
+AudioProcessingProperties::ToAudioProcessingSettings() const {
+  media::AudioProcessingSettings out;
+  auto convert_type =
+      [](EchoCancellationType type) -> media::EchoCancellationType {
+    switch (type) {
+      case EchoCancellationType::kEchoCancellationDisabled:
+        return media::EchoCancellationType::kDisabled;
+      case EchoCancellationType::kEchoCancellationAec2:
+        return media::EchoCancellationType::kAec2;
+      case EchoCancellationType::kEchoCancellationAec3:
+        return media::EchoCancellationType::kAec3;
+      case EchoCancellationType::kEchoCancellationSystem:
+        return media::EchoCancellationType::kSystemAec;
+    }
+  };
+
+  out.echo_cancellation = convert_type(echo_cancellation_type);
+  out.noise_suppression =
+      goog_noise_suppression ? (goog_experimental_noise_suppression
+                                    ? media::NoiseSuppressionType::kExperimental
+                                    : media::NoiseSuppressionType::kDefault)
+                             : media::NoiseSuppressionType::kDisabled;
+  out.automatic_gain_control =
+      goog_auto_gain_control
+          ? (goog_experimental_auto_gain_control
+                 ? media::AutomaticGainControlType::kExperimental
+                 : media::AutomaticGainControlType::kDefault)
+          : media::AutomaticGainControlType::kDisabled;
+  out.high_pass_filter = goog_highpass_filter;
+  out.typing_detection = goog_typing_noise_detection;
+  return out;
+}
+
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
   // TODO(bugs.webrtc.org/9535): Remove double-booking AEC toggle when the
   // config applies (from 2018-08-16).

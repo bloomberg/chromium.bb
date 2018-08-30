@@ -16,12 +16,10 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/gtest/include/gtest/gtest-param-test.h"
-
-#if defined(OS_WIN)
 #include "services/service_manager/sandbox/features.h"
-#endif
+#include "testing/gtest/include/gtest/gtest-param-test.h"
 
 namespace content {
 
@@ -36,6 +34,9 @@ enum class AudioServiceFeatures {
   kOutOfProcess,
 #if defined(OS_WIN)
   kSandboxed,
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  kSandboxedWithAudioServiceAPM
 #endif
 };
 }  // namespace
@@ -76,6 +77,13 @@ class WebRtcAudioBrowserTest
         audio_service_features_.InitWithFeatures(audio_service_oop_features,
                                                  {});
         break;
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+      case AudioServiceFeatures::kSandboxedWithAudioServiceAPM:
+        audio_service_oop_features.push_back(
+            service_manager::features::kAudioServiceSandbox);
+        audio_service_oop_features.push_back(
+            features::kWebRtcApmInAudioService);
 #endif
     }
   }
@@ -172,17 +180,21 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 // removed after launch.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcAudioBrowserTest,
-                        ::testing::Values(AudioServiceFeatures::kDisabled,
-                                          AudioServiceFeatures::kOutOfProcess));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    WebRtcAudioBrowserTest,
+    ::testing::Values(AudioServiceFeatures::kDisabled,
+                      AudioServiceFeatures::kOutOfProcess,
+                      AudioServiceFeatures::kSandboxedWithAudioServiceAPM));
 #elif defined(OS_WIN)
 // On Windows, also run in sandboxed mode.
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcAudioBrowserTest,
-                        ::testing::Values(AudioServiceFeatures::kDisabled,
-                                          AudioServiceFeatures::kOutOfProcess,
-                                          AudioServiceFeatures::kSandboxed));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    WebRtcAudioBrowserTest,
+    ::testing::Values(AudioServiceFeatures::kDisabled,
+                      AudioServiceFeatures::kOutOfProcess,
+                      AudioServiceFeatures::kSandboxed,
+                      AudioServiceFeatures::kSandboxedWithAudioServiceAPM));
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #else

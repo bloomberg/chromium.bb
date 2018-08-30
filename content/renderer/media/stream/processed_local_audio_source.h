@@ -11,10 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
 #include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/webrtc/audio_processor_controls.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
@@ -63,11 +65,22 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
     return audio_processing_properties_;
   }
 
-  // The following accessors are not valid until after the source is started
-  // (when the first track is connected).
-  const scoped_refptr<MediaStreamAudioProcessor>& audio_processor() const {
-    return audio_processor_;
+  // The following accessors are valid after the source is started (when the
+  // first track is connected).
+  scoped_refptr<AudioProcessorInterface> audio_processor() const {
+    DCHECK(audio_processor_ || audio_processor_proxy_);
+    return audio_processor_
+               ? static_cast<scoped_refptr<AudioProcessorInterface>>(
+                     audio_processor_)
+               : static_cast<scoped_refptr<AudioProcessorInterface>>(
+                     audio_processor_proxy_);
   }
+
+  bool has_audio_processing() const {
+    return audio_processor_proxy_ ||
+           (audio_processor_ && audio_processor_->has_audio_processing());
+  }
+
   const scoped_refptr<MediaStreamAudioLevelCalculator::Level>& audio_level()
       const {
     return level_calculator_.level();
@@ -100,8 +113,16 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
                bool key_pressed) override;
   void OnCaptureError(const std::string& message) override;
   void OnCaptureMuted(bool is_muted) override;
+  void OnCaptureProcessorCreated(
+      media::AudioProcessorControls* controls) override;
 
  private:
+  // Runs the audio through |audio_processor_| before sending it along.
+  void CaptureUsingProcessor(const media::AudioBus* audio_source,
+                             int audio_delay_milliseconds,
+                             double volume,
+                             bool key_pressed);
+
   // Helper function to get the source buffer size based on whether audio
   // processing will take place.
   int GetBufferSize(int sample_rate) const;
@@ -117,9 +138,14 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // Callback that's called when the audio source has been initialized.
   ConstraintsCallback started_callback_;
 
+  // At most one of |audio_processor_| and |audio_processor_proxy_| can be set.
+
   // Audio processor doing processing like FIFO, AGC, AEC and NS. Its output
   // data is in a unit of 10 ms data chunk.
   scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
+
+  // Proxy for the audio processor when it's run in the Audio Service process,
+  scoped_refptr<AudioServiceAudioProcessorProxy> audio_processor_proxy_;
 
   // The device created by the AudioDeviceFactory in EnsureSourceIsStarted().
   scoped_refptr<media::AudioCapturerSource> source_;

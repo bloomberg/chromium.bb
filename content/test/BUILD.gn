@@ -962,6 +962,7 @@ test("content_browsertests") {
     "//ipc",
     "//ipc:test_support",
     "//media:test_support",
+    "//media/webrtc",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
