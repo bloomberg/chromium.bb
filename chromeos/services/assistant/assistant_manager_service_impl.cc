@@ -318,6 +318,50 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
           weak_factory_.GetWeakPtr(), resolution));
 }
 
+// TODO(b/113541754): Deprecate this API when the server provides a fallback.
+void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
+  // Show fallback text.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::OnShowTextOnMainThread,
+                     weak_factory_.GetWeakPtr(),
+                     l10n_util::GetStringUTF8(
+                         IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT)));
+
+  // Construct a fallback card.
+  std::stringstream html;
+  html << R"(
+       <html>
+         <head><meta CHARSET='utf-8'></head>
+         <body>
+           <style>
+             * {
+               cursor: default;
+               font-family: Google Sans, sans-serif;
+               user-select: none;
+             }
+             html, body { margin: 0; padding: 0; }
+             div {
+               border: 1px solid rgba(32, 33, 36, 0.08);
+               border-radius: 12px;
+               color: #5F6368;
+               font-size: 13px;
+               padding: 16px;
+               text-align: center;
+             }
+         </style>
+         <div>)"
+       << l10n_util::GetStringUTF8(
+              IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD)
+       << "</div></body></html>";
+
+  // Show fallback card.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::OnShowHtmlOnMainThread,
+                     weak_factory_.GetWeakPtr(), html.str()));
+}
+
 void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
