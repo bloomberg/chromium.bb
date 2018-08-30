@@ -208,7 +208,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         @Override
         public void onHomepageStateUpdated() {
             mToolbarProvider.whenLoaded(
-                    (toolbar) -> toolbar.onHomeButtonUpdate(HomepageManager.isHomepageEnabled()));
+                    (toolbar) -> toolbar.onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
+                            || FeatureUtilities.isNewTabPageButtonEnabled()));
         }
     };
 
