@@ -60,6 +60,7 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/device/public",
   "+services/identity/public",
+  "+services/media_session/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
   "+services/network/ignore_errors_cert_verifier.h",

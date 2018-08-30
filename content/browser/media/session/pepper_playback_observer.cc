@@ -11,7 +11,7 @@
 #include "content/common/frame_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 
 namespace content {
 
@@ -75,8 +75,9 @@ void PepperPlaybackObserver::PepperStartsPlayback(
 
   MediaSessionImpl::Get(contents_)->AddPlayer(
       players_map_[id].get(), PepperPlayerDelegate::kPlayerId,
-      media::IsAudioFocusDuckFlashEnabled() ? media::MediaContentType::Pepper
-                                            : media::MediaContentType::OneShot);
+      media_session::IsAudioFocusDuckFlashEnabled()
+          ? media::MediaContentType::Pepper
+          : media::MediaContentType::OneShot);
 }
 
 void PepperPlaybackObserver::PepperStopsPlayback(

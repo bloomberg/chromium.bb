@@ -4,9 +4,8 @@
 
 #include "content/browser/media/session/audio_focus_delegate.h"
 
-#include "base/command_line.h"
 #include "content/browser/media/session/audio_focus_manager.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -35,11 +34,6 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   AudioFocusType audio_focus_type_if_disabled_;
 };
 
-bool IsAudioFocusEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAudioFocus);
-}
-
 }  // anonymous namespace
 
 AudioFocusDelegateDefault::AudioFocusDelegateDefault(
@@ -52,7 +46,7 @@ bool AudioFocusDelegateDefault::RequestAudioFocus(
     AudioFocusType audio_focus_type) {
   audio_focus_type_if_disabled_ = audio_focus_type;
 
-  if (!IsAudioFocusEnabled())
+  if (!media_session::IsAudioFocusEnabled())
     return true;
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(media_session_,
@@ -65,7 +59,7 @@ void AudioFocusDelegateDefault::AbandonAudioFocus() {
 }
 
 AudioFocusType AudioFocusDelegateDefault::GetCurrentFocusType() const {
-  if (IsAudioFocusEnabled()) {
+  if (media_session::IsAudioFocusEnabled()) {
     return AudioFocusManager::GetInstance()->GetFocusTypeForSession(
         media_session_);
   }

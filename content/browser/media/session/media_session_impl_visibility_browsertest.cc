@@ -20,6 +20,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -107,7 +108,7 @@ class MediaSessionImplVisibilityBrowserTest
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
 #if !defined(OS_ANDROID)
-    command_line->AppendSwitch(switches::kEnableAudioFocus);
+    command_line->AppendSwitch(media_session::switches::kEnableAudioFocus);
 #endif  // !defined(OS_ANDROID)
 
     VisibilityTestData params = GetVisibilityTestData();

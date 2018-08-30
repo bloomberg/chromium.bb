@@ -15,6 +15,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 
 namespace content {
 
@@ -36,7 +37,7 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   void EnableInternalMediaSesion() {
 #if !defined(OS_ANDROID)
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableInternalMediaSession);
+        media_session::switches::kEnableInternalMediaSession);
 #endif  // !defined(OS_ANDROID)
   }
 

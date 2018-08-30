@@ -25,6 +25,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -309,7 +310,7 @@ class MediaInternalsAudioFocusTest : public testing::Test,
                             base::Unretained(this));
 
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
-        switches::kEnableAudioFocus);
+        media_session::switches::kEnableAudioFocus);
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
     browser_context_.reset(new TestBrowserContext());

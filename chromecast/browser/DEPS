@@ -37,6 +37,7 @@ include_rules = [
   "+media/mojo",
   "+mojo/public",
   "+net",
+  "+services/media_session/public",
   "+services/network/public/cpp",
   "+services/service_manager/public",
   "+services/service_manager/embedder",

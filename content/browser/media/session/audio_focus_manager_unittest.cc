@@ -17,7 +17,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -68,7 +68,7 @@ class AudioFocusManagerTest : public testing::Test {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAudioFocus);
+        media_session::switches::kEnableAudioFocus);
     rph_factory_.reset(new MockRenderProcessHostFactory());
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         rph_factory_.get());

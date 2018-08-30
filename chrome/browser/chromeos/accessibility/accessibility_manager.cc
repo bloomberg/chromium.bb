@@ -78,7 +78,7 @@
 #include "extensions/common/host_id.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -1244,9 +1244,9 @@ void AccessibilityManager::PostLoadChromeVox() {
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableAudioFocus)) {
+          media_session::switches::kEnableAudioFocus)) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableAudioFocus);
+        media_session::switches::kEnableAudioFocus);
   }
 }
 

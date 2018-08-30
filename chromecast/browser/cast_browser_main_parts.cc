@@ -64,6 +64,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -231,7 +232,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     // GPU shader disk cache disabling is largely to conserve disk space.
     {switches::kDisableGpuShaderDiskCache, ""},
     // Enable media sessions by default (even on non-Android platforms).
-    {switches::kEnableInternalMediaSession, ""},
+    {media_session::switches::kEnableInternalMediaSession, ""},
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     {switches::kDisableGpu, ""},

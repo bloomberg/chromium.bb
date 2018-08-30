@@ -122,6 +122,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -775,11 +776,12 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
 #if !defined(OS_ANDROID)
 const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
     {flag_descriptions::kEnableAudioFocusDisabled, "", ""},
-    {flag_descriptions::kEnableAudioFocusEnabled, switches::kEnableAudioFocus,
-     ""},
+    {flag_descriptions::kEnableAudioFocusEnabled,
+     media_session::switches::kEnableAudioFocus, ""},
 #if BUILDFLAG(ENABLE_PLUGINS)
     {flag_descriptions::kEnableAudioFocusEnabledDuckFlash,
-     switches::kEnableAudioFocus, switches::kEnableAudioFocusDuckFlash},
+     media_session::switches::kEnableAudioFocus,
+     media_session::switches::kEnableAudioFocusDuckFlash},
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 };
 #endif  // !defined(OS_ANDROID)
