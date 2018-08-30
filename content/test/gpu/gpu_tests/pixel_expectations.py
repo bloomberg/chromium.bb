@@ -118,7 +118,6 @@ class PixelExpectations(GpuTestExpectations):
     # self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
     #    ['linux', 'mac'], bug=840394)
     self.Fail('Pixel_WorkerRAF_OOPD', ['android', 'nvidia'], bug=833902)
-    self.Fail('Pixel_WorkerRAF_OOPD', ['mac'], bug=851213)
 
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['linux', 'win'], bug=575305)
