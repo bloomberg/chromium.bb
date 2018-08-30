@@ -36,6 +36,9 @@ issues]].
 - Major update to the Urdu tables thanks to Jake Kyle.
 - Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
   and Swedish has been fixed thanks to Bue Vester-Andersen.
+- Improvements to UEB such as handling of /BLT/, /BLVD/ and /LLC/,
+  number sign placement, final-letter groupsign usage and final-letter
+  back-translation thanks to Mike Gray.
 
 ** Other changes
 - Test suite improvements: In addition to checking the translation the
