@@ -22,6 +22,12 @@ constexpr int kShelfSizeNewUi = 56;
 constexpr int kShelfButtonIconSize = 32;
 constexpr int kShelfButtonIconSizeNewUi = 44;
 
+// Size for controls like the app list button, back button, etc.
+constexpr int kShelfControlSizeNewUi = 40;
+
+ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
+    SkColorSetA(SK_ColorWHITE, 26);  // 10%
+
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.
 constexpr int kWorkspaceAreaVisibleInset = 2;
@@ -78,7 +84,6 @@ constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 
 // The width and height of the material design overflow button.
 constexpr int kOverflowButtonSize = 32;
-constexpr int kOverflowButtonSizeNewUi = 40;
 
 // The radius of the rounded corners of the overflow button.
 constexpr int kOverflowButtonCornerRadiusOldUi = 2;
@@ -113,7 +118,7 @@ class ShelfConstants {
 
   // The width and height of the material design overflow button.
   static int overflow_button_size() {
-    return UseNewUi() ? kOverflowButtonSizeNewUi : kOverflowButtonSize;
+    return UseNewUi() ? kShelfControlSizeNewUi : kOverflowButtonSize;
   }
 
   // The radius of the rounded corners of the overflow button.
