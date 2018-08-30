@@ -17,6 +17,7 @@
 #include "components/reading_list/core/reading_list_model_storage.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
@@ -49,6 +50,7 @@ class ReadingListCollectionViewControllerTest : public PlatformTest {
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ReadingListMediator* mediator_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
+  std::unique_ptr<FaviconLoader> favicon_loader;
 
   ReadingListCollectionViewController* reading_list_view_controller_;
   id mock_delegate_;
@@ -62,13 +64,12 @@ class ReadingListCollectionViewControllerTest : public PlatformTest {
 
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::DefaultClock::GetInstance()));
-    large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, /*image_fetcher=*/nullptr));
+    favicon_loader.reset(new FaviconLoader(new favicon::LargeIconService(
+        &mock_favicon_service_, /*image_fetcher=*/nullptr)));
     mediator_ = [[ReadingListMediator alloc]
-           initWithModel:reading_list_model_.get()
-        largeIconService:large_icon_service_.get()
-         listItemFactory:[ReadingListListItemFactory
-                             collectionViewItemFactory]];
+          initWithModel:reading_list_model_.get()
+          faviconLoader:favicon_loader.get()
+        listItemFactory:[ReadingListListItemFactory collectionViewItemFactory]];
     reading_list_view_controller_ = [[ReadingListCollectionViewController alloc]
         initWithDataSource:mediator_
                    toolbar:nil];

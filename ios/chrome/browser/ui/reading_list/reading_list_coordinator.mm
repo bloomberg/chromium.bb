@@ -12,6 +12,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -105,12 +106,12 @@
   ReadingListModel* model =
       ReadingListModelFactory::GetInstance()->GetForBrowserState(
           self.browserState);
-  favicon::LargeIconService* largeIconService =
-      IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
   ReadingListListItemFactory* itemFactory =
       [ReadingListListItemFactory tableViewItemFactory];
+  FaviconLoader* faviconLoader =
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
   self.mediator = [[ReadingListMediator alloc] initWithModel:model
-                                            largeIconService:largeIconService
+                                               faviconLoader:faviconLoader
                                              listItemFactory:itemFactory];
 
   // Create the table.
