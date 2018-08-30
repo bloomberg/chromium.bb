@@ -111,6 +111,63 @@ a {
   margin-top: 5px;
 }
 
+#error-information-button {
+  padding-left: 0.5em;
+  content: -webkit-image-set(
+          url(../../resources/default_100_percent/neterror/help_outline.png) 1x,
+          url(../../resources/default_200_percent/neterror/help_outline.png) 2x);
+  width: 24px;
+  height: 24px;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup {
+  align-items: center;
+  background-color: rgba(0,0,0,.65);
+  display: flex;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup-box {
+  background-color: white;
+  left: 5%;
+  position: fixed;
+  width: 90%;
+  z-index: 101;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup-content {
+  padding: 0.5em;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup-content {
+  padding: 0.5em;
+}
+
+:not(.use-popup-container)#error-information-popup-container
+  #error-information-popup-close {
+  display: none;
+}
+
+#error-information-popup-close {
+  margin-right: 2em;
+  text-align: right;
+}
+
+.link-button {
+  color: rgb(50, 102, 213);
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
 #sub-frame-error-details {
 <if expr="is_ios">
   font-size: 8pt;
