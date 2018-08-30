@@ -240,10 +240,8 @@ void OmniboxViewViews::InstallPlaceholderText() {
 }
 
 bool OmniboxViewViews::SelectionAtEnd() {
-  size_t start, end;
-  GetSelectionBounds(&start, &end);
-  end = std::max(start, end);
-  return end == text().size();
+  const gfx::Range sel = GetSelectedRange();
+  return sel.GetMax() == text().size();
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -557,7 +555,7 @@ bool OmniboxViewViews::IsSelectAll() const {
 void OmniboxViewViews::UpdatePopup() {
   // Prevent inline autocomplete when the caret isn't at the end of the text.
   const gfx::Range sel = GetSelectedRange();
-  model()->UpdateInput(!sel.is_empty(), sel.GetMax() < text().length());
+  model()->UpdateInput(!sel.is_empty(), !SelectionAtEnd());
 }
 
 void OmniboxViewViews::ApplyCaretVisibility() {
@@ -1314,11 +1312,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
     case ui::VKEY_LEFT:
       if (!(control || alt || shift)) {
-        size_t start, end;
-        GetSelectionBounds(&start, &end);
-        end = std::max(start, end);
-        if (end == text().size() &&
-            // Can be nil in tests.
+        if (SelectionAtEnd() &&
+            // Can be null in tests.
             model()->popup_model() &&
             model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
@@ -1378,10 +1373,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
     case ui::VKEY_SPACE:
       if (!(control || alt || shift)) {
-        size_t start, end;
-        GetSelectionBounds(&start, &end);
-        end = std::max(start, end);
-        if (end == text().size() &&
+        if (SelectionAtEnd() &&
             model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
                 OmniboxPopupModel::TAB_SWITCH) {
