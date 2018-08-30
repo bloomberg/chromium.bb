@@ -15,7 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,7 +29,7 @@ const int64_t kMemoryMonitorDelayInSeconds = 30;
 // Checks the values of free RAM and free disk space and updates breakpad with
 // these values.
 void UpdateBreakpadMemoryValues() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   const int free_memory =
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
   breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
