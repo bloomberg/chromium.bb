@@ -175,16 +175,14 @@ class InstallUtil {
   // Returns the highest Chrome version that was installed prior to a downgrade,
   // or an invalid Version if Chrome was not previously downgraded from a newer
   // version.
-  static base::Version GetDowngradeVersion(bool system_install,
-                                           const BrowserDistribution* dist);
+  static base::Version GetDowngradeVersion();
 
   // Adds or removes downgrade version registry value. This function should only
   // be used for Chrome install.
   static void AddUpdateDowngradeVersionItem(
-      bool system_install,
+      HKEY root,
       const base::Version* current_version,
       const base::Version& new_version,
-      const BrowserDistribution* dist,
       WorkItemList* list);
 
   // Returns the registry key path and value name where the enrollment token is

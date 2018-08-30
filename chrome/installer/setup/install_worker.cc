@@ -900,9 +900,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
       installer_state.root_key(),
       GetNotificationHelperPath(target_path, new_version), install_list);
 
-  InstallUtil::AddUpdateDowngradeVersionItem(installer_state.system_install(),
-                                             current_version, new_version, dist,
-                                             install_list);
+  InstallUtil::AddUpdateDowngradeVersionItem(
+      installer_state.root_key(), current_version, new_version, install_list);
 
   // Migrate usagestats back to Chrome.
   AddMigrateUsageStatsWorkItems(installer_state, install_list);

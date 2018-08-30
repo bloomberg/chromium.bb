@@ -591,17 +591,16 @@ bool InstallUtil::ProgramCompare::GetInfo(const base::File& file,
 }
 
 // static
-base::Version InstallUtil::GetDowngradeVersion(
-    bool system_install,
-    const BrowserDistribution* dist) {
-  DCHECK(dist);
+base::Version InstallUtil::GetDowngradeVersion() {
   RegKey key;
   base::string16 downgrade_version;
-  if (key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-               dist->GetStateKey().c_str(),
+  if (key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
+                                                 : HKEY_CURRENT_USER,
+               install_static::GetClientStateKeyPath().c_str(),
                KEY_QUERY_VALUE | KEY_WOW64_32KEY) != ERROR_SUCCESS ||
       key.ReadValue(kRegDowngradeVersion, &downgrade_version) !=
-          ERROR_SUCCESS) {
+          ERROR_SUCCESS ||
+      downgrade_version.empty()) {
     return base::Version();
   }
   return base::Version(base::UTF16ToASCII(downgrade_version));
@@ -609,24 +608,23 @@ base::Version InstallUtil::GetDowngradeVersion(
 
 // static
 void InstallUtil::AddUpdateDowngradeVersionItem(
-    bool system_install,
+    HKEY root,
     const base::Version* current_version,
     const base::Version& new_version,
-    const BrowserDistribution* dist,
     WorkItemList* list) {
   DCHECK(list);
-  DCHECK(dist);
-  base::Version downgrade_version = GetDowngradeVersion(system_install, dist);
-  HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  const base::Version downgrade_version = GetDowngradeVersion();
   if (!current_version ||
       (*current_version <= new_version &&
        ((!downgrade_version.IsValid() || downgrade_version <= new_version)))) {
-    list->AddDeleteRegValueWorkItem(root, dist->GetStateKey(), KEY_WOW64_32KEY,
-                                    kRegDowngradeVersion);
+    list->AddDeleteRegValueWorkItem(root,
+                                    install_static::GetClientStateKeyPath(),
+                                    KEY_WOW64_32KEY, kRegDowngradeVersion);
   } else if (*current_version > new_version && !downgrade_version.IsValid()) {
     list->AddSetRegValueWorkItem(
-        root, dist->GetStateKey(), KEY_WOW64_32KEY, kRegDowngradeVersion,
-        base::ASCIIToUTF16(current_version->GetString()), true);
+        root, install_static::GetClientStateKeyPath(), KEY_WOW64_32KEY,
+        kRegDowngradeVersion, base::ASCIIToUTF16(current_version->GetString()),
+        true);
   }
 }
 

@@ -22,6 +22,8 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/test_app_registration_data.h"
@@ -434,9 +436,9 @@ TEST_F(InstallUtilTest, ProgramCompare) {
 }
 
 TEST_F(InstallUtilTest, AddDowngradeVersion) {
-  TestBrowserDistribution dist;
-  bool system_install = true;
-  RegKey(HKEY_LOCAL_MACHINE, dist.GetStateKey().c_str(),
+  install_static::ScopedInstallDetails system_install(true);
+  const HKEY kRoot = HKEY_LOCAL_MACHINE;
+  RegKey(kRoot, install_static::GetClientStateKeyPath().c_str(),
          KEY_SET_VALUE | KEY_WOW64_32KEY);
   std::unique_ptr<WorkItemList> list;
 
@@ -445,39 +447,34 @@ TEST_F(InstallUtilTest, AddDowngradeVersion) {
   base::Version lower_new_version_1("1.1.1.0");
   base::Version lower_new_version_2("1.1.0.0");
 
-  ASSERT_FALSE(
-      InstallUtil::GetDowngradeVersion(system_install, &dist).IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
 
   // Upgrade should not create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &current_version, higer_new_version, &dist, list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+                                             higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(
-      InstallUtil::GetDowngradeVersion(system_install, &dist).IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
 
   // Downgrade should create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &current_version, lower_new_version_1, &dist, list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+                                             lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Multiple downgrades should not change the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &lower_new_version_1, lower_new_version_2, &dist,
-      list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+                                             lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 }
 
 TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
-  TestBrowserDistribution dist;
-  bool system_install = true;
-  RegKey(HKEY_LOCAL_MACHINE, dist.GetStateKey().c_str(),
+  install_static::ScopedInstallDetails system_install(true);
+  const HKEY kRoot = HKEY_LOCAL_MACHINE;
+  RegKey(kRoot, install_static::GetClientStateKeyPath().c_str(),
          KEY_SET_VALUE | KEY_WOW64_32KEY);
   std::unique_ptr<WorkItemList> list;
 
@@ -487,53 +484,44 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   base::Version lower_new_version_2("1.1.0.0");
 
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &current_version, lower_new_version_2, &dist, list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+                                             lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Upgrade should not delete the value if it still lower than the version that
   // downgrade from.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &lower_new_version_2, lower_new_version_1, &dist,
-      list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_2,
+                                             lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Repair should not delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &lower_new_version_1, lower_new_version_1, &dist,
-      list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+                                             lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Fully upgrade should delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &lower_new_version_1, higer_new_version, &dist,
-      list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+                                             higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(
-      InstallUtil::GetDowngradeVersion(system_install, &dist).IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
 
   // Fresh install should delete the value if it exists.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, &current_version, lower_new_version_2, &dist, list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+                                             lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version,
-            InstallUtil::GetDowngradeVersion(system_install, &dist));
+  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      system_install, nullptr, lower_new_version_1, &dist, list.get());
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, nullptr,
+                                             lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(
-      InstallUtil::GetDowngradeVersion(system_install, &dist).IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
 }
 
 TEST(DeleteRegistryKeyTest, DeleteAccessRightIsEnoughToDelete) {
