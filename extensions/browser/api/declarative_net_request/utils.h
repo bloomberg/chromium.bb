@@ -85,6 +85,9 @@ bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum);
 // testing.
 std::string GetVersionHeaderForTesting();
 
+// Returns the indexed ruleset format version.
+int GetIndexedRulesetFormatVersionForTesting();
+
 // Override the ruleset format version for testing.
 void SetIndexedRulesetFormatVersionForTesting(int version);
 

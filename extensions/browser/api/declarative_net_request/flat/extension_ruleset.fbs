@@ -4,6 +4,10 @@
 
 include "components/url_pattern_index/flat/url_pattern_index.fbs";
 
+// NOTE: Increment kIndexedRulesetFormatVersion at
+// extensions/browser/api/declarative_net_request/utils.cc whenever
+// making a breaking change to this schema.
+
 namespace extensions.declarative_net_request.flat;
 
 /// Additional extension related metadata for a url_pattern_index UrlRule.
