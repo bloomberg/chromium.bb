@@ -857,24 +857,9 @@ int BookmarkBarView::GetToolbarOverlap() const {
   return gfx::ToRoundedInt(kOverlap * size_animation_.GetCurrentValue());
 }
 
-int BookmarkBarView::GetPreferredHeight() const {
-  return std::max(GetTallestButtonHeight(),
-                  GetLayoutConstant(BOOKMARK_BAR_HEIGHT));
-}
-
-int BookmarkBarView::GetTallestButtonHeight() const {
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    const views::View* view = child_at(i);
-    if (view->visible())
-      height = std::max(view->GetPreferredSize().height(), height);
-  }
-  return height;
-}
-
 gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   gfx::Size prefsize;
-  int preferred_height = GetPreferredHeight();
+  int preferred_height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
   if (IsDetached()) {
     prefsize.set_height(
         preferred_height +
@@ -914,7 +899,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   // It should also contain the Managed Bookmarks folder, if it is visible.
   int width = kBookmarkBarHorizontalMargin;
 
-  int height = GetPreferredHeight();
+  int height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
     height += static_cast<int>(
@@ -956,7 +941,7 @@ void BookmarkBarView::Layout() {
   int x = kBookmarkBarHorizontalMargin;
   int width = View::width() - 2 * kBookmarkBarHorizontalMargin;
 
-  int height = GetTallestButtonHeight();
+  int height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
 
   int y = (GetContentsBounds().height() - height) / 2;
 

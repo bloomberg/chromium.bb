@@ -28,13 +28,19 @@ int GetCocoaLayoutConstant(LayoutConstant constant) {
 
 int GetLayoutConstant(LayoutConstant constant) {
   const int mode = ui::MaterialDesignController::GetMode();
+  static const int kBookmarkBarVerticalMargin = 4;
   const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
   const bool touch_optimized_material =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   const bool newer_material = ui::MaterialDesignController::IsNewerMaterialUi();
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
-      return touch_optimized_material ? 40 : 32;
+      // The fixed margin ensures the bookmark buttons appear centered relative
+      // to the white space above and below.
+      return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) +
+             kBookmarkBarVerticalMargin;
+    case BOOKMARK_BAR_BUTTON_HEIGHT:
+      return touch_optimized_material ? 36 : 28;
     case BOOKMARK_BAR_NTP_HEIGHT:
       return touch_optimized_material ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT)
                                       : 39;
