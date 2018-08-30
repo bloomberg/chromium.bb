@@ -311,9 +311,13 @@ TEST(ParseAv1CodecId, VerifyOptionalSubsampling) {
   EXPECT_FALSE(
       ParseAv1CodecId("av01.0.00M.10.0.013", &profile, &level, &color_space));
 
-  // The last-value must be non-zero if the first two values are non-zero.
-  EXPECT_FALSE(
+  // The last-value may be non-zero if the first two values are non-zero.
+  EXPECT_TRUE(
       ParseAv1CodecId("av01.0.00M.10.0.110", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.100", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.010", &profile, &level, &color_space));
 
   for (int i = 2; i <= 9; ++i) {
     for (int j = 2; j <= 9; ++j) {
