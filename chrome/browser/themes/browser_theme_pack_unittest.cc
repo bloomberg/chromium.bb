@@ -778,6 +778,29 @@ TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast) {
   }
 }
 
+// Ensure that, given a theme that specifies a frame color and a background text
+// color, but NO discrete tab background colors or images, the importing process
+// properly modified the text color so that it maintains a minimum readable
+// contrast ratio with the background.
+TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast_NoTabColor) {
+  // Build a theme from test file
+  // (theme_test_bgtabtext_notabcolor_singletextcolor).
+  base::FilePath theme_path = GetTestExtensionThemePath(
+      "theme_test_bgtabtext_notabcolor_singletextcolor");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(theme_path, &pack);
+
+  SkColor frame_color;
+  SkColor text_color;
+
+  pack->GetColor(TP::COLOR_FRAME, &frame_color);
+  pack->GetColor(TP::COLOR_BACKGROUND_TAB_TEXT, &text_color);
+
+  float contrast_ratio = color_utils::GetContrastRatio(frame_color, text_color);
+
+  EXPECT_GE(contrast_ratio, color_utils::kMinimumReadableContrastRatio);
+}
+
 // Ensure that, given a theme which only specifies a color for
 // COLOR_BACKGROUND_TAB_TEXT, that color is used for the other variants of
 // background tab text (inactive, incognito, and incognito+inactive).
@@ -821,4 +844,29 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_WithIncognito) {
                     TP::COLOR_BACKGROUND_TAB_TEXT);
   VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
+}
+
+// Ensure that, given a theme which only specifies a color for
+// COLOR_BACKGROUND_TAB_TEXT and FRAME_COLOR (no discrete tab colors or images),
+// that the background tab text color is properly used for the other variants of
+// background tab text (inactive, incognito, and incognito+inactive).
+TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_NoTabColor) {
+  // Build a theme from test file
+  // (theme_test_bgtabtext_notabcolor_singletextcolor_propagate).
+  // This theme specifies a color for frame_color, and background_tab_text, but
+  // no tab background colors, and no variants of background_tab_text.
+  base::FilePath theme_path = GetTestExtensionThemePath(
+      "theme_test_bgtabtext_notabcolor_singletextcolor_autoassign");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(theme_path, &pack);
+
+  // Verify that all background tab text colors match the color for background
+  // tab text.
+  BrowserThemePack* pack_ptr = pack.get();
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
 }

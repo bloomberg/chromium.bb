@@ -183,6 +183,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   // defined for |source_color_id| as a starting point (if it exists).
   void GenerateMissingTextColorForID(int text_color_id,
                                      int tab_color_id,
+                                     int frame_color_id,
                                      int source_color_id);
 
   // Takes all the SkBitmaps in |images|, encodes them as PNGs and places
