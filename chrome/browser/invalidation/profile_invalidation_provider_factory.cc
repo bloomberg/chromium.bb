@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 
 #include <memory>
 #include <utility>
@@ -15,9 +15,9 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
+#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
-#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -52,8 +52,8 @@
 namespace invalidation {
 
 // static
-ProfileInvalidationProvider*
-DeprecatedProfileInvalidationProviderFactory::GetForProfile(Profile* profile) {
+ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
+    Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Using ProfileHelper::GetSigninProfile() here would lead to an infinite loop
   // when this method is called during the creation of the sign-in profile
@@ -72,13 +72,12 @@ DeprecatedProfileInvalidationProviderFactory::GetForProfile(Profile* profile) {
 }
 
 // static
-DeprecatedProfileInvalidationProviderFactory*
-DeprecatedProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<DeprecatedProfileInvalidationProviderFactory>::get();
+ProfileInvalidationProviderFactory*
+ProfileInvalidationProviderFactory::GetInstance() {
+  return base::Singleton<ProfileInvalidationProviderFactory>::get();
 }
 
-DeprecatedProfileInvalidationProviderFactory::
-    DeprecatedProfileInvalidationProviderFactory()
+ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
     : BrowserContextKeyedServiceFactory(
           "InvalidationService",
           BrowserContextDependencyManager::GetInstance()),
@@ -89,16 +88,15 @@ DeprecatedProfileInvalidationProviderFactory::
 #endif
 }
 
-DeprecatedProfileInvalidationProviderFactory::
-    ~DeprecatedProfileInvalidationProviderFactory() {}
+ProfileInvalidationProviderFactory::~ProfileInvalidationProviderFactory() =
+    default;
 
-void DeprecatedProfileInvalidationProviderFactory::RegisterTestingFactory(
+void ProfileInvalidationProviderFactory::RegisterTestingFactory(
     TestingFactoryFunction testing_factory) {
   testing_factory_ = testing_factory;
 }
 
-KeyedService*
-DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
+KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (testing_factory_)
     return testing_factory_(context).release();
@@ -127,25 +125,22 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         IdentityManagerFactory::GetForProfile(profile)));
   }
 
-  std::unique_ptr<TiclInvalidationService> service =
-      std::make_unique<TiclInvalidationService>(
-          GetUserAgent(), std::move(identity_provider),
-          std::make_unique<TiclProfileSettingsProvider>(profile->GetPrefs()),
+  std::unique_ptr<FCMInvalidationService> service =
+      std::make_unique<FCMInvalidationService>(
+          std::move(identity_provider),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-          profile->GetRequestContext(),
+          instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
+              ->driver(),
+          profile->GetPrefs(),
+          base::BindRepeating(data_decoder::SafeJsonParser::Parse,
+                              content::ServiceManagerConnection::GetForProcess()
+                                  ->GetConnector()),
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess());
-  service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
-      new InvalidatorStorage(profile->GetPrefs())));
-
+              ->GetURLLoaderFactoryForBrowserProcess()
+              .get());
+  service->Init();
   return new ProfileInvalidationProvider(std::move(service));
 #endif
-}
-
-void DeprecatedProfileInvalidationProviderFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  ProfileInvalidationProvider::RegisterProfilePrefs(registry);
-  InvalidatorStorage::RegisterProfilePrefs(registry);
 }
 
 }  // namespace invalidation

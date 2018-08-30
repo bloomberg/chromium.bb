@@ -612,6 +612,8 @@ jumbo_split_static_library("browser") {
     "intranet_redirect_detector.h",
     "invalidation/deprecated_profile_invalidation_provider_factory.cc",
     "invalidation/deprecated_profile_invalidation_provider_factory.h",
+    "invalidation/profile_invalidation_provider_factory.cc",
+    "invalidation/profile_invalidation_provider_factory.h",
     "io_thread.cc",
     "io_thread.h",
     "language/chrome_language_detection_tab_helper.cc",
