@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -47,9 +48,10 @@ void QuitInstructionBubble::Hide() {
 void QuitInstructionBubble::AnimationProgressed(
     const gfx::Animation* animation) {
   float opacity = static_cast<float>(animation->CurrentValueBetween(0.0, 1.0));
+  base::char16 mnemonic = ui::GetMnemonic(l10n_util::GetStringUTF16(IDS_EXIT));
   if (opacity == 0) {
     popup_.reset();
-  } else {
+  } else if (mnemonic) {
     if (!popup_) {
       SubtleNotificationView* view = new SubtleNotificationView();
 
@@ -72,7 +74,7 @@ void QuitInstructionBubble::AnimationProgressed(
           IDS_QUIT_ACCELERATOR_TUTORIAL,
           l10n_util::GetStringUTF16(IDS_APP_ALT_KEY),
           ui::Accelerator(ui::VKEY_F, 0).GetShortcutText(),
-          ui::Accelerator(ui::VKEY_X, 0).GetShortcutText()));
+          base::string16(1, mnemonic)));
 
       popup_->CenterWindow(view->GetPreferredSize());
 

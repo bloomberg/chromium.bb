@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/libgtkui/menu_util.h"
 
+#include <map>
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
