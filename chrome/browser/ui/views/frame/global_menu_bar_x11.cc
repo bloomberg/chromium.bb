@@ -8,6 +8,9 @@
 #include <glib-object.h>
 #include <stddef.h>
 
+#include <utility>
+#include <vector>
+
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -352,7 +355,7 @@ GlobalMenuBarX11::~GlobalMenuBarX11() {
 }
 
 // static
-std::string GlobalMenuBarX11::GetPathForWindow(unsigned long xid) {
+std::string GlobalMenuBarX11::GetPathForWindow(XID xid) {
   return base::StringPrintf("/com/canonical/menu/%lX", xid);
 }
 
@@ -376,10 +379,10 @@ DbusmenuMenuitem* GlobalMenuBarX11::BuildMenuItem(
   return item;
 }
 
-void GlobalMenuBarX11::InitServer(unsigned long xid) {
+void GlobalMenuBarX11::InitServer(XID xid) {
   std::string path = GetPathForWindow(xid);
   {
-    ANNOTATE_SCOPED_MEMORY_LEAK; // http://crbug.com/314087
+    ANNOTATE_SCOPED_MEMORY_LEAK;  // http://crbug.com/314087
     server_ = server_new(path.c_str());
   }
 
@@ -461,8 +464,8 @@ DbusmenuMenuitem* GlobalMenuBarX11::BuildStaticMenu(
   DbusmenuMenuitem* top = menuitem_new();
   menuitem_property_set(
       top, kPropertyLabel,
-      ui::RemoveWindowsStyleAccelerators(
-          l10n_util::GetStringUTF8(menu_str_id)).c_str());
+      ui::RemoveWindowsStyleAccelerators(l10n_util::GetStringUTF8(menu_str_id))
+          .c_str());
   menuitem_property_set_bool(top, kPropertyVisible, true);
 
   for (int i = 0; commands[i].str_id != MENU_END; ++i) {
@@ -817,14 +820,14 @@ void GlobalMenuBarX11::TabRestoreServiceDestroyed(
   tab_restore_service_ = nullptr;
 }
 
-void GlobalMenuBarX11::OnWindowMapped(unsigned long xid) {
+void GlobalMenuBarX11::OnWindowMapped(XID xid) {
   if (!server_)
     InitServer(xid);
 
   GlobalMenuBarRegistrarX11::GetInstance()->OnWindowMapped(xid);
 }
 
-void GlobalMenuBarX11::OnWindowUnmapped(unsigned long xid) {
+void GlobalMenuBarX11::OnWindowUnmapped(XID xid) {
   GlobalMenuBarRegistrarX11::GetInstance()->OnWindowUnmapped(xid);
 }
 

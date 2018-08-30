@@ -68,6 +68,8 @@ component("base") {
   sources = [
     "accelerators/media_keys_listener.cc",
     "accelerators/media_keys_listener.h",
+    "accelerators/menu_label_accelerator_util.cc",
+    "accelerators/menu_label_accelerator_util.h",
     "accelerators/menu_label_accelerator_util_linux.cc",
     "accelerators/menu_label_accelerator_util_linux.h",
     "accelerators/platform_accelerator_cocoa.h",
@@ -864,6 +866,7 @@ test("ui_base_unittests") {
       "accelerators/accelerator_manager_unittest.cc",
       "accelerators/accelerator_unittest.cc",
       "accelerators/menu_label_accelerator_util_linux_unittest.cc",
+      "accelerators/menu_label_accelerator_util_unittest.cc",
       "accelerators/platform_accelerator_cocoa_unittest.mm",
       "clipboard/custom_data_helper_unittest.cc",
       "cocoa/base_view_unittest.mm",
