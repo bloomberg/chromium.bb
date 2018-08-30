@@ -195,6 +195,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowWaitForContainerReadyScreen();
   void ShowUpdateRequiredScreen();
   void ShowDiscoverScreen();
+  void ShowMarketingOptInScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
@@ -242,6 +243,7 @@ class WizardController : public BaseScreenDelegate,
   void OnDemoPreferencesCanceled();
   void OnWaitForContainerReadyFinished();
   void OnOobeFlowFinished();
+  void OnMarketingOptInFinished();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

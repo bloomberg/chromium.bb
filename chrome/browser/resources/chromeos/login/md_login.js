@@ -60,6 +60,7 @@ cr.define('cr.ui.Oobe', function() {
       login.WaitForContainerReadyScreen.register();
       login.UpdateRequiredScreen.register();
       login.DiscoverScreen.register();
+      login.MarketingOptInScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;
