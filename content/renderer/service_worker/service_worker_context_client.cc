@@ -28,6 +28,7 @@
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
@@ -688,6 +689,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
     mojom::EmbeddedWorkerStartTimingPtr start_timing,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -705,6 +707,14 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   instance_host_ =
       mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
           std::move(instance_host), main_thread_task_runner_);
+
+  if (subresource_loaders) {
+    loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+        main_thread_task_runner_);
+    loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+                                  std::move(subresource_loaders)),
+                              base::nullopt /* subresource_overrides */);
+  }
 
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
@@ -1352,10 +1362,14 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_request_.is_pending());
 
-  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
-      RenderThreadImpl::current()
-          ->blink_platform_impl()
-          ->CreateDefaultURLLoaderFactoryBundle();
+  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle;
+  if (loader_factories_) {
+    url_loader_factory_bundle = loader_factories_;
+  } else {
+    url_loader_factory_bundle = RenderThreadImpl::current()
+                                    ->blink_platform_impl()
+                                    ->CreateDefaultURLLoaderFactoryBundle();
+  }
   DCHECK(url_loader_factory_bundle);
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>

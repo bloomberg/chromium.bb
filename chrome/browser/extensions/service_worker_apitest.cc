@@ -671,6 +671,25 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, FetchArbitraryPaths) {
             NavigateAndExtractInnerText(extension->GetResourceURL("")));
 }
 
+IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
+                       FetchExtensionResourceFromServiceWorker) {
+  const Extension* extension =
+      StartTestFromBackgroundPage("fetch_from_sw.js", kExpectSuccess);
+  ASSERT_TRUE(extension);
+
+  // The service worker in this test tries to load 'hello.txt' via fetch()
+  // and sends back the content of the file, which should be 'hello'.
+  const char* kScript = R"(
+    let channel = new MessageChannel();
+    test.waitForMessage(channel.port1).then(message => {
+      window.domAutomationController.send(message);
+    });
+    test.registeredServiceWorker.postMessage(
+        {port: channel.port2}, [channel.port2]);
+  )";
+  EXPECT_EQ("hello", ExecuteScriptInBackgroundPage(extension->id(), kScript));
+}
+
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
   const Extension* extension =
       StartTestFromBackgroundPage("replace_background.js", kExpectSuccess);
