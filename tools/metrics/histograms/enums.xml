@@ -43598,6 +43598,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="SERVICE_WORKER_ERROR_REDUNDANT"/>
   <int value="18" label="SERVICE_WORKER_ERROR_DISALLOWED"/>
   <int value="19" label="SERVICE_WORKER_ERROR_DISABLED_WORKER (unused)"/>
+  <int value="20" label="SERVICE_WORKER_ERROR_INVALID_ARGUMENTS"/>
 </enum>
 
 <enum name="ServiceWorkerStoppedStatus">

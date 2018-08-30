@@ -82,6 +82,7 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
       break;
   }
   NOTREACHED();

@@ -549,6 +549,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
                             int64_t trace_id,
+                            mojo::ReportBadMessageCallback bad_message_callback,
                             blink::ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             int64_t registration_id);
@@ -571,10 +572,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojom::ControllerServiceWorkerRequest controller_request,
       blink::ServiceWorkerStatusCode status);
 
-  bool IsValidRegisterMessage(
-      const GURL& script_url,
-      const blink::mojom::ServiceWorkerRegistrationOptions& options,
-      std::string* out_error) const;
   bool IsValidGetRegistrationMessage(const GURL& client_url,
                                      std::string* out_error) const;
   bool IsValidGetRegistrationsMessage(std::string* out_error) const;
