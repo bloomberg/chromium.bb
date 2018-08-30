@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Mostrar grelha de separadores</translation>
 <translation id="162035744160882748">Ativar a sincronização, a personalização e outros serviços Google</translation>
 <translation id="1644574205037202324">Histórico</translation>
-<translation id="1646446875146297738">Se ativar a funcionalidade "Não monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado.
-
-Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados noutros Sites visitados por si como resposta a este pedido. Muitos Sites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Sites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">A partilha falhou porque não está ligado à rede.</translation>
 <translation id="165877110639533037">Sem separadores abertos</translation>
 <translation id="1687475363370981210">Marcar tudo como lido</translation>
@@ -86,7 +83,6 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2339560363438331454">Sincronização e serviços Google</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
-<translation id="2354750644801399986">"Não Monitorizar"</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2381405137052800939">Noções básicas</translation>
 <translation id="2386793615875593361">1 selecionada</translation>

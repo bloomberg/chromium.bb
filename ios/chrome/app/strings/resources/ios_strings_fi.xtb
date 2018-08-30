@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Näytä välilehtiruudukko</translation>
 <translation id="162035744160882748">Ota synkronointi, personointi ja muut Google-palvelut käyttöön</translation>
 <translation id="1644574205037202324">Historia</translation>
-<translation id="1646446875146297738">Do Not Track -valinta lisää pyynnön selaustietoliikenteeseesi. Sen vaikutus riippuu siitä, miten verkkosivustot vastaavat pyyntöön ja tulkitsevat sitä.
-
-Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle mainoksia, jotka eivät perustu käyttämiisi verkkosivustoihin. Monet verkkosivustot keräävät silti selaustietojasi esimerkiksi parantaakseen tietoturvaa, tarjotakseen sisältöä, mainoksia ja suosituksia verkkosivustoilleen sekä luodakseen raportointitietoja. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Jakaminen epäonnistui, koska verkkoyhteyttä ei ole.</translation>
 <translation id="165877110639533037">Ei avoimia välilehtiä</translation>
 <translation id="1687475363370981210">Merkitse kaikki luetuiksi</translation>
@@ -86,7 +83,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
 <translation id="2339560363438331454">Synkronointi ja Google-palvelut</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
-<translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2381405137052800939">Perusasetukset</translation>
 <translation id="2386793615875593361">1 valittu</translation>

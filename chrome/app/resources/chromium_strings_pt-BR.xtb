@@ -123,7 +123,6 @@
 <translation id="5479196819031988440">O Chromium OS não pode abrir essa página.</translation>
 <translation id="5480860683791598150">O Chromium precisa acessar seu local para compartilhá-lo com este site</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
-<translation id="5514308096618405748">O Chrome OS tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional, como o Linux (Beta).</translation>
 <translation id="5529843986978123325">{0,plural, =1{O Chromium OS será reiniciado em 1 minuto}one{O Chromium OS será reiniciado em # minuto}other{O Chromium OS será reiniciado em # minutos}}</translation>
 <translation id="5631814766731275228">Nome e foto do Chromium</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou versão superior.</translation>

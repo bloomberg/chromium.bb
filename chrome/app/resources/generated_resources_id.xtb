@@ -757,10 +757,10 @@
 <translation id="212862741129535676">Persentase Pemakaian Status Frekuensi</translation>
 <translation id="2129825002735785149">Perbarui plugin</translation>
 <translation id="2131077480075264">Tidak dapat memasang "<ph name="APP_NAME" />" karena tidak diizinkan oleh "<ph name="IMPORT_NAME" />"</translation>
+<translation id="2135456203358955318">Kaca pembesar yang dipasang ke dok</translation>
 <translation id="2135787500304447609">&amp;Lanjutkan</translation>
 <translation id="2136372518715274136">Masukkan sandi baru</translation>
 <translation id="2136476978468204130">Frasa sandi yang Anda masukkan salah</translation>
-<translation id="2136573720723402846">Aktifkan buka kunci sidik jari</translation>
 <translation id="2137068468602026500">Klik <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> di bawah Web Browser</translation>
 <translation id="2138398485845393913">Sambungan ke "<ph name="DEVICE_NAME" />" sedang dalam proses</translation>
 <translation id="214169863967063661">Buka setelan tampilan</translation>
@@ -2051,7 +2051,7 @@
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat mentransmisikan <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Iklan diblokir di situs ini</translation>
-<translation id="4079799245038595838">Notifikasi telah dikirim ke telepon Anda. Ikuti petunjuk untuk mengonfirmasi bahwa itu memang Anda.</translation>
+<translation id="4079799245038595838">Notifikasi telah dikirim ke telepon Anda. Ikuti petunjuk untuk mengonfirmasi identitas Anda.</translation>
 <translation id="4081242589061676262">Tidak dapat mentransmisikan file.</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084835346725913160">Tutup <ph name="TAB_NAME" /></translation>
@@ -3287,7 +3287,7 @@
 <translation id="6006484371116297560">Klasik</translation>
 <translation id="6007237601604674381">Pemindahan gagal. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6007240208646052708">Penelusuran suara dalam bahasa Anda tidak tersedia.</translation>
-<translation id="6009781704028455063">Sensor bawaan</translation>
+<translation id="6009781704028455063">Sensor yang ada di perangkat</translation>
 <translation id="6010869025736512584">Mengakses masukan video</translation>
 <translation id="6011193465932186973">Sidik jari</translation>
 <translation id="6011449291337289699">Hapus data situs</translation>
@@ -4232,7 +4232,7 @@
 <translation id="7464490149090366184">Gagal membuat file zip, item sudah ada: "$1"</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469406957790636836">Untuk mengaktifkannya, terlebih dahulu aktifkan fitur periksa ejaan di <ph name="BEGIN_LINK" />Bahasa dan masukan<ph name="END_LINK" /></translation>
-<translation id="7469518857922439236">Kirim notifikasi dan setel secara default untuk mengingat komputer ini untuk Message</translation>
+<translation id="7469518857922439236">Mengirim notifikasi dan secara default mengingat komputer ini untuk Message</translation>
 <translation id="7469894403370665791">Sambungkan ke jaringan ini secara otomatis</translation>
 <translation id="747114903913869239">Kesalahan: Tidak dapat mendekodekan ekstensi</translation>
 <translation id="7473891865547856676">Lain Kali</translation>

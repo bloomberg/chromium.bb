@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">பரிந்துரைக்கப்படும் பயன்பாடுகள்</translation>
 <translation id="1368832886055348810">இடமிருந்து வலம்</translation>
+<translation id="1383876407941801731">தேடல்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> இடமிருந்து வரும் அறிவிப்புகளை முடக்கு</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 நிமிடம், }other{# நிமிடங்கள், }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">அறிவிப்பு மையம், <ph name="UNREAD_NOTIFICATION_COUNT" /> படிக்காத அறிவிப்புகள்</translation>
 <translation id="4730374152663651037">அடிக்கடிப் பயன்படுத்தியவை</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 மாதம் உள்ளது}other{# மாதங்கள் உள்ளன}}</translation>
-<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">செருகும்</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 நொடி}other{# நொடிகள்}}</translation>
 <translation id="4971687151119236543">ஊடகத்தின் முந்தைய டிராக்</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">இங்கே தட்டவும்</translation>
 <translation id="5076340679995252485">&amp;ஒட்டு</translation>
-<translation id="5120799197269191491">தேடல்+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Google அசிஸ்டண்ட்டைத் தொடங்கும்</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> பெ.பை</translation>
 <translation id="5266161281976477809">கூடுதல் உள்ளடக்கத்தைக் காட்டும் முக்கோணம்</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 நிமிடம் உள்ளது}other{# நிமிடங்கள் உள்ளன}}</translation>
 <translation id="5941711191222866238">சிறிதாக்கு</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 மணிநேரம்}other{# மணிநேரம்}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> இல் <ph name="SELECTED_PAGE" />வது பக்கம்</translation>
 <translation id="6022924867608035986">தேடல்பெட்டியிலிருக்கும் உரையை அழிக்கும்</translation>
 <translation id="6040143037577758943">மூடு</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">சரிபார்</translation>
 <translation id="8393700583063109961">செய்தி அனுப்பு</translation>
 <translation id="8394908167088220973">ஊடகத்தை இயக்கு/இடைநிறுத்து</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1ஆ}other{#ஆ}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />கோப்பு(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> கி.பை./வி</translation>

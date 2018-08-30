@@ -16,7 +16,7 @@
 <translation id="1065552602950927991">Ungültige Eingabe</translation>
 <translation id="1080471004309605942">Ende kursiver Text</translation>
 <translation id="1082209053475788238">Keine vorherige Überschrift der Ebene 6</translation>
-<translation id="1087788677726983142">Event-Stream-Filter ausblenden</translation>
+<translation id="1087788677726983142">Filter für Ereignisstreams ausblenden</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
 <translation id="1106741348836243114">Akustisches Feedback (Earcons) aktivieren bzw. deaktivieren</translation>
 <translation id="1108651818222110612">Untertitel</translation>
@@ -79,7 +79,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1618597272655350600">Vollständige Beschreibung der aktuellen Position ansagen</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{Größer-als-Zeichen}other{# Größer-als-Zeichen}}</translation>
 <translation id="1653266918374749391">Vorherige Überschrift der Ebene 3</translation>
-<translation id="1657616855184033958">Event-Stream-Filter einblenden</translation>
+<translation id="1657616855184033958">Filter für Ereignisstreams einblenden</translation>
 <translation id="1659072772017912254">Nicht aktiviert</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">ChromeVox-Navigation</translation>
@@ -413,7 +413,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4255943572433203166">Verwenden Sie die Optionen unten, um ChromeVox anzupassen. Änderungen werden sofort wirksam.</translation>
 <translation id="4271220233568730077">Nächster mathematischer Ausdruck</translation>
 <translation id="4271521365602459209">Keine weiteren Ergebnisse</translation>
-<translation id="4275397969489577657">Event-Stream-Protokollierung aktivieren</translation>
+<translation id="4275397969489577657">Ereignisstream-Protokollierung aktivieren</translation>
 <translation id="4287520460805643128">Kein weiterer Artikel</translation>
 <translation id="4289540628985791613">Übersicht</translation>
 <translation id="4300318234632215983">URL hinter einem Link ansagen</translation>

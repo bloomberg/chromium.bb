@@ -169,7 +169,6 @@
 
 Google Chrome आपकी सेटिंग बहाल नहीं कर सकता.</translation>
 <translation id="5483595757826856374">{0,plural, =0{अब Chrome फिर से लॉन्च होगा}=1{Chrome दिनों सेकंड में फिर से लॉन्च होगा}one{Chrome # सेकंड में फिर से लॉन्च होगा}other{Chrome # सेकंड में फिर से लॉन्च होगा}}</translation>
-<translation id="5514308096618405748">Chrome OS को Linux (बीटा) की तरह ही ज़्यादा <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> के ज़रिए कारगर बनाया गया है.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>

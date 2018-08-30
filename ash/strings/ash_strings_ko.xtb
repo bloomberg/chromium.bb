@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">화면에 표시된 내용 찾아보기</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
-<translation id="1841545962859478868">기기 관리자가 다음을 모니터링할 수 있습니다.</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">시작하기</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="698231206551913481">이 사용자를 제거하면 해당 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다.</translation>
-<translation id="7007100238996585961">다른 기기에서 응답 중</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7037152028959403492">고대비 단축키를 누르셨습니다. 사용 설정할까요?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
-<translation id="7228479291753472782">웹사이트에서 위치정보, 마이크, 카메라 등과 같은 기능을 사용할 수 있도록 할지 여부를 지정하는 설정을 조작합니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">키보드</translation>
 <translation id="7886277072580235377">로그아웃하면 인터넷 세션이 삭제됩니다. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">이메일 보내 줘</translation>
-<translation id="790040513076446191">개인정보 보호 관련 설정 조정</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7933084174919150729">Google 어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">사설 네트워크</translation>
 <translation id="8152119955266188852">전체 화면 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
-<translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>
 <translation id="8192202700944119416">알림이 숨겨져 있음</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8297006494302853456">약함</translation>
@@ -479,7 +474,7 @@
 <translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>
 <translation id="9215934040295798075">배경화면 설정</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
-<translation id="938963181863597773">오늘 일정이 어떻게 돼?</translation>
+<translation id="938963181863597773">오늘 내 일정이 어떻게 돼?</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="98515147261107953">가로 방향</translation>
 </translationbundle>

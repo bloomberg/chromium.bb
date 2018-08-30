@@ -757,10 +757,10 @@
 <translation id="212862741129535676">Procentaj de ocupare în starea activă</translation>
 <translation id="2129825002735785149">Actualizează pluginul</translation>
 <translation id="2131077480075264">„<ph name="APP_NAME" />” nu poate fi instalată, deoarece „<ph name="IMPORT_NAME" />” nu permite acest lucru</translation>
+<translation id="2135456203358955318">Lupă andocată</translation>
 <translation id="2135787500304447609">&amp;Reia</translation>
 <translation id="2136372518715274136">Introdu noua parolă</translation>
 <translation id="2136476978468204130">Expresia de acces pe care ai introdus-o nu este corectă</translation>
-<translation id="2136573720723402846">Activează deblocarea prin amprentă</translation>
 <translation id="2137068468602026500">Dă clic pe <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> sub Browser web</translation>
 <translation id="2138398485845393913">Încă se conectează la „<ph name="DEVICE_NAME" />”</translation>
 <translation id="214169863967063661">Deschide setările privind aspectul</translation>
@@ -1745,7 +1745,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3627588569887975815">Deschide linkul într-o fereastră inco&amp;gnito</translation>
 <translation id="3627671146180677314">Interval de reînnoire a certificatului Netscape</translation>
 <translation id="3627879631695760395">Instalează <ph name="APP" />...</translation>
-<translation id="3630132874740063857">Numărul tău de telefon</translation>
+<translation id="3630132874740063857">Telefonul</translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
 <translation id="3635030235490426869">Fila 1</translation>
 <translation id="3636096452488277381">Bună ziua, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -1911,7 +1911,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3860381078714302691">Bun venit la Hangouts Meet</translation>
 <translation id="3861241522664181545">Pagină întreruptă.</translation>
 <translation id="3862134173397075045">Bun venit la experiența Cast în Chrome!</translation>
-<translation id="3862693525629180217">Verifică prin intermediul senzorului încorporat</translation>
+<translation id="3862693525629180217">Confirmă prin senzorul încorporat</translation>
 <translation id="3862788408946266506">Aplicația cu atributul „kiosk_only” din manifest trebuie să fie instalată în modul chioșc pentru sistemul de operare Chrome</translation>
 <translation id="3865414814144988605">Rezoluție</translation>
 <translation id="386548886866354912">Arhivează cu <ph name="EXTENSION_NAME" /></translation>
@@ -2037,7 +2037,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4055023634561256217">Trebuie să reporniți dispozitivul înainte de a fi resetat folosind Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Vedeți în magazin</translation>
-<translation id="4058647953897694817">Verifică prin Bluetooth</translation>
+<translation id="4058647953897694817">Confirmă prin Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Verifică acum documentul</translation>
 <translation id="406070391919917862">Aplicații în fundal</translation>
@@ -2051,7 +2051,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="407520071244661467">Redimensionează</translation>
 <translation id="4075639477629295004">Nu se poate proiecta <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Anunțurile au fost blocate pe acest site</translation>
-<translation id="4079799245038595838">Ți-am trimis o notificare pe telefon. Urmează instrucțiunile pentru a-ți confirma identitatea.</translation>
+<translation id="4079799245038595838">Ți s-a trimis o notificare pe telefon. Urmează instrucțiunile pentru a-ți confirma identitatea.</translation>
 <translation id="4081242589061676262">Nu se poate proiecta fișierul.</translation>
 <translation id="4084682180776658562">Marcaj</translation>
 <translation id="4084835346725913160">Închide <ph name="TAB_NAME" /></translation>
@@ -3797,7 +3797,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6759193508432371551">Resetare la setările din fabrică</translation>
 <translation id="6767639283522617719">Dispozitivul nu poate fi asociat domeniului. Asigură-te că setările pentru unitatea organizațională sunt corecte.</translation>
 <translation id="6769712124046837540">Se adaugă imprimanta...</translation>
-<translation id="6770664076092644100">Verifică prin NFC</translation>
+<translation id="6770664076092644100">Confirmă prin NFC</translation>
 <translation id="6771503742377376720">Este o Autoritate de certificare</translation>
 <translation id="6777817260680419853">Redirecționarea a fost blocată</translation>
 <translation id="6778959797435875428">Activează sunetul pentru site-uri</translation>
@@ -3833,7 +3833,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6823506025919456619">Pentru a vedea dispozitivele, este necesar să vă conectați la Chrome</translation>
 <translation id="6824564591481349393">Copiază adresa de &amp;e-mail</translation>
 <translation id="6825184156888454064">Sortează după nume</translation>
-<translation id="6826872289184051766">Verifică prin USB</translation>
+<translation id="6826872289184051766">Confirmă prin USB</translation>
 <translation id="6827236167376090743">Videoclipul va fi redat în continuu.</translation>
 <translation id="6828153365543658583">Restricționează conectarea la următorii utilizatori:</translation>
 <translation id="6828860976882136098">Actualizările automate nu au putut fi configurate pentru toți utilizatorii (eroare la executarea testării pe dispozitiv: <ph name="ERROR_NUMBER" />)</translation>
@@ -5133,7 +5133,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8814687660896548945">Așteaptă, se scanează arhiva...</translation>
 <translation id="881799181680267069">Ascunde-le pe celelalte</translation>
 <translation id="8818152010000655963">Imaginea de fundal</translation>
-<translation id="8818958672113348984">Verifică prin telefon</translation>
+<translation id="8818958672113348984">Confirmă prin telefon</translation>
 <translation id="8820817407110198400">Marcaje</translation>
 <translation id="8821045908425223359">Configurează automat adresa IP</translation>
 <translation id="882204272221080310">Actualizează firmware-ul pentru securitate suplimentară.</translation>

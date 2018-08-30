@@ -552,7 +552,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5407530583102765689">{COUNT,plural, =1{bodkočiarka}few{# bodkočiarky}many{# semicolons}other{# bodkočiarok}}</translation>
 <translation id="5411891038905756502">Žiadny predchádzajúci bod preskočenia</translation>
 <translation id="5417034931411865818">Kliknite na položku pod navigačným klávesom $1</translation>
-<translation id="5435274640623994081">Povoliť zápis zvukových signálov do denníka</translation>
+<translation id="5435274640623994081">Povoliť zápis zvukovej ikony do denníka</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak je menšie ako}few{# znaky je menšie ako}many{# less than signs}other{# znakov je menšie ako}}</translation>
 <translation id="5444587279251314700">(aktívne)</translation>
 <translation id="5446809554778706307">Nie je označená žiadna položka. Nové okno otvoríte pomocou kombinácie klávesov Ctrl + T.</translation>

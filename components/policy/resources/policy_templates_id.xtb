@@ -177,11 +177,11 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Aktifkan pemblokiran injeksi software pihak ketiga</translation>
 <translation id="1504431521196476721">Pengesahan Jarak Jauh</translation>
-<translation id="1507957856411744193">Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan terhubung ke perangkat Transmisi di semua alamat IP, bukan hanya alamat pribadi RFC1918/RFC4913.
+<translation id="1507957856411744193">Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan terhubung ke perangkat Cast di semua alamat IP, bukan hanya alamat pribadi RFC1918/RFC4913.
 
-          Jika kebijakan ini disetel ke false, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Transmisi di alamat pribadi RFC1918/RFC4913.
+          Jika kebijakan ini disetel ke false, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Cast di alamat pribadi RFC1918/RFC4913.
 
-          Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Transmisi di alamat pribadi RFC1918/RFC4913, kecuali fitur CastAllowAllIPs diaktifkan.
+          Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Cast di alamat pribadi RFC1918/RFC4913, kecuali fitur CastAllowAllIPs diaktifkan.
 
           Jika kebijakan "EnableMediaRouter" disetel ke false, nilai kebijakan ini tidak akan berpengaruh.</translation>
 <translation id="1509692106376861764">Kebijakan ini tidak lagi digunakan mulai <ph name="PRODUCT_NAME" /> versi 29.</translation>

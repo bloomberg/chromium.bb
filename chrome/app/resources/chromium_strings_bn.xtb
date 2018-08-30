@@ -124,7 +124,6 @@
 <translation id="5479196819031988440">Chromium OS এই পৃষ্ঠাটি খুলতে পারবে না।</translation>
 <translation id="5480860683791598150">এই সাইটটির সাথে আপনার লোকেশন শেয়ার করার জন্য Chromium কে আপনার লোকেশনের তথ্যে অ্যাক্সেস দিতে হবে</translation>
 <translation id="549669000822060376">Chromium যখন সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
-<translation id="5514308096618405748">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" />, যেমন Linux (বিটা) দিয়ে তৈরি।</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS ১ মিনিটের মধ্যে রিস্টার্ট হবে}one{Chromium OS # মিনিটের মধ্যে রিস্টার্ট হবে}other{Chromium OS # মিনিটের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="5631814766731275228">Chromium এর নাম এবং ছবি</translation>
 <translation id="5634636535844844681">Chromium এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>

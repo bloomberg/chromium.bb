@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Zobrazit mřížku karet</translation>
 <translation id="162035744160882748">Zapnout synchronizaci, personalizaci a další služby Google</translation>
 <translation id="1644574205037202324">Historie</translation>
-<translation id="1646446875146297738">Nastavení „Do Not Track“ (Nesledovat) znamená, že k vašemu provozu při prohlížení bude přidán speciální požadavek. Efekt tohoto požadavku však závisí na tom, zda na něj webové stránky reagují a jak jej interpretují.
-
-Některé webové stránky na tento požadavek mohou reagovat například tím, že při zobrazování reklam nebudou používat informace o tom, které jiné weby jste navštívili. Mnohé weby budou vaše údaje o prohlížení nadále sbírat a používat – např. za účelem zlepšení zabezpečení, poskytování obsahu, služeb, reklam a doporučení na svých webových stránkách a generování přehledových statistik. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Sdílení se nezdařilo, protože nejste připojeni k síti.</translation>
 <translation id="165877110639533037">Žádné otevřené karty</translation>
 <translation id="1687475363370981210">Označit vše jako přečtené</translation>
@@ -86,7 +83,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2320166752086256636">Skrýt klávesnici</translation>
 <translation id="2339560363438331454">Synchronizace a služby Google</translation>
 <translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
-<translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2381405137052800939">Základní nastavení</translation>
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>

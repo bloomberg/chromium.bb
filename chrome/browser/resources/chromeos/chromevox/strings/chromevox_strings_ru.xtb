@@ -16,7 +16,7 @@
 <translation id="1065552602950927991">Неправильный ввод</translation>
 <translation id="1080471004309605942">Конец курсива</translation>
 <translation id="1082209053475788238">Предыдущего заголовка шестого уровня нет.</translation>
-<translation id="1087788677726983142">Скрыть фильтры потока событий</translation>
+<translation id="1087788677726983142">Скрыть фильтры журнала событий</translation>
 <translation id="1088219014394087294">Заголовков нет.</translation>
 <translation id="1106741348836243114">Включить или отключить озвучивание (звуковые сигналы)</translation>
 <translation id="1108651818222110612">подзаголовок</translation>
@@ -79,7 +79,7 @@
 <translation id="1618597272655350600">Озвучить полное описание текущего элемента</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак "больше"}one{# знак "больше"}few{# знака "больше"}many{# знаков "больше"}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Перейти к предыдущему заголовку третьего уровня</translation>
-<translation id="1657616855184033958">Показать фильтры потока событий</translation>
+<translation id="1657616855184033958">Показать фильтры журнала событий</translation>
 <translation id="1659072772017912254">Не проверено</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">Навигация ChromeVox</translation>
@@ -414,7 +414,7 @@
 <translation id="4255943572433203166">Эти параметры позволяют настроить ChromeVox. Изменения вступят в силу немедленно.</translation>
 <translation id="4271220233568730077">Перейти к следующему математическому выражению</translation>
 <translation id="4271521365602459209">Больше ничего не найдено.</translation>
-<translation id="4275397969489577657">Включить ведение журнала для потока событий</translation>
+<translation id="4275397969489577657">Включить ведение журнала событий</translation>
 <translation id="4287520460805643128">Следующей статьи нет.</translation>
 <translation id="4289540628985791613">Обзор</translation>
 <translation id="4300318234632215983">Произносить URL после названия ссылки</translation>

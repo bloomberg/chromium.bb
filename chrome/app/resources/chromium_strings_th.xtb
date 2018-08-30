@@ -125,7 +125,6 @@
 <translation id="5479196819031988440">Chromium OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5480860683791598150">Chromium ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับเว็บไซต์นี้</translation>
 <translation id="549669000822060376">โปรดรอขณะที่ Chromium ติดตั้งการอัปเดตระบบล่าสุด</translation>
-<translation id="5514308096618405748">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม เช่นเดียวกับ Linux (เบต้า)</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS จะรีสตาร์ทใน 1 นาที}other{Chromium OS จะรีสตาร์ทใน # นาที}}</translation>
 <translation id="5631814766731275228">ชื่อและภาพโปรไฟล์ Chromium</translation>
 <translation id="5634636535844844681">Chromium ต้องใช้ Windows 7 ขึ้นไป</translation>

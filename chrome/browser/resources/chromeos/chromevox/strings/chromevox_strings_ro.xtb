@@ -553,7 +553,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5407530583102765689">{COUNT,plural, =1{semn punct și virgulă}few{# semne punct și virgulă}other{# de semne punct și virgulă}}</translation>
 <translation id="5411891038905756502">Nu există un punct de accesare directă anterior.</translation>
 <translation id="5417034931411865818">Dă clic pe elementul de sub tasta de deplasare $1</translation>
-<translation id="5435274640623994081">Activează înregistrarea semnalului audio</translation>
+<translation id="5435274640623994081">Activează înregistrarea audiogramei</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{semn mai mic}few{# semne mai mic}other{# de semne mai mic}}</translation>
 <translation id="5444587279251314700">(activă)</translation>
 <translation id="5446809554778706307">Niciun element focalizat. Pentru a deschide o filă nouă, apasă pe Ctrl + T.</translation>

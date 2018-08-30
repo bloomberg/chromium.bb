@@ -173,7 +173,6 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome se volverá a iniciar ahora}=1{Chrome se volverá a iniciar en 1 segundo}other{Chrome se volverá a iniciar en # segundos}}</translation>
-<translation id="5514308096618405748">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional, como Linux (Beta).</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>

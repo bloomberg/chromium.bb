@@ -757,10 +757,10 @@
 <translation id="212862741129535676">주파수 상태 점유율</translation>
 <translation id="2129825002735785149">플러그인 업데이트</translation>
 <translation id="2131077480075264"><ph name="IMPORT_NAME" />에서 허용하지 않으므로 '<ph name="APP_NAME" />'을(를) 설치할 수 없습니다.</translation>
+<translation id="2135456203358955318">고정 돋보기</translation>
 <translation id="2135787500304447609">다시 시작(&amp;R)</translation>
 <translation id="2136372518715274136">새 비밀번호 입력</translation>
 <translation id="2136476978468204130">입력한 암호가 잘못되었습니다.</translation>
-<translation id="2136573720723402846">지문 잠금 해제 사용</translation>
 <translation id="2137068468602026500">웹브라우저 하단의 <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> 클릭</translation>
 <translation id="2138398485845393913"><ph name="DEVICE_NAME" />에 연결 중입니다.</translation>
 <translation id="214169863967063661">표시 설정 열기</translation>

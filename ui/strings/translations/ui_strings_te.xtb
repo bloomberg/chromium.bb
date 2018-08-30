@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">సిఫార్సు చేసిన యాప్‌లు</translation>
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
+<translation id="1383876407941801731">శోధించు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> నుండి వచ్చే నోటిఫికేషన్‌లను నిలిపివేయి</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
@@ -79,15 +80,12 @@
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
 <translation id="4730374152663651037">తరచుగా ఉపయోగించేవి</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 నెల మిగిలి ఉంది}other{# నెలలు మిగిలి ఉన్నాయి}}</translation>
-<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">చొప్పించడం</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 సెకను}other{# సెకన్లు}}</translation>
 <translation id="4971687151119236543">మీడియా మునుపటి ట్రాక్</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">ఇక్కడ నొక్కండి</translation>
 <translation id="5076340679995252485">&amp;అతికించు</translation>
-<translation id="5120799197269191491">Search+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5137751499640340777">Google అసిస్టెంట్‌ను ప్రారంభించు</translation>
+<translation id="5137751499640340777">Google అసిస్టెంట్‌ను ప్రారంభించండి</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">కంటెంట్‌ను విస్తరింపజేసే లేదా కుదించే త్రిభుజం</translation>
 <translation id="528468243742722775">ముగింపు</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 సెకను మిగిలి ఉంది}other{# సెకన్లు మిగిలి ఉన్నాయి}}</translation>
 <translation id="5941711191222866238">కనిష్టీకరించు</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 గంట}other{# గంటలు}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />లో <ph name="SELECTED_PAGE" />వ పేజీ</translation>
 <translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">తనిఖీ చెయ్యి</translation>
 <translation id="8393700583063109961">సందేశాన్ని పంపండి</translation>
 <translation id="8394908167088220973">మీడియా ప్లే/పాజ్</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1సం}other{#సం}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ఫైల్ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/సె</translation>

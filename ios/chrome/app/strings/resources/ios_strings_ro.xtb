@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Afișează Grila de file</translation>
 <translation id="162035744160882748">Activează sincronizarea, personalizarea și alte servicii Google</translation>
 <translation id="1644574205037202324">Istoric</translation>
-<translation id="1646446875146297738">Dacă activezi funcția „Nu urmări” înseamnă că în traficul de navigare va fi inclusă o solicitare. Efectele depind de răspunsul site-ului la solicitare și de modul în care solicitarea este interpretată.
-
-De exemplu, unele site-uri pot răspunde la această solicitare afișând anunțuri care nu sunt bazate pe alte site-uri accesate de tine. Numeroase site-uri vor culege și vor utiliza totuși datele tale de navigare, de exemplu, pentru a îmbunătăți securitatea, pentru a oferi conținut, servicii, anunțuri și recomandări și pentru a genera statistici de raportare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Nu s-a trimis, pentru că nu te-ai conectat la rețea.</translation>
 <translation id="165877110639533037">Nu există file deschise</translation>
 <translation id="1687475363370981210">Marchează-le pe toate ca citite</translation>
@@ -86,7 +83,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2320166752086256636">Ascunde tastatura</translation>
 <translation id="2339560363438331454">Sincronizarea și Serviciile Google</translation>
 <translation id="2351097562818989364">Setările de traducere au fost resetate.</translation>
-<translation id="2354750644801399986">„Nu urmări”</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2381405137052800939">Setări de bază</translation>
 <translation id="2386793615875593361">1 selectată</translation>

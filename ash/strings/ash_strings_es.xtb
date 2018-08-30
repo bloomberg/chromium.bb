@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">¿Qué hay en mi pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando...)</translation>
-<translation id="1841545962859478868">Es posible que el administrador del dispositivo supervise lo siguiente:</translation>
 <translation id="1850504506766569011">La conexión Wi-Fi está desactivada.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
@@ -342,13 +341,12 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6972754398087986839">Empezar</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Una vez que se haya quitado este usuario, todos los archivos y datos asociados a él se eliminarán de forma permanente.</translation>
-<translation id="7007100238996585961">Se está respondiendo en otro dispositivo</translation>
 <translation id="7015766095477679451">Hora a la que puedes volver: <ph name="COME_BACK_TIME" /></translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7037152028959403492">Has pulsado la combinación de teclas de contraste alto. ¿Quieres activarlo?</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
-<translation id="7068360136237591149">Abre archivos</translation>
+<translation id="7068360136237591149">Abrir un archivo</translation>
 <translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7092922358121866860">Mostrar la configuración de luz nocturna</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
@@ -356,7 +354,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Manipula la configuración que especifica si los sitios web pueden usar funciones como la geolocalización, el micrófono, la cámara, etc.</translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
@@ -392,8 +389,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7886277072580235377">Tu sesión de Internet se borrará cuando la cierres. <ph name="LEARN_MORE" /></translation>
-<translation id="788781083998633524">Envía un correo electrónico</translation>
-<translation id="790040513076446191">Modificar la configuración relacionada con la privacidad</translation>
+<translation id="788781083998633524">Enviar un correo electrónico</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible en el perfil principal.</translation>
 <translation id="79341161159229895">Cuenta gestionada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8142699993796781067">Red privada</translation>
 <translation id="8152119955266188852">Has pulsado la combinación de teclas de la lupa de pantalla completa. ¿Quieres activarla?</translation>
 <translation id="8190698733819146287">Personalizar idiomas...</translation>
-<translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8297006494302853456">Débil</translation>
@@ -456,7 +451,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
 <translation id="8870509716567206129">La aplicación no admite la pantalla dividida.</translation>
 <translation id="8874184842967597500">No conectado</translation>
-<translation id="8877788021141246043">Añade un recordatorio</translation>
+<translation id="8877788021141246043">Añadir un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>

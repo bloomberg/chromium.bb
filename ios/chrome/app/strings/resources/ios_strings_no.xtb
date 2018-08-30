@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Vis fanerutenett</translation>
 <translation id="162035744160882748">Slå på synkronisering, personlig tilpasning og andre Google-tjenester</translation>
 <translation id="1644574205037202324">Logg</translation>
-<translation id="1646446875146297738">Hvis du aktiverer «Ikke spor», blir en forespørsel sendt med nettlesertrafikken din. Eventuelle virkninger avhenger av om nettstedet svarer på forespørselen, og hvordan forespørselen tolkes.
-
-Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annonser som ikke er basert på nettsteder du har besøkt. Mange nettsteder samler inn og bruker likevel nettleserdataene dine for å forbedre sikkerheten og levere innhold, tjenester, annonser og anbefalinger på nettstedet – i tillegg til å generere rapporteringsstatistikk. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Delingen mislyktes fordi du ikke er tilkoblet nettverket.</translation>
 <translation id="165877110639533037">Ingen åpne faner</translation>
 <translation id="1687475363370981210">Merk alle som lest</translation>
@@ -86,7 +83,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2339560363438331454">Synk. og Google-tjenester</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
-<translation id="2354750644801399986">«Ingen sporing»</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2381405137052800939">Grunninnstillinger</translation>
 <translation id="2386793615875593361">1 er valgt</translation>

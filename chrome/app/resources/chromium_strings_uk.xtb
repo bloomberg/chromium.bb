@@ -125,7 +125,6 @@
 <translation id="5479196819031988440">Неможливо відкрити цю сторінку в ОС Chromium.</translation>
 <translation id="5480860683791598150">Chromium потрібен доступ до геоданих, щоб повідомляти ваше місцезнаходження цьому сайту</translation>
 <translation id="549669000822060376">Зачекайте, доки Chromium установить найновіші оновлення системи.</translation>
-<translation id="5514308096618405748">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />, як і бета-версія Linux.</translation>
 <translation id="5529843986978123325">{0,plural, =1{ОС Chromium перезапуститься через 1 хвилину}one{ОС Chromium перезапуститься через # хвилину}few{ОС Chromium перезапуститься через # хвилини}many{ОС Chromium перезапуститься через # хвилин}other{ОС Chromium перезапуститься через # хвилини}}</translation>
 <translation id="5631814766731275228">Ім’я та зображення профілю Chromium</translation>
 <translation id="5634636535844844681">Для роботи Chromium потрібно мати ОС Windows 7 або новішої версії.</translation>

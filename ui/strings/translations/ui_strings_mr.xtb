@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">शिफारस केलेले अ‍ॅप्स</translation>
 <translation id="1368832886055348810">डावीकडून उजवीकडे</translation>
+<translation id="1383876407941801731">शोधा</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> वरील सूचना अक्षम करा</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }one{# मिनिट आणि }other{# मिनिटे आणि }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> न वाचलेल्या सूचना</translation>
 <translation id="4730374152663651037">वारंवार वापरलेले</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 महिना राहिला}one{# महिना राहिला}other{# महिने राहिले}}</translation>
-<translation id="4820616160060340806">आदेश+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">घालणे</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंद}one{# सेकंद}other{# सेकंद}}</translation>
 <translation id="4971687151119236543">मीडिया मागील ट्रॅक</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">येथे टॅप करा</translation>
 <translation id="5076340679995252485">&amp;पेस्ट करा</translation>
-<translation id="5120799197269191491">शोध+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Google असिस्टंट सुरू करा</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">प्रकटन त्रिकोण</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 सेकंद शिल्लक}one{# सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>
 <translation id="5941711191222866238">लहान करा</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 तास}one{# तास}other{# तास}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> पैकी <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6022924867608035986">शोध बॉक्स मजकूर साफ करा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">तपासा</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
 <translation id="8394908167088220973">मीडिया प्ले करा/विराम द्या</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1वर्ष}one{#वर्ष}other{#वर्षे}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

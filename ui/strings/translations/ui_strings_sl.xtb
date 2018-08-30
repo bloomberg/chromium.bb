@@ -8,6 +8,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">PRIPOROČENE APLIKACIJE</translation>
 <translation id="1368832886055348810">Od leve proti desni</translation>
+<translation id="1383876407941801731">Išči</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
@@ -75,14 +76,11 @@
 <translation id="4724120544754982507">Središče za obvestila, št. neprebranih sporočil: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">POGOSTO UPORABLJENE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Še 1 mesec}one{Še # mesec}two{Še # meseca}few{Še # mesece}other{Še # mesecev}}</translation>
-<translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">Vstavljanje</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
 <translation id="4971687151119236543">Prejšnja skladba</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">Dotaknite se tukaj</translation>
 <translation id="5076340679995252485">&amp;Prilepi</translation>
-<translation id="5120799197269191491">Tipka za iskanje + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Zagon Pomočnika Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
@@ -96,7 +94,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. stran od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Izbris besedila v iskalnem polju</translation>
 <translation id="6040143037577758943">Zapri</translation>
@@ -156,7 +153,6 @@
 <translation id="838869780401515933">potrdi</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
 <translation id="8394908167088220973">Ustavitev/začasna ustavitev</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8602707065186045623">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8730621377337864115">Končano</translation>

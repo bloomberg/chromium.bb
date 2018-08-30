@@ -757,10 +757,10 @@
 <translation id="212862741129535676">Porcentaje de ocupación de estado de frecuencia</translation>
 <translation id="2129825002735785149">Actualizar complemento</translation>
 <translation id="2131077480075264">No se puede instalar la extensión "<ph name="APP_NAME" />" porque no tiene permiso de "<ph name="IMPORT_NAME" />".</translation>
+<translation id="2135456203358955318">Lupa fijada</translation>
 <translation id="2135787500304447609">&amp;Reanudar</translation>
 <translation id="2136372518715274136">Escribe una contraseña nueva</translation>
 <translation id="2136476978468204130">La frase de contraseña que has introducido no es correcta</translation>
-<translation id="2136573720723402846">Habilitar el desbloqueo con huella digital</translation>
 <translation id="2137068468602026500">Haz clic en la opción <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> que aparece en la sección Explorador web</translation>
 <translation id="2138398485845393913">La conexión con "<ph name="DEVICE_NAME" />" sigue en curso</translation>
 <translation id="214169863967063661">Abrir la configuración de apariencia</translation>
@@ -2401,7 +2401,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
     Si no te lo esperabas, ponte en contacto con el equipo de asistencia.</translation>
 <translation id="469230890969474295">Carpeta OEM</translation>
-<translation id="4692623383562244444">Motores de búsqueda</translation>
+<translation id="4692623383562244444">Buscadores</translation>
 <translation id="4694024090038830733">El administrador se encarga de configurar la impresora.</translation>
 <translation id="4697551882387947560">Al finalizar la sesión de navegación</translation>
 <translation id="4699172675775169585">Archivos e imágenes almacenados en caché</translation>
@@ -3914,7 +3914,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6974609594866392343">Modo de demostración sin conexión</translation>
 <translation id="6976108581241006975">Consola JavaScript</translation>
 <translation id="6977381486153291903">Revisión del firmware</translation>
-<translation id="6978121630131642226">Motores de búsqueda</translation>
+<translation id="6978121630131642226">Buscadores</translation>
 <translation id="6978611942794658017">Este archivo está diseñado para un PC que utilice software de Windows, por lo que no es compatible con tu dispositivo, que utiliza Chrome OS. Puedes buscar una aplicación equivalente adecuada en Chrome Web Store.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
@@ -4027,7 +4027,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="713122686776214250">Añadir pá&amp;gina...</translation>
 <translation id="7133578150266914903">Tu administrador va a instalar una versión anterior en este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Reducir el tamaño del texto</translation>
-<translation id="7135729336746831607">Activar Bluetooth</translation>
+<translation id="7135729336746831607">¿Activar Bluetooth?</translation>
 <translation id="7136694880210472378">Establecer como predeterminado</translation>
 <translation id="7136984461011502314">Te damos la bienvenida a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7136993520339022828">Se ha producido un error. Selecciona otras imágenes e inténtalo de nuevo.</translation>

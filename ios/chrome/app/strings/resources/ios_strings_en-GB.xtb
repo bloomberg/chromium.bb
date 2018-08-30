@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Show Tab Grid</translation>
 <translation id="162035744160882748">Turn on sync, personalisation and other Google services</translation>
 <translation id="1644574205037202324">History</translation>
-<translation id="1646446875146297738">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
-
-For example, some websites may respond to this request by showing you ads that aren't based on other websites which you've visited. Many websites will still collect and use your browsing data – for example, to improve security, to provide content, services, ads and recommendations on their websites and to generate reporting statistics. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
 <translation id="165877110639533037">No Open Tabs</translation>
 <translation id="1687475363370981210">Mark All Read</translation>
@@ -86,7 +83,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2320166752086256636">Hide keyboard</translation>
 <translation id="2339560363438331454">Sync and Google Services</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
-<translation id="2354750644801399986">‘Do Not Track’</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 selected</translation>

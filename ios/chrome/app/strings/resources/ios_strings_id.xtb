@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Tampilkan Grid Tab</translation>
 <translation id="162035744160882748">Aktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
 <translation id="1644574205037202324">Histori</translation>
-<translation id="1646446875146297738">Dengan mengaktifkan 'Jangan Lacak', permintaan akan disertakan dalam lalu lintas penjelajahan Anda. Pengaruh apa pun bergantung pada apakah situs web menanggapi permintaan atau tidak, dan cara permintaan diinterpretasikan.
-
-Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangkan iklan yang tidak didasarkan pada situs web lain yang telah Anda kunjungi. Banyak situs web yang masih akan mengumpulkan dan menggunakan data penjelajahan Anda - misalnya untuk meningkatkan keamanan, menyediakan konten, layanan, iklan, dan saran pada situs web mereka, serta membuat statistik laporan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Gagal berbagi karena tidak terhubung ke jaringan.</translation>
 <translation id="165877110639533037">Tidak Ada Tab yang Terbuka</translation>
 <translation id="1687475363370981210">Tandai Semua Sudah Dibaca</translation>
@@ -86,7 +83,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
 <translation id="2339560363438331454">Sinkronisasi dan Layanan Google</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
-<translation id="2354750644801399986">‘Jangan Lacak’</translation>
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="2381405137052800939">Dasar-Dasar</translation>
 <translation id="2386793615875593361">1 dipilih</translation>

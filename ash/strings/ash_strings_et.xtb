@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Mis on minu ekraanil?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laadimine …)</translation>
-<translation id="1841545962859478868">Seadme administraator võib jälgida järgmist:</translation>
 <translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
 <translation id="1864454756846565995">C-tüüpi USB-seade (tagumine port)</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
@@ -342,7 +341,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6972754398087986839">Alustamine</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="698231206551913481">Kõik selle kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui see kasutaja eemaldatakse.</translation>
-<translation id="7007100238996585961">Vastamine teises seadmes</translation>
 <translation id="7015766095477679451">Tulge tagasi kell <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
 <translation id="7037152028959403492">Vajutasite suure kontrastsusega režiimi otseteed. Kas soovite režiimi sisse lülitada?</translation>
@@ -356,7 +354,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7143207342074048698">Ühendamine</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
-<translation id="7228479291753472782">Muutke seadeid, mis määravad, kas veebisaidid saavad kasutada selliseid funktsioone nagu asukoha määramine, mikrofon, kaamera jne.</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
@@ -393,7 +390,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7846634333498149051">Klaviatuur</translation>
 <translation id="7886277072580235377">Teie Interneti-seanss kustutatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Saada meil</translation>
-<translation id="790040513076446191">Privaatsusega seotud seadete muutmine</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="7933084174919150729">Google'i assistent on saadaval ainult peamisel profiilil.</translation>
 <translation id="79341161159229895">Kontohaldurid: <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
 <translation id="8152119955266188852">Vajutasite täisekraani luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
-<translation id="8191230140820435481">Teie rakenduste, laienduste ja teemade haldamine</translation>
 <translation id="8192202700944119416">Märguanded on peidetud.</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8297006494302853456">Nõrk</translation>

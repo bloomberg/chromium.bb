@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Prikaz mreže zavihkov</translation>
 <translation id="162035744160882748">Vklop sinhronizacije, prilagajanja in drugih Googlovih storitev</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
-<translation id="1646446875146297738">Omogočena možnost »Ne sledi« pomeni, da bo v vaš promet brskanja vključena zahteva. Morebiten učinek je odvisen od tega, ali se spletno mesto odzove na zahtevo in kako si jo razlaga.
-
-Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglasov, ki niso povezani z drugimi spletnimi mesti, ki ste jih obiskali. Mnoga spletna mesta bodo še vedno zbirala in uporabljala vaše podatke o brskanju – na primer za izboljšanje varnosti, zagotavljanje vsebine, storitev, oglasov in priporočil na svojih spletnih mestih ter za pripravo statističnih podatkov za poročanje. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Deljenje z drugimi ni uspelo, ker niste povezani v omrežje.</translation>
 <translation id="165877110639533037">No Open Tabs</translation>
 <translation id="1687475363370981210">Označi vse kot prebrano</translation>
@@ -86,7 +83,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
 <translation id="2339560363438331454">Sinhr. in Googlove storitve</translation>
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
-<translation id="2354750644801399986">»Ne sledi«</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 izbrana</translation>

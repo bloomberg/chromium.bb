@@ -91,7 +91,7 @@
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
-<translation id="1307454923744766368">Orígens o patrons de nom d'amfitrió en què no s'han d'aplicar les restriccions sobre orígens no segurs.</translation>
+<translation id="1307454923744766368">Orígens o patrons de nom d'amfitrió en què no s'han d'aplicar les restriccions sobre orígens no segurs</translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
          Si s'estableix aquesta política, s'especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la. Quan s'ajusta el temps d'espera d'inactivitat de la pantalla, s'ajusten els retards de desconnexió, bloqueig i desactivació de la pantalla per mantenir les mateixes distàncies del temps d'espera d'inactivitat de la pantalla que la configuració original.
@@ -103,11 +103,11 @@
 <translation id="1327466551276625742">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.</translation>
 <translation id="1330145147221172764">Activa el teclat en pantalla</translation>
 <translation id="13356285923490863">Nom de la política</translation>
-<translation id="1352174694615491349">Aquesta política permet la coalescència de connexions HTTP/2 quan s'utilitzen certificats de client. Perquè es doni la coalescència, tant el nom d'amfitrió de la possible connexió nova com el d'una connexió existent han de coincidir amb un o més patrons descrits en aquesta política. La política és una llista d'amfitrions que fan servir el format del filtre URLBlacklist: "example.com" coincideix amb "example.com" i tots els seus subdominis (per exemple, "sub.example.com"), mentre que ".example.net" coincideix exactament amb "example.net".
+<translation id="1352174694615491349">Aquesta política permet la fusió de connexions HTTP/2 quan s'utilitzen certificats de client. Perquè es puguin fusionar, tant el nom d'amfitrió de la possible connexió nova com el d'una connexió existent han de coincidir amb un o més patrons descrits en aquesta política. La política és una llista d'amfitrions que fan servir el format del filtre URLBlacklist: "example.com" coincideix amb "example.com" i tots els seus subdominis (per exemple, "sub.example.com"), mentre que ".example.net" coincideix exactament amb "example.net".
 
-      La coalescència de sol·licituds amb diferents amfitrions en connexions que utilitzen certificats de client pot generar problemes de seguretat i privadesa, ja que l'autoritat d'ambient es comunicarà a totes les sol·licituds, fins i tot si l'usuari no ho ha autoritzat explícitament. Aquesta política és temporal i se suprimirà en una versió posterior. Consulta https://crbug.com/855690.
+      La fusió de sol·licituds amb diferents amfitrions en connexions que utilitzen certificats de client pot generar problemes de seguretat i privadesa, ja que l'autoritat d'ambient es comunicarà a totes les sol·licituds, fins i tot si l'usuari no ho ha autoritzat explícitament. Aquesta política és temporal i se suprimirà en una versió posterior. Consulta https://crbug.com/855690.
 
-      Si aquesta política es deixa sense definir, s'utilitzarà el comportament predeterminat de no permetre cap coalescència de connexions HTTP/2 en el cas de les connexions que fan servir certificats de client.</translation>
+      Si aquesta política es deixa sense definir, s'utilitzarà el comportament predeterminat: no permetre cap fusió de connexions HTTP/2 en connexions que utilitzin certificats de client.</translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
@@ -202,7 +202,7 @@
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
-<translation id="1615221548356595305">Permet la coalescència de connexions HTTP/2 per a aquests amfitrions fins i tot quan s'utilitzen certificats de client</translation>
+<translation id="1615221548356595305">Permet la fusió de connexions HTTP/2 per a aquests amfitrions fins i tot quan s'utilitzen certificats de client</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
 <translation id="1634989431648355062">Permet el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
@@ -2481,7 +2481,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
 <translation id="7980227303582973781">Sense restriccions especials</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
-<translation id="8033913082323846868">Aquesta política es considera obsoleta a M70; en lloc seu, utilitza AutofillAddressEnabled i AutofillCreditCardEnabled.
+<translation id="8033913082323846868">Aquesta política es considera obsoleta a M70; substitueix-la per AutofillAddressEnabled i AutofillCreditCardEnabled.
 
       Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin formularis web automàticament amb dades emmagatzemades anteriorment, com ara la informació de targetes de crèdit o d'adreces.
 

@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Što je na mojem zaslonu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (učitavanje...)</translation>
-<translation id="1841545962859478868">Administrator uređaja može nadzirati sljedeće:</translation>
 <translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="1864454756846565995">USB-C uređaj (stražnji priključak)</translation>
 <translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Početak upotrebe</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="698231206551913481">Sve datoteke i lokalni podaci povezani s ovim korisnikom trajno će se izbrisati nakon uklanjanja korisnika.</translation>
-<translation id="7007100238996585961">Odgovor na drugom uređaju</translation>
 <translation id="7015766095477679451">Vratite se u <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
 <translation id="7037152028959403492">Pritisnuli ste prečac za visoki kontrast. Želite li ga uključiti?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Povezivanje</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Upravljajte postavkama koje određuju mogu li web-lokacije upotrebljavati značajke kao što su geolociranje, mikrofon, fotoaparat itd.</translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7886277072580235377">Vaša će se internetska sesija izbrisati kada se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Pošalji e-poruku</translation>
-<translation id="790040513076446191">rukovati postavkama koje se odnose na privatnost</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7933084174919150729">Google asistent dostupan je samo za primarni profil.</translation>
 <translation id="79341161159229895">Računom upravljaju <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Privatna mreža</translation>
 <translation id="8152119955266188852">Pritisnuli ste prečac za povećalo za cijeli zaslon. Želite li ga uključiti?</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
-<translation id="8191230140820435481">upravljati vašim aplikacijama, proširenjima i temama</translation>
 <translation id="8192202700944119416">Obavijesti su skrivene.</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Slab</translation>

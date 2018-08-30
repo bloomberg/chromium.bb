@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Ce este pe ecranul meu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (se încarcă...)</translation>
-<translation id="1841545962859478868">Este posibil ca administratorul dispozitivului să monitorizeze următoarele:</translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Începe</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
-<translation id="7007100238996585961">Se răspunde pe un alt dispozitiv</translation>
 <translation id="7015766095477679451">Revino la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
 <translation id="7037152028959403492">Ai accesat comanda rapidă pentru contrast ridicat. Vrei să-l activezi?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Controlează setările care precizează dacă site-urile pot utiliza funcții, cum ar fi localizarea geografică, microfonul, camera foto etc.</translation>
 <translation id="7256634071279256947">Microfonul din spate</translation>
 <translation id="726276584504105859">Trage aici pentru a folosi ecranul împărțit</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Tastatură</translation>
 <translation id="7886277072580235377">Sesiunea de internet va fi anulată după ce te deconectezi. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Trimite un e-mail</translation>
-<translation id="790040513076446191">Manipulează setările privind confidențialitatea</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7933084174919150729">Asistentul Google este disponibil numai pentru profilul principal.</translation>
 <translation id="79341161159229895">Cont gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Rețea privată</translation>
 <translation id="8152119955266188852">Ai accesat comanda rapidă pentru lupa de ecran complet. Vrei să o activezi?</translation>
 <translation id="8190698733819146287">Personalizează limbile și modul de introducere...</translation>
-<translation id="8191230140820435481">Gestionează aplicațiile, extensiile și temele dvs.</translation>
 <translation id="8192202700944119416">Notificările sunt ascunse.</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8297006494302853456">Slab</translation>

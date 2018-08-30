@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítání...)</translation>
-<translation id="1841545962859478868">Správce zařízení může sledovat toto:</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
 <translation id="1864454756846565995">Zařízení USB Type-C (zadní port)</translation>
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Začínáme</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="698231206551913481">Po odebrání tohoto uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena.</translation>
-<translation id="7007100238996585961">Odpověď je sdělována na jiném zařízení</translation>
 <translation id="7015766095477679451">Vraťte se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
 <translation id="7037152028959403492">Stiskli jste klávesovou zkratku pro vysoký kontrast. Chcete ho zapnout?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Připojování</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Manipulovat s nastaveními, která udávají, zda weby mohou používat funkce jako jsou geolokace, mikrofon, fotoaparát apod.</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="726276584504105859">Chcete-li použít rozdělenou obrazovku, přetáhněte okno sem</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Klávesnice</translation>
 <translation id="7886277072580235377">Když se odhlásíte, vaše relace internetu se vymaže. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Poslat e‑mail</translation>
-<translation id="790040513076446191">Manipulovat s nastavením týkajícím se ochrany soukromí</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="7933084174919150729">Asistent Google je k dispozici pouze pro primární profil.</translation>
 <translation id="79341161159229895">Správci účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Soukromá síť</translation>
 <translation id="8152119955266188852">Stiskli jste klávesovou zkratku pro lupu celé obrazovky. Chcete ji zapnout?</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
-<translation id="8191230140820435481">Spravovat aplikace, rozšíření a motivy</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8297006494302853456">Slabý</translation>

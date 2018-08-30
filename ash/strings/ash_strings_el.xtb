@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Τι υπάρχει στην οθόνη μου;</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Βοηθός (φόρτωση…)</translation>
-<translation id="1841545962859478868">Ο διαχειριστής της συσκευής μπορεί να παρακολουθεί τα παρακάτω:</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
 <translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Έναρξη</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="698231206551913481">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με τον χρήστη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης.</translation>
-<translation id="7007100238996585961">Απάντηση σε άλλη συσκευή</translation>
 <translation id="7015766095477679451">Επιστρέψτε ξανά στις <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
 <translation id="7037152028959403492">Πατήσατε τη συντόμευση για την υψηλή αντίθεση. Θέλετε να την ενεργοποιήσετε;</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Χειριστείτε ρυθμίσεις οι οποίες καθορίζουν εάν οι ιστότοποι μπορούν να χρησιμοποιούν λειτουργίες, όπως τη γεωτοποθεσία, το μικρόφωνο, την κάμερα, κ.λπ.</translation>
 <translation id="7256634071279256947">Πίσω μικρόφωνο</translation>
 <translation id="726276584504105859">Σύρετε εδώ για να χρησιμοποιήσετε τον διαχωρισμό οθόνης</translation>
 <translation id="7348093485538360975">Πληκτρολόγιο οθόνης</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Πληκτρολόγιο</translation>
 <translation id="7886277072580235377">Η περίοδος σύνδεσής σας στο διαδίκτυο θα διαγραφεί μόλις αποσυνδεθείτε. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Αποστολή μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
-<translation id="790040513076446191">Διαχείριση ρυθμίσεων σχετικά με το απόρρητο</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="7933084174919150729">Ο Βοηθός Google είναι διαθέσιμος μόνο για το κύριο προφίλ.</translation>
 <translation id="79341161159229895">Ο λογαριασμός είναι διαχειριζόμενος από τους χρήστες <ph name="FIRST_PARENT_EMAIL" /> και <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
 <translation id="8152119955266188852">Πατήσατε τη συντόμευση για τον μεγεθυντικό φακό πλήρους οθόνης. Θέλετε να τον ενεργοποιήσετε;</translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
-<translation id="8191230140820435481">Διαχείριση των εφαρμογών, των επεκτάσεων και των θεμάτων σας</translation>
 <translation id="8192202700944119416">Οι ειδοποιήσεις είναι κρυφές.</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8297006494302853456">Αδύναμο</translation>

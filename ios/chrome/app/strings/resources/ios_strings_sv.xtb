@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Visa flikar i rutnät</translation>
 <translation id="162035744160882748">Aktivera synkronisering, anpassning och andra tjänster från Google</translation>
 <translation id="1644574205037202324">Historik</translation>
-<translation id="1646446875146297738">Om du aktiverar Do Not Track innebär det att en begäran skickas med webbtrafiken. Vad som händer sedan beror på om webbplatserna svarar på din begäran och hur begäran tolkas.
-
-En del webbplatser kan till exempel svara genom att visa annonser som inte baseras på webbplatser du har besökt tidigare. Många webbplatser fortsätter att samla in och använda din webbinformation, till exempel för att förbättra säkerheten, för att erbjuda innehåll, tjänster, annonser och rekommendationer på sina webbplatser och för att generera statistik för rapporteringsändamål. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Det går inte att dela. Du är inte ansluten till nätverket.</translation>
 <translation id="165877110639533037">Inga öppna flikar</translation>
 <translation id="1687475363370981210">Markera alla som lästa</translation>
@@ -86,7 +83,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2320166752086256636">Dölj tangentbordet</translation>
 <translation id="2339560363438331454">Synk och Googles tjänster</translation>
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
-<translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2381405137052800939">Grunderna</translation>
 <translation id="2386793615875593361">1 markerat foto</translation>

@@ -123,7 +123,6 @@
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
-<translation id="5514308096618405748">Chrome OS, как и Linux (бета-версия), работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS перезапустится через 1 минуту}one{Chromium OS перезапустится через # минуту}few{Chromium OS перезапустится через # минуты}many{Chromium OS перезапустится через # минут}other{Chromium OS перезапустится через # минуты}}</translation>
 <translation id="5631814766731275228">Имя и изображение профиля Chromium</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>

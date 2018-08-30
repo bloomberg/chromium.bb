@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">माझ्या स्क्रीनवर काय आहे?</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
-<translation id="1841545962859478868">डिव्हाइस प्रशासक कदाचित खालील गोष्टींचे परीक्षण करू शकतो:</translation>
 <translation id="1850504506766569011">वाय-फाय बंद आहे.</translation>
 <translation id="1864454756846565995">USB-C डिव्‍हाइस (मागील बाजूचे पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">प्रारंभ करा</translation>
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
-<translation id="7007100238996585961">दुसऱ्या डिव्हाइसवर उत्तर देत आहे</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
 <translation id="7037152028959403492">तुम्ही उच्च कॉंट्रास्टसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">कनेक्ट करीत आहे</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
-<translation id="7228479291753472782">वेबसाइट भौगोलिक स्थान, मायक्रोफोन, कॅमेरा, इ. वैशिष्‍ट्ये वापरू शकतात किंवा नाही ते निर्दिष्ट करणार्‍या सेटिंग्ज कुशलतेने हाताळा.</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="726276584504105859">विभाजित स्क्रीन वापरण्यासाठी येथे ड्रॅग करा</translation>
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="7886277072580235377">तुम्ही साइन आउट केल्यावर तुमचे इंटरनेट सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ईमेल पाठवा</translation>
-<translation id="790040513076446191">गोपनीयतेशी-संबद्ध सेटिंग्ज कुशलतेने हाताळा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
 <translation id="8152119955266188852">तुम्ही पूर्ण-स्क्रीन मॅग्निफायर शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट सानुकूलित करा...</translation>
-<translation id="8191230140820435481">आपले अॅप्लिकेशन, विस्तार आणि थीम व्यवस्थापित करा</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8297006494302853456">कमकुवत</translation>
