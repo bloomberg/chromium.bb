@@ -246,14 +246,14 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
 
 ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
     : shelf_(shelf),
+      background_animator_(SHELF_BACKGROUND_DEFAULT,
+                           shelf_,
+                           Shell::Get()->wallpaper_controller()),
       delegate_view_(new DelegateView(this)),
       shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),
-      background_animator_(SHELF_BACKGROUND_DEFAULT,
-                           shelf_,
-                           Shell::Get()->wallpaper_controller()),
       scoped_session_observer_(this) {
   DCHECK(shelf_container);
   DCHECK(shelf_);

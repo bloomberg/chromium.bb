@@ -143,6 +143,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   Shelf* shelf_;
 
+  ShelfBackgroundAnimator background_animator_;
+
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
@@ -164,8 +166,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Do not focus the default element in this case. This should be set when
   // cycling focus from the overflow bubble to the main shelf.
   bool activated_from_overflow_bubble_ = false;
-
-  ShelfBackgroundAnimator background_animator_;
 
   ScopedSessionObserver scoped_session_observer_;
 
