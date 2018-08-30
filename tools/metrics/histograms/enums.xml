@@ -51437,6 +51437,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Get shortcut path failed"/>
   <int value="2" label="Shortcut missing"/>
   <int value="3" label="Toast activator CLSID incorrect"/>
+  <int value="4" label="Read shortcut property failed"/>
 </enum>
 
 <enum name="WindowsNotificationStartMenuShortStatus">
@@ -51456,6 +51457,15 @@ Full version information for the fingerprint enum values:
   </obsolete>
   <int value="0" label="Last opened profile is non-empty"/>
   <int value="1" label="Cannot open last used profile"/>
+</enum>
+
+<enum name="WindowsToastActivatorCLSIDMismatchReason">
+  <int value="0" label="Shortcut CLSID is Stable"/>
+  <int value="1" label="Shortcut CLSID is Beta"/>
+  <int value="2" label="Shortcut CLSID is Dev"/>
+  <int value="3" label="Shortcut CLSID is Chromium"/>
+  <int value="4" label="Shortcut CLSID is Null"/>
+  <int value="5" label="Shortcut CLSID is Unknown"/>
 </enum>
 
 <enum name="WindowsVersion">
