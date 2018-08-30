@@ -486,8 +486,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   // items.
   if (style->Display() == EDisplay::kTableRow) {
     ProcessChildrenWithRequiredLineBreaks(node, 0);
-    // Note: The node with "display:table-row" should have |LayoutTableRow|.
-    if (ShouldEmitNewlineForTableRow(ToLayoutTableRow(layout_object)))
+    if (layout_object.IsTableRow() &&
+        ShouldEmitNewlineForTableRow(ToLayoutTableRow(layout_object)))
       result_.EmitNewline();
     return;
   }
