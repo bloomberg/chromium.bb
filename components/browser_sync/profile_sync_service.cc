@@ -1633,7 +1633,12 @@ void ProfileSyncService::ConfigureDataTypeManager(
     if (base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableAccountWalletStorage) &&
         base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-      allowed_types.Put(syncer::AUTOFILL_WALLET_DATA);
+      if (!IsUsingSecondaryPassphrase() ||
+          base::FeatureList::IsEnabled(
+              switches::
+                  kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {
+        allowed_types.Put(syncer::AUTOFILL_WALLET_DATA);
+      }
     }
 
     types = Intersection(types, allowed_types);
