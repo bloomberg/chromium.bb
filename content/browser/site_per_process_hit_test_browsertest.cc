@@ -1166,14 +1166,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scroll_end_observer.Wait();
 }
 
-#if defined(OS_LINUX)
-// The test is flaky on Linux:  https://crbug.com/833380.
-#define MAYBE_BubbledScrollEventsTransformedCorrectly \
-  DISABLED_BubbledScrollEventsTransformedCorrectly
-#else
-#define MAYBE_BubbledScrollEventsTransformedCorrectly \
-  BubbledScrollEventsTransformedCorrectly
-#endif
 // When a scroll event is bubbled, ensure that the bubbled event's coordinates
 // are correctly updated to the ancestor's coordinate space. In particular,
 // ensure that the transformation considers CSS scaling of the child where
@@ -1181,7 +1173,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // coordinates in the ancestor's coordinate space.
 // See https://crbug.com/817392
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_BubbledScrollEventsTransformedCorrectly) {
+                       BubbledScrollEventsTransformedCorrectly) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_scaled_frame.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
