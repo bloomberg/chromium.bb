@@ -38,7 +38,6 @@ js_type_check("closure_compile") {
     ":metadata_box_controller",
     ":metadata_update_controller",
     ":metrics_start",
-    ":mouse_inactivity_watcher",
     ":naming_controller",
     ":navigation_list_model",
     ":navigation_uma",
@@ -443,9 +442,6 @@ js_library("metrics_start") {
   deps = [
     "../../common/js:metrics",
   ]
-}
-
-js_library("mouse_inactivity_watcher") {
 }
 
 js_library("naming_controller") {
