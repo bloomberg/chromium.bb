@@ -762,3 +762,80 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
 
   prompt_factory.reset();
 }
+
+TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
+  const char* kOrigin1 = "https://example.com";
+  const char* kOrigin2 = "https://google.com";
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+
+  NavigateAndCommit(GURL(kOrigin1));
+  content::RenderFrameHost* parent = main_rfh();
+  content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
+
+  int subscription_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, child, GURL(kOrigin2),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+  EXPECT_FALSE(callback_called());
+
+  // Location should be blocked for the child because it's not delegated.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  // Allow access for the top level origin.
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  // The child's permission should still be block and no callback should be run.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  EXPECT_FALSE(callback_called());
+
+  // Enabling geolocation by FP should allow the child to request access also.
+  RefreshPageAndSetHeaderPolicy(
+      &parent, blink::mojom::FeaturePolicyFeature::kGeolocation,
+      {kOrigin1, kOrigin2});
+  child = AddChildRFH(parent, kOrigin2);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  subscription_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, child, GURL(kOrigin2),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+  EXPECT_FALSE(callback_called());
+
+  // Blocking access to the parent should trigger the callback to be run for the
+  // child also.
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::DENIED, callback_result());
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  GetPermissionControllerDelegate()->UnsubscribePermissionStatusChange(
+      subscription_id);
+}
