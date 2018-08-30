@@ -299,7 +299,7 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
 
 const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserConsentSpecifics, Feature,
-                     FEATURE_UNSPECIFIED, CHROME_UNIFIED_CONSENT);
+                     FEATURE_UNSPECIFIED, ASSISTANT_ACTIVITY_CONTROL);
   switch (feature) {
     ENUM_CASE(sync_pb::UserConsentSpecifics, FEATURE_UNSPECIFIED);
     ENUM_CASE(sync_pb::UserConsentSpecifics, CHROME_SYNC);
@@ -307,6 +307,7 @@ const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature) {
     ENUM_CASE(sync_pb::UserConsentSpecifics, BACKUP_AND_RESTORE);
     ENUM_CASE(sync_pb::UserConsentSpecifics, GOOGLE_LOCATION_SERVICE);
     ENUM_CASE(sync_pb::UserConsentSpecifics, CHROME_UNIFIED_CONSENT);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, ASSISTANT_ACTIVITY_CONTROL);
   }
   NOTREACHED();
   return "";
