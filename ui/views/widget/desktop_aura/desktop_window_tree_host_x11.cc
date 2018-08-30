@@ -20,6 +20,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/class_property.h"
@@ -38,7 +39,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -2368,10 +2368,9 @@ DesktopWindowTreeHostX11::DisableEventListening() {
   modal_dialog_counter_++;
   if (modal_dialog_counter_ == 1) {
     // ScopedWindowTargeter is used to temporarily replace the event-targeter
-    // with NullEventTargeter to make |dialog| modal.
-    targeter_for_modal_.reset(new aura::ScopedWindowTargeter(
-        window(),
-        std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
+    // with NullWindowEventTargeter to make |dialog| modal.
+    targeter_for_modal_ = std::make_unique<aura::ScopedWindowTargeter>(
+        window(), std::make_unique<aura::NullWindowTargeter>());
   }
 
   return std::make_unique<base::OnceClosure>(

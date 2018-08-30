@@ -987,8 +987,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
       ash::Shell::GetAshConfig() == ash::Config::CLASSIC
           ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
           : ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
-  window->SetEventTargeter(base::WrapUnique(
-      new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
+  window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(
+      widget_, client_controlled_move_resize_));
   SetApplicationId(window, application_id_);
   SetStartupId(window, startup_id_);
   SetMainSurface(window, root_surface());

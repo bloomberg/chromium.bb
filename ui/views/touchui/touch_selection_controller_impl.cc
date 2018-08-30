@@ -252,7 +252,7 @@ class TouchSelectionControllerImpl::EditingHandleView
 
     aura::Window* window = widget_->GetNativeWindow();
     targeter_ = new TouchHandleWindowTargeter(window);
-    window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(targeter_));
+    window->SetEventTargeter(std::unique_ptr<aura::WindowTargeter>(targeter_));
 
     // We are owned by the TouchSelectionControllerImpl.
     set_owned_by_client();

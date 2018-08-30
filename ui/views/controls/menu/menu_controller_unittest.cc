@@ -16,7 +16,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/null_event_targeter.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -35,6 +34,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
@@ -648,11 +648,11 @@ class MenuControllerTest : public ViewsTestBase {
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
   {
-    // With the |ui::NullEventTargeter| instantiated and assigned we expect
+    // With the aura::NullWindowTargeter instantiated and assigned we expect
     // the menu to not handle the key event.
     aura::ScopedWindowTargeter scoped_targeter(
         owner()->GetNativeWindow()->GetRootWindow(),
-        std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+        std::make_unique<aura::NullWindowTargeter>());
     PressKey(ui::VKEY_ESCAPE);
     EXPECT_EQ(MenuController::EXIT_NONE, menu_exit_type());
   }

@@ -193,7 +193,7 @@ Surface::Surface()
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
+  window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>());
   window_->set_owned_by_parent(false);
   WMHelper::GetInstance()->SetDragDropDelegate(window_.get());
 }

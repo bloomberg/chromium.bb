@@ -3169,9 +3169,8 @@ TEST_F(WindowEventDispatcherMusTest, TargetCaptureWindow) {
   NonClientDelegate w2_child_delegate;
   std::unique_ptr<Window> w2_child(
       CreateNormalWindow(-1, w2.get(), &w2_child_delegate));
-  ExplicitWindowTargeter* w2_targeter =
-      new ExplicitWindowTargeter(w2_child.get());
-  w2->SetEventTargeter(base::WrapUnique(w2_targeter));
+  w2->SetEventTargeter(
+      std::make_unique<ExplicitWindowTargeter>(w2_child.get()));
   w2->SetCapture();
   ASSERT_TRUE(w2->HasCapture());
   const gfx::Point root_location(100, 200);

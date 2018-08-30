@@ -16,6 +16,7 @@
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/mus/input_method_mus.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ui_base_features.h"
@@ -128,8 +129,7 @@ void AshWindowTreeHostPlatform::PrepareForShutdown() {
   // ScreenPositionClient not to be attached to the root window and for
   // ui::EventHandlers to be unable to convert the event's location to screen
   // coordinates.
-  window()->SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+  window()->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
 
   // Do anything platform specific necessary before shutdown (eg. stop
   // listening for configuration XEvents).

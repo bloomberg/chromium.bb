@@ -7,12 +7,13 @@
 #include <utility>
 
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 
 namespace aura {
 
 ScopedWindowTargeter::ScopedWindowTargeter(
     Window* window,
-    std::unique_ptr<ui::EventTargeter> new_targeter)
+    std::unique_ptr<WindowTargeter> new_targeter)
     : window_(window),
       old_targeter_(window->SetEventTargeter(std::move(new_targeter))) {
   window_->AddObserver(this);
@@ -27,7 +28,7 @@ ScopedWindowTargeter::~ScopedWindowTargeter() {
 
 void ScopedWindowTargeter::OnWindowDestroyed(Window* window) {
   CHECK_EQ(window_, window);
-  window_ = NULL;
+  window_ = nullptr;
   old_targeter_.reset();
 }
 

@@ -24,7 +24,8 @@ namespace {
 
 class WideFrameTargeter : public aura::WindowTargeter {
  public:
-  WideFrameTargeter(HeaderView* header_view) : header_view_(header_view) {}
+  explicit WideFrameTargeter(HeaderView* header_view)
+      : header_view_(header_view) {}
   ~WideFrameTargeter() override = default;
 
   // aura::WindowTargeter:

@@ -66,6 +66,7 @@ class ScopedKeyboardHook;
 class WindowDelegate;
 class WindowObserver;
 class WindowPortForShutdown;
+class WindowTargeter;
 class WindowTreeHost;
 
 // Defined in class_property.h (which we do not include)
@@ -217,9 +218,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Sets a new event-targeter for the window, and returns the previous
   // event-targeter.
-  std::unique_ptr<ui::EventTargeter> SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter> targeter);
-  ui::EventTargeter* targeter() { return targeter_.get(); }
+  std::unique_ptr<WindowTargeter> SetEventTargeter(
+      std::unique_ptr<WindowTargeter> targeter);
+  WindowTargeter* targeter() { return targeter_.get(); }
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.
@@ -625,7 +626,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool transparent_;
 
   std::unique_ptr<LayoutManager> layout_manager_;
-  std::unique_ptr<ui::EventTargeter> targeter_;
+  std::unique_ptr<WindowTargeter> targeter_;
 
   // Makes the window pass all events through to any windows behind it.
   ws::mojom::EventTargetingPolicy event_targeting_policy_;
