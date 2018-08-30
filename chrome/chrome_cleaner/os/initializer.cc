@@ -15,7 +15,6 @@
 #include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
-#include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 
 namespace chrome_cleaner {
@@ -48,7 +47,6 @@ std::unique_ptr<base::WaitableEvent> SignalInitializationDone() {
 }  // namespace
 
 bool InitializeOSUtils() {
-  chrome_cleaner::InitializeFilePathSanitization();
   chrome_cleaner::InitializeDiskUtil();
 
   if (!chrome_cleaner::PreFetchedPaths::GetInstance()->Initialize()) {

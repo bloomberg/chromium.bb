@@ -32,6 +32,7 @@
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/chrome_cleaner/constants/version.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "chrome/chrome_cleaner/os/layered_service_provider_api.h"
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
@@ -232,7 +233,8 @@ base::FilePath AppendProductPath(const base::FilePath& base_path) {
     return base_path.Append(file_version_info->company_short_name())
         .Append(file_version_info->product_short_name());
   } else {
-    return base_path.Append(L"Google").Append(L"Chrome Cleanup Tool Test");
+    return base_path.Append(COMPANY_SHORTNAME_STRING)
+        .Append(L"Chrome Cleanup Tool Test");
   }
 }
 
@@ -444,15 +446,11 @@ bool ExpandEnvPath(const base::FilePath& path, base::FilePath* expanded_path) {
 void ExpandWow64Path(const base::FilePath& path,
                      base::FilePath* expanded_path) {
   DCHECK(expanded_path);
-  base::FilePath system_path;
+  base::FilePath system_path =
+      PreFetchedPaths::GetInstance()->GetCsidlSystemFolder();
 
   *expanded_path = path;
 
-  if (!base::PathService::Get(CsidlToPathServiceKey(CSIDL_SYSTEM),
-                              &system_path)) {
-    LOG(ERROR) << "Can't retrieve system directory.";
-    return;
-  }
   base::FilePath native_path = system_path.DirName().Append(L"sysnative");
   if (system_path.IsParent(path) &&
       system_path.AppendRelativePath(path, &native_path) &&

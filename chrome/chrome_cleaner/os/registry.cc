@@ -29,6 +29,13 @@ const wchar_t* HKeyToString(HKEY hkey) {
     return L"<unknown>";
 }
 
+bool IsPredefinedRegistryRootKey(HKEY key) {
+  return key == nullptr || key == INVALID_HANDLE_VALUE ||
+         key == HKEY_CLASSES_ROOT || key == HKEY_CURRENT_CONFIG ||
+         key == HKEY_CURRENT_USER || key == HKEY_LOCAL_MACHINE ||
+         key == HKEY_USERS;
+}
+
 }  // namespace
 
 bool GetNativeKeyPath(const base::win::RegKey& key,
@@ -67,13 +74,16 @@ bool GetNativeKeyPath(const base::win::RegKey& key,
 RegKeyPath::RegKeyPath() : rootkey_(nullptr), wow64access_(0) {}
 
 RegKeyPath::RegKeyPath(HKEY rootkey, const base::string16& subkey)
-    : RegKeyPath(rootkey, subkey, 0) {}
+    : RegKeyPath(rootkey, subkey, 0) {
+  DCHECK(IsPredefinedRegistryRootKey(rootkey));
+}
 
 RegKeyPath::RegKeyPath(HKEY rootkey,
                        const base::string16& subkey,
                        REGSAM wow64access)
     : rootkey_(rootkey), subkey_(subkey), wow64access_(wow64access) {
   DCHECK_NE(static_cast<HKEY>(nullptr), rootkey_);
+  DCHECK(IsPredefinedRegistryRootKey(rootkey));
   DCHECK(wow64access_ == KEY_WOW64_32KEY || wow64access_ == KEY_WOW64_64KEY ||
          wow64access_ == 0);
 }

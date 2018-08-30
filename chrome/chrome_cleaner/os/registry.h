@@ -26,6 +26,10 @@ bool GetNativeKeyPath(const base::win::RegKey& key,
 
 // Utility class to store a registry key path. Unlike a RegKey, this class is
 // copy/moveable.
+// It stores |rootkey|, which must be a predefined registry root key.
+// TODO(veranika): to make the requirement of a predefined registry root key
+// explicit, change the constructors to take the PredefinedHandle enum instead
+// of the broader HKEY.
 class RegKeyPath {
  public:
   RegKeyPath();

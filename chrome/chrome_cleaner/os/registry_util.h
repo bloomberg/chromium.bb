@@ -53,6 +53,17 @@ struct RegistryValue {
 // The key for program uninstallers.
 extern const wchar_t kUninstallerKeyPath[];
 
+// The key for Chrome policies.
+extern const wchar_t kChromePoliciesKeyPath[];
+
+// The keys for the Chrome policy forcelist and whitelist.
+extern const wchar_t kChromePoliciesForcelistKeyPath[];
+extern const wchar_t kChromePoliciesWhitelistKeyPath[];
+
+// The keys for the Chromium policy forcelist and whitelist.
+extern const wchar_t kChromiumPoliciesForcelistKeyPath[];
+extern const wchar_t kChromiumPoliciesWhitelistKeyPath[];
+
 // Returns a string representation of the registry value type.
 base::string16 RegistryValueTypeToString(DWORD value_type);
 

@@ -125,6 +125,18 @@ void CollectMatchingRegistryPathsRecursive(
 const wchar_t kUninstallerKeyPath[] =
     L"software\\microsoft\\windows\\currentversion\\uninstall";
 
+const wchar_t kChromePoliciesKeyPath[] = L"software\\policies\\google\\chrome";
+
+const wchar_t kChromePoliciesForcelistKeyPath[] =
+    L"software\\policies\\google\\chrome\\ExtensionInstallForcelist";
+const wchar_t kChromePoliciesWhitelistKeyPath[] =
+    L"software\\policies\\google\\chrome\\ExtensionInstallWhitelist";
+
+const wchar_t kChromiumPoliciesForcelistKeyPath[] =
+    L"software\\policies\\chromium\\ExtensionInstallForcelist";
+const wchar_t kChromiumPoliciesWhitelistKeyPath[] =
+    L"software\\policies\\chromium\\ExtensionInstallWhitelist";
+
 base::string16 RegistryValueTypeToString(DWORD value_type) {
   switch (value_type) {
     case REG_BINARY:
@@ -147,7 +159,7 @@ base::string16 RegistryValueTypeToString(DWORD value_type) {
       return L"REG_SZ";
     default:
       LOG(WARNING) << "Unknown registry value type (" << value_type << ").";
-      return base::StringPrintf(L"%lu", value_type);
+      return base::NumberToString16(value_type);
   }
 }
 
