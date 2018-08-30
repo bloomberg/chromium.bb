@@ -21,10 +21,12 @@ class CastDialogSinkButton : public HoverButton {
   // Icon sizes in DIP. These values are also used by the "no devices" view for
   // consistency.
   static int kPrimaryIconSize;
+  static int kPrimaryIconBorderWidth;
   static int kSecondaryIconSize;
 
   CastDialogSinkButton(views::ButtonListener* button_listener,
-                       const UIMediaSink& sink);
+                       const UIMediaSink& sink,
+                       int button_tag);
   ~CastDialogSinkButton() override;
 
   // views::View:
