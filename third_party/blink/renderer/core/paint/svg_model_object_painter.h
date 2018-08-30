@@ -16,6 +16,13 @@ class SVGModelObjectPainter {
   STACK_ALLOCATED();
 
  public:
+  // Paint a hit test display item and record hit test data. This should be
+  // called when painting the background even if there is no other painted
+  // content. SVG backgrounds are painted in the kForeground paint phase.
+  static void RecordHitTestData(
+      const LayoutSVGModelObject& layout_svg_model_object,
+      const PaintInfo&);
+
   SVGModelObjectPainter(const LayoutSVGModelObject& layout_svg_model_object)
       : layout_svg_model_object_(layout_svg_model_object) {}
 

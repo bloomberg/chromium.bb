@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_model_object.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
 
 namespace blink {
 
@@ -26,6 +27,26 @@ bool SVGModelObjectPainter::CullRectSkipsPainting(const PaintInfo& paint_info) {
   return !paint_info.GetCullRect().IntersectsCullRect(
       layout_svg_model_object_.LocalToSVGParentTransform(),
       layout_svg_model_object_.VisualRectInLocalSVGCoordinates());
+}
+
+void SVGModelObjectPainter::RecordHitTestData(
+    const LayoutSVGModelObject& layout_svg_model_object,
+    const PaintInfo& paint_info) {
+  DCHECK(paint_info.phase == PaintPhase::kForeground);
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  auto touch_action = layout_svg_model_object.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect =
+      LayoutRect(layout_svg_model_object.VisualRectInLocalSVGCoordinates());
+  HitTestData::RecordTouchActionRect(paint_info.context,
+                                     layout_svg_model_object,
+                                     TouchActionRect(rect, touch_action));
 }
 
 void SVGModelObjectPainter::PaintOutline(const PaintInfo& paint_info) {
