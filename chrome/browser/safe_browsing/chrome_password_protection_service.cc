@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,6 +39,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
@@ -64,6 +66,7 @@
 
 using content::BrowserThread;
 using sync_pb::UserEventSpecifics;
+using GaiaPasswordCaptured = UserEventSpecifics::GaiaPasswordCaptured;
 using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
 using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;
@@ -83,6 +86,10 @@ const int kPasswordEventAttributionUserGestureLimit = 2;
 // If user specifically mark a site as legitimate, we will keep this decision
 // for 2 days.
 const int kOverrideVerdictCacheDurationSec = 2 * 24 * 60 * 60;
+
+// Frequency to log PasswordCapture event log. Random 24-28 days.
+const int kPasswordCaptureEventLogFreqDaysMin = 24;
+const int kPasswordCaptureEventLogFreqDaysExtra = 4;
 
 int64_t GetMicrosecondsSinceWindowsEpoch(base::Time time) {
   return (time - base::Time()).InMicroseconds();
@@ -162,6 +169,32 @@ int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
              : 0;
 }
 
+// Return a new UserEventSpecifics w/o the navigation_id populated
+std::unique_ptr<UserEventSpecifics> GetNewUserEventSpecifics() {
+  auto specifics = std::make_unique<UserEventSpecifics>();
+  specifics->set_event_time_usec(
+      GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
+  return specifics;
+}
+
+// Return a new UserEventSpecifics w/ the navigation_id populated
+std::unique_ptr<UserEventSpecifics> GetUserEventSpecificsWithNavigationId(
+    int64_t navigation_id) {
+  if (navigation_id <= 0)
+    return nullptr;
+
+  auto specifics = GetNewUserEventSpecifics();
+  specifics->set_navigation_id(navigation_id);
+  return specifics;
+}
+
+// Return a new UserEventSpecifics populated from the web_contents
+std::unique_ptr<UserEventSpecifics> GetUserEventSpecifics(
+    content::WebContents* web_contents) {
+  return GetUserEventSpecificsWithNavigationId(
+      GetLastCommittedNavigationID(web_contents));
+}
+
 }  // namespace
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
@@ -199,14 +232,36 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       base::BindRepeating(
           &ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged,
           base::Unretained(this)));
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile->GetPrefs());
-  base::Optional<password_manager::PasswordHashData> sync_hash_data =
-      hash_password_manager.RetrievePasswordHash(GetAccountInfo().email,
-                                                 /*is_gaia_password=*/true);
-  sync_password_hash_ = sync_hash_data
-                            ? base::NumberToString(sync_hash_data->hash)
-                            : std::string();
+
+  // TODO(nparker) Move the rest of the above code into Init()
+  // without crashing unittests.
+  Init();
+}
+
+void ChromePasswordProtectionService::Init() {
+  // This code is shared by the normal ctor and testing ctor.
+
+  sync_password_hash_ = GetSyncPasswordHashFromPrefs();
+  if (!sync_password_hash_.empty()) {
+    // Set a timer for when next to log the PasswordCapture event. The timer
+    // value is stored in a pref to carry across restarts.
+    base::TimeDelta delay =
+        GetDelayFromPref(profile_->GetPrefs(),
+                         prefs::kSafeBrowsingNextPasswordCaptureEventLogTime);
+
+    // Bound it between 1 min and 28 days. Handles clock-resets.  We wait
+    // 1 min to not slowdown browser-startup, and to improve the
+    // probability that the sync system is initialized.
+    base::TimeDelta min_delay = base::TimeDelta::FromMinutes(1);
+    base::TimeDelta max_delay =
+        base::TimeDelta::FromDays(kPasswordCaptureEventLogFreqDaysMin +
+                                  kPasswordCaptureEventLogFreqDaysExtra);
+    if (delay < min_delay)
+      delay = min_delay;
+    else if (delay > max_delay)
+      delay = max_delay;
+    SetLogPasswordCaptureTimer(delay);
+  }
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
@@ -308,6 +363,19 @@ void ChromePasswordProtectionService::FillReferrerChain(
                : 0u;
   navigation_observer_manager_->AppendRecentNavigations(
       recent_navigations_to_collect, frame->mutable_referrer_chain());
+}
+
+std::string ChromePasswordProtectionService::GetSyncPasswordHashFromPrefs() {
+  if (!sync_password_hash_provider_for_testing_.is_null())
+    return sync_password_hash_provider_for_testing_.Run();
+
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile_->GetPrefs());
+  base::Optional<password_manager::PasswordHashData> sync_hash_data =
+      hash_password_manager.RetrievePasswordHash(GetAccountInfo().email,
+                                                 /*is_gaia_password=*/true);
+  return sync_hash_data ? base::NumberToString(sync_hash_data->hash)
+                        : std::string();
 }
 
 void ChromePasswordProtectionService::ShowModalWarning(
@@ -630,25 +698,6 @@ ChromePasswordProtectionService::GetSyncAccountType() const {
              : PasswordReuseEvent::GSUITE;
 }
 
-std::unique_ptr<UserEventSpecifics>
-ChromePasswordProtectionService::GetUserEventSpecificsWithNavigationId(
-    int64_t navigation_id) {
-  if (navigation_id <= 0)
-    return nullptr;
-
-  auto specifics = std::make_unique<UserEventSpecifics>();
-  specifics->set_event_time_usec(
-      GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
-  specifics->set_navigation_id(navigation_id);
-  return specifics;
-}
-
-std::unique_ptr<UserEventSpecifics>
-ChromePasswordProtectionService::GetUserEventSpecifics(
-    content::WebContents* web_contents) {
-  return GetUserEventSpecificsWithNavigationId(
-      GetLastCommittedNavigationID(web_contents));
-}
 
 void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupResult(
     content::WebContents* web_contents,
@@ -762,6 +811,50 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
   }
 }
 
+void ChromePasswordProtectionService::SetLogPasswordCaptureTimer(
+    const base::TimeDelta& delay) {
+  // This will replace any pending timer.
+  log_password_capture_timer_.Start(
+      FROM_HERE, delay,
+      base::BindOnce(&ChromePasswordProtectionService::MaybeLogPasswordCapture,
+                     base::Unretained(this), false));
+}
+
+void ChromePasswordProtectionService::MaybeLogPasswordCapture(bool did_log_in) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If logging is disabled, we'll skip this event and not set a timer. When the
+  // user logs in in the future, MaybeLogPasswordCapture() will be called
+  // immediately then and will restart the timer.
+  if (!IsEventLoggingEnabled() || sync_password_hash_.empty())
+    return;
+
+  syncer::UserEventService* user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile_);
+  if (!user_event_service)
+    return;
+
+  std::unique_ptr<UserEventSpecifics> specifics = GetNewUserEventSpecifics();
+  auto* const password_captured =
+      specifics->mutable_gaia_password_captured_event();
+  password_captured->set_event_trigger(
+      did_log_in ? GaiaPasswordCaptured::USER_LOGGED_IN
+                 : GaiaPasswordCaptured::EXPIRED_28D_TIMER);
+
+  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
+  user_event_service->RecordUserEvent(std::move(specifics));
+
+  // Set a timer to log it again in 24-28 days. Spread it to avoid hammering the
+  // backend with fixed cycle after this code lands in Stable.
+  base::TimeDelta delay = base::TimeDelta::FromDays(
+      (kPasswordCaptureEventLogFreqDaysMin +
+       base::RandInt(0, kPasswordCaptureEventLogFreqDaysExtra)));
+  SetLogPasswordCaptureTimer(delay);
+
+  // Write the deadline to a pref to carry over restarts.
+  SetDelayInPref(profile_->GetPrefs(),
+                 prefs::kSafeBrowsingNextPasswordCaptureEventLogTime, delay);
+}
+
 void ChromePasswordProtectionService::UpdateSecurityState(
     SBThreatType threat_type,
     ReusedPasswordType password_type,
@@ -826,15 +919,7 @@ void ChromePasswordProtectionService::
 }
 
 void ChromePasswordProtectionService::CheckGaiaPasswordChange() {
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile_->GetPrefs());
-  base::Optional<password_manager::PasswordHashData>
-      new_sync_password_hash_data = hash_password_manager.RetrievePasswordHash(
-          GetAccountInfo().email, /*is_gaia_password=*/true);
-  std::string new_sync_password_hash =
-      new_sync_password_hash_data
-          ? base::NumberToString(new_sync_password_hash_data->hash)
-          : std::string();
+  std::string new_sync_password_hash = GetSyncPasswordHashFromPrefs();
   if (sync_password_hash_ != new_sync_password_hash) {
     sync_password_hash_ = new_sync_password_hash;
     OnGaiaPasswordChanged();
@@ -847,6 +932,7 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
   LogNumberOfReuseBeforeSyncPasswordChange(
       unhandled_sync_password_reuses->size());
   unhandled_sync_password_reuses->Clear();
+  MaybeLogPasswordCapture(/*did_log_in=*/true);
   for (auto& observer : observer_list_)
     observer.OnGaiaPasswordChanged();
   if (GetSyncAccountType() == PasswordReuseEvent::GSUITE)
@@ -1046,14 +1132,18 @@ void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     Profile* profile,
     scoped_refptr<HostContentSettingsMap> content_setting_map,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    StringProvider sync_password_hash_provider)
     : PasswordProtectionService(nullptr,
                                 nullptr,
                                 nullptr,
                                 content_setting_map.get()),
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
-      profile_(profile) {}
+      profile_(profile),
+      sync_password_hash_provider_for_testing_(sync_password_hash_provider) {
+  Init();
+}
 
 std::unique_ptr<PasswordProtectionNavigationThrottle>
 MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {

@@ -38,6 +38,7 @@
 #endif
 
 using base::Time;
+using PasswordCaptured = sync_pb::UserEventSpecifics::GaiaPasswordCaptured;
 using PasswordReuseLookup =
     sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup;
 using PasswordReuseDetected =
@@ -557,6 +558,29 @@ base::DictionaryValue SerializePGEvent(
   result.SetDouble("time", timestamp.ToJsTime());
 
   base::DictionaryValue event_dict;
+
+  // Nominally only one of the following if() statements would be true.
+  // Note that top-level path is either password_captured, or one of the fields
+  // under GaiaPasswordReuse (ie. we've flattened the namespace for simplicity).
+
+  if (event.has_gaia_password_captured_event()) {
+    std::string event_trigger;
+
+    switch (event.gaia_password_captured_event().event_trigger()) {
+      case PasswordCaptured::UNSPECIFIED:
+        event_trigger = "UNSPECIFIED";
+        break;
+      case PasswordCaptured::USER_LOGGED_IN:
+        event_trigger = "USER_LOGGED_IN";
+        break;
+      case PasswordCaptured::EXPIRED_28D_TIMER:
+        event_trigger = "EXPIRED_28D_TIMER";
+        break;
+    }
+
+    event_dict.SetPath({"password_captured", "event_trigger"},
+                       base::Value(event_trigger));
+  }
 
   sync_pb::UserEventSpecifics::GaiaPasswordReuse reuse =
       event.gaia_password_reuse_event();

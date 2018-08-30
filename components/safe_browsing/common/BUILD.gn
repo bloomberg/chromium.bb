@@ -18,6 +18,7 @@ source_set("common") {
   deps = [
     "//base",
     "//components/policy/core/browser:browser",
+    "//components/prefs:prefs",
     "//components/safe_browsing:csd_proto",
     "//crypto:crypto",
     "//ipc",

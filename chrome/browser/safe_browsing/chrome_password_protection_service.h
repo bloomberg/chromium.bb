@@ -38,6 +38,7 @@ class SafeBrowsingUIManager;
 class ChromePasswordProtectionService;
 
 using OnWarningDone = base::OnceCallback<void(WarningAction)>;
+using StringProvider = base::RepeatingCallback<std::string()>;
 using url::Origin;
 
 // Shows the platform-specific password reuse modal dialog.
@@ -79,7 +80,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   ChromePasswordProtectionService(SafeBrowsingService* sb_service,
                                   Profile* profile);
-
   ~ChromePasswordProtectionService() override;
 
   static ChromePasswordProtectionService* GetPasswordProtectionService(
@@ -249,6 +249,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
                                          WarningAction action);
 
+  // Returns base-10 string representation of the uint64t hash.
+  std::string GetSyncPasswordHashFromPrefs();
+
   void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
     sync_password_hash_ = new_password_hash;
   }
@@ -260,6 +263,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            ReusedPasswordType password_type,
                            const GURL& main_frame_url) override;
 
+  // Unit tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -286,6 +290,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyCanShowInterstitial);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifySendsPingForAboutBlank);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordCaptureEventScheduledOnStartup);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordCaptureEventScheduledFromPref);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordCaptureEventReschedules);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordCaptureEventRecorded);
+
+  // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
@@ -306,12 +320,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Returns whether the profile is valid and has safe browsing service enabled.
   bool IsSafeBrowsingEnabled();
 
-  std::unique_ptr<sync_pb::UserEventSpecifics>
-  GetUserEventSpecificsWithNavigationId(int64_t navigation_id);
-
-  std::unique_ptr<sync_pb::UserEventSpecifics> GetUserEventSpecifics(
-      content::WebContents* web_contents);
-
   void MaybeLogPasswordReuseLookupResult(
       content::WebContents* web_contents,
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
@@ -330,6 +338,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::
           PasswordReuseDialogInteraction::InteractionResult interaction_result);
 
+  // Log that we captured the password, either due to log-in or by timer.
+  // This also sets the reoccuring timer.
+  void MaybeLogPasswordCapture(bool did_log_in);
+  void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+
   void OnModalWarningShownForSignInPassword(content::WebContents* web_contents,
                                             const std::string& verdict_token);
 
@@ -341,7 +354,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   ChromePasswordProtectionService(
       Profile* profile,
       scoped_refptr<HostContentSettingsMap> content_setting_map,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager);
+      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      StringProvider sync_password_hash_provider);
+
+  // Code shared by both ctors.
+  void Init();
 
   // If enterprise admin turns off password protection, removes all captured
   // enterprise password hashes.
@@ -363,6 +380,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::set<content::WebContents*>
       web_contents_with_unhandled_enterprise_reuses_;
+
+  // Schedules the next time to log the PasswordCaptured event.
+  base::OneShotTimer log_password_capture_timer_;
+
+  // Used to inject a different password hash, for testing. It's done as a
+  // member callback rather than a virtual function because it's needed in the
+  // constructor.
+  StringProvider sync_password_hash_provider_for_testing_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionService);
 };
 
