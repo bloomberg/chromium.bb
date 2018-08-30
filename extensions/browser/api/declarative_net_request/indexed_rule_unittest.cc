@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request.h"
@@ -258,6 +259,11 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
       {std::make_unique<std::string>("||google.com"),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_SUBDOMAIN,
        flat_rule::AnchorType_NONE, "google.com", ParseResult::SUCCESS},
+      // Url pattern with non-ascii characters -ⱴase.com.
+      {std::make_unique<std::string>(base::WideToUTF8(L"\x2c74"
+                                                      L"ase.com")),
+       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
+       flat_rule::AnchorType_NONE, "", ParseResult::ERROR_NON_ASCII_URL_FILTER},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -306,7 +312,30 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
            DomainVec({"g.com", "XY.COM", "zzz.com", "a.com", "google.com"})),
        ParseResult::SUCCESS,
        {"a.com", "a.com", "b.com"},
-       {"google.com", "zzz.com", "xy.com", "a.com", "g.com"}}};
+       {"google.com", "zzz.com", "xy.com", "a.com", "g.com"}},
+      // Domain with non-ascii characters.
+      {std::make_unique<DomainVec>(
+           DomainVec({base::WideToUTF8(L"abc\x2010" /*hyphen*/ L"def.com")})),
+       nullptr,
+       ParseResult::ERROR_NON_ASCII_DOMAIN,
+       {},
+       {}},
+      // Excluded domain with non-ascii characters.
+      {nullptr,
+       std::make_unique<DomainVec>(
+           DomainVec({base::WideToUTF8(L"36\x00b0"
+                                       L"c.com" /*36°c.com*/)})),
+       ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN,
+       {},
+       {}},
+      // Internationalized domain in punycode.
+      {std::make_unique<DomainVec>(
+           DomainVec({"xn--36c-tfa.com" /* punycode for 36°c.com*/})),
+       nullptr,
+       ParseResult::SUCCESS,
+       {"xn--36c-tfa.com"},
+       {}},
+  };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));

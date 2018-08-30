@@ -228,24 +228,31 @@ ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
   return ParseResult::SUCCESS;
 }
 
-// Lower-cases and sorts domains, as required by the url_pattern_index
-// component.
-std::vector<std::string> CanonicalizeDomains(
-    std::unique_ptr<std::vector<std::string>> domains) {
+// Lower-cases and sorts |domains|, as required by the url_pattern_index
+// component and stores the result in |output|. Returns false in case of
+// failure, when one of the input strings contains non-ascii characters.
+bool CanonicalizeDomains(std::unique_ptr<std::vector<std::string>> domains,
+                         std::vector<std::string>* output) {
+  DCHECK(output);
+  DCHECK(output->empty());
+
   if (!domains)
-    return std::vector<std::string>();
+    return true;
 
   // Convert to lower case as required by the url_pattern_index component.
-  for (size_t i = 0; i < domains->size(); i++)
-    (*domains)[i] = base::ToLowerASCII((*domains)[i]);
+  for (const std::string& domain : *domains) {
+    if (!base::IsStringASCII(domain))
+      return false;
 
-  std::sort(domains->begin(), domains->end(),
+    output->push_back(base::ToLowerASCII(domain));
+  }
+
+  std::sort(output->begin(), output->end(),
             [](const std::string& left, const std::string& right) {
               return url_pattern_index::CompareDomains(left, right) < 0;
             });
 
-  // Move the vector, because it isn't eligible for return value optimization.
-  return std::move(*domains);
+  return true;
 }
 
 }  // namespace
@@ -288,9 +295,11 @@ ParseResult IndexedRule::CreateIndexedRule(
     return ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST;
   }
 
-  if (parsed_rule->condition.url_filter &&
-      parsed_rule->condition.url_filter->empty()) {
-    return ParseResult::ERROR_EMPTY_URL_FILTER;
+  if (parsed_rule->condition.url_filter) {
+    if (parsed_rule->condition.url_filter->empty())
+      return ParseResult::ERROR_EMPTY_URL_FILTER;
+    if (!base::IsStringASCII(*parsed_rule->condition.url_filter))
+      return ParseResult::ERROR_NON_ASCII_URL_FILTER;
   }
 
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule->id);
@@ -306,10 +315,15 @@ ParseResult IndexedRule::CreateIndexedRule(
       return result;
   }
 
-  indexed_rule->domains =
-      CanonicalizeDomains(std::move(parsed_rule->condition.domains));
-  indexed_rule->excluded_domains =
-      CanonicalizeDomains(std::move(parsed_rule->condition.excluded_domains));
+  if (!CanonicalizeDomains(std::move(parsed_rule->condition.domains),
+                           &indexed_rule->domains)) {
+    return ParseResult::ERROR_NON_ASCII_DOMAIN;
+  }
+
+  if (!CanonicalizeDomains(std::move(parsed_rule->condition.excluded_domains),
+                           &indexed_rule->excluded_domains)) {
+    return ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN;
+  }
 
   if (is_redirect_rule)
     indexed_rule->redirect_url = std::move(*parsed_rule->action.redirect_url);
