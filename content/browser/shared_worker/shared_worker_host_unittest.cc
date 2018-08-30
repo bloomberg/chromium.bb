@@ -67,8 +67,8 @@ class SharedWorkerHostTest : public testing::Test {
   void StartWorker(SharedWorkerHost* host,
                    mojom::SharedWorkerFactoryPtr factory) {
     host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
-                {} /* script_loader_factory_info */,
-                nullptr /* factory_bundle */);
+                {} /* main_script_loader_factory */,
+                nullptr /* subresource_loader_factories */);
   }
 
   MessagePortChannel AddClient(SharedWorkerHost* host,
@@ -198,8 +198,8 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
 
   // Start the worker.
   host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
-              {} /* script_loader_factory_info */,
-              nullptr /* factory_bundle */);
+              {} /* main_script_loader_factory */,
+              nullptr /* subresource_loader_factories */);
 
   // Add a client.
   MockSharedWorkerClient client;
