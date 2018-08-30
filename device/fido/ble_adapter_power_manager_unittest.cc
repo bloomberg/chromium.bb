@@ -82,9 +82,52 @@ class FidoBleAdapterPowerManagerTest : public ::testing::Test {
       std::make_unique<FakeFidoRequestHandlerBase>(mock_observer_.get());
 };
 
-TEST_F(FidoBleAdapterPowerManagerTest, CheckAdapterPresenceDuringConstruction) {
-  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(::testing::Return(true));
+TEST_F(FidoBleAdapterPowerManagerTest, AdapaterNotPresent) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(false));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(::testing::Return(false));
+  EXPECT_CALL(*adapter(), CanPower()).WillOnce(::testing::Return(false));
+
+  FidoRequestHandlerBase::TransportAvailabilityInfo data;
+  EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
+      .WillOnce(::testing::SaveArg<0>(&data));
+
   CreateTestBleAdapterPowerManager();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(data.is_ble_powered);
+  EXPECT_FALSE(data.can_power_on_ble_adapter);
+}
+
+TEST_F(FidoBleAdapterPowerManagerTest, AdapaterPresentAndPowered) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(*adapter(), CanPower()).WillOnce(::testing::Return(false));
+
+  FidoRequestHandlerBase::TransportAvailabilityInfo data;
+  EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
+      .WillOnce(::testing::SaveArg<0>(&data));
+
+  CreateTestBleAdapterPowerManager();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(data.is_ble_powered);
+  EXPECT_FALSE(data.can_power_on_ble_adapter);
+}
+
+TEST_F(FidoBleAdapterPowerManagerTest, AdapaterPresentAndCanBePowered) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(::testing::Return(false));
+  EXPECT_CALL(*adapter(), CanPower()).WillOnce(::testing::Return(true));
+
+  FidoRequestHandlerBase::TransportAvailabilityInfo data;
+  EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
+      .WillOnce(::testing::SaveArg<0>(&data));
+
+  CreateTestBleAdapterPowerManager();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(data.is_ble_powered);
+  EXPECT_TRUE(data.can_power_on_ble_adapter);
 }
 
 TEST_F(FidoBleAdapterPowerManagerTest, TestSetBluetoothPowerOn) {

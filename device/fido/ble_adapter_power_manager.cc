@@ -44,8 +44,8 @@ void BleAdapterPowerManager::Start(scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(adapter_);
   adapter_->AddObserver(this);
 
-  request_handler_->OnBluetoothAdapterEnumerated(adapter_->IsPresent(),
-                                                 adapter_->IsPowered());
+  request_handler_->OnBluetoothAdapterEnumerated(
+      adapter_->IsPresent(), adapter_->IsPowered(), adapter_->CanPower());
 }
 
 }  // namespace device
