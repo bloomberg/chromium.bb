@@ -368,6 +368,10 @@ std::wstring GetClientsKeyPath() {
   return GetClientsKeyPath(GetAppGuid());
 }
 
+std::wstring GetClientStateKeyPath() {
+  return GetClientStateKeyPath(GetAppGuid());
+}
+
 std::wstring GetUninstallRegistryPath() {
   std::wstring result(
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\");
