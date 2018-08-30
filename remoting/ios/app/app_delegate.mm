@@ -50,10 +50,8 @@
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [self launchRootViewController];
   [RemotingTheme applyColorSchemes];
-  [AVAudioSession.sharedInstance
-      setCategory:AVAudioSessionCategoryPlayback
-      withOptions:AVAudioSessionCategoryOptionMixWithOthers
-            error:NULL];
+  [AVAudioSession.sharedInstance setCategory:AVAudioSessionCategoryAmbient
+                                       error:NULL];
   [AppInitializer onAppDidFinishLaunching];
 
   return YES;
