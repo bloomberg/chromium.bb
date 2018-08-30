@@ -250,16 +250,14 @@ class PixelIntegrationTest(
   #
   def _CrashGpuProcess(self, tab, page):
     # Crash the GPU process.
-    gpucrash_tab = tab.browser.tabs.New()
-    # To access these debug URLs from Telemetry, they have to be
-    # written using the chrome:// scheme.
-    # The try/except is a workaround for crbug.com/368107.
-    try:
-      gpucrash_tab.Navigate('chrome://gpucrash')
-    except Exception:
-      print 'Tab crashed while navigating to chrome://gpucrash'
-    # Activate the original tab and wait for completion.
-    tab.Activate()
+    #
+    # This used to create a new tab and navigate it to
+    # chrome://gpucrash, but there was enough unreliability
+    # navigating between these tabs (one of which was created solely
+    # in order to navigate to chrome://gpucrash) that the simpler
+    # solution of provoking the GPU process crash from this renderer
+    # process was chosen.
+    tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
