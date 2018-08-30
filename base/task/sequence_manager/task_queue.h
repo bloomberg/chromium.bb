@@ -83,26 +83,26 @@ class BASE_EXPORT TaskQueue : public SingleThreadTaskRunner {
     // Queues with control priority will run before any other queue, and will
     // explicitly starve other queues. Typically this should only be used for
     // private queues which perform control operations.
-    kControlPriority,
+    kControlPriority = 0,
 
     // The selector will prioritize highest over high, normal and low; and
     // high over normal and low; and normal over low. However it will ensure
     // neither of the lower priority queues can be completely starved by higher
     // priority tasks. All three of these queues will always take priority over
     // and can starve the best effort queue.
-    kHighestPriority,
+    kHighestPriority = 1,
 
-    kHighPriority,
+    kHighPriority = 2,
 
     // Queues with normal priority are the default.
-    kNormalPriority,
-    kLowPriority,
+    kNormalPriority = 3,
+    kLowPriority = 4,
 
     // Queues with best effort priority will only be run if all other queues are
     // empty. They can be starved by the other queues.
-    kBestEffortPriority,
+    kBestEffortPriority = 5,
     // Must be the last entry.
-    kQueuePriorityCount,
+    kQueuePriorityCount = 6,
     kFirstQueuePriority = kControlPriority,
   };
 
