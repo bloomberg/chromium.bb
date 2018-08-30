@@ -47,6 +47,7 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, Shelf* shelf)
     horizontal_dots_image_view_->SetImage(gfx::CreateVectorIcon(
         kShelfOverflowHorizontalDotsIcon, kShelfIconColor));
     SetLayoutManager(std::make_unique<views::FillLayout>());
+    background_color_ = kShelfControlPermanentHighlightBackground;
     AddChildView(horizontal_dots_image_view_);
   } else {
     // The new UI does not use a chevron icon.
@@ -73,6 +74,10 @@ void OverflowButton::OnOverflowBubbleHidden() {
 }
 
 void OverflowButton::UpdateShelfItemBackground(SkColor color) {
+  // In the new UI, this button has a permanent rounded highlight, regardless
+  // of the shelf state.
+  if (chromeos::switches::ShouldUseShelfNewUi())
+    return;
   background_color_ = color;
   SchedulePaint();
 }
@@ -175,11 +180,10 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
 
 void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
-  if (chromeos::switches::ShouldUseShelfNewUi()) {
-    // The image view is already a child view, no need to do any manual
-    // painting.
+  // The image view is already a child view, no need to do any manual
+  // painting.
+  if (chromeos::switches::ShouldUseShelfNewUi())
     return;
-  }
   DCHECK(chevron_image_);
   canvas->DrawImageInt(
       *chevron_image_,
