@@ -304,8 +304,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     GetDelegatedFrameHost()->ReclaimResources(resources);
   }
 
-  void ResetCompositor() { GetDelegatedFrameHost()->ResetCompositor(); }
-
   const ui::MotionEventAura& pointer_state() {
     return event_handler()->pointer_state();
   }

@@ -1319,7 +1319,7 @@ void Window::RegisterFrameSinkId() {
   if (registered_frame_sink_id_ || disable_frame_sink_id_registration_)
     return;
   if (auto* compositor = layer()->GetCompositor()) {
-    compositor->AddFrameSink(frame_sink_id_);
+    compositor->AddChildFrameSink(frame_sink_id_);
     registered_frame_sink_id_ = true;
   }
 }
@@ -1329,7 +1329,7 @@ void Window::UnregisterFrameSinkId() {
     return;
   registered_frame_sink_id_ = false;
   if (auto* compositor = layer()->GetCompositor())
-    compositor->RemoveFrameSink(frame_sink_id_);
+    compositor->RemoveChildFrameSink(frame_sink_id_);
 }
 
 }  // namespace aura

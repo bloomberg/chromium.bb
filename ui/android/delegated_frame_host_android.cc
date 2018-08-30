@@ -76,7 +76,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "DelegatedFrameHostAndroid");
-  CreateNewCompositorFrameSinkSupport();
+  CreateCompositorFrameSinkSupport();
 }
 
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
@@ -217,7 +217,7 @@ bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
   EvictDelegatedFrame();
-  CreateNewCompositorFrameSinkSupport();
+  CreateCompositorFrameSinkSupport();
   if (registered_parent_compositor_)
     AttachToCompositor(registered_parent_compositor_);
 }
@@ -430,7 +430,7 @@ void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
 
 void DelegatedFrameHostAndroid::CompositorLockTimedOut() {}
 
-void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
+void DelegatedFrameHostAndroid::CreateCompositorFrameSinkSupport() {
   if (enable_viz_)
     return;
 

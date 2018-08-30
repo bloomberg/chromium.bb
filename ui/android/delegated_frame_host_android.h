@@ -162,7 +162,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // ui::CompositorLockClient implementation.
   void CompositorLockTimedOut() override;
 
-  void CreateNewCompositorFrameSinkSupport();
+  void CreateCompositorFrameSinkSupport();
 
   void ProcessCopyOutputRequest(
       std::unique_ptr<viz::CopyOutputRequest> request);

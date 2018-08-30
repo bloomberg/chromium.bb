@@ -263,7 +263,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     root_layer_->parent()->RemoveObserver(this);
     root_layer_->parent()->Remove(root_layer_.get());
     delegated_frame_host_->WasHidden();
-    delegated_frame_host_->ResetCompositor();
+    delegated_frame_host_->DetachFromCompositor();
     state_ = HasNoCompositor;
   }
 
@@ -285,7 +285,8 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 
   // Transition HasDetachedCompositor -> HasAttachedCompositor.
   if (state_ == HasDetachedCompositor && new_state < HasDetachedCompositor) {
-    delegated_frame_host_->SetCompositor(recyclable_compositor_->compositor());
+    delegated_frame_host_->AttachToCompositor(
+        recyclable_compositor_->compositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
                                     false /* record_presentation_time */);
 
@@ -306,7 +307,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
-    delegated_frame_host_->ResetCompositor();
+    delegated_frame_host_->DetachFromCompositor();
     state_ = HasDetachedCompositor;
   }
 
@@ -325,7 +326,8 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     DCHECK(parent_ui_layer_);
     DCHECK(parent_ui_layer_->GetCompositor());
     DCHECK(!root_layer_->parent());
-    delegated_frame_host_->SetCompositor(parent_ui_layer_->GetCompositor());
+    delegated_frame_host_->AttachToCompositor(
+        parent_ui_layer_->GetCompositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
                                     false /* record_presentation_time */);
     parent_ui_layer_->Add(root_layer_.get());

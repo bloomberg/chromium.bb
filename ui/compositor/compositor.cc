@@ -255,7 +255,7 @@ Compositor::~Compositor() {
   }
 }
 
-void Compositor::AddFrameSink(const viz::FrameSinkId& frame_sink_id) {
+void Compositor::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
   context_factory_private_->GetHostFrameSinkManager()
@@ -264,7 +264,7 @@ void Compositor::AddFrameSink(const viz::FrameSinkId& frame_sink_id) {
   child_frame_sinks_.insert(frame_sink_id);
 }
 
-void Compositor::RemoveFrameSink(const viz::FrameSinkId& frame_sink_id) {
+void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
   auto it = child_frame_sinks_.find(frame_sink_id);
