@@ -711,14 +711,15 @@ void MediaInternals::SendAudioFocusState() {
     return;
 
   base::DictionaryValue audio_focus_data;
-  const std::list<MediaSessionImpl*>& stack =
+  const std::list<AudioFocusManager::StackRow>& stack =
       AudioFocusManager::GetInstance()->audio_focus_stack_;
 
   // We should go backwards through the stack so the top of the stack is always
   // shown first in the list.
   base::ListValue stack_data;
   for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
-    MediaSessionImpl::DebugInfo debug_info = (*iter)->GetDebugInfo();
+    MediaSessionImpl::DebugInfo debug_info =
+        (*iter).media_session->GetDebugInfo();
     base::DictionaryValue media_session_data;
     media_session_data.SetKey("name", base::Value(debug_info.name));
     media_session_data.SetKey("owner", base::Value(debug_info.owner));

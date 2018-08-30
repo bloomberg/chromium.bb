@@ -170,12 +170,6 @@ class MediaSessionImpl : public MediaSession,
   // Returns if the session is currently suspended.
   CONTENT_EXPORT bool IsSuspended() const;
 
-  // Returns the audio focus type. The type is updated everytime after the
-  // session requests audio focus.
-  CONTENT_EXPORT media_session::mojom::AudioFocusType audio_focus_type() const {
-    return audio_focus_type_;
-  }
-
   // Returns whether the session has Pepper instances.
   bool HasPepper() const;
 
@@ -321,9 +315,12 @@ class MediaSessionImpl : public MediaSession,
   PlayersMap pepper_players_;
   PlayersMap one_shot_players_;
 
-  State audio_focus_state_;
+  State audio_focus_state_ = State::INACTIVE;
   MediaSession::SuspendType suspend_type_;
-  media_session::mojom::AudioFocusType audio_focus_type_;
+
+  // The |desired_audio_focus_type_| is the AudioFocusType we will request when
+  // we request system audio focus.
+  media_session::mojom::AudioFocusType desired_audio_focus_type_;
 
   MediaSessionUmaHelper uma_helper_;
 

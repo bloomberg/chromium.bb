@@ -34,9 +34,9 @@ AudioFocusManager* AudioFocusManager::GetInstance() {
 void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
                                           AudioFocusType type) {
   if (!audio_focus_stack_.empty() &&
-      audio_focus_stack_.back() == media_session &&
-      audio_focus_stack_.back()->audio_focus_type() == type &&
-      audio_focus_stack_.back()->IsActive()) {
+      audio_focus_stack_.back().media_session == media_session &&
+      audio_focus_stack_.back().audio_focus_type == type &&
+      audio_focus_stack_.back().media_session->IsActive()) {
     // Early returning if |media_session| is already on top (has focus) and is
     // active.
     return;
@@ -50,22 +50,24 @@ void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
   // up the relation between AudioFocusManager and MediaSessionImpl.
   // See https://crbug.com/651069
   if (type == AudioFocusType::kGainTransientMayDuck) {
-    for (auto* old_session : audio_focus_stack_) {
-      old_session->StartDucking();
+    for (auto& old_session : audio_focus_stack_) {
+      old_session.media_session->StartDucking();
     }
   } else {
-    for (auto* old_session : audio_focus_stack_) {
-      if (old_session->IsActive()) {
-        if (old_session->HasPepper())
-          old_session->StartDucking();
+    for (auto& old_session : audio_focus_stack_) {
+      if (old_session.media_session->IsActive()) {
+        if (old_session.media_session->HasPepper())
+          old_session.media_session->StartDucking();
         else
-          old_session->Suspend(MediaSessionImpl::SuspendType::SYSTEM);
+          old_session.media_session->Suspend(
+              MediaSessionImpl::SuspendType::SYSTEM);
       }
     }
   }
 
-  audio_focus_stack_.push_back(media_session);
-  audio_focus_stack_.back()->StopDucking();
+  // Store the MediaSession and requested focus type.
+  audio_focus_stack_.emplace_back(media_session, type);
+  audio_focus_stack_.back().media_session->StopDucking();
 
   // Notify observers that we were gained audio focus.
   observers_.ForAllPtrs(
@@ -79,7 +81,7 @@ void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
   if (audio_focus_stack_.empty())
     return;
 
-  if (audio_focus_stack_.back() != media_session) {
+  if (audio_focus_stack_.back().media_session != media_session) {
     MaybeRemoveFocusEntry(media_session);
     return;
   }
@@ -99,19 +101,20 @@ void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
   // not active.
   for (auto iter = audio_focus_stack_.rbegin();
        iter != audio_focus_stack_.rend(); ++iter) {
-    if (!(*iter)->HasPepper())
+    if (!iter->media_session->HasPepper())
       continue;
 
-    MediaSessionImpl* pepper_session = *iter;
+    MediaSessionImpl* pepper_session = iter->media_session;
+    AudioFocusType focus_type = iter->audio_focus_type;
     pepper_session->StopDucking();
     MaybeRemoveFocusEntry(pepper_session);
-    audio_focus_stack_.push_back(pepper_session);
+    audio_focus_stack_.emplace_back(pepper_session, focus_type);
     return;
   }
   // Only try to unduck the new MediaSessionImpl on top. The session might be
   // still
   // inactive but it will not be resumed (so it doesn't surprise the user).
-  audio_focus_stack_.back()->StopDucking();
+  audio_focus_stack_.back().media_session->StopDucking();
 
   // Notify observers that we lost audio focus.
   observers_.ForAllPtrs(
@@ -123,6 +126,17 @@ void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
 mojo::InterfacePtrSetElementId AudioFocusManager::AddObserver(
     media_session::mojom::AudioFocusObserverPtr observer) {
   return observers_.AddPtr(std::move(observer));
+}
+
+AudioFocusType AudioFocusManager::GetFocusTypeForSession(
+    MediaSessionImpl* media_session) const {
+  for (auto row : audio_focus_stack_) {
+    if (row.media_session == media_session)
+      return row.audio_focus_type;
+  }
+
+  NOTREACHED();
+  return AudioFocusType::kGain;
 }
 
 void AudioFocusManager::RemoveObserver(mojo::InterfacePtrSetElementId id) {
@@ -147,7 +161,13 @@ AudioFocusManager::AudioFocusManager() {
 AudioFocusManager::~AudioFocusManager() = default;
 
 void AudioFocusManager::MaybeRemoveFocusEntry(MediaSessionImpl* media_session) {
-  audio_focus_stack_.remove(media_session);
+  for (auto iter = audio_focus_stack_.begin(); iter != audio_focus_stack_.end();
+       ++iter) {
+    if (iter->media_session == media_session) {
+      audio_focus_stack_.erase(iter);
+      break;
+    }
+  }
 }
 
 }  // namespace content

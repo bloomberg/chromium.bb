@@ -221,11 +221,13 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   // nothing to do. If it is granted of type Transient the requested type is
   // also transient, there is also nothing to do. Otherwise, the session needs
   // to request audio focus again.
-  if (audio_focus_state_ == State::ACTIVE &&
-      (audio_focus_type_ == AudioFocusType::kGain ||
-       audio_focus_type_ == required_audio_focus_type)) {
-    normal_players_.insert(PlayerIdentifier(observer, player_id));
-    return true;
+  if (audio_focus_state_ == State::ACTIVE) {
+    AudioFocusType current_focus_type = delegate_->GetCurrentFocusType();
+    if (current_focus_type == AudioFocusType::kGain ||
+        current_focus_type == required_audio_focus_type) {
+      normal_players_.insert(PlayerIdentifier(observer, player_id));
+      return true;
+    }
   }
 
   State old_audio_focus_state = audio_focus_state_;
@@ -360,7 +362,7 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
   if (suspend_type != SuspendType::SYSTEM) {
     // Request audio focus again in case we lost it because another app started
     // playing while the playback was paused.
-    State audio_focus_state = RequestSystemAudioFocus(audio_focus_type_)
+    State audio_focus_state = RequestSystemAudioFocus(desired_audio_focus_type_)
                                   ? State::ACTIVE
                                   : State::INACTIVE;
     SetAudioFocusState(audio_focus_state);
@@ -424,7 +426,7 @@ bool MediaSessionImpl::IsControllable() const {
   // inactive. Also, the session will be uncontrollable if it contains one-shot
   // players.
   return audio_focus_state_ != State::INACTIVE &&
-         audio_focus_type_ == AudioFocusType::kGain &&
+         desired_audio_focus_type_ == AudioFocusType::kGain &&
          one_shot_players_.empty();
 }
 
@@ -574,7 +576,7 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
 MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audio_focus_state_(State::INACTIVE),
-      audio_focus_type_(AudioFocusType::kGainTransientMayDuck),
+      desired_audio_focus_type_(AudioFocusType::kGainTransientMayDuck),
       is_ducking_(false),
       ducking_volume_multiplier_(kDefaultDuckingVolumeMultiplier),
       routed_service_(nullptr) {
@@ -599,7 +601,7 @@ bool MediaSessionImpl::RequestSystemAudioFocus(
   // MediaSessionImpl must change its state & audio focus type AFTER requesting
   // audio focus.
   SetAudioFocusState(result ? State::ACTIVE : State::INACTIVE);
-  audio_focus_type_ = audio_focus_type;
+  desired_audio_focus_type_ = audio_focus_type;
   return result;
 }
 

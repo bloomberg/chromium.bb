@@ -30,6 +30,9 @@ class AudioFocusDelegate {
   virtual bool RequestAudioFocus(
       media_session::mojom::AudioFocusType audio_focus_type) = 0;
   virtual void AbandonAudioFocus() = 0;
+
+  // Retrieves the current |AudioFocusType| for the associated |MediaSession|.
+  virtual media_session::mojom::AudioFocusType GetCurrentFocusType() const = 0;
 };
 
 }  // namespace content
