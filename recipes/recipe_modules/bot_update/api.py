@@ -29,10 +29,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
     super(BotUpdateApi, self).__init__(*args, **kwargs)
 
   def initialize(self):
-    gm = self.m.buildbucket.build_input.gitiles_commit
-    if self._revision is None and self._repository is None and gm:
+    build_input = self.m.buildbucket.build.input
+    if (self._revision is None and self._repository is None
+        and build_input.HasField('gitiles_commit')):
+      gm = build_input.gitiles_commit
       self._revision = gm.id
-      self._repository = gm.host + '/' + gm.project
+      self._repository = 'https://%s/%s' % (gm.host, gm.project)
 
   def __call__(self, name, cmd, **kwargs):
     """Wrapper for easy calling of bot_update."""
