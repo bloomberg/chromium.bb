@@ -12,13 +12,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -71,12 +70,9 @@ void BookmarkAppDataRetriever::GetIcons(const GURL& app_url,
 
   // Generate missing icons.
   static constexpr int kIconSizesToGenerate[] = {
-      extension_misc::EXTENSION_ICON_SMALL,
-      extension_misc::EXTENSION_ICON_SMALL * 2,
-      extension_misc::EXTENSION_ICON_MEDIUM,
-      extension_misc::EXTENSION_ICON_MEDIUM * 2,
-      extension_misc::EXTENSION_ICON_LARGE,
-      extension_misc::EXTENSION_ICON_LARGE * 2,
+      web_app::icon_size::k32,  web_app::icon_size::k32 * 2,
+      web_app::icon_size::k48,  web_app::icon_size::k48 * 2,
+      web_app::icon_size::k128, web_app::icon_size::k128 * 2,
   };
 
   // Get the letter to use in the generated icon.
@@ -98,8 +94,11 @@ void BookmarkAppDataRetriever::GetIcons(const GURL& app_url,
 
   std::vector<WebApplicationInfo::IconInfo> icons;
   for (int size : kIconSizesToGenerate) {
-    icons.push_back(
-        BookmarkAppHelper::GenerateIconInfo(size, SK_ColorDKGRAY, icon_letter));
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.width = size;
+    icon_info.height = size;
+    icon_info.data = web_app::GenerateBitmap(size, SK_ColorDKGRAY, icon_letter);
+    icons.push_back(icon_info);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

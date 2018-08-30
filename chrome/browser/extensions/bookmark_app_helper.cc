@@ -290,18 +290,6 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
 }
 
 // static
-WebApplicationInfo::IconInfo BookmarkAppHelper::GenerateIconInfo(
-    int output_size,
-    SkColor color,
-    char letter) {
-  WebApplicationInfo::IconInfo icon_info;
-  icon_info.width = output_size;
-  icon_info.height = output_size;
-  icon_info.data = web_app::GenerateBitmap(output_size, color, letter);
-  return icon_info;
-}
-
-// static
 void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
     std::map<int, web_app::BitmapAndSource> bitmap_map,
     WebApplicationInfo* web_app_info) {
