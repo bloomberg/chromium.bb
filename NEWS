@@ -15,12 +15,17 @@ issues]].
   translation.
 - The returned ~inlen~ and ~outlen~ now always match thanks to the
   above work on input/output positions by Bert Frees.
+- Major improvements on back-translation with capsword and
+  punctuation/math thanks to Bue Vester-Andersen.
+- Fix a problem when defining the same combination of dots as both
+  endcapsword and nocontractsign or letsign during back-translation
+  thanks to Bue Vester-Andersen and Rimas Kudelis.
 
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
   necessary for correct Braille translation. Replaced the longer rules
   with hyphenation for better cursor positioning. Corrected some words.
-  Thanks to Bue Vester-Andersen
+  Thanks to Bue Vester-Andersen.
 - New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
   Sunian Loomee. The first one is for Chinese Common Braille, commonly
   known as the old Braille where a Chinese character is composed of

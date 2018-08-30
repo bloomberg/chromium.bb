@@ -21,7 +21,6 @@ tests:
   # ";" must also work as nocontractsign and cancel number mode
   - - "abc#abc;abc"
     - "abc123abc"
-#    - {xfail: true} # does not work as nocontractsign
   - - "#abc;abc"
     - "123abc"
   # nocontractsign is not necessary below, as "k" it not in numericmodechars
