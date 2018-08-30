@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/test_sync_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -38,68 +39,68 @@ class AutofillExperimentsTest : public testing::Test {
 };
 
 TEST_F(AutofillExperimentsTest, DenyUpload_FeatureEnabled) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   EXPECT_TRUE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_FeatureDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndDisableFeature(features::kAutofillUpstream);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_SyncServiceCannotStart) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_AuthError) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetInAuthError(true);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest,
        DenyUpload_SyncServiceDoesNotHaveAutofillProfilePreferredDataType) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetDataTypes(syncer::ModelTypeSet());
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_SyncCycleNotComplete) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetSyncCycleComplete(false);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_SyncConfigurationNotDone) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetConfigurationDone(false);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest,
        DenyUpload_SyncServiceUsingSecondaryPassphrase) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetIsUsingSecondaryPassphrase(true);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest,
        DenyUpload_AutofillWalletImportEnabledPrefIsDisabled) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   prefs::SetPaymentsIntegrationEnabled(&pref_service_, false);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_EmptyUserEmail) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   EXPECT_FALSE(IsCreditCardUploadEnabled(""));
 }
 
 TEST_F(AutofillExperimentsTest, AllowUpload_UserEmailWithGoogleDomain) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   EXPECT_TRUE(IsCreditCardUploadEnabled("john.smith@gmail.com"));
   EXPECT_TRUE(IsCreditCardUploadEnabled("googler@google.com"));
   EXPECT_TRUE(IsCreditCardUploadEnabled("old.school@googlemail.com"));
@@ -107,7 +108,7 @@ TEST_F(AutofillExperimentsTest, AllowUpload_UserEmailWithGoogleDomain) {
 }
 
 TEST_F(AutofillExperimentsTest, DenyUpload_UserEmailWithNonGoogleDomain) {
-  scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   EXPECT_FALSE(IsCreditCardUploadEnabled("cool.user@hotmail.com"));
   EXPECT_FALSE(IsCreditCardUploadEnabled("john.smith@johnsmith.com"));
   EXPECT_FALSE(IsCreditCardUploadEnabled("fake.googler@google.net"));
@@ -117,7 +118,9 @@ TEST_F(AutofillExperimentsTest, DenyUpload_UserEmailWithNonGoogleDomain) {
 TEST_F(AutofillExperimentsTest,
        AllowUpload_UserEmailWithNonGoogleDomainIfExperimentEnabled) {
   scoped_feature_list_.InitWithFeatures(
-      {kAutofillUpstream, kAutofillUpstreamAllowAllEmailDomains}, {});
+      {features::kAutofillUpstream,
+       features::kAutofillUpstreamAllowAllEmailDomains},
+      {});
   EXPECT_TRUE(IsCreditCardUploadEnabled("cool.user@hotmail.com"));
   EXPECT_TRUE(IsCreditCardUploadEnabled("john.smith@johnsmith.com"));
   EXPECT_TRUE(IsCreditCardUploadEnabled("fake.googler@google.net"));

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/language/core/common/language_experiments.h"
@@ -47,8 +47,8 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
-    &autofill::kAutofillExpandedPopupViews,
-    &autofill::kAutofillScanCardholderName,
+    &autofill::features::kAutofillExpandedPopupViews,
+    &autofill::features::kAutofillScanCardholderName,
     &contextual_suggestions::kContextualSuggestionsAlternateCardLayout,
     &contextual_suggestions::kContextualSuggestionsBottomSheet,
     &contextual_suggestions::kContextualSuggestionsButton,

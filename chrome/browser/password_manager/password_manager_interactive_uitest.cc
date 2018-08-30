@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
@@ -44,9 +44,11 @@ class PasswordManagerBrowserTestWithConditionalPopupViews
     std::vector<base::Feature> disabled_features;
     const bool popup_views_enabled = GetParam();
     if (popup_views_enabled) {
-      enabled_features.push_back(autofill::kAutofillExpandedPopupViews);
+      enabled_features.push_back(
+          autofill::features::kAutofillExpandedPopupViews);
     } else {
-      disabled_features.push_back(autofill::kAutofillExpandedPopupViews);
+      disabled_features.push_back(
+          autofill::features::kAutofillExpandedPopupViews);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
