@@ -157,12 +157,12 @@ content_settings::PatternPair GetPatternsFromScopingType(
   content_settings::PatternPair patterns;
 
   switch (scoping_type) {
-    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::COOKIES_SCOPE:
       patterns.first = ContentSettingsPattern::FromURL(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
       break;
-    case WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE:
-    case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE:
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
       break;
@@ -433,6 +433,15 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     std::unique_ptr<base::Value> value) {
+  DCHECK(primary_pattern == secondary_pattern ||
+         secondary_pattern == ContentSettingsPattern::Wildcard() ||
+         content_settings::WebsiteSettingsRegistry::GetInstance()
+             ->Get(content_type)
+             ->SupportsEmbeddedExceptions() ||
+         content_settings::WebsiteSettingsRegistry::GetInstance()
+                 ->Get(content_type)
+                 ->scoping_type() ==
+             WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE);
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   // TODO(crbug.com/731126): Verify that assumptions for notification content

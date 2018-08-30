@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -388,6 +390,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
       "ContentSettings.ExtensionNonEmbeddedSettingSet", cookies_type, 1);
   histogram_tester.ExpectTotalCount(
       "ContentSettings.ExtensionNonEmbeddedSettingSet", 2);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, EmbeddedSettings) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+  const char kExtensionPath[] = "content_settings/embeddedsettings";
+  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
+                       EmbeddedSettingsPermissionDelegation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+  const char kExtensionPath[] = "content_settings/embeddedsettings";
+  EXPECT_TRUE(
+      RunExtensionSubtest(kExtensionPath, "test.html?permission_delegation"))
+      << message_;
 }
 
 }  // namespace extensions
