@@ -68,12 +68,6 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
 
  private:
   // RawResourceClient
-  void ResponseReceived(Resource*,
-                        const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
-  bool RedirectReceived(Resource*,
-                        const ResourceRequest&,
-                        const ResourceResponse&) override;
   void DataReceived(Resource*, const char* data, size_t length) override;
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "TextTrackLoader"; }

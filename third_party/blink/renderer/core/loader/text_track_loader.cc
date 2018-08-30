@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/loader/text_track_loader.h"
 
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -66,32 +67,6 @@ void TextTrackLoader::CancelLoad() {
   ClearResource();
 }
 
-void TextTrackLoader::ResponseReceived(Resource*,
-                                       const ResourceResponse& response,
-                                       std::unique_ptr<WebDataConsumerHandle>) {
-  if (response.IsOpaqueResponseFromServiceWorker()) {
-    CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(),
-                            response.OriginalURLViaServiceWorker());
-  }
-}
-
-bool TextTrackLoader::RedirectReceived(Resource* resource,
-                                       const ResourceRequest& request,
-                                       const ResourceResponse&) {
-  DCHECK_EQ(GetResource(), resource);
-  if (resource->GetResourceRequest().GetFetchRequestMode() ==
-          network::mojom::FetchRequestMode::kCORS ||
-      GetDocument().GetSecurityOrigin()->CanRequest(request.Url())) {
-    return true;
-  }
-
-  CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), request.Url());
-  if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-  ClearResource();
-  return false;
-}
-
 void TextTrackLoader::DataReceived(Resource* resource,
                                    const char* data,
                                    size_t length) {
@@ -104,20 +79,6 @@ void TextTrackLoader::DataReceived(Resource* resource,
     cue_parser_ = VTTParser::Create(this, GetDocument());
 
   cue_parser_->ParseBytes(data, length);
-}
-
-void TextTrackLoader::CorsPolicyPreventedLoad(
-    const SecurityOrigin* security_origin,
-    const KURL& url) {
-  String console_message(
-      "Text track from origin '" + SecurityOrigin::Create(url)->ToString() +
-      "' has been blocked from loading: Not at same origin as the document, "
-      "and parent of track element does not have a 'crossorigin' attribute. "
-      "Origin '" +
-      security_origin->ToString() + "' is therefore not allowed access.");
-  GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      kSecurityMessageSource, kErrorMessageLevel, console_message));
-  state_ = kFailed;
 }
 
 void TextTrackLoader::NotifyFinished(Resource* resource) {
@@ -145,16 +106,17 @@ bool TextTrackLoader::Load(const KURL& url,
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::track;
 
+  // Let |request| be the result of creating a potential-CORS request
+  // given |URL|, "track", and |corsAttributeState|, and with the same-origin
+  // fallback flag set.
   FetchParameters cue_fetch_params(ResourceRequest(url), options);
 
-  if (cross_origin != kCrossOriginAttributeNotSet) {
+  if (cross_origin == kCrossOriginAttributeNotSet) {
+    cue_fetch_params.MutableResourceRequest().SetFetchRequestMode(
+        network::mojom::FetchRequestMode::kSameOrigin);
+  } else {
     cue_fetch_params.SetCrossOriginAccessControl(
         GetDocument().GetSecurityOrigin(), cross_origin);
-  } else if (!GetDocument().GetSecurityOrigin()->CanRequest(url)) {
-    // Text track elements without 'crossorigin' set on the parent are "No
-    // CORS"; report error if not same-origin.
-    CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), url);
-    return false;
   }
 
   ResourceFetcher* fetcher = GetDocument().Fetcher();
