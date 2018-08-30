@@ -106,6 +106,36 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
+void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
+  // If kAutofillCreditCardEnabled and kAutofillProfileEnabled prefs are
+  // currently using their default value and kAutofillEnabledDeprecated has a
+  // non-default value, override the valuAues of the new prefs. The following
+  // blocks should execute only once and are needed for those users who had
+  // Autofill disabled before introduction of the fine-grained prefs.
+  // TODO(crbug.com/870328): Remove these once M70- users are sufficiently low.
+  const PrefService::Preference* deprecated_autofill_pref =
+      prefs->FindPreference(prefs::kAutofillEnabledDeprecated);
+  DCHECK(deprecated_autofill_pref);
+
+  const PrefService::Preference* autofill_credit_card_pref =
+      prefs->FindPreference(prefs::kAutofillCreditCardEnabled);
+  DCHECK(autofill_credit_card_pref);
+  if (autofill_credit_card_pref->IsDefaultValue() &&
+      !deprecated_autofill_pref->IsDefaultValue()) {
+    prefs->SetBoolean(kAutofillCreditCardEnabled,
+                      prefs->GetBoolean(kAutofillEnabledDeprecated));
+  }
+
+  const PrefService::Preference* autofill_profile_pref =
+      prefs->FindPreference(prefs::kAutofillProfileEnabled);
+  DCHECK(autofill_profile_pref);
+  if (autofill_profile_pref->IsDefaultValue() &&
+      !deprecated_autofill_pref->IsDefaultValue()) {
+    prefs->SetBoolean(kAutofillProfileEnabled,
+                      prefs->GetBoolean(kAutofillEnabledDeprecated));
+  }
+}
+
 bool IsAutocompleteEnabled(const PrefService* prefs) {
   return IsProfileAutofillEnabled(prefs);
 }
