@@ -2948,7 +2948,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
       EXPECT_EQ(match.description,
                 base::UTF16ToUTF8(matches[j].description));
       EXPECT_EQ(match.query_params,
-                matches[j].search_terms_args->suggest_query_params);
+                matches[j].search_terms_args->additional_query_params);
       EXPECT_EQ(match.fill_into_edit,
                 base::UTF16ToUTF8(matches[j].fill_into_edit));
       EXPECT_EQ(match.type, matches[j].type);

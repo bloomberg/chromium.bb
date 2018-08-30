@@ -135,7 +135,7 @@ class SearchSuggestionParser {
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
                   const base::string16& annotation,
-                  const std::string& suggest_query_params,
+                  const std::string& additional_query_params,
                   const std::string& deletion_url,
                   const std::string& image_dominant_color,
                   const std::string& image_url,
@@ -154,8 +154,8 @@ class SearchSuggestionParser {
       return match_contents_prefix_;
     }
     const base::string16& annotation() const { return annotation_; }
-    const std::string& suggest_query_params() const {
-      return suggest_query_params_;
+    const std::string& additional_query_params() const {
+      return additional_query_params_;
     }
 
     void SetAnswer(const base::string16& answer_contents,
@@ -199,7 +199,7 @@ class SearchSuggestionParser {
     base::string16 annotation_;
 
     // Optional additional parameters to be added to the search URL.
-    std::string suggest_query_params_;
+    std::string additional_query_params_;
 
     // TODO(jdonnelly): Remove the following two properties once the downstream
     // clients are using the SuggestionAnswer.
