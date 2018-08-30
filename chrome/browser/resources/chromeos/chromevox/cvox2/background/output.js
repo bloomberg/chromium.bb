@@ -1214,11 +1214,6 @@ Output.prototype = {
           } else {
             this.format_(node, '$descendants', buff);
           }
-        } else if (token == 'description') {
-          if (node.name == node.description || node.value == node.description)
-            return;
-          options.annotation.push(token);
-          this.append_(buff, node.description || '', options);
         } else if (token == 'indexInParent') {
           if (node.parent) {
             options.annotation.push(token);
