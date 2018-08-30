@@ -275,6 +275,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/oes-texture-half-float.html',
               ['win', 'no_passthrough', ('amd', 0x6613)], bug=653533)
 
+    # Win / AMD D3D11 failures
+    self.Flaky('conformance/textures/webgl_canvas/*', ['win', 'amd'],
+        bug=878780)
+
     # Win / AMD D3D9 failures
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['win', 'amd', 'd3d9'], bug=475095)
