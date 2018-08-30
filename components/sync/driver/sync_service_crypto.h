@@ -55,7 +55,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
       PassphraseRequiredReason reason,
-      KeyDerivationMethod key_derivation_method,
+      const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
@@ -141,12 +141,12 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // check it from the UI thread.
   PassphraseType cached_passphrase_type_ = PassphraseType::IMPLICIT_PASSPHRASE;
 
-  // The key derivation method for the passphrase. We save it when we receive a
-  // passphrase required event, as it is a necessary piece of information to be
-  // able to properly perform a decryption attempt, and we want to be able to
-  // synchronously do that from the UI thread. For passphrase types other than
-  // CUSTOM_PASSPHRASE, this will always be PBKDF2.
-  KeyDerivationMethod passphrase_key_derivation_method_;
+  // The key derivation params for the passphrase. We save them when we receive
+  // a passphrase required event, as they are a necessary piece of information
+  // to be able to properly perform a decryption attempt, and we want to be able
+  // to synchronously do that from the UI thread. For passphrase types other
+  // than CUSTOM_PASSPHRASE, their key derivation method will always be PBKDF2.
+  KeyDerivationParams passphrase_key_derivation_params_;
 
   // If an explicit passphrase is in use, the time at which the passphrase was
   // first set (if available).

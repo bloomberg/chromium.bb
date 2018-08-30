@@ -634,6 +634,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(keystore_migration_time);
   VISIT(custom_passphrase_time);
   VISIT(custom_passphrase_key_derivation_method);
+  VISIT(custom_passphrase_key_derivation_salt);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {

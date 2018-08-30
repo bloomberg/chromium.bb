@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/nigori.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -59,13 +60,13 @@ class SyncEncryptionHandler {
     // - If the passphrase is required because decryption failed, and a new
     //   passphrase is required, |reason| will be REASON_SET_PASSPHRASE_FAILED.
     //
-    // |key_derivation_method| is the method that should be used to obtain the
-    // key from the passphrase.
+    // |key_derivation_params| are the parameters that should be used to obtain
+    // the key from the passphrase.
     // |pending_keys| is a copy of the cryptographer's pending keys, that may be
     // cached by the frontend for subsequent use by the UI.
     virtual void OnPassphraseRequired(
         PassphraseRequiredReason reason,
-        KeyDerivationMethod key_derivation_method,
+        const KeyDerivationParams& key_derivation_params,
         const sync_pb::EncryptedData& pending_keys) = 0;
 
     // Called when the passphrase provided by the user has been accepted and is

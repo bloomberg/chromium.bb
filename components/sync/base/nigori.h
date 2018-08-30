@@ -18,6 +18,41 @@ class SymmetricKey;
 
 namespace syncer {
 
+class Nigori;
+
+struct KeyDerivationParams {
+ public:
+  static KeyDerivationParams CreateForPbkdf2(const std::string& hostname,
+                                             const std::string& username);
+  static KeyDerivationParams CreateForScrypt(const std::string& salt);
+  static KeyDerivationParams CreateWithUnsupportedMethod();
+
+  KeyDerivationMethod method() const { return method_; }
+  const std::string& pbkdf2_username() const;
+  const std::string& pbkdf2_hostname() const;
+  const std::string& scrypt_salt() const;
+
+  KeyDerivationParams(const KeyDerivationParams& other);
+  KeyDerivationParams(KeyDerivationParams&& other);
+  KeyDerivationParams& operator=(const KeyDerivationParams& other);
+  bool operator==(const KeyDerivationParams& other) const;
+
+ private:
+  KeyDerivationParams(KeyDerivationMethod method,
+                      const std::string& pbkdf2_hostname,
+                      const std::string& pbkdf2_username,
+                      const std::string& scrypt_salt);
+
+  KeyDerivationMethod method_;
+
+  // TODO(vitaliii): Delete hostname and username from here and hardcode them
+  // into the old key derivation function instead.
+  std::string pbkdf2_hostname_;
+  std::string pbkdf2_username_;
+
+  std::string scrypt_salt_;
+};
+
 // A (partial) implementation of Nigori, a protocol to securely store secrets in
 // the cloud. This implementation does not support server authentication or
 // assisted key derivation.
@@ -36,11 +71,9 @@ class Nigori {
   Nigori();
   virtual ~Nigori();
 
-  // Initialize by deriving keys based on the given |method|, |hostname|,
-  // |username| and |password|.
-  bool InitByDerivation(KeyDerivationMethod method,
-                        const std::string& hostname,
-                        const std::string& username,
+  // Initialize by deriving keys based on the given |key_derivation_params| and
+  // |password|.
+  bool InitByDerivation(const KeyDerivationParams& key_derivation_params,
                         const std::string& password);
 
   // Initialize by importing the given keys instead of deriving new ones.
@@ -67,6 +100,8 @@ class Nigori {
                   std::string* encryption_key,
                   std::string* mac_key) const;
 
+  static std::string GenerateScryptSalt();
+
   // Exposed for tests.
   static const size_t kIvSize = 16;
 
@@ -86,7 +121,8 @@ class Nigori {
     bool InitByDerivationUsingPbkdf2(const std::string& hostname,
                                      const std::string& username,
                                      const std::string& password);
-    bool InitByDerivationUsingScrypt(const std::string& password);
+    bool InitByDerivationUsingScrypt(const std::string& salt,
+                                     const std::string& password);
     bool InitByImport(const std::string& user_key_str,
                       const std::string& encryption_key_str,
                       const std::string& mac_key_str);

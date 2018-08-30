@@ -85,12 +85,15 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
 
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
       REASON_PASSPHRASE_NOT_REQUIRED,
-      KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, sync_pb::EncryptedData());
-  js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_ENCRYPTION, KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
       sync_pb::EncryptedData());
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_DECRYPTION, KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
+      REASON_ENCRYPTION,
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+      sync_pb::EncryptedData());
+  js_sync_encryption_handler_observer_.OnPassphraseRequired(
+      REASON_DECRYPTION,
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
       sync_pb::EncryptedData());
   PumpLoop();
 }
