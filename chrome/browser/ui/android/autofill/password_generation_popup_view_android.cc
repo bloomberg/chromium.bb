@@ -78,11 +78,6 @@ void PasswordGenerationPopupViewAndroid::Hide() {
   }
 }
 
-gfx::Size PasswordGenerationPopupViewAndroid::GetPreferredSizeOfPasswordView() {
-  static const int kUnusedSize = 0;
-  return gfx::Size(kUnusedSize, kUnusedSize);
-}
-
 void PasswordGenerationPopupViewAndroid::UpdateState() {}
 
 void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {

@@ -29,9 +29,6 @@ class PasswordGenerationPopupController
   // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
   virtual void OnSavedPasswordsLinkClicked() = 0;
 
-  // Return the minimum allowable width for the popup.
-  virtual int GetMinimumWidth() = 0;
-
   // Accessors
   virtual GenerationState state() const = 0;
   virtual bool password_selected() const = 0;

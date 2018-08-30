@@ -85,7 +85,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SelectionCleared() override;
   bool HasSelection() const override;
   gfx::Rect popup_bounds() const override;
-  gfx::NativeView container_view() override;
+  gfx::NativeView container_view() const override;
   const gfx::RectF& element_bounds() const override;
   void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;

@@ -37,6 +37,11 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   static const SkColor kSeparatorColor;
   static const SkColor kWarningColor;
 
+  // Consider the input element is |kElementBorderPadding| pixels larger at the
+  // top and at the bottom in order to reposition the dropdown, so that it
+  // doesn't look too close to the element.
+  static const int kElementBorderPadding = 1;
+
   // Horizontal spacing between value and description in the row.
   // TODO(crbug.com/876364): Replace this with a global constant.
   static const int kValueLabelPadding = 24;
@@ -59,6 +64,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   virtual void AddExtraInitParams(views::Widget::InitParams* params);
 
   // Returns the widget's contents view.
+  // TODO(crbug.com/831603): remove.
   virtual std::unique_ptr<views::View> CreateWrapperView();
 
   // Returns the border to be applied to the popup.

@@ -65,11 +65,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
       GetWebContents(), GetNativeView());
   controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
 
-  gfx::Point center_point =
-      static_cast<PasswordGenerationPopupController*>(controller_)
-          ->popup_bounds()
-          .CenterPoint();
-  GetViewTester()->SimulateMouseMovementAt(center_point);
+  GetViewTester()->SimulateMouseMovementAt(gfx::Point(1, 1));
 
   // Deletes |controller_|.
   controller_->HideAndDestroy();

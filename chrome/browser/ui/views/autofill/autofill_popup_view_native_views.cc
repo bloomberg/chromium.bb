@@ -43,6 +43,7 @@ namespace {
 // should always have a width which is a multiple of 12.
 constexpr int kAutofillPopupWidthMultiple = 12;
 constexpr int kAutofillPopupMinWidth = 64;
+// TODO(crbug.com/831603): move handling the max width to the base class.
 constexpr int kAutofillPopupMaxWidth = 456;
 
 // Max width for the username and masked password.
@@ -52,10 +53,6 @@ constexpr int kAutofillPopupPasswordMaxWidth = 108;
 // The additional height of the row in case it has two labels on top of each
 // other in comparison to the normal row with one line of text.
 constexpr int kAutofillPopupAdditionalDoubleRowHeight = 22;
-
-// A space between the input element and the dropdown, so that the dropdown's
-// border doesn't look too close to the element.
-constexpr int kElementBorderPadding = 1;
 
 // Vertical spacing between labels in one row.
 constexpr int kAdjacentLabelsVerticalSpacing = 2;

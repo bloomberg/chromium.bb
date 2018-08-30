@@ -77,7 +77,9 @@ void AutofillPopupBaseView::DoShow() {
     AddExtraInitParams(&params);
     widget->Init(params);
 
-    widget->SetContentsView(CreateWrapperView().release());
+    std::unique_ptr<views::View> wrapper = CreateWrapperView();
+    if (wrapper)
+      widget->SetContentsView(wrapper.release());
     widget->AddObserver(this);
 
     // No animation for popup appearance (too distracting).
@@ -165,13 +167,7 @@ void AutofillPopupBaseView::AddExtraInitParams(
 }
 
 std::unique_ptr<views::View> AutofillPopupBaseView::CreateWrapperView() {
-  // Create a wrapper view that contains the current view and will receive the
-  // bubble border. This is needed so that a clipping path can be later applied
-  // on the contents only and not affect the border.
-  auto wrapper_view = std::make_unique<views::View>();
-  wrapper_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  wrapper_view->AddChildView(this);
-  return wrapper_view;
+  return nullptr;
 }
 
 std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
@@ -194,23 +190,20 @@ void AutofillPopupBaseView::SetClipPath() {
 }
 
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
-  gfx::Rect bounds = delegate()->popup_bounds();
+  gfx::Size size = GetPreferredSize();
+  // When a bubble border is shown, the contents area (inside the shadow) is
+  // supposed to be aligned with input element boundaries.
+  gfx::Rect element_bounds = gfx::ToEnclosingRect(delegate()->element_bounds());
+  element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
 
-  SetSize(bounds.size());
-
-  gfx::Rect clipping_bounds = CalculateClippingBounds();
-
-  int available_vertical_space =
-      clipping_bounds.height() - (bounds.y() - clipping_bounds.y());
-
-  if (available_vertical_space < bounds.height())
-    bounds.set_height(available_vertical_space);
-
+  gfx::Rect popup_bounds = PopupViewCommon().CalculatePopupBounds(
+      size.width(), size.height(), element_bounds, delegate()->container_view(),
+      delegate()->IsRTL());
   // Account for the scroll view's border so that the content has enough space.
-  bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
-  GetWidget()->SetBounds(bounds);
-  SetClipPath();
+  popup_bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
+  GetWidget()->SetBounds(popup_bounds);
 
+  SetClipPath();
   SchedulePaint();
 }
 

@@ -9,7 +9,6 @@
 
 namespace gfx {
 class Point;
-class Size;
 }  // namespace gfx
 
 class PasswordGenerationPopupController;
@@ -22,9 +21,6 @@ class PasswordGenerationPopupView {
 
   // This will cause the popup to be deleted.
   virtual void Hide() = 0;
-
-  // Get desired size of the popup.
-  virtual gfx::Size GetPreferredSizeOfPasswordView() = 0;
 
   // The state of the popup has changed from editing to offering a new password.
   // The layout should be recreated.

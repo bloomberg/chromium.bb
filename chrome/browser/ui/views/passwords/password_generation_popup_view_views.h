@@ -23,7 +23,6 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   // PasswordGenerationPopupView implementation
   void Show() override;
   void Hide() override;
-  gfx::Size GetPreferredSizeOfPasswordView() override;
   void UpdateState() override;
   void UpdatePasswordValue() override;
   void UpdateBoundsAndRedrawPopup() override;
@@ -40,6 +39,7 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   // views:Views implementation.
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::StyledLabelListener implementation
   void StyledLabelLinkClicked(views::StyledLabel* label,
