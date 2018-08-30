@@ -34,12 +34,6 @@ void FidoBleDiscoveryBase::OnStartDiscoverySessionWithFilter(
   NotifyDiscoveryStarted(true);
 }
 
-void FidoBleDiscoveryBase::AdapterPoweredChanged(BluetoothAdapter* adapter,
-                                                 bool powered) {
-  if (observer_)
-    observer_->BluetoothAdapterPowerChanged(powered);
-}
-
 void FidoBleDiscoveryBase::OnSetPoweredError() {
   DLOG(ERROR) << "Failed to power on the adapter.";
   NotifyDiscoveryStarted(false);
@@ -59,7 +53,6 @@ void FidoBleDiscoveryBase::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
   if (!adapter->IsPresent()) {
     DVLOG(2) << "bluetooth adapter is not available in current system.";
-    NotifyDiscoveryAvailable(false);
     NotifyDiscoveryStarted(false);
     return;
   }
@@ -71,8 +64,6 @@ void FidoBleDiscoveryBase::OnGetAdapter(
 
   adapter_->AddObserver(this);
   if (adapter_->IsPowered()) {
-    FidoBleDiscoveryBase::AdapterPoweredChanged(adapter.get(),
-                                                true /* is_powered */);
     OnSetPowered();
   } else {
     adapter_->SetPowered(
@@ -83,7 +74,6 @@ void FidoBleDiscoveryBase::OnGetAdapter(
             base::BindOnce(&FidoBleDiscoveryBase::OnSetPoweredError,
                            weak_factory_.GetWeakPtr())));
   }
-  NotifyDiscoveryAvailable(true);
 }
 
 void FidoBleDiscoveryBase::StartInternal() {

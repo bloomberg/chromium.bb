@@ -103,12 +103,6 @@ void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
   observer_->DiscoveryStarted(this, success);
 }
 
-void FidoDiscovery::NotifyDiscoveryAvailable(bool is_available) {
-  if (!observer_)
-    return;
-  observer_->DiscoveryAvailable(this, is_available);
-}
-
 void FidoDiscovery::NotifyDeviceAdded(FidoDevice* device) {
   DCHECK_NE(state_, State::kIdle);
   if (!observer_)

@@ -496,7 +496,10 @@ void AuthenticatorImpl::MakeCredential(
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
-          request_->GetWeakPtr()) /* request_callback */);
+          request_->GetWeakPtr()) /* request_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */);
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
@@ -583,7 +586,10 @@ void AuthenticatorImpl::GetAssertion(
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
-          request_->GetWeakPtr()) /* request_callback */);
+          request_->GetWeakPtr()) /* request_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */);
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(

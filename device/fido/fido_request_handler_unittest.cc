@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
@@ -199,6 +201,12 @@ std::vector<uint8_t> CreateFakeOperationDeniedError() {
 
 class FidoRequestHandlerTest : public ::testing::Test {
  public:
+  FidoRequestHandlerTest() {
+    mock_adapter_ =
+        base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+    BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+  }
+
   void ForgeNextHidDiscovery() {
     discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
     ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
@@ -217,12 +225,16 @@ class FidoRequestHandlerTest : public ::testing::Test {
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
   test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
+  scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> adapter() {
+    return mock_adapter_;
+  }
   FakeHandlerCallbackReceiver& callback() { return cb_; }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
+  scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   FakeHandlerCallbackReceiver cb_;
@@ -537,28 +549,25 @@ TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
   observer.WaitForAndExpectAvailableTransportsAre({});
 }
 
-TEST_F(FidoRequestHandlerTest,
-       BleTransportAllowedIfDiscoveryStartsSuccessfully) {
+TEST_F(FidoRequestHandlerTest, BleTransportAllowedIfBluetoothAdapterPresent) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
+
   TestTransportAvailabilityObserver observer;
   auto request_handler = CreateFakeHandler();
   request_handler->set_observer(&observer);
-
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kUsbHumanInterfaceDevice,
        FidoTransportProtocol::kBluetoothLowEnergy});
 }
 
-TEST_F(FidoRequestHandlerTest, BleTransportDisallowedIfDiscoveryFails) {
+TEST_F(FidoRequestHandlerTest,
+       BleTransportDisallowedBluetoothAdapterNotPresent) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(false));
+
   TestTransportAvailabilityObserver observer;
   auto request_handler = CreateFakeHandler();
   request_handler->set_observer(&observer);
-
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-  ble_discovery()->WaitForCallToStart();
-  ble_discovery()->SimulateDiscoveryAvailable(false /* is_available */);
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kUsbHumanInterfaceDevice});
@@ -566,11 +575,10 @@ TEST_F(FidoRequestHandlerTest, BleTransportDisallowedIfDiscoveryFails) {
 
 TEST_F(FidoRequestHandlerTest,
        TransportAvailabilityNotificationOnObserverSetLate) {
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
+
   TestTransportAvailabilityObserver observer;
   auto request_handler = CreateFakeHandler();
-
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   request_handler->set_observer(&observer);

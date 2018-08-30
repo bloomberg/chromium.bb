@@ -27,11 +27,6 @@ void FakeFidoDiscovery::WaitForCallToStart() {
   wait_for_start_loop_.Run();
 }
 
-void FakeFidoDiscovery::SimulateDiscoveryAvailable(bool is_available) {
-  ASSERT_FALSE(is_running());
-  NotifyDiscoveryAvailable(is_available);
-}
-
 void FakeFidoDiscovery::SimulateStarted(bool success) {
   ASSERT_FALSE(is_running());
   NotifyDiscoveryStarted(success);
@@ -39,7 +34,6 @@ void FakeFidoDiscovery::SimulateStarted(bool success) {
 
 void FakeFidoDiscovery::WaitForCallToStartAndSimulateSuccess() {
   WaitForCallToStart();
-  SimulateDiscoveryAvailable(true /* is_available */);
   SimulateStarted(true /* success */);
 }
 

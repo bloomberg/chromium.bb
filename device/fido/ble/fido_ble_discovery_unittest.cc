@@ -47,16 +47,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(false));
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
-
-  {
-    base::RunLoop run_loop;
-    auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryAvailable(&discovery, false))
-        .WillOnce(ReturnFromAsyncCall(quit));
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
-    discovery.Start();
-    run_loop.Run();
-  }
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
+  discovery.Start();
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
@@ -69,22 +61,11 @@ TEST_F(BluetoothTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
   EXPECT_CALL(*mock_adapter, SetPowered)
       .WillOnce(::testing::WithArg<2>(
           [](const auto& error_callback) { error_callback.Run(); }));
-
-  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
-
-  {
-    base::RunLoop run_loop;
-    auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryAvailable(&discovery, true))
-        .WillOnce(ReturnFromAsyncCall(quit));
-
-    discovery.Start();
-    run_loop.Run();
-  }
-
   // After BluetoothAdapter is powered on, we expect that discovery session
   // starts again.
   EXPECT_CALL(*mock_adapter, StartDiscoverySessionWithFilterRaw);
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  discovery.Start();
   mock_adapter->NotifyAdapterPoweredChanged(true);
 }
 
@@ -97,7 +78,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
   // We don't expect any calls to the notification methods.
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
-  EXPECT_CALL(observer, DiscoveryAvailable(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);

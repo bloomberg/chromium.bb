@@ -10,6 +10,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/base/features.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -43,6 +45,12 @@ using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
 
 class FidoMakeCredentialHandlerTest : public ::testing::Test {
  public:
+  FidoMakeCredentialHandlerTest() {
+    mock_adapter_ =
+        base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+    BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+  }
+
   void ForgeDiscoveries() {
     discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
     ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
@@ -136,6 +144,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
+  scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<MockFidoDevice> mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
@@ -257,7 +266,7 @@ TEST_F(FidoMakeCredentialHandlerTest, AnyAttachment) {
       ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
   platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   set_mock_platform_device(std::move(platform_device));
-
+  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
@@ -280,6 +289,7 @@ TEST_F(FidoMakeCredentialHandlerTest, AnyAttachment) {
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {
+  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
@@ -448,6 +458,7 @@ TEST_F(FidoMakeCredentialHandlerTest, SupportedTransportsAreOnlyBleAndNfc) {
   };
 
   set_supported_transports(kBleAndNfc);
+  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(

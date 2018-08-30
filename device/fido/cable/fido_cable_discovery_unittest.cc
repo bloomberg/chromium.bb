@@ -493,7 +493,6 @@ TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
   auto mock_adapter =
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
   EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
-  EXPECT_CALL(mock_observer, DiscoveryAvailable(cable_discovery.get(), true));
 
   // After BluetoothAdapter is powered on, we expect that Cable discovery starts
   // again.
