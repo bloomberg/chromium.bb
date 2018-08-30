@@ -176,7 +176,7 @@ bool GURL::operator>(const GURL& other) const {
 }
 
 // Note: code duplicated below (it's inconvenient to use a template here).
-GURL GURL::Resolve(const std::string& relative) const {
+GURL GURL::Resolve(base::StringPiece relative) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
@@ -202,7 +202,7 @@ GURL GURL::Resolve(const std::string& relative) const {
 }
 
 // Note: code duplicated above (it's inconvenient to use a template here).
-GURL GURL::Resolve(const base::string16& relative) const {
+GURL GURL::Resolve(base::StringPiece16 relative) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
