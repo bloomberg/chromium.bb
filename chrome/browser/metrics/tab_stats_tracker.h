@@ -101,28 +101,34 @@ class TabStatsTracker : public TabStripModelObserver,
   TabStatsDataStore* tab_stats_data_store() {
     return tab_stats_data_store_.get();
   }
-  base::RepeatingTimer* timer() { return &timer_; }
-  DailyEvent* daily_event() { return daily_event_.get(); }
-  UmaStatsReportingDelegate* reporting_delegate() {
+  base::RepeatingTimer* daily_event_timer_for_testing() {
+    return &daily_event_timer_;
+  }
+  DailyEvent* daily_event_for_testing() { return daily_event_.get(); }
+  UmaStatsReportingDelegate* reporting_delegate_for_testing() {
     return reporting_delegate_.get();
   }
   std::vector<std::unique_ptr<base::RepeatingTimer>>*
   usage_interval_timers_for_testing() {
     return &usage_interval_timers_;
   }
+  base::RepeatingTimer* heartbeat_timer_for_testing() {
+    return &heartbeat_timer_;
+  }
 
   // Reset the |reporting_delegate_| object to |reporting_delegate|, for testing
   // purposes.
-  void reset_reporting_delegate(UmaStatsReportingDelegate* reporting_delegate) {
+  void reset_reporting_delegate_for_testing(
+      UmaStatsReportingDelegate* reporting_delegate) {
     reporting_delegate_.reset(reporting_delegate);
   }
 
   // Reset the DailyEvent object to |daily_event|, for testing purposes.
-  void reset_daily_event(DailyEvent* daily_event) {
+  void reset_daily_event_for_testing(DailyEvent* daily_event) {
     daily_event_.reset(daily_event);
   }
 
-  void reset_data_store(TabStatsDataStore* data_store) {
+  void reset_data_store_for_testing(TabStatsDataStore* data_store) {
     tab_stats_data_store_.reset(data_store);
   }
 
@@ -157,6 +163,9 @@ class TabStatsTracker : public TabStripModelObserver,
   void CalculateAndRecordNativeWindowVisibilities();
 #endif
 
+  // Function to call to report the tab heartbeat metrics.
+  void OnHeartbeatEvent();
+
   // The name of the histogram used to report that the daily event happened.
   static const char kTabStatsDailyEventHistogramName[];
 
@@ -179,7 +188,7 @@ class TabStatsTracker : public TabStripModelObserver,
 
   // The timer used to periodically check if the daily event should be
   // triggered.
-  base::RepeatingTimer timer_;
+  base::RepeatingTimer daily_event_timer_;
 
 #if defined(OS_WIN)
   // The timer used to periodically calculate the occlusion status of native
@@ -190,6 +199,9 @@ class TabStatsTracker : public TabStripModelObserver,
   // The timers used to analyze how tabs are used during a given interval of
   // time.
   std::vector<std::unique_ptr<base::RepeatingTimer>> usage_interval_timers_;
+
+  // The timer used to report the heartbeat metrics at regular interval.
+  base::RepeatingTimer heartbeat_timer_;
 
   // The observers that track how the tabs are used.
   std::map<content::WebContents*, std::unique_ptr<WebContentsUsageObserver>>
@@ -227,6 +239,10 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   static const char kUsedAndClosedInIntervalHistogramNameBase[];
   static const char kUsedTabsInIntervalHistogramNameBase[];
 
+  // The name of the histograms that records the current number of tabs/windows.
+  static const char kTabCountHistogramName[];
+  static const char kWindowCountHistogramName[];
+
   UmaStatsReportingDelegate() {}
   virtual ~UmaStatsReportingDelegate() {}
 
@@ -235,6 +251,9 @@ class TabStatsTracker::UmaStatsReportingDelegate {
 
   // Called once per day to report the metrics.
   void ReportDailyMetrics(const TabStatsDataStore::TabsStats& tab_stats);
+
+  // Report the tab heartbeat metrics.
+  void ReportHeartbeatMetrics(const TabStatsDataStore::TabsStats& tab_stats);
 
   // Report some information about how tabs have been used during a given
   // interval of time.

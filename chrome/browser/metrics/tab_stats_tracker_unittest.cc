@@ -8,7 +8,6 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/power_monitor_test_base.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -28,6 +27,7 @@ class TestTabStatsTracker : public TabStatsTracker {
  public:
   using TabStatsTracker::OnInitialOrInsertedTab;
   using TabStatsTracker::OnInterval;
+  using TabStatsTracker::OnHeartbeatEvent;
   using TabStatsTracker::TabChangedAt;
   using UmaStatsReportingDelegate = TabStatsTracker::UmaStatsReportingDelegate;
 
@@ -71,15 +71,17 @@ class TestTabStatsTracker : public TabStatsTracker {
     return tab_stats_data_store()->tab_stats().window_count;
   }
 
-  void CheckDailyEventInterval() { daily_event()->CheckInterval(); }
+  void CheckDailyEventInterval() { daily_event_for_testing()->CheckInterval(); }
 
   void TriggerDailyEvent() {
     // Reset the daily event to allow triggering the DailyEvent::OnInterval
     // manually several times in the same test.
-    reset_daily_event(new DailyEvent(pref_service_, prefs::kTabStatsDailySample,
-                                     kTabStatsDailyEventHistogramName));
-    daily_event()->AddObserver(std::make_unique<TabStatsDailyObserver>(
-        reporting_delegate(), tab_stats_data_store()));
+    reset_daily_event_for_testing(
+        new DailyEvent(pref_service_, prefs::kTabStatsDailySample,
+                       kTabStatsDailyEventHistogramName));
+    daily_event_for_testing()->AddObserver(
+        std::make_unique<TabStatsDailyObserver>(
+            reporting_delegate_for_testing(), tab_stats_data_store()));
 
     // Update the daily event registry to the previous day and trigger it.
     base::Time last_time = base::Time::Now() - base::TimeDelta::FromHours(25);
@@ -160,14 +162,18 @@ TestTabStatsTracker::TestTabStatsTracker(PrefService* pref_service)
     : TabStatsTracker(pref_service), pref_service_(pref_service) {
   // Stop the timer to ensure that the stats don't get reported (and reset)
   // while running the tests.
-  EXPECT_TRUE(timer()->IsRunning());
-  timer()->Stop();
+  EXPECT_TRUE(daily_event_timer_for_testing()->IsRunning());
+  daily_event_timer_for_testing()->Stop();
 
   // Stop the usage interval timers so they don't trigger while running the
   // tests.
   usage_interval_timers_for_testing()->clear();
 
-  reset_reporting_delegate(new TestUmaStatsReportingDelegate());
+  reset_reporting_delegate_for_testing(new TestUmaStatsReportingDelegate());
+
+  // Stop the heartbeat timer to ensure that it doesn't interfere with the
+  // tests.
+  heartbeat_timer_for_testing()->Stop();
 }
 
 // Comparator for base::Bucket values.
@@ -403,6 +409,30 @@ TEST_F(TabStatsTrackerTest, TabUsageGetsReported) {
           UmaStatsReportingDelegate::kUsedAndClosedInIntervalHistogramNameBase,
           kValidLongInterval),
       1, 1);
+}
+
+TEST_F(TabStatsTrackerTest, HeartbeatMetrics) {
+  size_t expected_tab_count = tab_stats_tracker_->AddTabs(12, this);
+  size_t expected_window_count = tab_stats_tracker_->AddWindows(5);
+
+  tab_stats_tracker_->OnHeartbeatEvent();
+
+  histogram_tester_.ExpectBucketCount(
+      UmaStatsReportingDelegate::kTabCountHistogramName, expected_tab_count, 1);
+  histogram_tester_.ExpectBucketCount(
+      UmaStatsReportingDelegate::kWindowCountHistogramName,
+      expected_window_count, 1);
+
+  expected_tab_count = tab_stats_tracker_->RemoveTabs(4);
+  expected_window_count = tab_stats_tracker_->RemoveWindows(3);
+
+  tab_stats_tracker_->OnHeartbeatEvent();
+
+  histogram_tester_.ExpectBucketCount(
+      UmaStatsReportingDelegate::kTabCountHistogramName, expected_tab_count, 1);
+  histogram_tester_.ExpectBucketCount(
+      UmaStatsReportingDelegate::kWindowCountHistogramName,
+      expected_window_count, 1);
 }
 
 }  // namespace metrics
