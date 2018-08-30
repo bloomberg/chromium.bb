@@ -601,28 +601,22 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ALT_KEY" desc="Alt key">
         Alt
       </message>
+      <message name="IDS_APP_COMMAND_KEY" desc="Command key">
+        Command
+      </message>
       <message name="IDS_APP_CTRL_KEY" desc="Ctrl key">
         Ctrl
+      </message>
+      <message name="IDS_APP_SEARCH_KEY" desc="Search key">
+        Search
       </message>
       <message name="IDS_APP_SHIFT_KEY" desc="Shift key">
         Shift
       </message>
 
-      <!-- Shortcut Modifiers -->
-      <message name="IDS_APP_CONTROL_MODIFIER" desc="Control key shortcut modifier">
-        Ctrl+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
-      </message>
-      <message name="IDS_APP_ALT_MODIFIER" desc="Alt key shortcut modifier">
-        Alt+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
-      </message>
-      <message name="IDS_APP_SHIFT_MODIFIER" desc="Shift key shortcut modifier">
-        Shift+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
-      </message>
-      <message name="IDS_APP_COMMAND_MODIFIER" desc="Command key shortcut modifier">
-        Command+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
-      </message>
-      <message name="IDS_APP_SEARCH_MODIFIER" desc="Search key shortcut modifier">
-        Search+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
+      <!-- Accelerator format -->
+      <message name="IDS_APP_ACCELERATOR_WITH_MODIFIER" desc="Accelerator with a modifier key">
+        <ph name="KEY_MODIFIER_NAME">$1<ex>Ctrl</ex></ph>+<ph name="KEY_COMBO_NAME">$2<ex>C</ex></ph>
       </message>
 
       <!-- Byte size units -->
