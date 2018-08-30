@@ -1180,8 +1180,10 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 
 void BrowserView::DestroyBrowser() {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  GetWidget()->GetNativeView()->RemovePreTargetHandler(
-      QuitInstructionBubbleController::GetInstance());
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
+    GetWidget()->GetNativeView()->RemovePreTargetHandler(
+        QuitInstructionBubbleController::GetInstance());
+  }
 #endif
 
   // After this returns other parts of Chrome are going to be shutdown. Close
@@ -2299,8 +2301,10 @@ void BrowserView::InitViews() {
                                        browser_->profile());
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  GetWidget()->GetNativeView()->AddPreTargetHandler(
-      QuitInstructionBubbleController::GetInstance());
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
+    GetWidget()->GetNativeView()->AddPreTargetHandler(
+        QuitInstructionBubbleController::GetInstance());
+  }
 #endif
 
 #if defined(USE_AURA)
