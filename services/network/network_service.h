@@ -206,7 +206,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
 
-  std::unique_ptr<MojoNetLog> owned_net_log_;
+  MojoNetLog* network_service_net_log_ = nullptr;
   // TODO(https://crbug.com/767450): Remove this, once Chrome no longer creates
   // its own NetLog.
   net::NetLog* net_log_;

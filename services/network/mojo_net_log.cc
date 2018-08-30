@@ -21,12 +21,14 @@
 
 namespace network {
 
-MojoNetLog::MojoNetLog() {}
+MojoNetLog::MojoNetLog() = default;
+MojoNetLog::~MojoNetLog() = default;
 
-MojoNetLog::~MojoNetLog() {
-  if (file_net_log_observer_)
+void MojoNetLog::ShutDown() {
+  if (file_net_log_observer_) {
     file_net_log_observer_->StopObserving(nullptr /*polled_data*/,
                                           base::OnceClosure());
+  }
 }
 
 void MojoNetLog::ObserveFileWithConstants(base::File file,

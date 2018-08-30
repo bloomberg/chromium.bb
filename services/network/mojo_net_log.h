@@ -29,6 +29,9 @@ class MojoNetLog : public net::NetLog {
   MojoNetLog();
   ~MojoNetLog() override;
 
+  // Finalizes the logfile created by any call to ObserveFileWithConstants().
+  void ShutDown();
+
   // If specified by the command line, stream network events (NetLog) to a
   // file on disk. This will last for the duration of the process.
   void ObserveFileWithConstants(base::File file, base::Value constants);
