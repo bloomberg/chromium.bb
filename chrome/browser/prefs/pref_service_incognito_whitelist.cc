@@ -133,6 +133,10 @@ const char* const kPersistentPrefNames[] = {
     prefs::kTabStatsTotalTabCountMax, prefs::kTabStatsMaxTabsPerWindow,
     prefs::kTabStatsWindowCountMax, prefs::kTabStatsDailySample,
 
+#if defined(OS_MACOSX)
+    prefs::kShowFullscreenToolbar,
+#endif
+
     // Rappor preferences are not used in incognito mode, but they are written
     // in startup if they don't exist. So if the startup would be in incognito,
     // they need to be persisted.
@@ -181,31 +185,14 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // !defined(OS_ANDROID)
 
     // chrome/common/pref_names.h
-    prefs::kImportantSitesDialogHistory, prefs::kNewTabPageLocationOverride,
-    prefs::kSessionExitedCleanly, prefs::kSessionExitType,
-    prefs::kObservedSessionTime, prefs::kRecurrentSSLInterstitial,
-    prefs::kSiteEngagementLastUpdateTime, prefs::kURLsToRestoreOnStartup,
-
-#if BUILDFLAG(ENABLE_RLZ)
-    prefs::kRlzPingDelaySeconds,
-#endif  // BUILDFLAG(ENABLE_RLZ)
+    prefs::kImportantSitesDialogHistory, prefs::kObservedSessionTime,
+    prefs::kSiteEngagementLastUpdateTime,
 
 #if defined(OS_CHROMEOS)
     prefs::kApplicationLocaleBackup, prefs::kApplicationLocaleAccepted,
     prefs::kOwnerLocale, prefs::kAllowedUILocales,
 #endif
 
-    prefs::kDataSaverEnabled, prefs::kSSLErrorOverrideAllowed,
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-    prefs::kConfirmToQuitEnabled,
-#endif
-#if defined(OS_MACOSX)
-    prefs::kShowFullscreenToolbar, prefs::kAllowJavascriptAppleEvents,
-#endif
-    prefs::kAlternateErrorPagesEnabled, prefs::kDnsPrefetchingStartupList,
-    prefs::kDnsPrefetchingHostReferralList, prefs::kNetworkQualities,
-    prefs::kNetworkPredictionOptions,
 #if defined(OS_CHROMEOS)
     prefs::kEnableTouchpadThreeFingerClick, prefs::kNaturalScroll,
     prefs::kPrimaryMouseButtonRight, prefs::kMouseReverseScroll,
@@ -241,10 +228,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kScreenTimeMinutesUsed, prefs::kUsageTimeLimit,
     prefs::kScreenTimeLastState, prefs::kEnableSyncConsent,
 #endif  // defined(OS_CHROMEOS)
-    prefs::kSpeechRecognitionFilterProfanities,
-#if !defined(OS_ANDROID)
-    prefs::kMdHistoryMenuPromoShown,
-#endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     prefs::kUsesSystemTheme,
 #endif
@@ -316,10 +299,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
-#if defined(OS_ANDROID)
-    prefs::kCrashReportingEnabled,
-#endif  // defined(OS_ANDROID)
-
     prefs::kStabilityOtherUserCrashCount, prefs::kStabilityKernelCrashCount,
     prefs::kStabilitySystemUncleanShutdownCount,
 
@@ -337,9 +316,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDownloadDirUpgraded,
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
     prefs::kOpenPdfDownloadInSystemReader,
-#endif
-#if defined(OS_ANDROID)
-    prefs::kShowMissingSdCardErrorAndroid,
 #endif
 
     // prefs::kSaveFileDefaultDirectory, prefs::kSaveFileType,
