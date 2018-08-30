@@ -28,6 +28,13 @@ const base::flat_set<AuthenticatorTransport> kAllTransports = {
     AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
 };
 
+const base::flat_set<AuthenticatorTransport> kAllTransportsWithoutCable = {
+    AuthenticatorTransport::kUsbHumanInterfaceDevice,
+    AuthenticatorTransport::kNearFieldCommunication,
+    AuthenticatorTransport::kBluetoothLowEnergy,
+    AuthenticatorTransport::kInternal,
+};
+
 using TransportAvailabilityInfo =
     ::device::FidoRequestHandlerBase::TransportAvailabilityInfo;
 
@@ -94,7 +101,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
     bool has_touch_id_credential;
     Step expected_first_step;
   } kTestCases[] = {
-      // Only a single transport is available.
+      // Only a single transport is available for a GetAssertion call.
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
        base::nullopt,
@@ -110,11 +117,6 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        base::nullopt,
        false,
        Step::kBleActivate},
-      {RequestType::kMakeCredential,
-       {AuthenticatorTransport::kInternal},
-       base::nullopt,
-       false,
-       Step::kTouchId},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal},
        base::nullopt,
@@ -131,14 +133,14 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        false,
        Step::kCableActivate},
 
-      // The last used transport is available.
-      {RequestType::kGetAssertion, kAllTransports,
+      // The last used transport is available (and caBLE is not).
+      {RequestType::kGetAssertion, kAllTransportsWithoutCable,
        AuthenticatorTransport::kUsbHumanInterfaceDevice, false,
        Step::kUsbInsertAndActivate},
 
       // The last used transport is not available.
       {RequestType::kGetAssertion,
-       {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
+       {AuthenticatorTransport::kBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice},
        AuthenticatorTransport::kNearFieldCommunication,
        false,
@@ -154,7 +156,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        AuthenticatorTransport::kUsbHumanInterfaceDevice,
        false,
        Step::kErrorInternalUnrecognized},
-      {RequestType::kGetAssertion, kAllTransports,
+      {RequestType::kGetAssertion, kAllTransportsWithoutCable,
        AuthenticatorTransport::kUsbHumanInterfaceDevice, false,
        Step::kUsbInsertAndActivate},
       {RequestType::kGetAssertion,
@@ -163,8 +165,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        AuthenticatorTransport::kInternal,
        false,
        Step::kUsbInsertAndActivate},
-      {RequestType::kGetAssertion, kAllTransports, base::nullopt, false,
-       Step::kTransportSelection},
+      {RequestType::kGetAssertion, kAllTransportsWithoutCable, base::nullopt,
+       false, Step::kTransportSelection},
 
       // The KeyChain contains an allowed Touch ID credential, but Touch ID is
       // not enabled by the relying party.
@@ -175,9 +177,26 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        Step::kUsbInsertAndActivate},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice,
-        AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
+        AuthenticatorTransport::kBluetoothLowEnergy},
        base::nullopt,
        true,
+       Step::kTransportSelection},
+
+      // If caBLE is one of the allowed transports, it has second-highest
+      // priority after Touch ID, and is auto-selected for GetAssertion
+      // operations even if the last used transport was something else.
+      {RequestType::kGetAssertion, kAllTransports, base::nullopt, false,
+       Step::kCableActivate},
+      {RequestType::kGetAssertion,
+       {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
+        AuthenticatorTransport::kUsbHumanInterfaceDevice},
+       AuthenticatorTransport::kUsbHumanInterfaceDevice,
+       false,
+       Step::kCableActivate},
+
+      // caBLE should not enjoy this same high priority for MakeCredential
+      // calls.
+      {RequestType::kMakeCredential, kAllTransports, base::nullopt, false,
        Step::kTransportSelection},
 
       // No transports available.
@@ -197,12 +216,27 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       // selection view for MakeCredential call.
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
+       base::nullopt,
        false,
        Step::kUsbInsertAndActivate},
       {RequestType::kMakeCredential,
+       {AuthenticatorTransport::kInternal},
+       base::nullopt,
+       false,
+       Step::kTouchId},
+      {RequestType::kMakeCredential,
+       {AuthenticatorTransport::kBluetoothLowEnergy},
+       base::nullopt,
+       false,
+       Step::kBleActivate},
+      {RequestType::kMakeCredential,
+       {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
+       base::nullopt,
+       false,
+       Step::kCableActivate},
+      {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
+       base::nullopt,
        false,
        Step::kUsbInsertAndActivate},
   };
@@ -284,7 +318,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, PostMortems) {
     model.AddObserver(&mock_observer);
 
     TransportAvailabilityInfo transports_info;
-    transports_info.available_transports = kAllTransports;
+    transports_info.available_transports = kAllTransportsWithoutCable;
 
     EXPECT_CALL(mock_observer, OnStepTransition());
     model.StartFlow(std::move(transports_info), base::nullopt);

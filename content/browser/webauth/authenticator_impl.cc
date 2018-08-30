@@ -574,12 +574,6 @@ void AuthenticatorImpl::GetAssertion(
       ConstructClientDataHash(client_data_json_), std::move(options),
       alternative_application_parameter_);
 
-  if (ctap_request.cable_extension()) {
-    // Always skip directly to the caBLE screen if the caBLE extension is used.
-    request_delegate_->UpdateLastTransportUsed(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  }
-
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);
