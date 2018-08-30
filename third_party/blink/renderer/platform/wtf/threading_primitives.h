@@ -105,6 +105,8 @@ class LOCKABLE WTF_EXPORT Mutex : public MutexBase {
   }
 };
 
+// RecursiveMutex is deprecated AND WILL BE REMOVED.
+// https://crbug.com/856641
 class WTF_EXPORT RecursiveMutex : public MutexBase {
  public:
   RecursiveMutex() : MutexBase(true) {}
