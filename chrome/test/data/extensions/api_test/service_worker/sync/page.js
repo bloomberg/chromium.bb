@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var registerSyncOnServiceWorker = new Promise(function(resolve, reject) {
-  var serviceWorker;
-  navigator.serviceWorker.register('sw.js').then(function() {
-    // Wait until the service worker is active.
-    return navigator.serviceWorker.ready;
-  }).then(function(registration) {
-    serviceWorker = registration.active;
-    return registration.sync.register('send-chats');
-  }).then(function() {
-    resolve(serviceWorker);
-  }).catch(function(err) {
-    reject(err);
+var getOnSyncWorkerPromise = function() {
+  return new Promise(function(resolve, reject) {
+    var serviceWorker;
+    navigator.serviceWorker.register('sw.js').then(function() {
+      // Wait until the service worker is active.
+      return navigator.serviceWorker.ready;
+    }).then(function(registration) {
+      serviceWorker = registration.active;
+      return registration.sync.register('send-chats');
+    }).then(function() {
+      resolve(serviceWorker);
+    }).catch(function(err) {
+      reject(err);
+    });
   });
-});
+};
 
 window.runServiceWorker = function() {
-  registerSyncOnServiceWorker.then(function(serviceWorker) {
+  getOnSyncWorkerPromise().then(function(serviceWorker) {
     var mc = new MessageChannel();
     // Called when ServiceWorker.onsync fires.
     mc.port1.onmessage = function(e) {

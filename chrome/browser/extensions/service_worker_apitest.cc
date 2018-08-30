@@ -876,13 +876,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, WebAccessibleResourcesFetch) {
       "service_worker/web_accessible_resources/fetch/", "page.html"));
 }
 
-// Flaky on Linux: http://crbug/810397.
-#if defined(OS_LINUX)
-#define MAYBE_TabsCreate DISABLED_TabsCreate
-#else
-#define MAYBE_TabsCreate TabsCreate
-#endif
-IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, MAYBE_TabsCreate) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, TabsCreate) {
   if (IsMacViewsMode())
     return;
   // Extensions APIs from SW are only enabled on trunk.
