@@ -42,7 +42,7 @@
       audit.define('test', (task, should) => {
         should(function() {
           scriptNode1.connect(analyzer);
-        }, 'scriptNode1.connect(analyzer)').throw('InvalidAccessError');
+        }, 'scriptNode1.connect(analyzer)').throw(DOMException, 'InvalidAccessError');
         should(function() {
           scriptNode2.connect(analyzer);
         }, 'scriptNode2.connect(analyzer)').notThrow();

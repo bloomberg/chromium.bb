@@ -42,7 +42,7 @@
         p = context.decodeAudioData(encodedAudio);
         should(() => {
           postMessage('', '*', [encodedAudio]);
-        }, 'Transfer of audio buffer').throw('DataCloneError');
+        }, 'Transfer of audio buffer').throw(DOMException, 'DataCloneError');
         should(p, 'Decoding of audio').beResolved().then(() => task.done());
       });
 

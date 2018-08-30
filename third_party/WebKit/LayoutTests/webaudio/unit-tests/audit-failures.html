@@ -34,7 +34,7 @@
             }, 'Setting foo to bar').notThrow();
             should(function() {
               let foo = 0;
-            }).throw('ReferenceError');
+            }).throw(ReferenceError);
             should(3 > 5, '3 < 5').beTrue();
             should(true).beFalse();
             should(1, 'The number of channels').beEqualTo(2);

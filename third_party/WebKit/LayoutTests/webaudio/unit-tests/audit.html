@@ -29,7 +29,7 @@
             }).throw();
             should(function() {
               let foo3 = bar;
-            }).throw('ReferenceError');
+            }).throw(ReferenceError);
             should(function() {
               let foo4 = bar;
             }).throw(null);
@@ -38,7 +38,7 @@
             }).throw(undefined);
             should(() => {
               should();
-            }, 'Calling should() with no argument').throw('Error');
+            }, 'Calling should() with no argument').throw(Error);
             should(3 < 5, '3 < 5').beTrue();
             should(false).beFalse();
             should(1).beEqualTo(1)

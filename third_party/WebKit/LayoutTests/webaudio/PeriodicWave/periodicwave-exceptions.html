@@ -25,19 +25,19 @@
             should(
                 () => context.createPeriodicWave([1, Infinity], [1, 1]),
                 'createPeriodicWave([1, Infinity], [1,1])')
-                .throw('TypeError');
+                .throw(TypeError);
             should(
                 () => context.createPeriodicWave([1, NaN], [1, 1]),
                 'createPeriodicWave([1, NaN], [1,1])')
-                .throw('TypeError');
+                .throw(TypeError);
             should(
                 () => context.createPeriodicWave([1, 1], [1, Infinity]),
                 'createPeriodicWave([1, 1], [1, Infinity])')
-                .throw('TypeError');
+                .throw(TypeError);
             should(
                 () => context.createPeriodicWave([1, 1], [1, NaN]),
                 'createPeriodicWave([1, 1], [1, NaN])')
-                .throw('TypeError');
+                .throw(TypeError);
             task.done();
           });
 

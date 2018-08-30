@@ -73,7 +73,7 @@
                       () => gain.gain.value = 0,
                       'Using value setter at time ' + context.currentTime +
                           ' in the middle of the curve')
-                      .throw('NotSupportedError');
+                      .throw(DOMException, 'NotSupportedError');
                 })
                 .then(() => context.resume());
 

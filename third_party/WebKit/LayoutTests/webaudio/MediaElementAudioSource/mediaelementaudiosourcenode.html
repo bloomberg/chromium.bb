@@ -36,15 +36,15 @@
             // destination, illegal output index, and illegal input index.
             should(
                 () => audioNode.connect(0, 0, 0), 'audioNode.connect(0, 0, 0)')
-                .throw('TypeError');
+                .throw(TypeError);
             should(
                 () => audioNode.connect(context.destination, 5, 0),
                 'audioNode.connect(context.destination, 5, 0)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
             should(
                 () => audioNode.connect(context.destination, 0, 5),
                 'audioNode.connect(context.destination, 0, 5)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
 
             // Verify same object is returned.
             let element = mediaSource.mediaElement;

@@ -267,18 +267,24 @@ window.Audit = (function() {
 
     /**
      * Check if |actual| operation wrapped in a function throws an exception
-     * with a expected error type correctly. |expected| is optional.
+     * with a expected error type correctly. |expected| is optional. If it is an
+     * instance of DOMException, then the description can be provided to be more
+     * strict about the exception type. |expected| also can be other generic
+     * error types.
      *
      * @example
      *   should(() => { let a = b; }, 'A bad code').throw();
-     *   should(() => { let c = d; }, 'Assigning d to c.')
-     *       .throw('ReferenceError');
-     *   should(() => { let e = f; }, 'Assigning e to f.')
-     *       .throw('ReferenceError', { omitErrorMessage: true });
+     *   should(() => { new SomeConstructor(); }, 'A bad construction')
+     *       .throw(DOMException, 'NotSupportedError');
+     *   should(() => { let c = d; }, 'Assigning d to c')
+     *       .throw(ReferenceError);
+     *   should(() => { let e = f; }, 'Assigning e to f')
+     *       .throw(ReferenceError, { omitErrorMessage: true });
      *
      * @result
      *   "PASS   A bad code threw an exception of ReferenceError: b is not
      *       defined."
+     *   "PASS   A bad construction threw NotSupportedError."
      *   "PASS   Assigning d to c threw ReferenceError: d is not defined."
      *   "PASS   Assigning e to f threw ReferenceError: [error message
      *       omitted]."
@@ -303,10 +309,16 @@ window.Audit = (function() {
           // The expected error type was not given.
           didThrowCorrectly = true;
           passDetail = '${actual} threw ' + error.name + errorMessage + '.';
-        } else if (error.name === this._expected) {
-          // The expected error type match the actual one.
+        } else if (this._expected === DOMException &&
+                   (this._expectedDescription === undefined ||
+                    this._expectedDescription === error.name)) {
+          // Handles DOMException with the associated name.
           didThrowCorrectly = true;
           passDetail = '${actual} threw ${expected}' + errorMessage + '.';
+        } else if (this._expected == error.constructor) {
+          // Handler other error types.
+          didThrowCorrectly = true;
+          passDetail = '${actual} threw ' + error.name + errorMessage + '.';
         } else {
           didThrowCorrectly = false;
           failDetail =

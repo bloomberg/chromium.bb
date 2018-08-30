@@ -74,11 +74,11 @@
             // Context is closed, so verify that we cannot create any more
             // nodes, nor connect any.
             should(() => context.createAnalyser(), 'context.createAnalyser()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createBiquadFilter(),
                 'context.createBiquadFilter()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
 
             // createBuffer is an exception because it's not really tied in any
             // way to an audio context. And it's useful to be able to create a
@@ -92,48 +92,48 @@
             should(
                 () => context.createBufferSource(),
                 'context.createBufferSource()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createChannelMerger(),
                 'context.createChannelMerger()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createChannelSplitter(),
                 'context.createChannelSplitter()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(() => context.createConvolver(), 'context.createConvolver()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(() => context.createDelay(), 'context.createDelay()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createDynamicsCompressor(),
                 'context.createDynamicsCompressor()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(() => context.createGain(), 'context.createGain()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createOscillator(), 'context.createOscillator()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(() => context.createPanner(), 'context.createPanner()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createPeriodicWave(wave, wave),
                 'context.createPeriodicWave(wave, wave)')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createScriptProcessor(),
                 'context.createScriptProcessor()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createStereoPanner(),
                 'context.createStereoPanner()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(
                 () => context.createWaveShaper(), 'context.createWaveShaper()')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
 
             should(() => osc.connect(gain), 'osc.connect(gain)')
-                .throw('InvalidStateError');
+                .throw(DOMException, 'InvalidStateError');
             should(() => gain.disconnect(), 'gain.disconnect()').notThrow();
 
             // Can't resume a context that is closed (released).

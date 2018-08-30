@@ -51,28 +51,28 @@
         should(
             () => context.createBuffer(99, 1, context.sampleRate),
             'context.createBuffer(99, 1, context.sampleRate)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         should(
             () => context.createBuffer(0, 1, context.sampleRate),
             'context.createBuffer(0, 1, context.sampleRate)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         // Invalid sample rate: NotSupportedError
         should(
             () => context.createBuffer(1, 1, 1),
             'context.createBuffer(1, 1, 1)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         should(
             () => context.createBuffer(1, 1, 2999),
             'context.createBuffer(1, 1, 2999)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         should(
             () => context.createBuffer(1, 1, 384001),
             'context.createBuffer(1, 1, 384001)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         should(
             () => context.createBuffer(1, 1, 1e6),
             'context.createBuffer(1, 1, 1e6)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         // Check valid values from crbug.com/344375
         should(
             () => context.createBuffer(1, 1, 3000),
@@ -90,12 +90,12 @@
         should(
             () => context.createBuffer(1, 0, context.sampleRate),
             'context.createBuffer(1, 0, context.sampleRate)')
-            .throw('NotSupportedError');
+            .throw(DOMException, 'NotSupportedError');
         // 2-arg createBuffer not allowed.
         should(
             () => context.createBuffer(new ArrayBuffer(100), true),
             'context.createBuffer(new ArrayBuffer(100), true)')
-            .throw('TypeError');
+            .throw(TypeError);
 
         task.done();
       });
@@ -124,16 +124,16 @@
         should(
             () => context.createScriptProcessor(1, 1, 1),
             'context.createScriptProcessor(1, 1, 1)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
         // Invalid number of inputs and outputs: IndexSizeError
         should(
             () => context.createScriptProcessor(4096, 100, 1),
             'context.createScriptProcessor(4096, 100, 1)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
         should(
             () => context.createScriptProcessor(4096, 1, 100),
             'context.createScriptProcessor(4096, 1, 100)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
         should(
             () => context.createScriptProcessor(),
             'context.createScriptProcessor()')
@@ -151,15 +151,15 @@
         should(
             () => context.createChannelSplitter(0),
             'context.createChannelSplitter(0)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
         should(
             () => context.createChannelSplitter(99),
             'context.createChannelSplitter(99)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
         should(
             () => context.createChannelMerger(0),
             'context.createChannelMerger(0)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
 
         task.done();
       });
@@ -169,7 +169,7 @@
         should(
             () => context.createChannelMerger(99),
             'context.createChannelMerger(99)')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
 
         task.done();
       });
@@ -179,11 +179,11 @@
         should(
             () => context.createPeriodicWave(null, null),
             'context.createPeriodicWave(null, null)')
-            .throw('TypeError');
+            .throw(TypeError);
         should(
             () => context.createPeriodicWave(new Float32Array(10), null),
             'context.createPeriodicWave(new Float32Array(10), null)')
-            .throw('TypeError');
+            .throw(TypeError);
         // Verify that we can use large arrays with no limit. Roughly.
         should(
             () => context.createPeriodicWave(
@@ -205,7 +205,7 @@
             () => context.createPeriodicWave(
                 new Float32Array(10), new Float32Array(7)),
             'context.createPeriodicWave(new Float32Array(10), new Float32Array(7))')
-            .throw('IndexSizeError');
+            .throw(DOMException, 'IndexSizeError');
 
         task.done();
       });
@@ -311,17 +311,17 @@
             should(
                 () => node.connect(context.destination, 100, 0),
                 'node.connect(context.destination, 100, 0)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
             should(
                 () => node.connect(context.destination, 0, 100),
                 'node.connect(context.destination, 0, 100)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
             should(
                 () => node.connect(node2.gain, 100),
                 'node.connect(node2.gain, 100)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
             should(() => node.disconnect(99), 'node.disconnect(99)')
-                .throw('IndexSizeError');
+                .throw(DOMException, 'IndexSizeError');
             // Can't connect to a different context (unspecified error)
             should(
                 () => node.connect(otherContext.destination),
@@ -362,7 +362,7 @@
             should(
                 () => context.destination.channelCount = 99,
                 'context.destination.channelCount = 99')
-                .throw('IndexSizeError', {omitErrorMessage: true});
+                .throw(DOMException, 'IndexSizeError', {omitErrorMessage: true});
 
             task.done();
           });
@@ -481,24 +481,24 @@
             should(
                 () => new OfflineAudioContext(0, 100, context.sampleRate),
                 'new OfflineAudioContext(0, 100, context.sampleRate)')
-                .throw('NotSupportedError');
+                .throw(DOMException, 'NotSupportedError');
             should(
                 () => new OfflineAudioContext(99, 100, context.sampleRate),
                 'new OfflineAudioContext(99, 100, context.sampleRate)')
-                .throw('NotSupportedError');
+                .throw(DOMException, 'NotSupportedError');
             // Invalid sample rate.
             should(
                 () => new OfflineAudioContext(1, 100, 1),
                 'new OfflineAudioContext(1, 100, 1)')
-                .throw('NotSupportedError');
+                .throw(DOMException, 'NotSupportedError');
             should(
                 () => new OfflineAudioContext(1, 100, 1e6),
                 'new OfflineAudioContext(1, 100, 1e6)')
-                .throw('NotSupportedError');
+                .throw(DOMException, 'NotSupportedError');
             should(
                 () => new OfflineAudioContext(1, 0, 44100),
                 'new OfflineAudioContext(1, 0, 44100)')
-                .throw('NotSupportedError');
+                .throw(DOMException, 'NotSupportedError');
             task.done();
           });
 
