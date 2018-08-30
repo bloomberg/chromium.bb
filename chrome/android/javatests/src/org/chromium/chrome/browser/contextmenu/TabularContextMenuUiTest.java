@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.common.Referrer;
@@ -86,8 +87,9 @@ public class TabularContextMenuUiTest {
 
         final List<Pair<Integer, List<ContextMenuItem>>> itemGroups = new ArrayList<>();
         List<? extends ContextMenuItem> item =
-                CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
-                        ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
+                CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
+                        new ChromeContextMenuItem(Item.CALL),
+                        new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         itemGroups.add(
                 new Pair<>(R.string.contextmenu_link_title, Collections.unmodifiableList(item)));
         final String url = "http://google.com";
@@ -115,8 +117,9 @@ public class TabularContextMenuUiTest {
 
         final List<Pair<Integer, List<ContextMenuItem>>> itemGroups = new ArrayList<>();
         List<? extends ContextMenuItem> item =
-                CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
-                        ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
+                CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
+                        new ChromeContextMenuItem(Item.CALL),
+                        new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         itemGroups.add(
                 new Pair<>(R.string.contextmenu_link_title, Collections.unmodifiableList(item)));
         itemGroups.add(
@@ -144,8 +147,9 @@ public class TabularContextMenuUiTest {
     public void testURLIsShownOnContextMenu() throws ExecutionException {
         final TabularContextMenuUi dialog = new TabularContextMenuUi(null);
         final List<? extends ContextMenuItem> item =
-                CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
-                        ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
+                CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
+                        new ChromeContextMenuItem(Item.CALL),
+                        new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         final String createdUrl = "http://google.com";
         final String expectedUrlWithFormatUrlForDisplayOmitHTTPScheme = "google.com";
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
@@ -170,8 +174,9 @@ public class TabularContextMenuUiTest {
     public void testHeaderIsNotShownWhenThereIsNoParams() throws ExecutionException {
         final TabularContextMenuUi dialog = new TabularContextMenuUi(null);
         final List<? extends ContextMenuItem> item =
-                CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
-                        ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
+                CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
+                        new ChromeContextMenuItem(Item.CALL),
+                        new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
@@ -190,8 +195,9 @@ public class TabularContextMenuUiTest {
     public void testLinkShowsMultipleLinesWhenClicked() throws ExecutionException {
         final TabularContextMenuUi dialog = new TabularContextMenuUi(null);
         final List<? extends ContextMenuItem> item =
-                CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
-                        ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
+                CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
+                        new ChromeContextMenuItem(Item.CALL),
+                        new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
