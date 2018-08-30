@@ -35,6 +35,17 @@ class Manifest(object):
     self._etree = etree
     self._ValidateTree()
 
+  # These __*state__ pickle protocol methods are intended for multiprocessing.
+
+  def __getstate__(self):
+    """Return picklable state for this Manifest."""
+    return ElementTree.tostring(self._etree.getroot())
+
+  def __setstate__(self, state):
+    """Set the state from pickle for this Manifest."""
+    root = ElementTree.fromstring(state)
+    self._etree = ElementTree.ElementTree(root)
+
   def _ValidateTree(self):
     """Raise Error if self._etree is not a valid manifest tree."""
     root = self._etree.getroot()
@@ -129,13 +140,25 @@ class _ManifestElement(object):
   """Subclasses of _ManifestElement wrap Manifest child XML elements."""
 
   ATTRS = ()
+  TAG = None
 
   def __init__(self, manifest, element):
-    tag = self.__class__.__name__.lower()
+    tag = self.TAG or self.__class__.__name__.lower()
     if element.tag != tag:
       raise ValueError('expected a <%s> but got a <%s>' % (tag, element.tag))
     self._manifest = manifest
     self._el = element
+
+  # These __*state__ pickle protocol methods are intended for multiprocessing.
+
+  def __getstate__(self):
+    """Return picklable state for this element."""
+    return (self._manifest, ElementTree.tostring(self._el))
+
+  def __setstate__(self, state):
+    """Set the state from pickle for this element."""
+    self._manifest, xml_data = state
+    self._el = ElementTree.fromstring(xml_data)
 
   def _XMLAttrName(self, name):
     """Return the XML attr name for the given Python attr name."""

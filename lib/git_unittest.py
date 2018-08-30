@@ -441,8 +441,20 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
       self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
 
 
-class GitBranchDetectionTest(patch_unittest.GitRepoPatchTestCase):
-  """Tests that git library functions related to branch detection work."""
+class GitIntegrationTest(patch_unittest.GitRepoPatchTestCase):
+  """Tests that git library functions work with actual git repos."""
+
+  def testIsReachableTrue(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'foo')
+    patch2 = self.CommitFile(git1, 'bar', 'bar')
+    self.assertTrue(git.IsReachable(git1, patch1.sha1, patch2.sha1))
+
+  def testIsReachableFalse(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'foo')
+    patch2 = self.CommitFile(git1, 'bar', 'bar')
+    self.assertFalse(git.IsReachable(git1, patch2.sha1, patch1.sha1))
 
   def testDoesCommitExistInRepoWithAmbiguousBranchName(self):
     git1 = self._MakeRepo('git1', self.source)

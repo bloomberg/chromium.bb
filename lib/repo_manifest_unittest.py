@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import io
 import os
+import pickle
 
 from xml.etree import cElementTree as ElementTree
 
@@ -98,6 +99,12 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
       with self.assertRaises(repo_manifest.UnsupportedFeature):
         repo_manifest.Manifest(etree)
 
+  def testPickle(self):
+    """Test Manifest picklability."""
+    pickled = pickle.dumps(self.manifest)
+    unpickled = pickle.loads(pickled)
+    self.AssertXMLAlmostEqual(ManifestToString(unpickled), MANIFEST_XML)
+
   def testFromFile(self):
     """Test Manifest.FromFile."""
     path = os.path.join(self.tempdir, 'manifest.xml')
@@ -155,19 +162,29 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
       self.manifest.GetUniqueProject('missing/project')
 
 
+class ManifestElementExample(repo_manifest._ManifestElement):
+  """_ManifestElement testing example."""
+  # pylint: disable=protected-access
+
+  ATTRS = ('name', 'other_attr')
+  TAG = 'example'
+
+
 class ManifestElementTest(XMLTestCase):
   """Tests for repo_manifest._ManifestElement."""
+  # pylint: disable=attribute-defined-outside-init
 
   XML = '<example name="value"/>'
 
-  # pylint: disable=protected-access
-  class Example(repo_manifest._ManifestElement):
-    """_ManifestElement testing example."""
-    ATTRS = ('name', 'other_attr')
-
   def setUp(self):
     element = ElementTree.fromstring(self.XML)
-    self.example = self.Example(None, element)
+    self.example = ManifestElementExample(None, element)
+
+  def testPickle(self):
+    """Test _ManifestElement picklability."""
+    pickled = pickle.dumps(self.example)
+    unpickled = pickle.loads(pickled)
+    self.AssertXMLAlmostEqual(repr(unpickled), self.XML)
 
   def testGetters(self):
     """Test _ManifestElement.__getattr__."""
@@ -181,7 +198,6 @@ class ManifestElementTest(XMLTestCase):
 
   def testSetters(self):
     """Test _ManifestElement.__setattr__."""
-    # pylint: disable=attribute-defined-outside-init
     self.example.name = 'new'
     self.example.other_attr = 'other'
     EXPECTED = '<example name="new" other-attr="other"/>'

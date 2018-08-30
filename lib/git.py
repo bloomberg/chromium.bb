@@ -162,6 +162,29 @@ def GetGitRepoRevision(cwd, branch='HEAD', short=False):
   return RunGit(cwd, cmd).output.strip()
 
 
+def IsReachable(cwd, to_ref, from_ref):
+  """Determine whether one commit ref is reachable from another.
+
+  Args:
+    cwd: The git repository to work with.
+    to_ref: The commit ref that may be reachable.
+    from_ref: The commit ref that |to_ref| may be reachable from.
+
+  Returns:
+    True if |to_ref| is reachable from |from_ref|.
+
+  Raises:
+    RunCommandError: if some error occurs, such as a commit ref not existing.
+  """
+  try:
+    RunGit(cwd, ['merge-base', '--is-ancestor', to_ref, from_ref])
+  except cros_build_lib.RunCommandError as e:
+    if e.result.returncode == 1:
+      return False
+    raise
+  return True
+
+
 def DoesCommitExistInRepo(cwd, commit):
   """Determine whether a commit (SHA1 or ref) exists in a repo.
 
