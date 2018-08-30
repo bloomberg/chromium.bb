@@ -20,6 +20,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/host_resolver_source.h"
 
 namespace net {
 
@@ -56,6 +57,14 @@ int ParseAddressList(const std::string& host_list,
 //
 // By default, MockHostResolvers include a single rule that maps all hosts to
 // 127.0.0.1.
+//
+// Separate rules are used for separate HostResolverSource (eg
+// HostResolverSource::SYSTEM for requests that should only be resolved using
+// the system resolver).  Use rules_map() to access the separate rules if tests
+// involve requests specifying sources:
+//
+//    host_resolver->rules_map()[HostResolverSource::DNS]->AddRule("foo.com",
+//                                                                 "1.2.3.4");
 
 // Base class shared by MockHostResolver and MockCachingHostResolver.
 class MockHostResolverBase
@@ -68,8 +77,16 @@ class MockHostResolverBase
  public:
   ~MockHostResolverBase() override;
 
-  RuleBasedHostResolverProc* rules() { return rules_.get(); }
-  void set_rules(RuleBasedHostResolverProc* rules) { rules_ = rules; }
+  RuleBasedHostResolverProc* rules() {
+    return rules_map_[HostResolverSource::ANY].get();
+  }
+  void set_rules(RuleBasedHostResolverProc* rules) {
+    rules_map_[HostResolverSource::ANY] = rules;
+  }
+  std::map<HostResolverSource, scoped_refptr<RuleBasedHostResolverProc>>
+  rules_map() {
+    return rules_map_;
+  }
 
   // Controls whether resolutions complete synchronously or asynchronously.
   void set_synchronous_mode(bool is_synchronous) {
@@ -152,6 +169,7 @@ class MockHostResolverBase
       const HostPortPair& host,
       AddressFamily requested_address_family,
       HostResolverFlags flags,
+      HostResolverSource source,
       bool allow_cache,
       AddressList* addresses,
       HostCache::EntryStaleness* stale_info = nullptr);
@@ -159,6 +177,7 @@ class MockHostResolverBase
   int ResolveProc(const HostPortPair& host,
                   AddressFamily requested_address_family,
                   HostResolverFlags flags,
+                  HostResolverSource source,
                   AddressList* addresses);
   // Resolve request stored in |requests_|. Pass rv to callback.
   void ResolveNow(size_t id);
@@ -166,7 +185,8 @@ class MockHostResolverBase
   RequestPriority last_request_priority_;
   bool synchronous_mode_;
   bool ondemand_mode_;
-  scoped_refptr<RuleBasedHostResolverProc> rules_;
+  std::map<HostResolverSource, scoped_refptr<RuleBasedHostResolverProc>>
+      rules_map_;
   std::unique_ptr<HostCache> cache_;
   RequestMap requests_;
   size_t next_request_id_;
