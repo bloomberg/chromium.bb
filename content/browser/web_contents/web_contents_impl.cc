@@ -1496,6 +1496,8 @@ void WebContentsImpl::SetHasPictureInPictureVideo(
     return;
   has_picture_in_picture_video_ = has_picture_in_picture_video;
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  for (auto& observer : observers_)
+    observer.MediaPictureInPictureChanged(has_picture_in_picture_video_);
 }
 
 bool WebContentsImpl::IsCrashed() const {
@@ -6501,11 +6503,6 @@ void WebContentsImpl::MediaResized(
 void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
   for (auto& observer : observers_)
     observer.MediaEffectivelyFullscreenChanged(is_fullscreen);
-}
-
-void WebContentsImpl::MediaPictureInPictureChanged(bool is_picture_in_picture) {
-  for (auto& observer : observers_)
-    observer.MediaPictureInPictureChanged(is_picture_in_picture);
 }
 
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {

@@ -336,9 +336,6 @@ void MediaWebContentsObserver::OnPictureInPictureModeStarted(
 
   UpdateVideoLock();
 
-  web_contents_impl()->MediaPictureInPictureChanged(
-      true /* is_picture_in_picture */);
-
   gfx::Size window_size =
       web_contents_impl()->EnterPictureInPicture(surface_id, natural_size);
 
@@ -353,9 +350,6 @@ void MediaWebContentsObserver::OnPictureInPictureModeEnded(
     int delegate_id,
     int request_id) {
   ExitPictureInPictureInternal();
-
-  web_contents_impl()->MediaPictureInPictureChanged(
-      false /* is_picture_in_picture */);
 
   render_frame_host->Send(
       new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
