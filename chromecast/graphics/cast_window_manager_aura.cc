@@ -13,6 +13,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ime/input_method.h"
@@ -73,39 +74,12 @@ gfx::Rect GetPrimaryDisplayHostBounds() {
 
 }  // namespace
 
-// An ui::EventTarget that ignores events.
-class CastEventIgnorer : public ui::EventTargeter {
- public:
-  ~CastEventIgnorer() override;
-
-  // ui::EventTargeter implementation:
-  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                      ui::Event* event) override;
-  ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
-                                      ui::Event* event) override;
-};
-
-CastEventIgnorer::~CastEventIgnorer() {}
-
-ui::EventTarget* CastEventIgnorer::FindTargetForEvent(ui::EventTarget* root,
-                                                      ui::Event* event) {
-  return nullptr;
-}
-
-ui::EventTarget* CastEventIgnorer::FindNextBestTarget(
-    ui::EventTarget* previous_target,
-    ui::Event* event) {
-  return nullptr;
-}
-
 CastWindowTreeHost::CastWindowTreeHost(bool enable_input,
                                        const gfx::Rect& bounds)
     : WindowTreeHostPlatform(ui::PlatformWindowInitProperties{bounds}),
       enable_input_(enable_input) {
-  if (!enable_input) {
-    window()->SetEventTargeter(
-        std::unique_ptr<ui::EventTargeter>(new CastEventIgnorer));
-  }
+  if (!enable_input)
+    window()->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
 }
 
 CastWindowTreeHost::~CastWindowTreeHost() {}

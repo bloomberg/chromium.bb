@@ -36,6 +36,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_port.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -304,9 +305,9 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
     layout_manager_->OnWindowAddedToLayout(*it);
 }
 
-std::unique_ptr<ui::EventTargeter> Window::SetEventTargeter(
-    std::unique_ptr<ui::EventTargeter> targeter) {
-  std::unique_ptr<ui::EventTargeter> old_targeter = std::move(targeter_);
+std::unique_ptr<WindowTargeter> Window::SetEventTargeter(
+    std::unique_ptr<WindowTargeter> targeter) {
+  std::unique_ptr<WindowTargeter> old_targeter = std::move(targeter_);
   targeter_ = std::move(targeter);
   return old_targeter;
 }

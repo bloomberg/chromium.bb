@@ -10,13 +10,10 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
-namespace ui {
-class EventTargeter;
-}
-
 namespace aura {
 
 class Window;
+class WindowTargeter;
 
 // ScopedWindowTargeter is used to temporarily replace the event-targeter for a
 // window. Upon construction, it installs a new targeter on the window, and upon
@@ -24,20 +21,18 @@ class Window;
 class AURA_EXPORT ScopedWindowTargeter : public WindowObserver {
  public:
   ScopedWindowTargeter(Window* window,
-                       std::unique_ptr<ui::EventTargeter> new_targeter);
+                       std::unique_ptr<WindowTargeter> new_targeter);
 
   ~ScopedWindowTargeter() override;
 
-  ui::EventTargeter* old_targeter() {
-    return old_targeter_.get();
-  }
+  WindowTargeter* old_targeter() { return old_targeter_.get(); }
 
  private:
   // WindowObserver:
   void OnWindowDestroyed(Window* window) override;
 
   Window* window_;
-  std::unique_ptr<ui::EventTargeter> old_targeter_;
+  std::unique_ptr<WindowTargeter> old_targeter_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowTargeter);
 };

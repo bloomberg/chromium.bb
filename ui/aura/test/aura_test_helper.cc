@@ -158,8 +158,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   if (!screen)
     display::Screen::SetScreenInstance(test_screen_.get());
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
-  host_->window()->SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
+  host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
 
   client::SetFocusClient(root_window(), focus_client_.get());
   client::SetCaptureClient(root_window(), capture_client());

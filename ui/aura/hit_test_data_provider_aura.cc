@@ -68,8 +68,7 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
   if (window->IsEmbeddingClient())
     return;
 
-  WindowTargeter* parent_targeter =
-      static_cast<WindowTargeter*>(window->GetEventTargeter());
+  WindowTargeter* parent_targeter = window->targeter();
 
   // TODO(varkha): Figure out if we need to add hit-test regions for |window|.
   // Walk the children in Z-order (reversed order of children()) to produce
@@ -87,8 +86,7 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
       gfx::Rect rect_mouse(child->bounds());
       gfx::Rect rect_touch;
       bool touch_and_mouse_are_same = true;
-      WindowTargeter* targeter =
-          static_cast<WindowTargeter*>(child->GetEventTargeter());
+      WindowTargeter* targeter = child->targeter();
       if (!targeter)
         targeter = parent_targeter;
       // Use the |child|'s (when set) or the |window|'s |targeter| to query for

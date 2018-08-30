@@ -709,8 +709,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   std::unique_ptr<aura::Window> masked_window(
       aura::test::CreateTestWindowWithDelegate(&masked_window_delegate, 10,
                                                test, browser_window->parent()));
-  masked_window->SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter>(new MaskedWindowTargeter()));
+  masked_window->SetEventTargeter(std::make_unique<MaskedWindowTargeter>());
 
   ASSERT_FALSE(masked_window->GetEventHandlerForPoint(
       gfx::Point(bounds.width() - 11, 0)));

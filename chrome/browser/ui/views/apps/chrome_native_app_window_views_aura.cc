@@ -85,9 +85,8 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
   // Add the AppWindowEasyResizeWindowTargeter on the window, not its root
   // window. The root window does not have a delegate, which is needed to
   // handle the event in Linux.
-  window->SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter>(new AppWindowEasyResizeWindowTargeter(
-          window, gfx::Insets(frame->resize_inside_bounds_size()), this)));
+  window->SetEventTargeter(std::make_unique<AppWindowEasyResizeWindowTargeter>(
+      window, gfx::Insets(frame->resize_inside_bounds_size()), this));
 
   return frame;
 }
@@ -119,8 +118,8 @@ void ChromeNativeAppWindowViewsAura::UpdateShape(
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape() && !had_shape) {
     native_window->SetEventTargeter(
-        std::unique_ptr<ui::EventTargeter>(new ShapedAppWindowTargeter(this)));
+        std::make_unique<ShapedAppWindowTargeter>(this));
   } else if (!shape() && had_shape) {
-    native_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>());
+    native_window->SetEventTargeter(nullptr);
   }
 }
