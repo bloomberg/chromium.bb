@@ -135,14 +135,11 @@ class VR_UI_EXPORT Ui : public UiInterface {
   void SetDialogFloating(bool floating) override;
   void ShowPlatformToast(const base::string16& text) override;
   void CancelPlatformToast() override;
-  bool ShouldRenderWebVr() override;
 
   void OnPause() override;
   void OnControllerUpdated(const ControllerModel& controller_model,
                            const ReticleModel& reticle_model) override;
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
-  bool IsControllerVisible() const override;
-  bool SkipsRedrawWhenNotDirty() const override;
   void OnSwapContents(int new_content_id) override;
   void OnContentBoundsChanged(int width, int height) override;
 

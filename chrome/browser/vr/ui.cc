@@ -369,10 +369,6 @@ void Ui::CancelPlatformToast() {
   model_->platform_toast.reset();
 }
 
-bool Ui::ShouldRenderWebVr() {
-  return model_->web_vr.presenting_web_vr();
-}
-
 void Ui::OnGlInitialized(unsigned int content_texture_id,
                          GlTextureLocation content_location,
                          unsigned int content_overlay_texture_id,
@@ -483,15 +479,6 @@ void Ui::OnSwapContents(int new_content_id) {
 
 void Ui::OnContentBoundsChanged(int width, int height) {
   content_input_delegate_->SetSize(width, height);
-}
-
-bool Ui::IsControllerVisible() const {
-  UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
-  return controller_group && controller_group->GetTargetOpacity() > 0.0f;
-}
-
-bool Ui::SkipsRedrawWhenNotDirty() const {
-  return model_->skips_redraw_when_not_dirty;
 }
 
 void Ui::Dump(bool include_bindings) {

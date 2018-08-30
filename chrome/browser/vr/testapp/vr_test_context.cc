@@ -192,7 +192,8 @@ void VrTestContext::DrawFrame() {
   ui_->SetLoading(load_progress < 1.0f);
   ui_->SetLoadProgress(std::min(load_progress, 1.0f));
 
-  if (web_vr_mode_ && ui_->ShouldRenderWebVr() && webvr_frames_received_) {
+  if (web_vr_mode_ && model_->web_vr.state == kWebVrPresenting &&
+      webvr_frames_received_) {
     ui_->DrawWebVrOverlayForeground(render_info);
   } else {
     ui_->Draw(render_info);
