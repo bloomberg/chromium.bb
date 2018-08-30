@@ -108,6 +108,9 @@ class ArcNotificationViewTest : public AshTestBase {
   void TearDown() override {
     widget()->Close();
     notification_view_.reset();
+    item_.reset();
+    notification_.reset();
+    surface_.reset();
     AshTestBase::TearDown();
   }
 
