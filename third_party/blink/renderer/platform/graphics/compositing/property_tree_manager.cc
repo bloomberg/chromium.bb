@@ -299,6 +299,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
           scroll_node->OverscrollBehaviorX()),
       static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
           scroll_node->OverscrollBehaviorY()));
+  compositor_node.snap_container_data = scroll_node->SnapContainerData();
 
   auto compositor_element_id = scroll_node->GetCompositorElementId();
   if (compositor_element_id) {

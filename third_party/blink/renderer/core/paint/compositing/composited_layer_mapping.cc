@@ -1271,6 +1271,10 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
 }
 
 void CompositedLayerMapping::UpdateOverscrollBehavior() {
+  // OverscrollBehavior directly set to scroll node when BGPT enabled.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   EOverscrollBehavior behavior_x =
       GetLayoutObject().StyleRef().OverscrollBehaviorX();
   EOverscrollBehavior behavior_y =
@@ -1284,6 +1288,10 @@ void CompositedLayerMapping::UpdateOverscrollBehavior() {
 }
 
 void CompositedLayerMapping::UpdateSnapContainerData() {
+  // SnapContainerData directly set to scroll node when BGPT enabled.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   if (!GetLayoutObject().IsBox() || !scrolling_contents_layer_)
     return;
 

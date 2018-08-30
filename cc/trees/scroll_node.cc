@@ -66,6 +66,18 @@ void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("overscroll_behavior_x", overscroll_behavior.x);
   value->SetInteger("overscroll_behavior_y", overscroll_behavior.y);
+
+  if (snap_container_data) {
+    value->SetString("snap_container_rect",
+                     snap_container_data->rect().ToString());
+    if (snap_container_data->size()) {
+      value->BeginArray("snap_area_rects");
+      for (size_t i = 0; i < snap_container_data->size(); ++i) {
+        value->AppendString(snap_container_data->at(i).rect.ToString());
+      }
+      value->EndArray();
+    }
+  }
 }
 
 }  // namespace cc

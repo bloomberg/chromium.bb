@@ -73,6 +73,19 @@ std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
                                                  state_.overscroll_behavior.y));
   }
 
+  if (state_.snap_container_data) {
+    json->SetString("snap_container_rect",
+                    state_.snap_container_data->rect().ToString().c_str());
+    if (state_.snap_container_data->size()) {
+      auto area_rects_json = JSONArray::Create();
+      for (size_t i = 0; i < state_.snap_container_data->size(); ++i) {
+        area_rects_json->PushString(
+            state_.snap_container_data->at(i).rect.ToString().c_str());
+      }
+      json->SetArray("snap_area_rects", std::move(area_rects_json));
+    }
+  }
+
   return json;
 }
 
