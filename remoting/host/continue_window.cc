@@ -5,30 +5,34 @@
 #include "remoting/host/continue_window.h"
 
 #include "base/location.h"
+#include "base/time/time.h"
 #include "remoting/host/client_session_control.h"
 
 // Minutes before the local user should confirm that the session should go on.
-const int kSessionExpirationTimeoutMinutes = 10;
+constexpr base::TimeDelta kSessionExpirationTimeout =
+    base::TimeDelta::FromMinutes(30);
 
 // Minutes before the session will be disconnected (from the moment the Continue
 // window has been shown).
-const int kSessionDisconnectTimeoutMinutes = 1;
+constexpr base::TimeDelta kSessionDisconnectTimeout =
+    base::TimeDelta::FromMinutes(5);
 
 namespace remoting {
+
+ContinueWindow::ContinueWindow() = default;
 
 ContinueWindow::~ContinueWindow() = default;
 
 void ContinueWindow::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!client_session_control_.get());
-  DCHECK(client_session_control.get());
+  DCHECK(!client_session_control_);
+  DCHECK(client_session_control);
 
   client_session_control_ = client_session_control;
 
-  session_expired_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMinutes(kSessionExpirationTimeoutMinutes),
-      this, &ContinueWindow::OnSessionExpired);
+  session_expired_timer_.Start(FROM_HERE, kSessionExpirationTimeout, this,
+                               &ContinueWindow::OnSessionExpired);
 }
 
 void ContinueWindow::ContinueSession() {
@@ -36,32 +40,29 @@ void ContinueWindow::ContinueSession() {
 
   disconnect_timer_.Stop();
 
-  if (!client_session_control_.get())
+  if (!client_session_control_)
     return;
 
   // Hide the Continue window and resume the session.
   HideUi();
   client_session_control_->SetDisableInputs(false);
 
-  session_expired_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMinutes(kSessionExpirationTimeoutMinutes),
-      this, &ContinueWindow::OnSessionExpired);
+  session_expired_timer_.Start(FROM_HERE, kSessionExpirationTimeout, this,
+                               &ContinueWindow::OnSessionExpired);
 }
 
 void ContinueWindow::DisconnectSession() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   disconnect_timer_.Stop();
-  if (client_session_control_.get())
+  if (client_session_control_)
     client_session_control_->DisconnectSession(protocol::MAX_SESSION_LENGTH);
 }
-
-ContinueWindow::ContinueWindow() = default;
 
 void ContinueWindow::OnSessionExpired() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!client_session_control_.get())
+  if (!client_session_control_)
     return;
 
   // Stop the remote input while the Continue window is shown.
@@ -69,9 +70,8 @@ void ContinueWindow::OnSessionExpired() {
 
   // Show the Continue window and wait for the local user input.
   ShowUi();
-  disconnect_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMinutes(kSessionDisconnectTimeoutMinutes),
-      this, &ContinueWindow::DisconnectSession);
+  disconnect_timer_.Start(FROM_HERE, kSessionDisconnectTimeout, this,
+                          &ContinueWindow::DisconnectSession);
 }
 
 }  // namespace remoting
