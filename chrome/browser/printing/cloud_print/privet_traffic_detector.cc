@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,10 +28,13 @@ const int kMaxRestartAttempts = 10;
 
 void GetNetworkListInBackground(
     base::OnceCallback<void(net::NetworkInterfaceList)> callback) {
-  base::AssertBlockingAllowed();
   net::NetworkInterfaceList networks;
-  if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
-    return;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+    if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
+      return;
+  }
 
   net::NetworkInterfaceList ip4_networks;
   for (const auto& network : networks) {
