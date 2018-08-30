@@ -49,14 +49,16 @@ void ReportUmaResult(safe_browsing::UmaRemoteCallResult result) {
 // Convert a SBThreatType to a Java threat type.  We only support a few.
 int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
   switch (sb_threat_type) {
+    case SB_THREAT_TYPE_BILLING:
+      return safe_browsing::JAVA_THREAT_TYPE_BILLING;
+    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+      return safe_browsing::JAVA_THREAT_TYPE_SUBRESOURCE_FILTER;
     case SB_THREAT_TYPE_URL_PHISHING:
       return safe_browsing::JAVA_THREAT_TYPE_SOCIAL_ENGINEERING;
     case SB_THREAT_TYPE_URL_MALWARE:
       return safe_browsing::JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION;
     case SB_THREAT_TYPE_URL_UNWANTED:
       return safe_browsing::JAVA_THREAT_TYPE_UNWANTED_SOFTWARE;
-    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
-      return safe_browsing::JAVA_THREAT_TYPE_SUBRESOURCE_FILTER;
     default:
       NOTREACHED();
       return 0;

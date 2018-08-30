@@ -60,7 +60,8 @@ void ReportUmaThreatSubType(SBThreatType threat_type,
 ThreatPatternType ParseThreatSubType(const base::DictionaryValue* match,
                                      SBThreatType threat_type) {
   if (threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-      threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
+      threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER ||
+      threat_type == SB_THREAT_TYPE_BILLING) {
     return ThreatPatternType::NONE;
   }
 
@@ -160,6 +161,8 @@ int GetThreatSeverity(JavaThreatTypes threat_type) {
       return 2;
     case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
       return 3;
+    case JAVA_THREAT_TYPE_BILLING:
+      return 4;
     case JAVA_THREAT_TYPE_MAX_VALUE:
       return std::numeric_limits<int>::max();
   }
@@ -177,6 +180,8 @@ SBThreatType JavaToSBThreatType(int java_threat_num) {
       return SB_THREAT_TYPE_URL_PHISHING;
     case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
       return SB_THREAT_TYPE_SUBRESOURCE_FILTER;
+    case JAVA_THREAT_TYPE_BILLING:
+      return SB_THREAT_TYPE_BILLING;
     default:
       // Unknown threat type
       return SB_THREAT_TYPE_SAFE;
