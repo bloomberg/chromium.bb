@@ -99,8 +99,6 @@ class CONTENT_EXPORT FlingController {
 
   bool FlingCancellationIsDeferred() const;
 
-  bool TouchscreenFlingInProgress() const;
-
   gfx::Vector2dF CurrentFlingVelocity() const;
 
   // Returns the |TouchpadTapSuppressionController| instance.
