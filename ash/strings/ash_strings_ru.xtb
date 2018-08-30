@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Объекты на экране</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Ассистент (загрузка…)</translation>
-<translation id="1841545962859478868">Администратор устройства может просматривать следующую информацию:</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Начать</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>
-<translation id="7007100238996585961">Ассистент отвечает на другом устройстве</translation>
 <translation id="7015766095477679451">Увидимся снова в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Завершить сеанс</translation>
 <translation id="7037152028959403492">Вы нажали сочетание клавиш для высокой контрастности. Включить ее?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Изменение настроек, управляющих доступом сайтов к геоданным, микрофону, камере и другим функциям.</translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>
 <translation id="7348093485538360975">Экранная клавиатура</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7886277072580235377">После выхода из аккаунта данные о ваших действиях в Интернете будут удалены. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Отправить письмо</translation>
-<translation id="790040513076446191">Управление настройками конфиденциальности</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7933084174919150729">Google Ассистент доступен только в основном профиле</translation>
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Частные сети</translation>
 <translation id="8152119955266188852">Вы нажали сочетание клавиш для полноэкранной лупы. Включить ее?</translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
-<translation id="8191230140820435481">Управление приложениями, расширениями и темами</translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8297006494302853456">Слабый</translation>

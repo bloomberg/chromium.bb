@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРЪЧАНИ ПРИЛОЖЕНИЯ</translation>
 <translation id="1368832886055348810">Отляво надясно</translation>
+<translation id="1383876407941801731">Търсене</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="1413622004203049571">Деактивиране на известията от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">Център за известия, <ph name="UNREAD_NOTIFICATION_COUNT" /> непрочетени</translation>
 <translation id="4730374152663651037">ЧЕСТО ИЗПОЛЗВАНИ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Остава 1 месец}other{Остават # месеца}}</translation>
-<translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">Вмъкване</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}other{# секунди}}</translation>
 <translation id="4971687151119236543">Мултимедия, предишният запис</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">Докоснете тук</translation>
 <translation id="5076340679995252485">&amp;Поставяне</translation>
-<translation id="5120799197269191491">Търсене+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Стартиране на Google Асистент</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5266161281976477809">Триъгълник за разкриване на съдържание</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Остава 1 секунда}other{Остават # секунди}}</translation>
 <translation id="5941711191222866238">Намаляване</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}other{# часа}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> от <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
 <translation id="6040143037577758943">Затваряне</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">отмятане</translation>
 <translation id="8393700583063109961">Изпратете съобщение</translation>
 <translation id="8394908167088220973">Мултимедия, пускане/пауза</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г.}other{# г.}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> файл (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек</translation>

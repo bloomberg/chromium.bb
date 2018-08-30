@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推荐的应用</translation>
 <translation id="1368832886055348810">从左向右</translation>
+<translation id="1383876407941801731">搜索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1413622004203049571">停用来自“<ph name="NOTIFIER_NAME" />”的通知</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
 <translation id="4730374152663651037">常用应用</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
-<translation id="4820616160060340806">命令键 + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">插入</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">媒体上一曲</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">点按此处</translation>
 <translation id="5076340679995252485">粘贴(&amp;P)</translation>
-<translation id="5120799197269191491">搜索键 + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">启动 Google 助理</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">开合三角标记</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小时}other{# 小时}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 页（共 <ph name="TOTAL_PAGE_NUM" /> 页）</translation>
 <translation id="6022924867608035986">清除搜索框文字</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">选中</translation>
 <translation id="8393700583063109961">发送消息</translation>
 <translation id="8394908167088220973">媒体播放/暂停</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 文件 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

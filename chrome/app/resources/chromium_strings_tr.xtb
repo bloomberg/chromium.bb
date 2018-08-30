@@ -123,7 +123,6 @@
 <translation id="5479196819031988440">Chromium OS bu sayfayı açamıyor.</translation>
 <translation id="5480860683791598150">Konumunuzu bu siteyle paylaşabilmek için Chromium'un konum bilgilerinize erişmesi gerekiyor</translation>
 <translation id="549669000822060376">Chromium en son sistem güncellemelerini yüklerken lütfen bekleyin.</translation>
-<translation id="5514308096618405748">Chrome OS, Linux'ta (Beta) olduğu gibi ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS 1 dakika içinde yeniden başlatılacak}other{Chromium OS # dakika içinde yeniden başlatılacak}}</translation>
 <translation id="5631814766731275228">Chromium adı ve resmi</translation>
 <translation id="5634636535844844681">Chromium, Windows 7 veya daha sonraki bir sürümü gerektirir.</translation>

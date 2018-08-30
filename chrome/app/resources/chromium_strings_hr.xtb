@@ -125,7 +125,6 @@
 <translation id="5479196819031988440">OS Chromium ne može otvoriti ovu stranicu.</translation>
 <translation id="5480860683791598150">Chromium treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
-<translation id="5514308096618405748">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog izvornog koda<ph name="END_LINK_CROS_OSS" />, isto kao i Linux (Beta).</translation>
 <translation id="5529843986978123325">{0,plural, =1{OS Chromium ponovo će se pokrenuti za 1 minutu}one{OS Chromium ponovo će se pokrenuti za # minutu}few{OS Chromium ponovo će se pokrenuti za # minute}other{OS Chromium ponovo će se pokrenuti za # minuta}}</translation>
 <translation id="5631814766731275228">Ime i slika Chromium profila</translation>
 <translation id="5634636535844844681">Chromium zahtijeva Windows 7 ili noviju verziju.</translation>

@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРУЧЕНЕ АПЛИКАЦИЈЕ</translation>
 <translation id="1368832886055348810">Слева надесно</translation>
+<translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1413622004203049571">Онемогући обавештења од <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧЕСТО КОРИШЋЕНЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Још 1 месец}one{Још # месец}few{Још # месеца}other{Још # месеци}}</translation>
-<translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">Уметање</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунде}other{# секунди}}</translation>
 <translation id="4971687151119236543">Претходна песма медија</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">Додирните овде</translation>
 <translation id="5076340679995252485">&amp;Налепи</translation>
-<translation id="5120799197269191491">Тастер за претрагу + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Покрените Google помоћник</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Троугао за откривање</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Још 1 секунда}one{Још # секунда}few{Још # секунде}other{Још # секунди}}</translation>
 <translation id="5941711191222866238">Смањи</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 сат}one{# сат}few{# сата}other{# сати}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. страница од <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Обришите текст из оквира за претрагу</translation>
 <translation id="6040143037577758943">Затвори</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">изабери</translation>
 <translation id="8393700583063109961">Пошаљите поруку</translation>
 <translation id="8394908167088220973">Пуштање/паузирање медија</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г}one{# г}few{# г}other{# г}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> датотека (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

@@ -757,10 +757,10 @@
 <translation id="212862741129535676">आवृत्ति स्थिति उपयोग प्रतिशत</translation>
 <translation id="2129825002735785149">प्‍लग इन अपडेट करें</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" इंस्‍टॉल करने में असमर्थ क्‍योंकि "<ph name="IMPORT_NAME" />" द्वारा इसकी अनुमति नहीं है</translation>
+<translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
 <translation id="2135787500304447609">&amp;फिर से शुरू करें</translation>
 <translation id="2136372518715274136">नया पासवर्ड डालें</translation>
 <translation id="2136476978468204130">आपने जो पासफ़्रेज़ डाला है वह गलत है</translation>
-<translation id="2136573720723402846">फ़िंगरप्रिंट अनलॉक सक्षम करें</translation>
 <translation id="2137068468602026500">वेब ब्राउज़र के अंतर्गत <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> क्लिक करें</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" से कनेक्शन अभी भी प्रगति में है</translation>
 <translation id="214169863967063661">प्रकटन सेटिंग खोलें</translation>
@@ -1786,7 +1786,7 @@
 <translation id="3691267899302886494"><ph name="HOST" /> आपकी स्क्रीन शेयर करना चाहता है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
 <translation id="3694027410380121301">पिछला टैब को चुनें</translation>
-<translation id="369489984217678710">पासवर्ड और दूसरा साइन-इन डेटा</translation>
+<translation id="369489984217678710">पासवर्ड और दूसरे साइन-इन डेटा</translation>
 <translation id="3699624789011381381">ईमेल पता</translation>
 <translation id="3699920817649120894">सिंक करना और मनमुताबिक बनाना बंद करें?</translation>
 <translation id="3700888195348409686">पेश है (<ph name="PAGE_ORIGIN" />)</translation>
@@ -2050,7 +2050,7 @@
 <translation id="407520071244661467">स्केल</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> कास्ट नहीं हो पा रहा है.</translation>
 <translation id="4077917118009885966">इस साइट पर विज्ञापन ब्लॉक हैं</translation>
-<translation id="4079799245038595838">आपके फ़ोन पर एक सूचना भेजी गई थी. पुष्टि करने के लिए कि यह आप ही हैं संकेतों का पालन करें.</translation>
+<translation id="4079799245038595838">आपके फ़ोन पर एक सूचना भेजी गई थी. संकेतों का पालन करके इस बात की पुष्टि करें कि यह आप ही हैं.</translation>
 <translation id="4081242589061676262">फ़ाइल को कास्ट नहीं किया जा सका.</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> बंद करें</translation>
@@ -4231,7 +4231,7 @@
 <translation id="7464490149090366184">ज़िप करना विफल रहा, मौजूद आइटम: "$1"</translation>
 <translation id="7465778193084373987">Netscape प्रमाणपत्र रद्द करने संबंधी URL</translation>
 <translation id="7469406957790636836">इसे चालू करने के लिए, पहले <ph name="BEGIN_LINK" />भाषाएं और इनपुट<ph name="END_LINK" /> में जाकर 'वर्तनी जांच' सुविधा चालू करें</translation>
-<translation id="7469518857922439236">मैसेज के लिए इस कंप्यूटर को याद रखने के लिए आपको सूचनाएं और डिफ़ॉल्ट भेजती है</translation>
+<translation id="7469518857922439236">सूचनाएं भेजती है और यह याद रखती है कि मैसेज के लिए यह कंप्यूटर डिफ़ॉल्ट है</translation>
 <translation id="7469894403370665791">इस नेटवर्क से अपने आप कनेक्ट करें</translation>
 <translation id="747114903913869239">गड़बड़ी: एक्सटेंशन डिकोड करने में असमर्थ</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>

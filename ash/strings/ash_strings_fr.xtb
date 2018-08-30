@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
-<translation id="1841545962859478868">L'administrateur de cet appareil peut contrôler les éléments suivants :</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
@@ -342,7 +341,6 @@
 <translation id="6972754398087986839">Démarrer</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
-<translation id="7007100238996585961">Réponse sur un autre appareil…</translation>
 <translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="7037152028959403492">Vous avez utilisé le raccourci du contraste élevé. Voulez-vous l'activer ?</translation>
@@ -356,7 +354,6 @@
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Manipule des paramètres qui déterminent si les sites Web peuvent utiliser des fonctionnalités telles que la géolocalisation, le microphone, l'appareil photo, etc.</translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
@@ -393,7 +390,6 @@
 <translation id="7846634333498149051">Clavier</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
-<translation id="790040513076446191">Modifier les paramètres de confidentialité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@
 <translation id="8142699993796781067">Réseau privé</translation>
 <translation id="8152119955266188852">Vous avez utilisé le raccourci de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
-<translation id="8191230140820435481">Gérer vos applications, vos extensions et vos thèmes</translation>
 <translation id="8192202700944119416">Les notifications sont masquées.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>

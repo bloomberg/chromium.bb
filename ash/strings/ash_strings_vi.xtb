@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Trên màn hình của tôi có nội dung gì?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
-<translation id="1841545962859478868">Quản trị viên thiết bị có thể theo dõi các vấn đề sau đây:</translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
 <translation id="1864454756846565995">Thiết bị USB-C (cổng phía sau)</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME" /></translation>
@@ -342,7 +341,6 @@
 <translation id="6972754398087986839">Bắt đầu</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
-<translation id="7007100238996585961">Đang trả lời trên thiết bị khác</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="7037152028959403492">Bạn đã nhấn phím tắt để có độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
@@ -356,7 +354,6 @@
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Thực hiện cài đặt chỉ định liệu trang web có thể sử dụng các tính năng như vị trí địa lý, micrô, máy ảnh, v.v. hay không.</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
@@ -393,7 +390,6 @@
 <translation id="7846634333498149051">Bàn phím</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Gửi email</translation>
-<translation id="790040513076446191">Thực hiện cài đặt liên quan đến bảo mật</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7933084174919150729">Bạn chỉ có thể sử dụng Trợ lý Google cho hồ sơ chính.</translation>
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@
 <translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn màn hình. Bạn có muốn bật chế độ này không?</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
-<translation id="8191230140820435481">Quản lý ứng dụng, tiện ích và chủ đề của bạn</translation>
 <translation id="8192202700944119416">Đã ẩn thông báo.</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8297006494302853456">Yếu</translation>

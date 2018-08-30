@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">אפליקציות מומלצות</translation>
 <translation id="1368832886055348810">משמאל לימין</translation>
+<translation id="1383876407941801731">חפש</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1413622004203049571">השבת הודעות מאת <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">מרכז הודעות, <ph name="UNREAD_NOTIFICATION_COUNT" /> הודעות שלא נקראו</translation>
 <translation id="4730374152663651037">בשימוש לעתים קרובות</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{נותר חודש אחד}two{נותרו חודשיים}many{נותרו # חודשים}other{נותרו # חודשים}}</translation>
-<translation id="4820616160060340806">פקודה+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">הוספה</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{שנייה אחת}two{# שניות}many{# שניות}other{# שניות}}</translation>
 <translation id="4971687151119236543">רצועה קודמת במדיה</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">הקש כאן</translation>
 <translation id="5076340679995252485">&amp;הדבק</translation>
-<translation id="5120799197269191491">חיפוש+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">‏הפעלת Google Assistant</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">משולש הצגה</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{נותרה שנייה אחת}two{נותרו # שניות}many{נותרו # שניות}other{נותרו # שניות}}</translation>
 <translation id="5941711191222866238">מזער</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{שעה אחת}two{שעתיים}many{# שעות}other{# שעות}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">דף <ph name="SELECTED_PAGE" /> מתוך <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">נקה את הטקסט בתיבת החיפוש</translation>
 <translation id="6040143037577758943">סגור</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">סמן</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
 <translation id="8394908167088220973">הפעלה/השהיה של המדיה</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{שנה}two{# שנ}many{# שנ}other{# שנ}}</translation>
 <translation id="8602707065186045623">קובץ <ph name="SAVEAS_EXTENSION_TYPE" />  (<ph name="SAVEAS_EXTENSION_NAME" />.)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s‎</translation>

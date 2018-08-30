@@ -164,7 +164,7 @@
 <translation id="1225211345201532184">Element na polici 5</translation>
 <translation id="1227507814927581609">Med povezovanjem z napravo »<ph name="DEVICE_NAME" />« ni uspelo preverjanje pristnosti.</translation>
 <translation id="1230807973377071856">sistemski meni</translation>
-<translation id="123186018454553812">Uporaba druge tipke</translation>
+<translation id="123186018454553812">Uporabite drugo tipko</translation>
 <translation id="1232569758102978740">Brez naslova</translation>
 <translation id="1233721473400465416">Jezik</translation>
 <translation id="1234808891666923653">Komponente »service worker«</translation>
@@ -386,7 +386,7 @@
 <translation id="1564414980088536597">Te slike ni mogoče uporabiti. Izberite drugo sliko.</translation>
 <translation id="1566049601598938765">Spletno mesto</translation>
 <translation id="1567387640189251553">Od zadnjega vnosa gesla je bila priklopljena druga tipkovnica, ki morda poskuša beležiti vse, kar natipkate.</translation>
-<translation id="1567750922576943685">Če preverite identiteto, bodo vaši osebni podatki na varnem</translation>
+<translation id="1567750922576943685">Če preverite identiteto, bodo vaši osebni podatki varnejši</translation>
 <translation id="1567993339577891801">Konzola JavaScript</translation>
 <translation id="1568067597247500137">Izklopi zvok spletnega mesta</translation>
 <translation id="1568323446248056064">Odpiranje nastavitev zaslona v napravi</translation>
@@ -757,10 +757,10 @@
 <translation id="212862741129535676">Odstotek zasedenosti frekvenčnega stanja</translation>
 <translation id="2129825002735785149">Posodobitev vtičnika</translation>
 <translation id="2131077480075264">»<ph name="APP_NAME" />« ni mogoče namestiti, ker »<ph name="IMPORT_NAME" />« tega ne dovoli.</translation>
+<translation id="2135456203358955318">Zasidrana lupa</translation>
 <translation id="2135787500304447609">&amp;Nadaljuj</translation>
 <translation id="2136372518715274136">Vnesite novo geslo</translation>
 <translation id="2136476978468204130">Vnesli ste napačno geslo</translation>
-<translation id="2136573720723402846">Omogočanje odklepanja s prstnim odtisom</translation>
 <translation id="2137068468602026500">V razdelku »Brskalnik« kliknite <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Povezava z napravo »<ph name="DEVICE_NAME" />« še vedno poteka</translation>
 <translation id="214169863967063661">Odpiranje nastavitev videza</translation>
@@ -1767,7 +1767,7 @@
 <translation id="3664511988987167893">Ikona razširitve</translation>
 <translation id="3665589677786828986">Chrome je zaznal, da je drug program spremenil nastavitve, in jih ponastavil na prvotne privzete nastavitve.</translation>
 <translation id="3668570675727296296">Jezikovne nastavitve</translation>
-<translation id="3668801437375206837">Zaposleni pri Googlu lahko za boljše diagnosticiranje težav z Bluetoothom v poročila s povratnimi informacijami vključijo dodatne dnevnike za Bluetooth. Če je označena ta možnost, bosta v vašem poročilu vključena dnevnika btsnoop in HCI iz trenutne seje, in sicer prečiščena tako, da je odstranjenih čim več podatkov, ki omogočajo osebno prepoznavo. Dostop do teh dnevnikov bo omejen na skrbnike skupine izdelkov OS Chrome za Listnr. Dnevniki bodo trajno odstranjeni po 90 dneh.</translation>
+<translation id="3668801437375206837">Googlovi uporabniki lahko za boljše diagnosticiranje težav z Bluetoothom v poročila s povratnimi informacijami vključijo dodatne dnevnike za Bluetooth. Če je označena ta možnost, bosta v vašem poročilu vključena dnevnika btsnoop in HCI iz trenutne seje, in sicer prečiščena tako, da je odstranjenih čim več podatkov, ki omogočajo osebno prepoznavo. Dostop do teh dnevnikov bo omejen na skrbnike skupine izdelkov OS Chrome za Listnr. Dnevniki bodo trajno odstranjeni po 90 dneh.</translation>
 <translation id="3668823961463113931">Kontrolniki</translation>
 <translation id="3670229581627177274">Vklop vmesnika Bluetooth</translation>
 <translation id="3672681487849735243">Zaznana je tovarniška napaka</translation>
@@ -2051,7 +2051,7 @@
 <translation id="407520071244661467">Prilagajanje velikosti</translation>
 <translation id="4075639477629295004">Ni mogoče predvajati <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Oglasi blokirani na tem spletnem mestu</translation>
-<translation id="4079799245038595838">V telefon ste prejeli obvestilo. Upoštevajte pozive, da potrdite, da ste to res vi.</translation>
+<translation id="4079799245038595838">V vaš telefon smo poslali obvestilo. Upoštevajte pozive, da potrdite, da ste to res vi.</translation>
 <translation id="4081242589061676262">Datoteke ni mogoče predvajati.</translation>
 <translation id="4084682180776658562">Zaznamek</translation>
 <translation id="4084835346725913160">Zapri <ph name="TAB_NAME" /></translation>
@@ -3363,7 +3363,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6105877918873366097">Zadnji dostop</translation>
 <translation id="6107012941649240045">Izdano za</translation>
 <translation id="6112294629795967147">Dotaknite se za spreminjanje velikosti</translation>
-<translation id="6112931163620622315">Preverjanje telefona</translation>
+<translation id="6112931163620622315">Preverite telefon</translation>
 <translation id="6112952769866305444">Urejanje osebe, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6116338172782435947">ogled besedila in slik, kopiranih v odložišče</translation>
 <translation id="6116921718742659598">Spreminjanje nastavitev jezika in vnosa</translation>
@@ -4114,7 +4114,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7256710573727326513">Odpri na zavihku</translation>
 <translation id="725758059478686223">Storitev tiskanja</translation>
 <translation id="7257666756905341374">Branje podatkov, ki jih kopirate in prilepite</translation>
-<translation id="7260764918845374269">Če si želite ogledati varnostni ključ, mora biti v načinu za seznanjanje. Pritisnite gumb na ključu in ga pridržite vsaj 5 sekund.</translation>
+<translation id="7260764918845374269">Če želite, da je varnostni ključ prikazan, mora biti v načinu za seznanjanje. Pritisnite gumb na ključu in ga pridržite vsaj 5 sekund.</translation>
 <translation id="7262004276116528033">Prijavno storitev gosti <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zapri zavihke</translation>
 <translation id="7268659760406822741">Razpoložljive storitve</translation>

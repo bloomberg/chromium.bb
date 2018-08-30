@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Afficher la grille d'onglets</translation>
 <translation id="162035744160882748">Activer la synchronisation, la personnalisation et d'autres services Google</translation>
 <translation id="1644574205037202324">Historique</translation>
-<translation id="1646446875146297738">Si vous activez la fonctionnalité "Interdire le suivi", une demande sera incluse dans le trafic de navigation. Le résultat dépend de l'obtention d'une réponse de la part du site Web, ainsi que de la façon dont celle-ci est interprétée.
-
-Par exemple, certains sites Web peuvent répondre à cette demande en affichant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation pour, par exemple, améliorer la sécurité, ou pour afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Échec du partage, car vous n'êtes pas connecté au réseau.</translation>
 <translation id="165877110639533037">Aucun onglet ouvert</translation>
 <translation id="1687475363370981210">Tout marquer comme lu</translation>
@@ -86,7 +83,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2320166752086256636">Masquer le clavier</translation>
 <translation id="2339560363438331454">Services Google/Sync</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
-<translation id="2354750644801399986">Interdire le suivi</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2381405137052800939">Paramètres de base</translation>
 <translation id="2386793615875593361">1 photo sélectionnée</translation>

@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Hva er på skjermen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laster inn …)</translation>
-<translation id="1841545962859478868">Enhetsadministratoren kan overvåke følgende:</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Kom i gang</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
-<translation id="7007100238996585961">Svarer på en annen enhet</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
 <translation id="7037152028959403492">Du trykket på snarveien for høy kontrast. Vil du slå det på?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Håndter innstillinger som angir om nettsteder kan bruke funksjoner som geolokalisering, mikrofonen, kameraet og så videre.</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7886277072580235377">Internett-økten din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send e-post</translation>
-<translation id="790040513076446191">manipulere personvernrelaterte innstillinger</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
 <translation id="79341161159229895">Kontoen er administrert av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8152119955266188852">Du trykket på snarveien for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
-<translation id="8191230140820435481">Administrering av programmer, utvidelser og temaer</translation>
 <translation id="8192202700944119416">Varsler er skjult.</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>

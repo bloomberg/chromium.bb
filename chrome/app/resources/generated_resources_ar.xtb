@@ -164,7 +164,7 @@
 <translation id="1225211345201532184">عنصر الرف 5</translation>
 <translation id="1227507814927581609">تعذّرت المصادقة أثناء الاتصال بالجهاز "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">قائمة النظام</translation>
-<translation id="123186018454553812">تجربة مفتاح مختلف</translation>
+<translation id="123186018454553812">تجربة مفتاح آخر</translation>
 <translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1233721473400465416">اللغة</translation>
 <translation id="1234808891666923653">عمال الخدمة</translation>
@@ -757,10 +757,10 @@
 <translation id="212862741129535676">نسبة إشغال حالة التردد</translation>
 <translation id="2129825002735785149">تحديث المكوِّن الإضافي</translation>
 <translation id="2131077480075264">تعذّر تثبيت "<ph name="APP_NAME" />" لأنه لم يُسمح به من قبل "<ph name="IMPORT_NAME" />"</translation>
+<translation id="2135456203358955318">المكبّر الذي تم إرساؤه</translation>
 <translation id="2135787500304447609">&amp;استئناف</translation>
 <translation id="2136372518715274136">أدخل كلمة المرور الجديدة</translation>
 <translation id="2136476978468204130">عبارة المرور التي أدخلتها غير صحيحة</translation>
-<translation id="2136573720723402846">تفعيل إلغاء قفل بصمة الإصبع</translation>
 <translation id="2137068468602026500">‏انقر على <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> ضمن متصفح الويب</translation>
 <translation id="2138398485845393913">لا يزال الاتصال بالجهاز "<ph name="DEVICE_NAME" />" قيد التقدُّم</translation>
 <translation id="214169863967063661">فتح إعدادات المظهر</translation>
@@ -1765,7 +1765,7 @@
 <translation id="3664511988987167893">رمز الإضافة</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة التلقائية الأصلية.</translation>
 <translation id="3668570675727296296">إعدادات اللغة</translation>
-<translation id="3668801437375206837">‏من أجل تشخيص أفضل لمشاكل البلوتوث، يمكن لموظفي Google تضمين سجلّات بلوتوث إضافية مع تقارير التعليقات. وعند تحديد هذا الخيار، سيتضمَّن تقريرك سجلّات وحدة تحكُّم المُضيف (HCI) وbtsnoop من الجلسة الحالية، والتوعية بإزالة معلومات تحديد الهوية الشخصية بقدر الإمكان. وسيقتصر الوصول إلى هذه السجلّات على مديري مجموعة منتجات نظام التشغيل Chrome في Listnr. وستُزال السجلّات نهائيًا بعد 90 يومًا.</translation>
+<translation id="3668801437375206837">‏لتشخيص مشاكل البلوتوث بشكل أفضل، يمكن لمستخدمي Google تضمين سجلّات بلوتوث إضافية مع تقارير التعليقات. وعند تحديد هذا الخيار، سيتضمَّن تقريرك للجلسة الحالية ملفات بتنسيقات btsnoop وسجلّات وحدة تحكُّم المُضيف (HCI) مُصحَّحة لإزالة أكبر قدر ممكن من معلومات تحديد الهوية الشخصية. وسيقتصر الوصول إلى هذه السجلّات على مديري مجموعة منتجات نظام التشغيل Chrome في Listnr. وستُزال السجلّات نهائيًا بعد 90 يومًا.</translation>
 <translation id="3668823961463113931">المعالجات</translation>
 <translation id="3670229581627177274">تشغيل البلوتوث</translation>
 <translation id="3672681487849735243">تم اكتشاف خطأ من المصنع</translation>
@@ -2046,7 +2046,7 @@
 <translation id="407520071244661467">تغيير الحجم</translation>
 <translation id="4075639477629295004">يتعذَر إرسال <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">حظر الإعلانات على هذا الموقع</translation>
-<translation id="4079799245038595838">أُرسِل إشعار إلى هاتفك. يُرجى متابعة المطالبات لتأكيد هويتك.</translation>
+<translation id="4079799245038595838">تم إرسال إشعار إلى هاتفك. يُرجى متابعة المطالبات لتأكيد هويتك.</translation>
 <translation id="4081242589061676262">يتعذَّر إرسال الملف.</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="4084835346725913160">غلق <ph name="TAB_NAME" /></translation>
@@ -2146,7 +2146,7 @@
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="4252852543720145436">مُعرّفات المحتوى المحمي</translation>
-<translation id="4252899949534773101">البلوتوث موقوف</translation>
+<translation id="4252899949534773101">البلوتوث غير مُفعَّل</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - تمت مشاركة محتوى علامة التبويب</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
 <translation id="425573743389990240">بطارية تفريغ شحن البطارية بوحدة الوات (القيمة السالب تعني أنه جارٍ شحن البطارية)</translation>
@@ -2272,7 +2272,7 @@
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
 <translation id="4482194545587547824">‏قد يستخدم Google سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="4495419450179050807">عدم الظهور في هذه الصفحة</translation>
-<translation id="449938344715680828">اضغط على |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ثم |<ph name="ACCELERATOR3" />| للخروج</translation>
+<translation id="449938344715680828">الضغط على |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ثم |<ph name="ACCELERATOR3" />| للخروج</translation>
 <translation id="4499718683476608392">تفعيل الملء التلقائي لبطاقة الائتمان لملء النماذج بنقرة واحدة</translation>
 <translation id="4500114933761911433">تعطّل <ph name="PLUGIN_NAME" />.</translation>
 <translation id="450099669180426158">رمز علامة التعجب</translation>
@@ -3403,7 +3403,7 @@
 <translation id="6169666352732958425">تعذر إرسال سطح المكتب.</translation>
 <translation id="6171948306033499786">إيقاف الطباعة مؤقتًا</translation>
 <translation id="6175314957787328458">‏المعرّف الفريد العمومي لنطاق Microsoft</translation>
-<translation id="6176043333338857209">سيُفعَّل البلوتوث مؤقتًا للتواصل مع مفتاح الأمان</translation>
+<translation id="6176043333338857209">سيُفعَّل البلوتوث مؤقتًا للاتصال مع مفتاح الأمان.</translation>
 <translation id="6178664161104547336">تحديد شهادة</translation>
 <translation id="6181431612547969857">تم حظر التنزيل</translation>
 <translation id="6185132558746749656">موقع الجهاز</translation>
@@ -3491,7 +3491,7 @@
 <translation id="6311220991371174222">‏تعذّر بدء تشغيل Chrome بسبب حدوث خطأ ما أثناء فتح ملفك الشخصي. حاول إعادة تشغيل Chrome.</translation>
 <translation id="6312400084708441752">يتضمن معلومات عن البرامج الضارة وإعدادات النظام والعمليات على جهاز الكمبيوتر.</translation>
 <translation id="6312403991423642364">خطأ غير معروف</translation>
-<translation id="6313320178014547270">أنت تستخدم مفتاحًا غير مُسجَّل مع هذا الموقع الإلكتروني</translation>
+<translation id="6313320178014547270">أنت تستخدم مفتاحًا غير مُسجَّل مع هذا الموقع الإلكتروني.</translation>
 <translation id="6313641880021325787">‏الخروج من VR</translation>
 <translation id="6314819609899340042">لقد نجحت في تفعيل ميزات تصحيح الأخطاء على هذا الجهاز <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315493146179903667">إحضار الكل للمقدمة</translation>
@@ -3547,7 +3547,7 @@
 <translation id="6399774419735315745">الجاسوسة</translation>
 <translation id="6401445054534215853">بند الرف 1</translation>
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
-<translation id="6405510437656969977">يمكنك المتابعة عندما تكون جاهزًا لإدخال رقم التعريف الشخصي</translation>
+<translation id="6405510437656969977">يمكنك المتابعة عندما تكون جاهزًا لإدخال رقم التعريف الشخصي.</translation>
 <translation id="6406303162637086258">محاكاة إعادة تشغيل المتصفح</translation>
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="6408118934673775994">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
@@ -3666,7 +3666,7 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - تمت مشاركة محتوى سطح المكتب</translation>
 <translation id="6580151766480067746">‏إصدار ARC</translation>
 <translation id="6581162200855843583">‏رابط Google Drive</translation>
-<translation id="6582080224869403177">يُرجى إعادة ضبط <ph name="DEVICE_TYPE" /> لترقية الأمان.</translation>
+<translation id="6582080224869403177">إعادة ضبط <ph name="DEVICE_TYPE" /> لترقية الأمان</translation>
 <translation id="6582421931165117398">لحماية معلوماتك الشخصية، غيِّر كلمة مرورك الآن. قبل أن تتمكن من تغيير كلمة مرورك، سيُطلب منك تسجيل الدخول.</translation>
 <translation id="6583851739559471707">تم الحظر على مواقع الويب التي تميل إلى عرض إعلانات متداخلة (مستحسن)</translation>
 <translation id="6584878029876017575">‏التوقيع مدى الحياة لـ Microsoft</translation>
@@ -3716,7 +3716,7 @@
 <translation id="6644846457769259194">جارٍ تحديث جهازك (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">‏عنوان URL لإبطال المرجع المصدق لـ Netscape</translation>
 <translation id="6647838571840953560">حاليًا على قناة <ph name="CHANNEL_NAME" /></translation>
-<translation id="6648051959475508072">فُعِّل مفتاح الأمان...</translation>
+<translation id="6648051959475508072">يتم تفعيل مفتاح الأمان...</translation>
 <translation id="6648911618876616409">تحديث مهم جاهز للتثبيت. يُرجى تسجيل الدخول للبدء.</translation>
 <translation id="6649018507441623493">لحظة من فضلك...</translation>
 <translation id="6649563841575838401">تنسيق الأرشيف غير متوافق، أو الملف تالف.</translation>
@@ -4073,7 +4073,7 @@
 <translation id="7201118060536064622">تم حذف "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7206693748120342859">جارٍ تنزيل <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{الخروج من الصفجة}zero{الخروج من صفحة}two{الخروج من الصفحتين}few{الخروج من صفحات}many{الخروج من صفحة}other{الخروج من صفحة}}</translation>
-<translation id="721467499098558573">اضغط مع الاستمرار على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ</translation>
+<translation id="721467499098558573">الضغط مع الاستمرار على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ</translation>
 <translation id="7216409898977639127">موفر شبكة الجوّال</translation>
 <translation id="7216595297012131718">ترتيب اللغات حسب تفضيلك</translation>
 <translation id="7220019174139618249">تعذّر تصدير كلمات المرور إلى "<ph name="FOLDER" />"</translation>
@@ -4109,7 +4109,7 @@
 <translation id="7256710573727326513">فتح في علامة تبويب</translation>
 <translation id="725758059478686223">خدمة الطباعة</translation>
 <translation id="7257666756905341374">قراءة البيانات التي نسختها ولصقتها</translation>
-<translation id="7260764918845374269">للاطّلاع على مفتاح الأمان، يجب أن تكون في وضع الإقران. اضغط على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ.</translation>
+<translation id="7260764918845374269">لكي يظهر مفتاح الأمان، يجب أن تكون في وضع الإقران. اضغط على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ.</translation>
 <translation id="7262004276116528033">يستضيف <ph name="SAML_DOMAIN" /> خدمة تسجيل الدخول هذه.</translation>
 <translation id="7268365133021434339">إغلاق علامات التبويب</translation>
 <translation id="7268659760406822741">الخدمات المتوفرة</translation>
@@ -4227,7 +4227,7 @@
 <translation id="7464490149090366184">تعذّر الضغط، العناصر الموجودة: "$1"</translation>
 <translation id="7465778193084373987">‏عنوان URL لإبطال شهادة Netscape</translation>
 <translation id="7469406957790636836">لتفعيل هذا الإعداد، يُرجى أولاً تفعيل "التدقيق الإملائي" في <ph name="BEGIN_LINK" />اللغات والإدخال<ph name="END_LINK" /></translation>
-<translation id="7469518857922439236">تُرسِل إليك الإشعارات وتضبط الخيار التلقائي على تذكُّر جهاز الكمبيوتر هذا للرسائل</translation>
+<translation id="7469518857922439236">تُُرسِل إليك الإشعارات وتتذكر جهاز الكمبيوتر المُحدّد لميزة استلام "الرسائل" تلقائيًا.</translation>
 <translation id="7469894403370665791">الاتصال بهذه الشبكة تلقائيًا</translation>
 <translation id="747114903913869239">خطأ: تعذر فك تشفير الإضافة</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
@@ -4380,7 +4380,7 @@
 <translation id="7709152031285164251">تعذّر - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;إرسال...</translation>
 <translation id="7711920809702896782">معلومات الصورة</translation>
-<translation id="7712740978240882272">‏يمكنك إلغاء قفل جهاز Chromebook باستخدام هاتفك.<ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
+<translation id="7712740978240882272">‏إلغاء قفل جهاز Chromebook باستخدام هاتفك.<ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="7712836429117959503">إضافة غير معروفة مُشار إليها برمز <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">تم السماح بملفات تعريف الارتباط الواردة من <ph name="DOMAIN" /></translation>
 <translation id="7714464543167945231">شهادة</translation>
@@ -4729,7 +4729,7 @@
 <translation id="8185331656081929126">عرض إشعارات عند اكتشاف طابعات جديدة على الشبكة</translation>
 <translation id="8186609076106987817">تعذر على الخادم العثور على الملف.</translation>
 <translation id="8188120771410500975">&amp;مراجعة حقول النص إملائيًا</translation>
-<translation id="8188389033983459049">تحقُّق من إعدادات جهازك وفعّله للاستمرار</translation>
+<translation id="8188389033983459049">التحقُّق من إعدادات جهازك وتفعيلها للاستمرار</translation>
 <translation id="8190193592390505034">جارٍ الاتصال بـ <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="8191453843330043793">‏محلل وكيل V8</translation>
@@ -4833,7 +4833,7 @@
 <translation id="8371695176452482769">تحدث الآن</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8373553483208508744">تجاهل علامات التبويب</translation>
-<translation id="8379878387931047019">لا يدعم هذا الجهاز نوع مفتاح الأمان الذي يطلبه هذا الموقع الإلكتروني</translation>
+<translation id="8379878387931047019">لا يدعم هذا الجهاز نوع مفتاح الأمان الذي يطلبه هذا الموقع الإلكتروني.</translation>
 <translation id="8382913212082956454">نسخ عنوان البريد الإل&amp;كتروني</translation>
 <translation id="8386903983509584791">اكتملت عملية الفحص.</translation>
 <translation id="8389492867173948260">السماح لهذه الإضافة بقراءة جميع بياناتك وتغييرها على المواقع الإلكترونية التي تزورها:</translation>
@@ -5296,7 +5296,7 @@
 <translation id="9066782832737749352">تحويل النَّص إلى الكلام</translation>
 <translation id="9072550133391925347">يعمل <ph name="PASSWORD_MANAGER_BRAND" /> على تسجيل دخولك تلقائيًا إلى المواقع والتطبيقات المؤهلة باستخدام كلمات المرور التي حفظتها.</translation>
 <translation id="9073281213608662541">‏بروتوكول مصادقة كلمات المرور (PAP)</translation>
-<translation id="90737709606140813">يمكنك إقران مفتاحك مع هذا الجهاز حتى تتمكّن من استخدامه لتسجيل الدخول إلى حسابك</translation>
+<translation id="90737709606140813">إقران مفتاحك مع هذا الجهاز حتى تتمكّن من استخدامه لتسجيل الدخول إلى حسابك</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9074836595010225693">‏ماوس USB متصل</translation>
 <translation id="9076523132036239772">عذرًا، تعذر التحقق من صحة البريد الإلكتروني أو كلمة المرور. جرّب الاتصال بالشبكة أولاً.</translation>

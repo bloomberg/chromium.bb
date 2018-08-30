@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">מה מופיע במסך שלי?</translation>
 <translation id="1823873187264960516">אתרנט: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">‏Assistant (בטעינה...)</translation>
-<translation id="1841545962859478868">ייתכן שמנהל המכשיר עוקב אחרי:</translation>
 <translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
 <translation id="1864454756846565995">‏מכשיר עם יציאת USB-C (יציאה אחורית)</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>
-<translation id="7007100238996585961">מענה במכשיר אחר</translation>
 <translation id="7015766095477679451">אפשר לחזור בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="7037152028959403492">לחצת על מקש הקיצור של ניגודיות גבוהה. להפעיל אותה?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">מתחבר</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">שינוי הגדרות שמציינות אם אתרים יכולים להשתמש בתכונות כגון מיקום גיאוגרפי, מיקרופון, מצלמה ועוד</translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="726276584504105859">לשימוש במסך מפוצל יש לגרור לכאן</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>
@@ -394,7 +391,6 @@
 <translation id="7846634333498149051">מקלדת</translation>
 <translation id="7886277072580235377">סשן הגלישה שלך יימחק אחרי היציאה. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">שליחת אימייל</translation>
-<translation id="790040513076446191">לשנות הגדרות הקשורות לפרטיות</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7933084174919150729">‏Google Assistant זמין רק לפרופיל ראשי.</translation>
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -413,7 +409,6 @@
 <translation id="8142699993796781067">רשת פרטית</translation>
 <translation id="8152119955266188852">לחצת על מקש הקיצור של זכוכית מגדלת במסך מלא. להפעיל אותה?</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
-<translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
 <translation id="8192202700944119416">ההודעות מוסתרות.</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8297006494302853456">חלש</translation>
@@ -483,7 +478,7 @@
 <translation id="9210037371811586452">‏יציאה ממצב Unified Desktop</translation>
 <translation id="9215934040295798075">הגדר טפט</translation>
 <translation id="923686485342484400">‏הקש פעמיים על Control Shift Q כדי לצאת.</translation>
-<translation id="938963181863597773">אירועים קרובים ביומן</translation>
+<translation id="938963181863597773">אירועים קרובים ביומן שלי</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>
 <translation id="98515147261107953">לרוחב</translation>
 </translationbundle>

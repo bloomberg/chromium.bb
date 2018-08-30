@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Kas ir redzams ekrānā?</translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
-<translation id="1841545962859478868">Ierīces administrators var uzraudzīt šo:</translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
 <translation id="1882897271359938046">Spoguļo šeit: <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Sākt darbu</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
-<translation id="7007100238996585961">Tiek atbildēts citā ierīcē</translation>
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
 <translation id="7037152028959403492">Jūs nospiedāt augsta kontrasta īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Mainiet iestatījumus, kas norāda, vai vietnes var izmantot tādas funkcijas kā ģeolokāciju, mikrofonu, kameru u. c.</translation>
 <translation id="7256634071279256947">Aizmugurējais mikrofons</translation>
 <translation id="726276584504105859">Velciet šeit, lai izmantotu ekrāna sadalīšanu.</translation>
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Tastatūra</translation>
 <translation id="7886277072580235377">Pēc izrakstīšanās jūsu interneta sesija tiks notīrīta. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Sūtīt e-pasta ziņojumu</translation>
-<translation id="790040513076446191">Manipulēt ar konfidencialitāti saistītus iestatījumus</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7933084174919150729">Google asistents ir pieejams tikai galvenajam profilam.</translation>
 <translation id="79341161159229895">Kontu pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Privāts tīkls</translation>
 <translation id="8152119955266188852">Jūs nospiedāt pilnekrāna lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
-<translation id="8191230140820435481">Pārvaldīt jūsu lietotnes, paplašinājumus un motīvus</translation>
 <translation id="8192202700944119416">Paziņojumi ir paslēpti.</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8297006494302853456">Vājš</translation>

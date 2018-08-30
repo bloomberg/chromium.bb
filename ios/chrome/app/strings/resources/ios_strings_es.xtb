@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Mostrar cuadrícula de pestañas</translation>
 <translation id="162035744160882748">Activar la sincronización, la personalización y otros servicios de Google</translation>
 <translation id="1644574205037202324">Historial</translation>
-<translation id="1646446875146297738">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con tu tráfico de navegación. El efecto dependerá de si un sitio web responde a la solicitud y de cómo se interpreta esa solicitud.
-
-Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recogiendo y utilizando tus datos de navegación (por ejemplo, para mejorar tu seguridad, proporcionarte contenido, servicios, anuncios y recomendaciones sobre sus sitios web y generar estadísticas de informes). <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Error al compartir contenido porque no estás conectado a la red</translation>
 <translation id="165877110639533037">No hay pestañas abiertas</translation>
 <translation id="1687475363370981210">Marcar todo como leído</translation>
@@ -86,7 +83,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2339560363438331454">Servicios de Google y sinc.</translation>
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
-<translation id="2354750644801399986">No realizar seguimiento</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>

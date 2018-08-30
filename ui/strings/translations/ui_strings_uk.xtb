@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">РЕКОМЕНДОВАНІ ПРОГРАМИ</translation>
 <translation id="1368832886055348810">Зліва направо</translation>
+<translation id="1383876407941801731">Пошук</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="1413622004203049571">Вимкнути сповіщення від <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвилина та }one{# хвилина та }few{# хвилини та }many{# хвилин і }other{# хвилини та }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">Центр сповіщень, непрочитаних сповіщень: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧАСТО ВИКОРИСТОВУЮТЬСЯ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Залишився 1 місяць}one{Залишився # місяць}few{Залишилося # місяці}many{Залишилося # місяців}other{Залишилося # місяця}}</translation>
-<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">Вставлення</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунди}many{# секунд}other{# секунди}}</translation>
 <translation id="4971687151119236543">Попередня композиція</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">Торкніться тут</translation>
 <translation id="5076340679995252485">&amp;Вставити</translation>
-<translation id="5120799197269191491">Клавіша пошуку+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Запустити Google Асистент</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5266161281976477809">Трикутник відкривання</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Залишилась 1 секунда}one{Залишилася # секунда}few{Залишилося # секунди}many{Залишилося # секунд}other{Залишилося # секунди}}</translation>
 <translation id="5941711191222866238">Зменшити</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 година}one{# година}few{# години}many{# годин}other{# години}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">Сторінка <ph name="SELECTED_PAGE" /> з <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Очистити вікно пошуку</translation>
 <translation id="6040143037577758943">Закрити</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">установити прапорець</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8394908167088220973">Відтворити чи призупинити</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 р.}one{# р.}few{# р.}many{# р.}other{# р.}}</translation>
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек.</translation>

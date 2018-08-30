@@ -125,7 +125,6 @@
 <translation id="5479196819031988440">Chromium OS nevar atvērt šo lapu.</translation>
 <translation id="5480860683791598150">Pārlūkam Chromium ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
-<translation id="5514308096618405748">Chrome OS un Linux (Beta) darbību nodrošina papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="5529843986978123325">{0,plural, =1{Operētājsistēma Chromium OS tiks restartēta pēc 1 minūtes}zero{Operētājsistēma Chromium OS tiks restartēta pēc # minūtēm}one{Operētājsistēma Chromium OS tiks restartēta pēc # minūtes}other{Operētājsistēma Chromium OS tiks restartēta pēc # minūtēm}}</translation>
 <translation id="5631814766731275228">Chromium profila vārds un attēls</translation>
 <translation id="5634636535844844681">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>

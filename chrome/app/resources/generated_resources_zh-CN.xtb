@@ -754,10 +754,10 @@
 <translation id="212862741129535676">频率状态占用率</translation>
 <translation id="2129825002735785149">更新插件</translation>
 <translation id="2131077480075264">“<ph name="IMPORT_NAME" />”不允许安装“<ph name="APP_NAME" />”，因为无法进行此项安装</translation>
+<translation id="2135456203358955318">停靠的放大镜</translation>
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="2136372518715274136">输入新密码</translation>
 <translation id="2136476978468204130">您输入的密码不正确</translation>
-<translation id="2136573720723402846">启用指纹解锁功能</translation>
 <translation id="2137068468602026500">点击“网络浏览器”下的 <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">仍在连接“<ph name="DEVICE_NAME" />”</translation>
 <translation id="214169863967063661">打开外观设置</translation>
@@ -1761,7 +1761,7 @@
 <translation id="3664511988987167893">扩展程序图标</translation>
 <translation id="3665589677786828986">Chrome检测到您的部分设置被其他程序篡改了，因此已将这些设置重置为原始默认设置。</translation>
 <translation id="3668570675727296296">语言设置</translation>
-<translation id="3668801437375206837">为了更好地诊断蓝牙问题，Google 员工可以在反馈报告中包含其他蓝牙日志。此选项处于选中状态时，您的报告中将包含来自当前会话的 btsnoop 和 HCI 日志，这些日志经过处理，尽可能移除了个人身份信息。只有 Listnr 的 Chrome 操作系统产品组管理员可以访问这些日志。这些日志将于 90 天后被完全清除。</translation>
+<translation id="3668801437375206837">为了更好地诊断蓝牙问题，Google 用户可以在反馈报告中包含其他蓝牙日志。此选项处于选中状态时，您的报告中将包含来自当前会话的 btsnoop 和 HCI 日志，这些日志经过处理，尽可能移除了个人身份信息。只有 Listnr 的 Chrome 操作系统产品组管理员可以访问这些日志。这些日志将于 90 天后被完全清除。</translation>
 <translation id="3668823961463113931">处理程序</translation>
 <translation id="3670229581627177274">开启蓝牙</translation>
 <translation id="3672681487849735243">检测到出厂错误</translation>
@@ -3395,7 +3395,7 @@
 <translation id="6169666352732958425">无法投射桌面。</translation>
 <translation id="6171948306033499786">暂停打印</translation>
 <translation id="6175314957787328458">Microsoft 域 GUID</translation>
-<translation id="6176043333338857209">将暂时开启蓝牙，以便与您的安全密钥通信</translation>
+<translation id="6176043333338857209">蓝牙将暂时开启，以便与您的安全密钥通信</translation>
 <translation id="6178664161104547336">选择证书</translation>
 <translation id="6181431612547969857">下载已被阻止</translation>
 <translation id="6185132558746749656">设备位置</translation>
@@ -3539,7 +3539,7 @@
 <translation id="6399774419735315745">间谍</translation>
 <translation id="6401445054534215853">栏中第 1 项</translation>
 <translation id="6404511346730675251">修改书签</translation>
-<translation id="6405510437656969977">当您准备好可以输入 PIN 码时，再继续操作</translation>
+<translation id="6405510437656969977">当您准备好输入 PIN 码时，再继续操作</translation>
 <translation id="6406303162637086258">模拟浏览器重启</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6408118934673775994">读取和更改您在<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />和<ph name="WEBSITE_3" />上的数据</translation>
@@ -4100,7 +4100,7 @@
 <translation id="7256710573727326513">在标签页中打开</translation>
 <translation id="725758059478686223">打印服务</translation>
 <translation id="7257666756905341374">读取您复制和粘贴的数据</translation>
-<translation id="7260764918845374269">仅当您的安全密钥处于配对模式时，才会显示出来。按下安全密钥上的按钮至少 5 秒钟，即可使其进入配对模式。</translation>
+<translation id="7260764918845374269">您的安全密钥只有在处于配对模式时才会显示出来。按下安全密钥上的按钮至少 5 秒钟，即可使其进入配对模式。</translation>
 <translation id="7262004276116528033">此登录服务由 <ph name="SAML_DOMAIN" /> 托管</translation>
 <translation id="7268365133021434339">关闭标签页</translation>
 <translation id="7268659760406822741">可用服务</translation>

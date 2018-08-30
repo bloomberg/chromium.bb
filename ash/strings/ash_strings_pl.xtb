@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Co widać na moim ekranie?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
-<translation id="1841545962859478868">Administrator urządzenia może monitorować te zdarzenia:</translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
@@ -342,7 +341,6 @@
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
-<translation id="7007100238996585961">Odpowiem na innym urządzeniu</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7037152028959403492">Naciśnięto skrót wysokiego kontrastu. Czy chcesz go włączyć?</translation>
@@ -356,7 +354,6 @@
 <translation id="7143207342074048698">Łączenie</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Zmień ustawienia określające, czy strony mogą korzystać z takich funkcji jak geolokalizacja, mikrofon, aparat itd.</translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
@@ -393,7 +390,6 @@
 <translation id="7846634333498149051">Klawiatura</translation>
 <translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Wyślij e-maila</translation>
-<translation id="790040513076446191">Manipulować ustawieniami ochrony prywatności</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7933084174919150729">Asystent Google jest dostępny tylko na profilu głównym.</translation>
 <translation id="79341161159229895">Kontem zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@
 <translation id="8142699993796781067">Sieć prywatna</translation>
 <translation id="8152119955266188852">Naciśnięto skrót lupy pełnoekranowej. Czy chcesz ją włączyć?</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
-<translation id="8191230140820435481">Zarządzanie Twoimi aplikacjami, rozszerzeniami i motywami</translation>
 <translation id="8192202700944119416">Powiadomienia są ukryte.</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>

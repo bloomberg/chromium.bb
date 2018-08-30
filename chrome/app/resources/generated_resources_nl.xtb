@@ -757,10 +757,10 @@
 <translation id="212862741129535676">Bezettingspercentage van frequentiestatus</translation>
 <translation id="2129825002735785149">Plug-in updaten</translation>
 <translation id="2131077480075264">Kan <ph name="APP_NAME" /> niet installeren, omdat dit niet wordt toegestaan door <ph name="IMPORT_NAME" /></translation>
+<translation id="2135456203358955318">Gedockt vergrootglas</translation>
 <translation id="2135787500304447609">He&amp;rvatten</translation>
 <translation id="2136372518715274136">Nieuw wachtwoord opgeven</translation>
 <translation id="2136476978468204130">De opgegeven wachtwoordzin is onjuist</translation>
-<translation id="2136573720723402846">Ontgrendelen via vingerafdruk inschakelen</translation>
 <translation id="2137068468602026500">Klik op <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> onder Webbrowser</translation>
 <translation id="2138398485845393913">Verbinding met '<ph name="DEVICE_NAME" />' is nog in behandeling</translation>
 <translation id="214169863967063661">Instellingen voor uiterlijk openen</translation>
@@ -4385,7 +4385,7 @@
 <translation id="7709152031285164251">Mislukt - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Casten...</translation>
 <translation id="7711920809702896782">Afbeeldingsgegevens</translation>
-<translation id="7712740978240882272">Je Chromebook ontgrendelen met je telefoon. <ph name="LINK_BEGIN" />Meer informatie.<ph name="LINK_END" /></translation>
+<translation id="7712740978240882272">Je Chromebook ontgrendelen met je telefoon. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="7712836429117959503">Onbekende extensie met ID <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">Cookies van <ph name="DOMAIN" /> toegestaan</translation>
 <translation id="7714464543167945231">Certificaat</translation>
@@ -4733,7 +4733,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8185331656081929126">Meldingen weergeven wanneer er nieuwe printers in het netwerk worden gedetecteerd</translation>
 <translation id="8186609076106987817">De server kan het bestand niet vinden.</translation>
 <translation id="8188120771410500975">&amp;Controleer de spelling van tekstvelden</translation>
-<translation id="8188389033983459049">Controleer de instellingen van je apparaat en schakel het in om door te gaan</translation>
+<translation id="8188389033983459049">Controleer de instellingen van je apparaat en schakel je apparaat in om door te gaan</translation>
 <translation id="8190193592390505034">Verbinding maken met <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Je apps, extensies en thema's beheren</translation>
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>

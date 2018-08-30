@@ -16,7 +16,7 @@
 <translation id="119944043368869598">I-clear lahat</translation>
 <translation id="1247372569136754018">Mikropono (internal)</translation>
 <translation id="1252999807265626933">Nagcha-charge mula sa <ph name="POWER_SOURCE" /></translation>
-<translation id="1255033239764210633">Ano ang lagay ng panahon?</translation>
+<translation id="1255033239764210633">Ano'ng lagay ng panahon?</translation>
 <translation id="1267032506238418139">Pagbabago ng shortcut</translation>
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Ano ang nasa screen ko?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (naglo-load...)</translation>
-<translation id="1841545962859478868">Maaaring subaybayan ng admin ng device ang mga sumusunod:</translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
@@ -143,7 +142,7 @@
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Nakakonekta sa isang device}one{Nakakonekta sa # device}other{Nakakonekta sa # na device}}</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
-<translation id="3255483164551725916">Ano ang maaari mong gawin?</translation>
+<translation id="3255483164551725916">Ano'ng maaari mong gawin?</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Magsimula</translation>
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
-<translation id="7007100238996585961">Sinasagot sa isa pang device</translation>
 <translation id="7015766095477679451">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
 <translation id="7037152028959403492">Napindot mo ang shortcut para sa mataas na contrast. Gusto mo ba itong i-on?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Manipulahin ang mga setting na tumutukoy kung makakagamit ang mga website ng mga feature gaya ng geolocation, mikropono, camera, atbp.</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7886277072580235377">Maki-clear ang iyong session sa internet kapag nag-sign out ka. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Magpadala ng email</translation>
-<translation id="790040513076446191">Manipulahin ang mga setting kaugnay ng privacy</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7933084174919150729">Available lang ang Google Assistant para sa pangunahing profile.</translation>
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8152119955266188852">Napindot mo ang shortcut para sa full-screen magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
-<translation id="8191230140820435481">Pamahalaan ang iyong apps, mga extension, at tema</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8297006494302853456">Mahina</translation>
@@ -479,7 +474,7 @@
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>
 <translation id="9215934040295798075">Magtakda ng wallpaper</translation>
 <translation id="923686485342484400">Pindutin ang Control Shift Q nang dalawang beses upang mag-sign out.</translation>
-<translation id="938963181863597773">Ano ang nakaiskedyul sa kalendaryo ko?</translation>
+<translation id="938963181863597773">Ano'ng nakaiskedyul sa kalendaryo ko?</translation>
 <translation id="945522503751344254">Magpadala ng feedback...</translation>
 <translation id="98515147261107953">Landscape</translation>
 </translationbundle>

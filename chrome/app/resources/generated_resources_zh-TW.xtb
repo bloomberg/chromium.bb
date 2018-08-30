@@ -757,10 +757,10 @@
 <translation id="212862741129535676">頻率狀態占用率</translation>
 <translation id="2129825002735785149">更新外掛程式</translation>
 <translation id="2131077480075264">由於「<ph name="IMPORT_NAME" />」不允許，因此無法安裝「<ph name="APP_NAME" />」</translation>
+<translation id="2135456203358955318">停駐放大鏡</translation>
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
 <translation id="2136372518715274136">輸入新密碼</translation>
 <translation id="2136476978468204130">你輸入的通關密語不正確</translation>
-<translation id="2136573720723402846">啟用指紋解鎖功能</translation>
 <translation id="2137068468602026500">在「網路瀏覽器」之下，按一下 [Microsoft Edge]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">仍在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="214169863967063661">開啟顯示外觀設定</translation>
@@ -3668,7 +3668,7 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - 已分享桌面內容</translation>
 <translation id="6580151766480067746">ARC 版本</translation>
 <translation id="6581162200855843583">Google 雲端硬碟連結</translation>
-<translation id="6582080224869403177">請重設 <ph name="DEVICE_TYPE" /> 以便進行安全性更新。</translation>
+<translation id="6582080224869403177">請重設 <ph name="DEVICE_TYPE" />，以便進行安全性更新。</translation>
 <translation id="6582421931165117398">為維護你的個人資訊安全，請立即變更密碼。系統會要求你先登入帳戶，才能變更密碼。</translation>
 <translation id="6583851739559471707">已針對經常顯示侵入式廣告的網站封鎖廣告 (建議)</translation>
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
@@ -4229,7 +4229,7 @@
 <translation id="7464490149090366184">壓縮失敗，項目已存在：「$1」</translation>
 <translation id="7465778193084373987">Netscape 憑證撤銷網址</translation>
 <translation id="7469406957790636836">如要啟用這項功能，請先在<ph name="BEGIN_LINK" />語言與輸入法<ph name="END_LINK" />設定中開啟拼字檢查</translation>
-<translation id="7469518857922439236">傳送通知給你，並預設記住這部電腦以便在收到簡訊時傳送通知</translation>
+<translation id="7469518857922439236">傳送通知給你，並預設記住這部電腦，以便在收到簡訊時傳送通知</translation>
 <translation id="7469894403370665791">自動連線至這個網路</translation>
 <translation id="747114903913869239">錯誤：無法為擴充功能解碼</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
@@ -4278,7 +4278,7 @@
 <translation id="7531779363494549572">依序輕觸 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
 <translation id="7536709149194614609">請重新啟動裝置，然後再試一次。</translation>
 <translation id="7537601449003285327">固定至工作列</translation>
-<translation id="7539856059004947393">藍牙金鑰</translation>
+<translation id="7539856059004947393">藍牙安全金鑰</translation>
 <translation id="7540972813190816353">檢查更新時發生錯誤：<ph name="ERROR" /></translation>
 <translation id="7543104066686362383">在這個 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上啟用偵錯功能</translation>
 <translation id="7544853251252956727">隨機播放</translation>
@@ -4729,7 +4729,7 @@
 <translation id="8185331656081929126">在網路上偵測到新印表機時顯示通知</translation>
 <translation id="8186609076106987817">伺服器找不到檔案。</translation>
 <translation id="8188120771410500975">檢查文字欄位的拼字(&amp;C)</translation>
-<translation id="8188389033983459049">檢查裝置設定並開啟藍牙功能以便繼續</translation>
+<translation id="8188389033983459049">檢查裝置設定並開啟藍牙功能，以便繼續操作</translation>
 <translation id="8190193592390505034">正在連線至 <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">管理你的應用程式、擴充功能和主題</translation>
 <translation id="8191453843330043793">V8 Proxy 解析工具</translation>
@@ -5421,7 +5421,7 @@
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="973473557718930265">結束</translation>
 <translation id="974555521953189084">如要開始同步處理，請輸入你的通關密語</translation>
-<translation id="977640333593638907">只要按下按鈕即可使用大多數的金鑰</translation>
+<translation id="977640333593638907">大多數的金鑰只要按下按鈕即可使用</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>
 <translation id="984275831282074731">付款方式</translation>

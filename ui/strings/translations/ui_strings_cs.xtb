@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Klávesa Esc</translation>
 <translation id="1306549533752902673">DOPORUČENÉ APLIKACE</translation>
 <translation id="1368832886055348810">Zleva doprava</translation>
+<translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1413622004203049571">Deaktivovat oznámení ze služby <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zbývá 1 měsíc}few{zbývají # měsíce}many{zbývá # měsíce}other{zbývá # měsíců}}</translation>
-<translation id="4820616160060340806">Příkaz + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">Vložení</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekund}}</translation>
 <translation id="4971687151119236543">Média – předchozí skladba</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">Klepněte sem</translation>
 <translation id="5076340679995252485">Vložit</translation>
-<translation id="5120799197269191491">Hledat+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Spustit Asistenta Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Tlačítko k zobrazení skrytého obsahu</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zbývá 1 sekunda}few{Zbývají # sekundy}many{Zbývá # sekundy}other{Zbývá # sekund}}</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodin}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Vymazat text z vyhledávacího pole</translation>
 <translation id="6040143037577758943">Zavřít</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">zaškrtnout</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
 <translation id="8394908167088220973">Média – přehrát/pozastavit</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 r}few{# r}many{# r}other{# r}}</translation>
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>

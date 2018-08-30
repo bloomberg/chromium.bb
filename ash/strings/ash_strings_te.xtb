@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">నా స్క్రీన్‌పై ఏమి ఉన్నాయి?</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
-<translation id="1841545962859478868">పరికర నిర్వాహకుడు క్రింది వాటిని పర్యవేక్షించవచ్చు:</translation>
 <translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
@@ -143,7 +142,7 @@
 <translation id="3153444934357957346">మీరు బహుళ సైన్-ఇన్‌లో గరిష్టంగా <ph name="MULTI_PROFILE_USER_LIMIT" /> ఖాతాలను మాత్రమే కలిగి ఉండవచ్చు.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{పరికరానికి కనెక్ట్ చేయబడింది}other{# పరికరాలకు కనెక్ట్ చేయబడింది}}</translation>
 <translation id="3236488194889173876">మొబైల్ నెట్‌వర్క్ ఏదీ అందుబాటులో లేదు</translation>
-<translation id="3255483164551725916">మీరు ఏమి చేయగలరు?</translation>
+<translation id="3255483164551725916">నువ్వు ఏమి చేయగలవు?</translation>
 <translation id="3294437725009624529">అతిథి</translation>
 <translation id="332587331255250389">దయచేసి బ్యాటరీని భర్తీ చేయండి</translation>
 <translation id="3351879221545518001">ప్రస్తుతం మీరు స్క్రీన్‌ని ప్రసారం చేస్తున్నారు.</translation>
@@ -342,7 +341,6 @@
 <translation id="6972754398087986839">ప్రారంభించండి</translation>
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="698231206551913481">ఈ వినియోగదారును తీసివేసిన తర్వాత ఈ వినియోగదారుతో అనుబంధించిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి.</translation>
-<translation id="7007100238996585961">మరొక పరికరంలో సమాధానం ఇవ్వబడుతోంది</translation>
 <translation id="7015766095477679451">తిరిగి <ph name="COME_BACK_TIME" />కి రండి.</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
 <translation id="7037152028959403492">అధిక కాంట్రాస్ట్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
@@ -356,7 +354,6 @@
 <translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
-<translation id="7228479291753472782">వెబ్‌సైట్‌లు భౌగోళికస్థానం, మైక్రోఫోన్, కెమెరా మొదలైనటువంటి లక్షణాలను ఉపయోగించవచ్చా లేదా అనేది పేర్కొనే సెట్టింగ్‌లను సవరించండి</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="726276584504105859">విభజన స్క్రీన్‌ను ఉపయోగించడానికి ఇక్కడికి లాగండి</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
@@ -375,7 +372,7 @@
 <translation id="7569509451529460200">బ్రెయిలీ మరియు ChromeVox ప్రారంభించబడ్డాయి</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
 <translation id="7604942372593434070">మీ బ్రౌజింగ్ కార్యాచరణను ప్రాప్యత చేయండి</translation>
-<translation id="7642778300616172920">గోప్యమైన కంటెంట్‌ను దాచు</translation>
+<translation id="7642778300616172920">సున్నితమైన కంటెంట్‌ను దాచు</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (యజమాని)</translation>
 <translation id="7647488630410863958">మీ నోటిఫికేషన్‌లను వీక్షించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>
@@ -393,7 +390,6 @@
 <translation id="7846634333498149051">కీబోర్డ్</translation>
 <translation id="7886277072580235377">మీరు సైన్ అవుట్ చేసినప్పుడు మీ ఇంటర్నెట్ సెషన్ క్లియర్ చేయబడుతుంది. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ఇమెయిల్ పంపు</translation>
-<translation id="790040513076446191">గోప్యత సంబంధ సెట్టింగ్‌లను మ్యానిపులేట్ చేయండి</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="7933084174919150729">ప్రాథమిక ప్రొఫైల్‌కు మాత్రమే Google సహాయకం అందుబాటులో ఉంటుంది.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడుతోంది</translation>
@@ -412,7 +408,6 @@
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
 <translation id="8152119955266188852">పూర్తి స్క్రీన్‌ మాగ్నిఫైయర్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
-<translation id="8191230140820435481">మీ అనువర్తనాలను, పొడిగింపులను మరియు థీమ్‌లను నిర్వహించండి</translation>
 <translation id="8192202700944119416">నోటిఫికేషన్‌లు దాచబడ్డాయి.</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8297006494302853456">బలహీనం</translation>

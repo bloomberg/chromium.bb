@@ -16,7 +16,7 @@
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
-<translation id="1255033239764210633">Laporan cuaca?</translation>
+<translation id="1255033239764210633">Gimana kondisi cuaca?</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Konten apa yang ada di layar saya?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asisten (sedang dimuat...)</translation>
-<translation id="1841545962859478868">Admin perangkat dapat memantau hal-hal berikut:</translation>
 <translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
 <translation id="1864454756846565995">Perangkat USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
@@ -143,7 +142,7 @@
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
-<translation id="3255483164551725916">Apa yang dapat Anda lakukan?</translation>
+<translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="332587331255250389">Harap ganti baterai</translation>
 <translation id="3351879221545518001">Anda sedang mentransmisi layar.</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Mulai</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="698231206551913481">Semua file dan data lokal yang dikaitkan ke pengguna ini akan dihapus secara permanen setelah pengguna ini dihapus.</translation>
-<translation id="7007100238996585961">Menjawab di perangkat lain</translation>
 <translation id="7015766095477679451">Coba lagi pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="7037152028959403492">Anda menekan pintasan untuk kontras tinggi. Ingin mengaktifkannya?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Menyambungkan</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Memanipulasi setelan yang menentukan apakah situs web dapat menggunakan fitur seperti geolokasi, mikrofon, kamera, dll.</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7886277072580235377">Sesi internet Anda akan dihapus saat Anda logout. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Kirim email</translation>
-<translation id="790040513076446191">Memanipulasi setelan yang terkait privasi</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
 <translation id="79341161159229895">Akun dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Jaringan pribadi</translation>
 <translation id="8152119955266188852">Anda menekan pintasan untuk kaca pembesar layar penuh. Ingin mengaktifkannya?</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan masukan...</translation>
-<translation id="8191230140820435481">Mengelola aplikasi, ekstensi, dan tema Anda</translation>
 <translation id="8192202700944119416">Notifikasi disembunyikan.</translation>
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8297006494302853456">Lemah</translation>

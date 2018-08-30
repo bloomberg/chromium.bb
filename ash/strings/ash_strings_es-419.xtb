@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">¿Qué hay en mi pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando…)</translation>
-<translation id="1841545962859478868">Es posible que el administrador de dispositivos supervise lo siguiente:</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
@@ -342,7 +341,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6972754398087986839">Comenzar</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
-<translation id="7007100238996585961">Se responderá en otro dispositivo</translation>
 <translation id="7015766095477679451">Regresa a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
 <translation id="7037152028959403492">Presionaste la combinación de teclas para activar el modo de contraste alto. ¿Quieres activarlo?</translation>
@@ -356,7 +354,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="7228479291753472782">Se manipularán las opciones de configuración que especifican si los sitios web pueden usar funciones, como la ubicación geográfica, el micrófono, la cámara, etc.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para usar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
@@ -393,7 +390,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7886277072580235377">Cuando salgas, se borrarán los datos de tu sesión de Internet. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar un correo electrónico</translation>
-<translation id="790040513076446191">Manipular la configuración relacionada con la privacidad</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible para el perfil principal.</translation>
 <translation id="79341161159229895">Cuenta administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -412,7 +408,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8142699993796781067">Red privada</translation>
 <translation id="8152119955266188852">Presionaste la combinación de teclas para activar la lupa de pantalla completa. ¿Quieres activarla?</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
-<translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8297006494302853456">Débil</translation>

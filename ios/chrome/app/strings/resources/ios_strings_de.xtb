@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Tab-Raster anzeigen</translation>
 <translation id="162035744160882748">Synchronisierung, Personalisierung und andere Google-Dienste aktivieren</translation>
 <translation id="1644574205037202324">Verlauf</translation>
-<translation id="1646446875146297738">Wenn Sie "Do Not Track" aktivieren, wird eine Anfrage in Ihre Browseraufrufe aufgenommen. Welche Auswirkungen dies hat, hängt davon ab, ob eine Website auf die Anfrage reagiert und wie diese interpretiert wird.
-
-Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen einblenden, die nicht auf anderen von Ihnen besuchten Websites basieren. Viele Websites erfassen und nutzen dennoch Ihre Browserdaten, etwa zur Verbesserung der Sicherheit, zur Bereitstellung von Inhalten, Diensten, Anzeigen und Empfehlungen auf der Website sowie zur Erstellung von Berichtsstatistiken. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Fehler beim Teilen, weil keine Netzwerkverbindung besteht</translation>
 <translation id="165877110639533037">Keine geöffneten Tabs</translation>
 <translation id="1687475363370981210">Alle als gelesen markieren</translation>
@@ -86,7 +83,6 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
 <translation id="2339560363438331454">Synchronisierung und Google-Dienste</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
-<translation id="2354750644801399986">"Do Not Track"</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2381405137052800939">Grundeinstellungen</translation>
 <translation id="2386793615875593361">1 ausgewählt</translation>

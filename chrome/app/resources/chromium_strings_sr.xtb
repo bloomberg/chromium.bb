@@ -127,7 +127,6 @@
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
-<translation id="5514308096618405748">Chrome ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је Linux (бета).</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium ОС ће се рестартовати за 1 минут}one{Chromium ОС ће се рестартовати за # минут}few{Chromium ОС ће се рестартовати за # минута}other{Chromium ОС ће се рестартовати за # минута}}</translation>
 <translation id="5631814766731275228">Назив и слика Chromium профила</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>

@@ -56,7 +56,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1384959399684842514">Descarga detenida</translation>
 <translation id="1389974829397082527">Aquí no hay favoritos</translation>
-<translation id="1395084944394113895">Ver el contenido sin conexión</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1404122904123200417">Incorporado en <ph name="WEBSITE_URL" /></translation>
@@ -426,6 +425,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4453340223357552416">Se descargó <ph name="FILE_NAME" /> en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4468959413250150279">Silenciar un sitio específico.</translation>
 <translation id="4472118726404937099">Para sincronizar diferentes dispositivos y personalizar tu experiencia, accede a tu cuenta y activa la sincronización</translation>
+<translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4479647676395637221">Preguntar primero antes de permitir que los sitios usen tu cámara (recomendado)</translation>
 <translation id="4487967297491345095">Todos los datos de app de Chrome se borrarán de forma permanente. Esta información incluye todos los archivos, opciones de configuración, cuentas, bases de datos, etc.</translation>
 <translation id="4508440807153586353">Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -482,6 +482,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4878404682131129617">Se produjo un error al establecer conexión a través del servidor proxy</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="488187801263602086">Cambiar el nombre del archivo</translation>
+<translation id="4882831918239250449">Controlar cómo se usa tu historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4883379392681899581">Abandonar el modo privado</translation>
 <translation id="4885273946141277891">Cantidad de instancias de Chrome no admitidas</translation>
 <translation id="4910889077668685004">Apps de pago</translation>
@@ -497,6 +498,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
 <translation id="5004339818306944878">Usa hasta un 60% menos de datos y acelera la navegación en la Web. Los servidores de Google optimizarán las páginas que visites.</translation>
+<translation id="5004416275253351869">Controles de actividad de Google</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> desea conectarse</translation>
 <translation id="5013696553129441713">No hay sugerencias nuevas</translation>
@@ -528,6 +530,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido que se descargará.</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que hagas en tus favoritos, historial, contraseñas y otras opciones de configuración se seguirán sincronizando con tu cuenta de Google. Sin embargo, tus datos existentes seguirán almacenados en tu cuenta de Google.</translation>
+<translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5304593522240415983">Este campo no puede quedar en blanco.</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -556,6 +559,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="548278423535722844">Abrir en una app de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5487729733663684359">Las actualizaciones de Chrome ya no son compatibles con esta versión de Android.</translation>
+<translation id="5494920125229734069">Seleccionar todo</translation>
 <translation id="550684401320795253">Actualizando Chrome...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5514904542973294328">El administrador de este dispositivo inhabilitó esta opción</translation>
@@ -618,6 +622,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5862731021271217234">Para obtener las pestañas de tus otros dispositivos, activa la sincronización</translation>
 <translation id="5864174910718532887">Detalles: Ordenados por nombre de sitio</translation>
 <translation id="5864419784173784555">Esperando que finalice otra descarga…</translation>
+<translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
 <translation id="5878455346526065919">Bloquear anuncios de sitios que tienden a mostrar anuncios intrusivos</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos almacenados en este sitio web, incluidas las cookies.</translation>
@@ -775,6 +780,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
 <translation id="7077143737582773186">Tarjeta SD</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Opciones disponibles cerca de la parte superior de la pantalla</translation>
+<translation id="7108338896283013870">Ocultar</translation>
 <translation id="7121362699166175603">Borra el historial y las sugerencias de autocompletado en la barra de direcciones. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Habilitar el motor de búsqueda actual</translation>
 <translation id="7138678301420049075">Otros</translation>
@@ -811,7 +817,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="7444811645081526538">Más categorías</translation>
 <translation id="7445411102860286510">Permitir que los sitios reproduzcan videos silenciados de forma automática (recomendado)</translation>
-<translation id="7453467225369441013">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google.</translation>
 <translation id="7454641608352164238">No hay suficiente espacio</translation>
 <translation id="7455923816558154057">Presiona para ver</translation>
 <translation id="7465104139234185284">Cerrar todas las pestañas privadas</translation>

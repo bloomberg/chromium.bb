@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ശുപാർശിത ആപ്പുകൾ</translation>
 <translation id="1368832886055348810">ഇടതുനിന്ന് വലത്തേക്ക്</translation>
+<translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> എന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{ഒരു മിനിറ്റും }other{# മിനിറ്റും }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">അറിയിപ്പ് കേന്ദ്രം, <ph name="UNREAD_NOTIFICATION_COUNT" /> വായിക്കാത്ത അറിയിപ്പുകൾ</translation>
 <translation id="4730374152663651037">പതിവായി ഉപയോഗിക്കുന്നത്</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{ഒരു മാസം ശേഷിക്കുന്നു}other{# മാസം ശേഷിക്കുന്നു}}</translation>
-<translation id="4820616160060340806">കമാൻഡ്+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">ചേർക്കൽ</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{ഒരു സെക്കന്‍ഡ്}other{# സെക്കൻഡ്}}</translation>
 <translation id="4971687151119236543">മുമ്പത്തെ മീഡിയ ട്രാക്ക്</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">ഇവിടെ ടാപ്പുചെയ്യുക</translation>
 <translation id="5076340679995252485">&amp;ഒട്ടിക്കുക</translation>
-<translation id="5120799197269191491">തിരയുക+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">Google അസിസ്‌റ്റന്റ് ആരംഭിക്കുക</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">ഡിസ്‌ക്ലോഷർ ത്രികോണം</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു}other{# സെക്കൻഡ് ശേഷിക്കുന്നു}}</translation>
 <translation id="5941711191222866238">ചെറുതാക്കുക‍</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ഒരു മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">പേജ് <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">പരിശോധിക്കൂ</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
 <translation id="8394908167088220973">മീഡിയ പ്ലേ ചെയ്യുക/താൽക്കാലികമായി നിർത്തുക</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1വർഷം}other{#വർഷം}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ഫയല്‍ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">Какво има на екрана ми?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
-<translation id="1841545962859478868">Администраторът на устройството може да наблюдава следното:</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
-<translation id="7007100238996585961">Отговаря се на друго устройство</translation>
 <translation id="7015766095477679451">Ще бъда отново на ваше разположение в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7037152028959403492">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Свързва се</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Управление на настройките, които посочват дали уебсайтовете могат да използват функции като геолокация, микрофон, камера и др.</translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
 <translation id="726276584504105859">Преместете тук с плъзгане, за да използвате режим за разделен екран</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7886277072580235377">Сесията ви за интернет ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">„Send an email“ („Изпрати имейл“)</translation>
-<translation id="790040513076446191">Манипулиране на свързаните с поверителността настройки</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7933084174919150729">Google Асистент е налице само за основния потребителски профил.</translation>
 <translation id="79341161159229895">Профилът се управлява от <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Частна мрежа</translation>
 <translation id="8152119955266188852">Използвахте клавишната комбинация за лупата за увеличаване на целия екран. Искате ли да включите функцията?</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
-<translation id="8191230140820435481">Управление на вашите приложения, разширения и теми</translation>
 <translation id="8192202700944119416">Известията са скрити.</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8297006494302853456">Слаб</translation>

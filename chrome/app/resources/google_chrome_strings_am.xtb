@@ -173,7 +173,6 @@
 
 Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome አሁን ዳግም ይጀምራል}=1{Chrome በ1 ሰከንድ ዳግም ይጀምራል}one{Chrome በ# ሰከንዶች ዳግም ይጀምራል}other{Chrome በ# ሰከንዶች ዳግም ይጀምራል}}</translation>
-<translation id="5514308096618405748">Chrome OS በተጨማሪ <ph name="BEGIN_LINK_CROS_OSS" />ክፍት ምንጭ ሶፍትዌር<ph name="END_LINK_CROS_OSS" /> እንደ Linux (ቅድመ ይሁንታ) እንደሆነው ሊሆን የሚችል ሆኗል።</translation>
 <translation id="556024056938947818">Google Chrome የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>

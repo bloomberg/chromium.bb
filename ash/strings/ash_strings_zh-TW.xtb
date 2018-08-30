@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">我的畫面內容有什麼資訊？</translation>
 <translation id="1823873187264960516">乙太網路：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">小幫手 (載入中…)</translation>
-<translation id="1841545962859478868">裝置管理員可能會監控下列項目：</translation>
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
 <translation id="1864454756846565995">USB-C 裝置 (背面連接埠)</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME" /> 鏡像</translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">開始使用</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
-<translation id="7007100238996585961">正在透過其他裝置回答問題</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="7037152028959403492">你按下了高對比的快速鍵。確定要啟用這項功能嗎？</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
-<translation id="7228479291753472782">控制可指定網站能否使用地理位置、麥克風、攝影機等功能的設定。</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">鍵盤</translation>
 <translation id="7886277072580235377">登出帳戶後，系統將清除你的網際網路工作階段。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">傳送電子郵件</translation>
-<translation id="790040513076446191">操控隱私權相關設定</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="7933084174919150729">Google 助理僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">這個帳戶是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">私人網路</translation>
 <translation id="8152119955266188852">你按下了全螢幕放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
-<translation id="8191230140820435481">管理你的應用程式、擴充功能和主題</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8297006494302853456">弱</translation>

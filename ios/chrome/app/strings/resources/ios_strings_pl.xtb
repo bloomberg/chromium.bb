@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">Pokaż układ kart</translation>
 <translation id="162035744160882748">Włącz synchronizację, personalizację i inne usługi Google</translation>
 <translation id="1644574205037202324">Historia</translation>
-<translation id="1646446875146297738">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
-
-Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi wcześniej. Wiele stron będzie nadal gromadzić Twoje dane przeglądania i używać ich np. do zwiększania bezpieczeństwa, dostarczania treści i usług, wyświetlania reklam i rekomendacji oraz do generowania statystyk. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">Nie udało się udostępnić, bo nie masz połączenia z siecią.</translation>
 <translation id="165877110639533037">Brak otwartych kart</translation>
 <translation id="1687475363370981210">Oznacz wszystkie jako przeczytane</translation>
@@ -86,7 +83,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
 <translation id="2339560363438331454">Synchronizacja i usługi Google</translation>
 <translation id="2351097562818989364">Ustawienia tłumaczenia zostały zresetowane.</translation>
-<translation id="2354750644801399986">„Bez śledzenia”</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2381405137052800939">Podstawowe</translation>
 <translation id="2386793615875593361">Wybrano: 1</translation>

@@ -51,7 +51,6 @@
 <translation id="1812997170047690955">What's on my screen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
-<translation id="1841545962859478868">The device admin may monitor the following:</translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
@@ -341,7 +340,6 @@
 <translation id="6972754398087986839">Get Started</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
-<translation id="7007100238996585961">Answering on another device</translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7037152028959403492">You pressed the shortcut for high contrast. Do you want to turn it on?</translation>
@@ -355,7 +353,6 @@
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7228479291753472782">Manipulate settings that specify whether websites can use features such as geo-location, microphone, camera, etc.</translation>
 <translation id="7256634071279256947">Rear microphone</translation>
 <translation id="726276584504105859">Drag here to use split screen</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
@@ -392,7 +389,6 @@
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7886277072580235377">Your Internet session will be cleared when you sign out. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send an email</translation>
-<translation id="790040513076446191">Manipulate privacy-related settings</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7933084174919150729">The Google Assistant is only available for primary profile.</translation>
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -411,7 +407,6 @@
 <translation id="8142699993796781067">Private networks</translation>
 <translation id="8152119955266188852">You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
-<translation id="8191230140820435481">Manage your apps, extensions, and themes</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8297006494302853456">Weak</translation>

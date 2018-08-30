@@ -125,7 +125,6 @@
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="5480860683791598150">Το Chromium χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
-<translation id="5514308096618405748">Το Chrome OS έγινε πραγματικότητα χάρη στα πρόσθετα <ph name="BEGIN_LINK_CROS_OSS" />λογισμικά ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />, όπως το Linux (beta).</translation>
 <translation id="5529843986978123325">{0,plural, =1{Η επανεκκίνηση του Chromium OS θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chromium OS θα γίνει σε # λεπτά}}</translation>
 <translation id="5631814766731275228">Όνομα και εικόνα στο Chromium</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>

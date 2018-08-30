@@ -16,7 +16,7 @@
 <translation id="1065552602950927991">إدخال غير صالح</translation>
 <translation id="1080471004309605942">نهاية النص المائل</translation>
 <translation id="1082209053475788238">ليس هناك عنوان سابق من المستوى السادس.</translation>
-<translation id="1087788677726983142">إخفاء فلترات بث الحدث</translation>
+<translation id="1087788677726983142">إخفاء فلاتر بث الحدث</translation>
 <translation id="1088219014394087294">ليست هناك عناوين.</translation>
 <translation id="1106741348836243114">‏تشغيل التعليقات الصوتية (earcons) أو إيقافها.</translation>
 <translation id="1108651818222110612">ترجمة مصاحِبة</translation>
@@ -79,7 +79,7 @@
 <translation id="1618597272655350600">الإعلان عن وصف كامل للموضع الحالي</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامة أكبر من واحدة}zero{# greater than signs}two{علامتا أكبر من (#)}few{# علامات أكبر من}many{# علامة أكبر من}other{# من علامات أكبر من}}</translation>
 <translation id="1653266918374749391">عنوان المستوى الثالث السابق</translation>
-<translation id="1657616855184033958">عرض فلترات بث الحدث</translation>
+<translation id="1657616855184033958">عرض فلاتر بث الحدث</translation>
 <translation id="1659072772017912254">غير محدد</translation>
 <translation id="1669290819662866522">أسبوع</translation>
 <translation id="1674262202423278359">‏التنقل في ChromeVox</translation>
@@ -414,7 +414,7 @@
 <translation id="4255943572433203166">‏استخدم الخيارات أدناه لتخصيص ChromeVox. تسري التغييرات في الحال.</translation>
 <translation id="4271220233568730077">التعبير الرياضي التالي</translation>
 <translation id="4271521365602459209">لا تتوفر نتائج أخرى.</translation>
-<translation id="4275397969489577657">تفعيل تسجيل بث الحدث</translation>
+<translation id="4275397969489577657">تفعيل ميزة تسجيل بث الحدث</translation>
 <translation id="4287520460805643128">لا تتوفر مقالة تالية.</translation>
 <translation id="4289540628985791613">نظرة عامة</translation>
 <translation id="4300318234632215983">‏الإعلان عن عنوان URL وراء رابط</translation>
@@ -553,7 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{فاصلة منقوطة واحدة}zero{# semicolons}two{فاصلتان منقوطتان (#)}few{# فواصل منقوطة}many{# فاصلة منقوطة}other{# من الفواصل المنقوطة}}</translation>
 <translation id="5411891038905756502">ليست هناك نقطة انتقال سابقة.</translation>
 <translation id="5417034931411865818">النقر على العنصر أسفل مفتاح التوجيه $1</translation>
-<translation id="5435274640623994081">تفعيل تسجيل الرمز الصوتي</translation>
+<translation id="5435274640623994081">تفعيل ميزة تسجيل الرمز الصوتي</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامة أقل من واحدة}zero{# less than signs}two{علامتا أقل من (#)}few{# علامات أقل من}many{# علامة أقل من}other{# من علامات أقل من}}</translation>
 <translation id="5444587279251314700">(نشط)</translation>
 <translation id="5446809554778706307">‏لم يتم التركيز على أي عنصر. يُرجى الضغط على Ctrl+T لفتح علامة تبويب جديدة.</translation>
@@ -903,7 +903,7 @@
 <translation id="8650576015643545550">ليست هناك قائمة سابقة.</translation>
 <translation id="8651481478098336970">كتم الصوت</translation>
 <translation id="8653646212587894517">عرض قائمة الروابط</translation>
-<translation id="8656888282555543604">تفعيل تسجيل لغة برايل</translation>
+<translation id="8656888282555543604">تفعيل ميزة تسجيل لغة برايل</translation>
 <translation id="8664519043722036194">ثوانٍ</translation>
 <translation id="867187640362843212">العنوان الخامس</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{شريط رأسي واحد}zero{# vertical pipes}two{شريطان رأسيان (#)}few{# أشرطة رأسية}many{# شريطًا رأسيًا}other{# من الأشرطة الرأسية}}</translation>

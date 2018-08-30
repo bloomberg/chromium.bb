@@ -180,7 +180,7 @@
 
           如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
 
-          如果未設定這項政策，除非啟用 CastAllowAllIPs 功能，否則<ph name="PRODUCT_NAME" /> 只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
+          如果未設定這項政策，除非啟用 CastAllowAllIPs 功能，否則 <ph name="PRODUCT_NAME" /> 只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
 
           如果將「EnableMediaRouter」政策設為 False，則這項政策的值不會有任何效果。</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>

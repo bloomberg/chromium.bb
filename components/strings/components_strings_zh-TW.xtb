@@ -908,6 +908,7 @@
 <translation id="7444046173054089907">這個網站遭到封鎖</translation>
 <translation id="7445762425076701745">你所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在你的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保你所連上的網站是正確的，而不會遭到網路攻擊。</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
+<translation id="7453467225369441013">你會從大多數網站登出，但不會因此登出 Google 帳戶。</translation>
 <translation id="7455133967321480974">使用全域預設值 (封鎖)</translation>
 <translation id="7460163899615895653">你最近在其他裝置上開啟的分頁會顯示在這裡</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
@@ -998,6 +999,7 @@
 <translation id="8025119109950072390">攻擊者可能會試圖透過這個網站誘使你做一些危險的行為，例如安裝軟體或提供個人資訊 (包括密碼、電話號碼或信用卡資料)。</translation>
 <translation id="8034522405403831421">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="8037357227543935929">詢問 (預設)</translation>
+<translation id="803771048473350947">檔案</translation>
 <translation id="8041089156583427627">提供意見</translation>
 <translation id="8041940743680923270">使用全域預設值 (要求確認)</translation>
 <translation id="8042918947222776840">選擇取件方式</translation>
@@ -1077,6 +1079,7 @@
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8620436878122366504">你的家長尚未核准這個網站</translation>
 <translation id="8625384913736129811">將這張信用卡儲存到這個裝置</translation>
+<translation id="8662811608048051533">你會從大多數網站登出。</translation>
 <translation id="8663226718884576429">訂單摘要：<ph name="TOTAL_LABEL" />，更多詳細資料</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />，答案：<ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">你到 <ph name="DOMAIN" /> 的連線未加密。</translation>

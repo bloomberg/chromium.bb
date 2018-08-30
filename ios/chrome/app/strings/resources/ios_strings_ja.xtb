@@ -45,9 +45,6 @@
 <translation id="1612730193129642006">タブをグリッド表示</translation>
 <translation id="162035744160882748">同期、カスタマイズ、その他の Google サービスを有効にする</translation>
 <translation id="1644574205037202324">履歴</translation>
-<translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
-
-たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、コンテンツ、サービス、広告、ウェブサイトのおすすめ情報の提供、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">ネットワークに接続されていないため共有できませんでした。</translation>
 <translation id="165877110639533037">開いているタブはありません</translation>
 <translation id="1687475363370981210">すべて既読にする</translation>
@@ -86,7 +83,6 @@
 <translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2339560363438331454">同期と Google サービス</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
-<translation id="2354750644801399986">トラッキング拒否</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2381405137052800939">基本設定</translation>
 <translation id="2386793615875593361">1 枚選択されています</translation>

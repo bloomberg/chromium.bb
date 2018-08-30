@@ -414,7 +414,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4255943572433203166">Utilisez les options ci-dessous pour personnaliser ChromeVox. Les modifications prendront effet immédiatement.</translation>
 <translation id="4271220233568730077">Objet Math suivant</translation>
 <translation id="4271521365602459209">Aucun autre résultat</translation>
-<translation id="4275397969489577657">Activer l'enregistrement des flux d'événements dans le journal</translation>
+<translation id="4275397969489577657">Activer la journalisation des flux d'événements</translation>
 <translation id="4287520460805643128">Aucun article suivant</translation>
 <translation id="4289540628985791613">Présentation</translation>
 <translation id="4300318234632215983">Énoncer l'URL du lien</translation>
@@ -553,7 +553,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5407530583102765689">{COUNT,plural, =1{point-virgule}one{# point-virgule}other{# points-virgules}}</translation>
 <translation id="5411891038905756502">Aucun renvoi précédent</translation>
 <translation id="5417034931411865818">Cliquez sur l'élément sous la clé de routage $1</translation>
-<translation id="5435274640623994081">Activer l'enregistrement des icônes sonores dans le journal</translation>
+<translation id="5435274640623994081">Activer la journalisation des icônes sonores</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{signe inférieur à}one{# signe inférieur à}other{# signes inférieur à}}</translation>
 <translation id="5444587279251314700">(activé)</translation>
 <translation id="5446809554778706307">Aucune sélection. Appuyez sur Ctrl+T pour ouvrir un nouvel onglet.</translation>
@@ -903,7 +903,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8650576015643545550">Aucune liste précédente</translation>
 <translation id="8651481478098336970">couper le son</translation>
 <translation id="8653646212587894517">Afficher la liste des liens</translation>
-<translation id="8656888282555543604">Activer l'enregistrement des caractères braille dans le journal</translation>
+<translation id="8656888282555543604">Activer la journalisation des caractères braille</translation>
 <translation id="8664519043722036194">secondes</translation>
 <translation id="867187640362843212">Titre 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barre verticale}one{# barre verticale}other{# barres verticales}}</translation>

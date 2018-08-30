@@ -56,7 +56,6 @@
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">توقف التنزيل مؤقتًا</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
-<translation id="1395084944394113895">عرض المحتوى بلا اتصال بالإنترنت</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">المزامنة والتخصيص</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
@@ -426,6 +425,7 @@
 <translation id="4453340223357552416">تم تنزيل <ph name="FILE_NAME" /> في <ph name="PRODUCT_NAME" /></translation>
 <translation id="4468959413250150279">كتم صوت موقع ويب معين.</translation>
 <translation id="4472118726404937099">للمزامنة والتخصيص على جميع الأجهزة، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
+<translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
 <translation id="4479647676395637221">السؤال أولاً قبل السماح للمواقع باستخدام الكاميرا (موصى به)</translation>
 <translation id="4487967297491345095">‏سيتم حذف جميع بيانات تطبيق Chrome نهائيًا. ويشمل ذلك جميع الملفات والإعدادات والحسابات وقواعد البيانات وما إلى ذلك.</translation>
 <translation id="4508440807153586353">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها.
@@ -483,6 +483,7 @@
 <translation id="4878404682131129617">أخفق إنشاء نفق عبر الخادم الوكيل.</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="488187801263602086">إعادة تسمية الملف</translation>
+<translation id="4882831918239250449">التحكُّم في كيفية استخدامنا لسِجل التصفُّح الخاص بك لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="4883379392681899581">مغادرة الوضع الخاص</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4910889077668685004">تطبيقات الدفع</translation>
@@ -498,6 +499,7 @@
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5004339818306944878">‏يمكنك خفض استخدام البيانات بنسبة تصل إلى 60%، إلى جانب تسريع الويب. كما ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
+<translation id="5004416275253351869">‏عناصر التحكم بالنشاط على Google</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5011311129201317034">يريد <ph name="SITE" /> الاتصال</translation>
 <translation id="5013696553129441713">ليست هناك اقتراحات جديدة</translation>
@@ -529,6 +531,7 @@
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات بحسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
+<translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">موافق وأعي ذلك</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
 <translation id="5308380583665731573">اتصال</translation>
@@ -557,6 +560,7 @@
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5487729733663684359">‏لم يعد يتم دعم تحديثات Chrome لهذا الإصدار من Android.</translation>
+<translation id="5494920125229734069">تحديد الكل</translation>
 <translation id="550684401320795253">‏جارٍ تحديث Chrome...</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم الإيقاف من قبل مشرف هذا الجهاز</translation>
@@ -619,6 +623,7 @@
 <translation id="5862731021271217234">للحصول على علامات التبويب من أجهزتك الأخرى، يُرجى تفعيل المزامنة.</translation>
 <translation id="5864174910718532887">التفاصيل: تم الترتيب بحسب اسم موقع الويب</translation>
 <translation id="5864419784173784555">في انتظار تنزيل آخر…</translation>
+<translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5878455346526065919">حظر الإعلانات من المواقع التي تميل إلى عرض إعلانات متداخلة</translation>
 <translation id="5902828464777634901">سيتم حذف كل البيانات المحلية المخزنة بواسطة موقع الويب هذا بما في ذلك ملفات تعريف الارتباط.</translation>
@@ -776,6 +781,7 @@
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
 <translation id="7077143737582773186">‏بطاقة SD</translation>
 <translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
+<translation id="7108338896283013870">إخفاء</translation>
 <translation id="7121362699166175603">‏مسح السجل وميزة الإكمال التلقائي في شريط العناوين. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">السماح بمحرك البحث الحالي</translation>
 <translation id="7138678301420049075">أخرى</translation>
@@ -812,7 +818,6 @@
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7444811645081526538">مزيد من الفئات</translation>
 <translation id="7445411102860286510">السماح للمواقع بتشغيل الفيديوهات مكتومة الصوت تلقائيًا (مُستحسن)</translation>
-<translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7454641608352164238">سعة التخزين غير كافية</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7465104139234185284">إغلاق جميع علامات التبويب الخاصة</translation>

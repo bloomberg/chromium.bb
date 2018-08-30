@@ -45,10 +45,6 @@
 <translation id="1612730193129642006">Mostrar grade das guias</translation>
 <translation id="162035744160882748">Ativar sincronização, personalização e outros serviços do Google</translation>
 <translation id="1644574205037202324">Histórico</translation>
-<translation id="1646446875146297738">A ativação da opção "Não rastrear" significa que uma solicitação será incluída com seu tráfego de navegação. Qualquer efeito depende de o website responder ou não à solicitação e da forma que a solicitação é interpretada.
-
-Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que não têm qualquer relação com os sites que você costuma visitar. Mesmo assim, alguns websites ainda vão coletar e usar seus dados de navegação para, por exemplo, melhorar a segurança, gerar conteúdo, anúncios, recomendações e relatórios de estatística. 
-<ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">O compartilhamento falhou porque não há conexão de rede.</translation>
 <translation id="165877110639533037">Não há guias abertas</translation>
 <translation id="1687475363370981210">Marcar todas as entradas como lidas</translation>
@@ -87,7 +83,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2339560363438331454">Serviços do Google e de sincronização</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
-<translation id="2354750644801399986">"Não rastrear"</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2381405137052800939">Conceitos básicos</translation>
 <translation id="2386793615875593361">Uma selecionada</translation>

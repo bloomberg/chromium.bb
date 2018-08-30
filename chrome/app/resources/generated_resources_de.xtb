@@ -383,7 +383,7 @@
 <translation id="1564414980088536597">Dieses Bild kann nicht verwendet werden. Bitte wählen Sie ein anderes Bild aus.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="1567387640189251553">Seit der letzten Eingabe Ihres Passwortes wurde eine andere Tastatur angeschlossen. Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen.</translation>
-<translation id="1567750922576943685">Wenn Ihre Identität überprüft wird, hilft dies, Ihre personenbezogenen Daten zu schützen</translation>
+<translation id="1567750922576943685">Wenn Ihre Identität überprüft werden kann, hilft dies, Ihre personenbezogenen Daten zu schützen</translation>
 <translation id="1567993339577891801">JavaScript-Konsole</translation>
 <translation id="1568067597247500137">Website stummschalten</translation>
 <translation id="1568323446248056064">Einstellungen für Anzeigegerät öffnen</translation>
@@ -754,10 +754,10 @@
 <translation id="212862741129535676">Aktiver Zustand – Auslastung in Prozent</translation>
 <translation id="2129825002735785149">Plug-in aktualisieren</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" konnte nicht installiert werden, da dies vom "<ph name="IMPORT_NAME" />" nicht zugelassen wurde.</translation>
+<translation id="2135456203358955318">Angedockte Lupe</translation>
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="2136372518715274136">Neues Passwort eingeben</translation>
 <translation id="2136476978468204130">Sie haben eine ungültige Passphrase eingegeben</translation>
-<translation id="2136573720723402846">Entsperren per Fingerabdruck aktivieren</translation>
 <translation id="2137068468602026500">Klicken Sie unter "Webbrowser" auf <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Es wird weiterhin versucht, eine Verbindung zu "<ph name="DEVICE_NAME" />" herzustellen</translation>
 <translation id="214169863967063661">Darstellungseinstellungen öffnen</translation>
@@ -1507,7 +1507,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3285322247471302225">Neuer &amp;Tab</translation>
 <translation id="3288047731229977326">Erweiterungen im Entwicklermodus können auf Ihrem Computer Schaden anrichten. Wenn Sie kein Entwickler sind, sollten Sie diese Erweiterungen im Entwicklermodus deaktivieren, um sicher zu sein.</translation>
 <translation id="3289856944988573801">Verwenden Sie Ethernet oder WLAN zur Suche nach Updates.</translation>
-<translation id="3292421191230118801">Sie können Websites, die Sie auf Mobilgeräten aufgerufen haben, weiter auf Ihrem Chromebook ansehen</translation>
+<translation id="3292421191230118801">Sie können sich Websites, die Sie auf Mobilgeräten aufgerufen haben, anschließend weiter auf Ihrem Chromebook ansehen</translation>
 <translation id="32939749466444286">Der Linux-Container konnte nicht gestartet werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="329838636886466101">Reparieren</translation>
@@ -2047,7 +2047,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="407520071244661467">Skalieren</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> kann nicht gestreamt werden.</translation>
 <translation id="4077917118009885966">Werbung auf dieser Website blockiert</translation>
-<translation id="4079799245038595838">Eine Benachrichtigung wurde an Ihr Smartphone gesendet. Folgen Sie den Schritten, um Ihre Identität zu bestätigen.</translation>
+<translation id="4079799245038595838">An Ihr Smartphone wurde eine Benachrichtigung gesendet. Folgen Sie den Schritten darin, um Ihre Identität zu bestätigen.</translation>
 <translation id="4081242589061676262">Datei kann nicht gestreamt werden.</translation>
 <translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> schließen</translation>
@@ -3548,7 +3548,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6399774419735315745">Spionin</translation>
 <translation id="6401445054534215853">Ablageartikel 1</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
-<translation id="6405510437656969977">Fahren Sie fort, wenn Sie bereit sind, den PIN einzugeben</translation>
+<translation id="6405510437656969977">Fahren Sie fort, wenn Sie bereit sind, die PIN einzugeben</translation>
 <translation id="6406303162637086258">Browser-Neustart simulieren</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="6408118934673775994">Eigene Daten auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> und <ph name="WEBSITE_3" /> lesen und ändern</translation>
@@ -4228,7 +4228,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7464490149090366184">Fehler beim Zippen, Element bereits vorhanden: "$1"</translation>
 <translation id="7465778193084373987">URL zum Zurückrufen von Netscape-Zertifikaten</translation>
 <translation id="7469406957790636836">Wenn Sie diese Funktion aktivieren möchten, müssen Sie zuerst die Rechtschreibprüfung unter <ph name="BEGIN_LINK" />Sprache und Eingabe<ph name="END_LINK" /> einschalten</translation>
-<translation id="7469518857922439236">Sie erhalten Benachrichtigungen für SMS und der Computer wird gemerkt</translation>
+<translation id="7469518857922439236">Messages sendet Benachrichtigungen und merkt sich diesen Computer</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
 <translation id="747114903913869239">Fehler: Erweiterung kann nicht entschlüsselt werden.</translation>
 <translation id="7473891865547856676">Nein danke</translation>

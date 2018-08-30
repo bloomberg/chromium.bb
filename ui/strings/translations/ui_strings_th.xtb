@@ -9,6 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">แอปแนะนำ</translation>
 <translation id="1368832886055348810">ซ้ายไปขวา</translation>
+<translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
@@ -79,14 +80,11 @@
 <translation id="4724120544754982507">ศูนย์การแจ้งเตือนมีการแจ้งเตือนที่ยังไม่อ่าน <ph name="UNREAD_NOTIFICATION_COUNT" /> รายการ</translation>
 <translation id="4730374152663651037">แอปที่ใช้บ่อย</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{เหลือ 1 เดือน}other{เหลือ # เดือน}}</translation>
-<translation id="4820616160060340806">คำสั่ง+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4841881773802181781">การแทรก</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
 <translation id="4971687151119236543">แทร็กก่อนหน้าของสื่อ</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5046499563572181734">แตะที่นี่</translation>
 <translation id="5076340679995252485">&amp;วาง</translation>
-<translation id="5120799197269191491">ค้นหา+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5137751499640340777">เริ่มใช้ Google Assistant</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">สามเหลี่ยมซ่อนเนื้อหา</translation>
@@ -102,7 +100,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>
 <translation id="5941711191222866238">ย่อ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ชั่วโมง}other{# ชั่วโมง}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="6012623610530968780">หน้า <ph name="SELECTED_PAGE" /> จาก <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">ล้างข้อความในช่องค้นหา</translation>
 <translation id="6040143037577758943">ปิด</translation>
@@ -163,7 +160,6 @@
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8394908167088220973">เล่น/หยุดสื่อชั่วคราว</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 ปี}other{# ปี}}</translation>
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/วินาที</translation>
