@@ -9,6 +9,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.UserData;
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.vr.VrModeObserver;
@@ -17,7 +19,10 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 /**
  * Handles browser controls offset for a Tab.
  */
-public class TabBrowserControlsOffsetHelper implements VrModeObserver {
+public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData {
+    private static final Class<TabBrowserControlsOffsetHelper> USER_DATA_KEY =
+            TabBrowserControlsOffsetHelper.class;
+
     /**
      * Maximum duration for the control container slide-in animation. Note that this value matches
      * the one in browser_controls_offset_manager.cc.
@@ -56,10 +61,18 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
      */
     private boolean mIsInVr;
 
+    public static TabBrowserControlsOffsetHelper from(Tab tab) {
+        UserDataHost host = tab.getUserDataHost();
+        TabBrowserControlsOffsetHelper helper = host.getUserData(USER_DATA_KEY);
+        return helper != null
+                ? helper
+                : host.setUserData(USER_DATA_KEY, new TabBrowserControlsOffsetHelper(tab));
+    }
+
     /**
      * @param tab The {@link Tab} that this class is associated with.
      */
-    TabBrowserControlsOffsetHelper(Tab tab) {
+    private TabBrowserControlsOffsetHelper(Tab tab) {
         mTab = tab;
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
@@ -262,9 +275,9 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
         showAndroidControls(false);
     }
 
-    /**
-     * Cleans up internal state, unregistering any observers.
-     */
+    // UserData
+
+    @Override
     public void destroy() {
         clearPreviousPositions();
         VrModuleProvider.unregisterVrModeObserver(this);

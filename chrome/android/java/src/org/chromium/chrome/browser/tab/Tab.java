@@ -37,6 +37,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -556,6 +557,16 @@ public class Tab
     /** Controls display cutout states on the tab. */
     private DisplayCutoutController mDisplayCutoutController;
 
+    private final UserDataHost mUserDataHost = new UserDataHost();
+
+    /**
+     * @return {@link UserDataHost} that manages {@link UserData} objects attached to
+     *         this Tab instance.
+     */
+    public UserDataHost getUserDataHost() {
+        return mUserDataHost;
+    }
+
     /**
      * Creates an instance of a {@link Tab}.
      *
@@ -618,7 +629,7 @@ public class Tab
         ContextualSearchTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
 
-        mControlsOffsetHelper = new TabBrowserControlsOffsetHelper(this);
+        mControlsOffsetHelper = TabBrowserControlsOffsetHelper.from(this);
 
         if (creationState != null) {
             mTabUma = new TabUma(creationState);
@@ -643,8 +654,7 @@ public class Tab
                 updateInteractableState();
             }
         };
-
-        mDisplayCutoutController = new DisplayCutoutController(this);
+        mDisplayCutoutController = DisplayCutoutController.from(this);
     }
 
     private int calculateDefaultThemeColor() {
@@ -2051,8 +2061,7 @@ public class Tab
             mInfoBarContainer.destroy();
             mInfoBarContainer = null;
         }
-
-        mControlsOffsetHelper.destroy();
+        mUserDataHost.destroy();
     }
 
     /**
@@ -3467,14 +3476,6 @@ public class Tab
     @CalledByNative
     private void setTrustedCdnPublisherUrl(@Nullable String url) {
         mTrustedCdnPublisherUrl = url;
-    }
-
-    /**
-     * Sets a custom {@link DisplayCutoutController} for testing.
-     */
-    @VisibleForTesting
-    public void setDisplayCutoutController(DisplayCutoutController controller) {
-        mDisplayCutoutController = controller;
     }
 
     private native void nativeInit();

@@ -174,7 +174,8 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     protected void setUp() throws Exception {
         mTab = getActivity().getActivityTab();
         mTestController = new TestDisplayCutoutController(mTab);
-        mTab.setDisplayCutoutController(mTestController);
+        ThreadUtils.runOnUiThreadBlocking(() -> DisplayCutoutController.initForTesting(
+                mTab.getUserDataHost(), mTestController));
 
         FullscreenTabObserver observer = new FullscreenTabObserver();
         mTab.addObserver(observer);
