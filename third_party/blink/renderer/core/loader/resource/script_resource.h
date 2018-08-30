@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/text_resource.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
@@ -70,7 +70,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void SetSerializedCachedMetadata(const char*, size_t) override;
 
-  const MovableString& SourceText();
+  const ParkableString& SourceText();
 
   AccessControlStatus CalculateAccessControlStatus() const;
 
@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   bool CanUseCacheValidator() const override;
 
-  MovableString source_text_;
+  ParkableString source_text_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

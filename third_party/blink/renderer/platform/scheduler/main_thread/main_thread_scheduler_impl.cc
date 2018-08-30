@@ -27,7 +27,7 @@
 #include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1001,12 +1001,13 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
     main_thread_only().metrics_helper.OnRendererForegrounded(now);
   }
 
-  auto& movable_string_table = MovableStringTable::Instance();
-  movable_string_table.SetRendererBackgrounded(backgrounded);
+  auto& parkable_string_table = ParkableStringTable::Instance();
+  parkable_string_table.SetRendererBackgrounded(backgrounded);
   if (backgrounded) {
     DefaultTaskRunner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce([]() { MovableStringTable::Instance().MaybeParkAll(); }),
+        FROM_HERE, base::BindOnce([]() {
+          ParkableStringTable::Instance().MaybeParkAll();
+        }),
         base::TimeDelta::FromSeconds(10));
   }
 }

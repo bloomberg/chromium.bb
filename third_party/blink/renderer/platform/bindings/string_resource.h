@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_STRING_RESOURCE_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -40,8 +40,8 @@ class StringResourceBase {
         string.CharactersSizeInBytes());
   }
 
-  explicit StringResourceBase(const MovableString& string)
-      : movable_string_(string) {
+  explicit StringResourceBase(const ParkableString& string)
+      : parkable_string_(string) {
 #if DCHECK_IS_ON()
     thread_id_ = WTF::CurrentThread();
 #endif
@@ -64,10 +64,10 @@ class StringResourceBase {
   }
 
   const String& GetWTFString() {
-    if (!movable_string_.IsNull()) {
+    if (!parkable_string_.IsNull()) {
       DCHECK(plain_string_.IsNull());
       DCHECK(atomic_string_.IsNull());
-      return movable_string_.ToString();
+      return parkable_string_.ToString();
     }
     return plain_string_;
   }
@@ -76,10 +76,10 @@ class StringResourceBase {
 #if DCHECK_IS_ON()
     DCHECK(thread_id_ == WTF::CurrentThread());
 #endif
-    if (!movable_string_.IsNull()) {
+    if (!parkable_string_.IsNull()) {
       DCHECK(plain_string_.IsNull());
       DCHECK(atomic_string_.IsNull());
-      return AtomicString(movable_string_.ToString());
+      return AtomicString(parkable_string_.ToString());
     }
     if (atomic_string_.IsNull()) {
       atomic_string_ = AtomicString(plain_string_);
@@ -102,9 +102,9 @@ class StringResourceBase {
   // the original string alive because v8 may keep derived pointers
   // into that string.
   AtomicString atomic_string_;
-  // If this string is movable, its value is held here, and the other
+  // If this string is parkable, its value is held here, and the other
   // members above are null.
-  MovableString movable_string_;
+  ParkableString parkable_string_;
 
  private:
 #if DCHECK_IS_ON()
@@ -155,46 +155,46 @@ class StringResource8 final : public StringResourceBase,
   DISALLOW_COPY_AND_ASSIGN(StringResource8);
 };
 
-class MovableStringResource16 final
+class ParkableStringResource16 final
     : public StringResourceBase,
       public v8::String::ExternalStringResource {
  public:
-  explicit MovableStringResource16(const MovableString& string)
+  explicit ParkableStringResource16(const ParkableString& string)
       : StringResourceBase(string) {
-    DCHECK(!movable_string_.Is8Bit());
+    DCHECK(!parkable_string_.Is8Bit());
   }
 
-  // V8 external resources are "compressible", not "movable".
+  // V8 external resources are "compressible", not "parkable".
   bool IsCompressible() const override { return true; }
 
-  size_t length() const override { return movable_string_.length(); }
+  size_t length() const override { return parkable_string_.length(); }
 
   const uint16_t* data() const override {
-    return reinterpret_cast<const uint16_t*>(movable_string_.Characters16());
+    return reinterpret_cast<const uint16_t*>(parkable_string_.Characters16());
   }
 
-  DISALLOW_COPY_AND_ASSIGN(MovableStringResource16);
+  DISALLOW_COPY_AND_ASSIGN(ParkableStringResource16);
 };
 
-class MovableStringResource8 final
+class ParkableStringResource8 final
     : public StringResourceBase,
       public v8::String::ExternalOneByteStringResource {
  public:
-  explicit MovableStringResource8(const MovableString& string)
+  explicit ParkableStringResource8(const ParkableString& string)
       : StringResourceBase(string) {
-    DCHECK(movable_string_.Is8Bit());
+    DCHECK(parkable_string_.Is8Bit());
   }
 
-  // V8 external resources are "compressible", not "movable".
+  // V8 external resources are "compressible", not "parkable".
   bool IsCompressible() const override { return true; }
 
-  size_t length() const override { return movable_string_.length(); }
+  size_t length() const override { return parkable_string_.length(); }
 
   const char* data() const override {
-    return reinterpret_cast<const char*>(movable_string_.Characters8());
+    return reinterpret_cast<const char*>(parkable_string_.Characters8());
   }
 
-  DISALLOW_COPY_AND_ASSIGN(MovableStringResource8);
+  DISALLOW_COPY_AND_ASSIGN(ParkableStringResource8);
 };
 
 enum ExternalMode { kExternalize, kDoNotExternalize };

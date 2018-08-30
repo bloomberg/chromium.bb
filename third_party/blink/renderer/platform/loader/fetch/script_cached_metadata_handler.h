@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"

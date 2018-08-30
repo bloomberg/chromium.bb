@@ -12,7 +12,7 @@
 namespace blink {
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-ModuleScript* ModuleScript::Create(const MovableString& original_source_text,
+ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
                                    Modulator* modulator,
                                    const KURL& source_url,
                                    const KURL& base_url,
@@ -21,7 +21,7 @@ ModuleScript* ModuleScript::Create(const MovableString& original_source_text,
                                    const TextPosition& start_position) {
   // <spec step="1">If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string.</spec>
-  MovableString source_text;
+  ParkableString source_text;
   if (!modulator->IsScriptingDisabled())
     source_text = original_source_text;
 
@@ -101,14 +101,14 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
                                           ScriptModule record,
                                           const KURL& base_url,
                                           const ScriptFetchOptions& options) {
-  MovableString dummy_source_text(String("").ReleaseImpl());
+  ParkableString dummy_source_text(String("").ReleaseImpl());
   KURL dummy_source_url;
   return CreateInternal(dummy_source_text, modulator, record, dummy_source_url,
                         base_url, options, TextPosition::MinimumPosition());
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-ModuleScript* ModuleScript::CreateInternal(const MovableString& source_text,
+ModuleScript* ModuleScript::CreateInternal(const ParkableString& source_text,
                                            Modulator* modulator,
                                            ScriptModule result,
                                            const KURL& source_url,
@@ -141,7 +141,7 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const KURL& source_url,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options,
-                           const MovableString& source_text,
+                           const ParkableString& source_text,
                            const TextPosition& start_position)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),

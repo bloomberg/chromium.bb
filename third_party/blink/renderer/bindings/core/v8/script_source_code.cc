@@ -10,7 +10,7 @@ namespace blink {
 
 namespace {
 
-MovableString TreatNullSourceAsEmpty(const MovableString& source) {
+ParkableString TreatNullSourceAsEmpty(const ParkableString& source) {
   // ScriptSourceCode allows for the representation of the null/not-there-really
   // ScriptSourceCode value.  Encoded by way of a source_.IsNull() being true,
   // with the nullary constructor to be used to construct such a value.
@@ -20,7 +20,7 @@ MovableString TreatNullSourceAsEmpty(const MovableString& source) {
   // between such null string occurrences.  Do that by converting the latter
   // case's null strings into empty ones.
   if (source.IsNull())
-    return MovableString();
+    return ParkableString();
 
   return source;
 }
@@ -49,7 +49,7 @@ String SourceMapUrlFromResponse(const ResourceResponse& response) {
 }  // namespace
 
 ScriptSourceCode::ScriptSourceCode(
-    const MovableString& source,
+    const ParkableString& source,
     ScriptSourceLocationType source_location_type,
     SingleCachedMetadataHandler* cache_handler,
     const KURL& url,
@@ -70,7 +70,7 @@ ScriptSourceCode::ScriptSourceCode(
     SingleCachedMetadataHandler* cache_handler,
     const KURL& url,
     const TextPosition& start_position)
-    : ScriptSourceCode(MovableString(source.Impl()),
+    : ScriptSourceCode(ParkableString(source.Impl()),
                        source_location_type,
                        cache_handler,
                        url,

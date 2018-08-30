@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -27,7 +27,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
  public:
   // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
   static ModuleScript* Create(
-      const MovableString& source_text,
+      const ParkableString& source_text,
       Modulator*,
       const KURL& source_url,
       const KURL& base_url,
@@ -71,10 +71,10 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
                const KURL& source_url,
                const KURL& base_url,
                const ScriptFetchOptions&,
-               const MovableString& source_text,
+               const ParkableString& source_text,
                const TextPosition& start_position);
 
-  static ModuleScript* CreateInternal(const MovableString& source_text,
+  static ModuleScript* CreateInternal(const ParkableString& source_text,
                                       Modulator*,
                                       ScriptModule,
                                       const KURL& source_url,
@@ -136,7 +136,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
   // For CSP check.
-  const MovableString source_text_;
+  const ParkableString source_text_;
 
   const TextPosition start_position_;
   HashMap<String, KURL> specifier_to_url_cache_;

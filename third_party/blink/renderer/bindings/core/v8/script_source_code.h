@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/bindings/movable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -58,7 +58,7 @@ class CORE_EXPORT ScriptSourceCode final {
       const TextPosition& = TextPosition::MinimumPosition());
 
   ScriptSourceCode(
-      const MovableString& source,
+      const ParkableString& source,
       ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
       SingleCachedMetadataHandler* cache_handler = nullptr,
       const KURL& = KURL(),
@@ -75,7 +75,7 @@ class CORE_EXPORT ScriptSourceCode final {
   ~ScriptSourceCode();
   void Trace(blink::Visitor*);
 
-  const MovableString& Source() const { return source_; }
+  const ParkableString& Source() const { return source_; }
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   const KURL& Url() const { return url_; }
   const TextPosition& StartPosition() const { return start_position_; }
@@ -90,7 +90,7 @@ class CORE_EXPORT ScriptSourceCode final {
   }
 
  private:
-  const MovableString source_;
+  const ParkableString source_;
   Member<SingleCachedMetadataHandler> cache_handler_;
   Member<ScriptStreamer> streamer_;
   ScriptStreamer::NotStreamingReason not_streaming_reason_;

@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 
+#include <utility>
+
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
@@ -97,14 +99,14 @@ void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
       dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-const MovableString& ScriptResource::SourceText() {
+const ParkableString& ScriptResource::SourceText() {
   DCHECK(IsLoaded());
 
   if (source_text_.IsNull() && Data()) {
     String source_text = DecodedText();
     ClearData();
     SetDecodedSize(source_text.CharactersSizeInBytes());
-    source_text_ = MovableString(source_text.ReleaseImpl());
+    source_text_ = ParkableString(source_text.ReleaseImpl());
   }
 
   return source_text_;
@@ -130,7 +132,7 @@ void ScriptResource::SetSerializedCachedMetadata(const char* data,
 }
 
 void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
-  source_text_ = MovableString();
+  source_text_ = ParkableString();
   SetDecodedSize(0);
 }
 

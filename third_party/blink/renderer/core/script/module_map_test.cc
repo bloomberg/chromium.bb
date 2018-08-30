@@ -107,14 +107,14 @@ class ModuleMapTestModulator final : public DummyModulator {
     USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
 
    public:
-    TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
+    explicit TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
         : modulator_(modulator) {}
     void Fetch(FetchParameters& request,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = new TestRequest(
           ModuleScriptCreationParams(
-              request.Url(), MovableString(String("").ReleaseImpl()),
+              request.Url(), ParkableString(String("").ReleaseImpl()),
               request.GetResourceRequest().GetFetchCredentialsMode(),
               kSharableCrossOrigin),
           client);
