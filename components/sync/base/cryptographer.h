@@ -25,20 +25,15 @@ class Encryptor;
 extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
+// TODO(davidovic): Stop relying on KeyParams and inline it, because it's now
+// just a pair of KeyDerivationParams and passphrase.
 struct KeyParams {
-  KeyParams(KeyDerivationMethod derivation_method,
-            const std::string& hostname,
-            const std::string& username,
-            const std::string& password);
+  KeyParams(KeyDerivationParams derivation_params, const std::string& password);
   KeyParams(const KeyParams& other);
   KeyParams(KeyParams&& other);
   ~KeyParams();
 
-  KeyDerivationMethod derivation_method;
-  // TODO(vitaliii): Delete hostname and username from here and hardcode them
-  // into the old key derivation function instead.
-  std::string hostname;
-  std::string username;
+  KeyDerivationParams derivation_params;
   std::string password;
 };
 

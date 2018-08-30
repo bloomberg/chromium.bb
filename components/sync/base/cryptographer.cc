@@ -24,14 +24,9 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
-KeyParams::KeyParams(KeyDerivationMethod derivation_method,
-                     const std::string& hostname,
-                     const std::string& username,
+KeyParams::KeyParams(KeyDerivationParams derivation_params,
                      const std::string& password)
-    : derivation_method(derivation_method),
-      hostname(hostname),
-      username(username),
-      password(password) {}
+    : derivation_params(derivation_params), password(password) {}
 
 KeyParams::KeyParams(const KeyParams& other) = default;
 KeyParams::KeyParams(KeyParams&& other) = default;
@@ -172,8 +167,7 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
 bool Cryptographer::AddKey(const KeyParams& params) {
   // Create the new Nigori and make it the default encryptor.
   std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.derivation_method, params.hostname,
-                                params.username, params.password)) {
+  if (!nigori->InitByDerivation(params.derivation_params, params.password)) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
@@ -184,8 +178,7 @@ bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
   DCHECK(is_initialized());
   // Create the new Nigori and add it to the keybag.
   std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.derivation_method, params.hostname,
-                                params.username, params.password)) {
+  if (!nigori->InitByDerivation(params.derivation_params, params.password)) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
@@ -253,8 +246,7 @@ const sync_pb::EncryptedData& Cryptographer::GetPendingKeys() const {
 
 bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
   Nigori nigori;
-  if (!nigori.InitByDerivation(params.derivation_method, params.hostname,
-                               params.username, params.password)) {
+  if (!nigori.InitByDerivation(params.derivation_params, params.password)) {
     NOTREACHED();
     return false;
   }

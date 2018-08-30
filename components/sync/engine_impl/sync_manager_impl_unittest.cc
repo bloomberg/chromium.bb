@@ -494,8 +494,8 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 }
 
 TEST_F(SyncApiTest, WriteAndReadPassword) {
-  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                      "username", "passphrase"};
+  KeyParams params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "passphrase"};
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
@@ -527,8 +527,8 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 }
 
 TEST_F(SyncApiTest, WritePasswordAndCheckMetadata) {
-  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                      "username", "passphrase"};
+  KeyParams params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "passphrase"};
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
@@ -565,8 +565,8 @@ TEST_F(SyncApiTest, WritePasswordAndCheckMetadata) {
 }
 
 TEST_F(SyncApiTest, WriteEncryptedTitle) {
-  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                      "username", "passphrase"};
+  KeyParams params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "passphrase"};
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
@@ -772,8 +772,8 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
 // Tests that InitUniqueByCreation called for existing encrypted entry properly
 // decrypts specifics and pust them in BaseNode::unencrypted_data_.
 TEST_F(SyncApiTest, WriteNode_UniqueByCreation_EncryptedExistingEntry) {
-  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                      "username", "passphrase"};
+  KeyParams params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "passphrase"};
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
@@ -806,8 +806,8 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_EncryptedExistingEntry) {
 // Tests that undeleting deleted password doesn't trigger any issues.
 // See crbug/440430.
 TEST_F(SyncApiTest, WriteNode_PasswordUniqueByCreationAfterDelete) {
-  KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                      "username", "passphrase"};
+  KeyParams params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "passphrase"};
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
@@ -899,7 +899,7 @@ class SyncEncryptionHandlerObserverMock
  public:
   MOCK_METHOD3(OnPassphraseRequired,
                void(PassphraseRequiredReason,
-                    KeyDerivationMethod,
+                    const KeyDerivationParams&,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());         // NOLINT
   MOCK_METHOD2(OnBootstrapTokenUpdated,
@@ -1044,8 +1044,8 @@ class SyncManagerTest : public testing::Test,
     if (!cryptographer)
       return false;
     if (encryption_status != UNINITIALIZED) {
-      KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                          "localhost", "dummy", "foobar"};
+      KeyParams params = {
+          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
       cryptographer->AddKey(params);
     } else {
       DCHECK_NE(nigori_status, WRITE_TO_NIGORI);
@@ -1463,8 +1463,9 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
-    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                        "dummy", "passphrase2"};
+    KeyParams params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+        "passphrase2"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
@@ -1509,8 +1510,8 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
-    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                        "dummy", "old_gaia"};
+    KeyParams params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old_gaia"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
@@ -1521,8 +1522,8 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
 
     // other_cryptographer now contains all encryption keys, and is encrypting
     // with the newest gaia.
-    KeyParams new_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                            "localhost", "dummy", "new_gaia"};
+    KeyParams new_params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new_gaia"};
     other_cryptographer.AddKey(new_params);
   }
   // The bootstrap token should have been updated. Save it to ensure it's based
@@ -1584,8 +1585,8 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
-    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                        "dummy", "explicit"};
+    KeyParams params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "explicit"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
@@ -1631,8 +1632,9 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
     Cryptographer* cryptographer = trans.GetCryptographer();
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
-    KeyParams params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, "localhost",
-                        "dummy", "passphrase"};
+    KeyParams params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+        "passphrase"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
@@ -2224,8 +2226,8 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
     Cryptographer other_cryptographer(&encryptor_);
-    KeyParams fake_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                             "localhost", "dummy", "fake_key"};
+    KeyParams fake_params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "fake_key"};
     other_cryptographer.AddKey(fake_params);
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret");
@@ -2233,8 +2235,8 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
         data, entity_specifics.mutable_password()->mutable_encrypted());
 
     // Set up the real cryptographer with a different key.
-    KeyParams real_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                             "localhost", "username", "real_key"};
+    KeyParams real_params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "real_key"};
     trans.GetCryptographer()->AddKey(real_params);
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
@@ -2267,8 +2269,8 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
     Cryptographer other_cryptographer(&encryptor_);
-    KeyParams fake_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                             "localhost", "dummy", "fake_key"};
+    KeyParams fake_params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "fake_key"};
     other_cryptographer.AddKey(fake_params);
     sync_pb::EntitySpecifics bm_specifics;
     bm_specifics.mutable_bookmark()->set_title("title");
@@ -2278,8 +2280,8 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
     entity_specifics.mutable_encrypted()->CopyFrom(encrypted);
 
     // Set up the real cryptographer with a different key.
-    KeyParams real_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                             "localhost", "username", "real_key"};
+    KeyParams real_params = {
+        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "real_key"};
     trans.GetCryptographer()->AddKey(real_params);
   }
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, kClientTag,
