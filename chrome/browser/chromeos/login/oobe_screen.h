@@ -67,6 +67,8 @@ enum class OobeScreen : unsigned int {
   SCREEN_APP_DOWNLOADING,
   SCREEN_DISCOVER,
 
+  SCREEN_MARKETING_OPT_IN,
+
   SCREEN_UNKNOWN  // This must always be the last element.
 };
 

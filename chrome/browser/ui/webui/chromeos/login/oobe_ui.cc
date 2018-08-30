@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -374,6 +375,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<FingerprintSetupScreenHandler>());
 
+  AddScreenHandler(std::make_unique<MarketingOptInScreenHandler>());
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   ActiveDirectoryPasswordChangeScreenHandler*
@@ -533,6 +536,10 @@ TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
 
 SyncConsentScreenView* OobeUI::GetSyncConsentScreenView() {
   return GetView<SyncConsentScreenHandler>();
+}
+
+MarketingOptInScreenView* OobeUI::GetMarketingOptInScreenView() {
+  return GetView<MarketingOptInScreenHandler>();
 }
 
 ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {

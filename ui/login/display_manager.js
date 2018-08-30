@@ -46,6 +46,7 @@
 /** @const */ var SCREEN_RECOMMEND_APPS = 'recommend-apps';
 /** @const */ var SCREEN_APP_DOWNLOADING = 'app-downloading';
 /** @const */ var SCREEN_DISCOVER = 'discover';
+/** @const */ var SCREEN_MARKETING_OPT_IN = 'marketing-opt-in';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -172,6 +173,7 @@ cr.define('cr.ui.login', function() {
     SCREEN_RECOMMEND_APPS,
     SCREEN_APP_DOWNLOADING,
     SCREEN_DISCOVER,
+    SCREEN_MARKETING_OPT_IN,
   ];
 
   /**

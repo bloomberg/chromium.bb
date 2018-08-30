@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
+#include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
@@ -147,7 +148,9 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
     chromeos::OobeScreen::SCREEN_RECOMMEND_APPS,
     chromeos::OobeScreen::SCREEN_APP_DOWNLOADING,
-    chromeos::OobeScreen::SCREEN_DISCOVER};
+    chromeos::OobeScreen::SCREEN_DISCOVER,
+    chromeos::OobeScreen::SCREEN_MARKETING_OPT_IN,
+};
 
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
@@ -511,6 +514,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
     return std::make_unique<FingerprintSetupScreen>(
         this, oobe_ui->GetFingerprintSetupScreenView());
+  } else if (screen == OobeScreen::SCREEN_MARKETING_OPT_IN) {
+    return std::make_unique<MarketingOptInScreen>(
+        this, oobe_ui->GetMarketingOptInScreenView());
   }
   return nullptr;
 }
@@ -671,6 +677,12 @@ void WizardController::ShowFingerprintSetupScreen() {
   VLOG(1) << "Showing Fingerprint Setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
+}
+
+void WizardController::ShowMarketingOptInScreen() {
+  VLOG(1) << "Showing Marketing Opt-In screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -1047,6 +1059,10 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnSyncConsentFinished() {
+  ShowMarketingOptInScreen();
+}
+
+void WizardController::OnMarketingOptInFinished() {
   if (chromeos::quick_unlock::IsFingerprintEnabled())
     ShowFingerprintSetupScreen();
   else
@@ -1449,6 +1465,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowDiscoverScreen();
   } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
     ShowFingerprintSetupScreen();
+  } else if (screen == OobeScreen::SCREEN_MARKETING_OPT_IN) {
+    ShowMarketingOptInScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
@@ -1623,6 +1641,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::FINGERPRINT_SETUP_FINISHED:
       OnFingerprintSetupFinished();
+      break;
+    case ScreenExitCode::MARKETING_OPT_IN_FINISHED:
+      ShowArcTermsOfServiceScreen();
       break;
     default:
       NOTREACHED();
@@ -1808,7 +1829,8 @@ void WizardController::SkipPostLoginScreensForTesting() {
       current_screen_id == OobeScreen::SCREEN_FINGERPRINT_SETUP ||
       current_screen_id == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE ||
       current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
-      current_screen_id == OobeScreen::SCREEN_DISCOVER) {
+      current_screen_id == OobeScreen::SCREEN_DISCOVER ||
+      current_screen_id == OobeScreen::SCREEN_MARKETING_OPT_IN) {
     default_controller()->OnOobeFlowFinished();
   } else {
     LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "

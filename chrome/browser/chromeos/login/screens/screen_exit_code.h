@@ -70,6 +70,7 @@ enum class ScreenExitCode {
   NETWORK_CONNECTED = 43,
   NETWORK_OFFLINE_DEMO_SETUP = 44,
   FINGERPRINT_SETUP_FINISHED = 45,
+  MARKETING_OPT_IN_FINISHED = 46,
   EXIT_CODES_COUNT  // not a real code, must be the last
 };
 

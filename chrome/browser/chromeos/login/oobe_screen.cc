@@ -63,6 +63,7 @@ const char* kScreenNames[] = {
     "recommend-apps",                // SCREEN_RECOMMEND_APPS
     "app-downloading",               // SCREEN_APP_DOWNLOADING
     "discover",                      // SCREEN_DISCOVER
+    "marketing-opt-in",              // SCREEN_MARKETING_OPT_IN
     "unknown",                       // SCREEN_UNKNOWN
 };
 

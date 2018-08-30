@@ -98,6 +98,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "NETWORK_OFFLINE_DEMO_SETUP";
     case ScreenExitCode::FINGERPRINT_SETUP_FINISHED:
       return "FINGERPRINT_SETUP_FINISHED";
+    case ScreenExitCode::MARKETING_OPT_IN_FINISHED:
+      return "MARKETING_OPT_IN_FINISHED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

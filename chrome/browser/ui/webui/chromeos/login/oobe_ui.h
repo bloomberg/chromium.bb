@@ -50,6 +50,7 @@ class KioskAppMenuHandler;
 class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
+class MarketingOptInScreenView;
 class NativeWindowDelegate;
 class NetworkScreenView;
 class NetworkStateInformer;
@@ -140,6 +141,7 @@ class OobeUI : public content::WebUIController,
   UserBoardView* GetUserBoardView();
   DiscoverScreenView* GetDiscoverScreenView();
   NetworkScreenView* GetNetworkScreenView();
+  MarketingOptInScreenView* GetMarketingOptInScreenView();
 
   // ShutdownPolicyHandler::Delegate
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;

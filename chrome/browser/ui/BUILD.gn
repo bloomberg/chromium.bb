@@ -2017,6 +2017,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/login/kiosk_enable_screen_handler.h",
       "webui/chromeos/login/l10n_util.cc",
       "webui/chromeos/login/l10n_util.h",
+      "webui/chromeos/login/marketing_opt_in_screen_handler.cc",
+      "webui/chromeos/login/marketing_opt_in_screen_handler.h",
       "webui/chromeos/login/native_window_delegate.h",
       "webui/chromeos/login/network_dropdown_handler.cc",
       "webui/chromeos/login/network_dropdown_handler.h",
