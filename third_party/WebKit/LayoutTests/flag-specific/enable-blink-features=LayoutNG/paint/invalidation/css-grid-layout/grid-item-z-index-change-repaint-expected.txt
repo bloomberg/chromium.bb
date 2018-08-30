@@ -23,11 +23,6 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutGrid DIV class='grid fit-content'",
-          "rect": [8, 126, 400, 100],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV id='item2' class='sizedToGridArea green'",
           "rect": [8, 236, 200, 100],
           "reason": "disappeared"

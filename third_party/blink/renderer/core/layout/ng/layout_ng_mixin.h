@@ -59,7 +59,6 @@ class LayoutNGMixin : public Base {
   scoped_refptr<NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
       NGBreakToken*) const override;
-  const NGConstraintSpace* CachedConstraintSpace() const override;
 
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              NGBreakToken*,
@@ -99,7 +98,6 @@ class LayoutNGMixin : public Base {
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
 
   scoped_refptr<NGLayoutResult> cached_result_;
-  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
   scoped_refptr<NGPaintFragment> paint_fragment_;
 
   friend class NGBaseLayoutAlgorithmTest;

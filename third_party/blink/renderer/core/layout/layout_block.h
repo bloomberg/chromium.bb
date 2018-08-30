@@ -33,6 +33,7 @@ namespace blink {
 
 struct PaintInfo;
 class LineLayoutBox;
+class NGConstraintSpace;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
@@ -307,6 +308,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit AvailableLogicalHeightForPercentageComputation() const;
   bool HasDefiniteLogicalHeight() const;
 
+  const NGConstraintSpace* CachedConstraintSpace() const;
+  void SetCachedConstraintSpace(const NGConstraintSpace& space);
+
  protected:
   bool RecalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
   bool RecalcPositionedDescendantsOverflowAfterStyleChange();
@@ -528,6 +532,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual bool UpdateLogicalWidthAndColumnWidth();
 
   LayoutObjectChildList children_;
+  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
 
   unsigned
       has_margin_before_quirk_ : 1;  // Note these quirk values can't be put

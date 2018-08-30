@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
@@ -71,6 +72,7 @@ namespace blink {
 
 struct SameSizeAsLayoutBlock : public LayoutBox {
   LayoutObjectChildList children;
+  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
   uint32_t bitfields;
 };
 
@@ -448,6 +450,7 @@ void LayoutBlock::UpdateLayout() {
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
+  cached_constraint_space_ = nullptr;
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
@@ -1984,6 +1987,14 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
   layout_block->SetDocumentForAnonymous(&parent->GetDocument());
   layout_block->SetStyle(std::move(new_style));
   return layout_block;
+}
+
+const NGConstraintSpace* LayoutBlock::CachedConstraintSpace() const {
+  return cached_constraint_space_.get();
+}
+
+void LayoutBlock::SetCachedConstraintSpace(const NGConstraintSpace& space) {
+  cached_constraint_space_ = &space;
 }
 
 bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(
