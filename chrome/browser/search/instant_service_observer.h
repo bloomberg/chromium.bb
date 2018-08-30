@@ -22,9 +22,11 @@ class InstantServiceObserver {
   // Indicates that the user's custom theme has changed in some way.
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo&);
 
-  // Indicates that the most visited items has changed.
+  // Indicates that the most visited items has changed. |is_custom_links| is
+  // true if the items are custom links.
   virtual void MostVisitedItemsChanged(
-      const std::vector<InstantMostVisitedItem>&);
+      const std::vector<InstantMostVisitedItem>&,
+      bool is_custom_links);
 
  protected:
   virtual ~InstantServiceObserver() {}

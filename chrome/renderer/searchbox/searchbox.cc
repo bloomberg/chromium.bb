@@ -340,6 +340,10 @@ void SearchBox::UndoMostVisitedDeletion(
   embedded_search_service_->UndoMostVisitedDeletion(page_seq_no_, url);
 }
 
+bool SearchBox::IsCustomLinks() const {
+  return is_custom_links_;
+}
+
 void SearchBox::AddCustomLink(const GURL& url, const std::string& title) {
   if (!url.is_valid()) {
     AddCustomLinkResult(false);
@@ -477,8 +481,10 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
 }
 
 void SearchBox::MostVisitedChanged(
-    const std::vector<InstantMostVisitedItem>& items) {
+    const std::vector<InstantMostVisitedItem>& items,
+    bool is_custom_links) {
   has_received_most_visited_ = true;
+  is_custom_links_ = is_custom_links;
 
   std::vector<InstantMostVisitedItemIDPair> last_known_items;
   GetMostVisitedItems(&last_known_items);

@@ -119,6 +119,9 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends UndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
+  // Returns true if the most visited items are custom links.
+  bool IsCustomLinks() const;
+
   // Sends AddCustomLink to the browser.
   void AddCustomLink(const GURL& url, const std::string& title);
 
@@ -167,8 +170,8 @@ class SearchBox : public content::RenderFrameObserver,
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
-  void MostVisitedChanged(
-      const std::vector<InstantMostVisitedItem>& items) override;
+  void MostVisitedChanged(const std::vector<InstantMostVisitedItem>& items,
+                          bool is_custom_links) override;
   void SetInputInProgress(bool input_in_progress) override;
   void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
 
@@ -206,6 +209,8 @@ class SearchBox : public content::RenderFrameObserver,
   bool is_key_capture_enabled_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   bool has_received_most_visited_;
+  // True if the most visited items are custom links.
+  bool is_custom_links_ = false;
   ThemeBackgroundInfo theme_info_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_;
