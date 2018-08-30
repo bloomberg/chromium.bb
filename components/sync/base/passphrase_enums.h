@@ -31,17 +31,17 @@ sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
 // user's custom passphrase.
 enum class KeyDerivationMethod {
   PBKDF2_HMAC_SHA1_1003 = 0,  // PBKDF2-HMAC-SHA1 with 1003 iterations.
-  UNKNOWN = 1,                // Unknown method, likely from a future version.
+  UNSUPPORTED = 1,  // Unsupported method, likely from a future version.
 };
 
 // This function accepts an integer and not KeyDerivationMethod from the proto
 // in order to be able to handle new, unknown values.
 KeyDerivationMethod ProtoKeyDerivationMethodToEnum(
     ::google::protobuf::int32 method);
-// Note that KeyDerivationMethod::UNKNOWN is an invalid input for this function,
-// since it corresponds to a method that we are not aware of and so cannot
-// meaningfully convert. The caller is responsible for ensuring that
-// KeyDerivationMethod::UNKNOWN is never passed to this function.
+// Note that KeyDerivationMethod::UNSUPPORTED is an invalid input for this
+// function, since it corresponds to a method that we are not aware of and so
+// cannot meaningfully convert. The caller is responsible for ensuring that
+// KeyDerivationMethod::UNSUPPORTED is never passed to this function.
 sync_pb::NigoriSpecifics::KeyDerivationMethod EnumKeyDerivationMethodToProto(
     KeyDerivationMethod method);
 

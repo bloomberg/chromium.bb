@@ -61,7 +61,7 @@ const char* BootstrapTokenTypeToString(BootstrapTokenType type) {
 const char* KeyDerivationMethodToString(KeyDerivationMethod method) {
   switch (method) {
     ENUM_CASE(KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
-    ENUM_CASE(KeyDerivationMethod::UNKNOWN);
+    ENUM_CASE(KeyDerivationMethod::UNSUPPORTED);
   }
 
   NOTREACHED();

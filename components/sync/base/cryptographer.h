@@ -26,7 +26,6 @@ extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
 struct KeyParams {
-  KeyParams();
   KeyParams(KeyDerivationMethod derivation_method,
             const std::string& hostname,
             const std::string& username,

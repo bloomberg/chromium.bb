@@ -24,12 +24,6 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
-KeyParams::KeyParams()
-    : derivation_method(KeyDerivationMethod::UNKNOWN),
-      hostname(),
-      username(),
-      password() {}
-
 KeyParams::KeyParams(KeyDerivationMethod derivation_method,
                      const std::string& hostname,
                      const std::string& username,
