@@ -13,7 +13,6 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
     "//services/identity/public/mojom",
     "//ui/accessibility/mojom",
