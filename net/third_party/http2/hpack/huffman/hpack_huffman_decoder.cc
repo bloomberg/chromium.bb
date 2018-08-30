@@ -415,59 +415,7 @@ HpackHuffmanDecoder::HpackHuffmanDecoder() = default;
 HpackHuffmanDecoder::~HpackHuffmanDecoder() = default;
 
 bool HpackHuffmanDecoder::Decode(Http2StringPiece input, Http2String* output) {
-  return DecodeShortCodesFirst(input, output);
-}
-
-// "Legacy" decoder, used until cl/129771019 submitted, which added
-// DecodeShortCodesFirst() as primary decoder method.
-// TODO(jamessynge): Remove this once satisfied that there is no going back.
-bool HpackHuffmanDecoder::DecodeWithIfTreeAndStruct(Http2StringPiece input,
-                                                    Http2String* output) {
-  DVLOG(1) << "HpackHuffmanDecoder::DecodeWithIfTreeAndStruct";
-
-  // Fill bit_buffer_ from input.
-  input.remove_prefix(bit_buffer_.AppendBytes(input));
-
-  while (true) {
-    DVLOG(3) << "Enter Decode Loop, bit_buffer_: " << bit_buffer_;
-
-    HuffmanCode code_prefix = bit_buffer_.value() >> kExtraAccumulatorBitCount;
-    DVLOG(3) << "code_prefix: " << HuffmanCodeBitSet(code_prefix);
-
-    PrefixInfo prefix_info = PrefixToInfo(code_prefix);
-    DVLOG(3) << "prefix_info: " << prefix_info;
-    DCHECK_LE(kMinCodeBitCount, prefix_info.code_length);
-    DCHECK_LE(prefix_info.code_length, kMaxCodeBitCount);
-
-    if (prefix_info.code_length <= bit_buffer_.count()) {
-      // We have enough bits for one code.
-      uint32_t canonical = prefix_info.DecodeToCanonical(code_prefix);
-      if (canonical < 256) {
-        // Valid code.
-        char c = kCanonicalToSymbol[canonical];
-        output->push_back(c);
-        bit_buffer_.ConsumeBits(prefix_info.code_length);
-        continue;
-      }
-      // Encoder is not supposed to explicity encode the EOS symbol.
-      DLOG(ERROR) << "EOS explicitly encoded!\n " << bit_buffer_ << "\n "
-                  << prefix_info;
-      return false;
-    }
-    // bit_buffer_ doesn't have enough bits in it to decode the next symbol.
-    // Append to it as many bytes as are available AND fit.
-    size_t byte_count = bit_buffer_.AppendBytes(input);
-    if (byte_count == 0) {
-      DCHECK_EQ(input.size(), 0u);
-      return true;
-    }
-    input.remove_prefix(byte_count);
-  }
-}
-
-bool HpackHuffmanDecoder::DecodeShortCodesFirst(Http2StringPiece input,
-                                                Http2String* output) {
-  DVLOG(1) << "HpackHuffmanDecoder::DecodeShortCodesFirst";
+  DVLOG(1) << "HpackHuffmanDecoder::Decode";
 
   // Fill bit_buffer_ from input.
   input.remove_prefix(bit_buffer_.AppendBytes(input));
