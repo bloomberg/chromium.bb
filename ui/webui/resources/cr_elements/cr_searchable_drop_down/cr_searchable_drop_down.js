@@ -14,6 +14,12 @@ Polymer({
   is: 'cr-searchable-drop-down',
 
   properties: {
+    autofocus: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     /** @type {!Array<string>} */
     items: Array,
 
