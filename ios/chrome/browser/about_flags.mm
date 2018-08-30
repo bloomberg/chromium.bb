@@ -373,6 +373,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncStandaloneTransportName,
      flag_descriptions::kSyncStandaloneTransportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncStandaloneTransport)},
+    {"sync-support-secondary-account",
+     flag_descriptions::kSyncSupportSecondaryAccountName,
+     flag_descriptions::kSyncSupportSecondaryAccountDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
 };
 
 // Add all switches from experimental flags to |command_line|.

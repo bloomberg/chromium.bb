@@ -50,6 +50,13 @@ const char kSyncStandaloneTransportDescription[] =
     "this mode, the Sync machinery can start without user opt-in, but only a "
     "subset of data types are supported.";
 
+const char kSyncSupportSecondaryAccountName[] =
+    "Support secondary accounts for Sync standalone transport";
+const char kSyncSupportSecondaryAccountDescription[] =
+    "If enabled, allows Chrome Sync to start in standalone transport mode for "
+    "a signed-in account that has not been chosen as Chrome's primary account. "
+    "This only has an effect if sync-standalone-transport is also enabled.";
+
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";

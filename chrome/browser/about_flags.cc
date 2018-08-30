@@ -4418,6 +4418,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          blink::features::kServiceWorkerImportedScriptUpdateCheck)},
 
+    {"sync-support-secondary-account",
+     flag_descriptions::kSyncSupportSecondaryAccountName,
+     flag_descriptions::kSyncSupportSecondaryAccountDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

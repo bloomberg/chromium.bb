@@ -40,6 +40,11 @@ extern const char kSyncSandboxDescription[];
 extern const char kSyncStandaloneTransportName[];
 extern const char kSyncStandaloneTransportDescription[];
 
+// Title and description for the flag to control if Chrome Sync (in standalone
+// transport mode) supports non-primary accounts.
+extern const char kSyncSupportSecondaryAccountName[];
+extern const char kSyncSupportSecondaryAccountDescription[];
+
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];

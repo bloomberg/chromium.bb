@@ -28970,6 +28970,7 @@ from previous Chrome versions.
   <int value="-208435024" label="EnableUsernameCorrection:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-204355195" label="secondary-ui-md"/>
+  <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
   <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
   <int value="-196110497" label="force-text-direction"/>
@@ -29557,6 +29558,7 @@ from previous Chrome versions.
   <int value="1019857902"
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
