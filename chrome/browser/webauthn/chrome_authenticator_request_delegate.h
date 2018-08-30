@@ -64,6 +64,7 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   // content::AuthenticatorRequestClientDelegate:
+  void DidFailWithInterestingReason(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,

@@ -22,7 +22,24 @@ const base::flat_set<device::FidoTransportProtocol> kAllTransports = {
     device::FidoTransportProtocol::kInternal,
     device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
 };
-}
+
+using TransportAvailabilityInfo =
+    ::device::FidoRequestHandlerBase::TransportAvailabilityInfo;
+
+class MockDialogModelObserver
+    : public testing::StrictMock<AuthenticatorRequestDialogModel::Observer> {
+ public:
+  MockDialogModelObserver() = default;
+
+  MOCK_METHOD0(OnModelDestroyed, void());
+  MOCK_METHOD0(OnStepTransition, void());
+  MOCK_METHOD0(OnCancelRequest, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDialogModelObserver);
+};
+
+}  // namespace
 
 class AuthenticatorRequestDialogModelTest : public ::testing::Test {
  public:
@@ -159,7 +176,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
   };
 
   for (const auto& test_case : kTestCases) {
-    ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info;
+    TransportAvailabilityInfo transports_info;
     transports_info.request_type = test_case.request_type;
     transports_info.available_transports = test_case.available_transports;
     transports_info.has_recognized_mac_touch_id_credential =
@@ -178,11 +195,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
-  ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info_1;
-  transports_info_1.available_transports = kAllTransports;
+  TransportAvailabilityInfo transports_info;
+  transports_info.available_transports = kAllTransports;
 
   AuthenticatorRequestDialogModel model;
-  model.StartFlow(std::move(transports_info_1), base::nullopt);
+  model.StartFlow(std::move(transports_info), base::nullopt);
   EXPECT_THAT(model.transport_list_model()->transports(),
               ::testing::UnorderedElementsAre(
                   AuthenticatorTransport::kUsbHumanInterfaceDevice,
@@ -190,4 +207,72 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
                   AuthenticatorTransport::kBluetoothLowEnergy,
                   AuthenticatorTransport::kInternal,
                   AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy));
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest, NoAvailableTransports) {
+  using Step = AuthenticatorRequestDialogModel::Step;
+
+  MockDialogModelObserver mock_observer;
+  AuthenticatorRequestDialogModel model;
+  model.AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnStepTransition());
+  model.StartFlow(TransportAvailabilityInfo(),
+                  AuthenticatorTransport::kInternal);
+  EXPECT_EQ(Step::kErrorNoAvailableTransports, model.current_step());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnCancelRequest());
+  model.Cancel();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnStepTransition());
+  model.OnRequestComplete();
+  EXPECT_EQ(Step::kClosed, model.current_step());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnModelDestroyed());
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest, PostMortems) {
+  using Step = AuthenticatorRequestDialogModel::Step;
+
+  const struct {
+    void (AuthenticatorRequestDialogModel::*event)();
+    Step expected_post_mortem_sheet;
+  } kTestCases[] = {
+      {&AuthenticatorRequestDialogModel::OnRequestTimeout,
+       Step::kPostMortemTimedOut},
+      {&AuthenticatorRequestDialogModel::OnActivatedKeyNotRegistered,
+       Step::kPostMortemKeyNotRegistered},
+      {&AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered,
+       Step::kPostMortemKeyAlreadyRegistered},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    MockDialogModelObserver mock_observer;
+    AuthenticatorRequestDialogModel model;
+    model.AddObserver(&mock_observer);
+
+    TransportAvailabilityInfo transports_info;
+    transports_info.available_transports = kAllTransports;
+
+    EXPECT_CALL(mock_observer, OnStepTransition());
+    model.StartFlow(std::move(transports_info), base::nullopt);
+    EXPECT_EQ(Step::kTransportSelection, model.current_step());
+    testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+    EXPECT_CALL(mock_observer, OnStepTransition());
+    (model.*test_case.event)();
+    model.OnRequestComplete();
+    EXPECT_EQ(test_case.expected_post_mortem_sheet, model.current_step());
+    testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+    EXPECT_CALL(mock_observer, OnStepTransition());
+    model.Cancel();
+    EXPECT_EQ(Step::kClosed, model.current_step());
+    testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+    EXPECT_CALL(mock_observer, OnModelDestroyed());
+  }
 }

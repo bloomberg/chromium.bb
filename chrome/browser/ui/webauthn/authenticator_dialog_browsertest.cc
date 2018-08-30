@@ -31,8 +31,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     model->StartFlow(std::move(transport_availability), base::nullopt);
 
     // The dialog should immediately close as soon as it is displayed.
-    if (name == "completed") {
-      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kCompleted);
+    if (name == "closed") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kClosed);
     } else if (name == "transports") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTransportSelection);
@@ -41,16 +41,16 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
     } else if (name == "timeout") {
       model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kErrorTimedOut);
+          AuthenticatorRequestDialogModel::Step::kPostMortemTimedOut);
     } else if (name == "no_available_transports") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kErrorNoAvailableTransports);
     } else if (name == "key_not_registered") {
       model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kErrorKeyNotRegistered);
+          AuthenticatorRequestDialogModel::Step::kPostMortemKeyNotRegistered);
     } else if (name == "key_already_registered") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kErrorKeyAlreadyRegistered);
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
+                                kPostMortemKeyAlreadyRegistered);
     } else if (name == "ble_power_on_manual") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_completed) {
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_closed) {
   ShowAndVerifyUi();
 }
 
