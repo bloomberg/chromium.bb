@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.view.WindowManager.LayoutParams;
 
+import org.chromium.base.UserData;
+import org.chromium.base.UserDataHost;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.InsetObserverView;
@@ -22,11 +24,14 @@ import org.chromium.content_public.browser.WebContentsObserver;
  * Controls the display cutout state for the tab.
  */
 @JNINamespace("chrome")
-public class DisplayCutoutController implements InsetObserverView.WindowInsetObserver {
+public class DisplayCutoutController implements InsetObserverView.WindowInsetObserver, UserData {
     /** These are the property names of the different cutout mode states. */
     private static final String VIEWPORT_FIT_AUTO = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT";
     private static final String VIEWPORT_FIT_CONTAIN = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER";
     private static final String VIEWPORT_FIT_COVER = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES";
+
+    private static final Class<DisplayCutoutController> USER_DATA_KEY =
+            DisplayCutoutController.class;
 
     /** The tab that this controller belongs to. */
     private Tab mTab;
@@ -57,12 +62,6 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         }
 
         @Override
-        public void onDestroyed(Tab tab) {
-            assert tab == mTab;
-            destroy();
-        }
-
-        @Override
         public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
             assert tab == mTab;
 
@@ -74,11 +73,20 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         }
     };
 
+    public static DisplayCutoutController from(Tab tab) {
+        UserDataHost host = tab.getUserDataHost();
+        DisplayCutoutController controller = host.getUserData(USER_DATA_KEY);
+        return controller == null
+                ? host.setUserData(USER_DATA_KEY, new DisplayCutoutController(tab))
+                : controller;
+    }
+
     /**
      * Constructs a new DisplayCutoutController for a specific tab.
      * @param tab The tab that this controller belongs to.
      */
-    public DisplayCutoutController(Tab tab) {
+    @VisibleForTesting
+    DisplayCutoutController(Tab tab) {
         mTab = tab;
 
         tab.addObserver(mTabObserver);
@@ -109,10 +117,8 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         mInsetObserverView = null;
     }
 
-    /**
-     * Cleans up all internal state.
-     */
-    private void destroy() {
+    @Override
+    public void destroy() {
         mTab.removeObserver(mTabObserver);
         maybeRemoveInsetObserver();
     }
@@ -153,6 +159,11 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
      */
     private int adjustInsetForScale(int inset, float dipScale) {
         return (int) Math.ceil(inset / dipScale);
+    }
+
+    @VisibleForTesting
+    static void initForTesting(UserDataHost host, DisplayCutoutController controller) {
+        host.setUserData(USER_DATA_KEY, controller);
     }
 
     @VisibleForTesting
