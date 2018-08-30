@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -32,6 +33,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -1605,6 +1607,21 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   generator->ReleaseTouch();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Test backdrop exists for active non-fullscreen window in tablet mode.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, BackdropTest) {
+  WorkspaceControllerTestApi test_helper(
+      ShellTestApi(Shell::Get()).workspace_controller());
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  std::unique_ptr<aura::Window> non_fullscreen_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  non_fullscreen_window->Show();
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
 }  // namespace ash
