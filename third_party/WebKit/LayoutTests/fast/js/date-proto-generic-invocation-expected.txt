@@ -8,9 +8,9 @@ PASS o.__proto__.toDateString() threw exception TypeError: Method Date.prototype
 PASS o.__proto__.toTimeString() threw exception TypeError: Method Date.prototype.toTimeString called on incompatible receiver [object Object].
 PASS o.__proto__.toGMTString() threw exception TypeError: Method Date.prototype.toUTCString called on incompatible receiver [object Object].
 PASS o.__proto__.toUTCString() threw exception TypeError: Method Date.prototype.toUTCString called on incompatible receiver [object Object].
-PASS o.__proto__.toLocaleString() threw exception TypeError: Method invoked on an object that is not Date..
-PASS o.__proto__.toLocaleDateString() threw exception TypeError: Method invoked on an object that is not Date..
-PASS o.__proto__.toLocaleTimeString() threw exception TypeError: Method invoked on an object that is not Date..
+PASS o.__proto__.toLocaleString() threw exception TypeError: Method Date.prototype.toLocaleString called on incompatible receiver [object Object].
+PASS o.__proto__.toLocaleDateString() threw exception TypeError: Method Date.prototype.toLocaleDateString called on incompatible receiver [object Object].
+PASS o.__proto__.toLocaleTimeString() threw exception TypeError: Method Date.prototype.toLocaleTimeString called on incompatible receiver [object Object].
 PASS o.__proto__.getTime() threw exception TypeError: this is not a Date object..
 PASS o.__proto__.getYear() threw exception TypeError: Method Date.prototype.getYear called on incompatible receiver [object Object].
 PASS o.__proto__.getFullYear() threw exception TypeError: this is not a Date object..
