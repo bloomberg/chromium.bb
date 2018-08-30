@@ -60,3 +60,88 @@ class GerritCLTest(unittest.TestCase):
         gerrit_cl = GerritCL(data, MockGerritAPI())
         # It's important that this does not throw!
         self.assertFalse(gerrit_cl.is_exportable())
+
+    def test_wpt_cl_is_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {'1': {
+                'commit_with_footers': 'fake subject',
+                'files': {
+                    'third_party/WebKit/LayoutTests/external/wpt/foo/bar.html': '',
+                }
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertTrue(gerrit_cl.is_exportable())
+
+    def test_no_wpt_cl_is_not_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {'1': {
+                'commit_with_footers': 'fake subject',
+                'files': {
+                    'third_party/WebKit/LayoutTests/foo/bar.html': '',
+                }
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertFalse(gerrit_cl.is_exportable())
+
+    def test_no_export_is_not_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {'1': {
+                'commit_with_footers': 'fake subject\nNo-Export: true',
+                'files': {
+                    'third_party/WebKit/LayoutTests/external/wpt/foo/bar.html': '',
+                }
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertFalse(gerrit_cl.is_exportable())
+
+    def test_legacy_noexport_is_not_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {'1': {
+                'commit_with_footers': 'fake subject\nNOEXPORT=true',
+                'files': {
+                    'third_party/WebKit/LayoutTests/external/wpt/foo/bar.html': '',
+                }
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertFalse(gerrit_cl.is_exportable())
+
+    def test_import_in_subject_is_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'Import something',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {'1': {
+                'commit_with_footers': 'fake subject',
+                'files': {
+                    'third_party/WebKit/LayoutTests/external/wpt/foo/bar.html': '',
+                }
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertTrue(gerrit_cl.is_exportable())
