@@ -82,6 +82,7 @@ static void AddExternalClearKey(
   static const char kExternalClearKeyCdmProxyKeySystem[] =
       "org.chromium.externalclearkey.cdmproxy";
 
+  // TODO(xhwang): Actually use |capability| to determine capabilities.
   media::mojom::KeySystemCapabilityPtr capability;
   if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
     DVLOG(1) << "External Clear Key not supported";
@@ -282,7 +283,13 @@ static void AddWidevine(
       capability->session_types, media::CdmSessionType::kPersistentLicense);
   auto persistent_license_support =
       GetPersistentLicenseSupport(cdm_supports_persistent_license);
-  auto persistent_usage_record_support = EmeSessionTypeSupport::NOT_SUPPORTED;
+
+  // TODO(xhwang): Check more conditions as needed.
+  auto persistent_usage_record_support =
+      base::ContainsValue(capability->session_types,
+                          media::CdmSessionType::kPersistentUsageRecord)
+          ? EmeSessionTypeSupport::SUPPORTED
+          : EmeSessionTypeSupport::NOT_SUPPORTED;
 
   // Others.
   auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
