@@ -13,6 +13,8 @@
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
@@ -33,9 +35,10 @@ namespace {
 bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   return rhs->UpdateTime() > lhs->UpdateTime();
 }
-// Light gray color that matches the favicon background image color to eliminate
-// setting a non-opaque background color.
-const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
+// Desired width and height of favicon.
+const CGFloat kFaviconWidthHeight = 24;
+// Minimum favicon size to retrieve.
+const CGFloat kFaviconMinWidthHeight = 16;
 
 }  // namespace
 
@@ -60,6 +63,9 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
 @property(nonatomic, assign, readonly)
     favicon::LargeIconService* largeIconService;
 
+// Favicon Service used for UIRefresh Collections.
+@property(nonatomic, assign, readonly) FaviconLoader* faviconLoader;
+
 @end
 
 @implementation ReadingListMediator
@@ -70,6 +76,7 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
 @synthesize itemFactory = _itemFactory;
 @synthesize attributesProvider = _attributesProvider;
 @synthesize largeIconService = _largeIconService;
+@synthesize faviconLoader = _faviconLoader;
 
 #pragma mark - Public
 
@@ -82,6 +89,22 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
     _largeIconService = largeIconService;
     _itemFactory = itemFactory;
     _shouldMonitorModel = YES;
+
+    // This triggers the callback method. Should be created last.
+    _modelBridge.reset(new ReadingListModelBridge(self, model));
+  }
+  return self;
+}
+
+- (instancetype)initWithModel:(ReadingListModel*)model
+                faviconLoader:(nonnull FaviconLoader*)faviconLoader
+              listItemFactory:(ReadingListListItemFactory*)itemFactory {
+  self = [super init];
+  if (self) {
+    _model = model;
+    _itemFactory = itemFactory;
+    _shouldMonitorModel = YES;
+    _faviconLoader = faviconLoader;
 
     // This triggers the callback method. Should be created last.
     _modelBridge.reset(new ReadingListModelBridge(self, model));
@@ -169,23 +192,21 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
         if (!strongSelf || !strongItem) {
           return;
         }
-        if (attributes.monogramString && IsUIRefreshPhase1Enabled()) {
-          UIColor* textColor = [UIColor colorWithWhite:0 alpha:0.33];
-          UIColor* backgroundColor =
-              UIColorFromRGB(kFallbackIconDefaultBackgroundColor);
-          attributes = [FaviconAttributes
-              attributesWithMonogram:attributes.monogramString
-                           textColor:textColor
-                     backgroundColor:backgroundColor
-              defaultBackgroundColor:NO];
-        }
         strongItem.attributes = attributes;
 
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
       };
-
-  [self.attributesProvider fetchFaviconAttributesForURL:item.faviconPageURL
-                                             completion:completionBlock];
+  if (self.faviconLoader) {
+    FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
+        item.faviconPageURL, kFaviconMinWidthHeight, kFaviconWidthHeight,
+        completionBlock);
+    DCHECK(cachedAttributes);
+    return completionBlock(cachedAttributes);
+  } else {
+    DCHECK(self.attributesProvider);
+    [self.attributesProvider fetchFaviconAttributesForURL:item.faviconPageURL
+                                               completion:completionBlock];
+  }
 }
 
 - (void)beginBatchUpdates {
@@ -204,7 +225,7 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
   if (_attributesProvider) {
     return _attributesProvider;
   }
-
+  DCHECK(self.largeIconService);
   // Accept any favicon even the smallest ones (16x16) as it is better than the
   // fallback icon.
   // Pass 1 as minimum size to avoid empty favicons.
