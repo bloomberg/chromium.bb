@@ -635,10 +635,10 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
-    // Only show the media controls when the mouse is hovering over the window.
-    // This is checking for both ENTERED and MOVED because ENTERED is not fired
-    // after a resize on Windows.
-#if defined (OS_WIN)
+// Only show the media controls when the mouse is hovering over the window.
+// This is checking for both ENTERED and MOVED because ENTERED is not fired
+// after a resize on Windows.
+#if defined(OS_WIN)
     case ui::ET_MOUSE_MOVED:
 #endif  // OS_WIN
     case ui::ET_MOUSE_ENTERED:
