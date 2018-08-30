@@ -157,14 +157,14 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const String text_;
 
   // Start and end offset of the parent block text.
-  unsigned start_offset_;
-  unsigned end_offset_;
+  const unsigned start_offset_;
+  const unsigned end_offset_;
 
-  scoped_refptr<const ShapeResult> shape_result_;
+  const scoped_refptr<const ShapeResult> shape_result_;
 
-  unsigned line_orientation_ : 2;  // NGLineOrientation
-  unsigned end_effect_ : 1;        // NGTextEndEffect
-  unsigned is_anonymous_text_ : 1;
+  const unsigned line_orientation_ : 2;  // NGLineOrientation
+  const unsigned end_effect_ : 1;        // NGTextEndEffect
+  const unsigned is_anonymous_text_ : 1;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
