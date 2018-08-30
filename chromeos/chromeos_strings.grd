@@ -120,6 +120,13 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
+        I can't find anything on your screen I can help with.
+Try tapping the mic to ask me anything.
+      </message>
+      <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
+        Nothing found on screen
+      </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
         Timer done
       </message>

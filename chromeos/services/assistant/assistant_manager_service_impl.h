@@ -96,6 +96,7 @@ class AssistantManagerServiceImpl
   void CacheScreenContext(CacheScreenContextCallback callback) override;
 
   // AssistantActionObserver overrides:
+  void OnShowContextualQueryFallback() override;
   void OnShowHtml(const std::string& html) override;
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
