@@ -20,6 +20,8 @@ extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncShortNudgeDelayForTest[];
 
+extern const base::Feature
+    kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncClearDataOnPassphraseEncryption;
 extern const base::Feature kSyncStandaloneTransport;
 extern const base::Feature kSyncSupportSecondaryAccount;
