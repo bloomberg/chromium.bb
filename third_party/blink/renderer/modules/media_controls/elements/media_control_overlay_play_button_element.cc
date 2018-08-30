@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -298,17 +299,14 @@ bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
   // If we don't have the necessary pieces to calculate whether the event is
   // within the bounds of the button, default to yes.
   if (!mouse_event.HasPosition() || !internal_button_ ||
-      !GetDocument().GetLayoutView() || !GetLayoutObject() ||
-      !GetLayoutObject()->Style()) {
+      !GetDocument().GetLayoutView() || !GetComputedStyle()) {
     return true;
   }
 
   // Find the zoom-adjusted internal button bounding box.
   DOMRect* box = internal_button_->getBoundingClientRect();
-  float zoom = GetLayoutObject()->Style()->EffectiveZoom();
-  // getBoundingClientRect already takes the document ZoomFactor into account,
-  // so divide it out to avoid double-counting it.
-  zoom = zoom / GetDocument().GetLayoutView()->ZoomFactor();
+  float zoom = ComputedStyleRef().EffectiveZoom() /
+               GetDocument().GetLayoutView()->ZoomFactor();
   box->setX(box->x() * zoom);
   box->setY(box->y() * zoom);
   box->setWidth(box->width() * zoom);
