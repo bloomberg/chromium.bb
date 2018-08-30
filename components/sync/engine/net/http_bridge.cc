@@ -389,6 +389,11 @@ void HttpBridge::OnURLLoadComplete(std::unique_ptr<std::string> response_body) {
   base::AutoLock lock(fetch_state_lock_);
 
   network::SimpleURLLoader* url_loader = fetch_state_.url_loader.get();
+  // If the fetch completes in the window between Abort() and
+  // DestroyURLLoaderOnIOThread() this will still run. Abort() has already
+  // reported the result, so no extra work is needed.
+  if (fetch_state_.aborted)
+    return;
 
   int response_code = -1;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {

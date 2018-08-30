@@ -373,9 +373,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   // Schedule the fetch completion callback (but don't run it yet). Don't take
   // a reference to the bridge to mimic URLFetcher's handling of the delegate.
   ASSERT_TRUE(io_thread()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&syncer::HttpBridge::OnURLLoadCompleteInternal,
-                                base::Unretained(bridge_for_race_test()), 200,
-                                net::OK, 0, GURL("http://www.google.com"),
+      FROM_HERE, base::BindOnce(&syncer::HttpBridge::OnURLLoadComplete,
+                                base::Unretained(bridge_for_race_test()),
                                 std::make_unique<std::string>("success!"))));
 
   // Abort the fetch. This should be smart enough to handle the case where
