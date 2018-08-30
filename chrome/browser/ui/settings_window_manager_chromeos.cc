@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -69,6 +71,9 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   settings_session_map_.emplace(profile, SessionID::InvalidValue())
       .first->second = params.browser->session_id();
   DCHECK(params.browser->is_trusted_source());
+
+  auto* window = params.browser->window()->GetNativeWindow();
+  window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_SETTINGS_LOGO_192);
 
   for (SettingsWindowManagerObserver& observer : observers_)
     observer.OnNewSettingsWindow(params.browser);

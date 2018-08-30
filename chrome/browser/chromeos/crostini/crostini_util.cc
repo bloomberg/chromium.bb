@@ -23,9 +23,11 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -98,6 +100,8 @@ void ShowTerminal(const AppLaunchParams& launch_params,
                   Browser* browser) {
   crostini::CrostiniManager::GetInstance()->ShowContainerTerminal(
       launch_params, vsh_in_crosh_url, browser);
+  browser->window()->GetNativeWindow()->SetProperty(
+      kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }
 
 void LaunchContainerApplication(

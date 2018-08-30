@@ -132,7 +132,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -160,6 +159,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -1867,18 +1867,15 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
     return app_controller->GetWindowIcon();
 
 #if defined(OS_CHROMEOS)
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (browser_->is_type_tabbed()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return rb.GetImageNamed(IDR_PRODUCT_LOGO_32).AsImageSkia();
   }
-
-  // For the settings window, use whatever icon was previously set.
-  if (!browser_->is_app() && browser_->is_trusted_source() &&
-      GetNativeWindow()) {
-    auto* image = GetNativeWindow()->GetProperty(aura::client::kWindowIconKey);
-    if (image)
-      return *image;
-  }
+  auto* window = GetNativeWindow();
+  int override_window_icon_resource_id =
+      window ? window->GetProperty(kOverrideWindowIconResourceIdKey) : -1;
+  if (override_window_icon_resource_id >= 0)
+    return rb.GetImageNamed(override_window_icon_resource_id).AsImageSkia();
 #endif
 
   if (browser_->is_app() || browser_->is_type_popup())
