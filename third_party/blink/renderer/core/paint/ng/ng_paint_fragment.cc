@@ -158,7 +158,7 @@ NGPaintFragment::NGPaintFragment(
 }
 
 NGPaintFragment::~NGPaintFragment() {
-  DCHECK(!next_fragment_);
+  DCHECK(!next_for_same_layout_object_);
 }
 
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
@@ -311,7 +311,7 @@ void NGPaintFragment::AssociateWithLayoutObject(
     layout_object->SetFirstInlineFragment(this);
   } else {
     DCHECK(add_result.stored_value->value);
-    add_result.stored_value->value->next_fragment_ = this;
+    add_result.stored_value->value->next_for_same_layout_object_ = this;
     add_result.stored_value->value = this;
   }
 }
@@ -352,15 +352,16 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
 
 void NGPaintFragment::ResetInlineFragmentsFor(
     const LayoutObject* layout_object) {
-  // Because |next_fragment_| can be the last reference, we should have another
-  // reference during resetting |next_fragment_| |FragmentRange|..
+  // Because |next_for_same_layout_object_| can be the last reference, we should
+  // have another reference during resetting |next_for_same_layout_object_|
+  // |FragmentRange|..
   const FragmentRange range = InlineFragmentsFor(layout_object);
   Vector<scoped_refptr<NGPaintFragment>> fragments;
   fragments.ReserveCapacity(range.size());
   for (NGPaintFragment* fragment : range)
     fragments.push_back(fragment);
   for (const auto& fragment : fragments)
-    fragment->next_fragment_.reset();
+    fragment->next_for_same_layout_object_.reset();
 }
 
 bool NGPaintFragment::FlippedLocalVisualRectFor(

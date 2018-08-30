@@ -178,7 +178,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPaintFragment* operator->() const { return current_; }
       iterator& operator++() {
         CHECK(current_);
-        current_ = current_->next_fragment_.get();
+        current_ = current_->next_for_same_layout_object_.get();
         return *this;
       }
       bool operator==(const iterator& other) const {
@@ -265,7 +265,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // The next fragment for when this is fragmented.
   scoped_refptr<NGPaintFragment> next_fragmented_;
 
-  scoped_refptr<NGPaintFragment> next_fragment_;
+  scoped_refptr<NGPaintFragment> next_for_same_layout_object_;
   NGPhysicalOffset inline_offset_to_container_box_;
 
   //
