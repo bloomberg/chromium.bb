@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -28,6 +29,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/content_settings/core/common/features.h"
@@ -1379,7 +1381,8 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
+void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
+                                 Profile* profile) {
   LocalizedString localized_strings[] = {
       {"passwordsAndAutofillPageTitle",
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
@@ -1495,6 +1498,13 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       autofill::features::GetLocalCardMigrationExperimentalFlag() ==
           autofill::features::LocalCardMigrationExperimentalFlag::
               kMigrationIncludeSettingsPage);
+
+  autofill::PersonalDataManager* personal_data_manager_ =
+      autofill::PersonalDataManagerFactory::GetForProfile(profile);
+  html_source->AddBoolean(
+      "hasGooglePaymentsAccount",
+      autofill::payments::GetBillingCustomerId(personal_data_manager_,
+                                               profile->GetPrefs()) != 0);
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -2682,7 +2692,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDownloadsStrings(html_source);
   AddLanguagesStrings(html_source);
   AddOnStartupStrings(html_source);
-  AddPasswordsAndFormsStrings(html_source);
+  AddPasswordsAndFormsStrings(html_source, profile);
   AddPeopleStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source, profile);
