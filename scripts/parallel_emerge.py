@@ -40,7 +40,6 @@ import traceback
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event
-from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import process_util
 from chromite.lib import proctitle
@@ -229,7 +228,7 @@ class DepGraphGenerator(object):
   """
 
   __slots__ = ["board", "emerge", "package_db", "show_output", "sysroot",
-               "unpack_only", "max_retries", "install_plan_filename"]
+               "unpack_only", "max_retries"]
 
   def __init__(self):
     self.board = None
@@ -239,7 +238,6 @@ class DepGraphGenerator(object):
     self.sysroot = None
     self.unpack_only = False
     self.max_retries = 1
-    self.install_plan_filename = None
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
@@ -283,10 +281,6 @@ class DepGraphGenerator(object):
         event_logger = cros_event.getEventFileLogger(log_file_name)
         event_logger.setKind('ParallelEmerge')
         cros_event.setEventLogger(event_logger)
-      elif arg.startswith("--install-plan-filename"):
-        # No emerge equivalent, used to calculate the list of packages
-        # that changed and we will need to calculate reverse dependencies.
-        self.install_plan_filename = arg.replace("--install-plan-filename=", "")
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -546,17 +540,6 @@ class DepGraphGenerator(object):
     if "--quiet" not in emerge.opts:
       print("Deps calculated in %dm%.1fs" % (seconds / 60, seconds % 60))
 
-    # Calculate the install plan packages and append to temp file. They will be
-    # used to calculate all the reverse dependencies on these change packages.
-    if self.install_plan_filename:
-      # Always write the file even if nothing to do, scripts expect existence.
-      output = '\n'.join(deps_info)
-      if len(output) > 0:
-        # add a trailing newline only if the output is not empty.
-        output += '\n'
-      osutils.WriteFile(self.install_plan_filename,
-                        output,
-                        mode='a')
     return deps_tree, deps_info
 
   def PrintTree(self, deps, depth=""):
