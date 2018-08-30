@@ -807,6 +807,36 @@ TEST_P(BluetoothTestWinrtOnly, SimulateAdapterPoweredOffAndOn) {
   EXPECT_TRUE(observer.last_powered());
 }
 
+// Tests that the adapter responds to external changes to the power state, even
+// if it failed to obtain the underlying radio.
+TEST_P(BluetoothTestWinrtOnly, SimulateAdapterPoweredOnAndOffWithoutRadio) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitFakeAdapterWithoutRadio();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
+
+  SimulateAdapterPoweredOn();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(1, observer.powered_changed_count());
+  EXPECT_TRUE(observer.last_powered());
+
+  SimulateAdapterPoweredOff();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(2, observer.powered_changed_count());
+  EXPECT_FALSE(observer.last_powered());
+}
+
 // Makes sure the error callback gets run when changing the adapter power state
 // fails.
 // TODO(https://crbug.com/878680): Implement SimulateAdapterPowerSuccess() and

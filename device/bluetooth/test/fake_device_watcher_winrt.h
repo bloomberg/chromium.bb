@@ -7,6 +7,7 @@
 
 #include <windows.devices.enumeration.h>
 #include <windows.foundation.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include "base/macros.h"
@@ -61,7 +62,27 @@ class FakeDeviceWatcherWinrt
   IFACEMETHODIMP Start() override;
   IFACEMETHODIMP Stop() override;
 
+  void SimulateAdapterPoweredOn();
+  void SimulateAdapterPoweredOff();
+
  private:
+  bool has_powered_radio_ = false;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Enumeration::DeviceWatcher*,
+      ABI::Windows::Devices::Enumeration::DeviceInformation*>>
+      added_handler_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Enumeration::DeviceWatcher*,
+      ABI::Windows::Devices::Enumeration::DeviceInformationUpdate*>>
+      removed_handler_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Enumeration::DeviceWatcher*,
+      IInspectable*>>
+      enumerated_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceWatcherWinrt);
 };
 

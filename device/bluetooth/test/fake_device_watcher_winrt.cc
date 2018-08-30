@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/test/fake_device_watcher_winrt.h"
 
+#include <utility>
+
 namespace device {
 
 namespace {
@@ -23,11 +25,13 @@ FakeDeviceWatcherWinrt::~FakeDeviceWatcherWinrt() = default;
 HRESULT FakeDeviceWatcherWinrt::add_Added(
     ITypedEventHandler<DeviceWatcher*, DeviceInformation*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  added_handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::remove_Added(EventRegistrationToken token) {
-  return E_NOTIMPL;
+  added_handler_.Reset();
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::add_Updated(
@@ -43,22 +47,26 @@ HRESULT FakeDeviceWatcherWinrt::remove_Updated(EventRegistrationToken token) {
 HRESULT FakeDeviceWatcherWinrt::add_Removed(
     ITypedEventHandler<DeviceWatcher*, DeviceInformationUpdate*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  removed_handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::remove_Removed(EventRegistrationToken token) {
-  return E_NOTIMPL;
+  removed_handler_.Reset();
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::add_EnumerationCompleted(
     ITypedEventHandler<DeviceWatcher*, IInspectable*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  enumerated_handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::remove_EnumerationCompleted(
     EventRegistrationToken token) {
-  return E_NOTIMPL;
+  removed_handler_.Reset();
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::add_Stopped(
@@ -76,11 +84,23 @@ HRESULT FakeDeviceWatcherWinrt::get_Status(DeviceWatcherStatus* status) {
 }
 
 HRESULT FakeDeviceWatcherWinrt::Start() {
-  return E_NOTIMPL;
+  if (enumerated_handler_)
+    enumerated_handler_->Invoke(this, nullptr);
+  return S_OK;
 }
 
 HRESULT FakeDeviceWatcherWinrt::Stop() {
-  return E_NOTIMPL;
+  return S_OK;
+}
+
+void FakeDeviceWatcherWinrt::SimulateAdapterPoweredOn() {
+  if (!std::exchange(has_powered_radio_, true) && added_handler_)
+    added_handler_->Invoke(this, nullptr);
+}
+
+void FakeDeviceWatcherWinrt::SimulateAdapterPoweredOff() {
+  if (std::exchange(has_powered_radio_, false) && removed_handler_)
+    removed_handler_->Invoke(this, nullptr);
 }
 
 }  // namespace device
