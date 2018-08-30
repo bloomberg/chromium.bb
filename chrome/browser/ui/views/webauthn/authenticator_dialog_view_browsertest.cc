@@ -72,7 +72,7 @@ class TestSheetView : public AuthenticatorRequestSheetView {
  public:
   explicit TestSheetView(std::unique_ptr<TestSheetModel> model)
       : AuthenticatorRequestSheetView(std::move(model)) {
-    InitChildViews();
+    ReInitChildViews();
   }
 
   ~TestSheetView() override = default;

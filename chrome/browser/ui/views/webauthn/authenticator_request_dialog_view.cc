@@ -202,6 +202,10 @@ void AuthenticatorRequestDialogView::OnStepTransition() {
   }
 }
 
+void AuthenticatorRequestDialogView::OnSheetModelChanged() {
+  UpdateUIForCurrentSheet();
+}
+
 void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   DCHECK_EQ(sender, other_transports_button_);
@@ -231,10 +235,19 @@ void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
 
   sheet_ = new_sheet.get();
   AddChildView(new_sheet.release());
-  ToggleOtherTransportsButtonVisibility();
 
-  // The dialog button configuration is delegated to the |sheet_|, and the new
-  // sheet likely wants to provide a new configuration.
+  UpdateUIForCurrentSheet();
+}
+
+void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
+  DCHECK(sheet_);
+
+  sheet_->ReInitChildViews();
+
+  // Whether to show the `Choose another option` button, or other dialog
+  // configuration is delegated to the |sheet_|, and the new sheet likely wants
+  // to provide a new configuration.
+  ToggleOtherTransportsButtonVisibility();
   DialogModelChanged();
 
   // If the widget is not yet shown or already being torn down, we are done. In

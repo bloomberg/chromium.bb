@@ -332,12 +332,63 @@ bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonVisible() const {
 }
 
 bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonEnabled() const {
-  return true;
+  return dialog_model()->ble_adapter_is_powered();
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetAcceptButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_NEXT);
+}
+
+void AuthenticatorBlePowerOnManualSheetModel::OnBluetoothPoweredStateChanged() {
+  dialog_model()->OnSheetModelDidChange();
+}
+
+void AuthenticatorBlePowerOnManualSheetModel::OnAccept() {
+  dialog_model()->ContinueWithFlowAfterBleAdapterPowered();
+}
+
+// AuthenticatorBlePowerOnAutomaticSheetModel
+// ------------------------------------
+
+bool AuthenticatorBlePowerOnAutomaticSheetModel::IsActivityIndicatorVisible()
+    const {
+  return busy_powering_on_ble_;
+}
+
+gfx::ImageSkia*
+AuthenticatorBlePowerOnAutomaticSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
+}
+
+base::string16 AuthenticatorBlePowerOnAutomaticSheetModel::GetStepTitle()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_TITLE);
+}
+
+base::string16 AuthenticatorBlePowerOnAutomaticSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_DESCRIPTION);
+}
+
+bool AuthenticatorBlePowerOnAutomaticSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorBlePowerOnAutomaticSheetModel::IsAcceptButtonEnabled() const {
+  return !busy_powering_on_ble_;
+}
+
+base::string16
+AuthenticatorBlePowerOnAutomaticSheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_NEXT);
+}
+
+void AuthenticatorBlePowerOnAutomaticSheetModel::OnAccept() {
+  busy_powering_on_ble_ = true;
+  dialog_model()->OnSheetModelDidChange();
+  dialog_model()->PowerOnBleAdapter();
 }
 
 // AuthenticatorBlePairingBeginSheetModel -------------------------------------

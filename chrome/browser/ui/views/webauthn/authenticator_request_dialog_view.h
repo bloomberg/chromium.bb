@@ -44,11 +44,14 @@ class AuthenticatorRequestDialogView
 
  protected:
   // Replaces the |sheet_| currently being shown in the dialog with |new_sheet|,
-  // destroying the old sheet. Also triggers updating the state of the buttons
-  // on the dialog, the accessibility window title (using the data provided by
-  // the new sheet), and the dialog size and position.
+  // destroying the old sheet.
   void ReplaceCurrentSheetWith(
       std::unique_ptr<AuthenticatorRequestSheetView> new_sheet);
+
+  // Triggers updating the contents of the current sheet view, plus state of the
+  // buttons on the dialog, the accessibility window title (using the data
+  // provided by the new sheet), and the dialog size and position.
+  void UpdateUIForCurrentSheet();
 
   // Shows or hides the "Choose another option" button based on whether the
   // current sheet model defines a model for the other transports popup menu,
@@ -78,6 +81,7 @@ class AuthenticatorRequestDialogView
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
   void OnStepTransition() override;
+  void OnSheetModelChanged() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
