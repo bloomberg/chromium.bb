@@ -107,10 +107,13 @@ class ManualFillingMediator
         public void onTabSelectionHinted(int tabId) {}
 
         @Override
-        public void onSceneChange(Layout layout) {
+        public void onSceneStartShowing(Layout layout) {
             // Includes events like side-swiping between tabs and triggering contextual search.
             mKeyboardAccessory.dismiss();
         }
+
+        @Override
+        public void onSceneChange(Layout layout) {}
     };
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
@@ -179,7 +182,7 @@ class ManualFillingMediator
     // TODO(fhorschig): Look for stronger signals than |keyboardVisibilityChanged|.
     // This variable remembers the last state of |keyboardVisibilityChanged| which might not be
     // sufficient for edge cases like hardware keyboards, floating keyboards, etc.
-    private void onKeyboardVisibilityChanged(boolean isShowing) {
+    void onKeyboardVisibilityChanged(boolean isShowing) {
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
             mKeyboardAccessory.requestShowing();

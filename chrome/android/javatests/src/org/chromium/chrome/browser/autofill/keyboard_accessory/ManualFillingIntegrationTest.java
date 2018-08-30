@@ -84,8 +84,8 @@ public class ManualFillingIntegrationTest {
         mHelper.createTestTab();
 
         // Focus the field to bring up the accessory.
-        mHelper.clickPasswordField();
         onView(withId(R.id.keyboard_accessory)).check(doesNotExist());
+        mHelper.clickPasswordField();
         mHelper.waitForKeyboard();
 
         // Check that ONLY the accessory is there but the sheet is still hidden.
