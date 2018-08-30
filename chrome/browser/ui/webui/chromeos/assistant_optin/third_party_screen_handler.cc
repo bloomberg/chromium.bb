@@ -10,7 +10,7 @@
 
 namespace {
 
-constexpr char kJsScreenPath[] = "AssistantThirdPartyScreen";
+constexpr char kJsScreenPath[] = "assistant.ThirdPartyScreen";
 
 constexpr char kUserActionNextPressed[] = "next-pressed";
 
@@ -31,6 +31,8 @@ void ThirdPartyScreenHandler::DeclareLocalizedValues(
 
 void ThirdPartyScreenHandler::RegisterMessages() {
   AddPrefixedCallback("userActed", &ThirdPartyScreenHandler::HandleUserAction);
+  AddPrefixedCallback("screenShown",
+                      &ThirdPartyScreenHandler::HandleScreenShown);
 }
 
 void ThirdPartyScreenHandler::Initialize() {}
@@ -38,9 +40,14 @@ void ThirdPartyScreenHandler::Initialize() {}
 void ThirdPartyScreenHandler::HandleUserAction(const std::string& action) {
   DCHECK(exit_callback_);
   if (action == kUserActionNextPressed) {
+    RecordAssistantOptInStatus(THIRD_PARTY_CONTINUED);
     std::move(exit_callback_)
         .Run(AssistantOptInScreenExitCode::THIRD_PARTY_CONTINUED);
   }
+}
+
+void ThirdPartyScreenHandler::HandleScreenShown() {
+  RecordAssistantOptInStatus(THIRD_PARTY_SHOWN);
 }
 
 }  // namespace chromeos

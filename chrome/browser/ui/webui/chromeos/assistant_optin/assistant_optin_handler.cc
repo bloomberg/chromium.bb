@@ -8,6 +8,7 @@
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -268,11 +269,13 @@ void AssistantOptInHandler::ShowNextScreen() {
 void AssistantOptInHandler::OnActivityControlOptInResult(bool opted_in) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (opted_in) {
+    RecordAssistantOptInStatus(ACTIVITY_CONTROL_ACCEPTED);
     settings_manager_->UpdateSettings(
         GetSettingsUiUpdate(consent_token_).SerializeAsString(),
         base::BindOnce(&AssistantOptInHandler::OnUpdateSettingsResponse,
                        weak_factory_.GetWeakPtr()));
   } else {
+    RecordAssistantOptInStatus(ACTIVITY_CONTROL_SKIPPED);
     profile->GetPrefs()->SetBoolean(
         arc::prefs::kVoiceInteractionActivityControlAccepted, false);
     CallJSOrDefer("closeDialog");
@@ -288,6 +291,7 @@ void AssistantOptInHandler::OnEmailOptInResult(bool opted_in) {
     return;
   }
 
+  RecordAssistantOptInStatus(opted_in ? EMAIL_OPTED_IN : EMAIL_OPTED_OUT);
   settings_manager_->UpdateSettings(
       GetEmailOptInUpdate(opted_in).SerializeAsString(),
       base::BindOnce(&AssistantOptInHandler::OnUpdateSettingsResponse,
@@ -337,6 +341,8 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
   settings_ui.ParseFromString(settings);
 
   DCHECK(settings_ui.has_consent_flow_ui());
+
+  RecordAssistantOptInStatus(FLOW_STARTED);
   auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
   auto activity_control_ui = consent_ui.activity_control_ui();
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();

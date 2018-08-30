@@ -99,6 +99,13 @@ Polymer({
   consentStringLoaded_: false,
 
   /**
+   * Whether the screen has been shown to the user.
+   * @type {boolean}
+   * @private
+   */
+  screenShown_: false,
+
+  /**
    * Sanitizer used to sanitize html snippets.
    * @type {HtmlSanitizer}
    * @private
@@ -111,7 +118,7 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
-    chrome.send('AssistantValuePropScreen.userActed', ['skip-pressed']);
+    chrome.send('assistant.ValuePropScreen.userActed', ['skip-pressed']);
   },
 
   /**
@@ -120,7 +127,7 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    chrome.send('AssistantValuePropScreen.userActed', ['next-pressed']);
+    chrome.send('assistant.ValuePropScreen.userActed', ['next-pressed']);
   },
 
   /**
@@ -279,6 +286,11 @@ Polymer({
 
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
+
+    if (!this.hidden && !this.screenShown_) {
+      chrome.send('assistant.ValuePropScreen.screenShown');
+      this.screenShown_ = true;
+    }
   },
 
   /**

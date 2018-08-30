@@ -55,7 +55,8 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
   AddScreenHandler(std::make_unique<GetMoreScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
-  AddScreenHandler(std::make_unique<ReadyScreenHandler>());
+  AddScreenHandler(std::make_unique<ReadyScreenHandler>(
+      base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
 
   base::DictionaryValue localized_strings;
   for (auto* handler : screen_handlers_)
@@ -97,6 +98,9 @@ void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
       break;
     case AssistantOptInScreenExitCode::EMAIL_OPTED_OUT:
       assistant_handler_->OnEmailOptInResult(false);
+      break;
+    case AssistantOptInScreenExitCode::READY_SCREEN_CONTINUED:
+      CloseDialog(nullptr);
       break;
     default:
       NOTREACHED();

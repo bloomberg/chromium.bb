@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 
 namespace chromeos {
@@ -27,6 +27,7 @@ class ValuePropScreenHandler : public BaseWebUIHandler {
 
  private:
   void HandleUserAction(const std::string& action);
+  void HandleScreenShown();
 
   OnAssistantOptInScreenExitCallback exit_callback_;
 

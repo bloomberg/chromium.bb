@@ -1806,6 +1806,21 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Closed shape"/>
 </enum>
 
+<enum name="AssistantOptInFlowStatus">
+  <int value="0" label="FLOW_STARTED"/>
+  <int value="1" label="ACTIVITY_CONTROL_SHOWN"/>
+  <int value="2" label="ACTIVITY_CONTROL_ACCEPTED"/>
+  <int value="3" label="ACTIVITY_CONTROL_SKIPPED"/>
+  <int value="4" label="THIRD_PARTY_SHOWN"/>
+  <int value="5" label="THIRD_PARTY_CONTINUED"/>
+  <int value="6" label="GET_MORE_SHOWN"/>
+  <int value="7" label="EMAIL_OPTED_IN"/>
+  <int value="8" label="EMAIL_OPTED_OUT"/>
+  <int value="9" label="GET_MORE_CONTINUED"/>
+  <int value="10" label="READY_SCREEN_SHOWN"/>
+  <int value="11" label="READY_SCREEN_CONTINUED"/>
+</enum>
+
 <enum name="AsyncDNSConfigParsePosix">
   <int value="0" label="OK"/>
   <int value="1" label="RES_INIT_FAILED"/>
