@@ -77,6 +77,7 @@ class ChromotingClientRuntime {
     return url_requester_;
   }
 
+  // Must be called from the network thread.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory();
 
   ChromotingEventLogWriter* log_writer() { return log_writer_.get(); }
@@ -84,6 +85,10 @@ class ChromotingClientRuntime {
  private:
   ChromotingClientRuntime();
   virtual ~ChromotingClientRuntime();
+
+  // Initializes URL loader factory owner, log writer, and other resources on
+  // the network thread.
+  void InitializeOnNetworkThread();
 
   // Chromium code's connection to the app message loop. Once created the
   // MessageLoop will live for the life of the program.

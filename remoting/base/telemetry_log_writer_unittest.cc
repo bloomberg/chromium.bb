@@ -103,13 +103,14 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
 class TelemetryLogWriterTest : public testing::Test {
  public:
   TelemetryLogWriterTest()
-      : request_factory_(new FakeUrlRequestFactory()),
-        log_writer_(
+      : log_writer_(
             "",
-            base::WrapUnique(request_factory_),
             std::make_unique<FakeOAuthTokenGetter>(OAuthTokenGetter::SUCCESS,
                                                    "email",
                                                    kFakeAccessToken)) {
+    auto request_factory = std::make_unique<FakeUrlRequestFactory>();
+    request_factory_ = request_factory.get();
+    log_writer_.Init(std::move(request_factory));
     success_result_.success = true;
     success_result_.status = 200;
     success_result_.response_body = "{}";
@@ -133,7 +134,7 @@ class TelemetryLogWriterTest : public testing::Test {
   UrlRequest::Result success_result_;
   UrlRequest::Result unauth_result_;
 
-  FakeUrlRequestFactory* request_factory_;  // For peeking. No ownership.
+  FakeUrlRequestFactory* request_factory_;  // No ownership.
   TelemetryLogWriter log_writer_;
 
  private:

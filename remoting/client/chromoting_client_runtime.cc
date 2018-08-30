@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -58,10 +59,8 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
   display_task_runner_ = AutoThread::Create("native_disp", ui_task_runner_);
   network_task_runner_ = AutoThread::CreateWithType(
       "native_net", ui_task_runner_, base::MessageLoop::TYPE_IO);
-  url_requester_ = new URLRequestContextGetter(network_task_runner_);
-  url_loader_factory_owner_ =
-      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
-          url_requester_);
+
+  mojo::core::Init();
 }
 
 ChromotingClientRuntime::~ChromotingClientRuntime() {
@@ -86,8 +85,11 @@ void ChromotingClientRuntime::Init(
   delegate_ = delegate;
   log_writer_ = std::make_unique<TelemetryLogWriter>(
       kTelemetryBaseUrl,
-      std::make_unique<ChromiumUrlRequestFactory>(url_loader_factory()),
       CreateOAuthTokenGetter());
+  network_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromotingClientRuntime::InitializeOnNetworkThread,
+                     base::Unretained(this)));
 }
 
 std::unique_ptr<OAuthTokenGetter>
@@ -98,7 +100,18 @@ ChromotingClientRuntime::CreateOAuthTokenGetter() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromotingClientRuntime::url_loader_factory() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
   return url_loader_factory_owner_->GetURLLoaderFactory();
+}
+
+void ChromotingClientRuntime::InitializeOnNetworkThread() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+  url_requester_ = new URLRequestContextGetter(network_task_runner_);
+  url_loader_factory_owner_ =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          url_requester_);
+  log_writer_->Init(
+      std::make_unique<ChromiumUrlRequestFactory>(url_loader_factory()));
 }
 
 }  // namespace remoting

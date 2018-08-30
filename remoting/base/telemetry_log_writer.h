@@ -29,13 +29,14 @@ namespace remoting {
 class TelemetryLogWriter : public ChromotingEventLogWriter {
  public:
   TelemetryLogWriter(const std::string& telemetry_base_url,
-                     std::unique_ptr<UrlRequestFactory> request_factory,
                      std::unique_ptr<OAuthTokenGetter> token_getter);
+
+  ~TelemetryLogWriter() override;
+
+  void Init(std::unique_ptr<UrlRequestFactory> request_factory);
 
   // Push the log entry to the pending list and send out all the pending logs.
   void Log(const ChromotingEvent& entry) override;
-
-  ~TelemetryLogWriter() override;
 
  private:
   void SendPendingEntries();

@@ -18,18 +18,23 @@ constexpr char kAuthorizationHeaderPrefix[] = "Authorization:Bearer ";
 
 TelemetryLogWriter::TelemetryLogWriter(
     const std::string& telemetry_base_url,
-    std::unique_ptr<UrlRequestFactory> request_factory,
     std::unique_ptr<OAuthTokenGetter> token_getter)
     : telemetry_base_url_(telemetry_base_url),
-      request_factory_(std::move(request_factory)),
       token_getter_(std::move(token_getter)) {
   DETACH_FROM_THREAD(thread_checker_);
-  DCHECK(request_factory_);
   DCHECK(token_getter_);
 }
 
 TelemetryLogWriter::~TelemetryLogWriter() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+void TelemetryLogWriter::Init(
+    std::unique_ptr<UrlRequestFactory> request_factory) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!request_factory_);
+  DCHECK(request_factory);
+  request_factory_ = std::move(request_factory);
 }
 
 void TelemetryLogWriter::Log(const ChromotingEvent& entry) {
@@ -72,6 +77,7 @@ void TelemetryLogWriter::PostJsonToServer(const std::string& json,
                                           const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!request_);
+  DCHECK(request_factory_);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("CRD_telemetry_log", R"(
         semantics {
