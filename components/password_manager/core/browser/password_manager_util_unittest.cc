@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -125,7 +126,104 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
 
 #if !defined(OS_IOS)
 TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
-  for (bool is_hsts_enabled : {false, true}) {
+  enum class HttpCredentialType { kNoMatching, kEquivalent, kConflicting };
+
+  struct TestCase {
+    bool is_hsts_enabled;
+    autofill::PasswordForm::Scheme http_form_scheme;
+    bool same_signon_realm;
+    bool same_scheme;
+    bool same_username;
+    bool same_password;
+    HttpCredentialType expected;
+  };
+
+  struct Histogram {
+    bool test_hsts_enabled;
+    HttpCredentialType test_type;
+    std::string histogram_name;
+  };
+
+  constexpr static TestCase cases[] = {
+
+      {true, autofill::PasswordForm::Scheme::SCHEME_HTML, false, true, true,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, false, true,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, false,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true,
+       false, HttpCredentialType::kConflicting},
+      {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true,
+       true, HttpCredentialType::kEquivalent},
+
+      {false, autofill::PasswordForm::Scheme::SCHEME_HTML, false, true, true,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, false, true,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, false,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true,
+       false, HttpCredentialType::kConflicting},
+      {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true,
+       true, HttpCredentialType::kEquivalent},
+
+      {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, false, true, true,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, false, true,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, false,
+       true, HttpCredentialType::kNoMatching},
+      {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
+       false, HttpCredentialType::kConflicting},
+      {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
+       true, HttpCredentialType::kEquivalent},
+
+      {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, false, true, true,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, false, true,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, false,
+       true, HttpCredentialType::kNoMatching},
+      {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
+       false, HttpCredentialType::kConflicting},
+      {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
+       true, HttpCredentialType::kEquivalent}
+
+  };
+
+  const base::string16 username[2] = {base::ASCIIToUTF16("user0"),
+                                      base::ASCIIToUTF16("user1")};
+  const base::string16 password[2] = {base::ASCIIToUTF16("pass0"),
+                                      base::ASCIIToUTF16("pass1")};
+
+  std::vector<Histogram> histograms_to_test;
+  for (bool test_hsts_enabled : {true, false}) {
+    std::string suffix =
+        (test_hsts_enabled ? "WithHSTSEnabled" : "HSTSNotEnabled");
+    histograms_to_test.push_back(
+        {test_hsts_enabled, HttpCredentialType::kNoMatching,
+         "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
+             suffix});
+    histograms_to_test.push_back(
+        {test_hsts_enabled, HttpCredentialType::kEquivalent,
+         "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
+             suffix});
+    histograms_to_test.push_back(
+        {test_hsts_enabled, HttpCredentialType::kConflicting,
+         "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
+             suffix});
+  }
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_hsts_enabled=" << test.is_hsts_enabled
+                 << ", http_form_scheme="
+                 << static_cast<int>(test.http_form_scheme)
+                 << ", same_signon_realm=" << test.same_signon_realm
+                 << ", same_scheme=" << test.same_scheme
+                 << ", same_username=" << test.same_username
+                 << ", same_password=" << test.same_password);
+
     base::test::ScopedTaskEnvironment scoped_task_environment;
     auto request_context =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
@@ -135,50 +233,41 @@ TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
         nullptr, mojo::MakeRequest(&network_context_pipe),
         request_context->GetURLRequestContext());
 
-    const base::Time expiry = base::Time::Max();
-    const bool include_subdomains = false;
-
     auto password_store =
         base::MakeRefCounted<password_manager::TestPasswordStore>();
     ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
                                      nullptr));
 
-    autofill::PasswordForm hsts_host_1;
-    hsts_host_1.origin = GURL("http://hsts-host-1/");
-    hsts_host_1.username_value = base::ASCIIToUTF16(kTestUsername);
-    hsts_host_1.password_value = base::ASCIIToUTF16(kTestPassword);
-    password_store->AddLogin(hsts_host_1);
+    autofill::PasswordForm http_form;
+    http_form.origin = GURL("http://example.org/");
+    http_form.signon_realm = http_form.origin.GetOrigin().spec();
+    http_form.scheme = test.http_form_scheme;
+    http_form.username_value = username[1];
+    http_form.password_value = password[1];
+    password_store->AddLogin(http_form);
 
-    autofill::PasswordForm hsts_host_1_https;
-    hsts_host_1_https.origin = GURL("https://hsts-host-1/");
-    hsts_host_1_https.username_value = base::ASCIIToUTF16(kTestUsername);
-    hsts_host_1_https.password_value = base::ASCIIToUTF16(kTestPassword);
-    password_store->AddLogin(hsts_host_1_https);
+    autofill::PasswordForm https_form;
+    https_form.origin = GURL("https://example.org/");
+    https_form.scheme = test.http_form_scheme;
+    if (!test.same_scheme) {
+      if (https_form.scheme == autofill::PasswordForm::Scheme::SCHEME_BASIC)
+        https_form.scheme = autofill::PasswordForm::Scheme::SCHEME_HTML;
+      else
+        https_form.scheme = autofill::PasswordForm::Scheme::SCHEME_BASIC;
+    }
 
-    autofill::PasswordForm hsts_host_2;
-    hsts_host_2.origin = GURL("http://hsts-host-2/");
-    hsts_host_2.username_value = base::ASCIIToUTF16(kTestUsername2);
-    hsts_host_2.password_value = base::ASCIIToUTF16(kTestPassword);
-    password_store->AddLogin(hsts_host_2);
+    https_form.signon_realm = https_form.origin.GetOrigin().spec();
+    if (!test.same_signon_realm)
+      https_form.signon_realm += "different/";
 
-    autofill::PasswordForm hsts_host_2_https;
-    hsts_host_2_https.origin = GURL("https://hsts-host-2/");
-    hsts_host_2_https.username_value = base::ASCIIToUTF16(kTestUsername2);
-    hsts_host_2_https.password_value = base::ASCIIToUTF16("different_password");
-    password_store->AddLogin(hsts_host_2_https);
+    https_form.username_value = username[test.same_username];
+    https_form.password_value = password[test.same_password];
+    password_store->AddLogin(https_form);
 
-    // HTTPS version is not in Password Store.
-    autofill::PasswordForm hsts_host_3;
-    hsts_host_3.origin = GURL("http://hsts-host-3/");
-    password_store->AddLogin(hsts_host_3);
-
-    if (is_hsts_enabled) {
-      network_context->AddHSTSForTesting(hsts_host_1.origin.host(), expiry,
-                                         include_subdomains, base::DoNothing());
-      network_context->AddHSTSForTesting(hsts_host_2.origin.host(), expiry,
-                                         include_subdomains, base::DoNothing());
-      network_context->AddHSTSForTesting(hsts_host_3.origin.host(), expiry,
-                                         include_subdomains, base::DoNothing());
+    if (test.is_hsts_enabled) {
+      network_context->AddHSTSForTesting(
+          http_form.origin.host(), base::Time::Max(),
+          false /*include_subdomains*/, base::DoNothing());
     }
     scoped_task_environment.RunUntilIdle();
 
@@ -196,28 +285,13 @@ TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
         }));
     scoped_task_environment.RunUntilIdle();
 
-    for (bool test_hsts_enabled : {false, true}) {
-      std::string suffix =
-          (test_hsts_enabled ? "WithHSTSEnabled" : "HSTSNotEnabled");
-
-      // hsts_host_1
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
-              suffix,
-          (test_hsts_enabled == is_hsts_enabled), 1);
-
-      // hsts_host_2
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
-              suffix,
-          (test_hsts_enabled == is_hsts_enabled), 1);
-
-      // hsts_host_3
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
-              suffix,
-          (test_hsts_enabled == is_hsts_enabled), 1);
+    for (const auto& histogram : histograms_to_test) {
+      int sample =
+          static_cast<int>(histogram.test_type == test.expected &&
+                           histogram.test_hsts_enabled == test.is_hsts_enabled);
+      histogram_tester.ExpectUniqueSample(histogram.histogram_name, sample, 1);
     }
+
     password_store->ShutdownOnUIThread();
     scoped_task_environment.RunUntilIdle();
   }
