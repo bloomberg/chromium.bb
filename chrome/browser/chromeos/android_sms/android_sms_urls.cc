@@ -23,7 +23,7 @@ const char kDefaultAndroidMessagesUrl[] =
 
 // NOTE: Using experiment mods until changes roll out to prod.
 const char kExperimentUrlParams[] =
-    "/?e=DittoServiceWorker,DittoPwa,DittoIndexedDb";
+    "?e=DittoServiceWorker,DittoPwa,DittoIndexedDb";
 
 GURL GetURLInternal(bool with_experiments) {
   const base::CommandLine* command_line =
