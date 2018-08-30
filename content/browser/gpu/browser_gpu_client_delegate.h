@@ -15,10 +15,7 @@ class BrowserGpuClientDelegate : public viz::GpuClientDelegate {
   ~BrowserGpuClientDelegate() override;
 
   // GpuClientDelegate:
-  viz::mojom::GpuService* EnsureGpuService() override;
-  void EstablishGpuChannel(int client_id,
-                           uint64_t client_tracing_id,
-                           EstablishGpuChannelCallback callback) override;
+  viz::GpuHostImpl* EnsureGpuHost() override;
   viz::HostGpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
