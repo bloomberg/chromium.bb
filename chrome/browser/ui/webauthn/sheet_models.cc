@@ -128,6 +128,10 @@ void AuthenticatorWelcomeSheetModel::OnAccept() {
 
 // AuthenticatorTransportSelectorSheetModel -----------------------------------
 
+bool AuthenticatorTransportSelectorSheetModel::IsBackButtonVisible() const {
+  return false;
+}
+
 gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
     const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);

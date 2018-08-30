@@ -89,6 +89,7 @@ class AuthenticatorTransportSelectorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;

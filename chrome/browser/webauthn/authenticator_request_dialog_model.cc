@@ -237,11 +237,7 @@ void AuthenticatorRequestDialogModel::Cancel() {
 }
 
 void AuthenticatorRequestDialogModel::Back() {
-  if (current_step() == Step::kTransportSelection) {
-    Cancel();
-  } else {
-    SetCurrentStep(Step::kTransportSelection);
-  }
+  SetCurrentStep(Step::kTransportSelection);
 }
 
 void AuthenticatorRequestDialogModel::OnSheetModelDidChange() {
