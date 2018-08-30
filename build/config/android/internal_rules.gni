@@ -603,10 +603,7 @@ template("test_runner_script") {
         }
         test_runner_args += [ "--apk-under-test=$_apk_under_test" ]
       }
-      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled &&
-          # TODO(crbug.com/876539): Reenable deobfuscation once it stops killing
-          # bots.
-          false) {
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
         test_runner_args += [ "--enable-java-deobfuscation" ]
       }
       if (emma_coverage) {
