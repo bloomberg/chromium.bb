@@ -988,11 +988,11 @@ TEST_F(TabletModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // When exiting fullscreen, tablet mode should still be enabled, and the shelf
-  // should be forced to visible for tablet mode.
+  // state should return to SHELF_AUTO_HIDE.
   window_state->OnWMEvent(&event);
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // The shelf auto-hide preference should be restored when exiting tablet mode.
   DestroyTabletModeWindowManager();
@@ -1170,15 +1170,15 @@ TEST_F(TabletModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
   EXPECT_TRUE(window_state->IsMinimized());
 }
 
-// Tests that the auto-hide behavior is set to never auto-hide on tablet mode
-// and gets reset based on pref after exiting tablet mode.
-TEST_F(TabletModeWindowManagerTest, DisableAutoHideBehaviorOnTabletMode) {
+// Tests that the auto-hide behavior is not affected when entering/exiting
+// tablet mode.
+TEST_F(TabletModeWindowManagerTest, DoNotDisableAutoHideBehaviorOnTabletMode) {
   Shelf* shelf = GetPrimaryShelf();
   SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
                                SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   CreateTabletModeWindowManager();
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   DestroyTabletModeWindowManager();
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 }
@@ -1203,10 +1203,10 @@ TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
 
   CreateTabletModeWindowManager();
 
-  // Fullscreen should stay off, but the shelf is made visible in tablet mode.
+  // Fullscreen should stay off, and the shelf behavior is unmodified.
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // After going into fullscreen mode, the shelf should be hidden.
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);

@@ -62,8 +62,8 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
 
-  // When touchable app context menus are enabled in tablet mode, auto hide and
-  // shelf alignment options are not shown.
+  // When touchable app context menus are enabled in tablet mode, shelf
+  // alignment option is not shown.
   const bool skip_clamshell_only_options =
       features::IsTouchableAppContextMenuEnabled() && is_tablet_mode;
 
@@ -73,8 +73,7 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
   // the type of fullscreen. Do not show the auto-hide menu item while in
   // fullscreen because it is confusing when the preference appears not to
   // apply.
-  if (CanUserModifyShelfAutoHide(prefs) && !IsFullScreenMode(display_id) &&
-      !skip_clamshell_only_options) {
+  if (CanUserModifyShelfAutoHide(prefs) && !IsFullScreenMode(display_id)) {
     mojom::MenuItemPtr auto_hide(mojom::MenuItem::New());
     const bool is_autohide_set =
         GetShelfAutoHideBehaviorPref(prefs, display_id) ==
@@ -93,7 +92,7 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
       auto_hide->checked = is_autohide_set;
     }
     auto_hide->command_id = ShelfContextMenuModel::MENU_AUTO_HIDE;
-    auto_hide->enabled = !is_tablet_mode;
+    auto_hide->enabled = true;
     menu->push_back(std::move(auto_hide));
   }
 
