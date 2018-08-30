@@ -20,5 +20,90 @@
   },
   "configuration": "Release",
   "tests": [
+    {
+      "app": "base_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "boringssl_crypto_tests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "boringssl_ssl_tests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "components_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "crypto_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "gfx_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "google_apis_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ios_chrome_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ios_net_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ios_web_inttests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ios_web_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ios_web_view_inttests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "net_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "skia_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "sql_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "ui_base_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    },
+    {
+      "app": "url_unittests",
+      "device type": "iPhone 6s",
+      "os": "12.0"
+    }
   ]
 }
