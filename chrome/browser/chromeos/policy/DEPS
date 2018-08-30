@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/feedback",
-  "+components/invalidation",
-  "+components/user_manager",
-]

@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/drive",
-  "+components/keyed_service",
-]
-
