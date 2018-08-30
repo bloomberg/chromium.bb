@@ -9,10 +9,12 @@
   <template>
     <style include="print-preview-shared select">
     </style>
-    <print-preview-settings-section>
+    <print-preview-settings-section class$="[[sectionClass_]]"
+        managed="[[settings.color.setByPolicy]]">
       <span id="color-label" slot="title">$i18n{optionColor}</span>
       <div slot="controls">
-        <select aria-labelledby="color-label" disabled$="[[disabled]]"
+        <select aria-labelledby="color-label"
+            disabled$="[[disabled_]]"
             value="{{selectedValue::change}}">
           <option value="bw" selected>$i18n{optionBw}</option>
           <option value="color">$i18n{optionColor}</option>

@@ -163,6 +163,14 @@ print_preview.ColorMode = {
 };
 
 /**
+ * Policies affecting a destination.
+ * @typedef {{
+ *   allowedColorModes: ?number,
+ * }}
+ */
+print_preview.Policies;
+
+/**
  * @typedef {{id: string,
  *            origin: print_preview.DestinationOrigin,
  *            account: string,
@@ -218,7 +226,8 @@ cr.define('print_preview', function() {
      *          extensionName: (string|undefined),
      *          description: (string|undefined),
      *          certificateStatus:
-     *              (print_preview.DestinationCertificateStatus|undefined)
+     *              (print_preview.DestinationCertificateStatus|undefined),
+     *          policies: (print_preview.Policies|undefined),
      *         }=} opt_params Optional
      *     parameters for the destination.
      */
@@ -265,6 +274,12 @@ cr.define('print_preview', function() {
        * @private {?print_preview.Cdd}
        */
       this.capabilities_ = null;
+
+      /**
+       * Policies affecting the destination.
+       * @private {?print_preview.Policies}
+       */
+      this.policies_ = (opt_params && opt_params.policies) || null;
 
       /**
        * Whether the destination is owned by the user.
@@ -521,6 +536,22 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * @return {?print_preview.Policies} Print policies affecting the
+     *     destination.
+     */
+    get policies() {
+      return this.policies_;
+    }
+
+    /**
+     * @param {?print_preview.Policies} policies Print policies affecting the
+     *     destination.
+     */
+    set policies(policies) {
+      this.policies_ = policies;
+    }
+
+    /**
      * @return {!print_preview.DestinationConnectionStatus} Connection status
      *     of the print destination.
      */
@@ -723,6 +754,17 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * @return {?number} Color mode set by policy. Valid values are |null|,
+           |print_preview.ColorMode.COLOR| and |print_preview.ColorMode.GRAY|.
+     * @private
+     */
+    colorPolicy_() {
+      return this.policies && this.policies.allowedColorModes ?
+          this.policies.allowedColorModes :
+          null;
+    }
+
+    /**
      * @return {boolean} Whether the printer supports both black and white and
      *     color printing.
      */
@@ -739,6 +781,22 @@ cr.define('print_preview', function() {
             hasMonochrome || this.MONOCHROME_TYPES_.includes(option.type);
       });
       return hasColor && hasMonochrome;
+    }
+
+    /**
+     * @return {boolean} Whether the printer color mode is set by policy.
+     */
+    get isColorManaged() {
+      return !!this.colorPolicy_();
+    }
+
+    /**
+     * @return {?boolean} Value for color setting set by policy.
+     */
+    get colorPolicyValue() {
+      return this.colorPolicy_() ?
+          this.colorPolicy_() == print_preview.ColorMode.COLOR :
+          null;
     }
 
     /**

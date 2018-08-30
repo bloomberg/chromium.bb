@@ -43,6 +43,11 @@ struct PRINTING_EXPORT PrintingRestrictions {
   std::vector<gfx::Size> page_sizes_um;
 };
 
+// Dictionary key for printing policies.
+// Must coincide with the name of field in |print_preview.Policies| in
+// chrome/browser/resources/print_preview/native_layer.js
+PRINTING_EXPORT extern const char kAllowedColorModes[];
+
 // Dictionary keys to be used with |kPrintingAllowedPageSizes| and
 // |kPrintingSizeDefault| policies.
 PRINTING_EXPORT extern const char kPageWidthUm[];

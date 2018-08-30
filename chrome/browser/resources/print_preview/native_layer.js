@@ -22,6 +22,7 @@ print_preview.PreviewSettings;
  *   printerDescription: (string | undefined),
  *   cupsEnterprisePrinter: (boolean | undefined),
  *   printerOptions: (Object | undefined),
+ *   policies: (print_preview.Policies | undefined),
  * }}
  */
 print_preview.LocalDestinationInfo;

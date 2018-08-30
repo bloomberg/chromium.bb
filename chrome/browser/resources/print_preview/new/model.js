@@ -364,6 +364,14 @@ Polymer({
     this.set('settings.collate.available', !!caps && !!(caps.collate));
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));
     this.set('settings.color.available', this.destination.hasColorCapability);
+    if (this.destination.isColorManaged) {
+      // |this.setSetting| does nothing if policy is present.
+      // We want to set the value nevertheless so we call |this.set| directly.
+      this.set('settings.color.value', this.destination.colorPolicyValue);
+    }
+
+    this.set('settings.color.setByPolicy', this.destination.isColorManaged);
+
     this.set(
         'settings.dpi.available',
         !!caps && !!caps.dpi && !!caps.dpi.option &&

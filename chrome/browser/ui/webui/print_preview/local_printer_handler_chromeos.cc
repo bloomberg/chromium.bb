@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -28,6 +29,7 @@
 #include "components/printing/common/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/backend/printing_restrictions.h"
 
 namespace {
 
@@ -59,7 +61,16 @@ void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
   }
 }
 
+void CapabilitiesFetched(base::DictionaryValue policies,
+                         LocalPrinterHandlerChromeos::GetCapabilityCallback cb,
+                         std::unique_ptr<base::DictionaryValue> printer_info) {
+  printer_info->FindKey(printing::kPrinter)
+      ->SetKey(printing::kSettingPolicies, std::move(policies));
+  std::move(cb).Run(std::move(printer_info));
+}
+
 void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
+                       base::DictionaryValue policies,
                        LocalPrinterHandlerChromeos::GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -69,7 +80,7 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&printing::GetSettingsOnBlockingPool, printer->id(),
                      basic_info, nullptr),
-      std::move(cb));
+      base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
 }
 
 }  // namespace
@@ -77,7 +88,8 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(
     Profile* profile,
     content::WebContents* preview_web_contents)
-    : preview_web_contents_(preview_web_contents),
+    : profile_(profile),
+      preview_web_contents_(preview_web_contents),
       printers_manager_(
           CupsPrintersManagerFactory::GetForBrowserContext(profile)),
       printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
@@ -153,7 +165,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   printer_configurer_->SetUpPrinter(
       printer_ref,
       base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                     weak_factory_.GetWeakPtr(), base::Passed(&printer),
+                     weak_factory_.GetWeakPtr(), std::move(printer),
                      std::move(cb)));
 }
 
@@ -164,14 +176,20 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   switch (result) {
-    case chromeos::PrinterSetupResult::kSuccess:
+    case chromeos::PrinterSetupResult::kSuccess: {
       VLOG(1) << "Printer setup successful for " << printer->id()
               << " fetching properties";
       printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
 
+      // populate |policies| with policies for native printers.
+      base::DictionaryValue policies;
+      policies.SetInteger(
+          printing::kAllowedColorModes,
+          profile_->GetPrefs()->GetInteger(prefs::kPrintingAllowedColorModes));
       // fetch settings on the blocking pool and invoke callback.
-      FetchCapabilities(std::move(printer), std::move(cb));
+      FetchCapabilities(std::move(printer), std::move(policies), std::move(cb));
       return;
+    }
     case chromeos::PrinterSetupResult::kPpdNotFound:
       LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
       // Prompt user to update configuration.
