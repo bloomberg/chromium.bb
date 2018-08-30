@@ -56,9 +56,6 @@ MEDIA_EXPORT extern const char kUseCras[];
 MEDIA_EXPORT extern const char
     kUnsafelyAllowProtectedMediaIdentifierForDomain[];
 
-MEDIA_EXPORT extern const char kEnableAudioFocus[];
-MEDIA_EXPORT extern const char kEnableAudioFocusDuckFlash[];
-
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
 MEDIA_EXPORT extern const char kDisableMojoRenderer[];
 #endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
@@ -84,10 +81,6 @@ MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimitMb[];
 MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
 MEDIA_EXPORT extern const char kOverrideEnabledCdmInterfaceVersion[];
 MEDIA_EXPORT extern const char kOverrideHardwareSecureCodecsForTesting[];
-
-#if !defined(OS_ANDROID)
-MEDIA_EXPORT extern const char kEnableInternalMediaSession[];
-#endif  // !defined(OS_ANDROID)
 
 namespace autoplay {
 
@@ -164,10 +157,6 @@ MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 // switches::autoplay namespace.
 MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
     const base::CommandLine& command_line);
-
-// Based on the command line of the current process, determine if
-// audio focus duck flash should be enabled.
-MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled();
 
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 

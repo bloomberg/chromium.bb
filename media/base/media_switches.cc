@@ -81,15 +81,6 @@ const char kUseCras[] = "use-cras";
 const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
     "unsafely-allow-protected-media-identifier-for-domain";
 
-// Enable a internal audio focus management between tabs in such a way that two
-// tabs can't  play on top of each other.
-// The allowed values are: "" (empty) or |kEnableAudioFocusDuckFlash|.
-const char kEnableAudioFocus[] = "enable-audio-focus";
-
-// This value is used as an option for |kEnableAudioFocus|. Flash will
-// be ducked when losing audio focus.
-const char kEnableAudioFocusDuckFlash[] = "duck-flash";
-
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
 // Rather than use the renderer hosted remotely in the media service, fall back
 // to the default renderer within content_renderer. Does not change the behavior
@@ -180,12 +171,6 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 //  --override-hardware-secure-codecs-for-testing
 const char kOverrideHardwareSecureCodecsForTesting[] =
     "override-hardware-secure-codecs-for-testing";
-
-#if !defined(OS_ANDROID)
-// Turns on the internal media session backend. This should be used by embedders
-// that want to control the media playback with the media session interfaces.
-const char kEnableInternalMediaSession[] = "enable-internal-media-session";
-#endif  // !defined(OS_ANDROID)
 
 namespace autoplay {
 
@@ -429,12 +414,6 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 #else
   return switches::autoplay::kNoUserGestureRequiredPolicy;
 #endif
-}
-
-MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             switches::kEnableAudioFocus) ==
-         switches::kEnableAudioFocusDuckFlash;
 }
 
 // Adds icons to the overflow menu on the native media controls.

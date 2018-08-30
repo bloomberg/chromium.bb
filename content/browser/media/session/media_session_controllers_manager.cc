@@ -4,27 +4,10 @@
 
 #include "content/browser/media/session/media_session_controllers_manager.h"
 
-#include "base/command_line.h"
 #include "content/browser/media/session/media_session_controller.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 
 namespace content {
-
-namespace {
-
-bool IsMediaSessionEnabled() {
-// Media session is enabled on Android and Chrome OS to allow control of media
-// players as needed.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  return true;
-#else
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableInternalMediaSession) ||
-         command_line->HasSwitch(switches::kEnableAudioFocus);
-#endif
-}
-
-}  // anonymous namespace
 
 MediaSessionControllersManager::MediaSessionControllersManager(
     MediaWebContentsObserver* media_web_contents_observer)
@@ -34,7 +17,7 @@ MediaSessionControllersManager::~MediaSessionControllersManager() = default;
 
 void MediaSessionControllersManager::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  if (!IsMediaSessionEnabled())
+  if (!media_session::IsMediaSessionEnabled())
     return;
 
   for (auto it = controllers_map_.begin(); it != controllers_map_.end();) {
@@ -50,7 +33,7 @@ bool MediaSessionControllersManager::RequestPlay(
     bool has_audio,
     bool is_remote,
     media::MediaContentType media_content_type) {
-  if (!IsMediaSessionEnabled())
+  if (!media_session::IsMediaSessionEnabled())
     return true;
 
   // Since we don't remove session instances on pause, there may be an existing
@@ -78,7 +61,7 @@ bool MediaSessionControllersManager::RequestPlay(
 }
 
 void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
-  if (!IsMediaSessionEnabled())
+  if (!media_session::IsMediaSessionEnabled())
     return;
 
   auto it = controllers_map_.find(id);
@@ -89,13 +72,13 @@ void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
 }
 
 void MediaSessionControllersManager::OnEnd(const MediaPlayerId& id) {
-  if (!IsMediaSessionEnabled())
+  if (!media_session::IsMediaSessionEnabled())
     return;
   controllers_map_.erase(id);
 }
 
 void MediaSessionControllersManager::WebContentsMutedStateChanged(bool muted) {
-  if (!IsMediaSessionEnabled())
+  if (!media_session::IsMediaSessionEnabled())
     return;
 
   for (auto& entry : controllers_map_)

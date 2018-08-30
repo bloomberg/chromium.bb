@@ -8,14 +8,14 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
-#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/switches.h"
 
 namespace content {
 
 class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableAudioFocus);
+    command_line->AppendSwitch(media_session::switches::kEnableAudioFocus);
   }
 
   void Run(WebContents* start_contents, WebContents* interrupt_contents) {
