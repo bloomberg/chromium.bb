@@ -101,6 +101,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
       should_invert_color_(false),
+      sizes_set_width_(false),
       referrer_policy_(kReferrerPolicyDefault) {
   SetHasCustomStyleCallbacks();
 }
@@ -223,6 +224,7 @@ void HTMLImageElement::ResetFormOwner() {
 
 void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
     const ImageCandidate& candidate) {
+  sizes_set_width_ = false;
   best_fit_image_url_ = candidate.Url();
   float candidate_density = candidate.Density();
   float old_image_device_pixel_ratio = image_device_pixel_ratio_;
@@ -232,6 +234,7 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
   bool intrinsic_sizing_viewport_dependant = false;
   if (candidate.GetResourceWidth() > 0) {
     intrinsic_sizing_viewport_dependant = true;
+    sizes_set_width_ = true;
     UseCounter::Count(GetDocument(), WebFeature::kSrcsetWDescriptor);
   } else if (!candidate.SrcOrigin()) {
     UseCounter::Count(GetDocument(), WebFeature::kSrcsetXDescriptor);
@@ -482,8 +485,9 @@ unsigned HTMLImageElement::height() {
 }
 
 LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
-  if (!overridden_intrinsic_size_.IsEmpty())
-    return LayoutSize(overridden_intrinsic_size_);
+  IntSize overridden_intrinsic_size = GetOverriddenIntrinsicSize();
+  if (!overridden_intrinsic_size.IsEmpty())
+    return LayoutSize(overridden_intrinsic_size);
   ImageResourceContent* image_resource = GetImageLoader().GetContent();
   if (!image_resource || !image_resource->HasImage())
     return LayoutSize();
@@ -568,6 +572,14 @@ void HTMLImageElement::setHeight(unsigned value) {
 }
 
 IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
+  if (sizes_set_width_ && !overridden_intrinsic_size_.IsEmpty()) {
+    float width = GetResourceWidth().width;
+    return IntSize(
+        RoundToInt(LayoutUnit(width)),
+        RoundToInt(LayoutUnit(
+            width * overridden_intrinsic_size_.Height() /
+            static_cast<float>(overridden_intrinsic_size_.Width()))));
+  }
   return overridden_intrinsic_size_;
 }
 
@@ -695,10 +707,10 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
   return FloatSize(size);
 }
 
-static bool SourceSizeValue(Element& element,
+static bool SourceSizeValue(const Element* element,
                             Document& current_document,
                             float& source_size) {
-  String sizes = element.FastGetAttribute(sizesAttr);
+  String sizes = element->FastGetAttribute(sizesAttr);
   bool exists = !sizes.IsNull();
   if (exists)
     UseCounter::Count(current_document, WebFeature::kSizes);
@@ -708,13 +720,11 @@ static bool SourceSizeValue(Element& element,
   return exists;
 }
 
-FetchParameters::ResourceWidth HTMLImageElement::GetResourceWidth() {
+FetchParameters::ResourceWidth HTMLImageElement::GetResourceWidth() const {
   FetchParameters::ResourceWidth resource_width;
   Element* element = source_.Get();
-  if (!element)
-    element = this;
-  resource_width.is_set =
-      SourceSizeValue(*element, GetDocument(), resource_width.width);
+  resource_width.is_set = SourceSizeValue(element ? element : this,
+                                          GetDocument(), resource_width.width);
   return resource_width;
 }
 
@@ -722,7 +732,7 @@ float HTMLImageElement::SourceSize(Element& element) {
   float value;
   // We don't care here if the sizes attribute exists, so we ignore the return
   // value.  If it doesn't exist, we just return the default.
-  SourceSizeValue(element, GetDocument(), value);
+  SourceSizeValue(&element, GetDocument(), value);
   return value;
 }
 
