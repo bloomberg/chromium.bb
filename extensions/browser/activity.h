@@ -53,6 +53,8 @@ struct Activity {
     PROCESS_MANAGER,
   };
 
+  static const char* ToString(Type type);
+
   static const char kCancelSuspend[];
   static const char kCreatePage[];
   static const char kIPC[];

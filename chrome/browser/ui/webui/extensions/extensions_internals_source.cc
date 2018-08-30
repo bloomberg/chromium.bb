@@ -15,6 +15,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/activity.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 
@@ -78,8 +79,22 @@ const char* LocationToString(extensions::Manifest::Location loc) {
 
 base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
                                 const extensions::Extension* extension) {
-  // TODO(dbertoni): Expand this when enhanced keepalive data is implemented.
-  return base::Value(process_manager->GetLazyKeepaliveCount(extension));
+  base::Value keepalive_data(base::Value::Type::DICTIONARY);
+  keepalive_data.SetKey(
+      "count", base::Value(process_manager->GetLazyKeepaliveCount(extension)));
+  const extensions::ProcessManager::ActivitiesMultiset activities =
+      process_manager->GetLazyKeepaliveActivities(extension);
+  base::Value activities_data(base::Value::Type::LIST);
+  activities_data.GetList().reserve(activities.size());
+  for (const auto& activity : activities) {
+    base::Value activities_entry(base::Value::Type::DICTIONARY);
+    activities_entry.SetKey(
+        "type", base::Value(extensions::Activity::ToString(activity.first)));
+    activities_entry.SetKey("extra_data", base::Value(activity.second));
+    activities_data.GetList().push_back(std::move(activities_entry));
+  }
+  keepalive_data.SetKey("activites", std::move(activities_data));
+  return keepalive_data;
 }
 
 }  // namespace
