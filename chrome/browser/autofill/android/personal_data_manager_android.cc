@@ -15,6 +15,7 @@
 #include "base/format_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/preferences/prefs.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -856,19 +857,23 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
                g_browser_process->GetApplicationLocale()));
 }
 
-// Returns whether the Autofill feature is enabled.
-static jboolean JNI_PersonalDataManager_IsAutofillEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return prefs::IsAutofillEnabled(GetPrefs());
-}
-
-// Enables or disables the Autofill feature.
-static void JNI_PersonalDataManager_SetAutofillEnabled(
+// Returns whether the specified feature is enabled.
+static jboolean JNI_PersonalDataManager_GetPref(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
-    jboolean enable) {
-  prefs::SetAutofillEnabled(GetPrefs(), enable);
+    const jint j_pref_index) {
+  return GetPrefs()->GetBoolean(
+      PersonalDataManagerAndroid::GetPrefNameExposedToJava(j_pref_index));
+}
+
+// Enables or disables the specified feature for profiles.
+static void JNI_PersonalDataManager_SetPref(JNIEnv* env,
+                                            const JavaParamRef<jclass>& clazz,
+                                            const jint j_pref_index,
+                                            const jboolean j_enable) {
+  return GetPrefs()->SetBoolean(
+      PersonalDataManagerAndroid::GetPrefNameExposedToJava(j_pref_index),
+      j_enable);
 }
 
 // Returns whether the Autofill feature is managed.
@@ -876,6 +881,20 @@ static jboolean JNI_PersonalDataManager_IsAutofillManaged(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   return prefs::IsAutofillManaged(GetPrefs());
+}
+
+// Returns whether the Autofill feature for profiles is managed.
+static jboolean JNI_PersonalDataManager_IsAutofillProfileManaged(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  return prefs::IsProfileAutofillManaged(GetPrefs());
+}
+
+// Returns whether the Autofill feature for credit cards is managed.
+static jboolean JNI_PersonalDataManager_IsAutofillCreditCardManaged(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  return prefs::IsCreditCardAutofillManaged(GetPrefs());
 }
 
 // Returns whether the Payments integration feature is enabled.
@@ -909,6 +928,13 @@ static jlong JNI_PersonalDataManager_Init(JNIEnv* env,
   PersonalDataManagerAndroid* personal_data_manager_android =
       new PersonalDataManagerAndroid(env, obj);
   return reinterpret_cast<intptr_t>(personal_data_manager_android);
+}
+
+const char* PersonalDataManagerAndroid::GetPrefNameExposedToJava(
+    int pref_index) {
+  DCHECK_GE(pref_index, 0);
+  DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
+  return kPrefsExposedToJava[pref_index];
 }
 
 }  // namespace autofill

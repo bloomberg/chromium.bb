@@ -274,7 +274,8 @@ public class MainPreferences extends PreferenceFragment
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 if (PREF_AUTOFILL_SETTINGS.equals(preference.getKey())) {
-                    return PersonalDataManager.isAutofillManaged();
+                    return PersonalDataManager.isAutofillProfileManaged()
+                            || PersonalDataManager.isAutofillCreditCardManaged();
                 }
                 if (PREF_SAVED_PASSWORDS.equals(preference.getKey())) {
                     return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
@@ -291,8 +292,12 @@ public class MainPreferences extends PreferenceFragment
             @Override
             public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
                 if (PREF_AUTOFILL_SETTINGS.equals(preference.getKey())) {
-                    return PersonalDataManager.isAutofillManaged()
-                            && !PersonalDataManager.isAutofillEnabled();
+                    // The whole "Autofill and payments" page is disabled by policy if profiles and
+                    // credit cards are both disabled by policy.
+                    return PersonalDataManager.isAutofillProfileManaged()
+                            && PersonalDataManager.isAutofillCreditCardManaged()
+                            && !PersonalDataManager.isAutofillProfileEnabled()
+                            && !PersonalDataManager.isAutofillCreditCardEnabled();
                 }
                 if (PREF_SAVED_PASSWORDS.equals(preference.getKey())) {
                     PrefServiceBridge prefs = PrefServiceBridge.getInstance();

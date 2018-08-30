@@ -153,6 +153,14 @@ bool IsAutofillManaged(const PrefService* prefs) {
   return prefs->IsManagedPreference(kAutofillEnabledDeprecated);
 }
 
+bool IsProfileAutofillManaged(const PrefService* prefs) {
+  return prefs->IsManagedPreference(kAutofillProfileEnabled);
+}
+
+bool IsCreditCardAutofillManaged(const PrefService* prefs) {
+  return prefs->IsManagedPreference(kAutofillCreditCardEnabled);
+}
+
 bool IsProfileAutofillEnabled(const PrefService* prefs) {
   return prefs->GetBoolean(kAutofillProfileEnabled);
 }

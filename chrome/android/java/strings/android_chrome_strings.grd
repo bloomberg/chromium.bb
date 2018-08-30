@@ -417,12 +417,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">
         Autofill and payments
       </message>
-      <message name="IDS_AUTOFILL_SWITCH" desc="Title for 'Autofill forms' switch preference, which controls whether personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">
-        Autofill forms
-      </message>
-      <message name="IDS_AUTOFILL_PROFILES_TITLE" desc="Title of the preference to list profiles (which contain the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
-        Addresses
-      </message>
       <message name="IDS_PAYMENT_APPS_TITLE" desc="Title of the preference to list the payment apps on device.">
         Payment apps
       </message>
@@ -431,9 +425,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_PAYMENT_APPS_USAGE_MESSAGE" desc="Message to explain the usage of the listed payment apps.">
         On some websites, you can pay with above supported payment apps on your device.
-      </message>
-      <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Title of the preference to list the user's cards that can be automatically filled into web page forms. These can be either credit, debit, or prepaid cards. [CHAR-LIMIT=32]">
-        Cards
       </message>
       <message name="IDS_AUTOFILL_CREATE_PROFILE" desc="Button that allows the user to create a new profile (which contains the user's name, address, etc) that will be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Add address
