@@ -387,6 +387,12 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 const base::Feature kSecMetadata{"SecMetadata",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables long running message dispatch for service workers.
+// This is a temporary addition only to be used for the Android Messages
+// integration with ChromeOS (http://crbug.com/823256).
+const base::Feature kServiceWorkerLongRunningMessage{
+    "ServiceWorkerLongRunningMessage", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/
 const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",

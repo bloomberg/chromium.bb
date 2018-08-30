@@ -1634,6 +1634,13 @@ const char kServiceWorkerScriptFullCodeCacheName[] =
 const char kServiceWorkerScriptFullCodeCacheDescription[] =
     "Generate V8 full code cache of Service Worker scripts while installing.";
 
+const char kServiceWorkerLongRunningMessageName[] =
+    "Service worker long running message dispatch.";
+const char kServiceWorkerLongRunningMessageDescription[] =
+    "Enables long running message dispatch method for service workers. "
+    "Messages sent with this method do not timeout, allowing the service "
+    "worker to run indefinitely.";
+
 const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";

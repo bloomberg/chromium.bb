@@ -12,6 +12,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context_observer.h"
+#include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -471,6 +473,12 @@ void ServiceWorkerContextWrapper::
         blink::TransferableMessage message,
         ResultCallback result_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!base::FeatureList::IsEnabled(
+          features::kServiceWorkerLongRunningMessage)) {
+    std::move(result_callback).Run(false);
+    return;
+  }
 
   if (!context_core_) {
     std::move(result_callback).Run(false);
