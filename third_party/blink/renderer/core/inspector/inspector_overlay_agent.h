@@ -122,8 +122,10 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool HandleInputEvent(const WebInputEvent&);
   void PageLayoutInvalidated(bool resized);
   String EvaluateInOverlayForTest(const String&);
-  void PaintOverlay();
-  void LayoutOverlay();
+
+  // Update the complete lifecycle (e.g., layout, paint) for the overlay.
+  void UpdateAllOverlayLifecyclePhases();
+
   bool IsInspectorLayer(GraphicsLayer*);
 
  private:
@@ -160,7 +162,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void Invalidate();
   void ScheduleUpdate();
   void ClearInternal();
-  void UpdateAllLifecyclePhases();
 
   bool HandleMouseDown(const WebMouseEvent&);
   bool HandleMouseUp(const WebMouseEvent&);

@@ -1580,9 +1580,6 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   if (requested_update == LifecycleUpdate::kPrePaint)
     return;
 
-  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
-    devtools->PaintOverlay();
-
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
     WebWidgetClient* client =
@@ -3001,8 +2998,6 @@ void WebViewImpl::MainFrameLayoutUpdated() {
   if (!client_)
     return;
 
-  UpdatePageOverlays();
-
   fullscreen_controller_->DidUpdateMainFrameLayout();
   client_->DidUpdateMainFrameLayout();
 }
@@ -3382,11 +3377,6 @@ base::WeakPtr<CompositorMutatorImpl> WebViewImpl::EnsureCompositorMutator(
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
   return mutator_;
-}
-
-void WebViewImpl::UpdatePageOverlays() {
-  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
-    devtools->LayoutOverlay();
 }
 
 float WebViewImpl::DeviceScaleFactor() const {

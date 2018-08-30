@@ -293,13 +293,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   if (!LocalRootImpl())
     return;
 
-  bool should_paint = requested_update != LifecycleUpdate::kLayout &&
-                      requested_update != LifecycleUpdate::kPrePaint;
-
-  WebDevToolsAgentImpl* devtools = LocalRootImpl()->DevToolsAgentImpl();
-  if (devtools && should_paint)
-    devtools->PaintOverlay();
-
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
