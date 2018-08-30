@@ -181,6 +181,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive").EnableDriveFs(),
         TestCase("fileDisplayDriveOffline").Offline().EnableDriveFs(),
+        TestCase("fileDisplayDriveOnline").EnableDriveFs(),
+        TestCase("fileDisplayDriveOnline"),
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
         TestCase("fileSearch"),
