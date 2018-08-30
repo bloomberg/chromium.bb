@@ -240,69 +240,6 @@ fuzzer_test("v8_wasm_async_fuzzer") {
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
-fuzzer_test("v8_wasm_data_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_data_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_function_sigs_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_function_sigs_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_globals_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_globals_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_imports_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_imports_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_memory_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_memory_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_names_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_names_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
-fuzzer_test("v8_wasm_types_section_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_types_section_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
-}
-
 fuzzer_test("convert_woff2ttf_fuzzer") {
   sources = [
     "convert_woff2ttf_fuzzer.cc",
