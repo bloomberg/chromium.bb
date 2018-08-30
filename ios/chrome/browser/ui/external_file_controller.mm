@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/web/public/web_view_creation_util.h"
 
@@ -80,7 +80,7 @@ const CFTimeInterval kSecondsPerDay = 60 * 60 * 24;
 
 + (void)removeFilesExcluding:(NSSet*)filesToKeep
                    olderThan:(NSInteger)ageInDays {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSString* inboxDirectory = [ExternalFileController inboxDirectoryPath];
   NSArray* externalFiles =
