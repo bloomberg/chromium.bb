@@ -15,33 +15,36 @@
 
 namespace gpu {
 
+class Scheduler;
+
 // Default Service class when no service is specified. GpuInProcessThreadService
 // is used by Mus and unit tests.
 class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
-    : public gpu::CommandBufferTaskExecutor {
+    : public CommandBufferTaskExecutor {
  public:
   GpuInProcessThreadService(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      gpu::SyncPointManager* sync_point_manager,
-      gpu::MailboxManager* mailbox_manager,
+      Scheduler* scheduler,
+      SyncPointManager* sync_point_manager,
+      MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLShareGroup> share_group,
       gl::GLSurfaceFormat share_group_surface_format,
       const GpuFeatureInfo& gpu_feature_info,
       const GpuPreferences& gpu_preferences);
 
-  // gpu::CommandBufferTaskExecutor implementation.
-  void ScheduleTask(base::OnceClosure task) override;
-  void ScheduleDelayedWork(base::OnceClosure task) override;
+  // CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() override;
-  gpu::SyncPointManager* sync_point_manager() override;
-  bool BlockThreadOnWaitSyncToken() const override;
+  bool BlockThreadOnWaitSyncToken() override;
+  std::unique_ptr<CommandBufferTaskExecutor::Sequence> CreateSequence()
+      override;
+  void ScheduleOutOfOrderTask(base::OnceClosure task) override;
+  void ScheduleDelayedWork(base::OnceClosure task) override;
 
  private:
   ~GpuInProcessThreadService() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  gpu::SyncPointManager* sync_point_manager_;  // Non-owning.
+  Scheduler* scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuInProcessThreadService);
 };

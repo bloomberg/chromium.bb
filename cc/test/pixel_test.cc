@@ -207,6 +207,8 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
 
   auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
       /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  gpu::ContextResult result = context_provider->BindToCurrentThread();
+  DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
       std::move(context_provider), flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
@@ -218,7 +220,8 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
 
   child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
       /*enable_oop_rasterization=*/false, /*support_locking=*/false);
-  child_context_provider_->BindToCurrentThread();
+  result = child_context_provider_->BindToCurrentThread();
+  DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   child_resource_provider_ =
       std::make_unique<viz::ClientResourceProvider>(true);
 }
@@ -259,8 +262,9 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
-      gpu_thread_->task_runner(), gpu_service_->sync_point_manager(),
-      gpu_service_->mailbox_manager(), gpu_service_->share_group(),
+      gpu_thread_->task_runner(), gpu_service_->scheduler(),
+      gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
+      gpu_service_->share_group(),
       gpu_service_->gpu_channel_manager()
           ->default_offscreen_surface()
           ->GetFormat(),

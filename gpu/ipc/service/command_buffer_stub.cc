@@ -763,6 +763,8 @@ void CommandBufferStub::ScheduleGrContextCleanup() {
   channel_->gpu_channel_manager()->ScheduleGrContextCleanup();
 }
 
+// TODO(sunnyps): Remove the wait command once all sync tokens are passed as
+// task dependencies.
 bool CommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
   DCHECK(!waiting_for_sync_point_);
   DCHECK(command_buffer_->scheduled());

@@ -68,6 +68,8 @@ class OopPixelTest : public testing::Test,
     gles2_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+    gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     const int gles2_max_texture_size =
         raster_context_provider_->ContextCapabilities().max_texture_size;
     gpu_image_cache_.reset(new GpuImageDecodeCache(
@@ -90,6 +92,8 @@ class OopPixelTest : public testing::Test,
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/true, /*support_locking=*/true,
             &gr_shader_cache_, &activity_flags_);
+    gpu::ContextResult result = raster_context_provider_->BindToCurrentThread();
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     const int raster_max_texture_size =
         raster_context_provider_->ContextCapabilities().max_texture_size;
     oop_image_cache_.reset(new GpuImageDecodeCache(

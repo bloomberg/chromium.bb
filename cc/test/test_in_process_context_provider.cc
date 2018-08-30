@@ -68,43 +68,12 @@ TestInProcessContextProvider::TestInProcessContextProvider(
     bool enable_oop_rasterization,
     bool support_locking,
     gpu::raster::GrShaderCache* gr_shader_cache,
-    gpu::GpuProcessActivityFlags* activity_flags) {
+    gpu::GpuProcessActivityFlags* activity_flags)
+    : enable_oop_rasterization_(enable_oop_rasterization),
+      gr_shader_cache_(gr_shader_cache),
+      activity_flags_(activity_flags) {
   if (support_locking)
     context_lock_.emplace();
-
-  if (enable_oop_rasterization) {
-    gpu::ContextCreationAttribs attribs;
-    attribs.bind_generates_resource = false;
-    attribs.enable_oop_rasterization = true;
-    attribs.enable_raster_interface = true;
-    attribs.enable_gles2_interface = false;
-
-    raster_context_.reset(new gpu::RasterInProcessContext);
-    auto result = raster_context_->Initialize(
-        /*service=*/nullptr, attribs, gpu::SharedMemoryLimits(),
-        &gpu_memory_buffer_manager_, &image_factory_,
-        /*gpu_channel_manager_delegate=*/nullptr, gr_shader_cache,
-        activity_flags);
-    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-
-    cache_controller_.reset(
-        new viz::ContextCacheController(raster_context_->GetContextSupport(),
-                                        base::ThreadTaskRunnerHandle::Get()));
-  } else {
-    gles2_context_ = CreateGLInProcessContext(
-        &gpu_memory_buffer_manager_, &image_factory_,
-        base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
-    cache_controller_.reset(
-        new viz::ContextCacheController(gles2_context_->GetImplementation(),
-                                        base::ThreadTaskRunnerHandle::Get()));
-    raster_implementation_gles2_ =
-        std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation(),
-            gles2_context_->GetImplementation()->command_buffer(),
-            gles2_context_->GetCapabilities());
-  }
-
-  cache_controller_->SetLock(GetLock());
 }
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;
@@ -118,6 +87,39 @@ void TestInProcessContextProvider::Release() const {
 }
 
 gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
+  if (enable_oop_rasterization_) {
+    gpu::ContextCreationAttribs attribs;
+    attribs.bind_generates_resource = false;
+    attribs.enable_oop_rasterization = true;
+    attribs.enable_raster_interface = true;
+    attribs.enable_gles2_interface = false;
+
+    raster_context_.reset(new gpu::RasterInProcessContext);
+    auto result = raster_context_->Initialize(
+        /*service=*/nullptr, attribs, gpu::SharedMemoryLimits(),
+        &gpu_memory_buffer_manager_, &image_factory_,
+        /*gpu_channel_manager_delegate=*/nullptr, gr_shader_cache_,
+        activity_flags_);
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+
+    cache_controller_.reset(
+        new viz::ContextCacheController(raster_context_->GetContextSupport(),
+                                        base::ThreadTaskRunnerHandle::Get()));
+  } else {
+    gles2_context_ = CreateGLInProcessContext(
+        &gpu_memory_buffer_manager_, &image_factory_,
+        base::ThreadTaskRunnerHandle::Get(), false /* oop_raster */);
+    cache_controller_.reset(
+        new viz::ContextCacheController(gles2_context_->GetImplementation(),
+                                        base::ThreadTaskRunnerHandle::Get()));
+    raster_implementation_gles2_ =
+        std::make_unique<gpu::raster::RasterImplementationGLES>(
+            gles2_context_->GetImplementation(),
+            gles2_context_->GetImplementation()->command_buffer(),
+            gles2_context_->GetCapabilities());
+  }
+
+  cache_controller_->SetLock(GetLock());
   return gpu::ContextResult::kSuccess;
 }
 
@@ -186,7 +188,7 @@ void TestInProcessContextProvider::ExecuteOnGpuThread(base::OnceClosure task) {
   DCHECK(raster_context_);
   raster_context_->GetCommandBufferForTest()
       ->service_for_testing()
-      ->ScheduleTask(std::move(task));
+      ->ScheduleOutOfOrderTask(std::move(task));
 }
 
 }  // namespace cc

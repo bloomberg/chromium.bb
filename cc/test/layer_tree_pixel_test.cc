@@ -49,6 +49,11 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
         /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     worker_context_provider = new TestInProcessContextProvider(
         /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+    // Bind worker context to main thread like it is in production. This is
+    // needed to fully initialize the context. Compositor context is bound to
+    // the impl thread in LayerTreeFrameSink::BindToCurrentThread().
+    gpu::ContextResult result = worker_context_provider->BindToCurrentThread();
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   }
   static constexpr bool disable_display_vsync = false;
   bool synchronous_composite =
@@ -79,7 +84,8 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     auto display_context_provider =
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
-    display_context_provider->BindToCurrentThread();
+    gpu::ContextResult result = display_context_provider->BindToCurrentThread();
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
     bool flipped_output_surface = false;
     display_output_surface = std::make_unique<PixelTestOutputSurface>(

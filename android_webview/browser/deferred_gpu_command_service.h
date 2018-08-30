@@ -40,46 +40,60 @@ class ScopedAllowGL {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
 
+class TaskForwardingSequence;
+
 class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
  public:
   static DeferredGpuCommandService* GetInstance();
 
-  void ScheduleTask(base::OnceClosure task) override;
-  void ScheduleDelayedWork(base::OnceClosure task) override;
+  // gpu::CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() override;
-  gpu::SyncPointManager* sync_point_manager() override;
-
-  void RunTasks();
-  // If |is_idle| is false, this will only run older idle tasks.
-  void PerformIdleWork(bool is_idle);
-  // Flush the idle queue until it is empty. This is different from
-  // PerformIdleWork(is_idle = true), which does not run any newly scheduled
-  // idle tasks during the idle run.
-  void PerformAllIdleWork();
-
-  bool BlockThreadOnWaitSyncToken() const override;
+  bool BlockThreadOnWaitSyncToken() override;
+  std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence> CreateSequence()
+      override;
+  void ScheduleOutOfOrderTask(base::OnceClosure task) override;
+  void ScheduleDelayedWork(base::OnceClosure task) override;
 
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   bool CanSupportThreadedTextureMailbox() const;
+
+  // If |is_idle| is false, this will only run older idle tasks.
+  void PerformIdleWork(bool is_idle);
+
+  // Flush the idle queue until it is empty. This is different from
+  // PerformIdleWork(is_idle = true), which does not run any newly scheduled
+  // idle tasks during the idle run.
+  void PerformAllIdleWork();
 
  protected:
   ~DeferredGpuCommandService() override;
 
  private:
   friend class ScopedAllowGL;
+  friend class TaskForwardingSequence;
+
   static void RequestProcessGL(bool for_idle);
 
-  DeferredGpuCommandService(const gpu::GpuPreferences& gpu_preferences,
-                            const gpu::GPUInfo& gpu_info,
-                            const gpu::GpuFeatureInfo& gpu_feature_info);
+  DeferredGpuCommandService(
+      std::unique_ptr<gpu::SyncPointManager> sync_point_manager,
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GPUInfo& gpu_info,
+      const gpu::GpuFeatureInfo& gpu_feature_info);
 
   static DeferredGpuCommandService* CreateDeferredGpuCommandService();
 
   size_t IdleQueueSize();
 
+  // Called by ScopedAllowGL and ScheduleTask().
+  void RunTasks();
+
+  // Called by TaskForwardingSequence. |out_of_order| indicates if task should
+  // be run ahead of already enqueued tasks.
+  void ScheduleTask(base::OnceClosure task, bool out_of_order);
+
   base::Lock tasks_lock_;
-  base::queue<base::OnceClosure> tasks_;
+  base::circular_deque<base::OnceClosure> tasks_;
   base::queue<std::pair<base::Time, base::OnceClosure>> idle_tasks_;
 
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;

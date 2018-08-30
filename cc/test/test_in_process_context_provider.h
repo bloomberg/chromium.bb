@@ -70,6 +70,10 @@ class TestInProcessContextProvider
   ~TestInProcessContextProvider() override;
 
  private:
+  bool enable_oop_rasterization_ = false;
+  gpu::raster::GrShaderCache* gr_shader_cache_ = nullptr;
+  gpu::GpuProcessActivityFlags* activity_flags_ = nullptr;
+
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
 

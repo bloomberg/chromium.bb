@@ -158,7 +158,8 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scoped_refptr<TestInProcessContextProvider> context(
       new TestInProcessContextProvider(/*enable_oop_rasterization=*/false,
                                        /*support_locking=*/false));
-  context->BindToCurrentThread();
+  gpu::ContextResult result = context->BindToCurrentThread();
+  DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   int max_texture_size = 0;
   context->ContextGL()->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
