@@ -702,7 +702,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             recordBottomToolbarUseForIPH();
             openHomepage();
         };
-        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.btn_toolbar_home);
+        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.ic_home);
         final CharSequence accessibilityString =
                 mActivity.getString(R.string.accessibility_toolbar_btn_home);
         return new ToolbarButtonData(
