@@ -34,7 +34,7 @@ def _GetAvailableTcpPort():
 
 
 class QemuTarget(target.Target):
-  def __init__(self, output_dir, target_cpu, system_log_file,
+  def __init__(self, output_dir, target_cpu, cpu_cores, system_log_file,
                ram_size_mb=2048):
     """output_dir: The directory which will contain the files that are
                    generated to support the QEMU deployment.
@@ -44,6 +44,7 @@ class QemuTarget(target.Target):
     self._qemu_process = None
     self._ram_size_mb = ram_size_mb
     self._system_log_file = system_log_file
+    self._cpu_cores = cpu_cores
 
   def __enter__(self):
     return self
@@ -75,7 +76,7 @@ class QemuTarget(target.Target):
         '-initrd', EnsurePathExists(
             boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                     'bootdata-blob.bin')),
-        '-smp', '4',
+        '-smp', str(self._cpu_cores),
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard
         # any changes.

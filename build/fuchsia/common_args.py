@@ -54,7 +54,9 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
                            help='Enable debug-level logging.')
-
+  common_args.add_argument('--qemu-cpu-cores', type=int, default=4,
+                           help='Sets the number of CPU cores to provide if '
+                           'launching in a VM with QEMU.'),
 
 def ConfigureLogging(args):
   """Configures the logging level based on command line |args|."""
@@ -86,7 +88,7 @@ def GetDeploymentTargetForArgs(args):
 
   if not args.device:
     return QemuTarget(args.output_directory, args.target_cpu,
-                      system_log_file)
+                      args.qemu_cpu_cores, system_log_file)
   else:
     return DeviceTarget(args.output_directory, args.target_cpu, args.host,
                         args.port, args.ssh_config, system_log_file)
