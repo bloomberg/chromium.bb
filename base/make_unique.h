@@ -16,4 +16,4 @@ std::unique_ptr<T> MakeUnique(Args&&... args) {
 
 }  // namespace openscreen
 
-#endif
+#endif  // BASE_MAKE_UNIQUE_H_

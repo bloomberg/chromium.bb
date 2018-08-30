@@ -106,4 +106,4 @@ struct IPv6Endpoint {
 
 }  // namespace openscreen
 
-#endif
+#endif  // BASE_IP_ADDRESS_H_

@@ -61,4 +61,4 @@ ReceivedData OnePlatformLoopIteration(EventWaiterPtr waiter);
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_BASE_EVENT_LOOP_H_

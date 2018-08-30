@@ -179,7 +179,8 @@ bool IPv6Address::operator!=(const IPv6Address& o) const {
 
 IPv6Address::operator bool() const {
   for (const auto& byte : bytes)
-    if (byte) return true;
+    if (byte)
+      return true;
 
   return false;
 }

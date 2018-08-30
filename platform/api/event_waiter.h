@@ -94,4 +94,4 @@ int WaitForEvents(EventWaiterPtr waiter, Events* events);
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_API_EVENT_WAITER_H_

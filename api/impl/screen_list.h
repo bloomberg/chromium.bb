@@ -39,4 +39,4 @@ class ScreenList {
 
 }  // namespace openscreen
 
-#endif
+#endif  // API_IMPL_SCREEN_LIST_H_

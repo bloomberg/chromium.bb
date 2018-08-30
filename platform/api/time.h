@@ -57,4 +57,4 @@ TimeDelta GetUTCNow();
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_API_TIME_H_

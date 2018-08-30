@@ -132,4 +132,4 @@ class Voidify {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_API_LOGGING_H_

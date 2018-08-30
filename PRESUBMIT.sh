@@ -20,9 +20,9 @@ for f in $(git diff --name-only @{u}); do
   if echo $f | sed -n '/\.h$/q0;q1'; then
     guard_name=$(echo $f | sed ':a;s/\//_/;ta;s/\.h$/_h_/')
     guard_name=${guard_name^^}
-    ifndef_count=$(grep -q -E "^#ifndef $guard_name\$" $f | wc -l)
-    define_count=$(grep -q -E "^#define $guard_name\$" $f | wc -l)
-    endif_count=$(grep -q -E "^#endif  // $guard_name\$" $f | wc -l)
+    ifndef_count=$(grep -E "^#ifndef $guard_name\$" $f | wc -l)
+    define_count=$(grep -E "^#define $guard_name\$" $f | wc -l)
+    endif_count=$(grep -E "^#endif  // $guard_name\$" $f | wc -l)
     if [ $ifndef_count -ne 1 -o $define_count -ne 1 -o \
          $endif_count -ne 1 ]; then
       echo "Include guard missing/incorrect: $f"

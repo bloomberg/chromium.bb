@@ -58,4 +58,4 @@ int64_t SendUdpIPv6(UdpSocketIPv6Ptr socket,
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_API_SOCKET_H_

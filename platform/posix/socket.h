@@ -19,4 +19,4 @@ struct UdpSocketIPv6Private {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_POSIX_SOCKET_H_

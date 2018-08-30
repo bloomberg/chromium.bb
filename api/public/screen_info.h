@@ -32,4 +32,4 @@ struct ScreenInfo {
 
 }  // namespace openscreen
 
-#endif
+#endif  // API_PUBLIC_SCREEN_INFO_H_

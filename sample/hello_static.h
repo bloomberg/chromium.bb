@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HELLO_STATIC_H_
-#define HELLO_STATIC_H_
+#ifndef SAMPLE_HELLO_STATIC_H_
+#define SAMPLE_HELLO_STATIC_H_
 
 const char* GetStaticText();
 
-#endif  // HELLO_STATIC_H_
+#endif  // SAMPLE_HELLO_STATIC_H_

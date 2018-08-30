@@ -76,4 +76,4 @@ class ScreenListenerImpl final : public ScreenListener {
 
 }  // namespace openscreen
 
-#endif
+#endif  // API_IMPL_SCREEN_LISTENER_IMPL_H_

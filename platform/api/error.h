@@ -16,4 +16,4 @@ std::string GetLastErrorString();
 }  // namespace platform
 }  // namespace openscreen
 
-#endif
+#endif  // PLATFORM_API_ERROR_H_

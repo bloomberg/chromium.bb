@@ -8,7 +8,7 @@
 namespace {
 
 class MockWidget {
-public:
+ public:
   MockWidget() = default;
   ~MockWidget() = default;
   MockWidget(const MockWidget&) = delete;
