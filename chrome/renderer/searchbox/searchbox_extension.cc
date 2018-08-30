@@ -169,8 +169,6 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
       .Set("thumbnailUrl", thumbnail_url)
       .Set("tileTitleSource", static_cast<int>(mv_item.title_source))
       .Set("tileSource", static_cast<int>(mv_item.source))
-      .Set("isCustomLink",
-           mv_item.source == ntp_tiles::TileSource::CUSTOM_LINKS)
       .Set("title", title)
       .Set("domain", mv_item.url.host())
       .Set("direction", base::StringPiece(direction))
@@ -605,6 +603,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
   static bool GetMostVisitedAvailable(v8::Isolate* isolate);
   static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
+  static bool GetIsCustomLinks();
 
   // Handlers for JS functions visible to all NTPs.
   static void CheckIsUserSignedInToChromeAs(const std::string& identity);
@@ -664,6 +663,7 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                    &NewTabPageBindings::GetMostVisitedAvailable)
       .SetProperty("themeBackgroundInfo",
                    &NewTabPageBindings::GetThemeBackgroundInfo)
+      .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
       .SetMethod("checkIsUserSignedIntoChromeAs",
                  &NewTabPageBindings::CheckIsUserSignedInToChromeAs)
       .SetMethod("checkIsUserSyncingHistory",
@@ -757,6 +757,15 @@ v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
     return v8::Null(isolate);
   const ThemeBackgroundInfo& theme_info = search_box->GetThemeBackgroundInfo();
   return GenerateThemeBackgroundInfo(isolate, theme_info);
+}
+
+// static
+bool NewTabPageBindings::GetIsCustomLinks() {
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return false;
+
+  return search_box->IsCustomLinks();
 }
 
 // static
