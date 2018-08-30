@@ -1411,13 +1411,15 @@ simple_heads_changed(struct wl_listener *listener, void *arg)
 	bool connected;
 	bool enabled;
 	bool changed;
+	bool non_desktop;
 
 	while ((head = weston_compositor_iterate_heads(wet->compositor, head))) {
 		connected = weston_head_is_connected(head);
 		enabled = weston_head_is_enabled(head);
 		changed = weston_head_is_device_changed(head);
+		non_desktop = weston_head_is_non_desktop(head);
 
-		if (connected && !enabled) {
+		if (connected && !enabled && !non_desktop) {
 			simple_head_enable(wet, head);
 		} else if (!connected && enabled) {
 			simple_head_disable(head);
@@ -1715,14 +1717,16 @@ drm_head_prepare_enable(struct wet_compositor *wet,
 
 	section = drm_config_find_controlling_output_section(wet->config, name);
 	if (section) {
-		/* skip outputs that are explicitly off, the backend turns
-		 * them off automatically.
+		/* skip outputs that are explicitly off, or non-desktop and not
+		 * explicitly enabled. The backend turns them off automatically.
 		 */
 		weston_config_section_get_string(section, "mode", &mode, NULL);
 		if (mode && strcmp(mode, "off") == 0) {
 			free(mode);
 			return;
 		}
+		if (!mode && weston_head_is_non_desktop(head))
+			return;
 		free(mode);
 
 		weston_config_section_get_string(section, "name",
