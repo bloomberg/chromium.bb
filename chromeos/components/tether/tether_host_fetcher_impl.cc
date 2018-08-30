@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_provider.h"
 
@@ -57,19 +56,23 @@ TetherHostFetcherImpl::TetherHostFetcherImpl(
       device_sync_client_(device_sync_client),
       multidevice_setup_client_(multidevice_setup_client),
       weak_ptr_factory_(this) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     device_sync_client_->AddObserver(this);
-  else
+    multidevice_setup_client_->AddObserver(this);
+  } else {
     remote_device_provider_->AddObserver(this);
+  }
 
   CacheCurrentTetherHosts();
 }
 
 TetherHostFetcherImpl::~TetherHostFetcherImpl() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     device_sync_client_->RemoveObserver(this);
-  else
+    multidevice_setup_client_->RemoveObserver(this);
+  } else {
     remote_device_provider_->RemoveObserver(this);
+  }
 }
 
 bool TetherHostFetcherImpl::HasSyncedTetherHosts() {
@@ -96,13 +99,36 @@ void TetherHostFetcherImpl::OnNewDevicesSynced() {
   CacheCurrentTetherHosts();
 }
 
+void TetherHostFetcherImpl::OnHostStatusChanged(
+    const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
+        host_status_with_device) {
+  CacheCurrentTetherHosts();
+}
+
+void TetherHostFetcherImpl::OnFeatureStatesChanged(
+    const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map) {
+  CacheCurrentTetherHosts();
+}
+
 void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
   cryptauth::RemoteDeviceRefList updated_list;
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    multidevice_setup_client_->GetHostStatus(
-        base::BindOnce(&TetherHostFetcherImpl::OnHostStatusFetched,
-                       weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+    multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
+        host_status_with_device = multidevice_setup_client_->GetHostStatus();
+    if (host_status_with_device.first ==
+        chromeos::multidevice_setup::mojom::HostStatus::kHostVerified) {
+      updated_list.push_back(*host_status_with_device.second);
+    }
+
+    if (updated_list == current_remote_device_list_)
+      return;
+
+    current_remote_device_list_.swap(updated_list);
+    NotifyTetherHostsUpdated();
     return;
   }
 
@@ -119,24 +145,6 @@ void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
       updated_list.push_back(cryptauth::RemoteDeviceRef(
           std::make_shared<cryptauth::RemoteDevice>(remote_device)));
     }
-  }
-
-  if (updated_list == current_remote_device_list_)
-    return;
-
-  current_remote_device_list_.swap(updated_list);
-  NotifyTetherHostsUpdated();
-}
-
-void TetherHostFetcherImpl::OnHostStatusFetched(
-    chromeos::multidevice_setup::mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  cryptauth::RemoteDeviceRefList updated_list;
-
-  if (host_status ==
-      chromeos::multidevice_setup::mojom::HostStatus::kHostVerified) {
-    updated_list.push_back(*host_device);
   }
 
   if (updated_list == current_remote_device_list_)

@@ -125,8 +125,8 @@ class TetherService
 
   // chromeos::multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnHostStatusChanged(
-      chromeos::multidevice_setup::mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+      const chromeos::multidevice_setup::MultiDeviceSetupClient::
+          HostStatusWithDevice& host_status_with_device) override;
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
@@ -270,6 +270,8 @@ class TetherService
   // Whether the device and service have been suspended (e.g. the laptop lid
   // was closed).
   bool suspended_ = false;
+
+  bool is_adapter_being_fetched_ = false;
 
   chromeos::multidevice_setup::mojom::HostStatus host_status_ =
       chromeos::multidevice_setup::mojom::HostStatus::kNoEligibleHosts;

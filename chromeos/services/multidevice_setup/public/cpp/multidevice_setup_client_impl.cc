@@ -50,12 +50,20 @@ MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     : host_status_observer_binding_(this),
       feature_state_observer_binding_(this),
       remote_device_cache_(
-          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()) {
+          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()),
+      host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
+      feature_states_map_(GenerateDefaultFeatureStatesMap()) {
   connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
   multidevice_setup_ptr_->AddHostStatusObserver(
       GenerateHostStatusObserverInterfacePtr());
   multidevice_setup_ptr_->AddFeatureStateObserver(
       GenerateFeatureStatesObserverInterfacePtr());
+  multidevice_setup_ptr_->GetHostStatus(
+      base::BindOnce(&MultiDeviceSetupClientImpl::OnHostStatusChanged,
+                     base::Unretained(this)));
+  multidevice_setup_ptr_->GetFeatureStates(
+      base::BindOnce(&MultiDeviceSetupClientImpl::OnFeatureStatesChanged,
+                     base::Unretained(this)));
 }
 
 MultiDeviceSetupClientImpl::~MultiDeviceSetupClientImpl() = default;
@@ -79,10 +87,9 @@ void MultiDeviceSetupClientImpl::RemoveHostDevice() {
   multidevice_setup_ptr_->RemoveHostDevice();
 }
 
-void MultiDeviceSetupClientImpl::GetHostStatus(GetHostStatusCallback callback) {
-  multidevice_setup_ptr_->GetHostStatus(
-      base::BindOnce(&MultiDeviceSetupClientImpl::OnGetHostStatusCompleted,
-                     base::Unretained(this), std::move(callback)));
+const MultiDeviceSetupClient::HostStatusWithDevice&
+MultiDeviceSetupClientImpl::GetHostStatus() const {
+  return host_status_with_device_;
 }
 
 void MultiDeviceSetupClientImpl::SetFeatureEnabledState(
@@ -94,9 +101,9 @@ void MultiDeviceSetupClientImpl::SetFeatureEnabledState(
                                                  std::move(callback));
 }
 
-void MultiDeviceSetupClientImpl::GetFeatureStates(
-    mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) {
-  multidevice_setup_ptr_->GetFeatureStates(std::move(callback));
+const MultiDeviceSetupClient::FeatureStatesMap&
+MultiDeviceSetupClientImpl::GetFeatureStates() const {
+  return feature_states_map_;
 }
 
 void MultiDeviceSetupClientImpl::RetrySetHostNow(
@@ -115,16 +122,21 @@ void MultiDeviceSetupClientImpl::OnHostStatusChanged(
     const base::Optional<cryptauth::RemoteDevice>& host_device) {
   if (host_device) {
     remote_device_cache_->SetRemoteDevices({*host_device});
-    NotifyHostStatusChanged(host_status, remote_device_cache_->GetRemoteDevice(
-                                             host_device->GetDeviceId()));
+    host_status_with_device_ = std::make_pair(
+        host_status,
+        remote_device_cache_->GetRemoteDevice(host_device->GetDeviceId()));
   } else {
-    NotifyHostStatusChanged(host_status, base::nullopt);
+    host_status_with_device_ =
+        std::make_pair(host_status, base::nullopt /* host_device */);
   }
+
+  NotifyHostStatusChanged(host_status_with_device_);
 }
 
 void MultiDeviceSetupClientImpl::OnFeatureStatesChanged(
     const FeatureStatesMap& feature_states_map) {
-  NotifyFeatureStateChanged(feature_states_map);
+  feature_states_map_ = feature_states_map;
+  NotifyFeatureStateChanged(feature_states_map_);
 }
 
 void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
@@ -141,19 +153,6 @@ void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
       });
 
   std::move(callback).Run(eligible_host_device_refs);
-}
-
-void MultiDeviceSetupClientImpl::OnGetHostStatusCompleted(
-    GetHostStatusCallback callback,
-    mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDevice>& host_device) {
-  if (host_device) {
-    remote_device_cache_->SetRemoteDevices({*host_device});
-    std::move(callback).Run(host_status, *remote_device_cache_->GetRemoteDevice(
-                                             host_device->GetDeviceId()));
-  } else {
-    std::move(callback).Run(host_status, base::nullopt);
-  }
 }
 
 mojom::HostStatusObserverPtr

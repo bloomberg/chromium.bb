@@ -37,19 +37,15 @@ class MultideviceHandler
 
   // multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnHostStatusChanged(
-      multidevice_setup::mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+      const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
+          host_status_with_device) override;
   void OnFeatureStatesChanged(
       const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
           feature_states_map) override;
 
-  // Attempts to send the most recent PageContentData dictionary to the WebUI
-  // page as a response to a getPageContent() request.
-  void AttemptGetPageContentResponse(const std::string& js_callback_id);
-
-  // Attempts to send the most recent PageContentData dictionary to the WebUI
-  // page as an update (e.g., not due to a getPageCOntent() request.
-  void AttemptUpdatePageContent();
+  // Sends the most recent PageContentData dictionary to the WebUI page as an
+  // update (e.g., not due to a getPageContent() request).
+  void UpdatePageContent();
 
   void HandleShowMultiDeviceSetupDialog(const base::ListValue* args);
   void HandleGetPageContent(const base::ListValue* args);
@@ -57,14 +53,6 @@ class MultideviceHandler
   void HandleRemoveHostDevice(const base::ListValue* args);
   void HandleRetryPendingHostSetup(const base::ListValue* args);
 
-  void OnHostStatusFetched(
-      const std::string& js_callback_id,
-      multidevice_setup::mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
-  void OnFeatureStatesFetched(
-      const std::string& js_callback_id,
-      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
-          feature_states_map);
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
 
@@ -78,12 +66,6 @@ class MultideviceHandler
   ScopedObserver<multidevice_setup::MultiDeviceSetupClient,
                  multidevice_setup::MultiDeviceSetupClient::Observer>
       multidevice_setup_observer_;
-
-  base::Optional<std::pair<multidevice_setup::mojom::HostStatus,
-                           base::Optional<cryptauth::RemoteDeviceRef>>>
-      last_host_status_update_;
-  base::Optional<multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap>
-      last_feature_states_update_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_;

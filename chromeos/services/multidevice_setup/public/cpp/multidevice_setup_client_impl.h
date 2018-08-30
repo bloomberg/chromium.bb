@@ -52,15 +52,14 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
       const std::string& auth_token,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
-  void GetHostStatus(GetHostStatusCallback callback) override;
+  const HostStatusWithDevice& GetHostStatus() const override;
   void SetFeatureEnabledState(
       mojom::Feature feature,
       bool enabled,
       const base::Optional<std::string>& auth_token,
       mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback)
       override;
-  void GetFeatureStates(
-      mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) override;
+  const FeatureStatesMap& GetFeatureStates() const override;
   void RetrySetHostNow(
       mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
@@ -85,10 +84,6 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   void OnGetEligibleHostDevicesCompleted(
       GetEligibleHostDevicesCallback callback,
       const cryptauth::RemoteDeviceList& eligible_host_devices);
-  void OnGetHostStatusCompleted(
-      GetHostStatusCallback callback,
-      mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDevice>& host_device);
 
   mojom::HostStatusObserverPtr GenerateHostStatusObserverInterfacePtr();
   mojom::FeatureStateObserverPtr GenerateFeatureStatesObserverInterfacePtr();
@@ -99,6 +94,9 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   mojo::Binding<mojom::HostStatusObserver> host_status_observer_binding_;
   mojo::Binding<mojom::FeatureStateObserver> feature_state_observer_binding_;
   std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+
+  HostStatusWithDevice host_status_with_device_;
+  FeatureStatesMap feature_states_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupClientImpl);
 };

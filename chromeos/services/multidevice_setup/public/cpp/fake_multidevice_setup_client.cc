@@ -8,16 +8,44 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-FakeMultiDeviceSetupClient::FakeMultiDeviceSetupClient() = default;
+FakeMultiDeviceSetupClient::FakeMultiDeviceSetupClient()
+    : host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
+      feature_states_map_(GenerateDefaultFeatureStatesMap()) {}
 
 FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() {
   DCHECK(get_eligible_host_devices_callback_queue_.empty());
   DCHECK(set_host_args_queue_.empty());
-  DCHECK(get_host_status_callback_queue_.empty());
   DCHECK(set_feature_enabled_state_args_queue_.empty());
-  DCHECK(get_feature_states_args_queue_.empty());
   DCHECK(retry_set_host_now_callback_queue_.empty());
   DCHECK(trigger_event_for_debugging_type_and_callback_queue_.empty());
+}
+
+void FakeMultiDeviceSetupClient::SetHostStatusWithDevice(
+    const HostStatusWithDevice& host_status_with_device) {
+  if (host_status_with_device == host_status_with_device_)
+    return;
+
+  host_status_with_device_ = host_status_with_device;
+  MultiDeviceSetupClient::NotifyHostStatusChanged(host_status_with_device_);
+}
+
+void FakeMultiDeviceSetupClient::SetFeatureStates(
+    const FeatureStatesMap& feature_states_map) {
+  if (feature_states_map == feature_states_map_)
+    return;
+
+  feature_states_map_ = feature_states_map;
+  MultiDeviceSetupClient::NotifyFeatureStateChanged(feature_states_map_);
+}
+
+void FakeMultiDeviceSetupClient::SetFeatureState(
+    mojom::Feature feature,
+    mojom::FeatureState feature_state) {
+  if (feature_states_map_[feature] == feature_state)
+    return;
+
+  feature_states_map_[feature] = feature_state;
+  MultiDeviceSetupClient::NotifyFeatureStateChanged(feature_states_map_);
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
@@ -37,14 +65,6 @@ void FakeMultiDeviceSetupClient::InvokePendingSetHostDeviceCallback(
   set_host_args_queue_.pop();
 }
 
-void FakeMultiDeviceSetupClient::InvokePendingGetHostStatusCallback(
-    mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  std::move(get_host_status_callback_queue_.front())
-      .Run(host_status, host_device);
-  get_host_status_callback_queue_.pop();
-}
-
 void FakeMultiDeviceSetupClient::InvokePendingSetFeatureEnabledStateCallback(
     mojom::Feature expected_feature,
     bool expected_enabled,
@@ -56,12 +76,6 @@ void FakeMultiDeviceSetupClient::InvokePendingSetFeatureEnabledStateCallback(
   DCHECK(expected_auth_token == std::get<2>(tuple));
   std::move(std::get<3>(tuple)).Run(success);
   set_feature_enabled_state_args_queue_.pop();
-}
-
-void FakeMultiDeviceSetupClient::InvokePendingGetFeatureStatesCallback(
-    const FeatureStatesMap& feature_states_map) {
-  std::move(get_feature_states_args_queue_.front()).Run(feature_states_map);
-  get_feature_states_args_queue_.pop();
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingRetrySetHostNowCallback(
@@ -96,8 +110,9 @@ void FakeMultiDeviceSetupClient::RemoveHostDevice() {
   num_remove_host_device_called_++;
 }
 
-void FakeMultiDeviceSetupClient::GetHostStatus(GetHostStatusCallback callback) {
-  get_host_status_callback_queue_.push(std::move(callback));
+const MultiDeviceSetupClient::HostStatusWithDevice&
+FakeMultiDeviceSetupClient::GetHostStatus() const {
+  return host_status_with_device_;
 }
 
 void FakeMultiDeviceSetupClient::SetFeatureEnabledState(
@@ -109,9 +124,9 @@ void FakeMultiDeviceSetupClient::SetFeatureEnabledState(
                                                 std::move(callback));
 }
 
-void FakeMultiDeviceSetupClient::GetFeatureStates(
-    mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) {
-  get_feature_states_args_queue_.emplace(std::move(callback));
+const MultiDeviceSetupClient::FeatureStatesMap&
+FakeMultiDeviceSetupClient::GetFeatureStates() const {
+  return feature_states_map_;
 }
 
 void FakeMultiDeviceSetupClient::RetrySetHostNow(

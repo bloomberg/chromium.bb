@@ -453,6 +453,9 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   }
 
   void CreateTetherService() {
+    fake_multidevice_setup_client_->SetHostStatusWithDevice(
+        std::make_pair(initial_host_status_, initial_host_device_));
+
     tether_service_ = base::WrapUnique(new TestTetherService(
         profile_.get(), fake_power_manager_client_.get(),
         fake_cryptauth_service_.get(), fake_device_sync_client_.get(),
@@ -476,15 +479,9 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
             chromeos::NetworkTypePattern::Tether()));
     VerifyTetherActiveStatus(false /* expected_active */);
 
-    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-      if (!fake_device_sync_client_->is_ready())
-        return;
-
-      if (base::FeatureList::IsEnabled(
-              chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-        fake_multidevice_setup_client_->InvokePendingGetHostStatusCallback(
-            initial_host_status_, initial_host_device_);
-      }
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+        !fake_device_sync_client_->is_ready()) {
+      return;
     }
 
     // Allow the posted task to fetch the BluetoothAdapter to finish.
@@ -738,9 +735,9 @@ TEST_F(TetherServiceTest,
           chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(false /* expected_active */);
 
-  fake_multidevice_setup_client_->NotifyHostStatusChanged(
+  fake_multidevice_setup_client_->SetHostStatusWithDevice(std::make_pair(
       chromeos::multidevice_setup::mojom::HostStatus::kHostVerified,
-      test_devices_[0]);
+      test_devices_[0]));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
@@ -768,9 +765,9 @@ TEST_F(TetherServiceTest, TestMultiDeviceSetupClientLosesVerifiedHost) {
                 chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(true /* expected_active */);
 
-  fake_multidevice_setup_client_->NotifyHostStatusChanged(
+  fake_multidevice_setup_client_->SetHostStatusWithDevice(std::make_pair(
       chromeos::multidevice_setup::mojom::HostStatus::kNoEligibleHosts,
-      base::nullopt);
+      base::nullopt));
 
   EXPECT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
@@ -963,9 +960,9 @@ TEST_F(
   ASSERT_TRUE(tether_service);
 
   fake_multidevice_setup_client_impl_factory_->fake_multidevice_setup_client()
-      ->InvokePendingGetHostStatusCallback(
+      ->SetHostStatusWithDevice(std::make_pair(
           chromeos::multidevice_setup::mojom::HostStatus::kHostVerified,
-          test_devices_[0]);
+          test_devices_[0]));
 
   base::RunLoop().RunUntilIdle();
   tether_service->Shutdown();

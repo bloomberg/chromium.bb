@@ -62,6 +62,37 @@ void FakeMultiDeviceSetup::BindHandle(mojo::ScopedMessagePipeHandle handle) {
       std::move(handle)));
 }
 
+void FakeMultiDeviceSetup::FlushForTesting() {
+  host_status_observers_.FlushForTesting();
+  feature_state_observers_.FlushForTesting();
+}
+
+bool FakeMultiDeviceSetup::HasAtLeastOneHostStatusObserver() {
+  return !host_status_observers_.empty();
+}
+
+bool FakeMultiDeviceSetup::HasAtLeastOneFeatureStateObserver() {
+  return !feature_state_observers_.empty();
+}
+
+void FakeMultiDeviceSetup::NotifyHostStatusChanged(
+    mojom::HostStatus host_status,
+    const base::Optional<cryptauth::RemoteDevice>& host_device) {
+  host_status_observers_.ForAllPtrs(
+      [&host_status, &host_device](mojom::HostStatusObserver* observer) {
+        observer->OnHostStatusChanged(host_status, host_device);
+      });
+}
+
+void FakeMultiDeviceSetup::NotifyFeatureStateChanged(
+    const base::flat_map<mojom::Feature, mojom::FeatureState>&
+        feature_states_map) {
+  feature_state_observers_.ForAllPtrs(
+      [&feature_states_map](mojom::FeatureStateObserver* observer) {
+        observer->OnFeatureStatesChanged(feature_states_map);
+      });
+}
+
 void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
     mojom::AccountStatusChangeDelegatePtr delegate) {
   delegate_ = std::move(delegate);
@@ -69,12 +100,12 @@ void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
 
 void FakeMultiDeviceSetup::AddHostStatusObserver(
     mojom::HostStatusObserverPtr observer) {
-  host_status_observers_.push_back(std::move(observer));
+  host_status_observers_.AddPtr(std::move(observer));
 }
 
 void FakeMultiDeviceSetup::AddFeatureStateObserver(
     mojom::FeatureStateObserverPtr observer) {
-  feature_state_observers_.push_back(std::move(observer));
+  feature_state_observers_.AddPtr(std::move(observer));
 }
 
 void FakeMultiDeviceSetup::GetEligibleHostDevices(
