@@ -46,6 +46,7 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(
     cookie_value->GetBoolean("isHttpOnly", &is_http_only);
     cookie_value->GetString("priority", &priority);
     cookie_value->GetDouble("maxAge", &expiration_delta);
+
     base::TimeDelta before_expiration =
         base::TimeDelta::FromSecondsD(expiration_delta);
     if (domain.empty() && !host.empty() && host[0] != '.') {
