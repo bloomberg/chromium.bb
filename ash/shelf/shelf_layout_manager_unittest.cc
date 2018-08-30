@@ -902,7 +902,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
             display::Screen::GetScreen()->GetCursorScreenPoint().x());
 
   // Moving the mouse off the light bar should hide the shelf.
-  generator->MoveMouseTo(right_edge - 60, y);
+  generator->MoveMouseTo(right_edge - 50, y);
   UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -917,7 +917,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Hide the shelf.
-  generator->MoveMouseTo(right_edge - 60, y);
+  generator->MoveMouseTo(right_edge - 50, y);
   UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -1420,13 +1420,12 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   ui::GestureConfiguration::GetInstance()
       ->set_max_touch_move_in_pixels_for_click(0);
   Shelf* shelf = GetPrimaryShelf();
-  // TODO(manucornet): This part fails with the new shelf UI. Find out why.
-  // {
-  //   SCOPED_TRACE("BOTTOM");
-  //   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
-  //   RunGestureDragTests(gfx::Vector2d(0, 120));
-  //   GetAppListTestHelper()->WaitUntilIdle();
-  // }
+  {
+    SCOPED_TRACE("BOTTOM");
+    shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+    RunGestureDragTests(gfx::Vector2d(0, 120));
+    GetAppListTestHelper()->WaitUntilIdle();
+  }
 
   {
     SCOPED_TRACE("LEFT");

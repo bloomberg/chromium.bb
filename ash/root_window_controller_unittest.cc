@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
@@ -145,7 +144,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  int bottom_inset = 300 - ShelfConstants::shelf_size();
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());
   EXPECT_EQ("650,10 100x100", normal->GetWindowBoundsInScreen().ToString());
@@ -155,9 +153,9 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* maximized = CreateTestWidget(gfx::Rect(700, 10, 100, 100));
   maximized->Maximize();
   EXPECT_EQ(root_windows[1], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(600, 0, 300, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(600, 0, 300, 252).ToString(),
             maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 252).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   views::Widget* minimized = CreateTestWidget(gfx::Rect(550, 10, 200, 200));
@@ -213,24 +211,25 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("100,20 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  bottom_inset = 600 - ShelfConstants::shelf_size();
+  // Maximized area on primary display has 48px for inset at the bottom
+  // (kShelfSize).
 
   // First clear fullscreen status, since both fullscreen and maximized windows
   // share the same desktop workspace, which cancels the shelf status.
   fullscreen->SetFullscreen(false);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(0, 0, 600, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 552).ToString(),
             maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 600, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 552).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Set fullscreen to true, but maximized window's size won't change because
   // it's not visible. see crbug.com/504299.
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(gfx::Rect(0, 0, 600, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 552).ToString(),
             maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 600, bottom_inset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 552).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());

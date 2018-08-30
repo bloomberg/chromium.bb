@@ -986,8 +986,7 @@ TEST_F(WindowSelectorTest, FullscreenWindowTabletMode) {
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
 
   const gfx::Rect fullscreen(800, 600);
-  const int shelf_inset = 600 - ShelfConstants::shelf_size();
-  const gfx::Rect normal_work_area(800, shelf_inset);
+  const gfx::Rect normal_work_area(800, 552);
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(gfx::Rect(800, 600),
             screen->GetDisplayNearestWindow(window1.get()).work_area());
@@ -1980,7 +1979,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
   UpdateDisplay("400x300");
   // Midpoint of height minus shelf.
-  const int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
+  const int expected_y = (300 - kShelfSize) / 2;
 
   // Helper to check points. Uses EXPECT_NEAR on each coordinate to account for
   // rounding.
@@ -1999,15 +1998,13 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
 
   // Verify that when grid bounds are on the left, the label is centered on the
   // left side of the workspace.
-  grid->SetBoundsAndUpdatePositions(
-      gfx::Rect(0, 0, 200, 300 - ShelfConstants::shelf_size()));
+  grid->SetBoundsAndUpdatePositions(gfx::Rect(0, 0, 200, 300 - kShelfSize));
   check_point(gfx::Point(100, expected_y),
               grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
 
   // Verify that when grid bounds are on the right, the label is centered on the
   // right side of the workspace.
-  grid->SetBoundsAndUpdatePositions(
-      gfx::Rect(200, 0, 200, 300 - ShelfConstants::shelf_size()));
+  grid->SetBoundsAndUpdatePositions(gfx::Rect(200, 0, 200, 300 - kShelfSize));
   check_point(gfx::Point(300, expected_y),
               grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
 
@@ -2018,7 +2015,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  check_point(gfx::Point(150, (400 - ShelfConstants::shelf_size()) / 2),
+  check_point(gfx::Point(150, (400 - kShelfSize) / 2),
               grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
 }
 
