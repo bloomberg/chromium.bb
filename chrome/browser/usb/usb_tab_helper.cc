@@ -9,7 +9,6 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "chrome/browser/usb/web_usb_service_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -36,8 +35,8 @@ const char kFeaturePolicyViolation[] =
 }  // namespace
 
 struct FrameUsbServices {
-  std::unique_ptr<WebUSBPermissionProvider> permission_provider;
   std::unique_ptr<WebUsbChooser> usb_chooser;
+  std::unique_ptr<WebUsbServiceImpl> web_usb_service;
   int device_connection_count_ = 0;
 };
 
@@ -61,9 +60,13 @@ void UsbTabHelper::CreateWebUsbService(
     mojo::ReportBadMessage(kFeaturePolicyViolation);
     return;
   }
-  WebUsbServiceImpl::Create(GetPermissionProvider(render_frame_host),
-                            GetUsbChooser(render_frame_host),
-                            std::move(request));
+
+  FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
+  if (!frame_usb_services->web_usb_service) {
+    frame_usb_services->web_usb_service.reset(new WebUsbServiceImpl(
+        render_frame_host, GetUsbChooser(render_frame_host)));
+  }
+  frame_usb_services->web_usb_service->BindRequest(std::move(request));
 }
 
 void UsbTabHelper::IncrementConnectionCount(
@@ -118,16 +121,6 @@ FrameUsbServices* UsbTabHelper::GetFrameUsbService(
              .first;
   }
   return it->second.get();
-}
-
-base::WeakPtr<device::usb::PermissionProvider>
-UsbTabHelper::GetPermissionProvider(RenderFrameHost* render_frame_host) {
-  FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
-  if (!frame_usb_services->permission_provider) {
-    frame_usb_services->permission_provider.reset(
-        new WebUSBPermissionProvider(render_frame_host));
-  }
-  return frame_usb_services->permission_provider->GetWeakPtr();
 }
 
 base::WeakPtr<WebUsbChooser> UsbTabHelper::GetUsbChooser(

@@ -12,36 +12,47 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
-#include "device/usb/mojo/permission_provider.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace device {
 class UsbDevice;
 }
 
+class GURL;
+class UsbChooserContext;
+
 // Implements a restricted device::mojom::UsbDeviceManager interface by wrapping
-// another UsbDeviceManager instance and checking requests with the provided
-// device::usb::PermissionProvider.
+// another UsbDeviceManager instance and enforces the rules of the WebUSB
+// permission model as well as permission granted by the user through a device
+// chooser UI.
 class WebUsbServiceImpl : public blink::mojom::WebUsbService,
                           public device::UsbService::Observer,
                           public device::mojom::UsbDeviceClient {
  public:
-  static void Create(
-      base::WeakPtr<device::usb::PermissionProvider> permission_provider,
-      base::WeakPtr<WebUsbChooser> usb_chooser,
-      blink::mojom::WebUsbServiceRequest request);
+  static bool HasDevicePermission(
+      UsbChooserContext* chooser_context,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const device::mojom::UsbDeviceInfo& device_info);
 
+  WebUsbServiceImpl(content::RenderFrameHost* render_frame_host,
+                    base::WeakPtr<WebUsbChooser> usb_chooser);
   ~WebUsbServiceImpl() override;
 
+  void BindRequest(blink::mojom::WebUsbServiceRequest request);
+
  private:
-  WebUsbServiceImpl(
-      base::WeakPtr<device::usb::PermissionProvider> permission_provider,
-      base::WeakPtr<WebUsbChooser> usb_chooser);
+  bool HasDevicePermission(
+      const device::mojom::UsbDeviceInfo& device_info) const;
 
   // blink::mojom::WebUsbService implementation:
   void GetDevices(GetDevicesCallback callback) override;
@@ -66,14 +77,15 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
 
   void WillDestroyUsbService() override;
 
-  void OnConnectionError();
+  void OnDeviceManagerConnectionError();
+  void OnBindingConnectionError();
 
-  base::WeakPtr<device::usb::PermissionProvider> permission_provider_;
+  content::RenderFrameHost* const render_frame_host_;
   base::WeakPtr<WebUsbChooser> usb_chooser_;
 
   // Used to bind with Blink.
-  mojo::StrongBindingPtr<blink::mojom::WebUsbService> binding_;
-  device::mojom::UsbDeviceManagerClientPtr client_;
+  mojo::BindingSet<blink::mojom::WebUsbService> bindings_;
+  mojo::InterfacePtrSet<device::mojom::UsbDeviceManagerClient> clients_;
 
   // Binding used to connect with USB devices for opened/closed events.
   mojo::BindingSet<device::mojom::UsbDeviceClient> device_client_bindings_;

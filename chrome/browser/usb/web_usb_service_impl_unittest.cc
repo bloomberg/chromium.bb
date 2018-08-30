@@ -13,14 +13,18 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/web_contents_tester.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
-#include "device/usb/mojo/mock_permission_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using ::testing::_;
 using ::testing::AtMost;
@@ -31,9 +35,10 @@ using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
 using device::mojom::UsbDeviceManagerClientPtr;
 using device::MockUsbDevice;
-using device::usb::MockPermissionProvider;
 
 namespace {
+
+const char kDefaultTestUrl[] = "https://www.google.com/";
 
 ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
   ASSERT_TRUE(arg0);
@@ -42,24 +47,37 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
     callback.Run();
 };
 
-class WebUsbServiceImplTest : public testing::Test {
+class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebUsbServiceImplTest() = default;
-  ~WebUsbServiceImplTest() override = default;
+  WebUsbServiceImplTest() {}
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  }
 
  protected:
   WebUsbServicePtr ConnectToService() {
-    WebUsbServicePtr service;
-    WebUsbServiceImpl::Create(permission_provider_.GetWeakPtr(), nullptr,
-                              mojo::MakeRequest(&service));
-    return service;
+    WebUsbServicePtr servicePtr;
+    web_usb_service_.reset(new WebUsbServiceImpl(main_rfh(), nullptr));
+    web_usb_service_->BindRequest(mojo::MakeRequest(&servicePtr));
+    return servicePtr;
+  }
+
+  void GrantDevicePermission(const GURL& requesting_origin,
+                             const GURL& embedding_origin,
+                             const std::string& guid) {
+    UsbChooserContextFactory::GetForProfile(profile())->GrantDevicePermission(
+        requesting_origin, embedding_origin, guid);
   }
 
   device::MockDeviceClient device_client_;
 
  private:
-  MockPermissionProvider permission_provider_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  std::unique_ptr<WebUsbServiceImpl> web_usb_service_;
+  DISALLOW_COPY_AND_ASSIGN(WebUsbServiceImplTest);
 };
 
 class MockDeviceManagerClient : public UsbDeviceManagerClient {
@@ -100,20 +118,20 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
 
 }  // namespace
 
-// Test requesting device enumeration updates with GetDeviceChanges.
 TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
+  GURL origin(kDefaultTestUrl);
+
   scoped_refptr<MockUsbDevice> device0 =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
   scoped_refptr<MockUsbDevice> device1 =
       new MockUsbDevice(0x1234, 0x5679, "ACME", "Frobinator+", "GHIJKL");
   scoped_refptr<MockUsbDevice> no_permission_device1 =
-      new MockUsbDevice(0xffff, 0x567b, "ACME", "Frobinator II",
-                        MockPermissionProvider::kRestrictedSerialNumber);
+      new MockUsbDevice(0xffff, 0x567b, "ACME", "Frobinator II", "MNOPQR");
   scoped_refptr<MockUsbDevice> no_permission_device2 =
-      new MockUsbDevice(0xffff, 0x567c, "ACME", "Frobinator Xtreme",
-                        MockPermissionProvider::kRestrictedSerialNumber);
+      new MockUsbDevice(0xffff, 0x567c, "ACME", "Frobinator Xtreme", "STUVWX");
 
   device_client_.usb_service()->AddDevice(device0);
+  GrantDevicePermission(origin, origin, device0->guid());
   device_client_.usb_service()->AddDevice(no_permission_device1);
 
   WebUsbServicePtr web_usb_service = ConnectToService();
@@ -123,9 +141,8 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   {
     // Call GetDevices once to make sure the WebUsbService is up and running
     // and the client is set or else we could block forever waiting for calls.
-    // The site has no permission to access |no_permission_device1| and
-    // |no_permission_device2|, so result of GetDevices() should only contain
-    // the |guid| of |device0|.
+    // The site has no permission to access |no_permission_device1|, so result
+    // of GetDevices() should only contain the |guid| of |device0|.
     std::set<std::string> guids;
     guids.insert(device0->guid());
     base::RunLoop loop;
@@ -135,22 +152,35 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   }
 
   device_client_.usb_service()->AddDevice(device1);
+  GrantDevicePermission(origin, origin, device1->guid());
   device_client_.usb_service()->AddDevice(no_permission_device2);
   device_client_.usb_service()->RemoveDevice(device0);
   device_client_.usb_service()->RemoveDevice(device1);
   device_client_.usb_service()->RemoveDevice(no_permission_device1);
   device_client_.usb_service()->RemoveDevice(no_permission_device2);
-
   {
     base::RunLoop loop;
     base::RepeatingClosure barrier =
-        base::BarrierClosure(3, loop.QuitClosure());
+        base::BarrierClosure(2, loop.QuitClosure());
     testing::InSequence s;
-    EXPECT_CALL(mock_client, DoOnDeviceAdded(_))
-        .Times(1)
-        .WillOnce(ExpectGuidAndThen(device1->guid(), barrier));
+
     EXPECT_CALL(mock_client, DoOnDeviceRemoved(_))
-        .Times(2)
+        .WillOnce(ExpectGuidAndThen(device0->guid(), barrier))
+        .WillOnce(ExpectGuidAndThen(device1->guid(), barrier));
+    loop.Run();
+  }
+
+  device_client_.usb_service()->AddDevice(device0);
+  device_client_.usb_service()->AddDevice(device1);
+  device_client_.usb_service()->AddDevice(no_permission_device1);
+  device_client_.usb_service()->AddDevice(no_permission_device2);
+  {
+    base::RunLoop loop;
+    base::RepeatingClosure barrier =
+        base::BarrierClosure(2, loop.QuitClosure());
+    testing::InSequence s;
+
+    EXPECT_CALL(mock_client, DoOnDeviceAdded(_))
         .WillOnce(ExpectGuidAndThen(device0->guid(), barrier))
         .WillOnce(ExpectGuidAndThen(device1->guid(), barrier));
     loop.Run();
