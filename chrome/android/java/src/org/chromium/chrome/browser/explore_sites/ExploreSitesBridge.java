@@ -21,6 +21,26 @@ public class ExploreSitesBridge {
     private static final String TAG = "ExploreSitesBridge";
 
     /**
+     * Fetches the catalog data for Explore page.
+     */
+    public static void getEspCatalog(
+            Profile profile, Callback<List<ExploreSitesCategory>> callback) {
+        List<ExploreSitesCategory> result = new ArrayList<>();
+        nativeGetEspCatalog(profile, result, callback);
+    }
+
+    /**
+     * Fetches the catalog data for New Tab page.
+     */
+    public static void getNtpCatalog(
+            Profile profile, Callback<List<ExploreSitesCategory>> callback) {
+        List<ExploreSitesCategory> result = new ArrayList<>();
+        nativeGetNtpCatalog(profile, result, callback);
+    }
+
+    /* These methods for Experimental Explore Sites */
+
+    /**
      * Fetches a JSON string from URL, returning the parsed JSONobject in a callback.
      * This will cancel any pending JSON fetches.
      */
@@ -45,4 +65,9 @@ public class ExploreSitesBridge {
     private static native void nativeGetIcon(
             Profile profile, String iconUrl, Callback<Bitmap> callback);
     public static native String nativeGetCatalogUrl();
+
+    private static native void nativeGetNtpCatalog(Profile profile,
+            List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
+    private static native void nativeGetEspCatalog(Profile profile,
+            List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 }
