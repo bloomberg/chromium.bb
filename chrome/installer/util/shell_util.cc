@@ -387,7 +387,7 @@ void GetChromeProgIdEntries(
   app_info.application_name = dist->GetDisplayName();
   app_info.application_icon_path = chrome_exe;
   app_info.application_icon_index = chrome_icon_index;
-  app_info.application_description = dist->GetAppDescription();
+  app_info.application_description = InstallUtil::GetAppDescription();
   app_info.publisher_name = dist->GetPublisherName();
   app_info.delegate_clsid = install_static::GetLegacyCommandExecuteImplClsid();
 

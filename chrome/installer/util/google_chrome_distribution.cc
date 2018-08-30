@@ -139,12 +139,6 @@ base::string16 GoogleChromeDistribution::GetPublisherName() {
   return publisher_name;
 }
 
-base::string16 GoogleChromeDistribution::GetAppDescription() {
-  const base::string16& app_description =
-      installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
-  return app_description;
-}
-
 base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   base::string16 sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");

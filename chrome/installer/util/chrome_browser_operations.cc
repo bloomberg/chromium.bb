@@ -45,7 +45,7 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
   }
 
   if (!properties->has_description())
-    properties->set_description(dist->GetAppDescription());
+    properties->set_description(InstallUtil::GetAppDescription());
 }
 
 }  // namespace installer

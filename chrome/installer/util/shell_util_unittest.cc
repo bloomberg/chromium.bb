@@ -30,6 +30,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,7 +179,7 @@ class ShellUtilShortcutTest : public testing::Test {
     if (properties.has_description())
       expected_properties.set_description(properties.description);
     else
-      expected_properties.set_description(dist->GetAppDescription());
+      expected_properties.set_description(InstallUtil::GetAppDescription());
 
     if (properties.has_icon()) {
       expected_properties.set_icon(properties.icon, properties.icon_index);
