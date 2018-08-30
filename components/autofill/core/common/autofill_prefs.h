@@ -20,6 +20,7 @@ namespace prefs {
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kAutofillAcceptSaveCreditCardPromptState[];
 extern const char kAutofillBillingCustomerNumber[];
+// Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 // Please use kAutofillCreditCardEnabled and kAutofillProfileEnabled instead.
@@ -29,6 +30,7 @@ extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];
 extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];
 extern const char kAutofillOrphanRowsRemoved[];
+// Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillProfileEnabled[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];
@@ -45,6 +47,9 @@ enum PreviousSaveCreditCardPromptUserDecision {
 
 // Registers Autofill prefs.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Migrates deprecated Autofill prefs values.
+void MigrateDeprecatedAutofillPrefs(PrefService* prefs);
 
 bool IsAutocompleteEnabled(const PrefService* prefs);
 

@@ -178,4 +178,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 01/2018.
   prefs->ClearPref(::prefs::kNtpShownPage);
+
+  // Added 8/2018.
+  autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
 }
