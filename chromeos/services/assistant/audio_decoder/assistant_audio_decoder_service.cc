@@ -36,7 +36,8 @@ void AssistantAudioDecoderService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::BindRepeating(&OnAudioDecoderFactoryRequest, ref_factory_.get()));
+      base::BindRepeating(&OnAudioDecoderFactoryRequest, ref_factory_.get()),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 void AssistantAudioDecoderService::OnBindInterface(

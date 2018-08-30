@@ -4,36 +4,36 @@
 
 module chromeos.assistant.mojom;
 
-import "media/mojo/interfaces/media_types.mojom";
-
 // A factory for creating an assistant audio decoder.
 interface AssistantAudioDecoderFactory {
-  // Creates an AssistantAudioDecoder. |client|'s methods will be called when
-  // certain events happen.
+  // Creates an AssistantAudioDecoder to decode audio stream data from
+  // |data_source|.
+  // |client|'s methods will be called when certain events happen.
   CreateAssistantAudioDecoder(AssistantAudioDecoder& audio_decoder,
-                              AssistantAudioDecoderClient client);
+                              AssistantAudioDecoderClient client,
+                              AssistantMediaDataSource data_source);
 };
 
 // Interface to communicate with assistant audio decoder service.
 interface AssistantAudioDecoder {
-  // Starts to parse and decode |data|.
-  Decode(array<uint8> data);
+  // Reads the audio data format.
+  OpenDecoder() => (bool success,
+                    int32 bytes_per_sample,
+                    int32 samples_per_second,
+                    int32 channels);
+
+  // Reads the audio data and decodes.
+  Decode();
 };
 
 // Interface for assistant audio decoder service to call into client.
 interface AssistantAudioDecoderClient {
-  // Called when the decoder has been initialized.
-  OnDecoderInitialized(bool success,
-                       int32 samples_per_second,
-                       int32 channels);
+  // Called when new audio buffers have been decoded.
+  // |buffers| are in interleaved format.
+  OnNewBuffers(array<array<uint8>> buffers);
+};
 
-  // Called when new buffers have been parsed.
-  // |total_frames| is the total number of new buffers.
-  OnNewBuffers(int32 total_frames);
-
-  // Called when an audio buffer has been decoded.
-  OnBufferDecoded(media.mojom.AudioBuffer buffer);
-
-  // Called when there is error.
-  OnDecoderError();
+// Interface used to read data from the calling process.
+interface AssistantMediaDataSource {
+  Read(int32 size) => (array<uint8> data);
 };

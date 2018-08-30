@@ -7,18 +7,14 @@
 
 #include <memory>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "media/base/stream_parser.h"
 
 namespace media {
-class AudioBuffer;
-class MediaLog;
-class MediaTracks;
-class MPEG1AudioStreamParser;
-class FFmpegAudioDecoder;
-class StreamParserBuffer;
+class AudioFileReader;
+class AudioBus;
+class DataSource;
 }  // namespace media
 
 namespace service_manager {
@@ -32,36 +28,36 @@ class AssistantAudioDecoder : public mojom::AssistantAudioDecoder {
  public:
   AssistantAudioDecoder(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref,
-      mojom::AssistantAudioDecoderClientPtr client);
+      mojom::AssistantAudioDecoderClientPtr client,
+      mojom::AssistantMediaDataSourcePtr data_source);
   ~AssistantAudioDecoder() override;
 
   // Called by |client_| on main thread.
-  void Decode(const std::vector<uint8_t>& data) override;
+  void OpenDecoder(OpenDecoderCallback callback) override;
+  void Decode() override;
 
  private:
-  // Called by |parser_| on main thread.
-  bool OnNewConfigs(
-      std::unique_ptr<media::MediaTracks> tracks,
-      const media::StreamParser::TextTrackConfigMap& text_configs);
-  bool OnNewBuffers(
-      const media::StreamParser::BufferQueueMap& buffer_queue_map);
+  // Calls |decoder_| to decode on media thread.
+  void OpenDecoderOnMediaThread(OpenDecoderCallback callback);
+  void DecodeOnMediaThread();
 
-  // Called by |decoder_| on main thread.
-  void OnDecoderInitialized(media::AudioDecoderConfig config, bool success);
-  void OnDecodeOutput(const scoped_refptr<media::AudioBuffer>& decoded);
-  void OnDecodeStatus(media::DecodeStatus status);
-
-  // Called by |OnNewBuffers()| and |OnDecodeOutput()| on main thread.
-  void DecodeNow();
+  // Calls |client_| methods on main thread.
+  void OnDecoderInitializedOnThread(OpenDecoderCallback callback,
+                                    int sample_rate,
+                                    int channels);
+  void OnDecoderErrorOnThread(OpenDecoderCallback callback);
+  void OnBufferDecodedOnThread(
+      const std::vector<std::unique_ptr<media::AudioBus>>&
+          decoded_audio_buffers);
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   mojom::AssistantAudioDecoderClientPtr client_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<media::MediaLog> media_log_;
-  std::unique_ptr<media::MPEG1AudioStreamParser> parser_;
-  std::unique_ptr<media::FFmpegAudioDecoder> decoder_;
-  base::circular_deque<scoped_refptr<media::StreamParserBuffer>>
-      parsed_buffers_;
+
+  std::unique_ptr<media::DataSource> data_source_;
+  std::unique_ptr<media::BlockingUrlProtocol> protocol_;
+  std::unique_ptr<media::AudioFileReader> decoder_;
+  std::unique_ptr<base::Thread> media_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAudioDecoder);
 };

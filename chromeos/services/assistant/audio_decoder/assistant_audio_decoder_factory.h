@@ -24,7 +24,8 @@ class AssistantAudioDecoderFactory
   // mojom::AssistantAudioDecoderFactory:
   void CreateAssistantAudioDecoder(
       mojom::AssistantAudioDecoderRequest request,
-      mojom::AssistantAudioDecoderClientPtr client) override;
+      mojom::AssistantAudioDecoderClientPtr client,
+      mojom::AssistantMediaDataSourcePtr data_source) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
