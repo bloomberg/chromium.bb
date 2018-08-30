@@ -6,46 +6,6 @@ import("//build/config/android/rules.gni")
 import("manifest_processor.gni")
 import("shell_apk_version.gni")
 
-shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
-unbound_shell_apk_manifest =
-    "$target_gen_dir/unbound_shell_apk_manifest/AndroidManifest.xml"
-maps_go_apk_manifest =
-    "$target_gen_dir/maps_go_apk_manifest/AndroidManifest.xml"
-shell_apk_http_manifest =
-    "$target_gen_dir/shell_apk_http_manifest/AndroidManifest.xml"
-
-manifest_processor_template("shell_apk_manifest") {
-  input = "AndroidManifest.xml"
-  config_file = "bound_manifest_config.json"
-  output = shell_apk_manifest
-
-  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
-}
-
-manifest_processor_template("unbound_shell_apk_manifest") {
-  input = "AndroidManifest.xml"
-  config_file = "unbound_manifest_config.json"
-  output = unbound_shell_apk_manifest
-
-  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
-}
-
-manifest_processor_template("maps_go_apk_manifest") {
-  input = "AndroidManifest.xml"
-  config_file = "maps_go_manifest_config.json"
-  output = maps_go_apk_manifest
-
-  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
-}
-
-manifest_processor_template("shell_apk_http_manifest") {
-  input = "AndroidManifest.xml"
-  config_file = "http_manifest_config.json"
-  output = shell_apk_http_manifest
-
-  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
-}
-
 android_resources("shell_apk_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.webapk.shell_apk"
@@ -66,46 +26,70 @@ android_library("dex_loader_java") {
   java_files = [ "src/org/chromium/webapk/shell_apk/DexLoader.java" ]
 }
 
-android_library("webapk_java") {
-  java_files = [
-    "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
-    "src/org/chromium/webapk/shell_apk/HostBrowserLauncher.java",
-    "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
-    "src/org/chromium/webapk/shell_apk/MainActivity.java",
-    "src/org/chromium/webapk/shell_apk/IdentityService.java",
-    "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity0.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity1.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity2.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity3.java",
-    "src/org/chromium/webapk/shell_apk/ShareActivity4.java",
-    "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
-    "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
-    "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
-  ]
-  deps = [
-    ":compiled_in_runtime_library_java",
-    ":dex_loader_java",
-    ":shell_apk_manifest",
-    ":shell_apk_resources",
-    "//chrome/android/webapk/libs/common:common_java",
-  ]
+template("webapk_java") {
+  android_library(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "android_manifest_for_lint",
+                             "deps",
+                           ])
 
-  android_manifest_for_lint = shell_apk_manifest
+    java_files = [
+      "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
+      "src/org/chromium/webapk/shell_apk/HostBrowserLauncher.java",
+      "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
+      "src/org/chromium/webapk/shell_apk/IdentityService.java",
+      "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
+      "src/org/chromium/webapk/shell_apk/MainActivity.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity0.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity1.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity2.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity3.java",
+      "src/org/chromium/webapk/shell_apk/ShareActivity4.java",
+      "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
+      "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
+      "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
+    ]
+    deps += [
+      ":compiled_in_runtime_library_java",
+      ":dex_loader_java",
+      ":shell_apk_resources",
+      "//chrome/android/webapk/libs/common:common_java",
+    ]
+  }
 }
 
 template("webapk_tmpl") {
-  android_apk(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "android_manifest",
-                             "android_manifest_dep",
-                             "apk_name",
-                           ])
+  _manifest_target_name = "${target_name}_generate_manifest"
+  _manifest_output =
+      "${target_gen_dir}/${_manifest_target_name}/AndroidManifest.xml"
+  _java_target_name = "${target_name}_java"
+
+  manifest_processor_template(_manifest_target_name) {
+    forward_variables_from(invoker, [ "config_file" ])
+
+    input = "AndroidManifest.xml"
+    output = _manifest_output
+
+    extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
+  }
+
+  webapk_java(_java_target_name) {
+    android_manifest_for_lint = _manifest_output
     deps = [
-      ":webapk_java",
+      ":$_manifest_target_name",
     ]
+  }
+
+  android_apk(target_name) {
+    forward_variables_from(invoker, [ "apk_name" ])
+    deps = [
+      ":$_java_target_name",
+    ]
+
+    android_manifest = _manifest_output
+    android_manifest_dep = ":$_manifest_target_name"
     never_incremental = true
 
     # Force 32 bit mode on 64 bit devices.
@@ -178,26 +162,22 @@ java_strings_grd("webapk_strings_grd") {
 # - Android manifest is customized to the website.
 # - App icon is extracted from the website and added to the APK's resources.
 webapk_tmpl("webapk") {
-  android_manifest = shell_apk_manifest
-  android_manifest_dep = ":shell_apk_manifest"
+  config_file = "bound_manifest_config.json"
   apk_name = "WebApk"
 }
 
 webapk_tmpl("maps_go_webapk") {
-  android_manifest = maps_go_apk_manifest
-  android_manifest_dep = ":maps_go_apk_manifest"
+  config_file = "maps_go_manifest_config.json"
   apk_name = "MapsWebApk"
 }
 
 webapk_tmpl("unbound_webapk") {
-  android_manifest = unbound_shell_apk_manifest
-  android_manifest_dep = ":unbound_shell_apk_manifest"
+  config_file = "unbound_manifest_config.json"
   apk_name = "UnboundWebApk"
 }
 
 webapk_tmpl("http_webapk") {
-  android_manifest = shell_apk_http_manifest
-  android_manifest_dep = ":shell_apk_http_manifest"
+  config_file = "http_manifest_config.json"
   apk_name = "HttpWebApk"
 }
 
