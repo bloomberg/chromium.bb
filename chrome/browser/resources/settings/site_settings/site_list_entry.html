@@ -54,7 +54,7 @@
           <div class="separator"></div>
         </template>
       </div>
-      <template is="dom-if" if="[[model.controlledBy]]">
+      <template is="dom-if" if="[[showPolicyPrefIndicator_]]">
         <cr-policy-pref-indicator pref="[[model]]"
             icon-aria-label="[[label]]" on-mouseenter="onShowTooltip_"
             on-focus="onShowTooltip_" focus-row-control focus-type="policy">
