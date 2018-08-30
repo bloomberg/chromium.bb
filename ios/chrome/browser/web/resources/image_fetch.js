@@ -56,10 +56,16 @@ __gCrWeb.imageFetch.getImageData = function(id, url) {
  * be prevented by the browser. The exported image is in a resolution of 96 dpi.
  *
  * @param {string} url The URL of the requested image.
- * @return {string|null} Image data in base64 string, or null if no <img> with
- *     "src=|url|" is found or exporting data from <img> failed.
+ * @return {string|null} Image data in base64 string, or null in these cases:
+ *   1. Image is a GIF because GIFs will become static after drawn to <canvas>;
+ *   2. No <img> with "src=|url|" is found;
+ *   3. Exporting data from <img> failed.
  */
 function getImageDataByCanvas(url) {
+ var extension = url.split('.').pop().toLowerCase();
+ if (extension == 'gif')
+  return null;
+
   for (var key in document.images) {
     var img = document.images[key];
     if (img.src == url) {
@@ -72,7 +78,7 @@ function getImageDataByCanvas(url) {
       try {
         // If the <img> is cross-domain without "crossorigin=anonymous", an
         // exception will be thrown.
-        data = canvas.toDataURL('image/png');
+        data = canvas.toDataURL('image/' + extension);
       } catch (error) {
         return null;
       }
