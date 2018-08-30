@@ -44,6 +44,19 @@ int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
 
   return time_stamps[n - 1];
 }
+
+int CountNonTombstoneEntries(
+    const std::map<std::string, std::unique_ptr<ProcessorEntityTracker>>&
+        entities) {
+  int count = 0;
+  for (const auto& kv : entities) {
+    if (!kv.second->metadata().is_deleted()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
 }  // namespace
 
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
@@ -1263,17 +1276,13 @@ void ClientTagBasedModelTypeProcessor::GetStatusCountersForDebugging(
     StatusCountersCallback callback) {
   StatusCounters counters;
   counters.num_entries_and_tombstones = entities_.size();
-  for (const auto& kv : entities_) {
-    if (!kv.second->metadata().is_deleted()) {
-      ++counters.num_entries;
-    }
-  }
+  counters.num_entries = CountNonTombstoneEntries(entities_);
   std::move(callback).Run(type_, counters);
 }
 
 void ClientTagBasedModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   SyncRecordModelTypeMemoryHistogram(type_, EstimateMemoryUsage());
-  SyncRecordModelTypeCountHistogram(type_, entities_.size());
+  SyncRecordModelTypeCountHistogram(type_, CountNonTombstoneEntries(entities_));
 }
 
 }  // namespace syncer

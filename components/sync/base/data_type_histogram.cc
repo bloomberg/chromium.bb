@@ -8,7 +8,7 @@
 
 namespace {
 const char kModelTypeMemoryHistogramPrefix[] = "Sync.ModelTypeMemoryKB.";
-const char kModelTypeCountHistogramPrefix[] = "Sync.ModelTypeCount2.";
+const char kModelTypeCountHistogramPrefix[] = "Sync.ModelTypeCount3.";
 }  // namespace
 
 void SyncRecordModelTypeMemoryHistogram(syncer::ModelType model_type,
