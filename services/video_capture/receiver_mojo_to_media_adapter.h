@@ -32,6 +32,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;

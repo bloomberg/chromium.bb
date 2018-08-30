@@ -211,12 +211,18 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   if (length <= 0 ||
       static_cast<size_t>(length) < resulting_format_.ImageAllocationSize()) {
     DLOG(WARNING) << "Wrong media sample length: " << length;
+    observer_->FrameDropped(
+        VideoCaptureFrameDropReason::kWinDirectShowUnexpectedSampleLength);
     return S_FALSE;
   }
 
   uint8_t* buffer = nullptr;
-  if (FAILED(sample->GetPointer(&buffer)))
+  if (FAILED(sample->GetPointer(&buffer))) {
+    observer_->FrameDropped(
+        VideoCaptureFrameDropReason::
+            kWinDirectShowFailedToGetMemoryPointerFromMediaSample);
     return S_FALSE;
+  }
 
   REFERENCE_TIME start_time, end_time;
   base::TimeDelta timestamp = kNoTimestamp;

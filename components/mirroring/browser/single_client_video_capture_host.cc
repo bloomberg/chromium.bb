@@ -230,6 +230,11 @@ void SingleClientVideoCaptureHost::OnError(media::VideoCaptureError) {
     observer_->OnStateChanged(media::mojom::VideoCaptureState::FAILED);
 }
 
+void SingleClientVideoCaptureHost::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 void SingleClientVideoCaptureHost::OnLog(const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(3) << message;

@@ -91,7 +91,6 @@ enum class VideoCaptureError {
   kFileVideoCaptureDeviceCouldNotOpenVideoFile = 24,
   kDeviceCaptureLinuxFailedToCreateVideoCaptureDelegate = 25,
   kErrorFakeDeviceIntentionallyEmittingErrorEvent = 26,
-  kDeviceClientTooManyFramesDropped = 27,
   kDeviceClientTooManyFramesDroppedY16 = 28,
   kDeviceMediaToMojoAdapterEncounteredUnsupportedBufferType = 29,
   kVideoCaptureManagerProcessDeviceStartQueueDeviceInfoNotFound = 30,
@@ -180,6 +179,27 @@ enum class VideoCaptureError {
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification = 113,
   kAndroidApi2ErrorConfiguringCamera = 114,
   kMaxValue = 114
+};
+
+// WARNING: Do not change the values assigned to the entries. They are used for
+// UMA logging.
+enum class VideoCaptureFrameDropReason {
+  kNone = 0,
+  kDeviceClientFrameHasInvalidFormat = 1,
+  kDeviceClientFailedToReserveBufferFromBufferPool = 2,
+  kDeviceClientLibyuvConvertToI420Failed = 3,
+  kV4L2BufferErrorFlagWasSet = 4,
+  kV4L2InvalidNumberOfBytesInBuffer = 5,
+  kAndroidThrottling = 6,
+  kAndroidGetByteArrayElementsFailed = 7,
+  kAndroidApi1UnexpectedDataLength = 8,
+  kAndroidApi2AcquiredImageIsNull = 9,
+  kWinDirectShowUnexpectedSampleLength = 10,
+  kWinDirectShowFailedToGetMemoryPointerFromMediaSample = 11,
+  kWinMediaFoundationReceivedSampleIsNull = 12,
+  kWinMediaFoundationLockingBufferDelieveredNullptr = 13,
+  kWinMediaFoundationGetBufferByIndexReturnedNull = 14,
+  kMaxValue = 14
 };
 
 // Assert that the int:frequency mapping is correct.

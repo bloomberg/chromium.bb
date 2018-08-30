@@ -357,8 +357,6 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
         kErrorFakeDeviceIntentionallyEmittingErrorEvent:
       return media::mojom::VideoCaptureError::
           kErrorFakeDeviceIntentionallyEmittingErrorEvent;
-    case media::VideoCaptureError::kDeviceClientTooManyFramesDropped:
-      return media::mojom::VideoCaptureError::kDeviceClientTooManyFramesDropped;
     case media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16:
       return media::mojom::VideoCaptureError::
           kDeviceClientTooManyFramesDroppedY16;
@@ -777,9 +775,6 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       *output = media::VideoCaptureError::
           kErrorFakeDeviceIntentionallyEmittingErrorEvent;
       return true;
-    case media::mojom::VideoCaptureError::kDeviceClientTooManyFramesDropped:
-      *output = media::VideoCaptureError::kDeviceClientTooManyFramesDropped;
-      return true;
     case media::mojom::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16:
       *output = media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16;
       return true;
@@ -1180,6 +1175,147 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       return true;
     case media::mojom::VideoCaptureError::kAndroidApi2ErrorConfiguringCamera:
       *output = media::VideoCaptureError::kAndroidApi2ErrorConfiguringCamera;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+media::mojom::VideoCaptureFrameDropReason
+EnumTraits<media::mojom::VideoCaptureFrameDropReason,
+           media::VideoCaptureFrameDropReason>::
+    ToMojom(media::VideoCaptureFrameDropReason input) {
+  switch (input) {
+    case media::VideoCaptureFrameDropReason::kNone:
+      return media::mojom::VideoCaptureFrameDropReason::kNone;
+    case media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kDeviceClientFrameHasInvalidFormat;
+    case media::VideoCaptureFrameDropReason::
+        kDeviceClientFailedToReserveBufferFromBufferPool:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool;
+    case media::VideoCaptureFrameDropReason::
+        kDeviceClientLibyuvConvertToI420Failed:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kDeviceClientLibyuvConvertToI420Failed;
+    case media::VideoCaptureFrameDropReason::kV4L2BufferErrorFlagWasSet:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kV4L2BufferErrorFlagWasSet;
+    case media::VideoCaptureFrameDropReason::kV4L2InvalidNumberOfBytesInBuffer:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kV4L2InvalidNumberOfBytesInBuffer;
+    case media::VideoCaptureFrameDropReason::kAndroidThrottling:
+      return media::mojom::VideoCaptureFrameDropReason::kAndroidThrottling;
+    case media::VideoCaptureFrameDropReason::kAndroidGetByteArrayElementsFailed:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kAndroidGetByteArrayElementsFailed;
+    case media::VideoCaptureFrameDropReason::kAndroidApi1UnexpectedDataLength:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kAndroidApi1UnexpectedDataLength;
+    case media::VideoCaptureFrameDropReason::kAndroidApi2AcquiredImageIsNull:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kAndroidApi2AcquiredImageIsNull;
+    case media::VideoCaptureFrameDropReason::
+        kWinDirectShowUnexpectedSampleLength:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kWinDirectShowUnexpectedSampleLength;
+    case media::VideoCaptureFrameDropReason::
+        kWinDirectShowFailedToGetMemoryPointerFromMediaSample:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kWinDirectShowFailedToGetMemoryPointerFromMediaSample;
+    case media::VideoCaptureFrameDropReason::
+        kWinMediaFoundationReceivedSampleIsNull:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kWinMediaFoundationReceivedSampleIsNull;
+    case media::VideoCaptureFrameDropReason::
+        kWinMediaFoundationLockingBufferDelieveredNullptr:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kWinMediaFoundationLockingBufferDelieveredNullptr;
+    case media::VideoCaptureFrameDropReason::
+        kWinMediaFoundationGetBufferByIndexReturnedNull:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kWinMediaFoundationGetBufferByIndexReturnedNull;
+  }
+  NOTREACHED();
+  return media::mojom::VideoCaptureFrameDropReason::kNone;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
+                media::VideoCaptureFrameDropReason>::
+    FromMojom(media::mojom::VideoCaptureFrameDropReason input,
+              media::VideoCaptureFrameDropReason* output) {
+  switch (input) {
+    case media::mojom::VideoCaptureFrameDropReason::kNone:
+      *output = media::VideoCaptureFrameDropReason::kNone;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kDeviceClientFrameHasInvalidFormat:
+      *output = media::VideoCaptureFrameDropReason::
+          kDeviceClientFrameHasInvalidFormat;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kDeviceClientFailedToReserveBufferFromBufferPool:
+      *output = media::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kDeviceClientLibyuvConvertToI420Failed:
+      *output = media::VideoCaptureFrameDropReason::
+          kDeviceClientLibyuvConvertToI420Failed;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::kV4L2BufferErrorFlagWasSet:
+      *output = media::VideoCaptureFrameDropReason::kV4L2BufferErrorFlagWasSet;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kV4L2InvalidNumberOfBytesInBuffer:
+      *output =
+          media::VideoCaptureFrameDropReason::kV4L2InvalidNumberOfBytesInBuffer;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::kAndroidThrottling:
+      *output = media::VideoCaptureFrameDropReason::kAndroidThrottling;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kAndroidGetByteArrayElementsFailed:
+      *output = media::VideoCaptureFrameDropReason::
+          kAndroidGetByteArrayElementsFailed;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kAndroidApi1UnexpectedDataLength:
+      *output =
+          media::VideoCaptureFrameDropReason::kAndroidApi1UnexpectedDataLength;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kAndroidApi2AcquiredImageIsNull:
+      *output =
+          media::VideoCaptureFrameDropReason::kAndroidApi2AcquiredImageIsNull;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kWinDirectShowUnexpectedSampleLength:
+      *output = media::VideoCaptureFrameDropReason::
+          kWinDirectShowUnexpectedSampleLength;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kWinDirectShowFailedToGetMemoryPointerFromMediaSample:
+      *output = media::VideoCaptureFrameDropReason::
+          kWinDirectShowFailedToGetMemoryPointerFromMediaSample;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kWinMediaFoundationReceivedSampleIsNull:
+      *output = media::VideoCaptureFrameDropReason::
+          kWinMediaFoundationReceivedSampleIsNull;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kWinMediaFoundationLockingBufferDelieveredNullptr:
+      *output = media::VideoCaptureFrameDropReason::
+          kWinMediaFoundationLockingBufferDelieveredNullptr;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kWinMediaFoundationGetBufferByIndexReturnedNull:
+      *output = media::VideoCaptureFrameDropReason::
+          kWinMediaFoundationGetBufferByIndexReturnedNull;
       return true;
   }
   NOTREACHED();

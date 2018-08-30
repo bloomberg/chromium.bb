@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include "base/metrics/histogram_macros.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
@@ -852,4 +854,140 @@ TEST_F(VideoCaptureControllerTest, OnStartedForMultipleClients) {
     controller_->AddClient(client_a_route_2, client_a_.get(), 200, session_200);
   }
 }
+
+TEST_F(VideoCaptureControllerTest, DroppedFramesGetLoggedInUMA) {
+  base::HistogramTester histogram_tester;
+
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool);
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      2);
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool,
+      1);
+}
+
+// Tests that too many frames dropped for the same reason emits a special UMA
+// log and disables further logging
+TEST_F(VideoCaptureControllerTest,
+       DroppedFrameLoggingGetsDisabledIfTooManyConsecutiveDropsForSameReason) {
+  base::HistogramTester histogram_tester;
+
+  for (int i = 0;
+       i < VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount;
+       i++) {
+    controller_->OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  }
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount);
+
+  // Add one more count after already having reached the max allowed.
+  // This should not get counted.
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount);
+
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.MaxFrameDropExceeded",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      1);
+}
+
+TEST_F(VideoCaptureControllerTest,
+       DeliveredFrameInBetweenDroppedFramesResetsCounter) {
+  base::HistogramTester histogram_tester;
+  for (int i = 0;
+       i <
+       VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount - 1;
+       i++) {
+    controller_->OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  }
+
+  SendStubFrameToDeviceClient(arbitrary_format_);
+  base::RunLoop().RunUntilIdle();
+
+  for (int i = 0;
+       i < VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount;
+       i++) {
+    controller_->OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  }
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      2 * VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount -
+          1);
+}
+
+TEST_F(VideoCaptureControllerTest, DeliveredFrameReenablesDroppedFrameLogging) {
+  base::HistogramTester histogram_tester;
+
+  // Drop enough frames to disable logging
+  for (int i = 0;
+       i <
+       VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount + 1;
+       i++) {
+    controller_->OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  }
+
+  SendStubFrameToDeviceClient(arbitrary_format_);
+  base::RunLoop().RunUntilIdle();
+
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount + 1);
+}
+
+TEST_F(VideoCaptureControllerTest,
+       ChangeInDropReasonReenablesDroppedFrameLogging) {
+  base::HistogramTester histogram_tester;
+
+  // Drop enough frames to disable logging
+  for (int i = 0;
+       i <
+       VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount + 1;
+       i++) {
+    controller_->OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  }
+
+  // Drop for a different reason
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool);
+
+  controller_->OnFrameDropped(
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
+      VideoCaptureController::kMaxConsecutiveFrameDropForSameReasonCount + 1);
+  histogram_tester.ExpectBucketCount(
+      "Media.VideoCapture.FrameDrop",
+      media::VideoCaptureFrameDropReason::
+          kDeviceClientFailedToReserveBufferFromBufferPool,
+      1);
+}
+
 }  // namespace content

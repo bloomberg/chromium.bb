@@ -861,6 +861,9 @@ public class VideoCaptureCamera
             if (data.length == mExpectedFrameSize) {
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, data, mExpectedFrameSize,
                         getCameraRotation());
+            } else {
+                nativeOnFrameDropped(mNativeVideoCaptureDeviceAndroid,
+                        AndroidVideoCaptureFrameDropReason.ANDROID_API_1_UNEXPECTED_DATA_LENGTH);
             }
         } finally {
             mPreviewBufferLock.unlock();

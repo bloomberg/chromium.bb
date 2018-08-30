@@ -52,6 +52,7 @@ class CAPTURE_EXPORT VideoFrameReceiver {
   virtual void OnBufferRetired(int buffer_id) = 0;
 
   virtual void OnError(VideoCaptureError error) = 0;
+  virtual void OnFrameDropped(VideoCaptureFrameDropReason reason) = 0;
   virtual void OnLog(const std::string& message) = 0;
   virtual void OnStarted() = 0;
   virtual void OnStartedUsingGpuDecode() = 0;

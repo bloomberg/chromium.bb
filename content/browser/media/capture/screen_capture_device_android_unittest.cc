@@ -40,6 +40,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                void(media::VideoCaptureError error,
                     const base::Location& from_here,
                     const std::string& reason));
+  MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
   MOCK_METHOD0(OnStarted, void(void));
 

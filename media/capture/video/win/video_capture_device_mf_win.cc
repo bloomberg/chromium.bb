@@ -388,6 +388,8 @@ class MFVideoCallback final
 
   STDMETHOD(OnSample)(IMFSample* sample) override {
     if (!sample) {
+      observer_->OnFrameDropped(
+          VideoCaptureFrameDropReason::kWinMediaFoundationReceivedSampleIsNull);
       return S_OK;
     }
 
@@ -407,9 +409,19 @@ class MFVideoCallback final
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
         buffer->Lock(&data, &max_length, &length);
-        observer_->OnIncomingCapturedData(data, length, reference_time,
-                                          timestamp);
+        if (data) {
+          observer_->OnIncomingCapturedData(data, length, reference_time,
+                                            timestamp);
+        } else {
+          observer_->OnFrameDropped(
+              VideoCaptureFrameDropReason::
+                  kWinMediaFoundationLockingBufferDelieveredNullptr);
+        }
         buffer->Unlock();
+      } else {
+        observer_->OnFrameDropped(
+            VideoCaptureFrameDropReason::
+                kWinMediaFoundationGetBufferByIndexReturnedNull);
       }
     }
     return S_OK;
@@ -971,9 +983,7 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   base::AutoLock lock(lock_);
-
-  if (!data)
-    return;
+  DCHECK(data);
 
   if (client_.get()) {
     client_->OnIncomingCapturedData(
@@ -1001,6 +1011,14 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
         VideoCaptureWinBackend::kMediaFoundation,
         ImageCaptureOutcome::kSucceededUsingVideoStream,
         IsHighResolution(selected_video_capability_->supported_format));
+  }
+}
+
+void VideoCaptureDeviceMFWin::OnFrameDropped(
+    VideoCaptureFrameDropReason reason) {
+  base::AutoLock lock(lock_);
+  if (client_.get()) {
+    client_->OnFrameDropped(reason);
   }
 }
 

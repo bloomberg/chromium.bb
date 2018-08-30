@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -122,7 +123,7 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
       limits::kMaxFramesPerSecond + 1, VideoPixelFormat::PIXEL_FORMAT_I420);
   DCHECK(device_client_.get());
   // Expect the the call to fail silently inside the VideoCaptureDeviceClient.
-  EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
+  EXPECT_CALL(*receiver_, OnLog(_)).Times(AtLeast(1));
   EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(_, _, _)).Times(0);
   device_client_->OnIncomingCapturedData(data, kScratchpadSizeInBytes,
                                          kFrameFormat, 0 /*clockwise rotation*/,

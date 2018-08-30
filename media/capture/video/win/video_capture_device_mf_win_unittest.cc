@@ -65,6 +65,8 @@ class MockClient : public VideoCaptureDevice::Client {
                     const base::Location&,
                     const std::string&));
 
+  MOCK_METHOD1(OnFrameDropped, void(VideoCaptureFrameDropReason));
+
   double GetBufferPoolUtilization() const override { return 0.0; }
 
   MOCK_METHOD0(OnStarted, void());

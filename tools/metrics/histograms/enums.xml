@@ -49399,6 +49399,25 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Desktop/Tab capture stopped. No frames produced."/>
 </enum>
 
+<enum name="VideoCaptureFrameDropReason">
+  <int value="0" label="kNone"/>
+  <int value="1" label="kDeviceClientFrameHasInvalidFormat"/>
+  <int value="2" label="kDeviceClientFailedToReserveBufferFromBufferPool"/>
+  <int value="3" label="kDeviceClientLibyuvConvertToI420Failed"/>
+  <int value="4" label="kV4L2BufferErrorFlagWasSet"/>
+  <int value="5" label="kV4L2InvalidNumberOfBytesInBuffer"/>
+  <int value="6" label="kAndroidThrottling"/>
+  <int value="7" label="kAndroidGetByteArrayElementsFailed"/>
+  <int value="8" label="kAndroidApi1UnexpectedDataLength"/>
+  <int value="9" label="kAndroidApi2AcquiredImageIsNull"/>
+  <int value="10" label="kWinDirectShowUnexpectedSampleLength"/>
+  <int value="11"
+      label="kWinDirectShowFailedToGetMemoryPointerFromMediaSample"/>
+  <int value="12" label="kWinMediaFoundationReceivedSampleIsNull"/>
+  <int value="13" label="kWinMediaFoundationLockingBufferDelieveredNullptr"/>
+  <int value="14" label="kWinMediaFoundationGetBufferByIndexReturnedNull"/>
+</enum>
+
 <enum name="VideoCaptureServiceEvent">
   <int value="0" label="Browser is using legacy video capture stack"/>
   <int value="1" label="Browser connecting to video capture service"/>

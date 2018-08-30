@@ -118,7 +118,6 @@ enum VideoCaptureError {
   kFileVideoCaptureDeviceCouldNotOpenVideoFile,
   kDeviceCaptureLinuxFailedToCreateVideoCaptureDelegate,
   kErrorFakeDeviceIntentionallyEmittingErrorEvent,
-  kDeviceClientTooManyFramesDropped,
   kDeviceClientTooManyFramesDroppedY16,
   kDeviceMediaToMojoAdapterEncounteredUnsupportedBufferType,
   kVideoCaptureManagerProcessDeviceStartQueueDeviceInfoNotFound,
@@ -206,6 +205,24 @@ enum VideoCaptureError {
   kMacDeckLinkUnsupportedPixelFormat,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
   kAndroidApi2ErrorConfiguringCamera
+};
+
+enum VideoCaptureFrameDropReason {
+  kNone,
+  kDeviceClientFrameHasInvalidFormat,
+  kDeviceClientFailedToReserveBufferFromBufferPool,
+  kDeviceClientLibyuvConvertToI420Failed,
+  kV4L2BufferErrorFlagWasSet,
+  kV4L2InvalidNumberOfBytesInBuffer,
+  kAndroidThrottling,
+  kAndroidGetByteArrayElementsFailed,
+  kAndroidApi1UnexpectedDataLength,
+  kAndroidApi2AcquiredImageIsNull,
+  kWinDirectShowUnexpectedSampleLength,
+  kWinDirectShowFailedToGetMemoryPointerFromMediaSample,
+  kWinMediaFoundationReceivedSampleIsNull,
+  kWinMediaFoundationLockingBufferDelieveredNullptr,
+  kWinMediaFoundationGetBufferByIndexReturnedNull
 };
 
 struct VideoCaptureFormat {

@@ -58,6 +58,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     ANDROID_API_2_ERROR_CONFIGURING_CAMERA = 114,
   };
 
+  // A Java counterpart will be generated for this enum.
+  // The values of these are matched with the ones in
+  // media::VideoCaptureFrameDropReason to allow direct static_casting.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+  enum class AndroidVideoCaptureFrameDropReason {
+    ANDROID_API_1_UNEXPECTED_DATA_LENGTH = 8,
+    ANDROID_API_2_ACQUIRED_IMAGE_IS_NULL = 9,
+  };
+
   explicit VideoCaptureDeviceAndroid(
       const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceAndroid() override;
@@ -105,6 +114,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
                const base::android::JavaParamRef<jobject>& obj,
                int android_video_capture_error,
                const base::android::JavaParamRef<jstring>& message);
+
+  // Implement org.chromium.media.VideoCapture.nativeOnFrameDropped.
+  void OnFrameDropped(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      int android_video_capture_frame_drop_reason);
 
   void OnGetPhotoCapabilitiesReply(
       JNIEnv* env,

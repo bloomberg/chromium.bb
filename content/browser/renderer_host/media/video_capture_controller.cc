@@ -47,6 +47,19 @@ static const int kInfiniteRatio = 99999;
   base::UmaHistogramSparse(                             \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
+void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.VideoCapture.FrameDrop", reason,
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1);
+}
+
+void LogMaxConsecutiveVideoFrameDropCountExceeded(
+    media::VideoCaptureFrameDropReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.VideoCapture.MaxFrameDropExceeded", reason,
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1);
+}
+
 void CallOnError(media::VideoCaptureError error,
                  VideoCaptureControllerEventHandler* client,
                  VideoCaptureControllerID id) {
@@ -184,6 +197,12 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
   }
   return result;
 }
+
+VideoCaptureController::FrameDropLogState::FrameDropLogState(
+    media::VideoCaptureFrameDropReason reason)
+    : drop_count((reason == media::VideoCaptureFrameDropReason::kNone) ? 0 : 1),
+      drop_reason(reason),
+      max_log_count_exceeded(false) {}
 
 VideoCaptureController::VideoCaptureController(
     const std::string& device_id,
@@ -425,6 +444,8 @@ void VideoCaptureController::OnFrameReadyInBuffer(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
+  frame_drop_log_state_ = FrameDropLogState();
+
   auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
   DCHECK(buffer_context_iter != buffer_contexts_.end());
   buffer_context_iter->set_frame_feedback_id(frame_feedback_id);
@@ -508,6 +529,35 @@ void VideoCaptureController::OnError(media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
   PerformForClientsWithOpenSession(base::BindRepeating(&CallOnError, error));
+}
+
+void VideoCaptureController::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  if (reason == frame_drop_log_state_.drop_reason) {
+    if (frame_drop_log_state_.max_log_count_exceeded)
+      return;
+
+    if (++frame_drop_log_state_.drop_count >
+        kMaxConsecutiveFrameDropForSameReasonCount) {
+      frame_drop_log_state_.max_log_count_exceeded = true;
+      LogMaxConsecutiveVideoFrameDropCountExceeded(reason);
+      std::ostringstream string_stream;
+      string_stream << "Too many consecutive frames dropped with reason code "
+                    << static_cast<int>(reason)
+                    << ". Stopping to log dropped frames for this reason in "
+                       "order to avoid log spam.";
+      EmitLogMessage(string_stream.str(), 1);
+      return;
+    }
+  } else {
+    frame_drop_log_state_ = FrameDropLogState(reason);
+  }
+
+  LogVideoFrameDrop(reason);
+  std::ostringstream string_stream;
+  string_stream << "Frame dropped with reason code "
+                << static_cast<int>(reason);
+  EmitLogMessage(string_stream.str(), 1);
 }
 
 void VideoCaptureController::OnLog(const std::string& message) {
