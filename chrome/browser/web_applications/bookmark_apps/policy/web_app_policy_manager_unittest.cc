@@ -45,7 +45,7 @@ base::Value GetWindowedItem() {
 }
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
-  return PendingAppManager::AppInfo::Create(
+  return PendingAppManager::AppInfo::CreateForPolicy(
       GURL(kWindowedUrl), PendingAppManager::LaunchContainer::kWindow,
       false /* create_shortcuts */);
 }
@@ -58,7 +58,7 @@ base::Value GetTabbedItem() {
 }
 
 PendingAppManager::AppInfo GetTabbedAppInfo() {
-  return PendingAppManager::AppInfo::Create(
+  return PendingAppManager::AppInfo::CreateForPolicy(
       GURL(kTabbedUrl), PendingAppManager::LaunchContainer::kTab,
       false /* create_shortcuts */);
 }
@@ -70,7 +70,7 @@ base::Value GetDefaultContainerItem() {
 }
 
 PendingAppManager::AppInfo GetDefaultContainerAppInfo() {
-  return PendingAppManager::AppInfo::Create(
+  return PendingAppManager::AppInfo::CreateForPolicy(
       GURL(kDefaultContainerUrl), PendingAppManager::LaunchContainer::kDefault,
       false /* create_shortcuts */);
 }

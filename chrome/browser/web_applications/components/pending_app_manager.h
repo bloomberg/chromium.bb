@@ -44,6 +44,13 @@ class PendingAppManager {
     kWindow,
   };
 
+  // What flags will be used when installing the app.
+  enum class InstallationFlag {
+    kNone,
+    kDefaultApp,
+    kFromPolicy,
+  };
+
   struct AppInfo {
     static AppInfo Create(GURL url,
                           LaunchContainer launch_container,
@@ -51,6 +58,9 @@ class PendingAppManager {
     static AppInfo CreateForDefaultApp(GURL url,
                                        LaunchContainer launch_container,
                                        bool create_shortcuts = true);
+    static AppInfo CreateForPolicy(GURL url,
+                                   LaunchContainer launch_container,
+                                   bool create_shortcuts = true);
 
     // Prefer static methods above.
     AppInfo(AppInfo&& other);
@@ -63,13 +73,13 @@ class PendingAppManager {
     const GURL url;
     const LaunchContainer launch_container;
     const bool create_shortcuts;
-    const bool is_default_app;
+    const InstallationFlag installation_flag;
 
    private:
     AppInfo(GURL url,
             LaunchContainer launch_container,
             bool create_shortcuts,
-            bool is_default_app);
+            InstallationFlag installation_flag);
 
     DISALLOW_COPY_AND_ASSIGN(AppInfo);
   };
