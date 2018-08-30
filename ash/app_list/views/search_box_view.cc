@@ -495,14 +495,14 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     // If the search box has no text in it currently, autocomplete should not
     // work.
     last_key_pressed_ = key_event.key_code();
-    if (key_event.type() == ui::ET_KEY_PRESSED) {
+    if (key_event.type() == ui::ET_KEY_PRESSED &&
+        key_event.key_code() != ui::VKEY_BACK) {
       if (key_event.key_code() == ui::VKEY_TAB) {
         AcceptAutocompleteText();
       } else if (key_event.key_code() == ui::VKEY_UP ||
                  key_event.key_code() == ui::VKEY_DOWN ||
                  key_event.key_code() == ui::VKEY_LEFT ||
-                 key_event.key_code() == ui::VKEY_RIGHT ||
-                 key_event.key_code() == ui::VKEY_BACK) {
+                 key_event.key_code() == ui::VKEY_RIGHT) {
         ClearAutocompleteText();
       } else {
         const base::string16 pending_text = search_box()->GetSelectedText();

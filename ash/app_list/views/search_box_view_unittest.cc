@@ -473,11 +473,19 @@ TEST_P(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  // Forward the next parameter to HandleKeyEvent(). We use HandleKeyEvent()
-  // because KeyPress() will replace the existing highlighted text.
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE);
-  static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
-      view()->search_box(), event);
+  // TODO(crbug.com/878984): Change KeyPress() to use EventGenerator::PressKey
+  // instead.
+  if (key_code() == ui::VKEY_BACK) {
+    // Use KeyPress() to mimic backspace. HandleKeyEvent() will not delete the
+    // text.
+    KeyPress(key_code());
+  } else {
+    // Forward the next parameter to HandleKeyEvent(). We use HandleKeyEvent()
+    // because KeyPress() will replace the existing highlighted text.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE);
+    static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
+        view()->search_box(), event);
+  }
   // Search box autocomplete suggestion is removed and is reflected in
   // SearchModel.
   EXPECT_EQ(view()->search_box()->text(),
