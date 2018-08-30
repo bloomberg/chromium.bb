@@ -63,7 +63,9 @@ class WatchTimeRecorderTest : public testing::Test {
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(mojom::PlaybackPropertiesPtr properties) {
-    provider_->Initialize(properties->is_mse);
+    provider_->Initialize(properties->is_mse,
+                          properties->is_mse ? mojom::MediaURLScheme::kUnknown
+                                             : mojom::MediaURLScheme::kHttp);
     provider_->AcquireWatchTimeRecorder(std::move(properties),
                                         mojo::MakeRequest(&wtr_));
   }

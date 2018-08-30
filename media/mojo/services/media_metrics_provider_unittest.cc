@@ -29,7 +29,10 @@ class MediaMetricsProviderTest : public testing::Test {
 
   ~MediaMetricsProviderTest() override { base::RunLoop().RunUntilIdle(); }
 
-  void Initialize(bool is_mse, bool is_top_frame, const std::string& origin) {
+  void Initialize(bool is_mse,
+                  bool is_top_frame,
+                  const std::string& origin,
+                  mojom::MediaURLScheme scheme) {
     source_id_ = test_recorder_->GetNewSourceID();
     test_recorder_->UpdateSourceURL(source_id_, GURL(origin));
 
@@ -38,7 +41,7 @@ class MediaMetricsProviderTest : public testing::Test {
         base::BindRepeating(&MediaMetricsProviderTest::GetSourceId,
                             base::Unretained(this)),
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
-    provider_->Initialize(is_mse);
+    provider_->Initialize(is_mse, scheme);
   }
 
   ukm::SourceId GetSourceId() { return source_id_; }
@@ -66,7 +69,7 @@ class MediaMetricsProviderTest : public testing::Test {
   EXPECT_TRUE(test_recorder_->EntryHasMetric(entry, name));
 
 TEST_F(MediaMetricsProviderTest, TestUkm) {
-  Initialize(true, true, kTestOrigin);
+  Initialize(true, true, kTestOrigin, mojom::MediaURLScheme::kHttp);
   provider_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -82,6 +85,9 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       EXPECT_UKM(UkmEntry::kIsMSEName, true);
       EXPECT_UKM(UkmEntry::kFinalPipelineStatusName, PIPELINE_OK);
 
+      // This is an MSE playback so the URL scheme should not be set.
+      EXPECT_NO_UKM(UkmEntry::kURLSchemeName);
+
       EXPECT_NO_UKM(UkmEntry::kTimeToMetadataName);
       EXPECT_NO_UKM(UkmEntry::kTimeToFirstFrameName);
       EXPECT_NO_UKM(UkmEntry::kTimeToPlayReadyName);
@@ -95,7 +101,7 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
   const base::TimeDelta kPlayReadyTime = base::TimeDelta::FromSeconds(3);
 
   ResetMetricRecorders();
-  Initialize(false, false, kTestOrigin2);
+  Initialize(false, false, kTestOrigin2, mojom::MediaURLScheme::kHttps);
   provider_->SetIsEME();
   provider_->SetTimeToMetadata(kMetadataTime);
   provider_->SetTimeToFirstFrame(kFirstFrameTime);
@@ -114,6 +120,8 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       EXPECT_UKM(UkmEntry::kIsTopFrameName, false);
       EXPECT_UKM(UkmEntry::kIsEMEName, true);
       EXPECT_UKM(UkmEntry::kIsMSEName, false);
+      EXPECT_UKM(UkmEntry::kURLSchemeName,
+                 static_cast<int64_t>(mojom::MediaURLScheme::kHttps));
       EXPECT_UKM(UkmEntry::kFinalPipelineStatusName, PIPELINE_ERROR_DECODE);
       EXPECT_UKM(UkmEntry::kTimeToMetadataName, kMetadataTime.InMilliseconds());
       EXPECT_UKM(UkmEntry::kTimeToFirstFrameName,

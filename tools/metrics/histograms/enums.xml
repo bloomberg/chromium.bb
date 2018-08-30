@@ -48781,17 +48781,20 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="URLSchemeForHistogram">
-  <int value="0" label="kUnknownURLScheme"/>
-  <int value="1" label="kMissingURLScheme"/>
-  <int value="2" label="kHttpURLScheme"/>
-  <int value="3" label="kHttpsURLScheme"/>
-  <int value="4" label="kFtpURLScheme"/>
-  <int value="5" label="kChromeExtensionURLScheme"/>
-  <int value="6" label="kJavascriptURLScheme"/>
-  <int value="7" label="kFileURLScheme"/>
-  <int value="8" label="kBlobURLScheme"/>
-  <int value="9" label="kDataURLScheme"/>
-  <int value="10" label="kFileSystemScheme"/>
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kMissing"/>
+  <int value="2" label="kHttp"/>
+  <int value="3" label="kHttps"/>
+  <int value="4" label="kFtp"/>
+  <int value="5" label="kChromeExtension"/>
+  <int value="6" label="kJavascript"/>
+  <int value="7" label="kFile"/>
+  <int value="8" label="kBlob"/>
+  <int value="9" label="kData"/>
+  <int value="10" label="kFileSystem"/>
+  <int value="11" label="kChrome"/>
+  <int value="12" label="kContent"/>
+  <int value="13" label="kContentId"/>
 </enum>
 
 <enum name="UsedInDraw">

@@ -590,7 +590,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.GetString().Utf8()));
   load_start_time_ = base::TimeTicks::Now();
 
-  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource);
+  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource,
+                                      load_type == kLoadTypeURL
+                                          ? GetMediaURLScheme(loaded_url_)
+                                          : mojom::MediaURLScheme::kUnknown);
 
   // Media source pipelines can start immediately.
   if (load_type == kLoadTypeMediaSource) {

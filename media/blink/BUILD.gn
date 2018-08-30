@@ -163,6 +163,7 @@ test("media_blink_unittests") {
     "webaudiosourceprovider_impl_unittest.cc",
     "webmediacapabilitiesclient_impl_unittest.cc",
     "webmediaplayer_impl_unittest.cc",
+    "webmediaplayer_util_unittest.cc",
   ]
 
   if (is_android) {

@@ -12,6 +12,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/blink/media_blink_export.h"
+#include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -22,6 +23,9 @@
 namespace media {
 
 class MediaLog;
+
+// Translates a |url| into the appropriate URL scheme.
+mojom::MediaURLScheme MEDIA_BLINK_EXPORT GetMediaURLScheme(const GURL& url);
 
 blink::WebTimeRanges MEDIA_BLINK_EXPORT
 ConvertToWebTimeRanges(const Ranges<base::TimeDelta>& ranges);

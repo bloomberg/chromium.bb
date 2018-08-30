@@ -1773,6 +1773,13 @@ be describing additional metrics about the same event.
       has buffered enough to start playback.
     </summary>
   </metric>
+  <metric name="URLScheme">
+    <summary>
+      media::mojom::MediaURLScheme enum value. Only recorded for !IsMSE src=URL
+      playbacks, this is the scheme of that URL; E.g., http, https, filesystem,
+      etc.
+    </summary>
+  </metric>
 </event>
 
 <event name="Media.BasicPlayback">
