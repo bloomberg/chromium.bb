@@ -397,9 +397,7 @@ bool ParseAv1CodecId(const std::string& codec_id,
   }
 
   if (((subsampling_x == '0' || subsampling_y == '0') &&
-       chroma_sample_position != '0') ||
-      (subsampling_x == '1' && subsampling_y == '1' &&
-       chroma_sample_position == '0')) {
+       chroma_sample_position != '0')) {
     DVLOG(3) << __func__ << " Invalid chroma subsampling (" << fields[5] << ")";
     return false;
   }
