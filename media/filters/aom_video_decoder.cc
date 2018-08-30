@@ -60,12 +60,6 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
 
     case AOM_IMG_FMT_I42016:
       switch (img->bit_depth) {
-        case 8:
-          // libaom compiled in high bit depth mode returns 8 bit content in a
-          // 16-bit type. This should be handled by the caller instead of using
-          // this function.
-          NOTREACHED();
-          return PIXEL_FORMAT_UNKNOWN;
         case 10:
           return PIXEL_FORMAT_YUV420P10;
         case 12:
@@ -92,24 +86,20 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
           return PIXEL_FORMAT_YUV444P10;
         case 12:
           return PIXEL_FORMAT_YUV444P12;
-          break;
         default:
           DLOG(ERROR) << "Unsupported bit depth: " << img->bit_depth;
           return PIXEL_FORMAT_UNKNOWN;
       }
 
     default:
-      break;
+      DLOG(ERROR) << "Unsupported pixel format: " << img->fmt;
+      return PIXEL_FORMAT_UNKNOWN;
   }
-
-  DLOG(ERROR) << "Unsupported pixel format: " << img->fmt;
-  return PIXEL_FORMAT_UNKNOWN;
 }
 
 static void SetColorSpaceForFrame(const aom_image_t* img,
                                   const VideoDecoderConfig& config,
                                   VideoFrame* frame) {
-
   gfx::ColorSpace::RangeID range = img->range == AOM_CR_FULL_RANGE
                                        ? gfx::ColorSpace::RangeID::FULL
                                        : gfx::ColorSpace::RangeID::LIMITED;
@@ -119,34 +109,12 @@ static void SetColorSpaceForFrame(const aom_image_t* img,
   // http://av1-spec.argondesign.com/av1-spec/av1-spec.html#color-config-semantics
   media::VideoColorSpace color_space(img->cp, img->tc, img->mc, range);
 
-  // If the bitstream doesn't specify a color space, use the one
-  // from the container.
+  // If the bitstream doesn't specify a color space, use the one from the
+  // container.
   if (!color_space.IsSpecified())
     color_space = config.color_space_info();
 
   frame->set_color_space(color_space.ToGfxColorSpace());
-}
-
-// Copies plane of 8-bit pixels out of a 16-bit values.
-static_assert(AOM_PLANE_Y == VideoFrame::kYPlane, "Y plane must match AOM");
-static_assert(AOM_PLANE_U == VideoFrame::kUPlane, "U plane must match AOM");
-static_assert(AOM_PLANE_V == VideoFrame::kVPlane, "V plane must match AOM");
-static void PackPlane(int plane, const aom_image_t* img, VideoFrame* frame) {
-  const uint8_t* in_plane = img->planes[plane];
-  uint8_t* out_plane = frame->visible_data(plane);
-
-  const int in_stride = img->stride[plane];
-  const int out_stride = frame->stride(plane);
-  const int rows = frame->rows(plane);
-  const int cols =
-      VideoFrame::Columns(plane, frame->format(), frame->coded_size().width());
-
-  for (int row = 0; row < rows; ++row) {
-    const uint8_t* in_line = in_plane + (row * in_stride);
-    uint8_t* out_line = out_plane + (row * out_stride);
-    for (int col = 0; col < cols; ++col)
-      out_line[col] = in_line[col * 2];
-  }
 }
 
 AomVideoDecoder::AomVideoDecoder(MediaLog* media_log) : media_log_(media_log) {
@@ -186,9 +154,16 @@ void AomVideoDecoder::Initialize(
   aom_config.h = config.coded_size().height();
   aom_config.threads = GetAomVideoDecoderThreadCount(config);
 
-  // TODO(dalecurtis): Refactor the MemoryPool and OffloadTaskRunner out of
-  // VpxVideoDecoder so that they can be used here for zero copy decoding off
-  // of the media thread.
+  // Misleading name. Required to ensure libaom doesn't output 8-bit samples
+  // in uint16_t containers. Without this we have to manually pack the values
+  // into uint8_t samples.
+  aom_config.allow_lowbitdepth = 1;
+
+  // TODO(dalecurtis, tguilbert): Switch to zero-copy by specifying external
+  // frame buffer functions and use FrameBufferPool. https://crbug.com/867613
+  //
+  // TODO(dalecurtis, tguilbert): Move decoding off the media thread to the
+  // offload thread via OffloadingVideoDecoder. https://crbug.com/867613
 
   std::unique_ptr<aom_codec_ctx> context = std::make_unique<aom_codec_ctx>();
   if (aom_codec_dec_init(context.get(), aom_codec_av1_dx(), &aom_config,
@@ -296,19 +271,9 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
     const struct aom_image* img) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(dalecurtis): This is silly, but if we want to get to zero copy we'll
-  // need to add support for 8-bit within a 16-bit container.
-  // https://bugs.chromium.org/p/aomedia/issues/detail?id=999
-  bool needs_packing = false;
-  VideoPixelFormat pixel_format;
-  if (img->fmt == AOM_IMG_FMT_I42016 && img->bit_depth == 8) {
-    needs_packing = true;
-    pixel_format = PIXEL_FORMAT_I420;
-  } else {
-    pixel_format = AomImgFmtToVideoPixelFormat(img);
-    if (pixel_format == PIXEL_FORMAT_UNKNOWN)
-      return nullptr;
-  }
+  VideoPixelFormat pixel_format = AomImgFmtToVideoPixelFormat(img);
+  if (pixel_format == PIXEL_FORMAT_UNKNOWN)
+    return nullptr;
 
   // Since we're making a copy, only copy the visible area.
   const gfx::Rect visible_rect(img->d_w, img->d_h);
@@ -319,18 +284,10 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
   if (!frame)
     return nullptr;
 
-  if (needs_packing) {
-    // Condense 16-bit values into 8-bit.
-    DCHECK_EQ(pixel_format, PIXEL_FORMAT_I420);
-    PackPlane(VideoFrame::kYPlane, img, frame.get());
-    PackPlane(VideoFrame::kUPlane, img, frame.get());
-    PackPlane(VideoFrame::kVPlane, img, frame.get());
-  } else {
-    for (int plane = 0; plane < 3; plane++) {
-      libyuv::CopyPlane(img->planes[plane], img->stride[plane],
-                        frame->visible_data(plane), frame->stride(plane),
-                        frame->row_bytes(plane), frame->rows(plane));
-    }
+  for (int plane = 0; plane < 3; plane++) {
+    libyuv::CopyPlane(img->planes[plane], img->stride[plane],
+                      frame->visible_data(plane), frame->stride(plane),
+                      frame->row_bytes(plane), frame->rows(plane));
   }
 
   return frame;
