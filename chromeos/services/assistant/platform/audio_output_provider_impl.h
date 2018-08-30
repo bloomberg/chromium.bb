@@ -54,7 +54,9 @@ class VolumeControlImpl : public assistant_client::VolumeControl,
 
 class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
-  explicit AudioOutputProviderImpl(service_manager::Connector* connector);
+  explicit AudioOutputProviderImpl(
+      service_manager::Connector* connector,
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
   ~AudioOutputProviderImpl() override;
 
   // assistant_client::AudioOutputProvider overrides:
@@ -78,20 +80,23 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   VolumeControlImpl volume_control_impl_;
   service_manager::Connector* connector_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };
 
 class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
  public:
-  AudioDeviceOwner(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  AudioDeviceOwner(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~AudioDeviceOwner() override;
 
   void StartOnMainThread(assistant_client::AudioOutput::Delegate* delegate,
                          service_manager::Connector* connector,
                          const assistant_client::OutputStreamFormat& format);
 
-  void StopOnMainThread();
+  void StopOnBackgroundThread();
 
   // media::AudioRenderSink::RenderCallback overrides:
   int Render(base::TimeDelta delay,
@@ -102,6 +107,9 @@ class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
   void OnRenderError() override;
 
  private:
+  void StartDeviceOnBackgroundThread(
+      std::unique_ptr<service_manager::Connector> connector);
+
   // Requests assistant to fill buffer with more data.
   void ScheduleFillLocked(const base::TimeTicks& time);
 
@@ -109,6 +117,7 @@ class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
   void BufferFillDone(int num_bytes);
 
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   base::Lock lock_;
   std::unique_ptr<media::AudioBlockFifo> audio_fifo_;  // guarded by lock_.

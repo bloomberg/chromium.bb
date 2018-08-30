@@ -58,8 +58,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
     bool enable_hotword)
-    : platform_api_(connector, std::move(battery_monitor), enable_hotword),
-      enable_hotword_(enable_hotword),
+    : enable_hotword_(enable_hotword),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       assistant_settings_manager_(
@@ -70,6 +69,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       background_thread_("background thread"),
       weak_factory_(this) {
   background_thread_.Start();
+  platform_api_ = std::make_unique<PlatformApiImpl>(
+      connector, std::move(battery_monitor), enable_hotword,
+      background_thread_.task_runner());
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
 
@@ -203,12 +205,12 @@ void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
-  platform_api_.SetMicState(true);
+  platform_api_->SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
 }
 
 void AssistantManagerServiceImpl::StopActiveInteraction() {
-  platform_api_.SetMicState(false);
+  platform_api_->SetMicState(false);
   assistant_manager_->StopAssistantInteraction();
 }
 
@@ -309,7 +311,7 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
   if (resolution != Resolution::NORMAL_WITH_FOLLOW_ON &&
       resolution != Resolution::CANCELLED &&
       resolution != Resolution::BARGE_IN) {
-    platform_api_.SetMicState(false);
+    platform_api_->SetMicState(false);
   }
   main_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -560,7 +562,7 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
 
   if (modify_setting_args.setting_id() == kVolumeLevelDeviceSettingId) {
     assistant_client::VolumeControl& volume_control =
-        this->platform_api_.GetAudioOutputProvider().GetVolumeControl();
+        this->platform_api_->GetAudioOutputProvider().GetVolumeControl();
 
     HandleValueChange(
         modify_setting_args,
@@ -631,7 +633,7 @@ void AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled(
 void AssistantManagerServiceImpl::OnVoiceInteractionHotwordEnabled(
     bool enabled) {
   enable_hotword_ = enabled;
-  platform_api_.OnHotwordEnabled(enabled);
+  platform_api_->OnHotwordEnabled(enabled);
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
@@ -640,7 +642,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   assistant_manager_.reset(assistant_client::AssistantManager::Create(
-      &platform_api_, CreateLibAssistantConfig(!enable_hotword_)));
+      platform_api_.get(), CreateLibAssistantConfig(!enable_hotword_)));
   assistant_manager_internal_ =
       UnwrapAssistantManagerInternal(assistant_manager_.get());
 

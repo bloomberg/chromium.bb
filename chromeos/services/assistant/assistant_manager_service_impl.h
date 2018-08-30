@@ -196,7 +196,7 @@ class AssistantManagerServiceImpl
       const std::vector<uint8_t>& assistant_screenshot);
 
   State state_ = State::STOPPED;
-  PlatformApiImpl platform_api_;
+  std::unique_ptr<PlatformApiImpl> platform_api_;
   bool enable_hotword_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

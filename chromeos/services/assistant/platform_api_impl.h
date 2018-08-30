@@ -30,9 +30,11 @@ namespace assistant {
 // Platform API required by the voice assistant.
 class PlatformApiImpl : public assistant_client::PlatformApi {
  public:
-  PlatformApiImpl(service_manager::Connector* connector,
-                  device::mojom::BatteryMonitorPtr battery_monitor,
-                  bool enable_hotword);
+  PlatformApiImpl(
+      service_manager::Connector* connector,
+      device::mojom::BatteryMonitorPtr battery_monitor,
+      bool enable_hotword,
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides
