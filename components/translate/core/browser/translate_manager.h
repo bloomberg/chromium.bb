@@ -140,6 +140,12 @@ class TranslateManager {
   // testing, set to true to offer anyway.
   static void SetIgnoreMissingKeyForTesting(bool ignore);
 
+  // Returns true if the TranslateManager is available and enabled by user
+  // preferences. It is not available for builds without API keys.
+  // blink's hrefTranslate attribute existence relies on the result.
+  // See https://github.com/dtapuska/html-translate
+  static bool IsAvailable(const TranslatePrefs* prefs);
+
   // Returns true if the decision should be overridden and logs the event
   // appropriately. |event_type| must be one of the
   // values defined by metrics::TranslateEventProto::EventType.

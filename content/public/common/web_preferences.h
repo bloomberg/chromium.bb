@@ -306,6 +306,11 @@ struct CONTENT_EXPORT WebPreferences {
   // Whether Picture-in-Picture is enabled.
   bool picture_in_picture_enabled;
 
+  // Whether a translate service is available.
+  // blink's hrefTranslate attribute existence relies on the result.
+  // See https://github.com/dtapuska/html-translate
+  bool translate_service_available;
+
   // Specifies how close a lazily loaded iframe or image should be from the
   // viewport before it should start being loaded in, depending on the effective
   // connection type of the current network. Blink will use the default distance

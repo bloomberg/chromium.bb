@@ -145,6 +145,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->default_maximum_page_scale_factor = 4.f;
   prefs->presentation_receiver =
       command_line.HasSwitch(switches::kForcePresentationReceiverForTesting);
+  prefs->translate_service_available = true;
 }
 
 base::FilePath GetWebKitRootDirFilePath() {

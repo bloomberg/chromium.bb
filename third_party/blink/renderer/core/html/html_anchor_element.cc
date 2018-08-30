@@ -397,6 +397,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
   if (HasRel(kRelationNoOpener))
     frame_request.SetShouldSetOpener(kNeverSetOpener);
+  frame_request.SetHrefTranslate(FastGetAttribute(hreftranslateAttr));
   frame_request.SetTriggeringEventInfo(
       event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                         : WebTriggeringEventInfo::kFromUntrustedEvent);

@@ -540,6 +540,11 @@
     {
       name: "HeapUnifiedGarbageCollection",
     },
+    // Only exposed when a translation engine is available
+    // and experimental features are enabled.
+    {
+      name: "HrefTranslate",
+    },
     // https://crbug.com/766694 for testing disabling the feature.
     {
       name: "HTMLImports",

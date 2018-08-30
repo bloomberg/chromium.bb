@@ -143,3 +143,8 @@ bool TranslateService::IsTranslatableURL(const GURL& url) {
 #endif
          !url.SchemeIs(url::kFtpScheme);
 }
+
+bool TranslateService::IsAvailable(PrefService* prefs) {
+  return translate::TranslateManager::IsAvailable(
+      ChromeTranslateClient::CreateTranslatePrefs(prefs).get());
+}

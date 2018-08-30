@@ -44,6 +44,9 @@ class TranslateService
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
 
+  // Returns true if the service is available and enabled by user preferences.
+  static bool IsAvailable(PrefService* prefs);
+
  private:
   TranslateService();
   ~TranslateService() override;

@@ -568,4 +568,8 @@ void WebRuntimeFeatures::EnableMediaControlsExpandGesture(bool enable) {
   RuntimeEnabledFeatures::SetMediaControlsExpandGestureEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableHrefTranslate(bool enable) {
+  RuntimeEnabledFeatures::SetHrefTranslateEnabled(enable);
+}
+
 }  // namespace blink
