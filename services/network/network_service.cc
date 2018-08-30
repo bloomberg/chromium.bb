@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -56,6 +57,11 @@ namespace network {
 namespace {
 
 NetworkService* g_network_service = nullptr;
+
+MojoNetLog* GetMojoNetLog() {
+  static base::NoDestructor<MojoNetLog> instance;
+  return instance.get();
+}
 
 // The interval for calls to NetworkService::UpdateLoadStates
 constexpr auto kUpdateLoadStatesInterval =
@@ -166,11 +172,11 @@ NetworkService::NetworkService(
   if (net_log) {
     net_log_ = net_log;
   } else {
-    owned_net_log_ = std::make_unique<MojoNetLog>();
+    network_service_net_log_ = GetMojoNetLog();
     // Note: The command line switches are only checked when not using the
     // embedder's NetLog, as it may already be writing to the destination log
     // file.
-    net_log_ = owned_net_log_.get();
+    net_log_ = network_service_net_log_;
   }
 
   // Add an observer that will emit network change events to the ChromeNetLog.
@@ -199,6 +205,9 @@ NetworkService::~NetworkService() {
   // All NetworkContexts (Owned and unowned) must have been deleted by this
   // point.
   DCHECK(network_contexts_.empty());
+
+  if (network_service_net_log_)
+    network_service_net_log_->ShutDown();
 }
 
 void NetworkService::set_os_crypt_is_configured() {
@@ -275,8 +284,8 @@ void NetworkService::StartNetLog(base::File file,
   std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
   constants->MergeDictionary(&client_constants);
 
-  owned_net_log_->ObserveFileWithConstants(std::move(file),
-                                           std::move(*constants));
+  network_service_net_log_->ObserveFileWithConstants(std::move(file),
+                                                     std::move(*constants));
 }
 
 void NetworkService::CreateNetworkContext(
