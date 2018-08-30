@@ -194,7 +194,7 @@ class MockEventPageTracker : public extensions::EventPageTracker {
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& extension_id));
   MOCK_METHOD2(WakeEventPage,
                bool(const std::string& extension_id,
-                    const base::Callback<void(bool)>& callback));
+                    base::OnceCallback<void(bool)> callback));
 };
 
 class MockEventPageRequestManager : public EventPageRequestManager {

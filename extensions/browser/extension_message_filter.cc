@@ -359,8 +359,8 @@ void ExtensionMessageFilter::OnExtensionWakeEventPage(
     if (process_manager->IsEventPageSuspended(extension_id)) {
       process_manager->WakeEventPage(
           extension_id,
-          base::Bind(&ExtensionMessageFilter::SendWakeEventPageResponse, this,
-                     request_id));
+          base::BindOnce(&ExtensionMessageFilter::SendWakeEventPageResponse,
+                         this, request_id));
     } else {
       SendWakeEventPageResponse(request_id, true);
     }

@@ -114,9 +114,9 @@ static void CreateBackgroundHostForExtensionLoad(
                                   BackgroundInfo::GetBackgroundURL(extension));
 }
 
-void PropagateExtensionWakeResult(const base::Callback<void(bool)>& callback,
+void PropagateExtensionWakeResult(base::OnceCallback<void(bool)> callback,
                                   extensions::ExtensionHost* host) {
-  callback.Run(host != nullptr);
+  std::move(callback).Run(host != nullptr);
 }
 
 }  // namespace
@@ -426,16 +426,16 @@ bool ProcessManager::IsEventPageSuspended(const std::string& extension_id) {
 }
 
 bool ProcessManager::WakeEventPage(const std::string& extension_id,
-                                   const base::Callback<void(bool)>& callback) {
+                                   base::OnceCallback<void(bool)> callback) {
   if (GetBackgroundHostForExtension(extension_id)) {
-    // Run the callback immediately if the extension is already awake.
+    // The extension is already awake.
     return false;
   }
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context_);
   queue->AddPendingTask(
       browser_context_, extension_id,
-      base::BindOnce(&PropagateExtensionWakeResult, callback));
+      base::BindOnce(&PropagateExtensionWakeResult, std::move(callback)));
   return true;
 }
 
