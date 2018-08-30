@@ -101,8 +101,7 @@ class PasswordGenerationPopupControllerImpl
   bool HasSelection() const override;
   void PasswordAccepted() override;
   void OnSavedPasswordsLinkClicked() override;
-  int GetMinimumWidth() override;
-  gfx::NativeView container_view() override;
+  gfx::NativeView container_view() const override;
   gfx::Rect popup_bounds() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
@@ -129,10 +128,6 @@ class PasswordGenerationPopupControllerImpl
 
   // Accept password if it's selected.
   bool PossiblyAcceptPassword();
-
-  // Get desired size of popup. Height depends on width because we do text
-  // wrapping.
-  void CalculateBounds();
 
   autofill::PasswordForm form_;
 
@@ -164,9 +159,6 @@ class PasswordGenerationPopupControllerImpl
 
   // The state of the generation popup.
   GenerationState state_;
-
-  // Bounds for all the elements of the popup.
-  gfx::Rect popup_bounds_;
 
   autofill::PopupViewCommon view_common_;
 

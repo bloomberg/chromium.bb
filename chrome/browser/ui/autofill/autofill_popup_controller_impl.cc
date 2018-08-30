@@ -296,7 +296,7 @@ gfx::Rect AutofillPopupControllerImpl::popup_bounds() const {
   return layout_model_.popup_bounds();
 }
 
-gfx::NativeView AutofillPopupControllerImpl::container_view() {
+gfx::NativeView AutofillPopupControllerImpl::container_view() const {
   return controller_common_.container_view;
 }
 

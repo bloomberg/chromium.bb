@@ -25,6 +25,14 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+// The max width prevents the popup from growing too much when the password
+// field is too long.
+constexpr int kPasswordGenerationMaxWidth = 480;
+
+}  // namespace
+
 // Class that shows the generated password and associated UI (currently an
 // explanatory text).
 class PasswordGenerationPopupViewViews::GeneratedPasswordBox
@@ -103,12 +111,6 @@ void PasswordGenerationPopupViewViews::Hide() {
   controller_ = NULL;
 
   DoHide();
-}
-
-gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
-  int width =
-      std::max(controller_->GetMinimumWidth(), GetPreferredSize().width());
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void PasswordGenerationPopupViewViews::UpdateState() {
@@ -207,6 +209,14 @@ void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
                        base::ASCIIToUTF16(" ")));
   node_data->SetDescription(controller_->HelpText());
   node_data->role = ax::mojom::Role::kMenuItem;
+}
+
+gfx::Size PasswordGenerationPopupViewViews::CalculatePreferredSize() const {
+  int width =
+      std::max(GetLayoutManager()->GetPreferredSize(this).width(),
+               gfx::ToEnclosingRect(controller_->element_bounds()).width());
+  width = std::min(width, kPasswordGenerationMaxWidth);
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void PasswordGenerationPopupViewViews::StyledLabelLinkClicked(

@@ -51,7 +51,7 @@ class AutofillPopupViewDelegate {
   virtual gfx::Rect popup_bounds() const = 0;
 
   // The view that the form field element sits in.
-  virtual gfx::NativeView container_view() = 0;
+  virtual gfx::NativeView container_view() const = 0;
 
   // The bounds of the form field element (screen coordinates).
   virtual const gfx::RectF& element_bounds() const = 0;

@@ -151,31 +151,6 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   Hide();
 }
 
-int PasswordGenerationPopupControllerImpl::GetMinimumWidth() {
-  // Minimum width in pixels.
-  const int minimum_width = 350;
-
-  // If the width of the field is longer than the minimum, use that instead.
-  return std::max(minimum_width,
-                  gfx::ToEnclosingRect(element_bounds()).width());
-}
-
-void PasswordGenerationPopupControllerImpl::CalculateBounds() {
-  gfx::Size bounds = view_->GetPreferredSizeOfPasswordView();
-
-  gfx::Rect new_element_bounds = gfx::ToEnclosingRect(element_bounds());
-  // Consider the element is |kElementBorderPadding| pixels larger at the top
-  // and at the bottom in order to reposition the dropdown, so that it doesn't
-  // look too close to the element.
-  constexpr int kElementBorderPadding = 1;
-  new_element_bounds.Inset(/*horizontal=*/0,
-                           /*vertical=*/-kElementBorderPadding);
-
-  popup_bounds_ = view_common_.CalculatePopupBounds(
-      bounds.width(), bounds.height(), new_element_bounds, container_view(),
-      IsRTL());
-}
-
 void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
@@ -201,11 +176,9 @@ void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
       return;
     }
 
-    CalculateBounds();
     view_->Show();
   } else {
     view_->UpdateState();
-    CalculateBounds();
     view_->UpdateBoundsAndRedrawPopup();
   }
 
@@ -275,12 +248,13 @@ bool PasswordGenerationPopupControllerImpl::HasSelection() const {
   return password_selected();
 }
 
-gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
+gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {
   return controller_common_.container_view;
 }
 
 gfx::Rect PasswordGenerationPopupControllerImpl::popup_bounds() const {
-  return popup_bounds_;
+  NOTREACHED();
+  return gfx::Rect();
 }
 
 const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
