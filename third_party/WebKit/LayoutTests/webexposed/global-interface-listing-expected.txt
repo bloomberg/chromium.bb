@@ -7340,6 +7340,7 @@ interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
     method createPolicy
+    method getExposedPolicy
     method getPolicyNames
 interface TrustedURL
     static method create

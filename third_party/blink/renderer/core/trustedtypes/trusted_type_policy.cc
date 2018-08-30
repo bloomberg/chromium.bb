@@ -16,13 +16,17 @@ namespace blink {
 
 TrustedTypePolicy::TrustedTypePolicy(
     const String& policy_name,
-    const TrustedTypePolicyOptions& policy_options)
-    : name_(policy_name), policy_options_(policy_options) {}
+    const TrustedTypePolicyOptions& policy_options,
+    bool exposed)
+    : name_(policy_name), policy_options_(policy_options) {
+  policy_options_.setExposed(exposed);
+}
 
 TrustedTypePolicy* TrustedTypePolicy::Create(
     const String& policy_name,
-    const TrustedTypePolicyOptions& policy_options) {
-  return new TrustedTypePolicy(policy_name, policy_options);
+    const TrustedTypePolicyOptions& policy_options,
+    bool exposed) {
+  return new TrustedTypePolicy(policy_name, policy_options, exposed);
 }
 
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
@@ -107,6 +111,10 @@ TrustedURL* TrustedTypePolicy::createURL(ScriptState* script_state,
 
 String TrustedTypePolicy::name() const {
   return name_;
+}
+
+bool TrustedTypePolicy::exposed() const {
+  return policy_options_.exposed();
 }
 
 void TrustedTypePolicy::Trace(blink::Visitor* visitor) {

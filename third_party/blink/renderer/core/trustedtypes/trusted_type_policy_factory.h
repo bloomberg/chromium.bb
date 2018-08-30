@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -29,7 +30,10 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
 
   TrustedTypePolicy* createPolicy(const String&,
                                   const TrustedTypePolicyOptions&,
+                                  bool exposed,
                                   ExceptionState&);
+
+  TrustedTypePolicy* getExposedPolicy(const String&);
 
   Vector<String> getPolicyNames() const;
 
@@ -38,7 +42,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
  private:
   explicit TrustedTypePolicyFactory(LocalFrame*);
 
-  HeapVector<Member<TrustedTypePolicy>> policies_;
+  HeapHashMap<String, Member<TrustedTypePolicy>> policy_map_;
 };
 
 }  // namespace blink
