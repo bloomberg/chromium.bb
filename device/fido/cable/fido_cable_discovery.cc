@@ -140,7 +140,15 @@ FidoCableDiscovery::FidoCableDiscovery(
     : FidoBleDiscoveryBase(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy),
       discovery_data_(std::move(discovery_data)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+// Windows currently does not support multiple EIDs, thus we ignore any extra
+// discovery data.
+// TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
+#if defined(OS_WIN)
+  if (discovery_data_.size() > 1u)
+    discovery_data_.erase(discovery_data_.begin() + 1, discovery_data_.end());
+#endif
+}
 
 // This is a workaround for https://crbug.com/846522
 FidoCableDiscovery::~FidoCableDiscovery() {
@@ -248,7 +256,12 @@ void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
   for (auto advertisement : advertisements_)
     advertisement.second->Unregister(barrier_closure, base::DoNothing());
 
+#if !defined(OS_WIN)
+  // On Windows the discovery is the only owner of the advertisements, meaning
+  // the advertisements would be destroyed before |barrier_closure| could be
+  // invoked.
   advertisements_.clear();
+#endif  // !defined(OS_WIN)
 }
 
 void FidoCableDiscovery::OnAdvertisementRegistered(
