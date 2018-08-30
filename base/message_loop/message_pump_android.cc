@@ -20,6 +20,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 
 // Android stripped sys/timerfd.h out of their platform headers, so we have to
 // use syscall to make use of timerfd. Once the min API level is 20, we can
@@ -52,7 +53,15 @@ int timerfd_settime(int ufc,
   return syscall(__NR_timerfd_settime, ufc, flags, utmr, otmr);
 }
 
-int NonDelayedLooperCallback(int fd, int events, void* data) {
+// https://crbug.com/873588. The stack may not be aligned when the ALooper calls
+// into our code due to the inconsistent ABI on older Android OS versions.
+#if defined(ARCH_CPU_X86)
+#define STACK_ALIGN __attribute__((force_align_arg_pointer))
+#else
+#define STACK_ALIGN
+#endif
+
+STACK_ALIGN int NonDelayedLooperCallback(int fd, int events, void* data) {
   if (events & ALOOPER_EVENT_HANGUP)
     return 0;
 
@@ -62,7 +71,7 @@ int NonDelayedLooperCallback(int fd, int events, void* data) {
   return 1;  // continue listening for events
 }
 
-int DelayedLooperCallback(int fd, int events, void* data) {
+STACK_ALIGN int DelayedLooperCallback(int fd, int events, void* data) {
   if (events & ALOOPER_EVENT_HANGUP)
     return 0;
 
