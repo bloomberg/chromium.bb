@@ -283,8 +283,8 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
     const UIMediaSink& sink = sinks.at(i);
-    CastDialogSinkButton* sink_button = new CastDialogSinkButton(this, sink);
-    sink_button->set_tag(i);
+    CastDialogSinkButton* sink_button =
+        new CastDialogSinkButton(this, sink, /** button_tag */ i);
     sink_buttons_.push_back(sink_button);
     sink_list_view->AddChildView(sink_button);
   }
@@ -347,9 +347,7 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
 
 void CastDialogView::DisableUnsupportedSinks() {
   for (CastDialogSinkButton* sink_button : sink_buttons_) {
-    const bool enable =
-        sink_button->sink().state == UIMediaSinkState::CONNECTED ||
-        GetCastModeToUse(sink_button->sink()).has_value();
+    const bool enable = GetCastModeToUse(sink_button->sink()).has_value();
     sink_button->SetEnabled(enable);
   }
 }
