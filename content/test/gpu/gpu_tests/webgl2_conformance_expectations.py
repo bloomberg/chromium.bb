@@ -278,15 +278,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/misc/' +
         'copy-texture-image-webgl-specific.html',
         ['win', 'amd', 'd3d11'], bug=828984)
-    self.Flaky('conformance2/textures/webgl_canvas/' +
-        'tex-3d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        ['win', 'amd', 'd3d11'], bug=828984)
-    self.Flaky('conformance2/textures/webgl_canvas/' +
-        'tex-3d-rg16f-rg-half_float.html',
-        ['win', 'amd', 'd3d11'], bug=828984)
-    self.Flaky('conformance2/textures/webgl_canvas/' +
-        'tex-3d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/webgl_canvas/*', ['win', 'amd'],
+        bug=878780)
 
     # Recent AMD drivers seem to have a regression with 3D textures.
     self.Fail('conformance2/textures/canvas_sub_rectangle/tex-3d-*',
