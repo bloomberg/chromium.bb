@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -156,7 +157,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeBaseCheckBoxPreference mNavigationError;
     private ChromeBaseCheckBoxPreference mSafeBrowsing;
     private ChromeBaseCheckBoxPreference mSafeBrowsingReporting;
-    private Preference mUsageAndCrashReporting;
+    private ChromeBaseCheckBoxPreference mUsageAndCrashReporting;
     private Preference mContextualSearch;
 
     private boolean mIsEngineInitialized;
@@ -249,7 +250,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mUsageAndCrashReporting = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+        mUsageAndCrashReporting =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+        mUsageAndCrashReporting.setOnPreferenceChangeListener(this);
+        mUsageAndCrashReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mContextualSearch = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (!ContextualSearchFieldTrial.isEnabled()) {
@@ -375,6 +379,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             recordNetworkPredictionEnablingUMA((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
+        } else if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
+            UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
         } else if (isSyncTypePreference(preference)) {
             final boolean syncAutofillToggled = preference == mSyncAutofill;
             final boolean preferenceChecked = (boolean) newValue;
@@ -833,14 +839,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
         mSafeBrowsingReporting.setChecked(
                 mPrefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
+        mUsageAndCrashReporting.setChecked(
+                mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
 
-        CharSequence textOn = getActivity().getResources().getText(R.string.text_on);
-        CharSequence textOff = getActivity().getResources().getText(R.string.text_off);
-        mUsageAndCrashReporting.setSummary(
-                mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser() ? textOn : textOff);
         if (mContextualSearch != null) {
             boolean isContextualSearchEnabled = !mPrefServiceBridge.isContextualSearchDisabled();
-            mContextualSearch.setSummary(isContextualSearchEnabled ? textOn : textOff);
+            mContextualSearch.setSummary(
+                    isContextualSearchEnabled ? R.string.text_on : R.string.text_off);
         }
     }
 
@@ -862,6 +867,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             }
             if (PREF_NETWORK_PREDICTIONS.equals(key)) {
                 return mPrefServiceBridge.isNetworkPredictionManaged();
+            }
+            if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
+                return PrefServiceBridge.getInstance().isMetricsReportingManaged();
             }
             return false;
         };

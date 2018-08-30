@@ -40,7 +40,7 @@
         android:summary="@string/settings_can_make_payment_toggle_label" />
     <Preference
         android:key="usage_and_crash_reports"
-        android:title="@string/usage_and_crash_reports_title"
+        android:title="@string/usage_and_crash_reports_title_legacy"
         android:fragment="org.chromium.chrome.browser.preferences.privacy.UsageAndCrashReportsPreferenceFragment" />
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.privacy.DoNotTrackPreference"
