@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -60,7 +61,7 @@ const char kStatsBookmarksKeyDeprecated[] = "stats_bookmarks";
 const char kStatsSettingsKeyDeprecated[] = "stats_settings";
 
 void DeleteBitmap(const base::FilePath& image_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::DeleteFile(image_path, false);
 }
 

@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
@@ -174,7 +174,7 @@ int64_t ComputeFilesSize(const base::FilePath& directory,
 
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const int64_t kBytesInOneMB = 1024 * 1024;
 
   int64_t size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
