@@ -524,6 +524,12 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         target_url_("http://host3/"),
         rule_based_resolver_proc_(new net::RuleBasedHostResolverProc(nullptr)),
         cross_site_test_server_(new net::EmbeddedTestServer()) {
+    // The predictor should be disabled until we set everything up.
+    std::vector<base::Feature> enabled_features = {};
+    std::vector<base::Feature> disabled_features = {
+        features::kNetworkPrediction,
+        predictors::kSpeculativePreconnectFeature};
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     rule_based_resolver_proc_->AddRuleWithLatency("www.example.test",
                                                   "127.0.0.1", 50);
     rule_based_resolver_proc_->AddRuleWithLatency("gmail.google.com",
@@ -537,8 +543,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         Predictor::kMaxSpeculativeResolveQueueDelayMs + 300);
     rule_based_resolver_proc_->AddRuleWithLatency("delay.google.com",
                                                   "127.0.0.1", 1000 * 60);
-    scoped_feature_list_.InitAndDisableFeature(
-        predictors::kSpeculativePreconnectFeature);
   }
 
   ~PredictorBrowserTest() override {}

@@ -160,6 +160,7 @@ void LoadingDataCollector::RecordFinishNavigation(
     inflight_navigations_.erase(old_navigation_id);
     return;
   }
+
   // All subsequent events corresponding to this navigation will have
   // |new_navigation_id|. Find the |old_navigation_id| entry in
   // |inflight_navigations_| and change its key to the |new_navigation_id|.

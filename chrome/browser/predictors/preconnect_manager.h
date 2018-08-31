@@ -117,6 +117,19 @@ class PreconnectManager {
     virtual void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) = 0;
   };
 
+  // An observer for testing.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    virtual void OnPreconnectUrl(const GURL& url,
+                                 int num_sockets,
+                                 bool allow_credentials) {}
+    virtual void OnPreresolveUrl(const GURL& url) {}
+
+    virtual void OnPreresolveFinished(const GURL& url, bool success) {}
+  };
+
   static const size_t kMaxInflightPreresolves = 3;
 
   PreconnectManager(base::WeakPtr<Delegate> delegate, Profile* profile);
@@ -143,6 +156,8 @@ class PreconnectManager {
       network::mojom::NetworkContext* network_context) {
     network_context_ = network_context;
   }
+
+  void SetObserverForTesting(Observer* observer) { observer_ = observer; }
 
  private:
   using PreresolveJobMap = base::IDMap<std::unique_ptr<PreresolveJob>>;
@@ -172,6 +187,7 @@ class PreconnectManager {
 
   // Only used in tests.
   network::mojom::NetworkContext* network_context_ = nullptr;
+  Observer* observer_ = nullptr;
 
   base::WeakPtrFactory<PreconnectManager> weak_factory_;
 

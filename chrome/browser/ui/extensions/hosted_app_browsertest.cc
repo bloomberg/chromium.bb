@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -68,10 +69,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "ui/base/clipboard/clipboard.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/common/chrome_features.h"
-#endif
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -277,18 +274,19 @@ class HostedAppTest
 
     bool desktop_pwa_flag;
     std::tie(app_type_, desktop_pwa_flag) = GetParam();
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features = {
+        features::kNetworkPrediction,
+        predictors::kSpeculativePreconnectFeature};
     if (desktop_pwa_flag) {
-      scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+      enabled_features.push_back(features::kDesktopPWAWindowing);
     } else {
+      disabled_features.push_back(features::kDesktopPWAWindowing);
 #if defined(OS_MACOSX)
-      scoped_feature_list_.InitWithFeatures({features::kBookmarkApps},
-                                            {features::kDesktopPWAWindowing});
-#else
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kDesktopPWAWindowing);
+      enabled_features.push_back(features::kBookmarkApps);
 #endif
     }
-
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     extensions::ExtensionBrowserTest::SetUp();
   }
 

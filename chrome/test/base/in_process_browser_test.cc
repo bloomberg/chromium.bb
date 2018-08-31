@@ -182,13 +182,6 @@ void InProcessBrowserTest::SetUp() {
   // here.
   command_line->AppendSwitch(switches::kDisableOfflineAutoReload);
 
-  // Turn off preconnects because it breaks some browser tests, see
-  // http://crbug.com/60035.
-  std::vector<base::Feature> enabled_features = {};
-  std::vector<base::Feature> disabled_features = {
-      features::kNetworkPrediction, predictors::kSpeculativePreconnectFeature};
-  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
