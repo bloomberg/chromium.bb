@@ -2252,11 +2252,35 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
 
   // Icon can be only fetched after app is registered in the system.
   FakeAppIconLoaderDelegate icon_delegate;
-  ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
-      &icon_delegate);
-  icon_loader.FetchImage(app_id);
+  std::unique_ptr<ArcAppIconLoader> icon_loader =
+      std::make_unique<ArcAppIconLoader>(
+          profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+          &icon_delegate);
+  icon_loader->FetchImage(app_id);
   icon_delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  icon_loader.reset();
+
+  // Restart ARC to validate default app icon can be loaded next session.
+  RestartArc();
+  prefs = ArcAppListPrefs::Get(profile_.get());
+
+  FakeAppIconLoaderDelegate icon_delegate2;
+  icon_loader = std::make_unique<ArcAppIconLoader>(
+      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      &icon_delegate2);
+  icon_loader->FetchImage(app_id);
+  // Default app icon becomes available once default apps loaded
+  // (asynchronously).
+  EXPECT_TRUE(prefs
+                  ->MaybeGetIconPathForDefaultApp(
+                      app_id, GetAppListIconDescriptor(ui::SCALE_FACTOR_100P))
+                  .empty());
+  icon_delegate2.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  EXPECT_FALSE(prefs
+                   ->MaybeGetIconPathForDefaultApp(
+                       app_id, GetAppListIconDescriptor(ui::SCALE_FACTOR_100P))
+                   .empty());
+  icon_loader.reset();
 }
 
 TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {

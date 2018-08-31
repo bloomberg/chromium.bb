@@ -905,8 +905,14 @@ void ArcAppListPrefs::RegisterDefaultApps() {
     if (!default_apps_.HasApp(app_id))
       continue;
     // Skip already tracked app.
-    if (tracked_apps_.count(app_id))
+    if (tracked_apps_.count(app_id)) {
+      // Notify that icon is ready for default app.
+      for (auto& observer : observer_list_) {
+        for (const auto& descriptor : active_icons_[app_id])
+          observer.OnAppIconUpdated(app_id, descriptor);
+      }
       continue;
+    }
 
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second.get();
     AddAppAndShortcut(app_info.name, app_info.package_name, app_info.activity,
