@@ -145,27 +145,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -780,27 +759,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1542,39 +1500,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ]
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2592,27 +2517,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3220,27 +3124,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

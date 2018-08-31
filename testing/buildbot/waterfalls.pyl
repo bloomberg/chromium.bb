@@ -2472,7 +2472,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_viz_gtests',
-          'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },
       'linux-blink-animation-use-time-delta': {
