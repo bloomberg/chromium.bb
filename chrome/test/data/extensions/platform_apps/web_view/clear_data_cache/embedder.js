@@ -96,9 +96,16 @@ ClearDataTester.prototype.testClearDataCache = function() {
   this.webview_.request.onResponseStarted.addListener(
       responseStartedHandler, {urls: ['<all_urls>']});
 
-  for (var i = 0; i < 5; ++i) {
-    this.requestXhrFromWebView_();
-  }
+  this.webview_.addEventListener('loadstop', () => {
+    for (var i = 0; i < 5; ++i) {
+      this.requestXhrFromWebView_();
+    }
+  });
+
+  // Load the actual guest URL to start the test.
+  var guestURL = this.webview_.getAttribute('src').replace(
+                    '/empty_guest.html', '/guest.html');
+  this.webview_.setAttribute('src', guestURL);
 };
 
 var tester = new ClearDataTester();
@@ -117,24 +124,26 @@ window.runTest = function(testName) {
 };
 // window.* exported functions end.
 
-function setUpTest(guestURL, doneCallback) {
+function setUpTest(emptyGuestURL, doneCallback) {
   var webview = document.createElement('webview');
 
-  webview.onloadstop = function(e) {
+  var listener = function(e) {
+    webview.removeEventListener('loadstop', listener);
     LOG('webview has loaded.');
     doneCallback(webview);
   };
+  webview.addEventListener('loadstop', listener);
 
-  webview.setAttribute('src', guestURL);
+  webview.setAttribute('src', emptyGuestURL);
   document.body.appendChild(webview);
 }
 
 onload = function() {
   chrome.test.getConfig(function(config) {
     LOG('config: ' + config.testServer.port);
-    var guestURL = 'http://localhost:' + config.testServer.port +
-        '/extensions/platform_apps/web_view/clear_data_cache/guest.html';
-    setUpTest(guestURL, function(webview) {
+    var emptyGuestURL = 'http://localhost:' + config.testServer.port +
+        '/extensions/platform_apps/web_view/clear_data_cache/empty_guest.html';
+    setUpTest(emptyGuestURL, function(webview) {
       LOG('Guest load completed.');
       //chrome.test.sendMessage('WebViewTest.LAUNCHED');
       chrome.test.sendMessage('Launched');
