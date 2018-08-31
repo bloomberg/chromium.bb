@@ -611,7 +611,13 @@ html[dir=rtl] #custom-bg-attr {
   width: 10px;
 }
 
+#link-icon.single-attr {
+  background-size: 16px 16px;
+  height: 18px;
+  width: 16px;
+}
+
 html[dir=rtl] #link-icon {
-  margin-right: auto;
   margin-left: 8px;
+  margin-right: auto;
 }
