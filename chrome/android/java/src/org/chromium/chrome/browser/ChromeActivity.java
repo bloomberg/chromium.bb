@@ -398,7 +398,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
 
             mModalDialogManager = createModalDialogManager();
-            mPageViewTimer = new PageViewTimer(mTabModelSelector);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -1378,6 +1377,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mManualFillingController.initialize(getWindowAndroid(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
+
+        // Create after native initialization so subclasses that override this method have a chance
+        // to setup.
+        mPageViewTimer = createPageViewTimer();
 
         if (mToolbarManager != null && mToolbarManager.getToolbar() != null) {
             mToolbarManager.getToolbar().setScrim(mScrimView);
@@ -2494,5 +2497,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @VisibleForTesting
     public ContextualSuggestionsCoordinator getContextualSuggestionsCoordinatorForTesting() {
         return mContextualSuggestionsCoordinator;
+    }
+
+    /**
+     * Create a PageViewTimer that's compatible with this activity. Override in subclasses to
+     * specialize behavior.
+     * @return The PageViewTimer created for this activity.
+     */
+    protected PageViewTimer createPageViewTimer() {
+        return new PageViewTimer(mTabModelSelector);
     }
 }
