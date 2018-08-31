@@ -147,7 +147,8 @@ MediaEngagementScore::GetScoreDetails() const {
   return media::mojom::MediaEngagementScoreDetails::New(
       origin_, actual_score(), visits(), media_playbacks(),
       last_media_playback_time().ToJsTime(), high_score(), audible_playbacks(),
-      significant_playbacks(), high_score_changes());
+      significant_playbacks(), high_score_changes(), audio_context_playbacks(),
+      media_element_playbacks());
 }
 
 MediaEngagementScore::~MediaEngagementScore() = default;
