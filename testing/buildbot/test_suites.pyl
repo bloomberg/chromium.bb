@@ -634,15 +634,6 @@
         'shards': 10,
       },
     },
-    'viz_content_browsertests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'shards': 10,
-      },
-      'test': 'content_browsertests',
-    },
     'viz_unittests': {},
   },
 
@@ -1365,17 +1356,6 @@
     },
   },
 
-  'gpu_default_win_and_linux_specific_telemetry_tests': {
-    'viz_screenshot_sync': {
-      'args': [
-        '--dont-restore-color-profile-after-test',
-        # This test confirms that GPU compositing is working with OOP-D.
-        '--extra-browser-args=--enable-features=VizDisplayCompositor',
-      ],
-      'telemetry_test_name': 'screenshot_sync',
-    },
-  },
-
   'gpu_desktop_specific_gtests': {
     'tab_capture_end2end_tests': {
       'args': [
@@ -1742,55 +1722,6 @@
         '--test-launcher-print-test-stdio=always',
       ],
     },
-   },
-
-  'linux_viz_isolated_scripts': {
-    'telemetry_perf_unittests': {
-      'args': [
-        '--xvfb',
-      ],
-      'swarming': {
-        'hard_timeout': 1200,
-        'idempotent': False,  # https://crbug.com/549140
-        'shards': 12,
-      },
-    },
-    'telemetry_perf_unittests_viz': {
-      'isolate_name': 'telemetry_perf_unittests',
-      'args': [
-        '--xvfb',
-        '--extra-browser-args=--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'hard_timeout': 1200,
-        'idempotent': False,  # https://crbug.com/549140
-        'shards': 12,
-      },
-    },
-    'telemetry_unittests_viz': {
-      'isolate_name': 'telemetry_unittests',
-      'args': [
-        '--extra-browser-args=--enable-features=VizDisplayCompositor',
-        # Disable GPU compositing, telemetry_unittests runs on VMs.
-        # https://crbug.com/871955
-        '--extra-browser-args=--disable-gpu',
-      ],
-      'swarming': {
-        'idempotent': False,  # https://crbug.com/549140
-        'shards': 4,
-      },
-     },
-     'telemetry_unittests': {
-       'args': [
-        # Disable GPU compositing, telemetry_unittests runs on VMs.
-        # https://crbug.com/871955
-         '--extra-browser-args=--disable-gpu',
-       ],
-       'swarming': {
-         'idempotent': False,  # https://crbug.com/549140
-         'shards': 4,
-       },
-     },
    },
 
   'mash_fyi_chromium_gtests': {
@@ -2214,14 +2145,14 @@
         '--enable-features=VizDisplayCompositor',
       ],
       'swarming': {
-        'shards': 2,
+        'shards': 10,
       },
       'test': 'content_browsertests',
     },
   },
 
-  'viz_non_linux_non_windows_gtests': {
-    # TODO(jonross): remove once Viz field trials for Mac are enabled.
+  'viz_chromeos_gtests': {
+    # TODO(jonross): remove once Viz field trials for ChromeOS are enabled.
     'viz_browser_tests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
@@ -2445,7 +2376,8 @@
     'single_process_mash_chromium_gtests',
     'mash_chromium_gtests',
     'non_android_chromium_gtests',
-    'viz_non_linux_non_windows_gtests',
+    'viz_chromeos_gtests',
+    'viz_gtests',
   ],
 
   'chromium_linux_dbg_isolated_scripts': [
@@ -2468,7 +2400,6 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
-    'viz_non_linux_non_windows_gtests',
   ],
 
   'chromium_win_gtests': [
@@ -2533,7 +2464,6 @@
 
   'gpu_common_win_and_linux_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2565,7 +2495,6 @@
 
   'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
     'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
@@ -2632,7 +2561,6 @@
 
   'gpu_fyi_win_amd_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
@@ -2642,7 +2570,6 @@
 
   'gpu_fyi_win_and_linux_release_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
@@ -2650,14 +2577,12 @@
 
   'gpu_fyi_win_and_linux_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
   'gpu_fyi_win_debug_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
@@ -2688,7 +2613,6 @@
 
   'gpu_fyi_win_release_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
@@ -2712,7 +2636,6 @@
 
   'gpu_fyi_win7_nvidia_release_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',

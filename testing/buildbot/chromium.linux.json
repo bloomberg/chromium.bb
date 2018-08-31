@@ -1064,17 +1064,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1819,17 +1808,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2515,17 +2493,6 @@
         "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -3331,22 +3298,6 @@
               "os": "Ubuntu-16.04"
             }
           ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 10
         },
         "test": "content_browsertests"
       },

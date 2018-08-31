@@ -1190,45 +1190,8 @@
     ],
   },
   'viz_content_browsertests': {
-    'remove_from': [
-      # chromium.android
-      # GL OOM error triggered on KitKat. crbug.com/863049
-      'android-kitkat-arm-rel',
-      # Several failures that need to be triaged. crbug.com/871519
-      'KitKat Phone Tester (dbg)',
-      # Currently flaky timeouts on Windows 10. crbug.com/839824
-      'Win10 Tests x64 (dbg)',
-      # TODO(crbug.com/877280): Add it back when we have the capacity.
-      'android-marshmallow-arm64-rel',
-    ],
     'modifications': {
-      # chromium.android
-      'android-kitkat-arm-rel': {
-        'experiment_percentage': 100,
-      },
-      # chromium.clang
-      'ToTLinuxUBSanVptr': {
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'linux-win_cross-rel': {
-        # content_browsertests sometimes times out without this override on
-        # the cross bot, probably because of https://crbug.com/803591,
-        # see also https://crbug.com/838559
-        # TODO(thakis): Remove this once 803591 is fixed.
-        'swarming': {
-          'shards': 5,
-        },
-      },
       # chromium.memory
-      'Linux ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 8,
-        },
-      },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # content_browsertests is slow on ASAN try bot. crbug.com/822461.
         'swarming': {
@@ -1242,44 +1205,9 @@
           'shards': 2,
         },
       },
-      'Linux TSan Tests': {
-        'swarming': {
-          'shards': 7,
-        },
-      },
-      # chromium.win
-      'Win10 Tests x64': {
-        # crbug.com/868082
-        'args': [
-          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
-        ],
-      },
     },
   },
   'viz_browser_tests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTMac', # https://crbug.com/828031
-      'ToTMacASan', # https://crbug.com/828031
-      # chromium.fyi
-      'Chromium Mac 10.13', # https://crbug.com/828031
-      'mac-views-rel', # https://crbug.com/828031
-      # chromium.mac
-      'Mac10.10 Tests', # https://crbug.com/828031
-      'Mac10.11 Tests', # https://crbug.com/828031
-      'Mac10.12 Tests', # https://crbug.com/828031
-      'Mac10.13 Tests', # https://crbug.com/828031
-      'Mac10.13 Tests (dbg)', # https://crbug.com/828031
-      # chromium.memory
-      'Linux TSan Tests',  # https://crbug.com/368525
-      'Mac ASan 64 Tests (1)', # https://crbug.com/828031
-      # chromium.win
-      # Currently too flaky on Windows.
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (1)',
-      'Win10 Tests x64 (dbg)',
-    ],
     'modifications': {
       # chromium.chromiumos
       'linux-chromeos-dbg': {
@@ -1287,25 +1215,7 @@
           'shards': 20,
         },
       },
-      # chromium.clang
-      'ToTWin(dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'ToTWin64(dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       # chromium.memory
-      'Linux ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'Linux ChromiumOS MSan Tests': {
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455

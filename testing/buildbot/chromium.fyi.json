@@ -467,27 +467,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1036,7 +1015,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -1059,59 +1038,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--xvfb"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 1200,
-          "idempotent": false,
-          "shards": 12
-        }
-      },
-      {
-        "args": [
-          "--xvfb",
-          "--extra-browser-args=--enable-features=VizDisplayCompositor"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests_viz",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 1200,
-          "idempotent": false,
-          "shards": 12
-        }
-      },
-      {
-        "args": [
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "idempotent": false,
-          "shards": 4
-        }
-      },
-      {
-        "args": [
-          "--extra-browser-args=--enable-features=VizDisplayCompositor --disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests_viz",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "idempotent": false,
-          "shards": 4
-        }
       }
     ]
   },
@@ -1392,7 +1318,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       }
@@ -1472,7 +1398,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -1662,7 +1588,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -2150,16 +2076,6 @@
           "--gtest_filter=TracingControllerTest.*"
         ],
         "name": "perfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -2804,7 +2720,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       }
@@ -4500,17 +4416,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -5228,17 +5133,6 @@
         "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -5983,29 +5877,8 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--enable-features=ViewsBrowserWindows"
         ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows"
-        ],
-        "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
