@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DRIVE_CHROMEOS_FILE_SYSTEM_OBSERVER_H_
 #define COMPONENTS_DRIVE_CHROMEOS_FILE_SYSTEM_OBSERVER_H_
 
+#include <set>
+#include <string>
+
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/file_errors.h"
 
@@ -27,10 +30,18 @@ class FileSystemObserver {
   virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
   virtual void OnFileChanged(const FileChange& file_change) {}
 
-  // Triggared when a specific drive error occurred.
+  // Triggered when a specific drive error occurred.
   // |type| is a type of the error. |file_name| is a virtual path of the entry.
   virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
                                 const base::FilePath& file_path) {}
+
+  // Triggered when the list of team drives that the user has access to
+  // changes. On first load all team drives will be passed via
+  // |added_team_drive_ids|, subsequent calls will just be the delta additions
+  // and removals.
+  virtual void OnTeamDrivesUpdated(
+      const std::set<std::string>& added_team_drive_ids,
+      const std::set<std::string>& removed_team_drive_ids) {}
 
  protected:
   virtual ~FileSystemObserver() = default;

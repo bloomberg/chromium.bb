@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -38,6 +41,7 @@
 #include "chromeos/chromeos_features.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system.h"
+#include "components/drive/chromeos/file_system_observer.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_app_registry.h"
@@ -373,6 +377,31 @@ class DriveIntegrationService::DriveFsHolder
   DISALLOW_COPY_AND_ASSIGN(DriveFsHolder);
 };
 
+class DriveIntegrationService::NotificationManager : public FileSystemObserver {
+ public:
+  // TODO(slangley): Allow for testing of DriveNotificationManager by using
+  // dependency injection.
+  explicit NotificationManager(Profile* profile) : profile_(profile) {}
+  ~NotificationManager() override = default;
+
+  void OnTeamDrivesUpdated(
+      const std::set<std::string>& added_team_drive_ids,
+      const std::set<std::string>& removed_team_drive_ids) override {
+    DriveNotificationManager* drive_notification_manager =
+        DriveNotificationManagerFactory::FindForBrowserContext(profile_);
+
+    if (drive_notification_manager) {
+      drive_notification_manager->UpdateTeamDriveIds(added_team_drive_ids,
+                                                     removed_team_drive_ids);
+    }
+  }
+
+ private:
+  Profile* const profile_;  // Not Owned
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationManager);
+};
+
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
     PreferenceWatcher* preference_watcher,
@@ -476,6 +505,11 @@ DriveIntegrationService::DriveIntegrationService(
   debug_info_collector_ = std::make_unique<DebugInfoCollector>(
       resource_metadata_.get(), file_system(), blocking_task_runner_.get());
 
+  notification_manager_ =
+      std::make_unique<DriveIntegrationService::NotificationManager>(profile);
+
+  file_system_->AddObserver(notification_manager_.get());
+
   SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
 }
 
@@ -494,6 +528,7 @@ void DriveIntegrationService::Shutdown() {
     drive_notification_manager->RemoveObserver(this);
 
   RemoveDriveMountPoint();
+  notification_manager_.reset();
   debug_info_collector_.reset();
   download_handler_.reset();
   file_system_.reset();
@@ -595,9 +630,17 @@ void DriveIntegrationService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DriveIntegrationService::OnNotificationReceived() {
+void DriveIntegrationService::OnNotificationReceived(
+    const std::set<std::string>& ids) {
   logger_->Log(logging::LOG_INFO,
                "Received Drive update notification. Will check for update.");
+  file_system_->CheckForUpdates(ids);
+  drive_app_registry_->Update();
+}
+
+void DriveIntegrationService::OnNotificationTimerFired() {
+  logger_->Log(logging::LOG_INFO,
+               "Drive notification timer erpired. Will check all for update.");
   file_system_->CheckForUpdates();
   drive_app_registry_->Update();
 }

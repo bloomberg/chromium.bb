@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -47,6 +48,7 @@ class FakeFileSystem : public FileSystemInterface {
   void AddObserver(FileSystemObserver* observer) override;
   void RemoveObserver(FileSystemObserver* observer) override;
   void CheckForUpdates() override;
+  void CheckForUpdates(const std::set<std::string>& ids) override;
   void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,

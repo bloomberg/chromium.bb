@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -202,8 +204,13 @@ class FileSystemInterface {
   virtual void AddObserver(FileSystemObserver* observer) = 0;
   virtual void RemoveObserver(FileSystemObserver* observer) = 0;
 
-  // Checks for updates on the server.
+  // Checks for updates on the server, in response to a timer expiring - most
+  // likely when we are not connected to push notifications.
   virtual void CheckForUpdates() = 0;
+
+  // Check for updates on the server, for the given ids. The ids are either
+  // team drive ids, or an empty string for the users default corpus.
+  virtual void CheckForUpdates(const std::set<std::string>& ids) = 0;
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
   // |local_src_file_path| must be a file from the local file system.

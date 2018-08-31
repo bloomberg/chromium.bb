@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -82,6 +84,7 @@ class FileSystem : public FileSystemInterface,
   void AddObserver(FileSystemObserver* observer) override;
   void RemoveObserver(FileSystemObserver* observer) override;
   void CheckForUpdates() override;
+  void CheckForUpdates(const std::set<std::string>& ids) override;
   void Search(const std::string& search_query,
               const GURL& next_link,
               SearchCallback callback) override;
