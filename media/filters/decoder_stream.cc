@@ -48,13 +48,12 @@ DecoderStream<StreamType>::DecoderStream(
     MediaLog* media_log)
     : traits_(std::move(traits)),
       task_runner_(task_runner),
-      create_decoders_cb_(std::move(create_decoders_cb)),
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(nullptr),
       cdm_context_(nullptr),
       decoder_produced_a_frame_(false),
-      has_fallen_back_once_on_decode_error_(false),
+      decoder_selector_(task_runner, std::move(create_decoders_cb), media_log),
       decoding_eos_(false),
       preparing_output_(false),
       pending_decode_requests_(0),
@@ -110,9 +109,11 @@ void DecoderStream<StreamType>::Initialize(
   init_cb_ = std::move(init_cb);
   cdm_context_ = cdm_context;
   statistics_cb_ = std::move(statistics_cb);
-  waiting_for_decryption_key_cb_ = std::move(waiting_for_decryption_key_cb);
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   traits_->OnStreamReset(stream_);
+  decoder_selector_.Initialize(traits_.get(), stream, cdm_context,
+                               std::move(waiting_for_decryption_key_cb));
 
   state_ = STATE_INITIALIZING;
   SelectDecoder();
@@ -266,23 +267,11 @@ void DecoderStream<StreamType>::SkipPrepareUntil(
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder() {
-  // If we are already using DecryptingDemuxerStream (DDS), e.g. during
-  // fallback, the |stream_| will always be clear. In this case, no need pass in
-  // the |cdm_context_|. This will also help prevent creating a new DDS on top
-  // of the current DDS.
-  CdmContext* cdm_context = decrypting_demuxer_stream_ ? nullptr : cdm_context_;
-  std::string blacklisted_decoder = decoder_ ? decoder_->GetDisplayName() : "";
-
-  decoder_selector_ = std::make_unique<DecoderSelector<StreamType>>(
-      task_runner_, create_decoders_cb_, media_log_);
-
-  decoder_selector_->SelectDecoder(
-      traits_.get(), stream_, cdm_context, blacklisted_decoder,
+  decoder_selector_.SelectDecoder(
       base::BindRepeating(&DecoderStream<StreamType>::OnDecoderSelected,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                          fallback_weak_factory_.GetWeakPtr()),
-      waiting_for_decryption_key_cb_);
+                          fallback_weak_factory_.GetWeakPtr()));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -296,8 +285,6 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   DCHECK(state_ == STATE_INITIALIZING || state_ == STATE_REINITIALIZING_DECODER)
       << state_;
 
-  decoder_selector_.reset();
-
   if (state_ == STATE_INITIALIZING) {
     DCHECK(init_cb_);
     DCHECK(!read_cb_);
@@ -310,6 +297,9 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   if (decrypting_demuxer_stream) {
     decrypting_demuxer_stream_ = std::move(decrypting_demuxer_stream);
     stream_ = decrypting_demuxer_stream_.get();
+    // Also clear |cdm_context_|, it shouldn't be passed during reinitialize for
+    // a sream that isn't encrypted.
+    cdm_context_ = nullptr;
   }
   if (decoder_change_observer_cb_)
     decoder_change_observer_cb_.Run(decoder_.get());
@@ -463,11 +453,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
 
   switch (status) {
     case DecodeStatus::DECODE_ERROR:
-      // Only fall back to a new decoder after failing to decode the first
-      // buffer, and if we have not fallen back before.
-      if (!decoder_produced_a_frame_ &&
-          !has_fallen_back_once_on_decode_error_) {
-        has_fallen_back_once_on_decode_error_ = true;
+      if (!decoder_produced_a_frame_) {
         pending_decode_requests_ = 0;
 
         // Prevent all pending decode requests and outputs from those requests
@@ -541,10 +527,13 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   // fallback decoder.
   // Note: |fallback_buffers_| might still have buffers, and we will keep
   // reading from there before requesting new buffers from |stream_|.
-  pending_buffers_.clear();
+  if (!decoder_produced_a_frame_) {
+    decoder_produced_a_frame_ = true;
+    decoder_selector_.FinalizeDecoderSelection();
+    pending_buffers_.clear();
+  }
 
   // If the frame should be dropped, exit early and decode another frame.
-  decoder_produced_a_frame_ = true;
   if (traits_->OnDecodeDone(output) == PostDecodeAction::DROP)
     return;
 
@@ -740,7 +729,9 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   DCHECK_EQ(pending_decode_requests_, 0);
 
   state_ = STATE_REINITIALIZING_DECODER;
-  // Decoders should not need a new CDM during reinitialization.
+
+  // TODO(sandersd): Detect whether a new decoder is required before
+  // attempting reinitialization.
   traits_->InitializeDecoder(
       decoder_.get(), traits_->GetDecoderConfig(stream_),
       stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
