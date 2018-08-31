@@ -569,12 +569,44 @@ void SetServerCreditCards(AutofillTable* table,
   }
 }
 
-void FillUploadField(AutofillUploadContents::Field* field,
-                     unsigned signature,
-                     const char* name,
-                     const char* control_type,
-                     const char* autocomplete,
-                     unsigned autofill_type) {
+void InitializePossibleTypesAndValidities(
+    std::vector<ServerFieldTypeSet>& possible_field_types,
+    std::vector<ServerFieldTypeValidityStatesMap>&
+        possible_field_types_validities,
+    const std::vector<ServerFieldType>& possible_types,
+    const std::vector<AutofillProfile::ValidityState>& validity_states) {
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types_validities.push_back(ServerFieldTypeValidityStatesMap());
+
+  if (validity_states.empty()) {
+    for (const auto& possible_type : possible_types) {
+      possible_field_types.back().insert(possible_type);
+      possible_field_types_validities.back()[possible_type].push_back(
+          AutofillProfile::UNVALIDATED);
+    }
+    return;
+  }
+
+  ASSERT_FALSE(possible_types.empty());
+  ASSERT_TRUE((possible_types.size() == validity_states.size()) ||
+              (possible_types.size() == 1 && validity_states.size() > 1));
+
+  ServerFieldType possible_type = possible_types[0];
+  for (unsigned i = 0; i < validity_states.size(); ++i) {
+    if (possible_types.size() == validity_states.size()) {
+      possible_type = possible_types[i];
+    }
+    possible_field_types.back().insert(possible_type);
+    possible_field_types_validities.back()[possible_type].push_back(
+        validity_states[i]);
+  }
+}
+
+void BasicFillUploadField(AutofillUploadContents::Field* field,
+                          unsigned signature,
+                          const char* name,
+                          const char* control_type,
+                          const char* autocomplete) {
   field->set_signature(signature);
   if (name)
     field->set_name(name);
@@ -582,7 +614,60 @@ void FillUploadField(AutofillUploadContents::Field* field,
     field->set_type(control_type);
   if (autocomplete)
     field->set_autocomplete(autocomplete);
+}
+
+void FillUploadField(AutofillUploadContents::Field* field,
+                     unsigned signature,
+                     const char* name,
+                     const char* control_type,
+                     const char* autocomplete,
+                     unsigned autofill_type,
+                     unsigned validity_state) {
+  BasicFillUploadField(field, signature, name, control_type, autocomplete);
+
   field->add_autofill_type(autofill_type);
+
+  auto* type_validities = field->add_autofill_type_validities();
+  type_validities->set_type(autofill_type);
+  type_validities->add_validity(validity_state);
+}
+
+void FillUploadField(AutofillUploadContents::Field* field,
+                     unsigned signature,
+                     const char* name,
+                     const char* control_type,
+                     const char* autocomplete,
+                     const std::vector<unsigned>& autofill_types,
+                     const std::vector<unsigned>& validity_states) {
+  BasicFillUploadField(field, signature, name, control_type, autocomplete);
+
+  for (unsigned i = 0; i < autofill_types.size(); ++i) {
+    field->add_autofill_type(autofill_types[i]);
+
+    auto* type_validities = field->add_autofill_type_validities();
+    type_validities->set_type(autofill_types[i]);
+    if (i < validity_states.size()) {
+      type_validities->add_validity(validity_states[i]);
+    } else {
+      type_validities->add_validity(0);
+    }
+  }
+}
+
+void FillUploadField(AutofillUploadContents::Field* field,
+                     unsigned signature,
+                     const char* name,
+                     const char* control_type,
+                     const char* autocomplete,
+                     unsigned autofill_type,
+                     const std::vector<unsigned>& validity_states) {
+  BasicFillUploadField(field, signature, name, control_type, autocomplete);
+
+  field->add_autofill_type(autofill_type);
+  auto* type_validities = field->add_autofill_type_validities();
+  type_validities->set_type(autofill_type);
+  for (unsigned i = 0; i < validity_states.size(); ++i)
+    type_validities->add_validity(validity_states[i]);
 }
 
 void FillQueryField(AutofillQueryContents::Form::Field* field,

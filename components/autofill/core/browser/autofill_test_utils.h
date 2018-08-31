@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -203,6 +205,16 @@ void ReenableSystemServices();
 void SetServerCreditCards(AutofillTable* table,
                           const std::vector<CreditCard>& cards);
 
+// Adds an element at the end of |possible_field_types| and
+// |possible_field_types_validities| given |possible_type| and their
+// corresponding |validity_state|.
+void InitializePossibleTypesAndValidities(
+    std::vector<ServerFieldTypeSet>& possible_field_types,
+    std::vector<ServerFieldTypeValidityStatesMap>&
+        possible_field_types_validities,
+    const std::vector<ServerFieldType>& possible_type,
+    const std::vector<AutofillProfile::ValidityState>& validity_state = {});
+
 // Fills the upload |field| with the information passed by parameter. If the
 // value of a const char* parameter is NULL, the corresponding attribute won't
 // be set at all, as opposed to being set to empty string.
@@ -211,7 +223,24 @@ void FillUploadField(AutofillUploadContents::Field* field,
                      const char* name,
                      const char* control_type,
                      const char* autocomplete,
-                     unsigned autofill_type);
+                     unsigned autofill_type,
+                     unsigned validity_state = 0);
+
+void FillUploadField(AutofillUploadContents::Field* field,
+                     unsigned signature,
+                     const char* name,
+                     const char* control_type,
+                     const char* autocomplete,
+                     const std::vector<unsigned>& autofill_type,
+                     const std::vector<unsigned>& validity_state = {});
+
+void FillUploadField(AutofillUploadContents::Field* field,
+                     unsigned signature,
+                     const char* name,
+                     const char* control_type,
+                     const char* autocomplete,
+                     unsigned autofill_type,
+                     const std::vector<unsigned>& validity_states);
 
 // Fills the query form |field| with the information passed by parameter. If the
 // value of a const char* parameter is NULL, the corresponding attribute won't

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
@@ -20,6 +21,9 @@
 #include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
+
+typedef std::map<ServerFieldType, std::vector<AutofillProfile::ValidityState>>
+    ServerFieldTypeValidityStatesMap;
 
 class AutofillField : public FormFieldData {
  public:
@@ -44,6 +48,9 @@ class AutofillField : public FormFieldData {
   HtmlFieldType html_type() const { return html_type_; }
   HtmlFieldMode html_mode() const { return html_mode_; }
   const ServerFieldTypeSet& possible_types() const { return possible_types_; }
+  const ServerFieldTypeValidityStatesMap& possible_types_validities() const {
+    return possible_types_validities_;
+  }
   PhonePart phone_part() const { return phone_part_; }
   bool previously_autofilled() const { return previously_autofilled_; }
   const base::string16& parseable_name() const { return parseable_name_; }
@@ -60,6 +67,11 @@ class AutofillField : public FormFieldData {
   void set_possible_types(const ServerFieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }
+  void set_possible_types_validities(
+      const ServerFieldTypeValidityStatesMap& possible_types_validities) {
+    possible_types_validities_ = possible_types_validities;
+  }
+
   void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
   void set_previously_autofilled(bool previously_autofilled) {
     previously_autofilled_ = previously_autofilled;
@@ -146,6 +158,15 @@ class AutofillField : public FormFieldData {
     return password_requirements_;
   }
 
+  // For each type in |possible_types_| that's missing from
+  // |possible_types_validities_|, will add it to the
+  // |possible_types_validities_| and will set its validity to UNVALIDATED. This
+  // is to avoid inconsistencies between |possible_types_| and
+  // |possible_types_validities_|. Used especially when the server validity map
+  // is not available (is empty), and as a result the
+  // |possible_types_validities_| would also be empty.
+  void NormalizePossibleTypesValidities();
+
  private:
   // Whether the heuristics or server predict a credit card field.
   bool IsCreditCardPrediction() const;
@@ -183,6 +204,9 @@ class AutofillField : public FormFieldData {
 
   // The set of possible types for this field.
   ServerFieldTypeSet possible_types_;
+
+  // The set of possible types and their validity for this field.
+  ServerFieldTypeValidityStatesMap possible_types_validities_;
 
   // Used to track whether this field is a phone prefix or suffix.
   PhonePart phone_part_;

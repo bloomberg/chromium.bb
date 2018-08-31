@@ -142,6 +142,12 @@ message AutofillUploadContents {
     // or any PASSWORD vote, then the field is absent. This field describes the
     // context of the vote.
     optional VoteType vote_type = 23;
+
+    message AutofillTypeValiditiesPair {
+      required fixed32 type = 1;
+      repeated fixed32 validity = 2;
+    }
+    repeated AutofillTypeValiditiesPair autofill_type_validities = 24;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;
@@ -192,10 +198,10 @@ message ProfileValidityMap {
   // Map from autofill type to the validity of its value in the profile.
   //
   // Key should be one of the enum values from ServerFieldType. Values should be
-  // from the AutofillProfile::ValidityState enum above. Plain integers are used
+  // from the AutofillProfile::ValidityState. Plain integers are used
   // instead of enums because proto2 treats unknown enum values as unknown
   // fields, which is confusing when the enums are in maps.
-  map<int32, int32> field_validity_states = 1;
+  map<fixed32, fixed32> field_validity_states = 1;
 }
 
 // Map from profile GUIDs to profile validity maps for that profile. Each
