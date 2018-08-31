@@ -143,7 +143,7 @@ public class ChooseHostBrowserDialog {
     private static List<BrowserItem> getBrowserInfosForHostBrowserSelection(
             PackageManager packageManager, List<ResolveInfo> resolveInfos) {
         List<BrowserItem> browsers = new ArrayList<>();
-        List<String> browsersSupportingWebApk = WebApkUtils.getBrowsersSupportingWebApk();
+        List<String> browsersSupportingWebApk = HostBrowserUtils.getBrowsersSupportingWebApk();
         Set<String> packages = new HashSet<>();
 
         for (ResolveInfo info : resolveInfos) {
