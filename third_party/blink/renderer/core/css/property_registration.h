@@ -36,6 +36,9 @@ class CORE_EXPORT PropertyRegistration
       const CSSValue* initial,
       scoped_refptr<CSSVariableData> initial_variable_data);
 
+  static const PropertyRegistration* From(const ExecutionContext*,
+                                          const AtomicString& property_name);
+
   const CSSSyntaxDescriptor& Syntax() const { return syntax_; }
   bool Inherits() const { return inherits_; }
   const CSSValue* Initial() const { return initial_; }

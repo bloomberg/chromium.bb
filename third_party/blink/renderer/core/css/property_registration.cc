@@ -32,6 +32,16 @@ PropertyRegistration* PropertyRegistration::Create(
                                   initial_variable_data);
 }
 
+const PropertyRegistration* PropertyRegistration::From(
+    const ExecutionContext* execution_context,
+    const AtomicString& property_name) {
+  if (!execution_context || !execution_context->IsDocument())
+    return nullptr;
+  const PropertyRegistry* registry =
+      ToDocument(*execution_context).GetPropertyRegistry();
+  return registry ? registry->Registration(property_name) : nullptr;
+}
+
 PropertyRegistration::PropertyRegistration(
     const AtomicString& name,
     const CSSSyntaxDescriptor& syntax,
