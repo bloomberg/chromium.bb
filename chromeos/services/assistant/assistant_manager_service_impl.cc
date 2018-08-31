@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
@@ -133,6 +134,12 @@ void AssistantManagerServiceImpl::SetAccessToken(
 }
 
 void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
+  // This is a callback from LibAssistant, it is async from LibAssistant thread.
+  // It is possible that when it reaches here, the assistant_manager_ has
+  // been stopped.
+  if (!assistant_manager_internal_)
+    return;
+
   // Register handler for media actions.
   assistant_manager_internal_->RegisterFallbackMediaHandler(
       [this](std::string play_media_args_proto) {
@@ -735,8 +742,13 @@ void AssistantManagerServiceImpl::HandleUpdateSettingsResponse(
   callback.Run(result);
 }
 
+// assistant_client::DeviceStateListener overrides
+// Run on LibAssistant threads
 void AssistantManagerServiceImpl::OnStartFinished() {
-  RegisterFallbackMediaHandler();
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::RegisterFallbackMediaHandler,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
