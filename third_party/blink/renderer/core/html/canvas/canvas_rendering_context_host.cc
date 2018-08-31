@@ -102,7 +102,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
                 : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
 
         const CanvasResourceProvider::PresentationMode presentation_mode =
-            RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
+            (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
+             (LowLatencyEnabled() && want_acceleration))
                 ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
                 : CanvasResourceProvider::kDefaultPresentationMode;
 
