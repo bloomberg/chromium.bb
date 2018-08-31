@@ -68,11 +68,6 @@ class ArcAccessibilityHelperBridgeBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
                        PreferenceChange) {
-  // TODO(penghuang): Re-enable once the EXO+Viz work is done and Arc can be
-  // supported. https://crbug.com/807465
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    return;
-
   ASSERT_EQ(mojom::AccessibilityFilterType::OFF,
             fake_accessibility_helper_instance_->filter_type());
 
