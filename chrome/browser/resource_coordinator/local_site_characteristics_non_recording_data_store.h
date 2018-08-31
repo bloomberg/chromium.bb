@@ -47,6 +47,7 @@ class LocalSiteCharacteristicsNonRecordingDataStore
   bool GetaDataForOrigin(
       const url::Origin& origin,
       std::unique_ptr<SiteCharacteristicsProto>* data) override;
+  SiteCharacteristicsDataStore* GetDataStore() override;
 
  private:
   // The data store to use to create the readers served by this data store. E.g.
