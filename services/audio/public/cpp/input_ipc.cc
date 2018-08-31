@@ -120,6 +120,9 @@ void InputIPC::CloseStream() {
   if (stream_client_binding_.is_bound())
     stream_client_binding_.Close();
   stream_.reset();
+
+  // Make sure we don't get any stale stream creation messages.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void InputIPC::OnError() {
