@@ -1,7 +1,4 @@
-<!DOCTYPE HTML>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/gesture-util.js"></script>
+<!DOCTYPE html>
 <style>
 body {
   zoom: 175%;
@@ -18,15 +15,21 @@ body {
   height: 200.3px;
 }
 </style>
-
+Tests scroll behavior when a subpixel scrollbar thumb is dragged by mouse.
 <div id="container">
   <div id="content"></div>
 </div>
-
+<script src="../../resources/js-test.js"></script>
 <script>
-promise_test(async () => {
-  var container = document.getElementById('container');
-  await mouseDragAndDrop(340, 200, 340, 250);
-  await waitFor(() => { return approx_equals(container.scrollTop, 0.57, 0.02); });
-}, 'Tests scroll behavior when a subpixel scrollbar thumb is dragged by mouse.');
+if (window.eventSender) {
+  onload = function() {
+    var container = document.getElementById('container');
+    eventSender.mouseMoveTo(340, 200);
+    eventSender.mouseDown();
+    eventSender.mouseMoveTo(340, 250);
+    eventSender.mouseUp();
+
+    shouldBeCloseTo("container.scrollTop", "0.57", 0.02);
+  };
+}
 </script>

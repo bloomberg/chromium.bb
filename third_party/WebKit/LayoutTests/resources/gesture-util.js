@@ -202,15 +202,15 @@ function mouseUpAt(xPosition, yPosition) {
 }
 
 // Simulate a mouse click on point.
-function mouseClickOn(x, y, button = 'left') {
+function mouseClickOn(x, y) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
           { 'name': 'pointerMove', 'x': x, 'y': y },
-          { 'name': 'pointerDown', 'x': x, 'y': y, 'button': button },
-          { 'name': 'pointerUp', 'button': button },
+          { 'name': 'pointerDown', 'x': x, 'y': y },
+          { 'name': 'pointerUp' },
         ]
       }];
       chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);
@@ -284,16 +284,6 @@ var iframeLoadResolve;
 iframeOnLoadPromise = new Promise(function(resolve) {
   iframeLoadResolve = resolve;
 });
-
-// Include run-after-layout-and-paint.js to use this promise.
-function WaitForlayoutAndPaint() {
-  return new Promise((resolve, reject) => {
-    if (typeof runAfterLayoutAndPaint !== 'undefined')
-      runAfterLayoutAndPaint(resolve);
-    else
-      reject('This test requires run-after-layout-and-paint.js');
-  });
-}
 
 function touchTapOn(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
