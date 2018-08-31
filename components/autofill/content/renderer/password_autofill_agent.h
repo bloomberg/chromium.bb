@@ -94,8 +94,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void SetLoggingState(bool active) override;
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;
-  void FindFocusedPasswordForm(
-      FindFocusedPasswordFormCallback callback) override;
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,

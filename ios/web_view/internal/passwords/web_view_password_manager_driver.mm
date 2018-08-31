@@ -79,10 +79,6 @@ WebViewPasswordManagerDriver::GetPasswordAutofillManager() {
   return nullptr;
 }
 
-void WebViewPasswordManagerDriver::ForceSavePassword() {
-  NOTIMPLEMENTED();
-}
-
 autofill::AutofillDriver* WebViewPasswordManagerDriver::GetAutofillDriver() {
   NOTIMPLEMENTED();
   return nullptr;

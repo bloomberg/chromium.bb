@@ -541,9 +541,6 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
           </message>
-          <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="The name of the Save Password command in the content area context menu">
-            Save password
-          </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="The name of the Generate Password command in the content area context menu">
             Generate password...
           </message>
@@ -764,9 +761,6 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="In Title Case: The name of the Save Password command in the content area context menu">
-            Save Password
           </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
             Generate Password...

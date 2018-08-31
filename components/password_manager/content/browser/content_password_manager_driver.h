@@ -68,7 +68,6 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void ShowInitialPasswordAccountSuggestions(
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
-  void ForceSavePassword() override;
   void GeneratePassword() override;
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
@@ -80,8 +79,6 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
  private:
-  void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
-
   const autofill::mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();
 
   const autofill::mojom::PasswordAutofillAgentAssociatedPtr&

@@ -1902,54 +1902,6 @@ TEST_F(PasswordManagerTest,
   EXPECT_FALSE(form_manager->HasGeneratedPassword());
 }
 
-TEST_F(PasswordManagerTest, ForceSavingPasswords) {
-  // Add the PasswordForceSaving feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPasswordForceSaving);
-  PasswordForm form(MakeSimpleForm());
-
-  std::vector<PasswordForm> observed;
-  observed.push_back(form);
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-
-  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
-  manager()->OnPasswordFormForceSaveRequested(&driver_, form);
-  ASSERT_TRUE(form_manager_to_save);
-  EXPECT_EQ(form.password_value,
-            PasswordFormManager::PasswordToSave(
-                form_manager_to_save->GetPendingCredentials())
-                .first);
-}
-
-// Forcing Chrome to save an empty passwords should fail without a crash.
-TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
-  // Add the PasswordForceSaving feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPasswordForceSaving);
-  PasswordForm empty_password_form;
-
-  std::vector<PasswordForm> observed;
-  observed.push_back(empty_password_form);
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-  manager()->OnPasswordFormForceSaveRequested(&driver_, empty_password_form);
-}
-
 TEST_F(PasswordManagerTest, UpdateFormManagers) {
   // Seeing some forms should result in creating PasswordFormManagers and
   // querying PasswordStore. Calling UpdateFormManagers should result in

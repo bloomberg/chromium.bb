@@ -96,11 +96,6 @@ interface PasswordAutofillAgent {
   // which contains information about username and password for some forms.
   // |predictions| maps forms to their username fields.
   AutofillUsernameAndPasswordDataReceived(FormsPredictionsMap predictions);
-
-  // Tells the renderer to find the focused password form (assuming it exists).
-  // Renderer is expected to return the found password form. If no password form
-  // is focused, the response will contain an empty |autofill::PasswordForm|.
-  FindFocusedPasswordForm() => (PasswordForm form);
 };
 
 // There is one instance of this interface per render frame in the render

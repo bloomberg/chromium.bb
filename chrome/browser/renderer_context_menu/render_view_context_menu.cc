@@ -86,7 +86,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/common/experiments.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -318,7 +317,6 @@ const struct UmaEnumCommandIdPair {
     {64, -1, IDC_WRITING_DIRECTION_LTR},
     {65, -1, IDC_WRITING_DIRECTION_RTL},
     {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
-    {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     {68, -1, IDC_ROUTE_MEDIA},
     {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
     {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
@@ -1578,11 +1576,6 @@ void RenderViewContextMenu::AppendPasswordItems() {
 
   // Don't offer saving or generating passwords in incognito profiles.
   if (!browser_context_->IsOffTheRecord()) {
-    if (password_manager::ForceSavingExperimentEnabled()) {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
-                                      IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
-      add_separator = true;
-    }
     password_manager::ContentPasswordManagerDriver* driver =
         password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
             GetRenderFrameHost());
@@ -1799,7 +1792,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
-    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
       return true;
@@ -2098,11 +2090,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
       ExecProtocolHandlerSettings(event_flags);
-      break;
-
-    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
-      ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
-          ForceSavePassword();
       break;
 
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:

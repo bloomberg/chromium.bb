@@ -416,12 +416,6 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 #endif
 }
 
-void ChromePasswordManagerClient::ForceSavePassword() {
-  password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());
-  driver->ForceSavePassword();
-}
-
 void ChromePasswordManagerClient::GeneratePassword() {
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());

@@ -126,11 +126,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       password_manager::PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
 
-  // Handles a manual request to save password.
-  void OnPasswordFormForceSaveRequested(
-      password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& password_form);
-
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
   void ShowManualFallbackForSaving(
