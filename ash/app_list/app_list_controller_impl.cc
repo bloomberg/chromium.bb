@@ -804,6 +804,9 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
 }
 
 void AppListControllerImpl::UpdateAssistantVisibility() {
+  if (!chromeos::switches::IsAssistantEnabled())
+    return;
+
   auto* controller = Shell::Get()->voice_interaction_controller();
   GetSearchModel()->search_box()->SetShowAssistantButton(
       controller->settings_enabled() &&
