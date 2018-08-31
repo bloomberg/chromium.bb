@@ -16,6 +16,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_mach_port.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -123,13 +124,12 @@ static OSStatus GetInputDeviceStreamFormat(
 
 // Returns the number of physical processors on the device.
 static int NumberOfPhysicalProcessors() {
-  mach_port_t mach_host = mach_host_self();
+  base::mac::ScopedMachSendRight mach_host(mach_host_self());
   host_basic_info hbi = {};
   mach_msg_type_number_t info_count = HOST_BASIC_INFO_COUNT;
   kern_return_t kr =
-      host_info(mach_host, HOST_BASIC_INFO, reinterpret_cast<host_info_t>(&hbi),
-                &info_count);
-  mach_port_deallocate(mach_task_self(), mach_host);
+      host_info(mach_host.get(), HOST_BASIC_INFO,
+                reinterpret_cast<host_info_t>(&hbi), &info_count);
 
   int n_physical_cores = 0;
   if (kr != KERN_SUCCESS) {
