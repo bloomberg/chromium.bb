@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
+import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -1090,6 +1091,7 @@ public class Tab
 
         if (themeColor == Color.TRANSPARENT) themeColor = getDefaultThemeColor();
         if (isIncognito()) themeColor = getDefaultThemeColor();
+        if (isPreview()) themeColor = getDefaultThemeColor();
 
         // Ensure there is no alpha component to the theme color as that is not supported in the
         // dependent UI.
@@ -1157,6 +1159,14 @@ public class Tab
     @CalledByNative
     public boolean isNativePage() {
         return mNativePage != null;
+    }
+
+    /**
+     * @return If the page being displayed is a Preview
+     */
+    public boolean isPreview() {
+        return getWebContents() != null && !isNativePage() && !isShowingInterstitialPage()
+                && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(getWebContents());
     }
 
     /**

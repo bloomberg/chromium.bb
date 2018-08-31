@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
-import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -325,9 +324,7 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     @Override
     public boolean isPreview() {
-        return hasTab() && mTab.getWebContents() != null && !mTab.isNativePage()
-                && !mTab.isShowingInterstitialPage()
-                && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(mTab.getWebContents());
+        return hasTab() && mTab.isPreview();
     }
 
     @Override
