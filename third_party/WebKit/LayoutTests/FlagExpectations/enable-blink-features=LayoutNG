@@ -488,7 +488,6 @@ crbug.com/591099 paint/invalidation/position/intermediate-layout-position.html [
 crbug.com/714962 paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/position/relayout-fixed-position-after-scale.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
-crbug.com/591099 paint/invalidation/selection/selection-rl.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure Pass ]
 crbug.com/591099 paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
