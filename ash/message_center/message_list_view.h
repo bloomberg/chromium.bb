@@ -89,6 +89,8 @@ class ASH_EXPORT MessageListView
   // Overridden from MessageView::SlideObserver
   void OnSlideChanged(const std::string& notification_id) override;
 
+  void UpdateCornerRadius(int index, int top_radius, int bottom_radius);
+
  protected:
   // Overridden from views::View.
   void Layout() override;

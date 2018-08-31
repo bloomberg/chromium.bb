@@ -324,7 +324,7 @@ void UnifiedMessageCenterView::Update() {
     const int top_radius =
         i == notification_count - 1 ? kUnifiedTrayCornerRadius : 0;
     const int bottom_radius = i == 0 ? kUnifiedTrayCornerRadius : 0;
-    view->UpdateCornerRadius(top_radius, bottom_radius);
+    message_list_view_->UpdateCornerRadius(i, top_radius, bottom_radius);
     bool has_bottom_separator = i > 0 && notification_count > 1;
     view->SetBorder(views::CreateSolidSidedBorder(
         0, 0, has_bottom_separator ? kUnifiedNotificationSeparatorThickness : 0,
