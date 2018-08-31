@@ -68,10 +68,10 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
  public:
   ProfileDataRemover(Profile* profile,
                      bool all_data,
-                     const base::Closure& callback)
+                     base::OnceClosure callback)
       : profile_(profile),
         all_data_(all_data),
-        callback_(callback),
+        callback_(std::move(callback)),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
         remover_(content::BrowserContext::GetBrowsingDataRemover(profile)) {
     remover_->AddObserver(this);
@@ -113,14 +113,14 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
       ClearLastSignedInUserForProfile(profile_);
     }
 
-    origin_runner_->PostTask(FROM_HERE, callback_);
+    origin_runner_->PostTask(FROM_HERE, std::move(callback_));
     origin_runner_->DeleteSoon(FROM_HERE, this);
   }
 
  private:
   Profile* profile_;
   bool all_data_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
   content::BrowsingDataRemover* remover_;
 
@@ -238,28 +238,19 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
   return domain;
 }
 
-void SigninManagerAndroid::WipeProfileData(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& callback) {
-  base::android::ScopedJavaGlobalRef<jobject> java_callback;
-  java_callback.Reset(env, callback);
-
+void SigninManagerAndroid::WipeProfileData(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
   WipeData(profile_, true /* all data */,
            base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr(), java_callback));
+                      weak_factory_.GetWeakPtr()));
 }
 
 void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& callback) {
-  base::android::ScopedJavaGlobalRef<jobject> java_callback;
-  java_callback.Reset(env, callback);
-
+    const JavaParamRef<jobject>& obj) {
   WipeData(profile_, false /* only Google service worker caches */,
            base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr(), java_callback));
+                      weak_factory_.GetWeakPtr()));
 }
 
 void SigninManagerAndroid::OnPolicyRegisterDone(
@@ -288,10 +279,9 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
       base::android::AttachCurrentThread(), java_signin_manager_);
 }
 
-void SigninManagerAndroid::OnBrowsingDataRemoverDone(
-    const base::android::ScopedJavaGlobalRef<jobject>& callback) {
+void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
   Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
-                                        java_signin_manager_, callback);
+                                        java_signin_manager_);
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(
@@ -363,9 +353,9 @@ void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
 // static
 void SigninManagerAndroid::WipeData(Profile* profile,
                                     bool all_data,
-                                    const base::Closure& callback) {
+                                    base::OnceClosure callback) {
   // The ProfileDataRemover deletes itself once done.
-  new ProfileDataRemover(profile, all_data, callback);
+  new ProfileDataRemover(profile, all_data, std::move(callback));
 }
 
 static jlong JNI_SigninManager_Init(JNIEnv* env,
