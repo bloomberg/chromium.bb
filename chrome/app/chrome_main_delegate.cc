@@ -174,7 +174,7 @@ base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
 
 extern int NaClMain(const content::MainFunctionParams&);
 
-#if defined(OS_WIN) || (defined(USE_CUPS) && !defined(OS_CHROMEOS))
+#if !defined(OS_CHROMEOS)
 extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 #endif
 
@@ -950,9 +950,13 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 int ChromeMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
+// ANDROID doesn't support "service", so no CloudPrintServiceProcessMain, and
+// arraysize doesn't support empty array. So we comment out the block for
+// Android.
+#if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD) && \
-    (defined(OS_WIN) || (defined(USE_CUPS) && !defined(OS_CHROMEOS)))
+    !defined(OS_CHROMEOS)
     {switches::kCloudPrintServiceProcess, CloudPrintServiceProcessMain},
 #endif
 
@@ -966,8 +970,8 @@ int ChromeMainDelegate::RunProcess(
     !defined(OS_LINUX)
     {switches::kNaClLoaderProcess, NaClMain},
 #else
-    {"<invalid>", nullptr},  // To avoid constant array of size 0
-                             // when NaCl disabled and CHROME_MULTIPLE_DLL_CHILD
+    {"<invalid>", NULL},  // To avoid constant array of size 0
+                          // when NaCl disabled and CHROME_MULTIPLE_DLL_CHILD
 #endif
   };
 
@@ -975,6 +979,8 @@ int ChromeMainDelegate::RunProcess(
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_function_params);
   }
+#endif
+
   return -1;
 }
 
