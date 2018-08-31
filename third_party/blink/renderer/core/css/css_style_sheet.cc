@@ -209,6 +209,14 @@ void CSSStyleSheet::DidMutateRules() {
         ownerNode()->GetTreeScope());
     if (StyleResolver* resolver = owner->GetStyleEngine().Resolver())
       resolver->InvalidateMatchedPropertiesCache();
+  } else if (!adopted_tree_scopes_.IsEmpty()) {
+    for (auto tree_scope : adopted_tree_scopes_) {
+      tree_scope->GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
+          *tree_scope);
+      if (StyleResolver* resolver =
+              tree_scope->GetDocument().GetStyleEngine().Resolver())
+        resolver->InvalidateMatchedPropertiesCache();
+    }
   }
 }
 
@@ -566,6 +574,7 @@ void CSSStyleSheet::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_cssom_wrapper_);
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(rule_list_cssom_wrapper_);
+  visitor->Trace(adopted_tree_scopes_);
   StyleSheet::Trace(visitor);
 }
 

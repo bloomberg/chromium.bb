@@ -30,6 +30,15 @@ class DocumentOrShadowRoot {
     return &shadow_root.StyleSheets();
   }
 
+  static StyleSheetList* adoptedStyleSheets(TreeScope& tree_scope) {
+    return &tree_scope.AdoptedStyleSheets();
+  }
+
+  static void setAdoptedStyleSheets(TreeScope& tree_scope,
+                                    StyleSheetList* adopted_style_sheets) {
+    tree_scope.SetAdoptedStyleSheets(adopted_style_sheets);
+  }
+
   static DOMSelection* getSelection(TreeScope& tree_scope) {
     return tree_scope.GetSelection();
   }

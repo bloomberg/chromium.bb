@@ -119,6 +119,9 @@ class CORE_EXPORT StyleEngine final
   void AddStyleSheetCandidateNode(Node&);
   void RemoveStyleSheetCandidateNode(Node&, ContainerNode& insertion_point);
   void ModifiedStyleSheetCandidateNode(Node&);
+  void AdoptedStyleSheetsWillChange(TreeScope&,
+                                    StyleSheetList* old_sheets,
+                                    StyleSheetList* new_sheets);
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
   void InitialStyleChanged();

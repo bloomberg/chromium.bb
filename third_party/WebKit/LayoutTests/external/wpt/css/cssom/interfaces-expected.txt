@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 377 tests; 323 PASS, 54 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 377 tests; 322 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface Window: original interface defined
@@ -64,7 +64,7 @@ PASS StyleSheet interface: sheet must inherit property "title" with the proper t
 PASS StyleSheet interface: sheet must inherit property "media" with the proper type
 PASS StyleSheet interface: sheet must inherit property "disabled" with the proper type
 PASS StyleSheetList interface: existence and properties of interface object
-PASS StyleSheetList interface object length
+FAIL StyleSheetList interface object length assert_equals: wrong value for StyleSheetList.length expected 0 but got 1
 PASS StyleSheetList interface object name
 PASS StyleSheetList interface: existence and properties of interface prototype object
 PASS StyleSheetList interface: existence and properties of interface prototype object's "constructor" property
