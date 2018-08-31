@@ -235,6 +235,18 @@ class Helper : public EmbeddedWorkerTestHelper {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Tells this helper to wait for FinishRespondWith() to be called before
+  // providing the response to the fetch event.
+  void DeferResponse() { response_mode_ = ResponseMode::kDeferredResponse; }
+  void FinishRespondWith() {
+    response_callback_->OnResponse(OkResponse(nullptr /* blob_body */),
+                                   base::Time::Now());
+    response_callback_.FlushForTesting();
+    std::move(finish_callback_)
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+             base::Time::Now());
+  }
+
   void ReadRequestBody(std::string* out_string) {
     ASSERT_TRUE(request_body_);
     const std::vector<network::DataElement>* elements =
@@ -244,6 +256,14 @@ class Helper : public EmbeddedWorkerTestHelper {
     const network::DataElement& element = elements->front();
     ASSERT_EQ(network::DataElement::TYPE_BYTES, element.type());
     *out_string = std::string(element.bytes(), element.length());
+  }
+
+  void RunUntilFetchEvent() {
+    if (has_received_fetch_event_)
+      return;
+    base::RunLoop run_loop;
+    quit_closure_for_fetch_event_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
  protected:
@@ -258,6 +278,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(
         static_cast<ResourceType>(request.resource_type)));
 
+    has_received_fetch_event_ = true;
     request_body_ = request.request_body;
 
     switch (response_mode_) {
@@ -265,14 +286,14 @@ class Helper : public EmbeddedWorkerTestHelper {
         EmbeddedWorkerTestHelper::OnFetchEvent(
             embedded_worker_id, request, std::move(preload_handle),
             std::move(response_callback), std::move(finish_callback));
-        return;
+        break;
       case ResponseMode::kBlob:
         response_callback->OnResponse(OkResponse(std::move(blob_body_)),
                                       base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
-        return;
+        break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
                                             std::move(stream_handle_),
@@ -280,25 +301,25 @@ class Helper : public EmbeddedWorkerTestHelper {
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
-        return;
+        break;
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
-        return;
+        break;
       case ResponseMode::kErrorResponse:
         response_callback->OnResponse(ErrorResponse(), base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
                  base::Time::Now());
-        return;
+        break;
       case ResponseMode::kNavigationPreloadResponse:
         // Deletes itself when done.
         new NavigationPreloadLoaderClient(std::move(preload_handle),
                                           std::move(response_callback),
                                           std::move(finish_callback));
-        return;
+        break;
       case ResponseMode::kFailFetchEventDispatch:
         // Simulate failure by stopping the worker before the event finishes.
         // This causes ServiceWorkerVersion::StartRequest() to call its error
@@ -314,22 +335,29 @@ class Helper : public EmbeddedWorkerTestHelper {
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
                  base::Time::Now());
-        return;
+        break;
+      case ResponseMode::kDeferredResponse:
+        finish_callback_ = std::move(finish_callback);
+        response_callback_ = std::move(response_callback);
+        // Now the caller must call FinishRespondWith() to finish the event.
+        break;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
         response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
                                       base::Time::Now());
         // Now the caller must call FinishWaitUntil() to finish the event.
-        return;
+        break;
       case ResponseMode::kRedirect:
         response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
                                       base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
-        return;
+        break;
     }
-    NOTREACHED();
+
+    if (quit_closure_for_fetch_event_)
+      std::move(quit_closure_for_fetch_event_).Run();
   }
 
  private:
@@ -341,6 +369,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     kErrorResponse,
     kNavigationPreloadResponse,
     kFailFetchEventDispatch,
+    kDeferredResponse,
     kEarlyResponse,
     kRedirect
   };
@@ -354,12 +383,15 @@ class Helper : public EmbeddedWorkerTestHelper {
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
-  // For ResponseMode::kEarlyResponse.
+  // For ResponseMode::kEarlyResponse and kDeferredResponse.
   mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
 
+  bool has_received_fetch_event_ = false;
+  base::OnceClosure quit_closure_for_fetch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -772,22 +804,21 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
-  // Start writing the body stream, then cancel the loader before finishing.
+  // Start writing the body stream, then break the Mojo connection to the loader
+  // before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = data_pipe.producer_handle->WriteData(
       kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
-  EXPECT_FALSE(loader_->WasCanceled());
   EXPECT_TRUE(version_->HasWorkInBrowser());
   loader_ptr_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(loader_->WasCanceled());
   EXPECT_FALSE(version_->HasWorkInBrowser());
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
-  // in Cancel(), the URLLoaderClient still exists. In this test, it is
+  // on connection error, the URLLoaderClient still exists. In this test, it is
   // |client_| which owns the data pipe, so it's still valid to write data to
   // it.
   mojo_result = data_pipe.producer_handle->WriteData(
@@ -1013,6 +1044,27 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
   // DetachedFromRequest() deletes |loader_|.
   loader.release()->DetachedFromRequest();
   EXPECT_FALSE(loader_weakptr);
+}
+
+TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
+  helper_->DeferResponse();
+  LoaderResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+
+  // Wait for the fetch event to be dispatched.
+  helper_->RunUntilFetchEvent();
+
+  // Break the Mojo connection. The loader should return an aborted status.
+  loader_ptr_.reset();
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+
+  // The loader is still alive. Finish the fetch event. It shouldn't crash or
+  // call any callbacks on |client_|, which would throw an error.
+  helper_->FinishRespondWith();
+  // There's no event to wait for, so just pump the message loop and the test
+  // passes if there is no error or crash.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, DetachedDuringFetchEvent) {

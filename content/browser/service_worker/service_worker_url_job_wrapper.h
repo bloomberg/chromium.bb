@@ -85,7 +85,9 @@ class CONTENT_EXPORT ServiceWorkerURLJobWrapper {
   // if needed later.
   void FailDueToLostController();
 
-  // Returns true if the underlying job has been canceled or destroyed.
+  // Returns true if the underlying job has been destroyed. This only useful in
+  // the non-S13nServiceWorker case, since this wrapper owns the job in the
+  // S13nServiceWorker case.
   bool WasCanceled() const;
 
  private:
