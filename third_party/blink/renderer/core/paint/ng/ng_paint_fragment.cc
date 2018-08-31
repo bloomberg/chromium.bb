@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 
 namespace blink {
 
@@ -432,10 +433,10 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
 
 const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
   DCHECK(PhysicalFragment().IsInline());
-  for (const NGPaintFragment* runner = this; runner;
-       runner = runner->Parent()) {
-    if (runner->PhysicalFragment().IsLineBox())
-      return runner;
+  for (const NGPaintFragment* fragment :
+       NGPaintFragmentTraversal::InclusiveAncestorsOf(*this)) {
+    if (fragment->PhysicalFragment().IsLineBox())
+      return fragment;
   }
   NOTREACHED();
   return nullptr;
