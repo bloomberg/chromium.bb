@@ -74,13 +74,15 @@ PanelMenu.prototype = {
   /**
    * @param {string} menuItemTitle The title of the menu item.
    * @param {string} menuItemShortcut The keystrokes to select this item.
+   * @param {string} menuItemBraille
+   * @param {string} gesture
    * @param {Function} callback The function to call if this item is selected.
    * @return {!PanelMenuItem} The menu item just created.
    */
   addMenuItem: function(
-      menuItemTitle, menuItemShortcut, menuItemBraille, callback) {
+      menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback) {
     var menuItem = new PanelMenuItem(
-        menuItemTitle, menuItemShortcut, menuItemBraille, callback);
+        menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback);
     this.items_.push(menuItem);
     this.menuElement.appendChild(menuItem.element);
 
@@ -319,7 +321,7 @@ PanelNodeMenu.prototype = {
         output.withoutHints();
         output.withSpeech(range, range, Output.EventType.NAVIGATE);
         var label = output.toString();
-        this.addMenuItem(label, '', '', (function() {
+        this.addMenuItem(label, '', '', '', (function() {
                            var savedNode = node;
                            return function() {
                              chrome.extension.getBackgroundPage()
@@ -354,7 +356,7 @@ PanelNodeMenu.prototype = {
   finish_: function() {
     if (!this.items_.length) {
       this.addMenuItem(
-          Msgs.getMsg('panel_menu_item_none'), '', '', function() {});
+          Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
       this.activateItem(0);
     }
   }
