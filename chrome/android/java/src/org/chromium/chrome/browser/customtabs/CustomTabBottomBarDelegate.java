@@ -26,11 +26,10 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
-import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -213,34 +212,33 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         return mBottomBarView;
     }
 
-    public void addContextualSearchObserver() {
-        ContextualSearchManager manager = mActivity.getContextualSearchManager();
-        if (manager != null) {
-            ContextualSearchObserver observer = new ContextualSearchObserver() {
-                @Override
-                public void onShowContextualSearch(
-                        @Nullable GSAContextDisplaySelection selectionContext) {
-                    if (mBottomBarView == null) return;
-                    mBottomBarView.animate()
-                            .alpha(0)
-                            .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
-                            .setDuration(SLIDE_ANIMATION_DURATION_MS)
-                            .withEndAction(() -> mBottomBarView.setVisibility(View.GONE))
-                            .start();
-                }
-                @Override
-                public void onHideContextualSearch() {
-                    if (mBottomBarView == null) return;
-                    mBottomBarView.setVisibility(View.VISIBLE);
-                    mBottomBarView.animate()
-                            .alpha(1)
-                            .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
-                            .setDuration(SLIDE_ANIMATION_DURATION_MS)
-                            .start();
-                }
-            };
-            manager.addObserver(observer);
-        }
+    public void addOverlayPanelManagerObserver() {
+        if (mActivity.getCompositorViewHolder().getLayoutManager() == null) return;
+        OverlayPanelManager manager =
+                mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
+
+        manager.addObserver(new OverlayPanelManagerObserver() {
+            @Override
+            public void onOverlayPanelShown() {
+                if (mBottomBarView == null) return;
+                mBottomBarView.animate()
+                        .alpha(0)
+                        .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+                        .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                        .withEndAction(() -> mBottomBarView.setVisibility(View.GONE))
+                        .start();
+            }
+            @Override
+            public void onOverlayPanelHidden() {
+                if (mBottomBarView == null) return;
+                mBottomBarView.setVisibility(View.VISIBLE);
+                mBottomBarView.animate()
+                        .alpha(1)
+                        .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+                        .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                        .start();
+            }
+        });
     }
 
     private void hideBottomBar() {
