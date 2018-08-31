@@ -8002,9 +8002,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContextualSuggestions.ClickDuration">
-  <int value="0" label="Short"/>
-  <int value="1" label="Medium"/>
-  <int value="2" label="Long"/>
+  <int value="0" label="Short (&lt;4 seconds)"/>
+  <int value="1" label="Medium (4-180 seconds)"/>
+  <int value="2" label="Long (&gt;180 seconds)"/>
 </enum>
 
 <enum name="ContextualSuggestions.Event">
