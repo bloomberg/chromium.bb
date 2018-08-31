@@ -254,7 +254,7 @@ message AutoUpdateSettingsProto {
     // installed Chrome OS version, the device should roll back to a Chrome OS
     // version starting with |target_version_prefix|. The device does a full
     // powerwash during the rollback, including TPM reset.
-    ROLLBACK_WITH_FULL_POWERWASH = 2;
+    ROLLBACK_AND_POWERWASH = 2;
     // If |target_version_prefix| specifies an older version than the currently
     // installed Chrome OS version, the device should roll back to a Chrome OS
     // version starting with |target_version_prefix|.
@@ -269,7 +269,7 @@ message AutoUpdateSettingsProto {
     // OS version starting with |target_version_prefix|.
     // If this is not possible, the device will stay on the current version
     // (same as ROLLBACK_DISABLED).
-    ROLLBACK_WITH_RESTORE_ONLY = 4;
+    ROLLBACK_ONLY_IF_RESTORE_POSSIBLE = 4;
   }
 
   // Specifies what should happen if |target_version_prefix| specifies an older

@@ -6700,9 +6700,9 @@
           'caption': '''Do not roll back to target version if OS version is newer than target. Updates are also disabled.''',
         },
         {
-          'name': 'RollbackWithFullPowerwash',
+          'name': 'RollbackAndPowerwash',
           'value': 2,
-          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a full powerwash during the process.''',
+          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.''',
         },
         {
           'name': 'RollbackAndRestoreIfPossible',
@@ -6711,7 +6711,7 @@
           Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
         },
         {
-          'name': 'RollbackWithRestoreOnly',
+          'name': 'RollbackOnlyIfRestorePossible',
           'value': 4,
           'caption': '''Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
           Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
