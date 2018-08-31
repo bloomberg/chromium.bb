@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_COLLECTION_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 
 @class CollectionViewItem;
@@ -22,7 +22,7 @@ typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
 // CollectionViewControllerStyleAppBar, it features an app bar in the card
 // style.
 @interface CollectionViewController
-    : MDCCollectionViewController<AppBarPresenting>
+    : MDCCollectionViewController<AppBarViewControllerPresenting>
 
 // The model of this controller.
 @property(strong, nonatomic, readonly)

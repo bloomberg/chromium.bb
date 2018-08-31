@@ -131,14 +131,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.view.accessibilityIdentifier = kSigninConfirmationCollectionViewId;
 
   // Configure the header.
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   headerView.canOverExtend = YES;
   headerView.maximumHeight = 200;
   headerView.shiftBehavior = MDCFlexibleHeaderShiftBehaviorEnabled;
   headerView.backgroundColor = [UIColor whiteColor];
   [headerView addSubview:[self contentViewWithFrame:headerView.bounds]];
-  self.appBar.navigationBar.hidesBackButton = YES;
+  self.appBarViewController.navigationBar.hidesBackButton = YES;
   self.collectionView.backgroundColor = [UIColor clearColor];
   [headerView changeContentInsets:^{
     UIEdgeInsets contentInset = self.collectionView.contentInset;
@@ -219,8 +218,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewWillLayoutSubviews {
   CGSize viewSize = self.view.bounds.size;
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   headerView.maximumHeight =
       MAX(kHeaderViewMinHeight, kHeaderViewHeightMultiplier * viewSize.height);
 }
