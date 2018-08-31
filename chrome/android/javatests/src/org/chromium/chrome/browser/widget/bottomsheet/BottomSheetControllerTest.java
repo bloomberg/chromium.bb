@@ -73,7 +73,8 @@ public class BottomSheetControllerTest {
 
             mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
                     activity.getCompositorViewHolder().getLayoutManager(), scrim, mBottomSheet,
-                    activity.getContextualSearchManager(), true);
+                    activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
+                    true);
 
             mLowPriorityContent = new TestBottomSheetContent(
                     mActivityTestRule.getActivity(), ContentPriority.LOW);
