@@ -344,8 +344,7 @@ void SharedWorkerServiceImpl::CreateWorker(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &CreateScriptLoaderOnIO,
-            service_worker_context_->storage_partition()
-                ->url_loader_factory_getter(),
+            storage_partition->url_loader_factory_getter(),
             std::move(factory_bundle_for_browser),
             std::move(subresource_loader_factories), service_worker_context_,
             appcache_handle_core,
@@ -360,7 +359,10 @@ void SharedWorkerServiceImpl::CreateWorker(
   }
 
   StartWorker(std::move(instance), weak_host, std::move(client), process_id,
-              frame_id, message_port, nullptr, {}, nullptr);
+              frame_id, message_port,
+              nullptr /* service_worker_provider_info */,
+              {} /* main_script_loader_factory */,
+              nullptr /* subresource_loader_factories */);
 }
 
 void SharedWorkerServiceImpl::StartWorker(

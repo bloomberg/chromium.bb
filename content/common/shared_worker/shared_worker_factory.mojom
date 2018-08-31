@@ -62,7 +62,7 @@ interface SharedWorkerFactory {
       // ServiceWorkerNetworkProvider::script_loader_factory_ can be an
       // associated interface ptr used for both service worker and shared
       // worker execution contexts.
-      associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info,
+      associated network.mojom.URLLoaderFactory? main_script_loader_factory,
 
       // NetworkService:
       // When the Network Service is enabled, |subresource_loader_factories|
