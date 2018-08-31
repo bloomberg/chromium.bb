@@ -436,6 +436,7 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
   run_loop_.Run();
 
   EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, video_device.type);
+  EXPECT_TRUE(video_device.display_media_info.has_value());
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
                                     _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));

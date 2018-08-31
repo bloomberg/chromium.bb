@@ -17,17 +17,23 @@
 namespace blink {
 class WebString;
 class WebMediaConstraints;
-}
+}  // namespace blink
 
 namespace content {
 
 // Calculates and returns videoKind value for |format|.
 // See https://w3c.github.io/mediacapture-depth.
-blink::WebString CONTENT_EXPORT
-GetVideoKindForFormat(const media::VideoCaptureFormat& format);
+CONTENT_EXPORT blink::WebString GetVideoKindForFormat(
+    const media::VideoCaptureFormat& format);
 
-blink::WebMediaStreamTrack::FacingMode CONTENT_EXPORT
-ToWebFacingMode(media::VideoFacingMode video_facing);
+CONTENT_EXPORT blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
+    media::VideoFacingMode video_facing);
+
+CONTENT_EXPORT blink::WebMediaStreamTrack::DisplayCaptureSurfaceType
+ToWebDisplaySurface(media::DisplayCaptureSurfaceType display_surface);
+
+CONTENT_EXPORT blink::WebMediaStreamTrack::CursorCaptureType
+ToWebCursorCaptureType(media::CursorCaptureType cursor);
 
 struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();

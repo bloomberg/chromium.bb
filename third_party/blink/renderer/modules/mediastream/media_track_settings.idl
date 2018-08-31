@@ -48,4 +48,10 @@ dictionary MediaTrackSettings {
     double            sharpness;
     double            zoom;
     boolean           torch;
+
+    // Screen Capture API
+    // https://w3c.github.io/mediacapture-screen-share
+    [RuntimeEnabled=GetDisplayMedia] DOMString displaySurface;
+    [RuntimeEnabled=GetDisplayMedia] boolean logicalSurface;
+    [RuntimeEnabled=GetDisplayMedia] DOMString cursor;
 };
