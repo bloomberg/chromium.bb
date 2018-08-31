@@ -217,6 +217,7 @@ void ChromeAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
+    std::unique_ptr<base::DictionaryValue> legal_message,
     std::vector<MigratableCreditCard>& migratable_credit_cards,
     base::OnceClosure start_migrating_cards_closure) {
 #if !defined(OS_ANDROID)
@@ -228,6 +229,7 @@ void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
   controller->SetViewState(LocalCardMigrationDialogState::kOffered);
   controller->SetCardList(migratable_credit_cards);
   controller->ShowDialog(
+      std::move(legal_message),
       CreateLocalCardMigrationDialogView(controller, web_contents()),
       std::move(start_migrating_cards_closure));
 #endif

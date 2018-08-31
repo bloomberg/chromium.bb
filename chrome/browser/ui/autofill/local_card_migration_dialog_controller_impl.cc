@@ -36,10 +36,17 @@ LocalCardMigrationDialogControllerImpl::
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowDialog(
+    std::unique_ptr<base::DictionaryValue> legal_message,
     LocalCardMigrationDialog* local_card_migration_dialog,
     base::OnceClosure user_accepted_migration_closure) {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_->CloseDialog();
+
+  if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
+                               /*escape_apostrophes=*/true)) {
+    // TODO(crbug/867194): Add metric.
+    return;
+  }
 
   local_card_migration_dialog_ = local_card_migration_dialog;
   local_card_migration_dialog_->ShowDialog(
@@ -64,6 +71,11 @@ LocalCardMigrationDialogControllerImpl::GetCardList() const {
 void LocalCardMigrationDialogControllerImpl::SetCardList(
     std::vector<MigratableCreditCard>& migratable_credit_cards) {
   migratable_credit_cards_ = migratable_credit_cards;
+}
+
+const LegalMessageLines&
+LocalCardMigrationDialogControllerImpl::GetLegalMessageLines() const {
+  return legal_message_lines_;
 }
 
 void LocalCardMigrationDialogControllerImpl::OnCardSelected(int index) {

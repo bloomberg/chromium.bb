@@ -76,6 +76,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
+      std::unique_ptr<base::DictionaryValue> legal_message,
       std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
       base::OnceClosure start_migrating_cards_closure) override;
   void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,

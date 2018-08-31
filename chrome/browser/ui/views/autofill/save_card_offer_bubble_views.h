@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
@@ -50,7 +51,11 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
 
   ~SaveCardOfferBubbleViews() override;
 
+  content::WebContents* web_contents_;
+
   views::Textfield* cardholder_name_textfield_ = nullptr;
+
+  LegalMessageView* footnote_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardOfferBubbleViews);
 };
