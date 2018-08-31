@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -243,16 +242,12 @@ class NetworkContext::ContextNetworkDelegate
       std::unique_ptr<net::NetworkDelegate> nested_network_delegate,
       bool enable_referrers,
       bool validate_referrer_policy_on_initial_request,
-      mojom::ProxyErrorClientPtrInfo proxy_error_client_info,
       NetworkContext* network_context)
       : LayeredNetworkDelegate(std::move(nested_network_delegate)),
         enable_referrers_(enable_referrers),
         validate_referrer_policy_on_initial_request_(
             validate_referrer_policy_on_initial_request),
-        network_context_(network_context) {
-    if (proxy_error_client_info)
-      proxy_error_client_.Bind(std::move(proxy_error_client_info));
-  }
+        network_context_(network_context) {}
 
   ~ContextNetworkDelegate() override {}
 
@@ -289,8 +284,6 @@ class NetworkContext::ContextNetworkDelegate
             "Net.HttpRequestCompletionErrorCodes.MainFrame", -net_error);
       }
     }
-
-    ForwardProxyErrors(net_error);
   }
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
@@ -316,43 +309,13 @@ class NetworkContext::ContextNetworkDelegate
     return true;
   }
 
-  void OnResponseStartedInternal(net::URLRequest* request,
-                                 int net_error) override {
-    ForwardProxyErrors(net_error);
-  }
-
-  void OnPACScriptErrorInternal(int line_number,
-                                const base::string16& error) override {
-    if (!proxy_error_client_)
-      return;
-
-    proxy_error_client_->OnPACScriptError(line_number,
-                                          base::UTF16ToUTF8(error));
-  }
-
   void set_enable_referrers(bool enable_referrers) {
     enable_referrers_ = enable_referrers;
   }
 
  private:
-  void ForwardProxyErrors(int net_error) {
-    if (!proxy_error_client_)
-      return;
-
-    // TODO(https://crbug.com/876848): Provide justification for the currently
-    // enumerated errors.
-    switch (net_error) {
-      case net::ERR_PROXY_AUTH_UNSUPPORTED:
-      case net::ERR_PROXY_CONNECTION_FAILED:
-      case net::ERR_TUNNEL_CONNECTION_FAILED:
-        proxy_error_client_->OnRequestMaybeFailedDueToProxySettings(net_error);
-        break;
-    }
-  }
-
   bool enable_referrers_;
   bool validate_referrer_policy_on_initial_request_;
-  mojom::ProxyErrorClientPtr proxy_error_client_;
   NetworkContext* network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextNetworkDelegate);
@@ -1210,7 +1173,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
                 network_context_params->enable_referrers,
                 network_context_params
                     ->validate_referrer_policy_on_initial_request,
-                std::move(network_context_params->proxy_error_client),
                 network_context);
         if (out_context_network_delegate)
           *out_context_network_delegate = context_network_delegate.get();

@@ -131,6 +131,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
                    bool started,
                    int net_error) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
+  void OnPACScriptError(int line_number, const base::string16& error) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,

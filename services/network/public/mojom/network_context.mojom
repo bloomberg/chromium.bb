@@ -149,10 +149,6 @@ struct NetworkContextParams {
   // ProxyConfigServices be modified not to need this notification?
   ProxyConfigPollerClient? proxy_config_poller_client;
 
-  // Optional client that will be notified of errors related to the proxy
-  // settings.
-  ProxyErrorClient? proxy_error_client;
-
   // When PAC quick checking is enabled, DNS lookups for PAC script's host are
   // timed out aggressively. This prevents hanging all network request on DNS
   // lookups that are slow or are blockholed, at the cost of making it more

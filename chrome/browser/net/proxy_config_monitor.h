@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "build/buildflag.h"
-#include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -24,17 +22,9 @@ class Profile;
 class PrefProxyConfigTracker;
 
 // Tracks the ProxyConfig to use, and passes any updates to a NetworkContext's
-// ProxyConfigClient. This also responds to errors related to proxy settings
-// from the NetworkContext, and forwards them any listening Chrome extensions
-// associated with the profile.
+// ProxyConfigClient.
 class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
-                           public network::mojom::ProxyConfigPollerClient
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    ,
-                           public network::mojom::ProxyErrorClient
-#endif
-
-{
+                           public network::mojom::ProxyConfigPollerClient {
  public:
   // Creates a ProxyConfigMonitor that gets proxy settings from |profile| and
   // watches for changes. The created ProxyConfigMonitor must be destroyed
@@ -70,26 +60,14 @@ class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
   // network::mojom::ProxyConfigPollerClient implementation:
   void OnLazyProxyConfigPoll() override;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // network::mojom::ProxyErrorClient implementation:
-  void OnPACScriptError(int32_t line_number,
-                        const std::string& details) override;
-  void OnRequestMaybeFailedDueToProxySettings(int32_t net_error) override;
-#endif
-
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   // Monitors global and Profile prefs related to proxy configuration.
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
+  mojo::BindingSet<network::mojom::ProxyConfigPollerClient> binding_set_;
 
   mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
       proxy_config_client_set_;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  mojo::BindingSet<network::mojom::ProxyErrorClient> error_binding_set_;
-  Profile* profile_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
 };
