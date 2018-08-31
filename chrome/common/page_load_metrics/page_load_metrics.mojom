@@ -173,6 +173,15 @@ struct ResourceDataUpdate {
   // Compression ratio estimated from the response headers if data saver was
   // used.
   double data_reduction_proxy_compression_ratio_estimate;
+
+  // Whether this resource was tagged as an ad in the renderer. This flag can
+  // be set to true at any point during a resource load. A more recent
+  // ResourceDataUpdate can have a different flag than the previous update.
+  // Once this is set to true, it will be true for all future updates.
+  bool reported_as_ad_resource;
+
+  // Whether this resource was loaded in the top-level frame.
+  bool is_main_frame_resource;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the

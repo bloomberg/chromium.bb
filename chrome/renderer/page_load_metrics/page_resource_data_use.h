@@ -40,6 +40,9 @@ class PageResourceDataUse {
 
   int resource_id() const { return resource_id_; }
 
+  void SetReportedAsAdResource(bool reported_as_ad_resource);
+  void SetIsMainFrameResource(bool is_main_frame_resource);
+
   // Creates a ResourceDataUpdate mojo for this resource. This page resource
   // contains information since the last time update. Should be called at most
   // once once per timing update.
@@ -61,6 +64,8 @@ class PageResourceDataUse {
 
   bool is_complete_;
   bool is_canceled_;
+  bool reported_as_ad_resource_;
+  bool is_main_frame_resource_;
 
   DISALLOW_ASSIGN(PageResourceDataUse);
 };

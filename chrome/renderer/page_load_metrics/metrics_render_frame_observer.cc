@@ -59,7 +59,8 @@ class MojoPageTimingSender : public PageTimingSender {
 
 MetricsRenderFrameObserver::MetricsRenderFrameObserver(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {}
+    : content::RenderFrameObserver(render_frame),
+      scoped_ad_resource_observer_(this) {}
 
 MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {}
 
@@ -102,6 +103,7 @@ void MetricsRenderFrameObserver::DidStartResponse(
                                                            response_head);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidStartResponse(request_id, response_head);
+    UpdateResourceMetadata(request_id);
   }
 }
 
@@ -113,6 +115,9 @@ void MetricsRenderFrameObserver::DidCompleteResponse(
     provisional_frame_resource_data_use_->DidCompleteResponse(status);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidCompleteResponse(request_id, status);
+    // The provisional frame can be flagged as an ad anytime during the load.
+    if (request_id == provisional_frame_resource_id)
+      UpdateResourceMetadata(request_id);
   }
 }
 
@@ -122,6 +127,9 @@ void MetricsRenderFrameObserver::DidCancelResponse(int request_id) {
     provisional_frame_resource_data_use_.reset();
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidCancelResponse(request_id);
+    // The provisional frame can be flagged as an ad anytime during the load.
+    if (request_id == provisional_frame_resource_id)
+      UpdateResourceMetadata(request_id);
   }
 }
 
@@ -135,6 +143,9 @@ void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidReceiveTransferSizeUpdate(
         request_id, received_data_length);
+    // The provisional frame can be flagged as an ad anytime during the load.
+    if (request_id == provisional_frame_resource_id)
+      UpdateResourceMetadata(request_id);
   }
 }
 
@@ -147,6 +158,7 @@ void MetricsRenderFrameObserver::DidStartProvisionalLoad(
   // Create a new data use tracker for the new provisional load.
   provisional_frame_resource_data_use_ =
       std::make_unique<PageResourceDataUse>();
+  provisional_frame_resource_id = 0;
 }
 
 void MetricsRenderFrameObserver::DidFailProvisionalLoad(
@@ -172,9 +184,56 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   if (HasNoRenderFrame())
     return;
 
+  // Update metadata once the load has been committed. There is no guarantee
+  // that the provisional resource will have been reported as an ad by this
+  // point. Therefore, need to update metadata for the resource after the load.
+  // Consumers may receive the correct ad information late.
+  UpdateResourceMetadata(provisional_frame_resource_data_use_->resource_id());
+
+  provisional_frame_resource_id =
+      provisional_frame_resource_data_use_->resource_id();
+
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
       CreatePageTimingSender(), CreateTimer(), GetTiming(),
       std::move(provisional_frame_resource_data_use_));
+}
+
+void MetricsRenderFrameObserver::SetAdResourceTracker(
+    subresource_filter::AdResourceTracker* ad_resource_tracker) {
+  // Remove all sources and set a new source for the observer.
+  scoped_ad_resource_observer_.RemoveAll();
+  scoped_ad_resource_observer_.Add(ad_resource_tracker);
+}
+
+void MetricsRenderFrameObserver::OnAdResourceTrackerGoingAway() {
+  scoped_ad_resource_observer_.RemoveAll();
+}
+
+void MetricsRenderFrameObserver::OnAdResourceObserved(int request_id) {
+  ad_request_ids_.insert(request_id);
+}
+
+void MetricsRenderFrameObserver::UpdateResourceMetadata(int request_id) {
+  if (!page_timing_metrics_sender_)
+    return;
+  // If the request is an ad, pop it off the list of known ad requests.
+  auto ad_resource_it = ad_request_ids_.find(request_id);
+  bool reported_as_ad_resource =
+      ad_request_ids_.find(request_id) != ad_request_ids_.end();
+  if (reported_as_ad_resource)
+    ad_request_ids_.erase(ad_resource_it);
+  bool is_main_frame_resource = render_frame()->IsMainFrame();
+  if (provisional_frame_resource_data_use_ &&
+      provisional_frame_resource_data_use_->resource_id() == request_id) {
+    if (reported_as_ad_resource)
+      provisional_frame_resource_data_use_->SetReportedAsAdResource(
+          reported_as_ad_resource);
+    provisional_frame_resource_data_use_->SetIsMainFrameResource(
+        is_main_frame_resource);
+  } else {
+    page_timing_metrics_sender_->UpdateResourceMetadata(
+        request_id, reported_as_ad_resource, is_main_frame_resource);
+  }
 }
 
 void MetricsRenderFrameObserver::SendMetrics() {

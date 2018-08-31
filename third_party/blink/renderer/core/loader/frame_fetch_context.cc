@@ -581,6 +581,9 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   DCHECK(resource);
 
+  if (GetSubresourceFilter() && resource->GetResourceRequest().IsAdResource())
+    GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
+
   MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
                                           response.GetCTPolicyCompliance(),
                                           MasterDocumentLoader());

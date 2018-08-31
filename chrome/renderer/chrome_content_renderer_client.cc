@@ -547,8 +547,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   new NetErrorHelper(render_frame);
 
-  new page_load_metrics::MetricsRenderFrameObserver(render_frame);
-
   if (!render_frame->IsMainFrame()) {
     auto* prerender_helper = prerender::PrerenderHelper::Get(
         render_frame->GetRenderView()->GetMainRenderFrame());
@@ -585,11 +583,21 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent, associated_interfaces);
 
+  // Owned by |render_frame|.
+  page_load_metrics::MetricsRenderFrameObserver* metrics_render_frame_observer =
+      new page_load_metrics::MetricsRenderFrameObserver(render_frame);
   // There is no render thread, thus no UnverifiedRulesetDealer in
   // ChromeRenderViewTests.
   if (subresource_filter_ruleset_dealer_) {
+    // Create AdResourceTracker to tracker ad resource loads at the chrome
+    // layer.
+    auto ad_resource_tracker =
+        std::make_unique<subresource_filter::AdResourceTracker>();
+    metrics_render_frame_observer->SetAdResourceTracker(
+        ad_resource_tracker.get());
     new subresource_filter::SubresourceFilterAgent(
-        render_frame, subresource_filter_ruleset_dealer_.get());
+        render_frame, subresource_filter_ruleset_dealer_.get(),
+        std::move(ad_resource_tracker));
   }
 
 #if !defined(OS_ANDROID)

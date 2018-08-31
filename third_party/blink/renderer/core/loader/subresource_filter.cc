@@ -44,7 +44,17 @@ SubresourceFilter::SubresourceFilter(
     ExecutionContext* execution_context,
     std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter)
     : execution_context_(execution_context),
-      subresource_filter_(std::move(subresource_filter)) {}
+      subresource_filter_(std::move(subresource_filter)) {
+  DCHECK(subresource_filter_);
+  // Report the main resource as an ad if the subresource filter is
+  // associated with an ad subframe.
+  if (execution_context_->IsDocument()) {
+    auto* loader = ToDocument(execution_context_)->Loader();
+    if (subresource_filter_->GetIsAssociatedWithAdSubframe()) {
+      ReportAdRequestId(loader->GetResponse().RequestId());
+    }
+  }
+}
 
 SubresourceFilter::~SubresourceFilter() = default;
 
@@ -99,6 +109,10 @@ bool SubresourceFilter::IsAdResource(
   }
 
   return load_policy != WebDocumentSubresourceFilter::kAllow;
+}
+
+void SubresourceFilter::ReportAdRequestId(int request_id) {
+  subresource_filter_->ReportAdRequestId(request_id);
 }
 
 void SubresourceFilter::ReportLoad(

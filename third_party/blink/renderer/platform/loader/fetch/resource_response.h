@@ -232,6 +232,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   HTTPVersion HttpVersion() const { return http_version_; }
   void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
 
+  int RequestId() const { return request_id_; }
+  void SetRequestId(int request_id) { request_id_ = request_id; }
+
   bool HasMajorCertificateErrors() const {
     return has_major_certificate_errors_;
   }
@@ -482,6 +485,9 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_ = kHTTPVersionUnknown;
+
+  // Request id given to the resource by the WebUrlLoader.
+  int request_id_ = 0;
 
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is

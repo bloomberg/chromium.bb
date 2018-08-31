@@ -17,7 +17,9 @@ PageResourceDataUse::PageResourceDataUse()
       total_received_bytes_(0),
       last_update_bytes_(0),
       is_complete_(false),
-      is_canceled_(false) {}
+      is_canceled_(false),
+      reported_as_ad_resource_(false),
+      is_main_frame_resource_(false) {}
 
 PageResourceDataUse::~PageResourceDataUse() = default;
 
@@ -56,6 +58,15 @@ bool PageResourceDataUse::IsFinishedLoading() {
   return is_complete_ || is_canceled_;
 }
 
+void PageResourceDataUse::SetReportedAsAdResource(
+    bool reported_as_ad_resource) {
+  reported_as_ad_resource_ = reported_as_ad_resource;
+}
+
+void PageResourceDataUse::SetIsMainFrameResource(bool is_main_frame_resource) {
+  is_main_frame_resource_ = is_main_frame_resource;
+}
+
 int PageResourceDataUse::CalculateNewlyReceivedBytes() {
   int newly_received_bytes = total_received_bytes_ - last_update_bytes_;
   last_update_bytes_ = total_received_bytes_;
@@ -72,6 +83,8 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->is_complete = is_complete_;
   resource_data_update->data_reduction_proxy_compression_ratio_estimate =
       data_reduction_proxy_compression_ratio_estimate_;
+  resource_data_update->reported_as_ad_resource = reported_as_ad_resource_;
+  resource_data_update->is_main_frame_resource = is_main_frame_resource_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

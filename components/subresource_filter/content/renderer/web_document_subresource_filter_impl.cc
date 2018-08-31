@@ -184,4 +184,10 @@ WebDocumentSubresourceFilterImpl::BuilderImpl::Build() {
       is_associated_with_ad_subframe_);
 }
 
+void WebDocumentSubresourceFilterImpl::ReportAdRequestId(int request_id) {
+  if (!ad_resource_tracker_)
+    return;
+  ad_resource_tracker_->NotifyAdResourceObserved(request_id);
+}
+
 }  // namespace subresource_filter

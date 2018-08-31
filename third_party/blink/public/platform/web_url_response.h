@@ -176,6 +176,9 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT HTTPVersion HttpVersion() const;
   BLINK_PLATFORM_EXPORT void SetHTTPVersion(HTTPVersion);
 
+  BLINK_PLATFORM_EXPORT int RequestId() const;
+  BLINK_PLATFORM_EXPORT void SetRequestId(int);
+
   BLINK_PLATFORM_EXPORT int HttpStatusCode() const;
   BLINK_PLATFORM_EXPORT void SetHTTPStatusCode(int);
 

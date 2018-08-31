@@ -216,6 +216,7 @@ bool BaseFetchContext::IsAdResource(
   if (filter && type != Resource::kMainResource) {
     return filter->IsAdResource(resource_url, request_context);
   }
+
   return false;
 }
 

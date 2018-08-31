@@ -159,6 +159,14 @@ void WebURLResponse::SetHTTPVersion(HTTPVersion version) {
       static_cast<ResourceResponse::HTTPVersion>(version));
 }
 
+int WebURLResponse::RequestId() const {
+  return resource_response_->RequestId();
+}
+
+void WebURLResponse::SetRequestId(int request_id) {
+  resource_response_->SetRequestId(request_id);
+}
+
 int WebURLResponse::HttpStatusCode() const {
   return resource_response_->HttpStatusCode();
 }

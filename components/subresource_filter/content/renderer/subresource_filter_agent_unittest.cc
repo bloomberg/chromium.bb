@@ -44,7 +44,9 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
  public:
   explicit SubresourceFilterAgentUnderTest(
       UnverifiedRulesetDealer* ruleset_dealer)
-      : SubresourceFilterAgent(nullptr /* RenderFrame */, ruleset_dealer) {}
+      : SubresourceFilterAgent(nullptr /* RenderFrame */,
+                               ruleset_dealer,
+                               nullptr /* AdResourceTracker */) {}
   ~SubresourceFilterAgentUnderTest() override = default;
 
   MOCK_METHOD0(GetDocumentURL, GURL());

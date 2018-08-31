@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -34,9 +35,12 @@ class SubresourceFilterAgent
       public base::SupportsWeakPtr<SubresourceFilterAgent> {
  public:
   // The |ruleset_dealer| must not be null and must outlive this instance. The
-  // |render_frame| may be null in unittests.
-  explicit SubresourceFilterAgent(content::RenderFrame* render_frame,
-                                  UnverifiedRulesetDealer* ruleset_dealer);
+  // |render_frame| may be null in unittests. The |ad_resource_tracker| may be
+  // null.
+  explicit SubresourceFilterAgent(
+      content::RenderFrame* render_frame,
+      UnverifiedRulesetDealer* ruleset_dealer,
+      std::unique_ptr<AdResourceTracker> ad_resource_tracker);
   ~SubresourceFilterAgent() override;
 
  protected:
@@ -93,6 +97,9 @@ class SubresourceFilterAgent
   UnverifiedRulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_next_commit_;
+
+  // Tracks all ad resource observers.
+  std::unique_ptr<AdResourceTracker> ad_resource_tracker_;
 
   // If a document has been created for this frame before. The first document
   // for a new local subframe should be about:blank.

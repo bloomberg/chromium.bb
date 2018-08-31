@@ -1223,6 +1223,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);
   response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
+  response->SetRequestId(request_id);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
@@ -1233,7 +1234,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_effective_connection_type(info.effective_connection_type);
-  extra_data->set_request_id(request_id);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
