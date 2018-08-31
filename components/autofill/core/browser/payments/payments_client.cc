@@ -507,6 +507,11 @@ class MigrateCardsRequest : public PaymentsRequest {
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale);
     context->SetInteger("billable_service", kMigrateCardsBillableServiceNumber);
+    if (request_details_.billing_customer_number != 0) {
+      context->SetKey("customer_context",
+                      BuildCustomerContextDictionary(
+                          request_details_.billing_customer_number));
+    }
     request_dict.Set("context", std::move(context));
 
     request_dict.SetString("context_token", request_details_.context_token);
