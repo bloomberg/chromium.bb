@@ -59,6 +59,9 @@
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/media_session/media_session_service.h"
+#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
@@ -554,6 +557,14 @@ ServiceManagerContext::ServiceManagerContext(
         base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
     packaged_services_connection_->AddEmbeddedService(
         resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  }
+
+  if (media_session::IsMediaSessionEnabled()) {
+    service_manager::EmbeddedServiceInfo media_session_info;
+    media_session_info.factory =
+        base::BindRepeating(&media_session::MediaSessionService::Create);
+    packaged_services_connection_->AddEmbeddedService(
+        media_session::mojom::kServiceName, media_session_info);
   }
 
   {
