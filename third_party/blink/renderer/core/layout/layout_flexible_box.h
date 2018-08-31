@@ -62,8 +62,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
-  IntSize OriginAdjustmentForScrollbars() const final;
-  IntSize ScrolledContentOffset() const final;
   bool HasTopOverflow() const override;
   bool HasLeftOverflow() const override;
 
@@ -126,14 +124,13 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
                                            const Length& size) const;
-  LayoutUnit FlowAwareBorderStart() const;
-  LayoutUnit FlowAwareBorderEnd() const;
-  LayoutUnit FlowAwareBorderBefore() const;
-  LayoutUnit FlowAwareBorderAfter() const;
-  LayoutUnit FlowAwarePaddingStart() const;
-  LayoutUnit FlowAwarePaddingEnd() const;
-  LayoutUnit FlowAwarePaddingBefore() const;
-  LayoutUnit FlowAwarePaddingAfter() const;
+
+  LayoutUnit ContentInsetBottom() const;
+  LayoutUnit ContentInsetRight() const;
+  LayoutUnit FlowAwareContentInsetStart() const;
+  LayoutUnit FlowAwareContentInsetEnd() const;
+  LayoutUnit FlowAwareContentInsetBefore() const;
+  LayoutUnit FlowAwareContentInsetAfter() const;
 
   LayoutUnit CrossAxisScrollbarExtent() const;
   LayoutUnit CrossAxisScrollbarExtentForChild(const LayoutBox& child) const;

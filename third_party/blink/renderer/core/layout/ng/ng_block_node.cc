@@ -259,11 +259,9 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
                                       layout_result);
     NGLayoutInputNode first_child = FirstChild();
     if (first_child && first_child.IsInline()) {
-      NGBoxStrut scrollbars = GetScrollbarSizes();
       CopyFragmentDataToLayoutBoxForInlineChildren(
           ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
-          layout_result->PhysicalFragment()->Size().width -
-              scrollbars.block_start,
+          layout_result->PhysicalFragment()->Size().width,
           Style().IsFlippedBlocksWritingMode());
 
       block_flow->SetPaintFragment(break_token,
@@ -521,7 +519,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // |ComputeOverflow()| below calls |AddOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
     block->ComputeOverflow(intrinsic_block_size - borders.block_end -
-                           scrollbars.BlockSum());
+                           scrollbars.block_end);
   }
 
   box_->UpdateAfterLayout();
@@ -610,11 +608,8 @@ void NGBlockNode::CopyChildFragmentPosition(
   bool has_flipped_x_axis =
       containing_block->StyleRef().IsFlippedBlocksWritingMode();
   if (has_flipped_x_axis) {
-    NGBoxStrut scrollbars = GetScrollbarSizes();
-    LayoutUnit container_width =
-        containing_block->Size().Width() - scrollbars.block_start;
-    horizontal_offset =
-        container_width - horizontal_offset - fragment.Size().width;
+    horizontal_offset = containing_block->Size().Width() - horizontal_offset -
+                        fragment.Size().width;
   }
   layout_box->SetX(horizontal_offset);
   layout_box->SetY(fragment_offset.top + additional_offset.top);

@@ -14,6 +14,67 @@ Note that a new Blink layout system is under development. See the
 The layout code is maintained by the
 [layout team](http://dev.chromium.org/teams/layout-team).
 
+## Box model
+
+[The CSS box model](https://www.w3.org/TR/css-box-3/#the-css-box-model) is based
+on a series of nested boxes, from outside to inside:
+
+* Margin box
+* Border box: the main coordinate space of a `LayoutBox`
+* Padding box: a.k.a. client box
+* Content box
+
+When there are non-overlay scrollbars, according to [css-overflow-3](https://www.w3.org/TR/css-overflow-3/#scrollbar-layout),
+they should be inserted between the inner border edge and the outer padding edge.
+
+The following graph is modified from the graph in the css box model spec, showing
+scrollbars:
+
+        |-------------------------------------------------|
+        |                                                 |
+        |                  margin-top                     |
+        |                                                 |
+        |    |---------------------------------------|    |
+        |    |                                       |    |
+        |    |             border-top                |    |
+        |    |                                       |    |
+        |    |    |--------------------------|--|    |    |
+        |    |    |                          |  |    |    |
+        |    |    |       padding-top        |##|    |    |
+        |    |    |                          |##|    |    |
+        |    |    |    |----------------|    |##|    |    |
+        |    |    |    |                |    |  |    |    |
+        | ML | BL | PL |  content box   | PR |SW| BR | MR |
+        |    |    |    |                |    |  |    |    |
+        |    |    |    |----------------|    |  |    |    |
+        |    |    |                          |  |    |    |
+        |    |    |      padding-bottom      |  |    |    |
+        |    |    |                          |  |    |    |
+        |    |    |--------------------------|--|    |    |
+        |    |    |     scrollbar height ####|SC|    |    |
+        |    |    |-----------------------------|    |    |
+        |    |                                       |    |
+        |    |           border-bottom               |    |
+        |    |                                       |    |
+        |    |---------------------------------------|    |
+        |                                                 |
+        |                margin-bottom                    |
+        |                                                 |
+        |-------------------------------------------------|
+
+        BL = border-left
+        BR = border-right
+        ML = margin-left
+        MR = margin-right
+        PL = padding-left
+        PR = padding-right
+        SC = scroll corner
+        SW = scrollbar width
+
+Note that the vertical scrollbar (if existing) will be on the left in right-to-left
+direction horizontal writing-mode. The horizontal scrollbar (if existing) is always
+at the bottom.
+
 ## Scroll origin vs. offset vs. position
 
 When a LayoutBox has scrollable overflow, it is associated with a PaintLayerScrollableArea.
@@ -157,7 +218,7 @@ See the [diagram](resources/flipped-blocks-relpos.svg) for full detail on
 dimensions of the involved elements.
 
 Determining the paint invalidation rect for `relpos` via
-`mapToVisualRectInAncestorSpace()` involves walking up the layout tree from
+`MapToVisualRectInAncestorSpace()` involves walking up the layout tree from
 `relpos` flipping the rect within its container at each box. Below we sketch
 each step as we recurse toward the top of the document, with 'this' on the left,
 the current rect being mapped on the right, and explanation beneath each:
@@ -215,29 +276,29 @@ making sure to incorporate coverage for all writing modes when appropriate.
 
 Values are generally transformed into flipped block-flow coordinates via a set
 of methods on the involved layout objects. See in particular
-`flipForWritingMode()`, `flipForWritingModeForChild()`.
+`FlipForWritingMode()`, `FlipForWritingModeForChild()`.
 
-`InlineBox::flipForWritingMode()` variants flip the input value within the
+`InlineBox::FlipForWritingMode()` variants flip the input value within the
 inline box's containing block.
 
-`LayoutBox::flipForWritingMode()` variants flip the input value within the
+`LayoutBox::FlipForWritingMode()` variants flip the input value within the
 referenced box.
 
-`LayoutBox::flipForWritingModeForChild()` variants flip the input value within
+`LayoutBox::FlipForWritingModeForChild()` variants flip the input value within
 the referenced box, offsetting for the specified child box's current x-position
 and width. This is useful for a common pattern wherein we build up a point
 location starting with the current location of the (child) box.
 
 For `LayoutBox` and `InlineBox` classes and subclasses:
 
-* `physicalLocation()` returns the physical location of a box or inline in the
+* `PhysicalLocation()` returns the physical location of a box or inline in the
 containing block. `(0,0)` is the top-left corner of the containing
 block. Flipping is performed on the values as needed. For `LayoutBox`, if the
-containing block is not passed to `physicalLocation()`, looking it up requires
+containing block is not passed to `PhysicalLocation()`, looking it up requires
 walking up the layout tree, which can be
-expensive. `InlineBox::physicalLocation()` is expensive only if the `InlineBox`
+expensive. `InlineBox::PhysicalLocation()` is expensive only if the `InlineBox`
 is in flipped block-flow writing mode.
-* `location()` returns the location of a box or inline in the "physical
+* `Location()` returns the location of a box or inline in the "physical
 coordinates with flipped block-flow direction" coordinate space. `(0,0)` is the
 top-left corner of the containing block for `writing-mode` in normal blocks
 direction (`horizontal-tb` and `vertical-lr`), and is the top-right corner of
@@ -247,12 +308,12 @@ the containing block for `writing-mode` in flipped block-flow direction
 Note there are two primary similar, but slightly different, methods regarding
 finding the containing block for an element:
 
-* `LayoutObject::container()` returns the containing block for an element as
+* `LayoutObject::Container()` returns the containing block for an element as
 defined by CSS.
-* `LayoutObject::containingBlock()` which returns the enclosing non-anonymous
+* `LayoutObject::ContainingBlock()` which returns the enclosing non-anonymous
 block for an element. If the containing block is a relatively positioned inline,
 it returns that inline's enclosing non-anonymous block. This is the one used by
-`physicalLocation()`.
+`PhysicalLocation()`.
 
 There are other containing block methods in `LayoutObject` for special purposes
 such as fixed position, absolute position, and paint invalidation.  Code will
@@ -262,11 +323,11 @@ containing element is important.
 
 More complex web platform features such as tables, flexbox, and multicol are
 typically implemented atop these primitives, along with checks such as
-`isFlippedBlocksWritingMode()`, `isLeftToRightDirection()`, and
-`isHorizontalWritingMode()`. See for example
-`LayoutTableSection::logicalRectForWritingModeAndDirection()`,
-`LayoutFlexibleBox::updateAutoMarginsInCrossAxis()` or
-`LayoutMultiColumnFlowThread::flowThreadTranslationAtPoint()`.
+`IsFlippedBlocksWritingMode()`, `IsLeftToRightDirection()`, and
+`IsHorizontalWritingMode()`. See for example
+`LayoutTableSection::LogicalRectForWritingModeAndDirection()`,
+`LayoutFlexibleBox::UpdateAutoMarginsInCrossAxis()` or
+`LayoutMultiColumnFlowThread::FlowThreadTranslationAtPoint()`.
 
 ## Geometry mapping
 

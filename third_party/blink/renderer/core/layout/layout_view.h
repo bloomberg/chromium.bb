@@ -244,8 +244,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   LayoutRect DebugRect() const override;
 
-  IntSize ScrolledContentOffset() const override;
-
   // Returns the coordinates of find-in-page scrollbar tickmarks.  These come
   // from DocumentMarkerController, unless overridden by SetTickmarks.
   Vector<IntRect> GetTickmarks() const;

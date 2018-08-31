@@ -120,23 +120,14 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
                                       ScrollbarOrCorner::kScrollbarCorner);
 
   if (mapping->ScrollingContentsLayer()) {
-    auto paint_offset = snapped_paint_offset;
-
-    // In flipped blocks writing mode, if there is scrollbar on the right,
-    // we move the contents to the left with extra amount of ScrollTranslation
-    // (-VerticalScrollbarWidth, 0). However, ScrollTranslation doesn't apply
-    // on ScrollingContentsLayer so we shift paint offset instead.
-    if (object.IsBox() && object.HasFlippedBlocksWritingMode())
-      paint_offset.Move(ToLayoutBox(object).VerticalScrollbarWidth(), 0);
-
-    auto SetContentsLayerState =
-        [&fragment_data, &paint_offset](GraphicsLayer* graphics_layer) {
-          if (graphics_layer) {
-            graphics_layer->SetLayerState(
-                fragment_data.ContentsProperties(),
-                paint_offset + graphics_layer->OffsetFromLayoutObject());
-          }
-        };
+    auto SetContentsLayerState = [&fragment_data, &snapped_paint_offset](
+                                     GraphicsLayer* graphics_layer) {
+      if (graphics_layer) {
+        graphics_layer->SetLayerState(
+            fragment_data.ContentsProperties(),
+            snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
+      }
+    };
     SetContentsLayerState(mapping->ScrollingContentsLayer());
     SetContentsLayerState(mapping->ForegroundLayer());
   } else {

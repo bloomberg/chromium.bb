@@ -142,22 +142,6 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
   LayoutRect children_flipped_overflow = children_overflow.ToLayoutFlippedRect(
       physical_fragment->Style(), physical_fragment->Size());
-  if (physical_fragment->Style().IsFlippedBlocksWritingMode()) {
-    // Legacy overflow coordinate system for flipped blocks is broken.
-    // It coordinates are "flipped blocks pretending scrollbar does
-    // not exist. This is the scrollbar adjustment.
-    // For details, see comments in LayoutBox::NoOverflowRect
-    LayoutObject* layout_object = physical_fragment->GetLayoutObject();
-    if (layout_object && layout_object->IsBox()) {
-      const LayoutBox* box = ToLayoutBox(layout_object);
-      if (!box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-        LayoutUnit right_scrollbar_width =
-            LayoutUnit(box->VerticalScrollbarWidth());
-        children_flipped_overflow.SetX(children_flipped_overflow.X() -
-                                       right_scrollbar_width);
-      }
-    }
-  }
   Base::AddLayoutOverflow(children_flipped_overflow);
 }
 

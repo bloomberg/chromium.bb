@@ -2758,8 +2758,7 @@ LayoutSize LayoutObject::OffsetFromScrollableContainer(
 
   // ScrollOrigin accounts for other writing modes whose content's origin is not
   // at the top-left.
-  return LayoutSize(ToIntSize(box->GetScrollableArea()->ScrollOrigin()) -
-                    box->OriginAdjustmentForScrollbars());
+  return LayoutSize(ToIntSize(box->GetScrollableArea()->ScrollOrigin()));
 }
 
 LayoutSize LayoutObject::OffsetFromAncestor(

@@ -284,8 +284,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
         .ClampNegativeToZero();
   }
   DISABLE_CFI_PERF LayoutUnit LogicalLeftOffsetForContent() const {
-    return IsHorizontalWritingMode() ? BorderLeft() + PaddingLeft()
-                                     : BorderTop() + PaddingTop();
+    return IsHorizontalWritingMode() ? ContentLeft() : ContentTop();
   }
   LayoutUnit LogicalRightOffsetForContent() const {
     return LogicalLeftOffsetForContent() + AvailableLogicalWidth();
