@@ -18,12 +18,11 @@ class MultideviceSetupHandler : public content::WebUIMessageHandler {
   MultideviceSetupHandler();
   ~MultideviceSetupHandler() override;
 
- protected:
+ private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
- private:
-  // Opens settings to MultiDevice (a.k.a. "ConnectedDevices") subpage.
+  void HandleGetProfileInfo(const base::ListValue* args);
   void HandleOpenMultiDeviceSettings(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(MultideviceSetupHandler);
