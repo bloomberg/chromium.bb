@@ -29580,6 +29580,7 @@ from previous Chrome versions.
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>
+  <int value="1004593833" label="LevelDBPerformRewrite:enabled"/>
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
   <int value="1005684777" label="PictureInPicture:disabled"/>
@@ -29791,6 +29792,7 @@ from previous Chrome versions.
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
+  <int value="1382107019" label="LevelDBPerformRewrite:disabled"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
   <int value="1384614036" label="disable-unified-media-pipeline"/>
