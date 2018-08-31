@@ -916,13 +916,13 @@ public class ContextualSearchManager
     // ============================================================================================
 
     /** @param observer An observer to notify when the user performs a contextual search. */
-    public void addObserver(ContextualSearchObserver observer) {
+    void addObserver(ContextualSearchObserver observer) {
         mObservers.addObserver(observer);
     }
 
     /** @param observer An observer to no longer notify when the user performs a contextual search.
      */
-    public void removeObserver(ContextualSearchObserver observer) {
+    void removeObserver(ContextualSearchObserver observer) {
         mObservers.removeObserver(observer);
     }
 
