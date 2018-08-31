@@ -12,7 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -72,7 +71,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private static final String PARAM_SIMPLIFIED_NTP_ABLATION = "simplified_ntp_ablation";
 
     private final int mTileGridLayoutBleed;
-    private final int mSearchboxShadowWidth;
 
     private View mMiddleSpacer; // Spacer between toolbar and Most Likely.
 
@@ -178,7 +176,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         super(context, attrs);
         Resources res = getResources();
         mTileGridLayoutBleed = res.getDimensionPixelSize(R.dimen.tile_grid_layout_bleed);
-        mSearchboxShadowWidth = res.getDimensionPixelOffset(R.dimen.ntp_search_box_shadow_width);
     }
 
     @Override
@@ -247,15 +244,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                 mManager.getNavigationDelegate(), mSearchProviderLogoView, profile);
 
         mSearchBoxView = findViewById(R.id.search_box);
-        if (SuggestionsConfig.useModernLayout()) {
-            mSearchBoxView.setBackgroundResource(R.drawable.ntp_search_box);
-            mSearchBoxView.getLayoutParams().height =
-                    getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_modern);
-
-            if (!DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
-                mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
-                        R.dimen.ntp_search_box_bounds_vertical_inset_modern);
-            }
+        if (SuggestionsConfig.useModernLayout()
+                && !DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
+            mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
+                    R.dimen.ntp_search_box_bounds_vertical_inset_modern);
         }
         mNoSearchLogoSpacer = findViewById(R.id.no_search_logo_spacer);
 
@@ -347,14 +339,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mVoiceSearchButton = findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(v -> mManager.focusSearchBox(true, null));
-
-        if (SuggestionsConfig.useModernLayout()
-                && !DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
-            MarginLayoutParamsCompat.setMarginEnd(
-                    (MarginLayoutParams) mVoiceSearchButton.getLayoutParams(),
-                    getResources().getDimensionPixelSize(
-                            R.dimen.ntp_search_box_voice_search_margin_end_modern));
-        }
 
         TraceEvent.end(TAG + ".initializeVoiceSearchButton()");
     }
@@ -694,10 +678,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     void getSearchBoxBounds(Rect bounds, Point translation, View parentView) {
         int searchBoxX = (int) mSearchBoxView.getX();
         int searchBoxY = (int) mSearchBoxView.getY();
-        bounds.set(searchBoxX + mSearchBoxView.getPaddingLeft(),
-                searchBoxY + mSearchBoxView.getPaddingTop(),
-                searchBoxX + mSearchBoxView.getWidth() - mSearchBoxView.getPaddingRight(),
-                searchBoxY + mSearchBoxView.getHeight() - mSearchBoxView.getPaddingBottom());
+        bounds.set(searchBoxX, searchBoxY, searchBoxX + mSearchBoxView.getWidth(),
+                searchBoxY + mSearchBoxView.getHeight());
 
         translation.set(0, 0);
 
@@ -906,14 +888,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void unifyElementWidths() {
         if (mSiteSectionView.getVisibility() != GONE) {
             final int width = mSiteSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
-            measureExactly(mSearchBoxView,
-                    width + mSearchboxShadowWidth, mSearchBoxView.getMeasuredHeight());
+            measureExactly(mSearchBoxView, width, mSearchBoxView.getMeasuredHeight());
             measureExactly(mSearchProviderLogoView,
                     width, mSearchProviderLogoView.getMeasuredHeight());
         } else if (mExploreSectionView != null) {
             final int exploreWidth = mExploreSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
-            measureExactly(mSearchBoxView, exploreWidth + mSearchboxShadowWidth,
-                    mSearchBoxView.getMeasuredHeight());
+            measureExactly(mSearchBoxView, exploreWidth, mSearchBoxView.getMeasuredHeight());
             measureExactly(mSearchProviderLogoView, exploreWidth,
                     mSearchProviderLogoView.getMeasuredHeight());
         }
