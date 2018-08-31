@@ -218,7 +218,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!content_suggestions::IsRegularXRegularSizeClass(self.view)) {
+  if (!content_suggestions::IsRegularXRegularSizeClass(self)) {
     CGFloat top = 0;
     if (@available(iOS 11, *)) {
       top = self.parentViewController.view.safeAreaInsets.top;
@@ -443,7 +443,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     self.logoVendor.showingLogo = self.logoIsShowing;
     [self.doodleHeightConstraint
         setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
-    if (content_suggestions::IsRegularXRegularSizeClass(self.view))
+    if (content_suggestions::IsRegularXRegularSizeClass(self))
       [self.fakeOmnibox setHidden:!self.logoIsShowing];
     [self.collectionSynchronizer invalidateLayout];
   }
@@ -481,7 +481,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)shiftTilesDown {
   if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
       (!IsUIRefreshPhase1Enabled() &&
-       !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
+       !content_suggestions::IsRegularXRegularSizeClass(self))) {
     [self.dispatcher onFakeboxBlur];
   }
   [self.collectionSynchronizer shiftTilesDown];
@@ -496,7 +496,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     }
     if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
         (!IsUIRefreshPhase1Enabled() &&
-         !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
+         !content_suggestions::IsRegularXRegularSizeClass(self))) {
       [self.dispatcher onFakeboxAnimationComplete];
       [self.headerView fadeOutShadow];
     }
