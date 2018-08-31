@@ -1437,9 +1437,9 @@ group("browser_dependencies") {
 
   if (enable_basic_printing) {
     public_deps += [ "//printing" ]
-    if (enable_print_preview && !is_chromeos) {
-      public_deps += [ "//chrome/service" ]
-    }
+  }
+  if (enable_print_preview && (is_win || (use_cups && !is_chromeos))) {
+    public_deps += [ "//chrome/service" ]
   }
 
   if (!is_component_build) {

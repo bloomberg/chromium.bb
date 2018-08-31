@@ -36,11 +36,4 @@ std::string PrintSystem::GenerateProxyId() {
   return base::GenerateGUID();
 }
 
-#if defined(OS_LINUX) && !defined(USE_CUPS)
-scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
-    const base::DictionaryValue*) {
-  return nullptr;
-}
-#endif
-
 }  // namespace cloud_print
