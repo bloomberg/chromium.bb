@@ -1442,8 +1442,8 @@ void HostProcess::InitializeSignaling() {
   // Create objects to manage GCD state.
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
   std::unique_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
-      service_urls->gcd_base_url(), host_id_,
-      context_->url_request_context_getter(), oauth_token_getter_.get()));
+      service_urls->gcd_base_url(), host_id_, context_->url_loader_factory(),
+      oauth_token_getter_.get()));
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
