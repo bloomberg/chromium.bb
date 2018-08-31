@@ -49,7 +49,7 @@ ArcNotificationView::ArcNotificationView(
   AddChildView(content_view_);
 
   if (content_view_->background()) {
-    background_view()->background()->SetNativeControlColor(
+    background()->SetNativeControlColor(
         content_view_->background()->get_color());
   }
 
