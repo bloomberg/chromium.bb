@@ -10,6 +10,7 @@ import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
@@ -33,26 +34,35 @@ public class CastSessionController {
     private final CafBaseMediaRouteProvider mProvider;
     private MediaSink mSink;
     private MediaSource mSource;
-    private List<String> mNamespaces;
+    private List<String> mNamespaces = new ArrayList<String>();
     private final CastListener mCastListener;
+    private final MediaRouter.Callback mMediaRouterCallbackForSessionLaunch;
 
     public CastSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
         mCastListener = new CastListener();
+        mMediaRouterCallbackForSessionLaunch = new MediaRouterCallbackForSessionLaunch();
     }
 
-    public void requestSessionLaunch(CreateRouteRequestInfo request) {
+    public void requestSessionLaunch() {
+        CreateRouteRequestInfo request = mProvider.getPendingCreateRouteRequestInfo();
         mSource = request.source;
         mSink = request.sink;
         CastUtils.getCastContext().setReceiverApplicationId(request.source.getApplicationId());
 
-        for (MediaRouter.RouteInfo routeInfo : mProvider.getAndroidMediaRouter().getRoutes()) {
-            if (routeInfo.getId().equals(request.sink.getId())) {
-                // Unselect and then select so that CAF will get notified of the selection.
-                mProvider.getAndroidMediaRouter().unselect(MediaRouter.UNSELECT_REASON_UNKNOWN);
-                routeInfo.select();
-                break;
-            }
+        if (request.routeInfo.isSelected()) {
+            // If a route has just been selected, CAF might not be ready yet before setting the app
+            // ID. So unselect and select the route will let CAF be aware that the route has been
+            // selected thus it can start the session.
+            //
+            // An issue of this workaround is that if a route is unselected and selected in a very
+            // short time, the selection might be ignored by MediaRouter, so put the reselection in
+            // a callback.
+            mProvider.getAndroidMediaRouter().addCallback(
+                    mSource.buildRouteSelector(), mMediaRouterCallbackForSessionLaunch);
+            mProvider.getAndroidMediaRouter().unselect(MediaRouter.UNSELECT_REASON_UNKNOWN);
+        } else {
+            request.routeInfo.select();
         }
     }
 
@@ -66,6 +76,10 @@ public class CastSessionController {
 
     public CastSession getSession() {
         return mCastSession;
+    }
+
+    public RemoteMediaClient getRemoteMediaClient() {
+        return mCastSession.getRemoteMediaClient();
     }
 
     public void endSession() {
@@ -111,9 +125,13 @@ public class CastSessionController {
     public void attachToCastSession(CastSession session) {
         mCastSession = session;
         mCastSession.addCastListener(mCastListener);
+        updateNamespaces();
     }
 
-    public void detachFromCastSession(CastSession session) {
+    public void detachFromCastSession() {
+        if (mCastSession == null) return;
+
+        mNamespaces.clear();
         mCastSession.removeCastListener(mCastListener);
         mCastSession = null;
     }
@@ -193,5 +211,19 @@ public class CastSessionController {
                         + message + "\"");
         CafMessageHandler messageHandler = mProvider.getMessageHandler();
         messageHandler.onMessageReceived(namespace, message);
+    }
+
+    private class MediaRouterCallbackForSessionLaunch extends MediaRouter.Callback {
+        @Override
+        public void onRouteUnselected(MediaRouter mediaRouter, MediaRouter.RouteInfo routeInfo) {
+            if (mProvider.getPendingCreateRouteRequestInfo() == null) return;
+
+            if (routeInfo.getId().equals(
+                        mProvider.getPendingCreateRouteRequestInfo().routeInfo.getId())) {
+                routeInfo.select();
+                mProvider.getAndroidMediaRouter().removeCallback(
+                        mMediaRouterCallbackForSessionLaunch);
+            }
+        }
     }
 }

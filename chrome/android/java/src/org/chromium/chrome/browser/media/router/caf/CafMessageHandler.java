@@ -72,7 +72,7 @@ public class CafMessageHandler {
 
     // The reference to CastSession, only valid after calling {@link onSessionCreated}, and will be
     // reset to null when calling {@link onApplicationStopped}.
-    private CastSessionController mSessionController;
+    private final CastSessionController mSessionController;
     private final CafMediaRouteProvider mRouteProvider;
     private Handler mHandler;
 
@@ -95,10 +95,12 @@ public class CafMessageHandler {
      * @param session  The {@link CastSession} for communicating with the Cast SDK.
      * @param provider The {@link CafMediaRouteProvider} for communicating with the page.
      */
-    public CafMessageHandler(CafMediaRouteProvider provider) {
+    public CafMessageHandler(
+            CafMediaRouteProvider provider, CastSessionController sessionController) {
         mRouteProvider = provider;
         mRequests = new SparseArray<RequestRecord>();
         mStopRequests = new ArrayMap<String, Queue<Integer>>();
+        mSessionController = sessionController;
         mVolumeRequests = new ArrayDeque<RequestRecord>();
         mHandler = new Handler();
 
@@ -141,15 +143,12 @@ public class CafMessageHandler {
      * Set the session when a session is started, and notify all clients that are not connected.
      * @param session The newly created session.
      */
-    public void onSessionStarted(CastSessionController sessionController) {
-        mSessionController = sessionController;
+    public void onSessionStarted() {
         for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
             if (!client.isConnected) continue;
 
             notifySessionConnectedToClient(client.clientId);
         }
-        // TODO(zqzhang): Register namespaces.
-        // TODO(zqzhang): Request media status.
     }
 
     /** Notify a client that a session has connected. */
@@ -438,7 +437,7 @@ public class CafMessageHandler {
     @VisibleForTesting
     boolean sendJsonCastMessage(JSONObject message, final String namespace, final String clientId,
             final int sequenceNumber) throws JSONException {
-        if (mSessionController == null || !mSessionController.isConnected()) return false;
+        if (!mSessionController.isConnected()) return false;
 
         removeNullFields(message);
 
@@ -553,7 +552,6 @@ public class CafMessageHandler {
             }
             mStopRequests.remove(clientId);
         }
-        mSessionController = null;
     }
 
     /**
@@ -659,7 +657,7 @@ public class CafMessageHandler {
      * @return A message containing the information of the {@link CastSession}.
      */
     public String buildSessionMessage() {
-        if (mSessionController == null || !mSessionController.isConnected()) return "{}";
+        if (!mSessionController.isConnected()) return "{}";
 
         try {
             // "volume" is a part of "receiver" initialized below.
@@ -778,7 +776,7 @@ public class CafMessageHandler {
 
     private boolean sendStringCastMessage(
             String message, String namespace, String clientId, int sequenceNumber) {
-        if (mSessionController == null || !mSessionController.isConnected()) return false;
+        if (!mSessionController.isConnected()) return false;
 
         PendingResult<Status> pendingResult =
                 mSessionController.getSession().sendMessage(namespace, message);
