@@ -522,9 +522,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
-  if (factory_->proxies_->IsAPIDestroyed())
-    return;
-
   if (!request_completed_) {
     target_client_->OnComplete(status);
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(

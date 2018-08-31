@@ -126,11 +126,6 @@ class WebRequestAPI
       return is_shutdown_;
     }
 
-    // Threadsafe methods to check and set if the WebRequestAPI has been
-    // destroyed.
-    void SetAPIDestroyed() { api_destroyed_.Set(); }
-    bool IsAPIDestroyed() { return api_destroyed_.IsSet(); }
-
     // Associates |proxy| with |id|. |proxy| must already be registered within
     // this ProxySet.
     //
@@ -169,14 +164,6 @@ class WebRequestAPI
     std::map<content::GlobalRequestID, Proxy*> request_id_to_proxy_map_;
     std::map<Proxy*, std::set<content::GlobalRequestID>>
         proxy_to_request_id_map_;
-
-    // Tracks whether the WebRequestAPI has been destroyed. Since WebRequestAPI
-    // is destroyed on the UI thread, and ProxySet is destroyed on the IO
-    // thread, there may be race conditions where a Proxy mojo pipe receives a
-    // connection error after WebRequestAPI is destroyed but before the ProxySet
-    // has been destroyed. Before running any error handlers, make sure to check
-    // this flag.
-    base::AtomicFlag api_destroyed_;
 
     DISALLOW_COPY_AND_ASSIGN(ProxySet);
   };
