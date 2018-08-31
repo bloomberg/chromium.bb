@@ -97,13 +97,15 @@ def _run_query(query):
 
 
 def FetchStoryTimingDataForSingleBuild(configurations, build_number):
+  configurations_str = ','.join(repr(c) for c in configurations)
   return _run_query(QUERY_BY_BUILD_NUMBER.format(
-      configurations, build_number))
+      configurations_str, build_number))
 
 
 def FetchAverageStortyTimingData(configurations, num_last_days):
+  configurations_str = ','.join(repr(c) for c in configurations)
   return _run_query(QUERY_STORY_AVG_RUNTIME.format(
-      configuration_names=configurations, num_last_days=num_last_days))
+      configuration_names=configurations_str, num_last_days=num_last_days))
 
 
 def FetchBenchmarkRuntime(configurations, num_last_days):
@@ -164,16 +166,15 @@ def main(args):
       help='If specified, the build number to get timing data from.')
   opts = parser.parse_args(args)
 
-  configurations = str(opts.configurations).strip('[]')
 
   if opts.action == _FETCH_BENCHMARK_RUNTIME:
-    data = FetchBenchmarkRuntime(configurations, num_last_days=5)
+    data = FetchBenchmarkRuntime(opts.configurations, num_last_days=5)
   else:
     if opts.build_number:
-      data = FetchStoryTimingDataForSingleBuild(configurations,
+      data = FetchStoryTimingDataForSingleBuild(opts.configurations,
           opts.build_number)
     else:
-      data = FetchAverageStortyTimingData(configurations, num_last_days=5)
+      data = FetchAverageStortyTimingData(opts.configurations, num_last_days=5)
 
   with open(opts.output_file, 'w') as output_file:
     json.dump(data, output_file, indent = 4, separators=(',', ': '))
