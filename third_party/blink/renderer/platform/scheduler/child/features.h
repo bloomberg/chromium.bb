@@ -143,6 +143,22 @@ const base::Feature kThrottleAndFreezeTaskTypes{
 extern const char PLATFORM_EXPORT kThrottleableTaskTypesListParam[];
 extern const char PLATFORM_EXPORT kFreezableTaskTypesListParam[];
 
+// https://crbug.com/874836: Experiment-controlled removal of input heuristics.
+// Expensive task blocking as a part of input handling heuristics, so disabling
+// input heuristics implicitly disables expensive task blocking. Expensive task
+// blocking is tested separately as it's less risky. Touchstart and
+// non-touchstart input heuristics are separated because non-touchstart are
+// seen as less ricky.
+const base::Feature kDisableExpensiveTaskBlocking{
+    "BlinkSchedulerDisableExpensiveTaskBlocking",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDisableNonTouchstartInputHeuristics{
+    "BlinkSchedulerDisableNonTouchstartInputHeuristics",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDisableTouchstartInputHeuristics{
+    "BlinkSchedulerDisableTouchstartInputHeuristics",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace scheduler
 }  // namespace blink
 

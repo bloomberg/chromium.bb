@@ -806,6 +806,27 @@ class MainThreadSchedulerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplTest);
 };
 
+class MainThreadSchedulerImplTestWithoutTouchstartInputHeuristics
+    : public MainThreadSchedulerImplTest {
+ public:
+  MainThreadSchedulerImplTestWithoutTouchstartInputHeuristics()
+      : MainThreadSchedulerImplTest({kDisableTouchstartInputHeuristics,
+                                     kDisableNonTouchstartInputHeuristics},
+                                    {kPrioritizeCompositingAfterInput}) {}
+  ~MainThreadSchedulerImplTestWithoutTouchstartInputHeuristics() override =
+      default;
+};
+
+class MainThreadSchedulerImplTestWithoutNonTouchstartInputHeuristics
+    : public MainThreadSchedulerImplTest {
+ public:
+  MainThreadSchedulerImplTestWithoutNonTouchstartInputHeuristics()
+      : MainThreadSchedulerImplTest({kDisableNonTouchstartInputHeuristics},
+                                    {kPrioritizeCompositingAfterInput}) {}
+  ~MainThreadSchedulerImplTestWithoutNonTouchstartInputHeuristics() override =
+      default;
+};
+
 TEST_F(MainThreadSchedulerImplTest, TestPostDefaultTask) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "D1 D2 D3 D4");
@@ -1008,6 +1029,22 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
+TEST_F(MainThreadSchedulerImplTestWithoutNonTouchstartInputHeuristics,
+       TestCompositorPolicy_CompositorHandlesInput_WithTouchHandler) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
 TEST_F(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_WithoutScrollUpdates) {
   std::vector<std::string> run_order;
@@ -1174,6 +1211,52 @@ TEST_F(
   EXPECT_EQ(UseCase::kTouchstart, CurrentUseCase());
 }
 
+TEST_F(
+    MainThreadSchedulerImplTestWithoutTouchstartInputHeuristics,
+    TestCompositorPolicy_MainThreadHandlesInput_SingleEvent_NoPreventDefault) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  scheduler_->DidHandleInputEventOnMainThread(
+      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      WebInputEventResult::kHandledSystem);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_F(
+    MainThreadSchedulerImplTestWithoutNonTouchstartInputHeuristics,
+    TestCompositorPolicy_MainThreadHandlesInput_SingleEvent_NoPreventDefault) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  scheduler_->DidHandleInputEventOnMainThread(
+      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      WebInputEventResult::kHandledSystem);
+  base::RunLoop().RunUntilIdle();
+  // Because we are still waiting for the touchstart to be processed,
+  // non-essential tasks like loading tasks are blocked.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
+  EXPECT_EQ(UseCase::kTouchstart, CurrentUseCase());
+}
+
 TEST_F(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
@@ -1230,6 +1313,34 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
 
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("C1")));
+}
+
+class MainThreadSchedulerImplTestWithoutExpensiveTaskBlocking
+    : public MainThreadSchedulerImplTest {
+ public:
+  MainThreadSchedulerImplTestWithoutExpensiveTaskBlocking()
+      : MainThreadSchedulerImplTest({kDisableExpensiveTaskBlocking}, {}) {}
+  ~MainThreadSchedulerImplTestWithoutExpensiveTaskBlocking() override = default;
+};
+
+TEST_F(MainThreadSchedulerImplTestWithoutExpensiveTaskBlocking,
+       ExpensiveTimersRunWhenMainThreadScrolling) {
+  std::vector<std::string> run_order;
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  SimulateExpensiveTasks(timer_task_runner_);
+  DoMainFrame();
+  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
+                                 blink::WebInputEvent::kGestureScrollUpdate);
+
+  PostTestTasks(&run_order, "C1 T1");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(BlockingInputExpectedSoon());
+  EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("T1")));
 }
 
 TEST_F(MainThreadSchedulerImplTest,

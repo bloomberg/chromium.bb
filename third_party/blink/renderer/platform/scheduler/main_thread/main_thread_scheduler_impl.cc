@@ -616,6 +616,13 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
       frame_task_types_to_queue_traits);
+
+  disable_expensive_task_blocking =
+      base::FeatureList::IsEnabled(kDisableExpensiveTaskBlocking);
+  disable_non_touchstart_input_heuristics =
+      base::FeatureList::IsEnabled(kDisableNonTouchstartInputHeuristics);
+  disable_touchstart_input_heuristics =
+      base::FeatureList::IsEnabled(kDisableTouchstartInputHeuristics);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
@@ -1549,6 +1556,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     expensive_task_policy = ExpensiveTaskPolicy::kRun;
   }
 
+  if (scheduling_settings().disable_expensive_task_blocking)
+    expensive_task_policy = ExpensiveTaskPolicy::kRun;
+
   switch (expensive_task_policy) {
     case ExpensiveTaskPolicy::kRun:
       break;
@@ -1690,7 +1700,8 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
   // Special case for flings. This is needed because we don't get notification
   // of a fling ending (although we do for cancellation).
   if (any_thread().fling_compositor_escalation_deadline > now &&
-      !any_thread().awaiting_touch_start_response) {
+      !any_thread().awaiting_touch_start_response &&
+      !scheduling_settings().disable_non_touchstart_input_heuristics) {
     *expected_use_case_duration =
         any_thread().fling_compositor_escalation_deadline - now;
     return UseCase::kCompositorGesture;
@@ -1700,7 +1711,8 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
       any_thread().user_model.TimeLeftInUserGesture(now);
   if (*expected_use_case_duration > base::TimeDelta()) {
     // Has a gesture been fully established?
-    if (any_thread().awaiting_touch_start_response) {
+    if (any_thread().awaiting_touch_start_response &&
+        !scheduling_settings().disable_touchstart_input_heuristics) {
       // No, so arrange for compositor tasks to be run at the highest priority.
       return UseCase::kTouchstart;
     }
@@ -1715,17 +1727,19 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
     //    stream of input events and has prevented a default gesture from being
     //    started.
     // 4. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
-    if (any_thread().last_gesture_was_compositor_driven) {
-      if (any_thread().begin_main_frame_on_critical_path) {
-        return UseCase::kSynchronizedGesture;
-      } else {
-        return UseCase::kCompositorGesture;
+    if (!scheduling_settings().disable_non_touchstart_input_heuristics) {
+      if (any_thread().last_gesture_was_compositor_driven) {
+        if (any_thread().begin_main_frame_on_critical_path) {
+          return UseCase::kSynchronizedGesture;
+        } else {
+          return UseCase::kCompositorGesture;
+        }
       }
-    }
-    if (any_thread().default_gesture_prevented) {
-      return UseCase::kMainThreadCustomInputHandling;
-    } else {
-      return UseCase::kMainThreadGesture;
+      if (any_thread().default_gesture_prevented) {
+        return UseCase::kMainThreadCustomInputHandling;
+      } else {
+        return UseCase::kMainThreadGesture;
+      }
     }
   }
 
