@@ -529,7 +529,9 @@ class AppSearchProviderWithArcAppInstallType
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderWithArcAppInstallType);
 };
 
-TEST_P(AppSearchProviderWithArcAppInstallType, InstallInernallyRanking) {
+// TODO (879413): Enable this after resolving flakiness.
+TEST_P(AppSearchProviderWithArcAppInstallType,
+       DISABLED_InstallInernallyRanking) {
   const bool default_app =
       GetParam() == TestArcAppInstallType::INSTALLED_BY_DEFAULT;
   if (default_app) {
