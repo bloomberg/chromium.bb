@@ -174,11 +174,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu) &&
       base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
-#elif defined(OS_CHROMEOS)
-  const bool enable_canvas_2d_image_chromium =
-      !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
-      !command_line.HasSwitch(switches::kDisableGpu) &&
-      base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
 #else
   constexpr bool enable_canvas_2d_image_chromium = false;
 #endif
@@ -186,17 +181,14 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       enable_canvas_2d_image_chromium);
 
 #if defined(OS_MACOSX)
-  bool enable_web_gl_image_chromium = command_line.HasSwitch(
-      switches::kEnableGpuMemoryBufferCompositorResources) &&
+  const bool enable_web_gl_image_chromium =
+      command_line.HasSwitch(
+          switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
-      !command_line.HasSwitch(switches::kDisableGpu);
-
-  if (enable_web_gl_image_chromium) {
-    enable_web_gl_image_chromium =
-        base::FeatureList::IsEnabled(features::kWebGLImageChromium);
-  }
+      !command_line.HasSwitch(switches::kDisableGpu) &&
+      base::FeatureList::IsEnabled(features::kWebGLImageChromium);
 #else
-  bool enable_web_gl_image_chromium =
+  const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(switches::kEnableWebGLImageChromium);
 #endif
   WebRuntimeFeatures::EnableWebGLImageChromium(enable_web_gl_image_chromium);

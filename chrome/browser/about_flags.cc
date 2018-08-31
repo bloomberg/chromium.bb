@@ -1333,7 +1333,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)},
     {"enable-canvas-2d-image-chromium",
      flag_descriptions::kCanvas2DImageChromiumName,
-     flag_descriptions::kCanvas2DImageChromiumDescription, kOsMac | kOsCrOS,
+     flag_descriptions::kCanvas2DImageChromiumDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kCanvas2DImageChromium)},
     {"disable-accelerated-2d-canvas",
      flag_descriptions::kAccelerated2dCanvasName,
