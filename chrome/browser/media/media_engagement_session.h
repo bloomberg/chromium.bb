@@ -37,8 +37,13 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // Returns whether the session's origin is same origin with |origin|.
   bool IsSameOriginWith(const url::Origin& origin) const;
 
-  // Record that the session received a significant playback.
-  void RecordSignificantPlayback();
+  // Record that the session received a significant playback from a media
+  // element.
+  void RecordSignificantMediaElementPlayback();
+
+  // Record that the session received a significant playback from an audio
+  // context.
+  void RecordSignificantAudioContextPlayback();
 
   // Record the length of an ignored media playback.
   void RecordShortPlaybackIgnored(int length_msec);
@@ -48,7 +53,11 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   void RegisterAudiblePlayers(int32_t audible_players,
                               int32_t significant_players);
 
-  bool significant_playback_recorded() const;
+  // Whether any significant playback was recorded.
+  bool WasSignificantPlaybackRecorded() const;
+
+  bool significant_media_element_playback_recorded() const;
+  bool significant_audio_context_playback_recorded() const;
   const url::Origin& origin() const;
 
  private:
@@ -61,8 +70,16 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // Returns the UkmRecorder with the right source id set.
   ukm::UkmRecorder* GetUkmRecorder();
 
+  // Records a significant playback that is either a media element or an audio
+  // context playback.
+  void RecordSignificantPlayback();
+
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
+
+  // Returns whether the session has a pending playback that needs to be
+  // committed into the database.
+  bool HasPendingPlaybackToCommit() const;
 
   // Returns whether the session has data that needs to be committed into the
   // database.
@@ -93,13 +110,18 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   int32_t audible_players_total_ = 0;
   int32_t significant_players_total_ = 0;
 
-  bool significant_playback_recorded_ = false;
+  bool significant_media_element_playback_recorded_ = false;
+  bool significant_audio_context_playback_recorded_ = false;
   struct PendingDataToCommit {
     bool visit = true;
-    bool playback = false;
+    bool audio_context_playback = false;
+    bool media_element_playback = false;
     bool players = false;
   };
   PendingDataToCommit pending_data_to_commit_;
+
+  // The time the first significant playback occurred.
+  base::Time first_significant_playback_time_;
 
   // The time between significant playbacks to be recorded to UKM.
   base::TimeDelta time_since_playback_for_ukm_;

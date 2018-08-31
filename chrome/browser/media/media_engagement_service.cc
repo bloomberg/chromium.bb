@@ -321,15 +321,6 @@ MediaEngagementService::GetAllScoreDetails() const {
   return details;
 }
 
-void MediaEngagementService::RecordPlayback(const GURL& url) {
-  if (!ShouldRecordEngagement(url))
-    return;
-
-  MediaEngagementScore score = CreateEngagementScore(url);
-  score.IncrementMediaPlaybacks();
-  score.Commit();
-}
-
 MediaEngagementScore MediaEngagementService::CreateEngagementScore(
     const GURL& url) const {
   // If we are in incognito, |settings| will automatically have the data from

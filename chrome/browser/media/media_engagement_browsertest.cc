@@ -337,7 +337,7 @@ class MediaEngagementPreloadBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 1, 0, 0);
+  ExpectScores(0, 0, 0, 0);
   CloseTab();
   ExpectScores(1, 1, 1, 1);
 }
