@@ -52,7 +52,7 @@ public class HostBrowserClassLoader {
      */
     public static ClassLoader getClassLoaderInstance(Context context, String canaryClassName) {
         assertRunningOnUiThread();
-        Context remoteContext = WebApkUtils.getHostBrowserContext(context);
+        Context remoteContext = HostBrowserUtils.getHostBrowserContext(context);
         if (remoteContext == null) {
             Log.w(TAG, "Failed to get remote context.");
             return null;

@@ -99,8 +99,9 @@ class HostBrowserLauncher {
         String packageName = mContext.getPackageName();
         Log.v(TAG, "Package name of the WebAPK:" + packageName);
 
-        String runtimeHostInPreferences = WebApkUtils.getHostBrowserFromSharedPreference(mContext);
-        String runtimeHost = WebApkUtils.getHostBrowserPackageName(mContext);
+        String runtimeHostInPreferences =
+                HostBrowserUtils.getHostBrowserFromSharedPreference(mContext);
+        String runtimeHost = HostBrowserUtils.getHostBrowserPackageName(mContext);
         if (!TextUtils.isEmpty(runtimeHostInPreferences)
                 && !runtimeHostInPreferences.equals(runtimeHost)) {
             deleteSharedPref();
@@ -203,7 +204,7 @@ class HostBrowserLauncher {
 
     /** Returns whether there is any installed browser supporting WebAPKs. */
     private static boolean hasBrowserSupportingWebApks(List<ResolveInfo> resolveInfos) {
-        List<String> browsersSupportingWebApk = WebApkUtils.getBrowsersSupportingWebApk();
+        List<String> browsersSupportingWebApk = HostBrowserUtils.getBrowsersSupportingWebApk();
         for (ResolveInfo info : resolveInfos) {
             if (browsersSupportingWebApk.contains(info.activityInfo.packageName)) {
                 return true;
@@ -219,7 +220,8 @@ class HostBrowserLauncher {
                     @Override
                     public void onHostBrowserSelected(String selectedHostBrowser) {
                         launchInHostBrowser(selectedHostBrowser, true);
-                        WebApkUtils.writeHostBrowserToSharedPref(mContext, selectedHostBrowser);
+                        HostBrowserUtils.writeHostBrowserToSharedPref(
+                                mContext, selectedHostBrowser);
                         finishCallback.run();
                     }
                     @Override
@@ -250,7 +252,7 @@ class HostBrowserLauncher {
                     @Override
                     public void onConfirmInstall(String packageName) {
                         installBrowser(packageName);
-                        WebApkUtils.writeHostBrowserToSharedPref(mContext, packageName);
+                        HostBrowserUtils.writeHostBrowserToSharedPref(mContext, packageName);
                         finishCallback.run();
                     }
                     @Override
