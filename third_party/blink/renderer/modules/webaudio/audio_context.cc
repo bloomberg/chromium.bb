@@ -7,10 +7,12 @@
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -465,6 +467,24 @@ void AudioContext::RecordAutoplayMetrics() {
 
 void AudioContext::ContextDestroyed(ExecutionContext*) {
   Uninitialize();
+}
+
+void AudioContext::NotifyAudibleAudioStarted() {
+  DCHECK(IsMainThread());
+
+  if (!audio_context_manager_) {
+    GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&audio_context_manager_));
+  }
+
+  audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
+}
+
+void AudioContext::NotifyAudibleAudioStopped() {
+  DCHECK(IsMainThread());
+  DCHECK(audio_context_manager_);
+
+  audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
 }
 
 }  // namespace blink

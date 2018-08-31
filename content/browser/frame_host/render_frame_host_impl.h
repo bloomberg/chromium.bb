@@ -784,6 +784,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return *registry_;
   }
 
+  // Called when the WebAudio AudioContext given by |audio_context_id| has
+  // started (or stopped) playing audible audio.
+  void AudioContextPlaybackStarted(int audio_context_id);
+  void AudioContextPlaybackStopped(int audio_context_id);
+
  protected:
   friend class RenderFrameHostFactory;
 

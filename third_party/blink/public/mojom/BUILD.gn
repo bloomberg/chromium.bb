@@ -62,6 +62,7 @@ mojom("mojom_platform") {
     "speech/speech_recognizer.mojom",
     "use_counter/css_property_id.mojom",
     "web_package/web_package_internals.mojom",
+    "webaudio/audio_context_manager.mojom",
   ]
 
   public_deps = [

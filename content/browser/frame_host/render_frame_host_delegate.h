@@ -386,6 +386,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Note: This is also exposed by the RenderWidgetHostDelegate.
   virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
 
+  // Notify observers if WebAudio AudioContext has started (or stopped) playing
+  // audible sounds.
+  virtual void AudioContextPlaybackStarted(RenderFrameHost* host,
+                                           int context_id){};
+  virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
+                                           int context_id){};
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

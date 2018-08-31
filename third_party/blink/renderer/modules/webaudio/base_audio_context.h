@@ -453,9 +453,10 @@ class MODULES_EXPORT BaseAudioContext
   // the BaseAudioContext goes away.
   WorkerThread* audio_worklet_thread_ = nullptr;
 
-  // Notifies browser when audible audio started or stopped.
-  void NotifyAudibleAudioStarted();
-  void NotifyAudibleAudioStopped();
+  // Notifies browser when audible audio starts or stops.  This should
+  // only apply for AudioContexts.
+  virtual void NotifyAudibleAudioStarted() { NOTREACHED(); }
+  virtual void NotifyAudibleAudioStopped() { NOTREACHED(); }
 
   // Keeps track if the output of this destination was audible, before the
   // current rendering quantum.  Used for recording "playback" time.
