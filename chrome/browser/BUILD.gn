@@ -1763,7 +1763,7 @@ jumbo_split_static_library("browser") {
     "//components/language/content/browser",
     "//components/language/core/browser",
     "//components/live_tab_count_metrics",
-    "//components/metrics:call_stack_profile_collector",
+    "//components/metrics:call_stacks",
     "//components/metrics:component_metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",

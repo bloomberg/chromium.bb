@@ -18,8 +18,6 @@
 
 namespace metrics {
 
-class SampledProfile;
-
 // An instance of the class is meant to be passed to base::StackSamplingProfiler
 // to collect profiles. The profiles collected are uploaded via the metrics log.
 class CallStackProfileBuilder
@@ -97,13 +95,6 @@ class CallStackProfileBuilder
       std::vector<base::StackSamplingProfiler::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
-
-  // Sets the callback to use for reporting browser process profiles. This
-  // indirection is required to avoid a dependency on unnecessary metrics code
-  // in child processes.
-  static void SetBrowserProcessReceiverCallback(
-      const base::RepeatingCallback<void(base::TimeTicks, SampledProfile)>&
-          callback);
 
   // Sets the current system state that is recorded with each captured stack
   // frame. This is thread-safe so can be called from anywhere. The parameter

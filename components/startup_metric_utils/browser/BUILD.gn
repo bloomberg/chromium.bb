@@ -25,7 +25,7 @@ static_library("lib") {
 
   deps = [
     "//base",
-    "//components/metrics:call_stack_profile_builder",
+    "//components/metrics:call_stack_profile",
     "//components/metrics:metrics",
     "//components/prefs",
     "//components/version_info",
