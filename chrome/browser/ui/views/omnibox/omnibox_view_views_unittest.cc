@@ -436,11 +436,18 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
 }
 
 TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
-  toolbar_model()->set_formatted_full_url(base::ASCIIToUTF16("permanent text"));
+  // Since this test is not focused on steady state elisions, set the full
+  // formatted URL and the url for display to the same value.
+  toolbar_model()->set_formatted_full_url(
+      base::ASCIIToUTF16("https://permanent-text.com"));
+  toolbar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://permanent-text.com"));
+
   omnibox_view()->model()->ResetDisplayUrls();
   omnibox_view()->RevertAll();
 
-  EXPECT_EQ(base::ASCIIToUTF16("permanent text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com"),
+            omnibox_view()->text());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
@@ -453,12 +460,13 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
-  // Expect that on blur, if the text is the same as the permanent text, exit
-  // user input mode.
-  omnibox_view()->SetUserText(base::ASCIIToUTF16("permanent text"));
+  // Expect that on blur, if the text is the same as the
+  // https://permanent-text.com, exit user input mode.
+  omnibox_view()->SetUserText(base::ASCIIToUTF16("https://permanent-text.com"));
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
   omnibox_textfield()->OnBlur();
-  EXPECT_EQ(base::ASCIIToUTF16("permanent text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com"),
+            omnibox_view()->text());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 }
 

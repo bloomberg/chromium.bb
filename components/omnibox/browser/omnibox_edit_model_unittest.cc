@@ -132,6 +132,9 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     if (input[i].steady_state_elisions_on) {
       feature_list.InitAndEnableFeature(
           omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
+    } else {
+      feature_list.InitAndDisableFeature(
+          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
     }
 
     toolbar_model()->set_formatted_full_url(
