@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 #define COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 
+#include <set>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -42,6 +45,11 @@ class DriveNotificationManager : public KeyedService,
   void AddObserver(DriveNotificationObserver* observer);
   void RemoveObserver(DriveNotificationObserver* observer);
 
+  // There has been a change in the users team drives, and as a result we need
+  // to update which objects we receive invalidations for.
+  void UpdateTeamDriveIds(const std::set<std::string>& added_team_drive_ids,
+                          const std::set<std::string>& removed_team_drive_ids);
+
   // True when XMPP notification is currently enabled.
   bool push_notification_enabled() const {
     return push_notification_enabled_;
@@ -63,10 +71,14 @@ class DriveNotificationManager : public KeyedService,
 
   // Notifies the observers that it's time to check for updates.
   // |source| indicates where the notification comes from.
-  void NotifyObserversToUpdate(NotificationSource source);
+  void NotifyObserversToUpdate(NotificationSource source,
+                               std::set<std::string> ids);
 
   // Registers for Google Drive invalidation notifications through XMPP.
   void RegisterDriveNotifications();
+
+  // Updates the list of notifications that we're expecting
+  void UpdateRegisteredDriveNotifications();
 
   // Returns a string representation of NotificationSource.
   static std::string NotificationSourceToString(NotificationSource source);
@@ -80,6 +92,9 @@ class DriveNotificationManager : public KeyedService,
   bool push_notification_enabled_;
   // True once observers are notified for the first time.
   bool observers_notified_;
+
+  // This is the set of team drive id's we're receiving notifications for.
+  std::set<std::string> team_drive_ids_;
 
   // The timer is used for polling based notification. XMPP should usually be
   // used but notification is done per polling when XMPP is not working.

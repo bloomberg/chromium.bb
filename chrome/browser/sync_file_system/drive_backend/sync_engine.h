@@ -139,7 +139,8 @@ class SyncEngine
                         const SyncStatusCallback& callback) override;
 
   // drive::DriveNotificationObserver overrides.
-  void OnNotificationReceived() override;
+  void OnNotificationReceived(const std::set<std::string>& ids) override;
+  void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
   // drive::DriveServiceObserver overrides.

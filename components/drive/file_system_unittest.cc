@@ -86,15 +86,33 @@ class MockDirectoryChangeObserver : public FileSystemObserver {
     changed_files_.Apply(new_file_change);
   }
 
+  void OnTeamDrivesUpdated(
+      const std::set<std::string>& added_team_drive_ids,
+      const std::set<std::string>& removed_team_drive_ids) override {
+    added_team_drive_ids_ = added_team_drive_ids;
+    removed_team_drive_ids_ = removed_team_drive_ids;
+  }
+
   const std::vector<base::FilePath>& changed_directories() const {
     return changed_directories_;
   }
 
   const FileChange& changed_files() const { return changed_files_; }
 
+  const std::set<std::string>& added_team_drive_ids() const {
+    return added_team_drive_ids_;
+  }
+
+  const std::set<std::string>& removed_team_drive_ids() const {
+    return removed_team_drive_ids_;
+  }
+
  private:
   std::vector<base::FilePath> changed_directories_;
   FileChange changed_files_;
+  std::set<std::string> added_team_drive_ids_;
+  std::set<std::string> removed_team_drive_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDirectoryChangeObserver);
 };
 
@@ -1380,6 +1398,106 @@ TEST_F(FileSystemTest, DebugMetadata) {
   EXPECT_EQ("654347", team_drive_metadata["td_id_2_2"].start_page_token);
   EXPECT_EQ(FILE_ERROR_OK,
             team_drive_metadata["td_id_2_2"].last_update_check_error);
+}
+
+TEST_F(FileSystemTest, TeamDrivesChangesObserved) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load will trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  // This is the initial set of team drives.
+  EXPECT_EQ(3UL, mock_directory_observer_->added_team_drive_ids().size());
+  EXPECT_TRUE(mock_directory_observer_->removed_team_drive_ids().empty());
+
+  fake_drive_service_->AddTeamDrive("td_id_3", "team_drive_3");
+  // TODO(slangley): Add support for removing a team drive in fake file service.
+  base::RunLoop().RunUntilIdle();
+
+  // Notify the update to the file system, which will add the team drive
+  file_system_->CheckForUpdates();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1UL, mock_directory_observer_->added_team_drive_ids().size());
+  EXPECT_EQ(1UL,
+            mock_directory_observer_->added_team_drive_ids().count("td_id_3"));
+  EXPECT_TRUE(mock_directory_observer_->removed_team_drive_ids().empty());
+}
+
+TEST_F(FileSystemTest, CheckUpdatesWithIds) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load will trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  // Check a non existent team drive id, no other sources should be updated.
+  file_system_->CheckForUpdates({"non_existant_team_drive_id"});
+  base::RunLoop().RunUntilIdle();
+
+  FileSystemMetadata default_corpus_metadata;
+  std::map<std::string, FileSystemMetadata> team_drive_metadata;
+
+  file_system_->GetMetadata(google_apis::test_util::CreateCopyResultCallback(
+      &default_corpus_metadata, &team_drive_metadata));
+  base::RunLoop().RunUntilIdle();
+
+  const base::Time default_time;
+  EXPECT_EQ(default_time, default_corpus_metadata.last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_1"].last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_2"].last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_2_2"].last_update_check_time);
+
+  base::Time now = base::Time::Now();
+
+  // Update just the default corpus.
+  file_system_->CheckForUpdates({""});
+  base::RunLoop().RunUntilIdle();
+
+  file_system_->GetMetadata(google_apis::test_util::CreateCopyResultCallback(
+      &default_corpus_metadata, &team_drive_metadata));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_LE(now, default_corpus_metadata.last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_1"].last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_2"].last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_2_2"].last_update_check_time);
+
+  // Update two team drives.
+  now = base::Time::Now();
+  file_system_->CheckForUpdates({"td_id_1", "td_id_2"});
+  base::RunLoop().RunUntilIdle();
+
+  file_system_->GetMetadata(google_apis::test_util::CreateCopyResultCallback(
+      &default_corpus_metadata, &team_drive_metadata));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_GE(now, default_corpus_metadata.last_update_check_time);
+  EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
+  EXPECT_LE(now, team_drive_metadata["td_id_2"].last_update_check_time);
+  EXPECT_EQ(default_time,
+            team_drive_metadata["td_id_2_2"].last_update_check_time);
+
+  // Update everything.
+  now = base::Time::Now();
+  file_system_->CheckForUpdates({"", "td_id_1", "td_id_2", "td_id_2_2"});
+  base::RunLoop().RunUntilIdle();
+
+  file_system_->GetMetadata(google_apis::test_util::CreateCopyResultCallback(
+      &default_corpus_metadata, &team_drive_metadata));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_LE(now, default_corpus_metadata.last_update_check_time);
+  EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
+  EXPECT_LE(now, team_drive_metadata["td_id_2"].last_update_check_time);
+  EXPECT_LE(now, team_drive_metadata["td_id_2_2"].last_update_check_time);
 }
 
 }   // namespace drive

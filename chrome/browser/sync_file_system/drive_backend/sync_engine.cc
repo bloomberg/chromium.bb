@@ -651,7 +651,11 @@ void SyncEngine::ApplyLocalChange(const FileChange& local_change,
                      local_path, local_metadata, url, relayed_callback));
 }
 
-void SyncEngine::OnNotificationReceived() {
+void SyncEngine::OnNotificationReceived(const std::set<std::string>& ids) {
+  OnNotificationTimerFired();
+}
+
+void SyncEngine::OnNotificationTimerFired() {
   if (!sync_worker_)
     return;
 
