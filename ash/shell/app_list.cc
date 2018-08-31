@@ -313,6 +313,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  bool ProcessHomeLauncherGesture(ui::EventType type,
+                                  const gfx::Point& screen_location) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   ws::WindowService* GetWindowService() override {
     NOTIMPLEMENTED();
     return nullptr;

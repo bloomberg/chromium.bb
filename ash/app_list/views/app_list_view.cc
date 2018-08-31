@@ -102,6 +102,10 @@ constexpr int kAppListFullscreenBackgroundRadius = 0;
 // The threshold beyond which the background radius starts transition.
 constexpr int kAppListBackgroundTransitionThreshold = 156;
 
+// Events within this threshold from the top of the view will be reserved for
+// home launcher gestures, if they can be processed.
+constexpr int kAppListHomeLaucherGesturesThreshold = 32;
+
 // Set animation durations to 0 for testing.
 static bool short_animations_for_testing;
 
@@ -1027,10 +1031,19 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       HandleClickOrTap(event);
       break;
     case ui::ET_SCROLL_FLING_START:
-    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
       // If the search box is active when we start our drag, let it know.
       if (search_box_view_->is_search_box_active())
         search_box_view_->NotifyGestureEvent();
+
+      if (event->location().y() < kAppListHomeLaucherGesturesThreshold) {
+        if (delegate_->ProcessHomeLauncherGesture(event->type(),
+                                                  gfx::Point())) {
+          event->SetHandled();
+          return;
+        }
+      }
+
       // Avoid scrolling events for the app list in tablet mode.
       if (is_side_shelf_ || IsHomeLauncherEnabledInTabletMode())
         return;
@@ -1043,7 +1056,16 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       SetIsInDrag(true);
       event->SetHandled();
       break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    }
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      gfx::Point location_in_screen = event->location();
+      views::View::ConvertPointToScreen(this, &location_in_screen);
+      if (delegate_->ProcessHomeLauncherGesture(event->type(),
+                                                location_in_screen)) {
+        event->SetHandled();
+        return;
+      }
+
       // Avoid scrolling events for the app list in tablet mode.
       if (is_side_shelf_ || IsHomeLauncherEnabledInTabletMode())
         return;
@@ -1052,7 +1074,16 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       UpdateDrag(event->location());
       event->SetHandled();
       break;
-    case ui::ET_GESTURE_END:
+    }
+    case ui::ET_GESTURE_END: {
+      gfx::Point location_in_screen = event->location();
+      views::View::ConvertPointToScreen(this, &location_in_screen);
+      if (delegate_->ProcessHomeLauncherGesture(event->type(),
+                                                location_in_screen)) {
+        event->SetHandled();
+        return;
+      }
+
       if (!is_in_drag_)
         break;
       // Avoid scrolling events for the app list in tablet mode.
@@ -1062,6 +1093,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       EndDrag(event->location());
       event->SetHandled();
       break;
+    }
     case ui::ET_MOUSEWHEEL: {
       if (HandleScroll(event->AsMouseWheelEvent()->offset().y(),
                        ui::ET_MOUSEWHEEL))

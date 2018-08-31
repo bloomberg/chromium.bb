@@ -33,6 +33,13 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
                                               TabletModeObserver,
                                               ui::ImplicitAnimationObserver {
  public:
+  // Enum which tracks which mode the current scroll process is in.
+  enum class Mode {
+    kNone,             // There is no current scroll process.
+    kSwipeUpToShow,    // Swiping away the MRU window to display launcher.
+    kSwipeDownToHide,  // Swiping down the MRU window to hide launcher.
+  };
+
   explicit HomeLauncherGestureHandler(
       AppListControllerImpl* app_list_controller);
   ~HomeLauncherGestureHandler() override;
@@ -40,7 +47,7 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Called by owner of this object when a gesture event is received. |location|
   // should be in screen coordinates. Returns false if the the gesture event
   // was not processed.
-  bool OnPressEvent();
+  bool OnPressEvent(Mode mode);
   bool OnScrollEvent(const gfx::Point& location);
   bool OnReleaseEvent(const gfx::Point& location);
 
@@ -66,9 +73,6 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
     gfx::Transform target_transform;
   };
 
-  // Checks if |window| can be hidden or shown with a gesture.
-  bool CanHideWindow(aura::Window* window);
-
   // Updates the opacity and transform |window_| and its transient children base
   // on the values in |window_values_| and |transient_descendants_values_|.
   // |progress| is between 0.0 and 1.0, where 0.0 means the window will have its
@@ -80,6 +84,8 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   void RemoveObserversAndStopTracking();
 
   aura::Window* window_ = nullptr;
+
+  Mode mode_ = Mode::kNone;
 
   // Original and target transform and opacity of |window_|.
   WindowValues window_values_;

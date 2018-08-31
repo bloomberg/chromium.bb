@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ws {
@@ -108,6 +109,12 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                         ui::MenuSourceType source_type) = 0;
+
+  // Forwards events to the home launcher gesture handler and returns true if
+  // they have been processed.
+  virtual bool ProcessHomeLauncherGesture(
+      ui::EventType type,
+      const gfx::Point& screen_location) = 0;
 
   virtual ws::WindowService* GetWindowService() = 0;
 };
