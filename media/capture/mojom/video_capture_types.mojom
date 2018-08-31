@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 
 enum VideoCapturePixelFormat {
   UNKNOWN,
@@ -244,6 +245,7 @@ struct VideoFrameInfo{
   VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
+  gfx.mojom.ColorSpace color_space;
 };
 
 struct VideoCaptureDeviceDescriptorCameraCalibration {

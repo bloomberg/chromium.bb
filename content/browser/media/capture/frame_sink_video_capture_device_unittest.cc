@@ -371,7 +371,8 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
               media::mojom::VideoFrameInfo::New(
                   kMinCapturePeriod * frame_number,
                   base::Value(base::Value::Type::DICTIONARY), kFormat,
-                  kResolution, gfx::Rect(kResolution)),
+                  kResolution, gfx::Rect(kResolution),
+                  gfx::ColorSpace::CreateREC709()),
               gfx::Rect(kResolution), gfx::Rect(kResolution),
               viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
                   std::move(callbacks_info)));

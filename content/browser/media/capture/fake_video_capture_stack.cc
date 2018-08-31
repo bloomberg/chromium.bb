@@ -65,6 +65,7 @@ class FakeVideoCaptureStack::Receiver : public media::VideoFrameReceiver {
         mapping.size(), frame_info->timestamp);
     CHECK(frame);
     frame->metadata()->MergeInternalValuesFrom(frame_info->metadata);
+    frame->set_color_space(frame_info->color_space);
     // This destruction observer will unmap the shared memory when the
     // VideoFrame goes out-of-scope.
     frame->AddDestructionObserver(base::BindOnce(

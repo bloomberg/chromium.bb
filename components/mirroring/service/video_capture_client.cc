@@ -188,6 +188,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
                      frame->metadata(), std::move(buffer_finished_callback)));
 
   frame->metadata()->MergeInternalValuesFrom(info->metadata);
+  frame->set_color_space(info->color_space);
 
   frame_deliver_callback_.Run(frame);
 }
