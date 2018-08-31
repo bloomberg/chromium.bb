@@ -11,10 +11,9 @@ import android.app.Instrumentation;
 import org.junit.Assert;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer
-        .OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 /**
  * Collection of functions for JavaScript-based interactions with a page.

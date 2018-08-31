@@ -31,7 +31,7 @@ import org.chromium.components.sync.protocol.SessionTab;
 import org.chromium.components.sync.protocol.SessionWindow;
 import org.chromium.components.sync.protocol.SyncEnums;
 import org.chromium.components.sync.protocol.TabNavigation;
-import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.Criteria;
 
 import java.util.ArrayList;
 import java.util.Arrays;

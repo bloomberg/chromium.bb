@@ -24,7 +24,7 @@ import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.policy.AbstractAppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;

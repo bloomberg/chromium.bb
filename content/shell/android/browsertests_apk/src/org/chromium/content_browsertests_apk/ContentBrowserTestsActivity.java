@@ -12,7 +12,7 @@ import org.chromium.content_shell.browsertests.ContentShellBrowserTestActivity;
 import java.io.File;
 
 /**
- * Android activity for running content browser tests
+ * Android activity for running content_public.browser.tests
  */
 public class ContentBrowserTestsActivity extends ContentShellBrowserTestActivity {
     private static final String TAG = "cr.native_test";

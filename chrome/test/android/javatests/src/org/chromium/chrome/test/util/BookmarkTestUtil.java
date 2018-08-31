@@ -6,7 +6,7 @@ package org.chromium.chrome.test.util;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Utility functions for dealing with bookmarks in tests.

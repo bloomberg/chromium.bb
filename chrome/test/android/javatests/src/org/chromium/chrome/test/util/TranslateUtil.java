@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.infobar.InfoBarCompactLayout;
 import org.chromium.chrome.browser.infobar.TranslateCompactInfoBar;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Utility functions for dealing with Translate InfoBars.

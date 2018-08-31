@@ -29,7 +29,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.BookmarkSpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
-import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.Criteria;
 
 import java.util.ArrayList;
 import java.util.List;

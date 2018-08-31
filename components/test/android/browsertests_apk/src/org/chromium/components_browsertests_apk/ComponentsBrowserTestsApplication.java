@@ -14,7 +14,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 /**
- * A basic content browser tests {@link android.app.Application}.
+ * A basic content_public.browser.tests {@link android.app.Application}.
  */
 public class ComponentsBrowserTestsApplication extends Application {
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "components_shell";
