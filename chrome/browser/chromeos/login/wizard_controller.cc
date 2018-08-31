@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
@@ -1218,13 +1219,21 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
   prescribed_enrollment_config_ = g_browser_process->platform_part()
                                       ->browser_policy_connector_chromeos()
                                       ->GetPrescribedEnrollmentConfig();
+
+  bool configuration_forced_enrollment = false;
+  auto* start_enrollment_value = oobe_configuration_.FindKeyOfType(
+      configuration::kWizardAutoEnroll, base::Value::Type::BOOLEAN);
+  if (start_enrollment_value)
+    configuration_forced_enrollment = start_enrollment_value->GetBool();
+
   if (device_disabled) {
     demo_setup_controller_.reset();
     ShowDeviceDisabledScreen();
   } else if (demo_setup_controller_) {
     ShowDemoModeSetupScreen();
   } else if (skip_update_enroll_after_eula_ ||
-             prescribed_enrollment_config_.should_enroll()) {
+             prescribed_enrollment_config_.should_enroll() ||
+             configuration_forced_enrollment) {
     StartEnrollmentScreen(skip_update_enroll_after_eula_);
   } else {
     PerformOOBECompletedActions();
@@ -1253,6 +1262,18 @@ void WizardController::InitiateOOBEUpdate() {
 }
 
 void WizardController::StartOOBEUpdate() {
+  bool skip_update = false;
+  auto* skip_update_value = oobe_configuration_.FindKeyOfType(
+      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
+  if (skip_update_value)
+    skip_update = skip_update_value->GetBool();
+
+  if (skip_update) {
+    VLOG(1) << "Skip OOBE Update because of configuration";
+    OnUpdateCompleted();
+    return;
+  }
+
   VLOG(1) << "StartOOBEUpdate";
   SetCurrentScreenSmooth(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE), true);
   UpdateScreen::Get(screen_manager())->StartNetworkCheck();

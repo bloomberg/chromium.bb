@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -152,42 +153,6 @@ class PrefStoreStub : public TestingPrefStore {
 MATCHER(NonEmptyConfiguration, "") {
   return arg && !arg->DictEmpty();
 }
-
-// Class that ensures that OOBE Configuration was loaded before
-// proceeding with checks.
-class OOBEConfigurationWaiter : public OobeConfiguration::Observer {
- public:
-  OOBEConfigurationWaiter() = default;
-
-  ~OOBEConfigurationWaiter() override {
-    if (callback_) {
-      OobeConfiguration::Get()->RemoveObserver(this);
-    }
-  };
-
-  // OobeConfiguration::Observer override:
-  void OnOobeConfigurationChanged() override {
-    if (OobeConfiguration::Get()->GetConfiguration().DictEmpty()) {
-      return;
-    }
-    OobeConfiguration::Get()->RemoveObserver(this);
-    std::move(callback_).Run();
-  }
-
-  // Wait until configuration is loaded.
-  bool IsConfigurationLoaded(base::OnceClosure callback) {
-    // Assume that configuration is not loaded if it is empty.
-    if (!OobeConfiguration::Get()->GetConfiguration().DictEmpty()) {
-      return true;
-    }
-    OobeConfiguration::Get()->AddObserver(this);
-    callback_ = std::move(callback);
-    return false;
-  }
-
- private:
-  base::OnceClosure callback_;
-};
 
 // Used to set up a |FakeAutoEnrollmentClientFactory| for the duration of a
 // test.

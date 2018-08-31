@@ -15,6 +15,7 @@ namespace chromeos {
 
 // static
 OobeConfiguration* OobeConfiguration::instance = nullptr;
+bool OobeConfiguration::skip_check_for_testing_ = false;
 
 OobeConfiguration::OobeConfiguration()
     : configuration_(
@@ -53,6 +54,8 @@ void OobeConfiguration::ResetConfiguration() {
 }
 
 void OobeConfiguration::CheckConfiguration() {
+  if (skip_check_for_testing_)
+    return;
   DBusThreadManager::Get()
       ->GetOobeConfigurationClient()
       ->CheckForOobeConfiguration(
