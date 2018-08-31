@@ -34,23 +34,53 @@ const char kFeaturePolicyBlocked[] =
     "Access to the feature \"usb\" is disallowed by feature policy.";
 const char kNoDeviceSelected[] = "No device selected.";
 
-UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
+void RejectWithTypeError(const String& error_details,
+                         ScriptPromiseResolver* resolver) {
+  ScriptState::Scope scope(resolver->GetScriptState());
+  v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+  resolver->Reject(V8ThrowException::CreateTypeError(isolate, error_details));
+}
+
+UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter,
+                                       ScriptPromiseResolver* resolver) {
   auto mojo_filter = device::mojom::blink::UsbDeviceFilter::New();
   mojo_filter->has_vendor_id = filter.hasVendorId();
   if (mojo_filter->has_vendor_id)
     mojo_filter->vendor_id = filter.vendorId();
   mojo_filter->has_product_id = filter.hasProductId();
-  if (mojo_filter->has_product_id)
+  if (mojo_filter->has_product_id) {
+    if (!mojo_filter->has_vendor_id) {
+      RejectWithTypeError(
+          "A filter containing a productId must also contain a vendorId.",
+          resolver);
+      return nullptr;
+    }
     mojo_filter->product_id = filter.productId();
+  }
   mojo_filter->has_class_code = filter.hasClassCode();
   if (mojo_filter->has_class_code)
     mojo_filter->class_code = filter.classCode();
   mojo_filter->has_subclass_code = filter.hasSubclassCode();
-  if (mojo_filter->has_subclass_code)
+  if (mojo_filter->has_subclass_code) {
+    if (!mojo_filter->has_class_code) {
+      RejectWithTypeError(
+          "A filter containing a subclassCode must also contain a classCode.",
+          resolver);
+      return nullptr;
+    }
     mojo_filter->subclass_code = filter.subclassCode();
+  }
   mojo_filter->has_protocol_code = filter.hasProtocolCode();
-  if (mojo_filter->has_protocol_code)
+  if (mojo_filter->has_protocol_code) {
+    if (!mojo_filter->has_subclass_code) {
+      RejectWithTypeError(
+          "A filter containing a protocolCode must also contain a "
+          "subclassCode.",
+          resolver);
+      return nullptr;
+    }
     mojo_filter->protocol_code = filter.protocolCode();
+  }
   if (filter.hasSerialNumber())
     mojo_filter->serial_number = filter.serialNumber();
   return mojo_filter;
@@ -126,19 +156,26 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
   Vector<UsbDeviceFilterPtr> filters;
   if (options.hasFilters()) {
     filters.ReserveCapacity(options.filters().size());
-    for (const auto& filter : options.filters())
-      filters.push_back(ConvertDeviceFilter(filter));
+    for (const auto& filter : options.filters()) {
+      UsbDeviceFilterPtr converted_filter =
+          ConvertDeviceFilter(filter, resolver);
+      if (!converted_filter)
+        return promise;
+      filters.push_back(std::move(converted_filter));
+    }
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  DCHECK(options.filters().size() == filters.size());
   get_permission_requests_.insert(resolver);
   service_->GetPermission(std::move(filters),
                           WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),
                                     WrapPersistent(resolver)));
-  return resolver->Promise();
+  return promise;
 }
 
 ExecutionContext* USB::GetExecutionContext() const {
