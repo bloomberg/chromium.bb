@@ -680,6 +680,16 @@ void WizardController::ShowFingerprintSetupScreen() {
 }
 
 void WizardController::ShowMarketingOptInScreen() {
+  // Skip the screen for public sessions and non-regular ephemeral users.
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  if (user_manager->IsLoggedInAsPublicAccount() ||
+      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
+       user_manager->GetActiveUser()->GetType() !=
+           user_manager::USER_TYPE_REGULAR)) {
+    OnMarketingOptInFinished();
+    return;
+  }
   VLOG(1) << "Showing Marketing Opt-In screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
@@ -1641,7 +1651,7 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       OnFingerprintSetupFinished();
       break;
     case ScreenExitCode::MARKETING_OPT_IN_FINISHED:
-      ShowArcTermsOfServiceScreen();
+      OnMarketingOptInFinished();
       break;
     default:
       NOTREACHED();
