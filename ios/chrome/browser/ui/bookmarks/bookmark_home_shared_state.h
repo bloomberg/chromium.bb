@@ -97,6 +97,9 @@ typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
 // Desired favicon size, in points.
 + (CGFloat)desiredFaviconSizePt;
 
+// Cell height, in points.
++ (CGFloat)cellHeightPt;
+
 // Minimium spacing between keyboard and the titleText when creating new folder,
 // in points.
 + (CGFloat)keyboardSpacingPt;

@@ -19,6 +19,9 @@ const CGFloat kMinFaviconSizePt = 16.0;
 // Desired favicon size, in points.
 const CGFloat kDesiredFaviconSizePt = 32.0;
 
+// Cell height, in points.
+const CGFloat kCellHeightPt = 56.0;
+
 // Minimium spacing between keyboard and the titleText when creating new folder,
 // in points.
 const CGFloat kKeyboardSpacingPt = 16.0;
@@ -80,6 +83,10 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
 
 + (CGFloat)desiredFaviconSizePt {
   return kDesiredFaviconSizePt;
+}
+
++ (CGFloat)cellHeightPt {
+  return kCellHeightPt;
 }
 
 + (CGFloat)keyboardSpacingPt {

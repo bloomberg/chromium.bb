@@ -206,7 +206,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCase Tests
@@ -1785,7 +1785,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCaseEntries Tests
@@ -2795,7 +2795,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCasePromo Tests
@@ -3009,7 +3009,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCaseAccessibility Tests
@@ -3185,7 +3185,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestFolders Tests
