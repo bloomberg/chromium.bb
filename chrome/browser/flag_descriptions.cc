@@ -1438,10 +1438,6 @@ const char kPassiveDocumentWheelEventListenersDescription[] =
     "Forces wheel, and mousewheel event listeners on document level targets "
     "(which haven't requested otherwise) to be treated as passive.";
 
-const char kPasswordExportName[] = "Password export";
-const char kPasswordExportDescription[] =
-    "Export functionality in password settings.";
-
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";

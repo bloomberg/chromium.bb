@@ -168,7 +168,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &offline_pages::kPrefetchingOfflinePagesFeature,
     &omnibox::kQueryInOmnibox,
     &omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains,
-    &password_manager::features::kPasswordExport,
     &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &unified_consent::kUnifiedConsent,

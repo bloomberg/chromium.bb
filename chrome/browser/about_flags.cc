@@ -2790,9 +2790,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProtectSyncCredentialOnReauthDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kProtectSyncCredentialOnReauth)},
-    {"PasswordExport", flag_descriptions::kPasswordExportName,
-     flag_descriptions::kPasswordExportDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
