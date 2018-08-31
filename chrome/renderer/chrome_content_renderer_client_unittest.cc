@@ -543,7 +543,14 @@ TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccess) {
   EXPECT_EQ(total_count, samples->TotalCount());
 }
 
-TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccessRewrite) {
+// Crashes on Mac/Win only. http://crbug.com/879644
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_RewriteEmbedSuccessRewrite DISABLED_RewriteEmbedSuccessRewrite
+#else
+#define MAYBE_RewriteEmbedSuccessRewrite RewriteEmbedSuccessRewrite
+#endif
+
+TEST_F(ChromeContentRendererClientMetricsTest, MAYBE_RewriteEmbedSuccessRewrite) {
   ChromeContentRendererClient client;
 
   std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
