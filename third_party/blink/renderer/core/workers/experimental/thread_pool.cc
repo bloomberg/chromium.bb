@@ -242,7 +242,7 @@ void ThreadPoolObjectProxy::ProcessTask(
 }
 
 service_manager::mojom::blink::InterfaceProviderPtrInfo
-ConnectToWorkerInterfaceProvider(
+ConnectToWorkerInterfaceProviderForThreadPool(
     ExecutionContext* execution_context,
     scoped_refptr<const SecurityOrigin> script_origin) {
   // TODO(japhet): Implement a proper factory.
@@ -302,8 +302,8 @@ ThreadPoolMessagingProxy* ThreadPool::GetProxyForTaskType(TaskType task_type) {
             OriginTrialContext::GetTokens(context).get(), devtools_worker_token,
             std::move(settings), kV8CacheOptionsDefault,
             nullptr /* worklet_module_responses_map */,
-            ConnectToWorkerInterfaceProvider(context,
-                                             context->GetSecurityOrigin())));
+            ConnectToWorkerInterfaceProviderForThreadPool(
+                context, context->GetSecurityOrigin())));
   }
   return context_proxies_[proxy_id];
 }
