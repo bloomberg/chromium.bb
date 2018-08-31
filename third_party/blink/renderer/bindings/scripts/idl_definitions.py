@@ -383,6 +383,9 @@ class IdlInterface(object):
                 raise ValueError('Value iterators (iterable<V>) must be accompanied by an indexed '
                                  'property getter and an integer-typed length attribute.')
 
+        if 'Unforgeable' in self.extended_attributes:
+            raise ValueError('[Unforgeable] cannot appear on interfaces.')
+
     def accept(self, visitor):
         visitor.visit_interface(self)
         for attribute in self.attributes:
@@ -449,6 +452,9 @@ class IdlAttribute(TypedObject):
                     self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
                 else:
                     raise ValueError('Unrecognized node class: %s' % child_class)
+
+        if 'Unforgeable' in self.extended_attributes and self.is_static:
+            raise ValueError('[Unforgeable] cannot appear on static attributes.')
 
     def accept(self, visitor):
         visitor.visit_attribute(self)
@@ -574,6 +580,9 @@ class IdlOperation(TypedObject):
                 self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
+
+        if 'Unforgeable' in self.extended_attributes and self.is_static:
+            raise ValueError('[Unforgeable] cannot appear on static operations.')
 
     @classmethod
     def constructor_from_arguments_node(cls, name, arguments_node):

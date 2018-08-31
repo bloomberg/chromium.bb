@@ -449,10 +449,8 @@ def runtime_enabled_feature_name(definition_or_member):
 
 
 # [Unforgeable]
-def is_unforgeable(interface, member):
-    return (('Unforgeable' in interface.extended_attributes or
-             'Unforgeable' in member.extended_attributes) and
-            not member.is_static)
+def is_unforgeable(member):
+    return 'Unforgeable' in member.extended_attributes
 
 
 # [LegacyInterfaceTypeChecking]
@@ -485,8 +483,7 @@ def on_instance(interface, member):
 
     if ('PrimaryGlobal' in interface.extended_attributes or
             'Global' in interface.extended_attributes or
-            'Unforgeable' in member.extended_attributes or
-            'Unforgeable' in interface.extended_attributes):
+            'Unforgeable' in member.extended_attributes):
         return True
     return False
 
@@ -517,8 +514,7 @@ def on_prototype(interface, member):
 
     if ('PrimaryGlobal' in interface.extended_attributes or
             'Global' in interface.extended_attributes or
-            'Unforgeable' in member.extended_attributes or
-            'Unforgeable' in interface.extended_attributes):
+            'Unforgeable' in member.extended_attributes):
         return False
     return True
 

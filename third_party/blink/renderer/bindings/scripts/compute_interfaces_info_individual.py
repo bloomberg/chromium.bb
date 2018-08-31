@@ -137,8 +137,6 @@ def get_put_forward_interfaces_from_definition(definition):
 
 
 def get_unforgeable_attributes_from_definition(definition):
-    if 'Unforgeable' in definition.extended_attributes:
-        return sorted(definition.attributes)
     return sorted(attribute for attribute in definition.attributes
                   if 'Unforgeable' in attribute.extended_attributes)
 
