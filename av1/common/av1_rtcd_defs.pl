@@ -135,7 +135,6 @@ add_proto qw/void av1_inv_txfm2d_add_8x8/, "const int32_t *input, uint16_t *outp
 specialize qw/av1_inv_txfm2d_add_8x8 sse4_1/;
 add_proto qw/void av1_inv_txfm2d_add_16x16/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 add_proto qw/void av1_inv_txfm2d_add_32x32/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
-specialize qw/av1_inv_txfm2d_add_32x32 avx2/;
 
 add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 add_proto qw/void av1_inv_txfm2d_add_32x64/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
