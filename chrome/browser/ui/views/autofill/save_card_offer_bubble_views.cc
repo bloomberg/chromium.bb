@@ -41,23 +41,7 @@
 namespace autofill {
 
 namespace {
-
 const int kTooltipIconSize = 12;
-
-std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
-    const LegalMessageLine& line,
-    views::StyledLabelListener* listener) {
-  std::unique_ptr<views::StyledLabel> label(
-      new views::StyledLabel(line.text(), listener));
-  label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  label->SetDefaultTextStyle(ChromeTextStyle::STYLE_SECONDARY);
-  for (const LegalMessageLine::Link& link : line.links()) {
-    label->AddStyleRange(link.range,
-                         views::StyledLabel::RangeStyleInfo::CreateForLink());
-  }
-  return label;
-}
-
 }  // namespace
 
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
@@ -65,24 +49,16 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
-}
+    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller),
+      web_contents_(web_contents) {}
 
 views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
     return nullptr;
 
-  // Use BoxLayout to provide insets around the label.
-  views::View* footnote_view_ = new View();
-  footnote_view_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  footnote_view_ =
+      new LegalMessageView(controller()->GetLegalMessageLines(), this);
   footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
-
-  // Add a StyledLabel for each line of the legal message.
-  for (const LegalMessageLine& line : controller()->GetLegalMessageLines()) {
-    footnote_view_->AddChildView(
-        CreateLegalMessageLineLabel(line, this).release());
-  }
 
   SetFootnoteViewForTesting(footnote_view_);
   return footnote_view_;
@@ -125,25 +101,7 @@ void SaveCardOfferBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
   if (!controller())
     return;
 
-  // Index of |label| within its parent's view hierarchy is the same as the
-  // legal message line index. DCHECK this assumption to guard against future
-  // layout changes.
-  DCHECK_EQ(static_cast<size_t>(label->parent()->child_count()),
-            controller()->GetLegalMessageLines().size());
-
-  const auto& links =
-      controller()
-          ->GetLegalMessageLines()[label->parent()->GetIndexOf(label)]
-          .links();
-  for (const LegalMessageLine::Link& link : links) {
-    if (link.range == range) {
-      controller()->OnLegalMessageLinkClicked(link.url);
-      return;
-    }
-  }
-
-  // |range| was not found.
-  NOTREACHED();
+  footnote_view_->OnLinkClicked(label, range, web_contents_);
 }
 
 void SaveCardOfferBubbleViews::ContentsChanged(

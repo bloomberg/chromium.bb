@@ -8,6 +8,7 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -20,7 +21,9 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
@@ -96,6 +99,8 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
       /*right=*/separator_horizontal_padding));
 }
 
+TitleWithIconAndSeparatorView::~TitleWithIconAndSeparatorView() {}
+
 gfx::Size TitleWithIconAndSeparatorView::GetMinimumSize() const {
   // View::GetMinumumSize() defaults to GridLayout::GetPreferredSize(), but that
   // gives a larger frame width, so the dialog will become wider than it should.
@@ -110,6 +115,57 @@ views::Textfield* CreateCvcTextfield() {
   textfield->SetDefaultWidthInChars(8);
   textfield->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
   return textfield;
+}
+
+LegalMessageView::LegalMessageView(const LegalMessageLines& legal_message_lines,
+                                   views::StyledLabelListener* listener)
+    : legal_message_lines_(legal_message_lines) {
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  for (const LegalMessageLine& line : legal_message_lines) {
+    AddChildView(CreateLegalMessageLineLabel(line, listener).release());
+  }
+}
+
+LegalMessageView::~LegalMessageView() {}
+
+std::unique_ptr<views::StyledLabel>
+LegalMessageView::CreateLegalMessageLineLabel(
+    const LegalMessageLine& line,
+    views::StyledLabelListener* listener) {
+  std::unique_ptr<views::StyledLabel> label(
+      new views::StyledLabel(line.text(), listener));
+  label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
+  label->SetDefaultTextStyle(ChromeTextStyle::STYLE_SECONDARY);
+  for (const LegalMessageLine::Link& link : line.links()) {
+    label->AddStyleRange(link.range,
+                         views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
+  return label;
+}
+
+void LegalMessageView::OnLinkClicked(views::StyledLabel* label,
+                                     const gfx::Range& range,
+                                     content::WebContents* web_contents) {
+  // Index of |label| within its parent's view hierarchy is the same as the
+  // legal message line index. DCHECK this assumption to guard against future
+  // layout changes.
+  DCHECK_EQ(static_cast<size_t>(label->parent()->child_count()),
+            legal_message_lines_.size());
+
+  const std::vector<LegalMessageLine::Link>& links =
+      legal_message_lines_[label->parent()->GetIndexOf(label)].links();
+  for (const LegalMessageLine::Link& link : links) {
+    if (link.range == range) {
+      web_contents->OpenURL(content::OpenURLParams(
+          link.url, content::Referrer(),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          /*is_renderer_initiated=*/false));
+      return;
+    }
+  }
+  // |range| was not found.
+  NOTREACHED();
 }
 
 }  // namespace autofill

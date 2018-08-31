@@ -26,6 +26,7 @@ enum DialogViewId : int {
   OK_BUTTON,            // Can say [Save], [Next], [Confirm],
                         // or [Done] depending on context
   CANCEL_BUTTON,        // Typically says [No thanks]
+  CLOSE_BUTTON,         // Typically says [Close]
   MANAGE_CARDS_BUTTON,  // Typicall says [Manage cards]
 
   // The following are views::Link objects (clickable).

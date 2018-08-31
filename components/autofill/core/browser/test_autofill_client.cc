@@ -77,6 +77,7 @@ void TestAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
+    std::unique_ptr<base::DictionaryValue> legal_message,
     std::vector<MigratableCreditCard>& migratable_credit_cards,
     base::OnceClosure start_migrating_cards_closure) {
   std::move(start_migrating_cards_closure).Run();

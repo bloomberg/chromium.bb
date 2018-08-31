@@ -39,6 +39,7 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillExpandedPopupViews;
+extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
@@ -76,6 +77,7 @@ extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
 extern const base::Feature kAutofillCreditCardLocalCardMigration;
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
+extern const char kAutofillLocalCardMigrationCloseButtonDelay[];
 extern const char kAutofillCreditCardLocalCardMigrationParameterName[];
 extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
@@ -105,6 +107,10 @@ enum class LocalCardMigrationExperimentalFlag {
 // page. Return kMigrationWithoutSettingsPage if user chooses to exclude the
 // settings page migration.
 LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag();
+
+// Returns the time delay for the local card migration dialog to show the close
+// button.
+base::TimeDelta GetTimeoutForMigrationPromptFeedbackCloseButton();
 
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the

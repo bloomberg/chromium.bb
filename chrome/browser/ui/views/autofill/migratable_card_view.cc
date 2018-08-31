@@ -71,10 +71,13 @@ void MigratableCardView::Init(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
 
-  checkbox_ = new views::Checkbox(base::string16());
+  checkbox_ = new views::Checkbox(base::string16(), listener);
   checkbox_->SetChecked(migratable_credit_card.is_chosen());
   checkbox_->set_tag(card_index);
   checkbox_->SetVisible(true);
+  // TODO(crbug/867194): Currently the ink drop animation circle is cut by the
+  // border of scroll bar view. Find a way to adjust the format.
+  checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
   AddChildView(checkbox_);
 
   constexpr int kMigrationResultImageSize = 16;
@@ -107,7 +110,8 @@ void MigratableCardView::Init(
   std::unique_ptr<views::Label> card_expiration =
       std::make_unique<views::Label>(migratable_credit_card.credit_card()
                                          .AbbreviatedExpirationDateForDisplay(),
-                                     views::style::CONTEXT_LABEL);
+                                     views::style::CONTEXT_LABEL,
+                                     ChromeTextStyle::STYLE_SECONDARY);
   AddChildView(card_expiration.release());
 
   delete_card_from_local_button_ = views::CreateVectorImageButton(listener);

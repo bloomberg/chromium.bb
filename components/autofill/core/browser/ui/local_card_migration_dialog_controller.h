@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/legal_message_line.h"
 
 namespace autofill {
 
@@ -30,6 +31,7 @@ class LocalCardMigrationDialogController {
   // TODO(crbug.com/867194): Ensure this would not be called when migration is
   // happending.
   virtual void SetCardList(std::vector<MigratableCreditCard>& card_list) = 0;
+  virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
   virtual void OnCardSelected(int index) = 0;
   virtual void OnDialogClosed() = 0;
 

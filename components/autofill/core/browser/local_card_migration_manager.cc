@@ -211,7 +211,7 @@ void LocalCardMigrationManager::ShowMainMigrationDialog() {
   user_accepted_main_migration_dialog_ = false;
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   client_->ConfirmMigrateLocalCardToCloud(
-      migratable_credit_cards_,
+      std::move(legal_message_), migratable_credit_cards_,
       base::BindOnce(
           &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
           weak_ptr_factory_.GetWeakPtr()));

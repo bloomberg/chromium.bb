@@ -25,7 +25,8 @@ class LocalCardMigrationDialogControllerImpl
  public:
   ~LocalCardMigrationDialogControllerImpl() override;
 
-  void ShowDialog(LocalCardMigrationDialog* local_card_migration_Dialog,
+  void ShowDialog(std::unique_ptr<base::DictionaryValue> legal_message,
+                  LocalCardMigrationDialog* local_card_migration_Dialog,
                   base::OnceClosure user_accepted_migration_closure_);
 
   // LocalCardMigrationDialogController:
@@ -33,6 +34,7 @@ class LocalCardMigrationDialogControllerImpl
   void SetViewState(LocalCardMigrationDialogState view_state) override;
   const std::vector<MigratableCreditCard>& GetCardList() const override;
   void SetCardList(std::vector<MigratableCreditCard>& card_list) override;
+  const LegalMessageLines& GetLegalMessageLines() const override;
   void OnCardSelected(int index) override;
   void OnDialogClosed() override;
 
@@ -47,6 +49,8 @@ class LocalCardMigrationDialogControllerImpl
   LocalCardMigrationDialog* local_card_migration_dialog_;
 
   LocalCardMigrationDialogState view_state_;
+
+  LegalMessageLines legal_message_lines_;
 
   // TODO(crbug.com/867194): Currently we will not handle the case of local
   // cards added/deleted during migration. migratable_credit_cards_ are local

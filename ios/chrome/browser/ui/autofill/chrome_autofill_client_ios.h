@@ -59,6 +59,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
+      std::unique_ptr<base::DictionaryValue> legal_message,
       std::vector<MigratableCreditCard>& migratable_credit_cards,
       base::OnceClosure start_migrating_cards_closure) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
