@@ -3664,7 +3664,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
-      [weakSelf saveImageAtURL:imageUrl referrer:referrer];
+      DCHECK(imageUrl.is_valid());
+      [weakSelf.imageSaver saveImageAtURL:imageUrl
+                                 referrer:referrer
+                                 webState:weakSelf.currentWebState];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Copy Image.
@@ -3830,21 +3833,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self addSelectedTabWithURL:result
                      postData:&post_content
                    transition:ui::PAGE_TRANSITION_TYPED];
-}
-
-// Saves the image at the given URL on the system's album.  The referrer is used
-// to download the image.
-- (void)saveImageAtURL:(const GURL&)url
-              referrer:(const web::Referrer&)referrer {
-  DCHECK(url.is_valid());
-
-  image_fetcher::ImageDataFetcherBlock callback =
-      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        [self.imageSaver saveImageData:data withMetadata:metadata];
-      };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
 }
 
 - (BOOL)isTabWithIDCurrent:(NSString*)sessionID {
