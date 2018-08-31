@@ -151,6 +151,13 @@ TEST_F(InputIPCTest, CreateStreamPropagates) {
   scoped_task_environment.RunUntilIdle();
 }
 
+TEST_F(InputIPCTest, StreamCreatedAfterCloseIsIgnored) {
+  StrictMock<MockDelegate> delegate;
+  ipc->CreateStream(&delegate, audioParameters, false, 0);
+  ipc->CloseStream();
+  scoped_task_environment.RunUntilIdle();
+}
+
 TEST_F(InputIPCTest, CreateStreamPropagatesInitiallyMuted) {
   StrictMock<MockDelegate> delegate;
 
