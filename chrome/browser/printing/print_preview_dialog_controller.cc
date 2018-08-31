@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::NavigationController;
@@ -55,6 +57,7 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
 
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
+  base::string16 GetAccessibleDialogTitle() const override;
   GURL GetDialogContentURL() const override;
   void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const override;
@@ -86,6 +89,10 @@ ui::ModalType PrintPreviewDialogDelegate::GetDialogModalType() const {
 base::string16 PrintPreviewDialogDelegate::GetDialogTitle() const {
   // Only used on Windows? UI folks prefer no title.
   return base::string16();
+}
+
+base::string16 PrintPreviewDialogDelegate::GetAccessibleDialogTitle() const {
+  return l10n_util::GetStringUTF16(IDS_PRINT_PREVIEW_TITLE);
 }
 
 GURL PrintPreviewDialogDelegate::GetDialogContentURL() const {

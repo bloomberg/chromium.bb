@@ -66,6 +66,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   std::string GetWindowName() const override;
   void WindowClosing() override;
   views::View* GetContentsView() override;

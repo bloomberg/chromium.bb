@@ -41,6 +41,9 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Returns the title of the dialog.
   virtual base::string16 GetDialogTitle() const = 0;
 
+  // Returns the title to be read with screen readers.
+  virtual base::string16 GetAccessibleDialogTitle() const;
+
   // Returns the dialog's name identifier. Used to identify this dialog for
   // state restoration.
   virtual std::string GetDialogName() const;
