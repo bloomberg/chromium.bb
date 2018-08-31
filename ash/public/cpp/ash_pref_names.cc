@@ -287,12 +287,6 @@ const char kSystemBluetoothAdapterEnabled[] =
 // A boolean pref which determines whether tap-dragging is enabled.
 const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
 
-// A boolean pref set to true if touchpad tap-to-click is enabled.
-const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
-
-// Copy of owner tap-to-click option to use on login screen.
-const char kOwnerTapToClickEnabled[] = "owner.touchpad.enable_tap_to_click";
-
 // Boolean prefs for the status of the touchscreen and the touchpad.
 const char kTouchpadEnabled[] = "events.touch_pad.enabled";
 const char kTouchscreenEnabled[] = "events.touch_screen.enabled";

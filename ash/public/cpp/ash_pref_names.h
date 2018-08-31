@@ -111,8 +111,6 @@ ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];
 ASH_PUBLIC_EXPORT extern const char kSystemBluetoothAdapterEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kTapDraggingEnabled[];
-ASH_PUBLIC_EXPORT extern const char kTapToClickEnabled[];
-ASH_PUBLIC_EXPORT extern const char kOwnerTapToClickEnabled[];
 ASH_PUBLIC_EXPORT extern const char kTouchpadEnabled[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenEnabled[];
 

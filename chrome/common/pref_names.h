@@ -186,6 +186,7 @@ extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
+extern const char kTapToClickEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kNaturalScroll[];
 extern const char kPrimaryMouseButtonRight[];
@@ -608,6 +609,7 @@ extern const char kUserActivityTimes[];
 extern const char kExternalStorageDisabled[];
 extern const char kExternalStorageReadOnly[];
 extern const char kOwnerPrimaryMouseButtonRight[];
+extern const char kOwnerTapToClickEnabled[];
 extern const char kUptimeLimit[];
 extern const char kRebootAfterUpdate[];
 extern const char kDeviceRobotAnyApiRefreshToken[];
