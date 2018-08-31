@@ -99,6 +99,7 @@ SRC_RESOURCES= \
 	src/js/scrollbar.js \
 	src/js/test.js \
 	src/js/test_cases.js \
+        src/js/tooltip.js \
 	src/js/util.js \
 	src/js/view.js \
 	src/js/views/browser.js \

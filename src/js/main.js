@@ -222,7 +222,7 @@ camera.Camera.prototype.start = function() {
     this.browserView_.prepare();
     model.load([this.cameraView_.galleryButton, this.browserView_]);
 
-    camera.util.TooltipManager.initialize();
+    camera.Tooltip.initialize();
     camera.util.makeElementsUnfocusableByMouse();
     camera.util.setupElementsAriaLabel();
     this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);

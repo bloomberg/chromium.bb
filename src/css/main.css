@@ -710,37 +710,20 @@ body.capturing.grid #preview-grid-vertical {
 }
 
 #tooltip {
+  background: rgba(241, 243, 244, 0.8);
+  border-radius: 2px;
+  color: #202124;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  line-height: 22px;
+  white-space: nowrap;
+  padding: 0 8px;
   left: 0;
   opacity: 0;
-  padding: 5px;
   pointer-events: none;
   position: absolute;
   top: 0;
-  white-space: nowrap;
   z-index: 100;
-}
-
-#tooltip-arrow {
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid #e0e0e0;
-  bottom: 0;
-  height: 0;
-  left: 50%;
-  margin: 0 -10px;
-  position: absolute;
-  width: 0;
-}
-
-#tooltip-arrow.reverse {
-  border-bottom: 10px solid #e0e0e0;
-  border-top-width: 0;
-  top: 0;
-}
-
-#tooltip #tooltip-msg {
-  background: #e0e0e0;
-  padding: 10px;
 }
 
 #tooltip.visible {
