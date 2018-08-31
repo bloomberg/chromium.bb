@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -19,7 +20,8 @@ enum class IdentityManagerEvent {
   PRIMARY_ACCOUNT_SET,
   PRIMARY_ACCOUNT_CLEARED,
   REFRESH_TOKEN_UPDATED,
-  REFRESH_TOKEN_REMOVED
+  REFRESH_TOKEN_REMOVED,
+  ACCOUNTS_IN_COOKIE_UPDATED,
 };
 
 class OneShotIdentityManagerObserver : public IdentityManager::Observer {
@@ -38,6 +40,8 @@ class OneShotIdentityManagerObserver : public IdentityManager::Observer {
                                        bool is_valid) override;
   void OnRefreshTokenRemovedForAccount(
       const AccountInfo& account_info) override;
+  void OnAccountsInCookieUpdated(
+      const std::vector<AccountInfo>& accounts) override;
 
   IdentityManager* identity_manager_;
   base::OnceClosure done_closure_;
@@ -91,6 +95,15 @@ void OneShotIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(
 void OneShotIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
     const AccountInfo& account_info) {
   if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_REMOVED)
+    return;
+
+  DCHECK(done_closure_);
+  std::move(done_closure_).Run();
+}
+
+void OneShotIdentityManagerObserver::OnAccountsInCookieUpdated(
+    const std::vector<AccountInfo>& accounts) {
+  if (event_to_wait_on_ != IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED)
     return;
 
   DCHECK(done_closure_);
@@ -286,6 +299,30 @@ void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
       IdentityManagerEvent::REFRESH_TOKEN_REMOVED);
 
   token_service->RevokeCredentials(account_id);
+
+  run_loop.Run();
+}
+
+void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
+                       IdentityManager* identity_manager,
+                       const std::vector<CookieParams>& cookie_accounts) {
+  // Convert |cookie_accounts| to the format FakeGaiaCookieManagerService wants.
+  std::vector<FakeGaiaCookieManagerService::CookieParams> gaia_cookie_accounts;
+  for (const CookieParams& params : cookie_accounts) {
+    gaia_cookie_accounts.push_back({params.email, params.gaia_id,
+                                    /*valid=*/true, /*signed_out=*/false,
+                                    /*verified=*/true});
+  }
+
+  base::RunLoop run_loop;
+  OneShotIdentityManagerObserver cookie_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED);
+
+  cookie_manager->SetListAccountsResponseWithParams(gaia_cookie_accounts);
+
+  cookie_manager->set_list_accounts_stale_for_testing(true);
+  cookie_manager->ListAccounts(nullptr, nullptr, "test");
 
   run_loop.Run();
 }

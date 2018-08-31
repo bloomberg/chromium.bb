@@ -19,7 +19,8 @@ class IdentityTestEnvironmentInternal;
 // not available; call MakePrimaryAccountAvailable() as needed.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
  public:
-  IdentityTestEnvironment();
+  IdentityTestEnvironment(
+      bool use_fake_url_loader_for_gaia_cookie_manager = false);
   ~IdentityTestEnvironment() override;
 
   // The IdentityManager instance created and owned by this instance.
@@ -79,6 +80,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // until the refresh token is removed.
   // NOTE: See disclaimer at top of file re: direct usage.
   void RemoveRefreshTokenForAccount(const std::string& account_id);
+
+  // Puts the given accounts into the Gaia cookie, replacing any previous
+  // accounts. Blocks until the accounts have been set.
+  void SetCookieAccounts(const std::vector<CookieParams>& cookie_accounts);
 
   // When this is set, access token requests will be automatically granted with
   // an access token value of "access_token".

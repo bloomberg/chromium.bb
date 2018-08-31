@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/account_info.h"
 
 class AccountTrackerService;
+class FakeGaiaCookieManagerService;
 class FakeSigninManagerBase;
 class FakeSigninManager;
 class ProfileOAuth2TokenService;
@@ -41,6 +42,11 @@ enum class ClearPrimaryAccountPolicy {
   KEEP_ALL_ACCOUNTS,
   // Explicitly remove all accounts.
   REMOVE_ALL_ACCOUNTS
+};
+
+struct CookieParams {
+  std::string email;
+  std::string gaia_id;
 };
 
 class IdentityManager;
@@ -129,6 +135,13 @@ void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
 void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
                                   IdentityManager* identity_manager,
                                   const std::string& account_id);
+
+// Puts the given accounts into the Gaia cookie, replacing any previous
+// accounts. Blocks until the accounts have been set.
+// NOTE: See disclaimer at top of file re: direct usage.
+void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
+                       IdentityManager* identity_manager,
+                       const std::vector<CookieParams>& cookie_accounts);
 
 }  // namespace identity
 
