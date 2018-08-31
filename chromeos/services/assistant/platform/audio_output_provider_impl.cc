@@ -5,8 +5,12 @@
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "chromeos/services/assistant/platform/audio_stream_handler.h"
+#include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/limits.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -36,21 +40,6 @@ int32_t GetBytesPerFrame(const assistant_client::OutputStreamFormat& format) {
 
 int32_t GetBufferSizeInBytesFromBufferFormat(
     const assistant_client::OutputStreamFormat& format) {
-  int32_t frame_size_in_bytes = 0;
-
-  switch (format.encoding) {
-    case assistant_client::OutputStreamEncoding::STREAM_PCM_S16:
-      frame_size_in_bytes = 2;
-      break;
-    case assistant_client::OutputStreamEncoding::STREAM_PCM_S32:
-    case assistant_client::OutputStreamEncoding::STREAM_PCM_F32:
-      frame_size_in_bytes = 4;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
   return GetBytesPerFrame(format) * format.pcm_sample_rate /
          kNumberOfBuffersPerSec;
 }
@@ -78,12 +67,19 @@ void FillAudioFifoWithDataOfBufferFormat(
   fifo->Push(data.data(), frames, bytes_per_sample);
 }
 
+bool IsEncodedFormat(const assistant_client::OutputStreamFormat& format) {
+  return format.encoding ==
+             assistant_client::OutputStreamEncoding::STREAM_MP3 ||
+         format.encoding ==
+             assistant_client::OutputStreamEncoding::STREAM_OPUS_IN_OGG;
+}
+
 class AudioOutputImpl : public assistant_client::AudioOutput {
  public:
   AudioOutputImpl(
       service_manager::Connector* connector,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       assistant_client::OutputStreamType type,
       assistant_client::OutputStreamFormat format)
       : connector_(connector),
@@ -91,6 +87,8 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
         background_thread_task_runner_(background_task_runner),
         stream_type_(type),
         format_(format),
+        audio_stream_handler_(
+            std::make_unique<AudioStreamHandler>(connector_, task_runner)),
         device_owner_(
             std::make_unique<AudioDeviceOwner>(task_runner,
                                                background_task_runner)) {}
@@ -101,36 +99,58 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
         FROM_HERE,
         base::BindOnce(
             [](std::unique_ptr<AudioDeviceOwner> device_owner,
-               scoped_refptr<base::SingleThreadTaskRunner> background_runner) {
+               scoped_refptr<base::SequencedTaskRunner> background_runner) {
               // Ensures |device_owner| is destructed on the correct thread.
               background_runner->DeleteSoon(FROM_HERE, device_owner.release());
             },
             std::move(device_owner_), background_thread_task_runner_));
+    main_thread_task_runner_->DeleteSoon(FROM_HERE,
+                                         audio_stream_handler_.release());
   }
 
   // assistant_client::AudioOutput overrides:
   assistant_client::OutputStreamType GetType() override { return stream_type_; }
 
   void Start(assistant_client::AudioOutput::Delegate* delegate) override {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AudioDeviceOwner::StartOnMainThread,
-                                  base::Unretained(device_owner_.get()),
-                                  delegate, connector_, format_));
+    if (IsEncodedFormat(format_)) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &AudioStreamHandler::StartAudioDecoder,
+              base::Unretained(audio_stream_handler_.get()), delegate,
+              base::BindOnce(&AudioDeviceOwner::StartOnMainThread,
+                             base::Unretained(device_owner_.get()),
+                             audio_stream_handler_.get(), connector_)));
+    } else {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&AudioDeviceOwner::StartOnMainThread,
+                                    base::Unretained(device_owner_.get()),
+                                    delegate, connector_, format_));
+    }
   }
 
   void Stop() override {
-    background_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AudioDeviceOwner::StopOnBackgroundThread,
-                                  base::Unretained(device_owner_.get())));
+    if (IsEncodedFormat(format_)) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&AudioStreamHandler::OnStopped,
+                         base::Unretained(audio_stream_handler_.get())));
+    } else {
+      background_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&AudioDeviceOwner::StopOnBackgroundThread,
+                                    base::Unretained(device_owner_.get())));
+    }
   }
 
  private:
   service_manager::Connector* connector_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> background_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_thread_task_runner_;
 
   const assistant_client::OutputStreamType stream_type_;
   assistant_client::OutputStreamFormat format_;
+
+  std::unique_ptr<AudioStreamHandler> audio_stream_handler_;
 
   std::unique_ptr<AudioDeviceOwner> device_owner_;
 
@@ -187,7 +207,7 @@ void VolumeControlImpl::OnMuteStateChanged(bool mute) {
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
     service_manager::Connector* connector,
-    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : volume_control_impl_(connector),
       connector_(connector),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -200,20 +220,18 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
     const assistant_client::OutputStreamFormat& stream_format) {
   // Owned by one arbitrary thread inside libassistant. It will be destroyed
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
-  // TODO(muyuanli): Handle encoded stream: OutputStreamEncoding::STREAM_MP3 /
-  // OGG.
   return new AudioOutputImpl(connector_, main_thread_task_runner_,
                              background_task_runner_, type, stream_format);
 }
 
 std::vector<assistant_client::OutputStreamEncoding>
 AudioOutputProviderImpl::GetSupportedStreamEncodings() {
-  // TODO(muyuanli): implement after media decoder is ready.
   return std::vector<assistant_client::OutputStreamEncoding>{
       assistant_client::OutputStreamEncoding::STREAM_PCM_S16,
       assistant_client::OutputStreamEncoding::STREAM_PCM_S32,
       assistant_client::OutputStreamEncoding::STREAM_PCM_F32,
       assistant_client::OutputStreamEncoding::STREAM_MP3,
+      assistant_client::OutputStreamEncoding::STREAM_OPUS_IN_OGG,
   };
 }
 
@@ -255,17 +273,19 @@ void AudioDeviceOwner::StartOnMainThread(
 
   delegate_ = delegate;
   format_ = format;
-  // TODO(wutao): Remove this after supporting mp3 encoding.
-  if (format_.encoding == assistant_client::OutputStreamEncoding::STREAM_MP3) {
+  // TODO(wutao): There is a bug LibAssistant sends wrong format. Do not run
+  // in this case.
+  if (format_.pcm_num_channels >
+      static_cast<int>(media::limits::kMaxChannels)) {
     delegate_->OnEndOfStream();
     return;
   }
 
   audio_param_ = GetAudioParametersFromBufferFormat(format_);
 
-  // |audio_fifo_| contains 3x the number of frames to render.
+  // |audio_fifo_| contains 8x the number of frames to render.
   audio_fifo_ = std::make_unique<media::AudioBlockFifo>(
-      format.pcm_num_channels, audio_param_.frames_per_buffer(), 3);
+      format.pcm_num_channels, audio_param_.frames_per_buffer(), 8);
   audio_data_.resize(GetBufferSizeInBytesFromBufferFormat(format_));
 
   {
@@ -286,9 +306,9 @@ void AudioDeviceOwner::StartOnMainThread(
 
 void AudioDeviceOwner::StopOnBackgroundThread() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-
   output_device_.reset();
   delegate_->OnStopped();
+  delegate_ = nullptr;
 }
 
 void AudioDeviceOwner::StartDeviceOnBackgroundThread(
@@ -307,7 +327,8 @@ int AudioDeviceOwner::Render(base::TimeDelta delay,
   base::AutoLock lock(lock_);
 
   if (!is_filling_ && audio_fifo_->GetAvailableFrames() <= 0) {
-    delegate_->OnEndOfStream();
+    if (delegate_)
+      delegate_->OnEndOfStream();
     return 0;
   }
   if (audio_fifo_->GetAvailableFrames() <= 0) {
@@ -339,7 +360,8 @@ int AudioDeviceOwner::Render(base::TimeDelta delay,
 
 void AudioDeviceOwner::OnRenderError() {
   DVLOG(1) << "OnRenderError()";
-  delegate_->OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
+  if (delegate_)
+    delegate_->OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
 }
 
 void AudioDeviceOwner::ScheduleFillLocked(const base::TimeTicks& time) {
@@ -350,6 +372,10 @@ void AudioDeviceOwner::ScheduleFillLocked(const base::TimeTicks& time) {
   // FillBuffer will not be called after delegate_->OnEndOfStream, after which
   // AudioDeviceOwner will be destroyed. Thus |this| is valid for capture
   // here.
+
+  if (!delegate_)
+    return;
+
   delegate_->FillBuffer(
       audio_data_.data(),
       std::min(static_cast<int>(audio_data_.size()),

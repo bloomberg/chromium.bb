@@ -56,7 +56,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   explicit AudioOutputProviderImpl(
       service_manager::Connector* connector,
-      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~AudioOutputProviderImpl() override;
 
   // assistant_client::AudioOutputProvider overrides:
@@ -79,8 +79,8 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  private:
   VolumeControlImpl volume_control_impl_;
   service_manager::Connector* connector_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };

@@ -72,7 +72,7 @@ void IPCDataSource::ReadDone(uint8_t* destination,
                              int requested_size,
                              const std::vector<uint8_t>& data) {
   DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
-  if (data.size() > requested_size) {
+  if (static_cast<int>(data.size()) > requested_size) {
     mojo::ReportBadMessage("IPCDataSource::ReadDone: Unexpected data size.");
     callback.Run(0);
     return;
