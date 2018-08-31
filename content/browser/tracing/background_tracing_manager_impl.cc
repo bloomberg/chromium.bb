@@ -669,7 +669,8 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION: {
       auto config = TraceConfig(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,"
-          "safe_browsing,disabled-by-default-system_stats",
+          "safe_browsing,task_scheduler,task_scheduler_diagnostics"
+          "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
       // Filter only browser process events.
       base::trace_event::TraceConfig::ProcessFilterConfig process_config(
