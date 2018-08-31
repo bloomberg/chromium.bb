@@ -4,6 +4,8 @@
 
 """Recipe module to ensure a checkout is consistent on a bot."""
 
+import re
+
 from recipe_engine import recipe_api
 
 
@@ -30,11 +32,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
   def initialize(self):
     build_input = self.m.buildbucket.build.input
-    if (self._revision is None and self._repository is None
-        and build_input.HasField('gitiles_commit')):
-      gm = build_input.gitiles_commit
-      self._revision = gm.id
-      self._repository = 'https://%s/%s' % (gm.host, gm.project)
+    if (self._revision is None and build_input.HasField('gitiles_commit')):
+      self._revision = build_input.gitiles_commit.id
+
+    if self._repository is None and len(build_input.gerrit_changes) == 1:
+      cl = build_input.gerrit_changes[0]
+      host = re.sub(r'([^\.]+)-review(\.googlesource\.com)', r'\1\2', cl.host)
+      self._repository = 'https://%s/%s' % (host, cl.project)
 
   def __call__(self, name, cmd, **kwargs):
     """Wrapper for easy calling of bot_update."""
