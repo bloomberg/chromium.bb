@@ -788,7 +788,7 @@ public class CustomTabActivity extends ChromeActivity {
     public void initializeCompositor() {
         super.initializeCompositor();
         getTabModelSelector().onNativeLibraryReady(getTabContentManager());
-        mBottomBarDelegate.addContextualSearchObserver();
+        mBottomBarDelegate.addOverlayPanelManagerObserver();
     }
 
     private void recordClientPackageName() {
