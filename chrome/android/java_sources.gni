@@ -2260,6 +2260,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/preferences/password/ReauthenticationManagerTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/SingleThreadBarrierClosureTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/TimedCallbackDelayerTest.java",
+  "junit/src/org/chromium/chrome/browser/signin/SigninManagerTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninPromoUtilTest.java",
   "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/suggestions/ImageFetcherTest.java",

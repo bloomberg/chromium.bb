@@ -54,14 +54,12 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
 
   // Delete all data for this profile.
   void WipeProfileData(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jobject>& hooks);
+                       const base::android::JavaParamRef<jobject>& obj);
 
   // Delete service worker caches for google.<eTLD>.
   void WipeGoogleServiceWorkerCaches(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& hooks);
+      const base::android::JavaParamRef<jobject>& obj);
 
   void LogInSignedInUser(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
@@ -102,14 +100,13 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
                             const std::string& client_id);
   void OnPolicyFetchDone(bool success);
 
-  void OnBrowsingDataRemoverDone(
-      const base::android::ScopedJavaGlobalRef<jobject>& callback);
+  void OnBrowsingDataRemoverDone();
 
   void OnSigninAllowedPrefChanged();
 
   static void WipeData(Profile* profile,
                        bool all_data,
-                       const base::Closure& callback);
+                       base::OnceClosure callback);
 
   Profile* profile_;
 
