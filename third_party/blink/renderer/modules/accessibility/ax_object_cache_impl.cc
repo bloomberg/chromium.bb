@@ -961,7 +961,8 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
 
 void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
                                                Element* element) {
-  if (attr_name == roleAttr || attr_name == typeAttr || attr_name == sizeAttr)
+  if (attr_name == roleAttr || attr_name == typeAttr || attr_name == sizeAttr ||
+      attr_name == aria_haspopupAttr)
     HandlePossibleRoleChange(element);
   else if (attr_name == altAttr || attr_name == titleAttr)
     TextChanged(element);

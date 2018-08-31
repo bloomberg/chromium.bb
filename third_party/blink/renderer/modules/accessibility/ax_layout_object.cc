@@ -306,7 +306,7 @@ AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
     if (node && node->IsLink())
       return kImageMapRole;
     if (IsHTMLInputElement(node))
-      return HasPopup() ? kPopUpButtonRole : kButtonRole;
+      return ButtonRoleType();
     if (IsSVGImage())
       return kSVGRootRole;
 
