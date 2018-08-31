@@ -112,9 +112,6 @@ Bug(none) webshare/ [ Skip ]
 Bug(none) xmlviewer/ [ Skip ]
 Bug(none) xr/ [ Skip ]
 
-# Suspect this is the same issue as the animation timeouts in crbug.com/855688.
-Bug(none) inspector-protocol/animation/animation-multiple-frames.js [ Timeout ]
-
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
@@ -151,15 +148,21 @@ crbug.com/836890 paint/overflow/composited-scroll-vertical-rl.html [ Failure ]
 crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Failure ]
 crbug.com/836912 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
 
-# These scrolling tests should pass.
+# Something wrong with vertical-rl scrollbars
+crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
+crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
+crbug.com/853945 fast/block/positioning/rtl-fixed-positioning.html [ Failure ]
 crbug.com/836913 virtual/threaded/fast/scrolling/overlay-scrollbars.html [ Failure ]
+
+# These scrolling tests should pass.
 crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 
-# Rounding difference. Needs investigation.
+# Backface visibility looks incorrect.
 crbug.com/879364 compositing/backface-visibility-transformed.html [ Failure ]
+crbug.com/879364 compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ Failure ]
 
 # Single pixel snapping difference on scrolling content size.
 Bug(none) compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
@@ -174,10 +177,15 @@ Bug(none) compositing/lots-of-img-layers-with-opacity.html [ Failure ]
 # Subpixel differences on text. Likely benign.
 Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
 
-# Failures that don't belong to any of above categories. Investigation needed.
-Bug(none) compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
-Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]
-Bug(none) compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ Failure ]
+# Benign subpixel differences.
+Bug(none) transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+Bug(none) transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+Bug(none) compositing/masks/direct-image-mask.html [ Failure ]
+Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]
+Bug(none) compositing/perpendicular-layer-sorting.html [ Failure ]
+Bug(none) compositing/perspective-interest-rect.html [ Failure ]
+
+crbug.com/879605 compositing/overflow-trumps-transform-style.html [ Failure ]
 
 # Rounded borders have slightly different antialiasing
 Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
@@ -216,32 +224,21 @@ Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/siblings-c
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
 
-# One line of pixels different when clipping the scrollbar. This looks like a progression.
+# One line of pixels different when clipping the scrollbar.
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
 
 # Incorrect clipping.
+crbug.com/879173 compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 crbug.com/879173 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 
-# Something wrong with vertical-rl scrollbars
-crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
-crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
-crbug.com/853945 fast/block/positioning/rtl-fixed-positioning.html [ Failure ]
+crbug.com/879610 virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
+crbug.com/879610 fast/dom/scroll-reveal-left-overflow.html [ Failure ]
+crbug.com/879610 fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 
-Bug(none) fast/dom/scroll-reveal-left-overflow.html [ Failure ]
-Bug(none) fast/dom/scroll-reveal-top-overflow.html [ Failure ]
-Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
 Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
 
 # Scroll snap data missing.
 crbug.com/853945 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
-
-# Benign subpixel differences.
-Bug(none) transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
-Bug(none) transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
-Bug(none) compositing/masks/direct-image-mask.html [ Failure ]
-Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]
-Bug(none) compositing/perpendicular-layer-sorting.html [ Failure ]
-Bug(none) compositing/perspective-interest-rect.html [ Failure ]
 
 crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
