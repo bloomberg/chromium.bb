@@ -579,12 +579,53 @@ gfx::Rect OverlayWindowViews::GetSecondCustomControlsBounds() {
   return second_custom_controls_view_->GetMirroredBounds();
 }
 
+void OverlayWindowViews::OnNativeBlur() {
+  // Controls should be hidden when there is no more focus on the window. This
+  // is used for tabbing and touch interactions. For mouse interactions, the
+  // window cannot be blurred before the ui::ET_MOUSE_EXITED event is handled.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
+  views::Widget::OnNativeBlur();
+}
+
+void OverlayWindowViews::OnNativeWidgetDestroyed() {
+  controller_->OnWindowDestroyed();
+}
+
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
   return min_size_;
 }
 
 gfx::Size OverlayWindowViews::GetMaximumSize() const {
   return max_size_;
+}
+
+void OverlayWindowViews::OnNativeWidgetMove() {
+  // Hide the controls when the window is moving. The controls will reappear
+  // when the user interacts with the window again.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
+  // Update the existing |window_bounds_| when the window moves. This allows
+  // the window to reappear with the same origin point when a new video is
+  // shown.
+  window_bounds_ = GetBounds();
+}
+
+void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
+  // Hide the controls when the window is being resized. The controls will
+  // reappear when the user interacts with the window again.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
+  // Update the view layers to scale to |new_size|.
+  UpdateCustomControlsSize(first_custom_controls_view_.get());
+  UpdateCustomControlsSize(second_custom_controls_view_.get());
+  UpdatePlayPauseControlsSize();
+  UpdateLayerBoundsWithLetterboxing(new_size);
+
+  views::Widget::OnNativeWidgetSizeChanged(new_size);
 }
 
 void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
@@ -703,47 +744,6 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
   if (sender == second_custom_controls_view_.get())
     controller_->ClickCustomControl(second_custom_controls_view_->id());
-}
-
-void OverlayWindowViews::OnNativeBlur() {
-  // Controls should be hidden when there is no more focus on the window. This
-  // is used for tabbing and touch interactions. For mouse interactions, the
-  // window cannot be blurred before the ui::ET_MOUSE_EXITED event is handled.
-  if (is_initialized_)
-    UpdateControlsVisibility(false);
-
-  views::Widget::OnNativeBlur();
-}
-
-void OverlayWindowViews::OnNativeWidgetMove() {
-  // Hide the controls when the window is moving. The controls will reappear
-  // when the user interacts with the window again.
-  if (is_initialized_)
-    UpdateControlsVisibility(false);
-
-  // Update the existing |window_bounds_| when the window moves. This allows
-  // the window to reappear with the same origin point when a new video is
-  // shown.
-  window_bounds_ = GetBounds();
-}
-
-void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
-  // Hide the controls when the window is being resized. The controls will
-  // reappear when the user interacts with the window again.
-  if (is_initialized_)
-    UpdateControlsVisibility(false);
-
-  // Update the view layers to scale to |new_size|.
-  UpdateCustomControlsSize(first_custom_controls_view_.get());
-  UpdateCustomControlsSize(second_custom_controls_view_.get());
-  UpdatePlayPauseControlsSize();
-  UpdateLayerBoundsWithLetterboxing(new_size);
-
-  views::Widget::OnNativeWidgetSizeChanged(new_size);
-}
-
-void OverlayWindowViews::OnNativeWidgetDestroyed() {
-  controller_->OnWindowDestroyed();
 }
 
 void OverlayWindowViews::TogglePlayPause() {
