@@ -15,7 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
@@ -166,13 +166,16 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 #pragma mark - Private API
 
 - (void)createReadingListFolder {
-  base::AssertBlockingAllowed();
-  NSFileManager* manager = [NSFileManager defaultManager];
-  if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
-    [manager createDirectoryAtPath:[[self presentedItemURL] path]
-        withIntermediateDirectories:NO
-                         attributes:nil
-                              error:nil];
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::WILL_BLOCK);
+    NSFileManager* manager = [NSFileManager defaultManager];
+    if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
+      [manager createDirectoryAtPath:[[self presentedItemURL] path]
+          withIntermediateDirectories:NO
+                           attributes:nil
+                                error:nil];
+    }
   }
 
   __weak ShareExtensionItemReceiver* weakSelf = self;
@@ -279,7 +282,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
     // The handler is called on file modification, including deletion. Check
     // that the file exists before continuing.
@@ -287,11 +290,11 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   }
   __weak ShareExtensionItemReceiver* weakSelf = self;
   ProceduralBlock successCompletion = ^{
-    base::AssertBlockingAllowed();
     [weakSelf deleteFileAtURL:url withCompletion:completion];
   };
   void (^readingAccessor)(NSURL*) = ^(NSURL* newURL) {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::WILL_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     NSData* data = [manager contentsAtPath:[newURL path]];
     if (![weakSelf receivedData:data withCompletion:successCompletion]) {
@@ -309,9 +312,10 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   void (^deletingAccessor)(NSURL*) = ^(NSURL* newURL) {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     [manager removeItemAtURL:newURL error:nil];
   };
@@ -347,7 +351,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)processExistingFiles {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   NSMutableArray<NSURL*>* files = [NSMutableArray array];
   NSFileManager* manager = [NSFileManager defaultManager];
   NSArray<NSURL*>* oldFiles = [manager
