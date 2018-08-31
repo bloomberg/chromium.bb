@@ -18,6 +18,11 @@ from blinkpy.common.path_finder import PathFinder
 _log = logging.getLogger(__file__)
 
 
+# The filename used for the base manifest includes the version as a
+# workaround for trouble landing huge changes to the base manifest when
+# the version changes. See https://crbug.com/876717.
+BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_4.json'
+
 # TODO(robertma): Use the official wpt.manifest module.
 
 class WPTManifest(object):
@@ -47,6 +52,8 @@ class WPTManifest(object):
     and `references` is a list that looks like:
         [[reference_url1, "=="], [reference_url2, "!="], ...]
     """
+
+
 
     def __init__(self, json_content):
         self.raw_dict = json.loads(json_content)
@@ -175,14 +182,14 @@ class WPTManifest(object):
         """Updates the MANIFEST.json file, or generates if it does not exist."""
         finder = PathFinder(host.filesystem)
         manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
-        base_manifest_path = finder.path_from_layout_tests('external', 'WPT_BASE_MANIFEST.json')
+        base_manifest_path = finder.path_from_layout_tests('external', BASE_MANIFEST_NAME)
 
         if not host.filesystem.exists(base_manifest_path):
             _log.error('Manifest base not found at "%s".', base_manifest_path)
             host.filesystem.write_text_file(base_manifest_path, '{}')
 
-        # Unconditionally replace MANIFEST.json with WPT_BASE_MANIFEST.json even
-        # if the former exists, to avoid regenerating the manifest from scratch
+        # Unconditionally replace MANIFEST.json with the base manifest even if
+        # the former exists, to avoid regenerating the manifest from scratch
         # when the manifest version changes. Remove the destination first as
         # copyfile will fail if the two files are hardlinked or symlinked.
         if host.filesystem.exists(manifest_path):
