@@ -20,6 +20,7 @@ from blinkpy.w3c.local_wpt import LocalWPT
 from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
 from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
+from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 from blinkpy.web_tests.builder_list import BuilderList
 
 
@@ -470,18 +471,18 @@ class TestImporterTest(LoggingTestCase):
                 ]
             ])
         self.assertEqual(importer.chromium_git.added_paths,
-                         {blink_path + '/LayoutTests/external/WPT_BASE_MANIFEST.json'})
+                         {blink_path + '/LayoutTests/external/' + BASE_MANIFEST_NAME})
 
     def test_only_wpt_manifest_changed(self):
         host = MockHost()
         importer = TestImporter(host)
         importer.chromium_git.changed_files = lambda: [
-            'third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json',
+            'third_party/WebKit/LayoutTests/external/' + BASE_MANIFEST_NAME,
             'third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         self.assertFalse(importer._only_wpt_manifest_changed())
 
         importer.chromium_git.changed_files = lambda: [
-            'third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json']
+            'third_party/WebKit/LayoutTests/external/' + BASE_MANIFEST_NAME]
         self.assertTrue(importer._only_wpt_manifest_changed())
 
     def test_delete_orphaned_baselines_basic(self):
