@@ -220,9 +220,10 @@ bool UnifiedConsentService::IsUnifiedConsentGiven() {
 }
 
 bool UnifiedConsentService::ShouldShowConsentBump() {
-  if (base::FeatureList::IsEnabled(kForceUnifiedConsentBump))
+  if (base::FeatureList::IsEnabled(kForceUnifiedConsentBump) &&
+      identity_manager_->HasPrimaryAccount()) {
     return true;
-
+  }
   return pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump);
 }
 
