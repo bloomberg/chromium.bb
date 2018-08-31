@@ -45,6 +45,7 @@ source_set("common") {
 
   deps = [
     "//base:i18n",
+    "//mojo/core/embedder",
     "//net",
     "//remoting/base",
     "//remoting/host",
