@@ -640,11 +640,19 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
       baseline_shift = (box->metrics.ascent - box->metrics.descent) / 2;
       break;
     case EVerticalAlign::kTop:
-    case EVerticalAlign::kBottom:
-      // 'top' and 'bottom' require the layout size of the line box.
-      stack_.front().pending_descendants.push_back(NGPendingPositions{
+    case EVerticalAlign::kBottom: {
+      // 'top' and 'bottom' require the layout size of the nearest ancestor that
+      // has 'top' or 'bottom', or the line box if none.
+      NGInlineBoxState* ancestor = &parent_box;
+      for (; ancestor != stack_.begin(); --ancestor) {
+        if (ancestor->style->VerticalAlign() == EVerticalAlign::kTop ||
+            ancestor->style->VerticalAlign() == EVerticalAlign::kBottom)
+          break;
+      }
+      ancestor->pending_descendants.push_back(NGPendingPositions{
           box->fragment_start, fragment_end, box->metrics, vertical_align});
       return kPositionPending;
+    }
     default:
       // Other values require the layout size of the parent box.
       parent_box.pending_descendants.push_back(NGPendingPositions{
