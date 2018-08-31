@@ -36,6 +36,20 @@ class AccessibilityScrollingCodeSearchStory(_AccessibilityStory):
     action_runner.ScrollElement(selector='#file_scroller', distance=1000)
 
 
+class AccessibilityScrollingCodeSearchStory2018(_AccessibilityStory):
+  """Tests scrolling an element within a page."""
+  NAME = 'browse_accessibility:tech:codesearch:2018'
+  URL = 'https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node_mac.mm'
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.SCROLL]
+
+  def RunNavigateSteps(self, action_runner):
+    super(AccessibilityScrollingCodeSearchStory2018, self).RunNavigateSteps(
+        action_runner)
+    action_runner.WaitForElement(text='// namespace ui')
+    for _ in range(6):
+      action_runner.ScrollElement(selector='#file_scroller', distance=1000)
+
+
 class AccessibilityWikipediaStory(_AccessibilityStory):
   """Wikipedia page on Accessibility. Long, but very simple, clean layout."""
   NAME = 'load_accessibility:media:wikipedia'

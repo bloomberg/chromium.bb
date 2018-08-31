@@ -64,7 +64,7 @@ class SystemHealthStory(page.Page):
 
   def __init__(self, story_set, take_memory_measurement,
       extra_browser_args=None):
-    case, group, _ = self.NAME.split(':')
+    case, group, _ = self.NAME.split(':', 2)
     tags = []
     for t in self.TAGS:  # pylint: disable=not-an-iterable
       assert t in story_tags.ALL_TAGS
