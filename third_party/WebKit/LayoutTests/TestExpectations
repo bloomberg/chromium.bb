@@ -4363,9 +4363,9 @@ crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/
 crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
 
 # These tests require Unified Autoplay.
-crbug.com/779087 external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
@@ -4490,9 +4490,9 @@ crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Sheriff 2018-02-26
 crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
