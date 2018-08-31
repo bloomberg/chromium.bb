@@ -103,6 +103,27 @@ public class UiUtils {
     }
 
     /**
+     * A delegate interface for the contacts picker.
+     */
+    public interface ContactsPickerDelegate {
+        /**
+         * Called to display the contacts picker.
+         * @param context  The context to use.
+         * @param listener The listener that will be notified of the action the user took in the
+         *                 picker.
+         * @param allowMultiple Whether to allow multiple contacts to be picked.
+         * @param mimeTypes A list of mime types requested.
+         */
+        void showContactsPicker(Context context, ContactsPickerListener listener,
+                boolean allowMultiple, List<String> mimeTypes);
+
+        /**
+         * Called when the contacts picker dialog has been dismissed.
+         */
+        void onContactsPickerDismissed();
+    }
+
+    /**
      * A delegate interface for the photo picker.
      */
     public interface PhotoPickerDelegate {
@@ -160,27 +181,6 @@ public class UiUtils {
     public static void onContactsPickerDismissed() {
         if (sContactsPickerDelegate == null) return;
         sContactsPickerDelegate.onContactsPickerDismissed();
-    }
-
-    /**
-     * A delegate interface for the contacts picker.
-     */
-    public interface ContactsPickerDelegate {
-        /**
-         * Called to display the contacts picker.
-         * @param context  The context to use.
-         * @param listener The listener that will be notified of the action the user took in the
-         *                 picker.
-         * @param allowMultiple Whether to allow multiple contacts to be picked.
-         * @param mimeTypes A list of mime types requested.
-         */
-        void showContactsPicker(Context context, ContactsPickerListener listener,
-                boolean allowMultiple, List<String> mimeTypes);
-
-        /**
-         * Called when the contacts picker dialog has been dismissed.
-         */
-        void onContactsPickerDismissed();
     }
 
     // PhotoPickerDelegate:

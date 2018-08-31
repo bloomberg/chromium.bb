@@ -89,14 +89,24 @@ public class PickerCategoryView extends RelativeLayout
     // active.
     private boolean mSelectAllMode = true;
 
+    // Whether the picker is in multi-selection mode.
+    private boolean mMultiSelectionAllowed;
+
     // The MIME types requested.
     private List<String> mMimeTypes;
 
+    /**
+     * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
+     * selected.
+     */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context) {
+    public PickerCategoryView(Context context, boolean multiSelectionAllowed) {
         super(context);
 
+        mMultiSelectionAllowed = multiSelectionAllowed;
+
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
+        if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
         mSelectionDelegate.addObserver(this);
 
         Resources resources = context.getResources();
@@ -111,23 +121,29 @@ public class PickerCategoryView extends RelativeLayout
 
         mPickerAdapter = new PickerAdapter(this, context.getContentResolver());
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
+        int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
+                                            : R.string.contacts_picker_select_contact;
         mToolbar = (ContactsPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.contacts_picker_toolbar, mSelectionDelegate,
-                R.string.contacts_picker_select_contacts, null, 0, 0, R.color.modern_primary_color,
-                null, false, false);
+                R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0,
+                R.color.modern_primary_color, null, false, false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
 
         mActionButton = (ImageView) root.findViewById(R.id.action);
-        mActionButton.setOnClickListener(this);
+        if (multiSelectionAllowed) {
+            mActionButton.setOnClickListener(this);
+
+            mLabelSelectAll = resources.getString(R.string.select_all);
+            mLabelUndo = resources.getString(R.string.undo);
+            mActionButton.setContentDescription(mLabelSelectAll);
+        } else {
+            mActionButton.setVisibility(GONE);
+        }
+
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
         mDoneButton = (Button) mToolbar.findViewById(R.id.done);
         mDoneButton.setOnClickListener(this);
-
-        mLabelSelectAll = resources.getString(R.string.select_all);
-        mLabelUndo = resources.getString(R.string.undo);
-        mActionButton.setContentDescription(mLabelSelectAll);
 
         mLayoutManager = new LinearLayoutManager(context);
         mRecyclerView.setHasFixedSize(true);
@@ -211,7 +227,7 @@ public class PickerCategoryView extends RelativeLayout
         // state to revert to (one might not exist if they were all selected manually).
         // TODO(finnur): Add automatic test that exercises the visibility of the action button,
         //               including when all items are selected manually (special case).
-        mActionButton.setVisibility(!mToolbar.isSearching()
+        mActionButton.setVisibility(!mToolbar.isSearching() && mMultiSelectionAllowed
                                 && (selectedItems.size() != mPickerAdapter.getItemCount()
                                            || mPreviousSelection != null)
                         ? VISIBLE

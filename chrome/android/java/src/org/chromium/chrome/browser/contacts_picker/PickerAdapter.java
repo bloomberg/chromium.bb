@@ -52,6 +52,7 @@ public class PickerAdapter extends Adapter<ViewHolder> {
     /**
      * The PickerAdapter constructor.
      * @param categoryView The category view to use to show the contacts.
+     * @param contentResolver The content resolver to use to fetch the data.
      */
     public PickerAdapter(PickerCategoryView categoryView, ContentResolver contentResolver) {
         mCategoryView = categoryView;
