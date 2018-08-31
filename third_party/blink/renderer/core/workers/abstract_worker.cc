@@ -57,8 +57,7 @@ KURL AbstractWorker::ResolveURL(ExecutionContext* execution_context,
   // We can safely expose the URL in the following exceptions, as these checks
   // happen synchronously before redirection. JavaScript receives no new
   // information.
-  if (!script_url.ProtocolIsData() &&
-      !execution_context->GetSecurityOrigin()->CanRequest(script_url)) {
+  if (!execution_context->GetSecurityOrigin()->CanReadContent(script_url)) {
     exception_state.ThrowSecurityError(
         "Script at '" + script_url.ElidedString() +
         "' cannot be accessed from origin '" +
