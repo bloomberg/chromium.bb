@@ -58,7 +58,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.autofill_assistant.AssistantUiController;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUi;
@@ -183,7 +183,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
-    private AssistantUiController mAutofillAssistantUiController;
+    private AutofillAssistantUiController mAutofillAssistantUiController;
 
     @Nullable
     private ModuleEntryPoint mModuleEntryPoint;
@@ -656,7 +656,7 @@ public class CustomTabActivity extends ChromeActivity {
         // intent.
         if (mAutofillAssistantUiController == null
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
-            mAutofillAssistantUiController = new AssistantUiController(this);
+            mAutofillAssistantUiController = new AutofillAssistantUiController(this);
         }
 
         if (mTrustedWebActivityUi != null) {

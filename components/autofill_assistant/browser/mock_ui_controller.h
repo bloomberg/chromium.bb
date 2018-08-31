@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_ASSISTANT_UI_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_ASSISTANT_UI_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
 
 #include "base/callback.h"
-#include "components/autofill_assistant/browser/assistant_ui_controller.h"
+#include "components/autofill_assistant/browser/ui_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 
-class MockAssistantUiController : public AssistantUiController {
+class MockUiController : public UiController {
  public:
-  MockAssistantUiController();
-  ~MockAssistantUiController() override;
+  MockUiController();
+  ~MockUiController() override;
 
-  MOCK_METHOD1(SetUiDelegate, void(AssistantUiDelegate* ui_delegate));
+  MOCK_METHOD1(SetUiDelegate, void(UiDelegate* ui_delegate));
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD0(ShowOverlay, void());
   MOCK_METHOD0(HideOverlay, void());
@@ -38,4 +38,4 @@ class MockAssistantUiController : public AssistantUiController {
 
 }  // namespace autofill_assistant
 
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_ASSISTANT_UI_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_

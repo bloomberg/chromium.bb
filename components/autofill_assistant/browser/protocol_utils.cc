@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/assistant_protocol_utils.h"
+#include "components/autofill_assistant/browser/protocol_utils.h"
 
 #include <utility>
 
@@ -19,7 +19,7 @@
 namespace autofill_assistant {
 
 // static
-std::string AssistantProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
+std::string ProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
@@ -33,12 +33,11 @@ std::string AssistantProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
 }
 
 // static
-bool AssistantProtocolUtils::ParseAssistantScripts(
+bool ProtocolUtils::ParseScripts(
     const std::string& response,
-    std::map<AssistantScript*, std::unique_ptr<AssistantScript>>*
-        assistant_scripts) {
+    std::map<Script*, std::unique_ptr<Script>>* scripts) {
   DCHECK(!response.empty());
-  DCHECK(assistant_scripts);
+  DCHECK(scripts);
 
   SupportsScriptResponseProto response_proto;
   if (!response_proto.ParseFromString(response)) {
@@ -46,14 +45,14 @@ bool AssistantProtocolUtils::ParseAssistantScripts(
     return false;
   }
 
-  for (const auto& script : response_proto.scripts()) {
-    auto assistant_script = std::make_unique<AssistantScript>();
-    assistant_script->path = script.path();
+  for (const auto& script_proto : response_proto.scripts()) {
+    auto script = std::make_unique<Script>();
+    script->path = script_proto.path();
 
-    if (script.has_presentation()) {
-      const auto& presentation = script.presentation();
+    if (script_proto.has_presentation()) {
+      const auto& presentation = script_proto.presentation();
       if (presentation.has_name())
-        assistant_script->name = presentation.name();
+        script->name = presentation.name();
 
       if (presentation.has_precondition()) {
         std::vector<std::vector<std::string>> elements_exist;
@@ -67,20 +66,20 @@ bool AssistantProtocolUtils::ParseAssistantScripts(
         }
 
         if (!elements_exist.empty()) {
-          assistant_script->precondition =
-              std::make_unique<AssistantScriptPrecondition>(elements_exist);
+          script->precondition =
+              std::make_unique<ScriptPrecondition>(elements_exist);
         }
       }
     }
 
-    (*assistant_scripts)[assistant_script.get()] = std::move(assistant_script);
+    (*scripts)[script.get()] = std::move(script);
   }
 
   return true;
 }
 
 // static
-std::string AssistantProtocolUtils::CreateInitialScriptActionsRequest(
+std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto::QueryProto* query =
@@ -96,7 +95,7 @@ std::string AssistantProtocolUtils::CreateInitialScriptActionsRequest(
 }
 
 // static
-std::string AssistantProtocolUtils::CreateNextScriptActionsRequest(
+std::string ProtocolUtils::CreateNextScriptActionsRequest(
     const std::string& previous_server_payload,
     const std::vector<ProcessedActionProto>& processed_actions) {
   ScriptActionRequestProto request_proto;
@@ -113,11 +112,10 @@ std::string AssistantProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-bool AssistantProtocolUtils::ParseActions(
-    const std::string& response,
-    std::string* return_server_payload,
-    std::deque<std::unique_ptr<Action>>* assistant_actions) {
-  DCHECK(assistant_actions);
+bool ProtocolUtils::ParseActions(const std::string& response,
+                                 std::string* return_server_payload,
+                                 std::deque<std::unique_ptr<Action>>* actions) {
+  DCHECK(actions);
 
   ActionsResponseProto response_proto;
   if (!response_proto.ParseFromString(response)) {
@@ -132,26 +130,23 @@ bool AssistantProtocolUtils::ParseActions(
   for (const auto& action : response_proto.actions()) {
     switch (action.action_info_case()) {
       case ActionProto::ActionInfoCase::kClick: {
-        assistant_actions->emplace_back(std::make_unique<ClickAction>(action));
+        actions->emplace_back(std::make_unique<ClickAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kTell: {
-        assistant_actions->emplace_back(std::make_unique<TellAction>(action));
+        actions->emplace_back(std::make_unique<TellAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress: {
-        assistant_actions->emplace_back(
-            std::make_unique<UseAddressAction>(action));
+        actions->emplace_back(std::make_unique<UseAddressAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kUseCard: {
-        assistant_actions->emplace_back(
-            std::make_unique<UseCardAction>(action));
+        actions->emplace_back(std::make_unique<UseCardAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
-        assistant_actions->emplace_back(
-            std::make_unique<UseCardAction>(action));
+        actions->emplace_back(std::make_unique<UseCardAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

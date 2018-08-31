@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "components/autofill_assistant/browser/assistant_web_controller.h"
+#include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -12,10 +12,10 @@
 
 namespace {
 
-class AssistantWebControllerBrowserTest : public content::ContentBrowserTest {
+class WebControllerBrowserTest : public content::ContentBrowserTest {
  public:
-  AssistantWebControllerBrowserTest() {}
-  ~AssistantWebControllerBrowserTest() override {}
+  WebControllerBrowserTest() {}
+  ~WebControllerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -27,19 +27,18 @@ class AssistantWebControllerBrowserTest : public content::ContentBrowserTest {
     ASSERT_TRUE(NavigateToURL(
         shell(),
         http_server_->GetURL("/autofill_assistant_target_website.html")));
-    assistant_web_controller_ =
-        autofill_assistant::AssistantWebController::CreateForWebContents(
-            shell()->web_contents());
+    web_controller_ = autofill_assistant::WebController::CreateForWebContents(
+        shell()->web_contents());
   }
 
   void IsElementExists(const std::vector<std::string>& selectors,
                        bool expected_result) {
     base::RunLoop run_loop;
-    assistant_web_controller_->ElementExists(
+    web_controller_->ElementExists(
         selectors,
-        base::BindOnce(
-            &AssistantWebControllerBrowserTest::CheckElementExistCallback,
-            base::Unretained(this), run_loop.QuitClosure(), expected_result));
+        base::BindOnce(&WebControllerBrowserTest::CheckElementExistCallback,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       expected_result));
     run_loop.Run();
   }
 
@@ -52,24 +51,25 @@ class AssistantWebControllerBrowserTest : public content::ContentBrowserTest {
 
   void ClickElement(const std::vector<std::string>& selectors) {
     base::RunLoop run_loop;
-    assistant_web_controller_->ClickElement(
+    web_controller_->ClickElement(
         selectors,
-        base::BindOnce(&AssistantWebControllerBrowserTest::ClickElementCallback,
+        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  void ClickElementCallback(const base::Closure& done_callback, bool result) {
+  void ClickElementCallback(const base::Closure& done_callback,
+                            bool result) {
     ASSERT_TRUE(result);
     done_callback.Run();
   }
 
   void WaitForElementRemove(const std::vector<std::string>& selectors) {
     base::RunLoop run_loop;
-    assistant_web_controller_->ElementExists(
+    web_controller_->ElementExists(
         selectors,
         base::BindOnce(
-            &AssistantWebControllerBrowserTest::OnWaitForElementRemove,
+            &WebControllerBrowserTest::OnWaitForElementRemove,
             base::Unretained(this), run_loop.QuitClosure(), selectors));
     run_loop.Run();
   }
@@ -85,13 +85,12 @@ class AssistantWebControllerBrowserTest : public content::ContentBrowserTest {
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  std::unique_ptr<autofill_assistant::AssistantWebController>
-      assistant_web_controller_;
+  std::unique_ptr<autofill_assistant::WebController> web_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantWebControllerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, IsElementExists) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, IsElementExists) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#button");
   IsElementExists(selectors, true);
@@ -121,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, IsElementExists) {
   IsElementExists(selectors, false);
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, ClickElement) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#button");
   ClickElement(selectors);
@@ -129,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest, ClickElement) {
   WaitForElementRemove(selectors);
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantWebControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        ClickElementInIFrame) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#iframe");

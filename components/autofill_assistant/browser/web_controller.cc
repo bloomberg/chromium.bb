@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/assistant_web_controller.h"
+#include "components/autofill_assistant/browser/web_controller.h"
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -25,31 +25,26 @@ const char* const kScrollIntoViewScript =
 }  // namespace
 
 // static
-std::unique_ptr<AssistantWebController>
-AssistantWebController::CreateForWebContents(
+std::unique_ptr<WebController> WebController::CreateForWebContents(
     content::WebContents* web_contents) {
-  return std::make_unique<AssistantWebController>(
-      std::make_unique<AssistantDevtoolsClient>(
-          content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
+  return std::make_unique<WebController>(std::make_unique<DevtoolsClient>(
+      content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
 }
 
-AssistantWebController::AssistantWebController(
-    std::unique_ptr<AssistantDevtoolsClient> devtools_client)
+WebController::WebController(std::unique_ptr<DevtoolsClient> devtools_client)
     : devtools_client_(std::move(devtools_client)), weak_ptr_factory_(this) {}
 
-AssistantWebController::~AssistantWebController() {}
+WebController::~WebController() {}
 
-void AssistantWebController::ClickElement(
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool)> callback) {
+void WebController::ClickElement(const std::vector<std::string>& selectors,
+                                 base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  FindElement(
-      selectors,
-      base::BindOnce(&AssistantWebController::OnFindElementForClick,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  FindElement(selectors, base::BindOnce(&WebController::OnFindElementForClick,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        std::move(callback)));
 }
 
-void AssistantWebController::OnFindElementForClick(
+void WebController::OnFindElementForClick(
     base::OnceCallback<void(bool)> callback,
     std::string object_id) {
   if (object_id.empty()) {
@@ -69,12 +64,12 @@ void AssistantWebController::OnFindElementForClick(
           .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
           .SetReturnByValue(true)
           .Build(),
-      base::BindOnce(&AssistantWebController::OnScrollIntoView,
+      base::BindOnce(&WebController::OnScrollIntoView,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      object_id));
 }
 
-void AssistantWebController::OnScrollIntoView(
+void WebController::OnScrollIntoView(
     base::OnceCallback<void(bool)> callback,
     std::string object_id,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
@@ -87,11 +82,11 @@ void AssistantWebController::OnScrollIntoView(
 
   devtools_client_->GetDOM()->GetBoxModel(
       dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
-      base::BindOnce(&AssistantWebController::OnGetBoxModel,
+      base::BindOnce(&WebController::OnGetBoxModel,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AssistantWebController::OnGetBoxModel(
+void WebController::OnGetBoxModel(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
@@ -113,12 +108,12 @@ void AssistantWebController::OnGetBoxModel(
           .SetButton(input::DispatchMouseEventButton::LEFT)
           .SetType(input::DispatchMouseEventType::MOUSE_PRESSED)
           .Build(),
-      base::BindOnce(&AssistantWebController::OnDispatchPressMoustEvent,
+      base::BindOnce(&WebController::OnDispatchPressMoustEvent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), x,
                      y));
 }
 
-void AssistantWebController::OnDispatchPressMoustEvent(
+void WebController::OnDispatchPressMoustEvent(
     base::OnceCallback<void(bool)> callback,
     double x,
     double y,
@@ -131,42 +126,40 @@ void AssistantWebController::OnDispatchPressMoustEvent(
           .SetButton(input::DispatchMouseEventButton::LEFT)
           .SetType(input::DispatchMouseEventType::MOUSE_RELEASED)
           .Build(),
-      base::BindOnce(&AssistantWebController::OnDispatchReleaseMoustEvent,
+      base::BindOnce(&WebController::OnDispatchReleaseMoustEvent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AssistantWebController::OnDispatchReleaseMoustEvent(
+void WebController::OnDispatchReleaseMoustEvent(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
   OnResult(true, std::move(callback));
 }
 
-void AssistantWebController::ElementExists(
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool)> callback) {
+void WebController::ElementExists(const std::vector<std::string>& selectors,
+                                  base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  FindElement(
-      selectors,
-      base::BindOnce(&AssistantWebController::OnFindElementForExist,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  FindElement(selectors, base::BindOnce(&WebController::OnFindElementForExist,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        std::move(callback)));
 }
 
-void AssistantWebController::OnFindElementForExist(
+void WebController::OnFindElementForExist(
     base::OnceCallback<void(bool)> callback,
     std::string object_id) {
   OnResult(!object_id.empty(), std::move(callback));
 }
 
-void AssistantWebController::FindElement(
+void WebController::FindElement(
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(std::string)> callback) {
   devtools_client_->GetDOM()->Enable();
   devtools_client_->GetDOM()->GetDocument(base::BindOnce(
-      &AssistantWebController::OnGetDocument, weak_ptr_factory_.GetWeakPtr(),
-      selectors, std::move(callback)));
+      &WebController::OnGetDocument, weak_ptr_factory_.GetWeakPtr(), selectors,
+      std::move(callback)));
 }
 
-void AssistantWebController::OnGetDocument(
+void WebController::OnGetDocument(
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(std::string)> callback,
     std::unique_ptr<dom::GetDocumentResult> result) {
@@ -174,19 +167,19 @@ void AssistantWebController::OnGetDocument(
                        std::move(callback));
 }
 
-void AssistantWebController::RecursiveFindElement(
+void WebController::RecursiveFindElement(
     int node_id,
     size_t index,
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(std::string)> callback) {
   devtools_client_->GetDOM()->QuerySelectorAll(
       node_id, selectors[index],
-      base::BindOnce(&AssistantWebController::OnQuerySelectorAll,
+      base::BindOnce(&WebController::OnQuerySelectorAll,
                      weak_ptr_factory_.GetWeakPtr(), index, selectors,
                      std::move(callback)));
 }
 
-void AssistantWebController::OnQuerySelectorAll(
+void WebController::OnQuerySelectorAll(
     size_t index,
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(std::string)> callback,
@@ -209,7 +202,7 @@ void AssistantWebController::OnQuerySelectorAll(
         dom::ResolveNodeParams::Builder()
             .SetNodeId(result->GetNodeIds()->front())
             .Build(),
-        base::BindOnce(&AssistantWebController::OnResolveNode,
+        base::BindOnce(&WebController::OnResolveNode,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
@@ -218,13 +211,13 @@ void AssistantWebController::OnQuerySelectorAll(
       dom::DescribeNodeParams::Builder()
           .SetNodeId(result->GetNodeIds()->front())
           .Build(),
-      base::BindOnce(&AssistantWebController::OnDescribeNode,
+      base::BindOnce(&WebController::OnDescribeNode,
                      weak_ptr_factory_.GetWeakPtr(),
                      result->GetNodeIds()->front(), index, selectors,
                      std::move(callback)));
 }
 
-void AssistantWebController::OnResolveNode(
+void WebController::OnResolveNode(
     base::OnceCallback<void(std::string)> callback,
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() ||
@@ -237,7 +230,7 @@ void AssistantWebController::OnResolveNode(
   std::move(callback).Run(result->GetObject()->GetObjectId());
 }
 
-void AssistantWebController::OnDescribeNode(
+void WebController::OnDescribeNode(
     int node_id,
     size_t index,
     const std::vector<std::string>& selectors,
@@ -268,7 +261,7 @@ void AssistantWebController::OnDescribeNode(
             dom::PushNodesByBackendIdsToFrontendParams::Builder()
                 .SetBackendNodeIds(backend_ids)
                 .Build(),
-            base::BindOnce(&AssistantWebController::OnPushNodesByBackendIds,
+            base::BindOnce(&WebController::OnPushNodesByBackendIds,
                            weak_ptr_factory_.GetWeakPtr(), index, selectors,
                            std::move(callback)));
     return;
@@ -277,7 +270,7 @@ void AssistantWebController::OnDescribeNode(
   RecursiveFindElement(node_id, ++index, selectors, std::move(callback));
 }
 
-void AssistantWebController::OnPushNodesByBackendIds(
+void WebController::OnPushNodesByBackendIds(
     size_t index,
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(std::string)> callback,
@@ -287,24 +280,22 @@ void AssistantWebController::OnPushNodesByBackendIds(
                        std::move(callback));
 }
 
-void AssistantWebController::OnResult(bool result,
-                                      base::OnceCallback<void(bool)> callback) {
+void WebController::OnResult(bool result,
+                             base::OnceCallback<void(bool)> callback) {
   devtools_client_->GetDOM()->Disable();
   std::move(callback).Run(result);
 }
 
-void AssistantWebController::FillAddressForm(
-    const std::string& guid,
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool)> callback) {
+void WebController::FillAddressForm(const std::string& guid,
+                                    const std::vector<std::string>& selectors,
+                                    base::OnceCallback<void(bool)> callback) {
   // TODO(crbug.com/806868): Implement fill address form operation.
   std::move(callback).Run(true);
 }
 
-void AssistantWebController::FillCardForm(
-    const std::string& guid,
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool)> callback) {
+void WebController::FillCardForm(const std::string& guid,
+                                 const std::vector<std::string>& selectors,
+                                 base::OnceCallback<void(bool)> callback) {
   // TODO(crbug.com/806868): Implement fill card form operation.
   std::move(callback).Run(true);
 }

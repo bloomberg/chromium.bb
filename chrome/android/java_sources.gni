@@ -112,7 +112,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessoryBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetViewBinder.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantUiController.java",
+  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
   "java/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTask.java",
   "java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",
   "java/src/org/chromium/chrome/browser/banners/AppBannerUiDelegateAndroid.java",

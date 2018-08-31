@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/assistant_script_executor.h"
+#include "components/autofill_assistant/browser/script_executor.h"
 
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/autofill_assistant/browser/assistant_service.h"
 #include "components/autofill_assistant/browser/client_memory.h"
-#include "components/autofill_assistant/browser/mock_assistant_service.h"
-#include "components/autofill_assistant/browser/mock_assistant_ui_controller.h"
-#include "components/autofill_assistant/browser/mock_assistant_web_controller.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
+#include "components/autofill_assistant/browser/mock_service.h"
+#include "components/autofill_assistant/browser/mock_ui_controller.h"
+#include "components/autofill_assistant/browser/mock_web_controller.h"
+#include "components/autofill_assistant/browser/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -25,37 +25,30 @@ using ::testing::StrictMock;
 using ::testing::NiceMock;
 using ::testing::_;
 
-class AssistantScriptExecutorTest : public testing::Test,
-                                    public AssistantScriptExecutorDelegate {
+class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
  public:
   void SetUp() override {
     script_.name = "script name";
     script_.path = "script path";
 
-    executor_ = std::make_unique<AssistantScriptExecutor>(&script_, this);
+    executor_ = std::make_unique<ScriptExecutor>(&script_, this);
 
     // In this test, "tell" actions always succeed and "click" actions always
     // fail.
-    ON_CALL(mock_assistant_web_controller_, OnClickElement(_, _))
+    ON_CALL(mock_web_controller_, OnClickElement(_, _))
         .WillByDefault(RunOnceCallback<1>(false));
   }
 
  protected:
-  AssistantScriptExecutorTest()
+  ScriptExecutorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
-  AssistantService* GetAssistantService() override {
-    return &mock_assistant_service_;
-  }
+  Service* GetService() override { return &mock_service_; }
 
-  AssistantUiController* GetAssistantUiController() override {
-    return &mock_assistant_ui_controller_;
-  }
+  UiController* GetUiController() override { return &mock_ui_controller_; }
 
-  AssistantWebController* GetAssistantWebController() override {
-    return &mock_assistant_web_controller_;
-  }
+  WebController* GetWebController() override { return &mock_web_controller_; }
 
   ClientMemory* GetClientMemory() override { return &memory_; }
 
@@ -68,24 +61,24 @@ class AssistantScriptExecutorTest : public testing::Test,
   // scoped_task_environment_ must be first to guarantee other field
   // creation run in that environment.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  AssistantScript script_;
+  Script script_;
   ClientMemory memory_;
-  StrictMock<MockAssistantService> mock_assistant_service_;
-  NiceMock<MockAssistantWebController> mock_assistant_web_controller_;
-  NiceMock<MockAssistantUiController> mock_assistant_ui_controller_;
-  std::unique_ptr<AssistantScriptExecutor> executor_;
-  StrictMock<base::MockCallback<AssistantScriptExecutor::RunScriptCallback>>
+  StrictMock<MockService> mock_service_;
+  NiceMock<MockWebController> mock_web_controller_;
+  NiceMock<MockUiController> mock_ui_controller_;
+  std::unique_ptr<ScriptExecutor> executor_;
+  StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
 };
 
-TEST_F(AssistantScriptExecutorTest, GetAssistantActionsFails) {
-  EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
+TEST_F(ScriptExecutorTest, GetActionsFails) {
+  EXPECT_CALL(mock_service_, OnGetActions(_, _))
       .WillOnce(RunOnceCallback<1>(false, ""));
   EXPECT_CALL(executor_callback_, Run(false));
   executor_->Run(executor_callback_.Get());
 }
 
-TEST_F(AssistantScriptExecutorTest, RunOneActionReportFailureAndStop) {
+TEST_F(ScriptExecutorTest, RunOneActionReportFailureAndStop) {
   ActionsResponseProto actions_response;
   actions_response.set_server_payload("payload");
   actions_response.add_actions()
@@ -93,11 +86,11 @@ TEST_F(AssistantScriptExecutorTest, RunOneActionReportFailureAndStop) {
       ->mutable_element_to_click()
       ->add_selectors("will fail");
 
-  EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
+  EXPECT_CALL(mock_service_, OnGetActions(_, _))
       .WillOnce(RunOnceCallback<1>(true, Serialize(actions_response)));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
       .WillOnce(DoAll(SaveArg<1>(&processed_actions_capture),
                       RunOnceCallback<2>(true, "")));
   EXPECT_CALL(executor_callback_, Run(true));
@@ -107,13 +100,12 @@ TEST_F(AssistantScriptExecutorTest, RunOneActionReportFailureAndStop) {
   EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions_capture[0].status());
 }
 
-TEST_F(AssistantScriptExecutorTest, RunMultipleActions) {
+TEST_F(ScriptExecutorTest, RunMultipleActions) {
   ActionsResponseProto initial_actions_response;
   initial_actions_response.set_server_payload("payload1");
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
   initial_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_assistant_service_,
-              OnGetAssistantActions(StrEq("script path"), _))
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("script path"), _))
       .WillOnce(RunOnceCallback<1>(true, Serialize(initial_actions_response)));
 
   ActionsResponseProto next_actions_response;
@@ -121,7 +113,7 @@ TEST_F(AssistantScriptExecutorTest, RunMultipleActions) {
   next_actions_response.add_actions()->mutable_tell()->set_message("3");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&processed_actions1_capture),
                 RunOnceCallback<2>(true, Serialize(next_actions_response))))
@@ -134,7 +126,7 @@ TEST_F(AssistantScriptExecutorTest, RunMultipleActions) {
   EXPECT_EQ(1u, processed_actions2_capture.size());
 }
 
-TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
+TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
   ActionsResponseProto initial_actions_response;
   initial_actions_response.set_server_payload("payload");
   initial_actions_response.add_actions()->mutable_tell()->set_message(
@@ -146,7 +138,7 @@ TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
   initial_actions_response.add_actions()->mutable_tell()->set_message(
       "never run");
 
-  EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
+  EXPECT_CALL(mock_service_, OnGetActions(_, _))
       .WillOnce(RunOnceCallback<1>(true, Serialize(initial_actions_response)));
 
   ActionsResponseProto next_actions_response;
@@ -155,7 +147,7 @@ TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
       "will run after error");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&processed_actions1_capture),
                 RunOnceCallback<2>(true, Serialize(next_actions_response))))
@@ -175,18 +167,18 @@ TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
             processed_actions2_capture[0].action().tell().message());
 }
 
-TEST_F(AssistantScriptExecutorTest, RunDelayedAction) {
+TEST_F(ScriptExecutorTest, RunDelayedAction) {
   ActionsResponseProto actions_response;
   actions_response.set_server_payload("payload");
   ActionProto* action = actions_response.add_actions();
   action->mutable_tell()->set_message("delayed");
   action->set_action_delay_ms(1000);
 
-  EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
+  EXPECT_CALL(mock_service_, OnGetActions(_, _))
       .WillOnce(RunOnceCallback<1>(true, Serialize(actions_response)));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
       .WillOnce(DoAll(SaveArg<1>(&processed_actions_capture),
                       RunOnceCallback<2>(true, "")));
 
