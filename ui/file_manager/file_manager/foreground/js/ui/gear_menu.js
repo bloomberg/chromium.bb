@@ -104,7 +104,7 @@ GearMenu.prototype.setSpaceInfo = function(
     spaceInfoPromise, showLoadingCaption) {
   this.spaceInfoPromise_ = spaceInfoPromise;
 
-  if (!spaceInfoPromise) {
+  if (!spaceInfoPromise || loadTimeData.getBoolean('HIDE_SPACE_INFO')) {
     this.volumeSpaceInfo.hidden = true;
     this.volumeSpaceInfoSeparator_.hidden = true;
     return;

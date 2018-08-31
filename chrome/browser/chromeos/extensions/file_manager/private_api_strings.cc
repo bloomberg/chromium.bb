@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
@@ -815,6 +816,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
                    file_manager::util::ShouldBeOpenedWithPlugin(
                        Profile::FromBrowserContext(browser_context()),
                        FILE_PATH_LITERAL(".swf")));
+  // TODO(crbug.com/868747): Find a better solution for demo mode.
+  dict->SetBoolean("HIDE_SPACE_INFO",
+                   chromeos::DemoSession::IsDeviceInDemoMode());
   dict->SetString("CHROMEOS_RELEASE_BOARD",
                   base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(
