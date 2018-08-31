@@ -83,8 +83,9 @@ class ScenicSession : public fuchsia::ui::scenic::SessionListener {
 
  private:
   // fuchsia::ui::scenic::SessionListener interface.
-  void OnError(fidl::StringPtr error) override;
-  void OnEvent(fidl::VectorPtr<fuchsia::ui::scenic::Event> events) override;
+  void OnScenicError(fidl::StringPtr error) override;
+  void OnScenicEvent(
+      fidl::VectorPtr<fuchsia::ui::scenic::Event> events) override;
 
   // Allocates a new unique resource id.
   ResourceId AllocateResourceId();
