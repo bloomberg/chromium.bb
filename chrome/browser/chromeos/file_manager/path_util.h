@@ -85,6 +85,7 @@ void ConvertToContentUrls(
 // * /home/chronos/user/Downloads                => Downloads
 // * /home/chronos/u-<hash>/Downloads            => Downloads
 // * /special/drive-<hash>/root                  => Google Drive
+// * /special/drive-<hash>/team_drives           => Team Drives
 // * /run/arc/sdcard/write/emulated/0            => Play files
 // * /media/fuse/crostini_<hash>_termina_penguin => Linux files
 // * '/' with ' \u203a ' (angled quote sign) for display purposes.
