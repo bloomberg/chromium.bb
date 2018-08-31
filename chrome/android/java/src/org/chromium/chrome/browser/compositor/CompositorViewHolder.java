@@ -210,6 +210,13 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                Tab tab = getCurrentTab();
+                // Set the size of NTP if we're in the attached state as it may have not been sized
+                // properly when initializing tab. See the comment in #initializeTab() for why.
+                if (tab != null && tab.isNativePage() && isAttachedToWindow(tab.getView())) {
+                    Point viewportSize = getViewportSize();
+                    setSize(tab.getWebContents(), tab.getView(), viewportSize.x, viewportSize.y);
+                }
                 onViewportChanged();
 
                 // If there's an event that needs to occur after the keyboard is hidden, post
@@ -1031,6 +1038,11 @@ public class CompositorViewHolder extends FrameLayout
         if (tab.getView() == null) return;
         tab.setTopControlsHeight(getTopControlsHeightPixels(), controlsResizeView());
         tab.setBottomControlsHeight(getBottomControlsHeightPixels());
+
+        // TextView with compound drawables in the NTP gets a wrong width when measure/layout is
+        // performed in the unattached state. Delay the layout till #onLayoutChange().
+        // See https://crbug.com/876686.
+        if (tab.isNativePage() && !isAttachedToWindow(tab.getView())) return;
         Point viewportSize = getViewportSize();
         setSize(webContents, tab.getView(), viewportSize.x, viewportSize.y);
     }
