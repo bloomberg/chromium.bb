@@ -359,7 +359,7 @@ class RawDiffTest(cros_test_lib.MockTestCase):
     ])
 
 
-class GitPushTest(cros_test_lib.MockTestCase):
+class GitPushTest(cros_test_lib.RunCommandTestCase):
   """Tests for git.GitPush function."""
 
   # Non fast-forward push error message.
@@ -409,29 +409,36 @@ class GitPushTest(cros_test_lib.MockTestCase):
   def _RunGitPush():
     """Runs git.GitPush with some default arguments."""
     git.GitPush('some_repo_path', 'local-ref',
-                git.RemoteRef('some-remote', 'remote-ref'),
-                skip=False)
+                git.RemoteRef('some-remote', 'remote-ref'))
 
-  def testPushSuccess(self):
-    """Test handling of successful git push."""
-    with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.AddCmdResult(partial_mock.In('push'), returncode=0)
-      self._RunGitPush()
+  def testGitPushSimple(self):
+    """Test GitPush with minimal arguments."""
+    git.GitPush('git_path', 'HEAD', git.RemoteRef('origin', 'master'))
+    self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master'],
+                             capture_output=True, print_cmd=False,
+                             cwd='git_path')
+
+  def testGitPushComplix(self):
+    """Test GitPush with some arguments."""
+    git.GitPush('git_path', 'HEAD', git.RemoteRef('origin', 'master'),
+                force=True, dry_run=True)
+    self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master',
+                              '--force', '--dry-run'],
+                             capture_output=True, print_cmd=False,
+                             cwd='git_path')
 
   def testNonFFPush(self):
     """Non fast-forward push error propagates to the caller."""
-    with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128,
-                           error=self.NON_FF_PUSH_ERROR)
-      self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
+    self.rc.AddCmdResult(partial_mock.In('push'), returncode=128,
+                         error=self.NON_FF_PUSH_ERROR)
+    self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
 
   def testPersistentTransientError(self):
     """GitPush fails if transient error occurs multiple times."""
     for error in self.TRANSIENT_ERRORS:
-      with cros_test_lib.RunCommandMock() as rc_mock:
-        rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128,
-                             error=error)
-        self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
+      self.rc.AddCmdResult(partial_mock.In('push'), returncode=128,
+                           error=error)
+      self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
 
 
 class GitBranchDetectionTest(patch_unittest.GitRepoPatchTestCase):
