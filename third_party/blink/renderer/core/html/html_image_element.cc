@@ -746,20 +746,14 @@ void HTMLImageElement::SelectSourceURL(
   if (!GetDocument().IsActive())
     return;
 
-  bool found_url = false;
   ImageCandidate candidate = FindBestFitImageFromPictureParent();
-  if (!candidate.IsEmpty()) {
-    SetBestFitURLAndDPRFromImageCandidate(candidate);
-    found_url = true;
-  }
-
-  if (!found_url) {
+  if (candidate.IsEmpty()) {
     candidate = BestFitSourceForImageAttributes(
         GetDocument().DevicePixelRatio(), SourceSize(*this),
         FastGetAttribute(srcAttr), FastGetAttribute(srcsetAttr),
         &GetDocument());
-    SetBestFitURLAndDPRFromImageCandidate(candidate);
   }
+  SetBestFitURLAndDPRFromImageCandidate(candidate);
 
   GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
 
