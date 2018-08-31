@@ -152,7 +152,7 @@ def translate(tableList, inbuf, typeform=None, cursorPos=0, mode=0):
     """
     tablesString = _createTablesString(tableList)
     inbuf = createEncodedByeString(inbuf)
-    inlen = c_int(len(inbuf)/wideCharBytes)
+    inlen = c_int(len(inbuf) // wideCharBytes)
     outlen = c_int(inlen.value*outlenMultiplier)
     outbuf = create_string_buffer(outlen.value * wideCharBytes)
     typeformbuf = None
@@ -187,7 +187,7 @@ def translateString(tableList, inbuf, typeform=None, mode=0):
     """
     tablesString = _createTablesString(tableList)
     inbuf = createEncodedByeString(inbuf)
-    inlen = c_int(len(inbuf)/wideCharBytes)
+    inlen = c_int(len(inbuf) // wideCharBytes)
     outlen = c_int(inlen.value*outlenMultiplier)
     outbuf = create_string_buffer(outlen.value * wideCharBytes)
     typeformbuf = None
@@ -223,7 +223,7 @@ def backTranslate(tableList, inbuf, typeform=None, cursorPos=0, mode=0):
     """
     tablesString = _createTablesString(tableList)
     inbuf = createEncodedByeString(inbuf)
-    inlen = c_int(len(inbuf)/wideCharBytes)
+    inlen = c_int(len(inbuf) // wideCharBytes)
     outlen = c_int(inlen.value * outlenMultiplier)
     outbuf = create_string_buffer(outlen.value * wideCharBytes)
     typeformbuf = None
@@ -258,7 +258,7 @@ def backTranslateString(tableList, inbuf, typeform=None, mode=0):
     """
     tablesString = _createTablesString(tableList)
     inbuf = createEncodedByeString(inbuf)
-    inlen = c_int(len(inbuf)/wideCharBytes)
+    inlen = c_int(len(inbuf) // wideCharBytes)
     outlen = c_int(inlen.value * outlenMultiplier)
     outbuf = create_string_buffer(outlen.value * wideCharBytes)
     typeformbuf = None
@@ -291,7 +291,7 @@ def hyphenate(tableList, inbuf, mode=0):
     """
     tablesString = _createTablesString(tableList)
     inbuf = createEncodedByeString(inbuf)
-    inlen = c_int(len(inbuf)/wideCharBytes)
+    inlen = c_int(len(inbuf) // wideCharBytes)
     hyphen_string = create_string_buffer(inlen.value + 1) 
     if not liblouis.lou_hyphenate(tablesString, inbuf, inlen, hyphen_string, mode):
         raise RuntimeError("Can't hyphenate: tables %s, inbuf %s, mode %d"%(tableList, inbuf, mode))
