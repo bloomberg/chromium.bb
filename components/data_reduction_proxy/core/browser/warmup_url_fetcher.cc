@@ -68,10 +68,15 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
   DCHECK_LT(0u, previous_attempt_counts_);
   DCHECK_GE(2u, previous_attempt_counts_);
 
-  if (previous_attempt_counts_ == 1)
-    return base::TimeDelta::FromSeconds(30);
+  if (previous_attempt_counts_ == 1) {
+    return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+        features::kDataReductionProxyRobustConnection,
+        "warmup_url_fetch_wait_timer_first_retry_seconds", 1));
+  }
 
-  return base::TimeDelta::FromSeconds(60);
+  return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+      features::kDataReductionProxyRobustConnection,
+      "warmup_url_fetch_wait_timer_second_retry_seconds", 30));
 }
 
 void WarmupURLFetcher::FetchWarmupURLNow() {
