@@ -194,6 +194,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowVoiceInteractionValuePropScreen();
   void ShowWaitForContainerReadyScreen();
   void ShowUpdateRequiredScreen();
+  void ShowAssistantOptInFlowScreen();
   void ShowDiscoverScreen();
   void ShowMarketingOptInScreen();
 
@@ -242,6 +243,7 @@ class WizardController : public BaseScreenDelegate,
   void OnDemoPreferencesContinued();
   void OnDemoPreferencesCanceled();
   void OnWaitForContainerReadyFinished();
+  void OnAssistantOptInFlowFinished();
   void OnOobeFlowFinished();
   void OnMarketingOptInFinished();
 
