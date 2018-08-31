@@ -11,14 +11,13 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
-import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -36,8 +35,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeRea
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * This class is responsible for managing the content shown by the {@link BottomSheet}. Features
@@ -73,14 +70,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /** Track whether the sheet was shown for the current tab. */
     private boolean mWasShownForCurrentTab;
 
-    /** Whether composited UI is currently showing (such as Contextual Search). */
-    private boolean mIsCompositedUIShowing;
-
     /** Whether the bottom sheet is temporarily suppressed. */
     private boolean mIsSuppressed;
 
-    /** The manager for Contextual Search to attach listeners to. */
-    private ContextualSearchManager mContextualSearchManager;
+    /** The manager for overlay panels to attach listeners to. */
+    private OverlayPanelManager mOverlayPanelManager;
 
     /** Whether the bottom sheet should be suppressed when Contextual Search is showing. */
     private boolean mSuppressSheetForContextualSearch;
@@ -91,17 +85,16 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * @param layoutManager A layout manager for detecting changes in the active layout.
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
-     * @param contextualSearchManager The manager for Contextual Search to attach listeners to.
+     * @param overlayManager The manager for overlay panels to attach listeners to.
      * @param suppressSheetForContextualSearch Whether the bottom sheet should be suppressed when
      *                                         Contextual Search is showing.
      */
     public BottomSheetController(final Activity activity, final TabModelSelector tabModelSelector,
             final LayoutManager layoutManager, final ScrimView scrim, BottomSheet bottomSheet,
-            ContextualSearchManager contextualSearchManager,
-            boolean suppressSheetForContextualSearch) {
+            OverlayPanelManager overlayManager, boolean suppressSheetForContextualSearch) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
-        mContextualSearchManager = contextualSearchManager;
+        mOverlayPanelManager = overlayManager;
         mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
@@ -214,21 +207,15 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
         });
 
-        // TODO(mdjones): This should be changed to a generic OverlayPanel observer.
-        if (mContextualSearchManager != null && mSuppressSheetForContextualSearch) {
-            mContextualSearchManager.addObserver(new ContextualSearchObserver() {
+        if (mSuppressSheetForContextualSearch) {
+            mOverlayPanelManager.addObserver(new OverlayPanelManagerObserver() {
                 @Override
-                public void onShowContextualSearch(
-                        @Nullable GSAContextDisplaySelection selectionContext) {
-                    // Contextual Search can call this method more than once per show event.
-                    if (mIsCompositedUIShowing) return;
-                    mIsCompositedUIShowing = true;
+                public void onOverlayPanelShown() {
                     suppressSheet(StateChangeReason.COMPOSITED_UI);
                 }
 
                 @Override
-                public void onHideContextualSearch() {
-                    mIsCompositedUIShowing = false;
+                public void onOverlayPanelHidden() {
                     unsuppressSheet();
                 }
             });
@@ -377,8 +364,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     public void expandSheet() {
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, true);
-        if (mContextualSearchManager != null) {
-            mContextualSearchManager.hideContextualSearch(OverlayPanel.StateChangeReason.UNKNOWN);
+        if (mOverlayPanelManager.getActivePanel() != null) {
+            // TODO(mdjones): This should only apply to contextual search, but contextual search is
+            //                the only implementation. Fix this to only apply to contextual search.
+            mOverlayPanelManager.getActivePanel().closePanel(
+                    OverlayPanel.StateChangeReason.UNKNOWN, true);
         }
     }
 
@@ -436,7 +426,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * @return Whether some other UI is preventing the sheet from showing.
      */
     protected boolean isOtherUIObscuring() {
-        return mIsCompositedUIShowing;
+        return mOverlayPanelManager.getActivePanel() != null;
     }
 
     /**
