@@ -129,146 +129,55 @@ bool ParseProcMapsLine(const char* line,
 
 }  // namespace
 
-// Internal implementation of ProcMaps class.
-class ProcMapsInternal {
- public:
-  ProcMapsInternal() : index_(0), entries_() {}
-
-  ~ProcMapsInternal() { Reset(); }
-
-  bool Open(const char* path) {
-    Reset();
-    LineReader reader(path);
-    index_ = 0;
-    while (reader.GetNextLine()) {
-      ProcMaps::Entry entry = {0, };
-      if (!ParseProcMapsLine(
-               reader.line(), reader.line() + reader.length(), &entry)) {
-        // Ignore broken lines.
-        continue;
-      }
-
-      // Reallocate path.
-      const char* old_path = entry.path;
-      if (old_path) {
-        char* new_path = static_cast<char*>(::malloc(entry.path_len + 1));
-        ::memcpy(new_path, old_path, entry.path_len);
-        new_path[entry.path_len] = '\0';
-        entry.path = const_cast<const char*>(new_path);
-      }
-
-      entries_.PushBack(entry);
-    }
-    return true;
-  }
-
-  void Rewind() { index_ = 0; }
-
-  bool GetNextEntry(ProcMaps::Entry* entry) {
-    if (index_ >= entries_.GetCount())
-      return false;
-
-    *entry = entries_[index_++];
-    return true;
-  }
-
- private:
-  void Reset() {
-    for (ProcMaps::Entry& entry : entries_) {
-      ::free(const_cast<char*>(entry.path));
-    }
-    entries_.Resize(0);
-  }
-
-  size_t index_;
-  Vector<ProcMaps::Entry> entries_;
-};
-
 ProcMaps::ProcMaps() {
-  internal_ = new ProcMapsInternal();
-  (void)internal_->Open("/proc/self/maps");
+  static const char kFilePath[] = "/proc/self/maps";
+  // NOTE: On Android, /proc/self/maps can easily be more than 10 kiB due
+  // to the large number of shared libraries and memory mappings loaded or
+  // created by the framework. Use a large capacity to reduce the number
+  // of dynamic allocations during parsing.
+  const size_t kCapacity = 16000;
+  LineReader reader(kFilePath, kCapacity);
+  while (reader.GetNextLine()) {
+    Entry entry = {};
+    if (!ParseProcMapsLine(reader.line(), reader.line() + reader.length(),
+                           &entry)) {
+      // Ignore broken lines.
+      continue;
+    }
+
+    // Reallocate path.
+    const char* old_path = entry.path;
+    if (old_path) {
+      char* new_path = static_cast<char*>(::malloc(entry.path_len + 1));
+      ::memcpy(new_path, old_path, entry.path_len);
+      new_path[entry.path_len] = '\0';
+      entry.path = const_cast<const char*>(new_path);
+    }
+
+    entries_.PushBack(entry);
+  }
 }
 
-ProcMaps::ProcMaps(pid_t pid) {
-  internal_ = new ProcMapsInternal();
-  char maps_file[32];
-  snprintf(maps_file, sizeof maps_file, "/proc/%u/maps", pid);
-  (void)internal_->Open(maps_file);
+ProcMaps::~ProcMaps() {
+  for (ProcMaps::Entry& entry : entries_) {
+    ::free(const_cast<char*>(entry.path));
+  }
+  entries_.Resize(0);
 }
 
-ProcMaps::~ProcMaps() { delete internal_; }
-
-void ProcMaps::Rewind() { internal_->Rewind(); }
-
-bool ProcMaps::GetNextEntry(Entry* entry) {
-  return internal_->GetNextEntry(entry);
-}
-
-int ProcMaps::GetProtectionFlagsForAddress(void* address) {
+const ProcMaps::Entry* ProcMaps::FindEntryForAddress(void* address) const {
   size_t vma_addr = reinterpret_cast<size_t>(address);
-  internal_->Rewind();
-  ProcMaps::Entry entry;
-  while (internal_->GetNextEntry(&entry)) {
+  for (const Entry& entry : entries_) {
     if (entry.vma_start <= vma_addr && vma_addr < entry.vma_end)
-      return entry.prot_flags;
+      return &entry;
   }
-  return 0;
+  return nullptr;
 }
 
-bool FindElfBinaryForAddress(void* address,
-                             uintptr_t* load_address,
-                             char* path_buffer,
-                             size_t path_buffer_len) {
-  ProcMaps self_maps;
-  ProcMaps::Entry entry;
-
-  uintptr_t addr = reinterpret_cast<uintptr_t>(address);
-
-  while (self_maps.GetNextEntry(&entry)) {
-    if (entry.vma_start <= addr && addr < entry.vma_end) {
-      *load_address = entry.vma_start;
-      if (!entry.path) {
-        LOG("Could not find ELF binary path!?");
-        return false;
-      }
-      if (entry.path_len >= path_buffer_len) {
-        LOG("ELF binary path too long: '%s'", entry.path);
-        return false;
-      }
-      memcpy(path_buffer, entry.path, entry.path_len);
-      path_buffer[entry.path_len] = '\0';
-      return true;
-    }
-  }
-  return false;
-}
-
-// Returns the current protection bit flags for the page holding a given
-// address. Returns true on success, or false if the address is not mapped.
-bool FindProtectionFlagsForAddress(void* address, int* prot_flags) {
-  ProcMaps self_maps;
-  ProcMaps::Entry entry;
-
-  uintptr_t addr = reinterpret_cast<uintptr_t>(address);
-
-  while (self_maps.GetNextEntry(&entry)) {
-    if (entry.vma_start <= addr && addr < entry.vma_end) {
-      *prot_flags = entry.prot_flags;
-      return true;
-    }
-  }
-  return false;
-}
-
-bool FindLoadAddressForFile(const char* file_name,
-                            uintptr_t* load_address,
-                            uintptr_t* load_offset) {
+const ProcMaps::Entry* ProcMaps::FindEntryForFile(const char* file_name) const {
   size_t file_name_len = strlen(file_name);
   bool is_base_name = (strchr(file_name, '/') == NULL);
-  ProcMaps self_maps;
-  ProcMaps::Entry entry;
-
-  while (self_maps.GetNextEntry(&entry)) {
+  for (const Entry& entry : entries_) {
     // Skip vDSO et al.
     if (entry.path_len == 0 || entry.path[0] == '[')
       continue;
@@ -287,13 +196,49 @@ bool FindLoadAddressForFile(const char* file_name,
 
     if (file_name_len == entry_len &&
         !memcmp(file_name, entry_name, entry_len)) {
-      *load_address = entry.vma_start;
-      *load_offset = entry.load_offset;
-      return true;
+      return &entry;
     }
   }
+  return nullptr;
+}
 
-  return false;
+bool FindElfBinaryForAddress(void* address,
+                             uintptr_t* load_address,
+                             char* path_buffer,
+                             size_t path_buffer_len) {
+  ProcMaps self_maps;
+
+  uintptr_t addr = reinterpret_cast<uintptr_t>(address);
+
+  const ProcMaps::Entry* entry = self_maps.FindEntryForAddress(address);
+  if (!entry) {
+    return false;
+  }
+  *load_address = entry->vma_start;
+  if (!entry->path) {
+    LOG("Could not find ELF binary path!?");
+    return false;
+  }
+  if (entry->path_len >= path_buffer_len) {
+    LOG("ELF binary path too long: '%.*s'", entry->path_len, entry->path);
+    return false;
+  }
+  ::memcpy(path_buffer, entry->path, entry->path_len);
+  path_buffer[entry->path_len] = '\0';
+  return true;
+}
+
+bool FindLoadAddressForFile(const char* file_name,
+                            uintptr_t* load_address,
+                            uintptr_t* load_offset) {
+  ProcMaps self_maps;
+  const ProcMaps::Entry* entry = self_maps.FindEntryForFile(file_name);
+  if (!entry) {
+    return false;
+  }
+  *load_address = entry->vma_start;
+  *load_offset = entry->load_offset;
+  return true;
 }
 
 }  // namespace crazy

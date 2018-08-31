@@ -13,29 +13,14 @@
 
 namespace crazy {
 
-LineReader::LineReader() : fd_(), buff_(NULL) {
-  Reset(true);
-}
-
-LineReader::LineReader(const char* path) : fd_(), buff_(NULL) {
-  Open(path);
-}
+LineReader::LineReader(const char* path, size_t capacity)
+    : fd_(path),
+      eof_(!fd_.IsOk()),
+      buff_capacity_(capacity),
+      buff_(static_cast<char*>(::malloc(capacity))) {}
 
 LineReader::~LineReader() {
   ::free(buff_);
-}
-
-void LineReader::Open(const char* path) {
-  Reset(!fd_.OpenReadOnly(path));
-}
-
-void LineReader::Reset(bool eof) {
-  eof_ = eof;
-  line_start_ = 0;
-  line_len_ = 0;
-  buff_size_ = 0;
-  buff_capacity_ = 128;
-  buff_ = static_cast<char*>(::realloc(buff_, buff_capacity_));
 }
 
 bool LineReader::GetNextLine() {
