@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
@@ -239,7 +238,6 @@ void URLDownloader::FetchPDFFile() {
 
 URLDownloader::SuccessState URLDownloader::SavePDFFile(
     const base::FilePath& temporary_path) {
-  base::AssertBlockingAllowed();
   if (CreateOfflineURLDirectory(original_url_)) {
     base::FilePath path = reading_list::OfflinePagePath(
         original_url_, reading_list::OFFLINE_TYPE_PDF);
@@ -296,7 +294,6 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images,
     const std::string& html) {
-  base::AssertBlockingAllowed();
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url)
                ? DOWNLOAD_SUCCESS

@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -46,7 +45,6 @@ const int kNumberOfFailsBeforeStop = 7;
 // Must be called on File thread.
 void CleanUpFiles(base::FilePath root,
                   const std::set<std::string>& processed_directories) {
-  base::AssertBlockingAllowed();
   base::FileEnumerator file_enumerator(root, false,
                                        base::FileEnumerator::DIRECTORIES);
   for (base::FilePath sub_directory = file_enumerator.Next();
