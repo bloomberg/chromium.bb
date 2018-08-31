@@ -49,8 +49,8 @@
 
 #include "elevation_service_idl.h"
 
-#define TYPE_FORMAT_STRING_SIZE   29                                
-#define PROC_FORMAT_STRING_SIZE   43                                
+#define TYPE_FORMAT_STRING_SIZE   3                                 
+#define PROC_FORMAT_STRING_SIZE   1                                 
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   0            
@@ -108,42 +108,6 @@ static const elevation_service_idl_MIDL_PROC_FORMAT_STRING elevation_service_idl
         0,
         {
 
-	/* Procedure GetElevatorFactory */
-
-			0x33,		/* FC_AUTO_HANDLE */
-			0x6c,		/* Old Flags:  object, Oi2 */
-/*  2 */	NdrFcLong( 0x0 ),	/* 0 */
-/*  6 */	NdrFcShort( 0x3 ),	/* 3 */
-/*  8 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
-/* 10 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 12 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 14 */	0x47,		/* Oi2 Flags:  srv must size, clt must size, has return, has ext, */
-			0x3,		/* 3 */
-/* 16 */	0x8,		/* 8 */
-			0x1,		/* Ext Flags:  new corr desc, */
-/* 18 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 20 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 22 */	NdrFcShort( 0x0 ),	/* 0 */
-
-	/* Parameter elevator_id */
-
-/* 24 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
-/* 26 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 28 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
-
-	/* Parameter factory */
-
-/* 30 */	NdrFcShort( 0x13 ),	/* Flags:  must size, must free, out, */
-/* 32 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 34 */	NdrFcShort( 0x6 ),	/* Type Offset=6 */
-
-	/* Return value */
-
-/* 36 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 38 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 40 */	0x8,		/* FC_LONG */
-			0x0,		/* 0 */
-
 			0x0
         }
     };
@@ -153,28 +117,6 @@ static const elevation_service_idl_MIDL_TYPE_FORMAT_STRING elevation_service_idl
         0,
         {
 			NdrFcShort( 0x0 ),	/* 0 */
-/*  2 */	
-			0x11, 0x8,	/* FC_RP [simple_pointer] */
-/*  4 */	
-			0x25,		/* FC_C_WSTRING */
-			0x5c,		/* FC_PAD */
-/*  6 */	
-			0x11, 0x10,	/* FC_RP [pointer_deref] */
-/*  8 */	NdrFcShort( 0x2 ),	/* Offset= 2 (10) */
-/* 10 */	
-			0x2f,		/* FC_IP */
-			0x5a,		/* FC_CONSTANT_IID */
-/* 12 */	NdrFcLong( 0x1 ),	/* 1 */
-/* 16 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 18 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 20 */	0xc0,		/* 192 */
-			0x0,		/* 0 */
-/* 22 */	0x0,		/* 0 */
-			0x0,		/* 0 */
-/* 24 */	0x0,		/* 0 */
-			0x0,		/* 0 */
-/* 26 */	0x0,		/* 0 */
-			0x46,		/* 70 */
 
 			0x0
         }
@@ -215,21 +157,20 @@ static const MIDL_SERVER_INFO IElevator_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(4) _IElevatorProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(3) _IElevatorProxyVtbl = 
 {
-    &IElevator_ProxyInfo,
+    0,
     &IID_IElevator,
     IUnknown_QueryInterface_Proxy,
     IUnknown_AddRef_Proxy,
-    IUnknown_Release_Proxy ,
-    (void *) (INT_PTR) -1 /* IElevator::GetElevatorFactory */
+    IUnknown_Release_Proxy
 };
 
 const CInterfaceStubVtbl _IElevatorStubVtbl =
 {
     &IID_IElevator,
     &IElevator_ServerInfo,
-    4,
+    3,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
