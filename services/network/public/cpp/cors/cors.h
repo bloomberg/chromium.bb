@@ -99,6 +99,17 @@ base::Optional<CORSErrorStatus> CheckExternalPreflight(
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
 
+// Returns the response tainting value
+// (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
+// request and the CORS flag, as specified in
+// https://fetch.spec.whatwg.org/#main-fetch.
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::FetchResponseType CalculateResponseTainting(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag);
+
 // Checks safelisted request parameters.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedMethod(const std::string& method);
@@ -121,6 +132,16 @@ COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenHeader(const std::string& name);
 // https://tools.ietf.org/html/rfc7231#section-6.3 . We opt to use the Fetch
 // term in naming the predicate.
 COMPONENT_EXPORT(NETWORK_CPP) bool IsOkStatus(int status);
+
+// Returns true if |type| is a response type which makes a response
+// CORS-same-origin. See https://html.spec.whatwg.org/#cors-same-origin.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsCORSSameOriginResponseType(mojom::FetchResponseType type);
+
+// Returns true if |type| is a response type which makes a response
+// CORS-cross-origin. See https://html.spec.whatwg.org/#cors-cross-origin.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type);
 
 }  // namespace cors
 

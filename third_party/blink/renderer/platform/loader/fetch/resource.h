@@ -31,7 +31,6 @@
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/loader/cors/cors_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -338,14 +337,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   bool IsAlive() const { return is_alive_; }
 
-  CORSStatus GetCORSStatus() const { return cors_status_; }
-
-  bool IsSameOriginOrCORSSuccessful() const {
-    return cors_status_ == CORSStatus::kSameOrigin ||
-           cors_status_ == CORSStatus::kSuccessful ||
-           cors_status_ == CORSStatus::kServiceWorkerSuccessful;
-  }
-
   void SetCacheIdentifier(const String& cache_identifier) {
     cache_identifier_ = cache_identifier;
   }
@@ -376,6 +367,11 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual MatchStatus CanReuse(
       const FetchParameters& params,
       scoped_refptr<const SecurityOrigin> new_source_origin) const;
+
+  // TODO(yhirano): Remove this once out-of-blink CORS is fully enabled.
+  void SetResponseType(network::mojom::FetchResponseType response_type) {
+    response_.SetType(response_type);
+  }
 
   // If cache-aware loading is activated, this callback is called when the first
   // disk-cache-only request failed due to cache miss. After this callback,
@@ -503,9 +499,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   CachedMetadataHandler* CacheHandler() { return cache_handler_.Get(); }
 
  private:
-  // To allow access to SetCORSStatus
   friend class ResourceLoader;
-  friend class SubresourceIntegrityTest;
 
   void RevalidationSucceeded(const ResourceResponse&);
   void RevalidationFailed();
@@ -513,10 +507,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   size_t CalculateOverheadSize() const;
 
   String ReasonNotDeletable() const;
-
-  void SetCORSStatus(const CORSStatus cors_status) {
-    cors_status_ = cors_status;
-  }
 
   // MemoryCoordinatorClient overrides:
   void OnPurgeMemory() override;
@@ -545,8 +535,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // initiator that fetched the Resource. It may be different from the origin
   // that you need for any runtime security check in Blink.
   scoped_refptr<const SecurityOrigin> source_origin_;
-
-  CORSStatus cors_status_;
 
   Member<CachedMetadataHandler> cache_handler_;
 

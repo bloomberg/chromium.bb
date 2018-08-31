@@ -315,6 +315,32 @@ bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode) {
          mode == mojom::FetchRequestMode::kCORSWithForcedPreflight;
 }
 
+mojom::FetchResponseType CalculateResponseTainting(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag) {
+  if (url.SchemeIs(url::kDataScheme))
+    return mojom::FetchResponseType::kBasic;
+
+  if (cors_flag) {
+    DCHECK(IsCORSEnabledRequestMode(request_mode));
+    return mojom::FetchResponseType::kCORS;
+  }
+
+  if (!origin) {
+    // This is actually not defined in the fetch spec, but in this case CORS
+    // is disabled so no one should care this value.
+    return mojom::FetchResponseType::kBasic;
+  }
+
+  if (request_mode == mojom::FetchRequestMode::kNoCORS &&
+      !origin->IsSameOriginWith(url::Origin::Create(url))) {
+    return mojom::FetchResponseType::kOpaque;
+  }
+  return mojom::FetchResponseType::kBasic;
+}
+
 bool IsCORSSafelistedMethod(const std::string& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
@@ -425,6 +451,32 @@ bool IsForbiddenHeader(const std::string& name) {
 
 bool IsOkStatus(int status) {
   return status >= 200 && status < 300;
+}
+
+bool IsCORSSameOriginResponseType(mojom::FetchResponseType type) {
+  switch (type) {
+    case mojom::FetchResponseType::kBasic:
+    case mojom::FetchResponseType::kCORS:
+    case mojom::FetchResponseType::kDefault:
+      return true;
+    case mojom::FetchResponseType::kError:
+    case mojom::FetchResponseType::kOpaque:
+    case mojom::FetchResponseType::kOpaqueRedirect:
+      return false;
+  }
+}
+
+bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type) {
+  switch (type) {
+    case mojom::FetchResponseType::kBasic:
+    case mojom::FetchResponseType::kCORS:
+    case mojom::FetchResponseType::kDefault:
+    case mojom::FetchResponseType::kError:
+      return false;
+    case mojom::FetchResponseType::kOpaque:
+    case mojom::FetchResponseType::kOpaqueRedirect:
+      return true;
+  }
 }
 
 }  // namespace cors

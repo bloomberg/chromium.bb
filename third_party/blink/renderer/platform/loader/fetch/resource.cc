@@ -364,8 +364,15 @@ void Resource::FinishAsError(const ResourceError& error,
     GetMemoryCache()->Remove(this);
 
   bool failed_during_start = status_ == ResourceStatus::kNotStarted;
-  if (!ErrorOccurred())
+  if (!ErrorOccurred()) {
     SetStatus(ResourceStatus::kLoadError);
+    // If the response type has not been set, set it to "error". This is
+    // important because in some cases we arrive here after setting the response
+    // type (e.g., while downloading payload), and that shouldn't change the
+    // response type.
+    if (response_.GetType() == network::mojom::FetchResponseType::kDefault)
+      response_.SetType(network::mojom::FetchResponseType::kError);
+  }
   DCHECK(ErrorOccurred());
   ClearData();
   loader_ = nullptr;

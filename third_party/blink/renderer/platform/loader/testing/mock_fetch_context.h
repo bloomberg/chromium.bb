@@ -32,10 +32,12 @@ class MockFetchContext : public FetchContext {
     kShouldLoadNewResource,
     kShouldNotLoadNewResource,
   };
-  static MockFetchContext* Create(LoadPolicy load_policy,
-                                  scoped_refptr<base::SingleThreadTaskRunner>
-                                      loading_task_runner = nullptr) {
-    return new MockFetchContext(load_policy, std::move(loading_task_runner));
+  static MockFetchContext* Create(
+      LoadPolicy load_policy,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr) {
+    return new MockFetchContext(load_policy, std::move(loading_task_runner),
+                                std::move(url_loader_factory));
   }
 
   ~MockFetchContext() override = default;
@@ -142,13 +144,15 @@ class MockFetchContext : public FetchContext {
 
   MockFetchContext(
       LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
       : load_policy_(load_policy),
         runner_(loading_task_runner
                     ? std::move(loading_task_runner)
                     : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
         security_origin_(SecurityOrigin::CreateUniqueOpaque()),
         frame_scheduler_(new MockFrameScheduler(runner_)),
+        url_loader_factory_(std::move(url_loader_factory)),
         complete_(false),
         transfer_size_(-1) {}
 

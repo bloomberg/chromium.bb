@@ -102,13 +102,6 @@ CORSURLLoader::~CORSURLLoader() = default;
 
 void CORSURLLoader::Start() {
   if (fetch_cors_flag_ &&
-      request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
-    HandleComplete(URLLoaderCompletionStatus(
-        CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
-    return;
-  }
-
-  if (fetch_cors_flag_ &&
       cors::IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // Username and password should be stripped in a CORS-enabled request.
     if (request_.url.has_username() || request_.url.has_password()) {
@@ -164,6 +157,9 @@ void CORSURLLoader::FollowRedirect(
   // in net/url_request/redirect_util.cc).
   if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
       !fetch_cors_flag_) {
+    response_tainting_ =
+        CalculateResponseTainting(request_.url, request_.fetch_request_mode,
+                                  request_.request_initiator, fetch_cors_flag_);
     network_loader_->FollowRedirect(to_be_removed_request_headers,
                                     modified_request_headers);
     return;
@@ -213,8 +209,8 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
-  if (fetch_cors_flag_ &&
-      IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+
+  if (fetch_cors_flag_) {
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
@@ -229,7 +225,10 @@ void CORSURLLoader::OnReceiveResponse(
       return;
     }
   }
-  forwarding_client_->OnReceiveResponse(response_head);
+
+  ResourceResponseHead response_head_to_pass = response_head;
+  response_head_to_pass.response_type = response_tainting_;
+  forwarding_client_->OnReceiveResponse(response_head_to_pass);
 }
 
 void CORSURLLoader::OnReceiveRedirect(
@@ -313,7 +312,15 @@ void CORSURLLoader::OnReceiveRedirect(
   redirect_info_ = redirect_info;
 
   is_waiting_follow_redirect_call_ = true;
-  forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
+
+  auto response_head_to_pass = response_head;
+  if (request_.fetch_redirect_mode == mojom::FetchRedirectMode::kManual) {
+    response_head_to_pass.response_type =
+        mojom::FetchResponseType::kOpaqueRedirect;
+  } else {
+    response_head_to_pass.response_type = response_tainting_;
+  }
+  forwarding_client_->OnReceiveRedirect(redirect_info, response_head_to_pass);
 }
 
 void CORSURLLoader::OnUploadProgress(int64_t current_position,
@@ -376,15 +383,17 @@ void CORSURLLoader::StartRequest() {
     }
   }
 
-  if (request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
+  if (fetch_cors_flag_ &&
+      request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
     DCHECK(request_.request_initiator);
-    if (!request_.request_initiator->IsSameOriginWith(
-            url::Origin::Create(request_.url))) {
-      HandleComplete(URLLoaderCompletionStatus(
-          CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
-      return;
-    }
+    HandleComplete(URLLoaderCompletionStatus(
+        CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
+    return;
   }
+
+  response_tainting_ =
+      CalculateResponseTainting(request_.url, request_.fetch_request_mode,
+                                request_.request_initiator, fetch_cors_flag_);
 
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin

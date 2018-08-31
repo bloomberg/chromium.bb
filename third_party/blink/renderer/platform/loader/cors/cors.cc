@@ -190,6 +190,18 @@ bool CheckIfRequestCanSkipPreflight(
       *CreateNetHttpRequestHeaders(request_header_map));
 }
 
+network::mojom::FetchResponseType CalculateResponseTainting(
+    const KURL& url,
+    network::mojom::FetchRequestMode request_mode,
+    const SecurityOrigin* origin,
+    CORSFlag cors_flag) {
+  base::Optional<url::Origin> origin_to_pass;
+  if (origin)
+    origin_to_pass = origin->ToUrlOrigin();
+  return network::cors::CalculateResponseTainting(
+      url, request_mode, origin_to_pass, cors_flag == CORSFlag::Set);
+}
+
 bool IsCORSSafelistedMethod(const String& method) {
   DCHECK(!method.IsNull());
   CString utf8_method = method.Utf8();

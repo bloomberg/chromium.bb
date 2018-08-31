@@ -73,6 +73,12 @@ PLATFORM_EXPORT bool CheckIfRequestCanSkipPreflight(
     const String& method,
     const HTTPHeaderMap& request_header_map);
 
+PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
+    const KURL& url,
+    network::mojom::FetchRequestMode request_mode,
+    const SecurityOrigin* origin,
+    CORSFlag cors_flag);
+
 // Thin wrapper functions that will not be removed even after out-of-renderer
 // CORS is enabled.
 PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);

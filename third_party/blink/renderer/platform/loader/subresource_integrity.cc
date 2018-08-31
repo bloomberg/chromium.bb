@@ -77,7 +77,10 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const KURL& resource_url,
     const Resource& resource,
     ReportInfo& report_info) {
-  if (!resource.IsSameOriginOrCORSSuccessful()) {
+  // FetchResponseType::kError never arrives because it is a loading error.
+  DCHECK_NE(resource.GetResponse().GetType(),
+            network::mojom::FetchResponseType::kError);
+  if (!resource.GetResponse().IsCORSSameOrigin()) {
     report_info.AddConsoleErrorMessage(
         "Subresource Integrity: The resource '" + resource_url.ElidedString() +
         "' has an integrity attribute, but the resource "

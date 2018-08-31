@@ -250,6 +250,8 @@ class CORE_EXPORT ThreadableLoader final
   // handling phase.
   ResourceRequest actual_request_;
   ResourceLoaderOptions actual_options_;
+  network::mojom::FetchResponseType response_tainting_ =
+      network::mojom::FetchResponseType::kBasic;
 
   KURL initial_request_url_;
   KURL last_request_url_;
