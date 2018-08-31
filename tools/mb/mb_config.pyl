@@ -143,10 +143,10 @@
       'ToTWin64': 'clang_tot_official_minimal_symbols_static_release',
       'ToTWin64(dbg)': 'clang_tot_shared_debug',
       'ToTWin64(dll)': 'clang_tot_shared_release_dcheck',
-      'ToTWinCFI': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
-      'ToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
+      'ToTWinCFI': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
+      'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
-      'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static',
+      'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
       'ToTiOS': 'ios',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
@@ -158,8 +158,6 @@
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
       'Android Builder (dbg) Goma Latest Client': 'android_debug_static_bot_vrdata',
 
-      'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
-      'CFI Linux ToT': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
 
@@ -1091,12 +1089,14 @@
       'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on',
     ],
 
-    'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
-      'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on',
+    'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
+      'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static',
+      'dcheck_always_on', 'win_linker_timing',
     ],
 
-    'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86': [
-      'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'x86',
+    'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86': [
+      'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static',
+      'dcheck_always_on', 'x86', 'win_linker_timing',
     ],
 
     'clang_tot_edge_ubsan_no_recover_hack_static_release': [
@@ -1141,8 +1141,8 @@
       'clang_tot', 'minimal_symbols', 'shared', 'release', 'x86', 'dcheck_always_on',
     ],
 
-    'clang_tot_official_full_symbols_thin_lto_static': [
-      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static',
+    'clang_tot_win_official_full_symbols_thin_lto_static': [
+      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static', 'win_linker_timing',
     ],
 
     'clang_tot_official_minimal_symbols_static_release': [
@@ -2074,6 +2074,10 @@
 
     'thin_lto_opt': {
       'gn_args': 'use_thin_lto=true thin_lto_enable_optimizations=true',
+    },
+
+    'win_linker_timing': {
+      'gn_args': 'win_linker_timing=true',
     },
 
     'tcmalloc': {
