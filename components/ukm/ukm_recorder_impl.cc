@@ -396,19 +396,14 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
 void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
                                       const GURL& unsanitized_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const GURL sanitized_url = SanitizeURL(unsanitized_url);
-  if (!ShouldRecordUrl(source_id, sanitized_url))
-    return;
-
-  // TODO(csharrison): These checks can probably move to ShouldRecordUrl.
 
   if (base::ContainsKey(recordings_.sources, source_id))
     return;
 
-  if (recordings_.sources.size() >= GetMaxSources()) {
-    RecordDroppedSource(DroppedDataReason::MAX_HIT);
+  const GURL sanitized_url = SanitizeURL(unsanitized_url);
+  if (!ShouldRecordUrl(source_id, sanitized_url))
     return;
-  }
+
   RecordSource(std::make_unique<UkmSource>(source_id, sanitized_url));
 }
 
@@ -424,6 +419,7 @@ void UkmRecorderImpl::RecordNavigation(
     SourceId source_id,
     const UkmSource::NavigationData& unsanitized_navigation_data) {
   DCHECK(GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID);
+  DCHECK(!base::ContainsKey(recordings_.sources, source_id));
   // TODO(csharrison): Consider changing this behavior so the Source isn't event
   // recorded at all if the final URL in |unsanitized_navigation_data| should
   // not be recorded.
@@ -441,12 +437,6 @@ void UkmRecorderImpl::RecordNavigation(
 
   UkmSource::NavigationData sanitized_navigation_data =
       unsanitized_navigation_data.CopyWithSanitizedUrls(urls);
-  // TODO(csharrison): This check can probably move to ShouldRecordUrl.
-  DCHECK(!base::ContainsKey(recordings_.sources, source_id));
-  if (recordings_.sources.size() >= GetMaxSources()) {
-    RecordDroppedSource(DroppedDataReason::MAX_HIT);
-    return;
-  }
   RecordSource(
       std::make_unique<UkmSource>(source_id, sanitized_navigation_data));
 }
@@ -455,6 +445,11 @@ bool UkmRecorderImpl::ShouldRecordUrl(SourceId source_id,
                                       const GURL& sanitized_url) const {
   if (!recording_enabled_) {
     RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
+    return false;
+  }
+
+  if (recordings_.sources.size() >= GetMaxSources()) {
+    RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return false;
   }
 
