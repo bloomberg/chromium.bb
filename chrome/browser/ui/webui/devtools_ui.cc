@@ -87,6 +87,7 @@ class DevToolsDataSource : public content::URLDataSource {
   explicit DevToolsDataSource(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : url_loader_factory_(std::move(url_loader_factory)) {}
+  ~DevToolsDataSource() override = default;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -98,8 +99,6 @@ class DevToolsDataSource : public content::URLDataSource {
 
  private:
   struct PendingRequest;
-
-  ~DevToolsDataSource() override = default;
 
   // content::URLDataSource overrides.
   std::string GetMimeType(const std::string& path) const override;

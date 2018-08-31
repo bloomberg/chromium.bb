@@ -31,6 +31,7 @@ class ThumbnailService;
 class ThumbnailListSource : public content::URLDataSource {
  public:
   explicit ThumbnailListSource(Profile* profile);
+  ~ThumbnailListSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -49,8 +50,6 @@ class ThumbnailListSource : public content::URLDataSource {
   bool ShouldReplaceExistingSource() const override;
 
  private:
-  ~ThumbnailListSource() override;
-
   // Called on the IO thread.
   void OnMostVisitedURLsAvailable(
     const content::URLDataSource::GotDataCallback& callback,

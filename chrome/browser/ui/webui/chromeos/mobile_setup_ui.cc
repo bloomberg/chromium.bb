@@ -146,6 +146,7 @@ void SetActivationStateAndError(MobileActivator::PlanActivationState state,
 class MobileSetupUIHTMLSource : public content::URLDataSource {
  public:
   MobileSetupUIHTMLSource();
+  ~MobileSetupUIHTMLSource() override {}
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -164,8 +165,6 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   }
 
  private:
-  ~MobileSetupUIHTMLSource() override {}
-
   void GetPropertiesAndStartDataRequest(
       const content::URLDataSource::GotDataCallback& callback,
       const std::string& service_path,

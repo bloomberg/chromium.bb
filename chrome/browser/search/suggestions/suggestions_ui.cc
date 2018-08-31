@@ -21,6 +21,7 @@ namespace {
 class SuggestionsSourceWrapper : public content::URLDataSource {
  public:
   explicit SuggestionsSourceWrapper(SuggestionsService* suggestions_service);
+  ~SuggestionsSourceWrapper() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -31,8 +32,6 @@ class SuggestionsSourceWrapper : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
 
  private:
-  ~SuggestionsSourceWrapper() override;
-
   SuggestionsSource suggestions_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceWrapper);

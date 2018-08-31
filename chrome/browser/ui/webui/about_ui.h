@@ -20,6 +20,7 @@ class AboutUIHTMLSource : public content::URLDataSource {
  public:
   // Construct a data source for the specified |source_name|.
   AboutUIHTMLSource(const std::string& source_name, Profile* profile);
+  ~AboutUIHTMLSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -40,8 +41,6 @@ class AboutUIHTMLSource : public content::URLDataSource {
   Profile* profile() { return profile_; }
 
  private:
-  ~AboutUIHTMLSource() override;
-
   std::string source_name_;
   Profile* profile_;
 

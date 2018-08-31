@@ -2068,7 +2068,9 @@ class StaticURLDataSource : public content::URLDataSource {
  public:
   StaticURLDataSource(const std::string& source, const std::string& content)
       : source_(source), content_(content) {}
+  ~StaticURLDataSource() override = default;
 
+  // content::URLDataSource:
   std::string GetSource() const override { return source_; }
   void StartDataRequest(
       const std::string& path,
@@ -2083,8 +2085,9 @@ class StaticURLDataSource : public content::URLDataSource {
   bool ShouldAddContentSecurityPolicy() const override { return false; }
 
  private:
-  std::string source_;
-  std::string content_;
+  const std::string source_;
+  const std::string content_;
+
   DISALLOW_COPY_AND_ASSIGN(StaticURLDataSource);
 };
 
