@@ -6,7 +6,7 @@ import("//media/media_options.gni")
 
 static_library("gpu") {
   deps = [
-    "//components/metrics:child_call_stacks",
+    "//components/metrics:child_call_stack_profile_builder",
     "//content/public/common",
     "//content/public/gpu",
   ]
