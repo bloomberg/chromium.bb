@@ -715,12 +715,22 @@ template <typename HistogramEnumType>
 class BitmapHistogramTest : public BitmapImageTest,
                             public testing::WithParamInterface<
                                 HistogramTestParams<HistogramEnumType>> {
+ public:
+  // Flag to tell the test that no samples should have been reported in this
+  // case. Only useful when the parametric type is int.
+  static const int kNoSamplesReported = -1;
+
  protected:
   void RunTest(const char* histogram_name) {
     HistogramTester histogram_tester;
     LoadImage(this->GetParam().filename);
-    histogram_tester.ExpectUniqueSample(histogram_name, this->GetParam().type,
-                                        1);
+    if (std::is_same<HistogramEnumType, int>::value &&
+        this->GetParam().type == kNoSamplesReported) {
+      histogram_tester.ExpectTotalCount(histogram_name, 0);
+    } else {
+      histogram_tester.ExpectUniqueSample(histogram_name, this->GetParam().type,
+                                          1);
+    }
   }
 };
 
@@ -773,22 +783,50 @@ INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
-using DecodedImageDensityHistogramTest = BitmapHistogramTest<int>;
+using DecodedImageDensityHistogramTest100px = BitmapHistogramTest<int>;
 
-TEST_P(DecodedImageDensityHistogramTest, ImageOrientation) {
-  RunTest("Blink.DecodedImage.JpegDensity");
+TEST_P(DecodedImageDensityHistogramTest100px, JpegDensity) {
+  RunTest("Blink.DecodedImage.JpegDensity.100px");
 }
 
-const DecodedImageDensityHistogramTest::ParamType
-    kDecodedImageDensityHistogramTestParams[] = {
+const DecodedImageDensityHistogramTest100px::ParamType
+    kDecodedImageDensityHistogramTest100pxParams[] = {
+        // 64x64 too small to report any metric
+        {"/images/resources/rgb-jpeg-red.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported},
         // 439x154, 23220 bytes --> 2.74 bpp
         {"/images/resources/cropped_mandrill.jpg", 274},
         // 320x320, 74017 bytes --> 5.78
-        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578}};
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578},
+        // 632x475 too big for the 100-399px range.
+        {"/images/resources/cat.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
 
 INSTANTIATE_TEST_CASE_P(
-    DecodedImageDensityHistogramTest,
-    DecodedImageDensityHistogramTest,
-    testing::ValuesIn(kDecodedImageDensityHistogramTestParams));
+    DecodedImageDensityHistogramTest100px,
+    DecodedImageDensityHistogramTest100px,
+    testing::ValuesIn(kDecodedImageDensityHistogramTest100pxParams));
+
+using DecodedImageDensityHistogramTest400px = BitmapHistogramTest<int>;
+
+TEST_P(DecodedImageDensityHistogramTest400px, JpegDensity) {
+  RunTest("Blink.DecodedImage.JpegDensity.400px");
+}
+
+const DecodedImageDensityHistogramTest400px::ParamType
+    kDecodedImageDensityHistogramTest400pxParams[] = {
+        // 439x154, only one dimension is big enough.
+        {"/images/resources/cropped_mandrill.jpg",
+         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
+        // 320x320, not big enough.
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg",
+         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
+        // 632x475, 68826 bytes --> 1.83
+        {"/images/resources/cat.jpg", 183}};
+
+INSTANTIATE_TEST_CASE_P(
+    DecodedImageDensityHistogramTest400px,
+    DecodedImageDensityHistogramTest400px,
+    testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));
 
 }  // namespace blink
