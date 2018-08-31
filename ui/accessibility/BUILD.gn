@@ -75,6 +75,8 @@ component("accessibility") {
     "platform/ax_android_constants.h",
     "platform/ax_platform_node.cc",
     "platform/ax_platform_node.h",
+    "platform/ax_platform_node_test_helper.cc",
+    "platform/ax_platform_node_test_helper.h",
     "platform/ax_unique_id.cc",
     "platform/ax_unique_id.h",
   ]
