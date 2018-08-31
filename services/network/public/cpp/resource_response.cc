@@ -38,7 +38,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.connection_info = head.connection_info;
   new_response->head.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
   new_response->head.socket_address = head.socket_address;
-  new_response->head.was_fetched_via_cache = head.was_fetched_via_cache;
   new_response->head.was_fetched_via_service_worker =
       head.was_fetched_via_service_worker;
   new_response->head.was_fallback_required_by_service_worker =

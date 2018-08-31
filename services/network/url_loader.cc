@@ -66,7 +66,6 @@ void PopulateResourceResponse(net::URLRequest* request,
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
   response->head.socket_address = response_info.socket_address;
-  response->head.was_fetched_via_cache = request->was_cached();
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =

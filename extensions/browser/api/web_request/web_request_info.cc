@@ -350,7 +350,11 @@ void WebRequestInfo::AddResponseInfoFromResourceResponse(
   if (response_headers)
     response_code = response_headers->response_code();
   response_ip = response.socket_address.host();
-  response_from_cache = response.was_fetched_via_cache;
+
+  // TODO(https://crbug.com/721414): We have no apparent source for this
+  // information yet in the Network Service case. Should indicate whether or not
+  // the response data came from cache.
+  response_from_cache = false;
 }
 
 void WebRequestInfo::InitializeWebViewAndFrameData(
