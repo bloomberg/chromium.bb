@@ -2,6 +2,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/nacl/renderer",
   "+components/services/font",
+  "+ppapi/c",
   "+ppapi/host",
   "+ppapi/proxy",
 

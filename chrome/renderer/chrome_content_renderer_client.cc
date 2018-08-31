@@ -108,7 +108,6 @@
 #include "media/media_buildflags.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
