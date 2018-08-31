@@ -96,7 +96,7 @@ cr.define('settings_autofill_section', function() {
       document.body.appendChild(section);
 
       assertFalse(!!section.$$('#autofillExtensionIndicator'));
-      section.set('prefs.autofill.enabled.extensionId', 'test-id');
+      section.set('prefs.autofill.profile_enabled.extensionId', 'test-id');
       Polymer.dom.flush();
 
       assertTrue(!!section.$$('#autofillExtensionIndicator'));
@@ -171,14 +171,6 @@ cr.define('settings_autofill_section', function() {
       assertTrue(section.$.noAddressesLabel.hidden);
       assertFalse(section.$$('#autofillProfileToggle').disabled);
       assertFalse(section.$$('#addAddress').disabled);
-    });
-
-    test('verifyDisabled', function() {
-      const section = createAutofillSection(
-          [], {enabled: {value: false}, profile_enabled: {value: true}});
-
-      assertTrue(section.$$('#autofillProfileToggle').disabled);
-      assertTrue(section.$$('#addAddress').disabled);
     });
 
     test('verifyAddressDisabled', function() {

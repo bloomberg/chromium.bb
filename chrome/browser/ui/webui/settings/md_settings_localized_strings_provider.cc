@@ -1388,10 +1388,13 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
-      {"autofillFormsLabel", IDS_SETTINGS_AUTOFILL_TOGGLE_LABEL},
       {"enableProfilesLabel", IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL},
+      {"enableProfilesSublabel", IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_SUBLABEL},
       {"enableCreditCardsLabel", IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL},
+      {"enableCreditCardsSublabel",
+       IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL},
       {"addresses", IDS_AUTOFILL_ADDRESSES},
+      {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
       {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
       {"editAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE},
       {"addressCountry", IDS_SETTINGS_AUTOFILL_ADDRESSES_COUNTRY},
@@ -1466,7 +1469,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
   // |localized_strings| array once Autofill Home is fully launched.
   if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
     html_source->AddLocalizedString("autofill",
-                                    IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME);
+                                    IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
     html_source->AddLocalizedString("passwords",
                                     IDS_SETTINGS_PASSWORDS_AUTOFILL_HOME);
     html_source->AddLocalizedString("creditCards",
