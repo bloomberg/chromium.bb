@@ -343,11 +343,13 @@ void ContentsView::UpdateExpandArrowFocusBehavior(
     return;
 
   if (current_state == ash::AppListState::kStateStart) {
-    // The expand arrow is only focusable in peeking state.
+    // The expand arrow is only focusable and has InkDropMode on in peeking
+    // state.
     expand_arrow_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    expand_arrow_view_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
     return;
   }
-
+  expand_arrow_view_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
   expand_arrow_view_->SetFocusBehavior(FocusBehavior::NEVER);
 }
 
