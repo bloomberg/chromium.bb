@@ -7,7 +7,7 @@
 // Modifications include namespace, path, simplifying and removing unnecessary
 // codes.
 
-#include "components/autofill_assistant/browser/devtools/assistant_devtools_client.h"
+#include "components/autofill_assistant/browser/devtools/devtools_client.h"
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -17,7 +17,7 @@
 
 namespace autofill_assistant {
 
-AssistantDevtoolsClient::AssistantDevtoolsClient(
+DevtoolsClient::DevtoolsClient(
     scoped_refptr<content::DevToolsAgentHost> agent_host)
     : agent_host_(agent_host),
       input_domain_(this),
@@ -31,38 +31,37 @@ AssistantDevtoolsClient::AssistantDevtoolsClient(
   agent_host_->AttachClient(this);
 }
 
-AssistantDevtoolsClient::~AssistantDevtoolsClient() {}
+DevtoolsClient::~DevtoolsClient() {}
 
-input::Domain* AssistantDevtoolsClient::GetInput() {
+input::Domain* DevtoolsClient::GetInput() {
   return &input_domain_;
 }
 
-dom::Domain* AssistantDevtoolsClient::GetDOM() {
+dom::Domain* DevtoolsClient::GetDOM() {
   return &dom_domain_;
 }
 
-runtime::Domain* AssistantDevtoolsClient::GetRuntime() {
+runtime::Domain* DevtoolsClient::GetRuntime() {
   return &runtime_domain_;
 }
 
-void AssistantDevtoolsClient::SendMessage(
+void DevtoolsClient::SendMessage(
     const char* method,
     std::unique_ptr<base::Value> params,
     base::OnceCallback<void(const base::Value&)> callback) {
   SendMessageWithParams(method, std::move(params), std::move(callback));
 }
 
-void AssistantDevtoolsClient::SendMessage(const char* method,
-                                          std::unique_ptr<base::Value> params,
-                                          base::OnceClosure callback) {
+void DevtoolsClient::SendMessage(const char* method,
+                                 std::unique_ptr<base::Value> params,
+                                 base::OnceClosure callback) {
   SendMessageWithParams(method, std::move(params), std::move(callback));
 }
 
 template <typename CallbackType>
-void AssistantDevtoolsClient::SendMessageWithParams(
-    const char* method,
-    std::unique_ptr<base::Value> params,
-    CallbackType callback) {
+void DevtoolsClient::SendMessageWithParams(const char* method,
+                                           std::unique_ptr<base::Value> params,
+                                           CallbackType callback) {
   base::DictionaryValue message;
   message.SetString("method", method);
   message.Set("params", std::move(params));
@@ -81,14 +80,14 @@ void AssistantDevtoolsClient::SendMessageWithParams(
   DCHECK(success);
 }
 
-void AssistantDevtoolsClient::RegisterEventHandler(
+void DevtoolsClient::RegisterEventHandler(
     const char* method,
     base::RepeatingCallback<void(const base::Value&)> callback) {
   DCHECK(event_handlers_.find(method) == event_handlers_.end());
   event_handlers_[method] = std::move(callback);
 }
 
-void AssistantDevtoolsClient::DispatchProtocolMessage(
+void DevtoolsClient::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host,
     const std::string& json_message) {
   DCHECK_EQ(agent_host, agent_host_.get());
@@ -108,7 +107,7 @@ void AssistantDevtoolsClient::DispatchProtocolMessage(
     DLOG(ERROR) << "Unhandled protocol message: " << json_message;
 }
 
-bool AssistantDevtoolsClient::DispatchMessageReply(
+bool DevtoolsClient::DispatchMessageReply(
     std::unique_ptr<base::Value> owning_message,
     const base::DictionaryValue& message_dict) {
   const base::Value* id_value = message_dict.FindKey("id");
@@ -130,7 +129,7 @@ bool AssistantDevtoolsClient::DispatchMessageReply(
         browser_main_thread_->PostTask(
             FROM_HERE,
             base::BindOnce(
-                &AssistantDevtoolsClient::DispatchMessageReplyWithResultTask,
+                &DevtoolsClient::DispatchMessageReplyWithResultTask,
                 weak_ptr_factory_.GetWeakPtr(), std::move(owning_message),
                 std::move(callback.callback_with_result), result_dict));
       } else {
@@ -143,7 +142,7 @@ bool AssistantDevtoolsClient::DispatchMessageReply(
         browser_main_thread_->PostTask(
             FROM_HERE,
             base::BindOnce(
-                &AssistantDevtoolsClient::DispatchMessageReplyWithResultTask,
+                &DevtoolsClient::DispatchMessageReplyWithResultTask,
                 weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
                 std::move(callback.callback_with_result), null_value.get()));
       } else {
@@ -158,7 +157,7 @@ bool AssistantDevtoolsClient::DispatchMessageReply(
       browser_main_thread_->PostTask(
           FROM_HERE,
           base::BindOnce(
-              [](base::WeakPtr<AssistantDevtoolsClient> self,
+              [](base::WeakPtr<DevtoolsClient> self,
                  base::OnceClosure callback) {
                 if (self)
                   std::move(callback).Run();
@@ -171,16 +170,15 @@ bool AssistantDevtoolsClient::DispatchMessageReply(
   return true;
 }
 
-void AssistantDevtoolsClient::DispatchMessageReplyWithResultTask(
+void DevtoolsClient::DispatchMessageReplyWithResultTask(
     std::unique_ptr<base::Value> owning_message,
     base::OnceCallback<void(const base::Value&)> callback,
     const base::Value* result_dict) {
   std::move(callback).Run(*result_dict);
 }
 
-bool AssistantDevtoolsClient::DispatchEvent(
-    std::unique_ptr<base::Value> owning_message,
-    const base::DictionaryValue& message_dict) {
+bool DevtoolsClient::DispatchEvent(std::unique_ptr<base::Value> owning_message,
+                                   const base::DictionaryValue& message_dict) {
   const base::Value* method_value = message_dict.FindKey("method");
   if (!method_value)
     return false;
@@ -204,7 +202,7 @@ bool AssistantDevtoolsClient::DispatchEvent(
       // we risk breaking things.
       browser_main_thread_->PostTask(
           FROM_HERE,
-          base::BindOnce(&AssistantDevtoolsClient::DispatchEventTask,
+          base::BindOnce(&DevtoolsClient::DispatchEventTask,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(owning_message), &it->second, result_dict));
     } else {
@@ -214,33 +212,32 @@ bool AssistantDevtoolsClient::DispatchEvent(
   return true;
 }
 
-void AssistantDevtoolsClient::DispatchEventTask(
+void DevtoolsClient::DispatchEventTask(
     std::unique_ptr<base::Value> owning_message,
     const EventHandler* event_handler,
     const base::DictionaryValue* result_dict) {
   event_handler->Run(*result_dict);
 }
 
-void AssistantDevtoolsClient::AgentHostClosed(
-    content::DevToolsAgentHost* agent_host) {
+void DevtoolsClient::AgentHostClosed(content::DevToolsAgentHost* agent_host) {
   // Agent host is not expected to be closed when this object is alive.
   renderer_crashed_ = true;
 }
 
-AssistantDevtoolsClient::Callback::Callback() = default;
+DevtoolsClient::Callback::Callback() = default;
 
-AssistantDevtoolsClient::Callback::Callback(Callback&& other) = default;
+DevtoolsClient::Callback::Callback(Callback&& other) = default;
 
-AssistantDevtoolsClient::Callback::Callback(base::OnceClosure callback)
+DevtoolsClient::Callback::Callback(base::OnceClosure callback)
     : callback(std::move(callback)) {}
 
-AssistantDevtoolsClient::Callback::Callback(
+DevtoolsClient::Callback::Callback(
     base::OnceCallback<void(const base::Value&)> callback)
     : callback_with_result(std::move(callback)) {}
 
-AssistantDevtoolsClient::Callback::~Callback() = default;
+DevtoolsClient::Callback::~Callback() = default;
 
-AssistantDevtoolsClient::Callback& AssistantDevtoolsClient::Callback::operator=(
+DevtoolsClient::Callback& DevtoolsClient::Callback::operator=(
     Callback&& other) = default;
 
 }  // namespace autofill_assistant.

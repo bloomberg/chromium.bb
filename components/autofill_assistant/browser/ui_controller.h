@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_UI_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_UI_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 
-#include "components/autofill_assistant/browser/assistant_ui_delegate.h"
+#include "components/autofill_assistant/browser/ui_delegate.h"
 
 #include <string>
 
@@ -13,12 +13,12 @@
 
 namespace autofill_assistant {
 // Controller to control autofill assistant UI.
-class AssistantUiController {
+class UiController {
  public:
-  virtual ~AssistantUiController() = default;
+  virtual ~UiController() = default;
 
   // Set assistant UI delegate called by assistant UI controller.
-  virtual void SetUiDelegate(AssistantUiDelegate* ui_delegate) = 0;
+  virtual void SetUiDelegate(UiDelegate* ui_delegate) = 0;
 
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
@@ -42,7 +42,7 @@ class AssistantUiController {
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
  protected:
-  AssistantUiController() = default;
+  UiController() = default;
 };
 }  // namespace autofill_assistant.
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_UI_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

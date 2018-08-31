@@ -7,8 +7,8 @@
 // Modifications include namespace, path, simplifying and removing unnecessary
 // codes.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_ASSISTANT_DEVTOOLS_CLIENT_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_ASSISTANT_DEVTOOLS_CLIENT_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_DEVTOOLS_CLIENT_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_DEVTOOLS_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -28,12 +28,11 @@
 
 namespace autofill_assistant {
 
-class AssistantDevtoolsClient : public MessageDispatcher,
-                                public content::DevToolsAgentHostClient {
+class DevtoolsClient : public MessageDispatcher,
+                       public content::DevToolsAgentHostClient {
  public:
-  explicit AssistantDevtoolsClient(
-      scoped_refptr<content::DevToolsAgentHost> agent_host);
-  ~AssistantDevtoolsClient() override;
+  explicit DevtoolsClient(scoped_refptr<content::DevToolsAgentHost> agent_host);
+  ~DevtoolsClient() override;
 
   input::Domain* GetInput();
   dom::Domain* GetDOM();
@@ -102,9 +101,9 @@ class AssistantDevtoolsClient : public MessageDispatcher,
   bool renderer_crashed_;
   int next_message_id_;
 
-  base::WeakPtrFactory<AssistantDevtoolsClient> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(AssistantDevtoolsClient);
+  base::WeakPtrFactory<DevtoolsClient> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DevtoolsClient);
 };
 
 }  // namespace autofill_assistant.
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_ASSISTANT_DEVTOOLS_CLIENT_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DEVTOOLS_DEVTOOLS_CLIENT_H_

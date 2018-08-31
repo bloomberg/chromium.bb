@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/mock_assistant_ui_controller.h"
+#include "components/autofill_assistant/browser/mock_service.h"
 
 namespace autofill_assistant {
 
-MockAssistantUiController::MockAssistantUiController() {}
-MockAssistantUiController::~MockAssistantUiController() {}
+MockService::MockService() : Service(nullptr) {}
+MockService::~MockService() {}
 
 }  // namespace autofill_assistant

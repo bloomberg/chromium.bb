@@ -15,22 +15,22 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * Bridge to native side AssistantUiControllerAndroid. It allows native side to control Autofill
- * Assistant related UIs and forward UI events to native side.
+ * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
+ * Autofill Assistant related UIs and forward UI events to native side.
  */
 @JNINamespace("autofill_assistant")
-public class AssistantUiController {
-    private final long mAssistantUiControllerAndroid;
+public class AutofillAssistantUiController {
+    private final long mUiControllerAndroid;
 
     /**
      * Construct Autofill Assistant UI controller.
      *
      * @param activity The CustomTabActivity of the controller associated with.
      */
-    public AssistantUiController(CustomTabActivity activity) {
+    public AutofillAssistantUiController(CustomTabActivity activity) {
         // TODO(crbug.com/806868): Implement corresponding UI.
         Tab activityTab = activity.getActivityTab();
-        mAssistantUiControllerAndroid = nativeInit(activityTab.getWebContents());
+        mUiControllerAndroid = nativeInit(activityTab.getWebContents());
 
         // Stop Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
@@ -38,7 +38,7 @@ public class AssistantUiController {
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
                 if (!isAttached) {
                     activityTab.removeObserver(this);
-                    nativeDestroy(mAssistantUiControllerAndroid);
+                    nativeDestroy(mUiControllerAndroid);
                 }
             }
         });
@@ -51,7 +51,7 @@ public class AssistantUiController {
                 currentTabModel.removeObserver(this);
 
                 // Assume newly selected tab is always different from the last one.
-                nativeDestroy(mAssistantUiControllerAndroid);
+                nativeDestroy(mUiControllerAndroid);
                 // TODO(crbug.com/806868): May start a new Autofill Assistant instance for the newly
                 // selected Tab.
             }
@@ -75,5 +75,5 @@ public class AssistantUiController {
 
     // native methods.
     private native long nativeInit(WebContents webContents);
-    private native void nativeDestroy(long nativeAssistantUiControllerAndroid);
+    private native void nativeDestroy(long nativeUiControllerAndroid);
 }

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/assistant_script.h"
+#include "components/autofill_assistant/browser/mock_ui_controller.h"
 
 namespace autofill_assistant {
 
-AssistantScript::AssistantScript() = default;
+MockUiController::MockUiController() {}
+MockUiController::~MockUiController() {}
 
-AssistantScript::~AssistantScript() = default;
-
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

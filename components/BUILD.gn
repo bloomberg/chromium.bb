@@ -522,7 +522,7 @@ if (!is_ios) {
     if (is_android) {
       enable_multidex = true
       sources += [
-        "autofill_assistant/browser/assistant_web_controller_browsertest.cc",
+        "autofill_assistant/browser/web_controller_browsertest.cc",
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
       ]
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
