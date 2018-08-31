@@ -37,6 +37,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
 
@@ -423,13 +424,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [self updateTooltipIfRequiredAt:event_location];
 
   if (isScrollEvent) {
-    ui::ScrollEvent event(theEvent);
-    event.set_location(event_location);
-    bridge_->host()->OnScrollEvent(event);
+    auto event = std::make_unique<ui::ScrollEvent>(theEvent);
+    event->set_location(event_location);
+    bridge_->host()->OnScrollEvent(std::move(event));
   } else {
-    ui::MouseEvent event(theEvent);
-    event.set_location(event_location);
-    bridge_->host()->OnMouseEvent(event);
+    auto event = std::make_unique<ui::MouseEvent>(theEvent);
+    event->set_location(event_location);
+    bridge_->host()->OnMouseEvent(std::move(event));
   }
 }
 
@@ -453,11 +454,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // BridgedContentView private implementation.
 
 - (void)dispatchKeyEvent:(ui::KeyEvent*)event {
-  bool eventHandled = false;
   if (bridge_)
-    bridge_->host()->DispatchKeyEvent(*event, &eventHandled);
-  if (eventHandled)
-    event->SetHandled();
+    bridge_->host_helper()->DispatchKeyEvent(event);
 }
 
 - (BOOL)hasActiveMenuController {
@@ -468,15 +466,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (BOOL)dispatchKeyEventToMenuController:(ui::KeyEvent*)event {
-  bool eventSwallowed = false;
-  bool eventHandled = false;
-  if (bridge_) {
-    bridge_->host()->DispatchKeyEventToMenuController(*event, &eventSwallowed,
-                                                      &eventHandled);
-  }
-  if (eventHandled)
-    event->SetHandled();
-  return eventSwallowed;
+  if (bridge_)
+    return bridge_->host_helper()->DispatchKeyEventToMenuController(event);
+  return false;
 }
 
 - (void)handleKeyEvent:(ui::KeyEvent*)event {
@@ -691,13 +683,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return;
 
   DCHECK([theEvent type] != NSScrollWheel);
-  ui::MouseEvent event(theEvent);
-  [self adjustUiEventLocation:&event fromNativeEvent:theEvent];
+  auto event = std::make_unique<ui::MouseEvent>(theEvent);
+  [self adjustUiEventLocation:event.get() fromNativeEvent:theEvent];
 
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
-  [self updateTooltipIfRequiredAt:event.location()];
-  bridge_->host()->OnMouseEvent(event);
+  [self updateTooltipIfRequiredAt:event->location()];
+  bridge_->host()->OnMouseEvent(std::move(event));
 }
 
 - (void)forceTouchEvent:(NSEvent*)theEvent {
@@ -860,13 +852,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (!bridge_)
     return;
 
-  ui::ScrollEvent event(theEvent);
-  [self adjustUiEventLocation:&event fromNativeEvent:theEvent];
+  auto event = std::make_unique<ui::ScrollEvent>(theEvent);
+  [self adjustUiEventLocation:event.get() fromNativeEvent:theEvent];
 
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
-  [self updateTooltipIfRequiredAt:event.location()];
-  bridge_->host()->OnScrollEvent(event);
+  [self updateTooltipIfRequiredAt:event->location()];
+  bridge_->host()->OnScrollEvent(std::move(event));
 }
 
 // Called when we get a three-finger swipe, and they're enabled in System
@@ -890,10 +882,10 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Note this uses the default unique_touch_event_id of 0 (Swipe events do not
   // support -[NSEvent eventNumber]). This doesn't seem like a real omission
   // because the three-finger swipes are instant and can't be tracked anyway.
-  ui::GestureEvent gestureEvent(location.x(), location.y(),
-                                ui::EventFlagsFromNative(event),
-                                ui::EventTimeFromNative(event), swipeDetails);
-  bridge_->host()->OnGestureEvent(gestureEvent);
+  auto gestureEvent = std::make_unique<ui::GestureEvent>(
+      location.x(), location.y(), ui::EventFlagsFromNative(event),
+      ui::EventTimeFromNative(event), swipeDetails);
+  bridge_->host()->OnGestureEvent(std::move(gestureEvent));
 }
 
 - (void)quickLookWithEvent:(NSEvent*)theEvent {
@@ -906,8 +898,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   bool foundWord = false;
   gfx::DecoratedText decoratedWord;
   gfx::Point baselinePoint;
-  bridge_->host()->GetWordAt(locationInContent, &foundWord, &decoratedWord,
-                             &baselinePoint);
+  bridge_->host_helper()->GetWordAt(locationInContent, &foundWord,
+                                    &decoratedWord, &baselinePoint);
   if (!foundWord)
     return;
 
@@ -1536,21 +1528,21 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    return @[ bridge_->host()->GetNativeViewAccessible() ];
+    return @[ bridge_->host_helper()->GetNativeViewAccessible() ];
   }
 
   return [super accessibilityAttributeValue:attribute];
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  return
-      [bridge_->host()->GetNativeViewAccessible() accessibilityHitTest:point];
+  return [bridge_->host_helper()->GetNativeViewAccessible()
+      accessibilityHitTest:point];
 }
 
 - (id)accessibilityFocusedUIElement {
   if (!bridge_)
     return nil;
-  return [bridge_->host()->GetNativeViewAccessible()
+  return [bridge_->host_helper()->GetNativeViewAccessible()
               accessibilityFocusedUIElement];
 }
 

@@ -29,17 +29,25 @@
 @class NativeWidgetMacNSWindow;
 @class ViewsNSWindowDelegate;
 
+namespace views_bridge_mac {
+namespace mojom {
+class BridgedNativeWidgetHost;
+}  // namespace mojom
+}  // namespace views_bridge_mac
+
 namespace views {
 namespace test {
 class BridgedNativeWidgetTestApi;
 }
 
-class BridgedNativeWidgetHost;
+class BridgedNativeWidgetHostHelper;
 class CocoaMouseCapture;
 class CocoaWindowMoveLoop;
 class DragDropClientMac;
 class NativeWidgetMac;
 class View;
+
+using views_bridge_mac::mojom::BridgedNativeWidgetHost;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
@@ -60,7 +68,9 @@ class VIEWS_EXPORT BridgedNativeWidget
                                               const gfx::Size& size);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidget(BridgedNativeWidgetHost* host, NativeWidgetMac* parent);
+  BridgedNativeWidget(BridgedNativeWidgetHost* host,
+                      BridgedNativeWidgetHostHelper* host_helper,
+                      NativeWidgetMac* parent);
   ~BridgedNativeWidget() override;
 
   // Initialize the NSWindow by taking ownership of the specified object.
@@ -151,6 +161,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
   BridgedNativeWidgetHost* host() { return host_; }
+  BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
   NSWindow* ns_window();
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
@@ -280,7 +291,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool IsVisibleParent() const override;
   void RemoveChildWindow(BridgedNativeWidget* child) override;
 
-  BridgedNativeWidgetHost* const host_;       // Weak. Owns this.
+  BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
+  BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
   NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |host_|.
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;

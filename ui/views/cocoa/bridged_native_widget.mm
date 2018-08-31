@@ -35,6 +35,7 @@
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 using views_bridge_mac::mojom::WindowVisibilityState;
 
@@ -236,9 +237,11 @@ gfx::Size BridgedNativeWidget::GetWindowSizeForClientSize(
   return gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect));
 }
 
-BridgedNativeWidget::BridgedNativeWidget(BridgedNativeWidgetHost* host,
-                                         NativeWidgetMac* parent)
-    : host_(host), native_widget_mac_(parent) {
+BridgedNativeWidget::BridgedNativeWidget(
+    BridgedNativeWidgetHost* host,
+    BridgedNativeWidgetHostHelper* host_helper,
+    NativeWidgetMac* parent)
+    : host_(host), host_helper_(host_helper), native_widget_mac_(parent) {
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);

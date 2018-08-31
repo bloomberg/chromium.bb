@@ -9,7 +9,7 @@
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
-#import "ui/views/cocoa/bridged_native_widget_host.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
 
