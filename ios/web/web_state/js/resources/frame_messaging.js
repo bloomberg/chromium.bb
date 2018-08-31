@@ -131,6 +131,26 @@ var getFrameSymmetricKey_ = function(callback) {
   });
 };
 
+
+/**
+ * Sends |result| to the native application as the return value from the
+ * execution of the message with |messageId|.
+ * @param {number} messageId The message ID which the response is associated.
+ * @param {?Object} result The response to send.
+ */
+var replyWithResult_ = function(messageId, result) {
+  var replyCommand =
+      'frameMessaging_' + __gCrWeb.frameMessaging['getFrameId']() + '.reply';
+  var response = {
+    'command': replyCommand,
+    'messageId': messageId
+  };
+  if (result) {
+    response['result'] = result
+  }
+  __gCrWeb.message.invokeOnHost(response);
+};
+
 /**
  * Executes |functionName| on __gCrWeb with the given |parameters|.
  * @param {!string} functionPath The function to execute on __gCrWeb. Components
@@ -142,7 +162,9 @@ var getFrameSymmetricKey_ = function(callback) {
 var callGCrWebFunction_ = function(functionPath, parameters) {
   var functionReference = __gCrWeb;
   var functionComponents = functionPath.split('.');
-  for (var component in functionComponents) {
+  var numComponents = functionComponents.length;
+  for (var i = 0; i < numComponents; i++) {
+    var component = functionComponents[i];
     functionReference = functionReference[component];
     if (!functionReference) {
       return null;
@@ -185,17 +207,23 @@ var executeMessage_ = function(payload, iv) {
       // Verify that message id is valid.
       if (!Number.isInteger(callDict['messageId']) ||
           callDict['messageId'] <= lastReceivedMessageId_) {
-              return;
+        return;
       }
-      lastReceivedMessageId_ = callDict['messageId'];
 
+      // Check that a function name and parameters are specified.
       if (typeof callDict['functionName'] !== 'string' ||
           callDict['functionName'].length < 1 ||
           !Array.isArray(callDict['parameters'])) {
         return;
       }
 
-      callGCrWebFunction_(callDict['functionName'], callDict['parameters']);
+      lastReceivedMessageId_ = callDict['messageId'];
+      var result =
+          callGCrWebFunction_(callDict['functionName'], callDict['parameters']);
+      if (typeof callDict['replyWithResult'] === 'boolean' &&
+          callDict['replyWithResult']) {
+        replyWithResult_(callDict['messageId'], result);
+      }
     });
   });
 };

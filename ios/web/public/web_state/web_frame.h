@@ -12,6 +12,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class TimeDelta;
 class Value;
 }
 
@@ -41,6 +42,19 @@ class WebFrame : public base::SupportsUserData {
   virtual bool CallJavaScriptFunction(
       const std::string& name,
       const std::vector<base::Value>& parameters) = 0;
+
+  // Calls the JavaScript function in the same condition as
+  // CallJavaScriptFunction(std::string, const std::vector<base::Value>&).
+  // |callback| will be called with the value returned by the method.
+  // If |timeout| is reached, callback is called with the nullptr parameter
+  // and no result received later will be sent.
+  // Returns true if function call was requested, false otherwise. Function call
+  // may still fail even if this function returns true.
+  virtual bool CallJavaScriptFunction(
+      std::string name,
+      const std::vector<base::Value>& parameters,
+      base::OnceCallback<void(const base::Value*)> callback,
+      base::TimeDelta timeout) = 0;
 
   ~WebFrame() override {}
 
