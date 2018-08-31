@@ -567,6 +567,7 @@
       'gpu-manual-try-android-p-pixel-2-64': 'gpu_tests_android_vulkan_release_trybot_arm64',
       'gpu-manual-try-android-p-pixel-2-64-deqp': 'deqp_android_vulkan_release_trybot_arm64',
       'linux_android_dbg_ng': 'android_debug_trybot',
+      'try-nougat-phone-tester': 'android_debug_trybot_arm64',
     },
 
     # TODO(crbug/786044): Remove non-compile debug configs when migrated.
