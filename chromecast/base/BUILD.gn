@@ -322,6 +322,7 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Observer.java",
       "$java_src_dir/org/chromium/chromecast/base/Observers.java",
       "$java_src_dir/org/chromium/chromecast/base/Scope.java",
+      "$java_src_dir/org/chromium/chromecast/base/Scopes.java",
       "$java_src_dir/org/chromium/chromecast/base/Predicate.java",
       "$java_src_dir/org/chromium/chromecast/base/Subscription.java",
       "$java_src_dir/org/chromium/chromecast/base/Supplier.java",

@@ -19,7 +19,7 @@ public final class Observers {
     public static <T> Observer<T> onEnter(Consumer<? super T> consumer) {
         return (T value) -> {
             consumer.accept(value);
-            return () -> {};
+            return Scopes.NO_OP;
         };
     }
 
