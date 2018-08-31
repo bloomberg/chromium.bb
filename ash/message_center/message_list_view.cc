@@ -138,7 +138,8 @@ void MessageListView::RemoveNotification(MessageView* message_view) {
 
 void MessageListView::UpdateNotification(MessageView* message_view,
                                          const Notification& notification) {
-  views::View* container = message_view->parent();
+  auto* container = SlidableMessageView::GetFromMessageView(message_view);
+
   // Skip updating the notification being cleared.
   if (base::ContainsValue(clearing_all_views_, container))
     return;
@@ -154,7 +155,7 @@ void MessageListView::UpdateNotification(MessageView* message_view,
     deleting_views_.erase(container);
   if (deleted_when_done_.find(container) != deleted_when_done_.end())
     deleted_when_done_.erase(container);
-  message_view->UpdateWithNotification(notification);
+  container->UpdateWithNotification(notification);
   DoUpdateIfPossible();
 }
 
@@ -703,6 +704,16 @@ void MessageListView::OnSlideChanged(const std::string& notification_id) {
       continue;
     container->CloseSwipeControl();
   }
+}
+
+void MessageListView::UpdateCornerRadius(int index,
+                                         int top_radius,
+                                         int bottom_radius) {
+  auto* message_view = GetNotificationAt(index);
+  auto* container = SlidableMessageView::GetFromMessageView(message_view);
+
+  message_view->UpdateCornerRadius(top_radius, bottom_radius);
+  container->UpdateCornerRadius(top_radius, bottom_radius);
 }
 
 }  // namespace ash
