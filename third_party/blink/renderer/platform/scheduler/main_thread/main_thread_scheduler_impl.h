@@ -132,6 +132,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // entries. This is initialized early with all valid entries. Entries that
     // aren't valid task types, i.e. non-frame level, are base::nullopt.
     FrameTaskTypeToQueueTraitsArray frame_task_types_to_queue_traits;
+
+    bool disable_expensive_task_blocking;
+    bool disable_non_touchstart_input_heuristics;
+    bool disable_touchstart_input_heuristics;
   };
 
   static const char* UseCaseToString(UseCase use_case);
