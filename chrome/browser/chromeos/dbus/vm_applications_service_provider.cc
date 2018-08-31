@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -42,6 +44,13 @@ void VmApplicationsServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      vm_tools::apps::kVmApplicationsServiceInterface,
+      vm_tools::apps::kVmApplicationsServiceUpdateMimeTypesMethod,
+      base::BindRepeating(&VmApplicationsServiceProvider::UpdateMimeTypes,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VmApplicationsServiceProvider::OnExported(
@@ -69,7 +78,7 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (ProfileHelper::IsPrimaryProfile(profile)) {
+  if (IsCrostiniEnabled(profile)) {
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
     registry_service->UpdateApplicationList(request);
@@ -95,12 +104,37 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (ProfileHelper::IsPrimaryProfile(profile) &&
+  if (IsCrostiniEnabled(profile) &&
       request.owner_id() == CryptohomeIdForProfile(profile)) {
     crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
         profile, request.vm_name(), request.container_name(),
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
+  }
+
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void VmApplicationsServiceProvider::UpdateMimeTypes(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+
+  vm_tools::apps::MimeTypes request;
+
+  if (!reader.PopArrayOfBytesAsProto(&request)) {
+    constexpr char error_message[] = "Unable to parse MimeTypes from message";
+    LOG(ERROR) << error_message;
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    return;
+  }
+
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (IsCrostiniEnabled(profile)) {
+    crostini::CrostiniMimeTypesService* mime_types_service =
+        crostini::CrostiniMimeTypesServiceFactory::GetForProfile(profile);
+    mime_types_service->UpdateMimeTypes(request);
   }
 
   response_sender.Run(dbus::Response::FromMethodCall(method_call));

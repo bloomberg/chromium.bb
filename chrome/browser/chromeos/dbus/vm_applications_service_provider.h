@@ -41,6 +41,8 @@ class VmApplicationsServiceProvider
       dbus::ExportedObject::ResponseSender response_sender);
   void LaunchTerminal(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
+  void UpdateMimeTypes(dbus::MethodCall* method_call,
+                       dbus::ExportedObject::ResponseSender response_sender);
 
   base::WeakPtrFactory<VmApplicationsServiceProvider> weak_ptr_factory_;
 

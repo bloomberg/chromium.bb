@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -63,6 +65,8 @@ void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
     return;
   }
   CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
+      vm_name_, container_name_);
+  CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
       vm_name_, container_name_);
   CrostiniManager::GetInstance()->DestroyDiskImage(
       CryptohomeIdForProfile(profile_), base::FilePath(vm_name_),
