@@ -198,6 +198,12 @@ UserItemButton::UserItemButton(int user_index,
 
   capture_icon_->SetImage(
       gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kUnifiedMenuIconColor));
+  if (!has_close_button) {
+    // Add a padding with the same size as the close button,
+    // so as to align all media indicators in a column.
+    capture_icon_->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(0, 0, 0, kTrayItemSize + kUnifiedTopShortcutSpacing)));
+  }
   capture_icon_->SetVisible(false);
   AddChildView(capture_icon_);
 
