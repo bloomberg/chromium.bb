@@ -33,6 +33,8 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -92,6 +94,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 #if defined(OS_CHROMEOS)
@@ -1530,6 +1533,55 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->FlushNetworkInterfaceForTesting();
   EXPECT_FALSE(has_connection_error);
+}
+
+// Regression test for http://crbug.com/878366.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestApiDoesNotCrashOnErrorAfterProfileDestroyed) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Create a profile that will be destroyed later.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* tmp_profile = Profile::CreateProfile(
+      profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
+      Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+
+  // Create a WebRequestAPI instance that we can control the lifetime of.
+  auto api = std::make_unique<WebRequestAPI>(tmp_profile);
+  // Add a listener to make sure we proxy.
+  api->OnListenerAdded(EventListenerInfo("name", "id1", GURL(), tmp_profile));
+  content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
+      ->FlushNetworkInterfaceForTesting();
+
+  network::mojom::URLLoaderFactoryPtr factory;
+  auto request = mojo::MakeRequest(&factory);
+  api->MaybeProxyURLLoaderFactory(nullptr, false, &request);
+  auto params = network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = 0;
+  content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
+      ->GetNetworkContext()
+      ->CreateURLLoaderFactory(std::move(request), std::move(params));
+
+  network::TestURLLoaderClient client;
+  network::mojom::URLLoaderPtr loader;
+  network::ResourceRequest resource_request;
+  resource_request.url = embedded_test_server()->GetURL("/hung");
+  factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
+      resource_request, client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // Destroy profile, unbind client to cause a connection error, and delete the
+  // WebRequestAPI. This will cause the connection error that will reach the
+  // proxy before the ProxySet shutdown code runs on the IO thread.
+  api->Shutdown();
+  ProfileDestroyer::DestroyProfileWhenAppropriate(tmp_profile);
+  client.Unbind();
+  api.reset();
 }
 
 // Test fixture which sets a custom NTP Page.
