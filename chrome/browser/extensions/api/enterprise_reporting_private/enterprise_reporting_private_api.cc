@@ -37,8 +37,11 @@ namespace enterprise_reporting {
 const char kInvalidInputErrorMessage[] = "The report is not valid.";
 const char kUploadFailed[] = "Failed to upload the report.";
 const char kDeviceNotEnrolled[] = "This device has not been enrolled yet.";
+const char kDeviceIdNotFound[] = "Failed to retrieve the device id.";
 
 }  // namespace enterprise_reporting
+
+// UploadDesktopReport
 
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction()
@@ -138,5 +141,22 @@ void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     Respond(Error(enterprise_reporting::kUploadFailed));
   }
 }
+
+// GetDeviceId
+
+EnterpriseReportingPrivateGetDeviceIdFunction::
+    EnterpriseReportingPrivateGetDeviceIdFunction() {}
+
+ExtensionFunction::ResponseAction
+EnterpriseReportingPrivateGetDeviceIdFunction::Run() {
+  std::string client_id =
+      policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
+  if (client_id.empty())
+    return RespondNow(Error(enterprise_reporting::kDeviceIdNotFound));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(client_id)));
+}
+
+EnterpriseReportingPrivateGetDeviceIdFunction::
+    ~EnterpriseReportingPrivateGetDeviceIdFunction() = default;
 
 }  // namespace extensions

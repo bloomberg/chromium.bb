@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -55,11 +56,32 @@ class MockCloudPolicyClient : public policy::MockCloudPolicyClient {
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyClient);
 };
 
+class FakeBrowserDMTokenStorage : public policy::BrowserDMTokenStorage {
+ public:
+  FakeBrowserDMTokenStorage() = default;
+  ~FakeBrowserDMTokenStorage() override = default;
+
+  void SetClientId(const std::string& client_id) { client_id_ = client_id; }
+
+  // policy::BrowserDMTokenStorage:
+  std::string InitClientId() override { return client_id_; }
+  std::string InitEnrollmentToken() override { return std::string(); }
+  std::string InitDMToken() override { return std::string(); }
+  void SaveDMToken(const std::string& token) override {}
+
+ private:
+  std::string client_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBrowserDMTokenStorage);
+};
+
 }  // namespace
 
-class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
+// Test for API enterprise.reportingPrivate.uploadChromeDesktopReport
+class EnterpriseReportingPrivateUploadChromeDesktopReportTest
+    : public ExtensionApiUnittest {
  public:
-  EnterpriseReportingPrivateTest()
+  EnterpriseReportingPrivateUploadChromeDesktopReportTest()
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -98,24 +120,27 @@ class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateTest);
+  DISALLOW_COPY_AND_ASSIGN(
+      EnterpriseReportingPrivateUploadChromeDesktopReportTest);
 };
 
-TEST_F(EnterpriseReportingPrivateTest, DeviceIsNotEnrolled) {
+TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
+       DeviceIsNotEnrolled) {
   ASSERT_EQ(enterprise_reporting::kDeviceNotEnrolled,
             RunFunctionAndReturnError(
                 CreateChromeDesktopReportingFunction(std::string()),
                 GenerateArgs(kFakeMachineNameReport)));
 }
 
-TEST_F(EnterpriseReportingPrivateTest, ReportIsNotValid) {
+TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
+       ReportIsNotValid) {
   ASSERT_EQ(enterprise_reporting::kInvalidInputErrorMessage,
             RunFunctionAndReturnError(
                 CreateChromeDesktopReportingFunction(kFakeDMToken),
                 GenerateInvalidReport()));
 }
 
-TEST_F(EnterpriseReportingPrivateTest, UploadFailed) {
+TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest, UploadFailed) {
   UIThreadExtensionFunction* function =
       CreateChromeDesktopReportingFunction(kFakeDMToken);
   EXPECT_CALL(*client_, SetupRegistration(kFakeDMToken, kFakeClientId, _))
@@ -129,7 +154,8 @@ TEST_F(EnterpriseReportingPrivateTest, UploadFailed) {
   ::testing::Mock::VerifyAndClearExpectations(client_);
 }
 
-TEST_F(EnterpriseReportingPrivateTest, UploadSucceeded) {
+TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
+       UploadSucceeded) {
   UIThreadExtensionFunction* function =
       CreateChromeDesktopReportingFunction(kFakeDMToken);
   EXPECT_CALL(*client_, SetupRegistration(kFakeDMToken, kFakeClientId, _))
@@ -140,6 +166,42 @@ TEST_F(EnterpriseReportingPrivateTest, UploadSucceeded) {
   ASSERT_EQ(nullptr, RunFunctionAndReturnValue(
                          function, GenerateArgs(kFakeMachineNameReport)));
   ::testing::Mock::VerifyAndClearExpectations(client_);
+}
+
+// Test for API enterprise.reportingPrivate.getDeviceId
+class EnterpriseReportingPrivateGetDeviceIdTest : public ExtensionApiUnittest {
+ public:
+  EnterpriseReportingPrivateGetDeviceIdTest() {
+    policy::BrowserDMTokenStorage::SetForTesting(&storage_);
+  }
+
+  void SetClientId(const std::string& client_id) {
+    storage_.SetClientId(client_id);
+  }
+
+ private:
+  FakeBrowserDMTokenStorage storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceIdTest);
+};
+
+TEST_F(EnterpriseReportingPrivateGetDeviceIdTest, GetDeviceId) {
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceIdFunction>();
+  SetClientId(kFakeClientId);
+  std::unique_ptr<base::Value> id =
+      RunFunctionAndReturnValue(function.get(), "[]");
+  ASSERT_TRUE(id);
+  ASSERT_TRUE(id->is_string());
+  EXPECT_EQ(kFakeClientId, id->GetString());
+}
+
+TEST_F(EnterpriseReportingPrivateGetDeviceIdTest, DeviceIdNotExist) {
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceIdFunction>();
+  SetClientId("");
+  ASSERT_EQ(enterprise_reporting::kDeviceIdNotFound,
+            RunFunctionAndReturnError(function.get(), "[]"));
 }
 
 }  // namespace extensions
