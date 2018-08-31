@@ -26,6 +26,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -37,6 +38,7 @@ namespace ash {
 namespace {
 
 // Appearance.
+constexpr int kFirstCardMarginTopDip = 40;
 constexpr int kPaddingHorizontalDip = 32;
 
 // Card element animation.
@@ -160,8 +162,17 @@ class CardElementViewHolder : public views::NativeViewHost,
 
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* view) override {
-    contents_view_->SetPreferredSize(view->GetPreferredSize());
-    SetPreferredSize(view->GetPreferredSize());
+    gfx::Size preferred_size = view->GetPreferredSize();
+
+    if (border()) {
+      // When a border is present we need to explicitly account for it in our
+      // size calculations by enlarging our preferred size by the border insets.
+      const gfx::Insets insets = border()->GetInsets();
+      preferred_size.Enlarge(insets.width(), insets.height());
+    }
+
+    contents_view_->SetPreferredSize(preferred_size);
+    SetPreferredSize(preferred_size);
   }
 
   void Attach() {
@@ -303,6 +314,9 @@ void UiElementContainerView::OnResponseCleared() {
   // We can clear any pending UI elements as they are no longer relevant.
   pending_ui_element_list_.clear();
   SetProcessingUiElement(false);
+
+  // Reset state for the next response.
+  is_first_card_ = true;
 }
 
 void UiElementContainerView::OnResponseAdded(
@@ -432,6 +446,20 @@ void UiElementContainerView::OnCardReady(
     CardElementViewHolder* view_holder = new CardElementViewHolder(
         app_list::AnswerCardContentsRegistry::Get()->GetView(
             embed_token.value()));
+
+    if (is_first_card_) {
+      is_first_card_ = false;
+
+      // The first card requires a top margin of |kFirstCardMarginTopDip|, but
+      // we need to account for child spacing because the first card is not
+      // necessarily the first UI element.
+      const int top_margin_dip = child_count() == 0
+                                     ? kFirstCardMarginTopDip
+                                     : kFirstCardMarginTopDip - kSpacingDip;
+
+      // We effectively create a top margin by applying an empty border.
+      view_holder->SetBorder(views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
+    }
 
     content_view()->AddChildView(view_holder);
     view_holder->Attach();
