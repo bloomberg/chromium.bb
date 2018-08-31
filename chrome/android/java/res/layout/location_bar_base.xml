@@ -13,6 +13,7 @@
     <FrameLayout android:id="@+id/location_bar_icon"
         android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
+        android:paddingEnd="4dp"
         android:visibility="gone" >
 
         <ImageView android:id="@+id/navigation_button"

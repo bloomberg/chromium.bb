@@ -269,7 +269,8 @@
     <dimen name="toolbar_edge_padding">8dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
-    <dimen name="location_bar_icon_width">32dp</dimen>
+    <dimen name="location_bar_icon_width">28dp</dimen>
+    <dimen name="location_bar_lateral_padding">10dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_start_padding_no_buttons">6dp</dimen>
@@ -277,12 +278,10 @@
     <dimen name="location_bar_status_separator_width">1dp</dimen>
 
     <!-- Modern toolbar dimensions -->
-    <dimen name="modern_toolbar_background_focused_left_margin">6dp</dimen>
     <dimen name="modern_toolbar_background_size">40dp</dimen>
     <!-- Sometimes the modern toolbar is shown at 48dp so a corner radius of
          24dp is needed to completely round the corners. -->
     <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
-    <dimen name="modern_toolbar_background_lateral_inset">2dp</dimen>
 
     <!-- Omnibox suggestions -->
     <dimen name="omnibox_suggestion_height">60dp</dimen>
@@ -301,8 +300,8 @@
     <dimen name="omnibox_suggestion_refine_width">48dp</dimen>
     <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
     <dimen name="omnibox_suggestion_multiline_text_vertical_padding">10dp</dimen>
-    <dimen name="omnibox_suggestion_refine_view_modern_end_padding">2dp</dimen>
-    <dimen name="omnibox_suggestion_list_modern_offset">10dp</dimen>
+    <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
+    <dimen name="omnibox_suggestion_list_modern_offset">8dp</dimen>
 
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>
@@ -338,11 +337,8 @@
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
     <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="duet_ntp_logo_top_padding">16dp</dimen>
-    <dimen name="ntp_search_box_height">62dp</dimen>
-    <dimen name="ntp_search_box_height_modern">48dp</dimen>
-    <dimen name="ntp_search_box_shadow_width">4dp</dimen>
+    <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
-    <dimen name="ntp_search_box_voice_search_margin_end_modern">6dp</dimen>
     <dimen name="explore_sites_radius">8dp</dimen>
     <dimen name="explore_sites_padding">8dp</dimen>
     <dimen name="explore_sites_margin">16dp</dimen>
@@ -524,7 +520,7 @@
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_corner_radius">2dp</dimen>
-    <dimen name="clear_text_button_end_padding">4dp</dimen>
+    <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
     <dimen name="sad_tab_bullet_gap">12dp</dimen>
     <dimen name="sad_tab_bullet_leading_offset">1dp</dimen>

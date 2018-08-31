@@ -580,6 +580,7 @@
     <style name="LocationBarActionButton" parent="LocationBarButton">
         <item name="android:layout_width">@dimen/location_bar_icon_width</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingStart">4dp</item>
         <item name="android:scaleType">center</item>
         <item name="android:layout_gravity">end</item>
         <item name="chrometint">@color/dark_mode_tint</item>

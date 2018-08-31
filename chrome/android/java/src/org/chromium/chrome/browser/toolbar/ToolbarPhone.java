@@ -28,6 +28,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.text.TextUtils;
@@ -240,7 +241,6 @@ public class ToolbarPhone extends ToolbarLayout
     /** The boundaries of the omnibox, without the NTP-specific offset applied. */
     protected final Rect mLocationBarBackgroundBounds = new Rect();
 
-    protected final Rect mLocationBarBackgroundPadding = new Rect();
     private final Rect mBackgroundOverlayBounds = new Rect();
 
     /** Offset applied to the bounds of the omnibox if we are showing a New Tab Page. */
@@ -259,7 +259,6 @@ public class ToolbarPhone extends ToolbarLayout
     protected final Point mNtpSearchBoxTranslation = new Point();
 
     protected final int mToolbarSidePadding;
-    private final int mModernLocationBarLateralInset;
 
     private ValueAnimator mBrandColorTransitionAnimation;
     private boolean mBrandColorTransitionActive;
@@ -280,14 +279,8 @@ public class ToolbarPhone extends ToolbarLayout
     /** Token held when the TabSwitcherCallout is displayed to prevent the Toolbar from hiding. */
     private int mFullscreenCalloutToken = FullscreenManager.INVALID_TOKEN;
 
-    /** The height of the location bar background when the modern UI is enabled. */
-    private float mModernLocationBarBackgroundHeight;
-
-    /**
-     * The extra margin to apply to the start side of the location bar when it is focused and the
-     * modern UI is enabled.
-     */
-    private int mModernLocationBarExtraFocusedStartMargin;
+    /** The vertical inset of the location bar background. */
+    private int mLocationBarBackgroundVerticalInset;
 
     /** The current color of the location bar. */
     private int mCurrentLocationBarColor;
@@ -366,8 +359,6 @@ public class ToolbarPhone extends ToolbarLayout
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint);
         mDarkModeDefaultColor =
                 ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
-        mModernLocationBarLateralInset = getResources().getDimensionPixelOffset(
-                R.dimen.modern_toolbar_background_lateral_inset);
     }
 
     @Override
@@ -413,17 +404,12 @@ public class ToolbarPhone extends ToolbarLayout
      */
     protected void initLocationBarBackground() {
         Resources res = getResources();
-        mModernLocationBarBackgroundHeight =
-                res.getDimensionPixelSize(R.dimen.modern_toolbar_background_size);
+        mLocationBarBackgroundVerticalInset =
+                res.getDimensionPixelSize(R.dimen.location_bar_vertical_margin);
         mLocationBarBackground = createModernLocationBarBackground(getResources());
-        mLocationBarBackground.getPadding(mLocationBarBackgroundPadding);
-        mLocationBarBackground.mutate();
-        mLocationBar.setPadding(mLocationBarBackgroundPadding.left,
-                mLocationBarBackgroundPadding.top, mLocationBarBackgroundPadding.right,
-                mLocationBarBackgroundPadding.bottom);
 
-        mModernLocationBarExtraFocusedStartMargin = getResources().getDimensionPixelSize(
-                R.dimen.modern_toolbar_background_focused_left_margin);
+        int lateralPadding = res.getDimensionPixelOffset(R.dimen.location_bar_lateral_padding);
+        mLocationBar.setPadding(lateralPadding, 0, lateralPadding, 0);
 
         mActiveLocationBarBackground = mLocationBarBackground;
     }
@@ -659,35 +645,8 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUnfocusedLocationBarLayoutParams() {
-        mHasVisibleViewPriorToUrlBar = false;
-        for (int i = 0; i < mLocationBar.getChildCount(); i++) {
-            View child = mLocationBar.getChildAt(i);
-            if (child == mUrlBar) break;
-            if (child.getVisibility() != GONE) {
-                mHasVisibleViewPriorToUrlBar = true;
-                break;
-            }
-        }
-
         int leftViewBounds = getViewBoundsLeftOfLocationBar(mVisualState);
         int rightViewBounds = getViewBoundsRightOfLocationBar(mVisualState);
-
-        if (!mHasVisibleViewPriorToUrlBar) {
-            if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
-                rightViewBounds -= mToolbarSidePadding;
-            } else {
-                leftViewBounds += mToolbarSidePadding;
-            }
-        }
-
-        // Add spacing between the end of the URL and the edge of the omnibox drawable.
-        // This only applies if there is no end aligned view that should be visible
-        // while the omnibox is unfocused.
-        if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
-            leftViewBounds += mToolbarSidePadding;
-        } else {
-            rightViewBounds -= mToolbarSidePadding;
-        }
 
         mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
         mUnfocusedLocationBarLayoutLeft = leftViewBounds;
@@ -754,9 +713,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The width of the location bar when it has focus.
      */
     protected int getFocusedLocationBarWidth(int containerWidth, int priorVisibleWidth) {
-        int width = containerWidth - (2 * mToolbarSidePadding) + priorVisibleWidth
-                - mModernLocationBarExtraFocusedStartMargin - mLocationBarBackgroundPadding.left
-                - mLocationBarBackgroundPadding.right;
+        int width = containerWidth - (2 * mToolbarSidePadding) + priorVisibleWidth;
 
         return width;
     }
@@ -766,11 +723,11 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The left margin of the location bar when it has focus.
      */
     protected int getFocusedLocationBarLeftMargin(int priorVisibleWidth) {
-        int baseMargin = mToolbarSidePadding + mLocationBarBackgroundPadding.left;
+        int baseMargin = mToolbarSidePadding;
         if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
             return baseMargin;
         } else {
-            return baseMargin - priorVisibleWidth + mModernLocationBarExtraFocusedStartMargin;
+            return baseMargin - priorVisibleWidth;
         }
     }
 
@@ -968,19 +925,8 @@ public class ToolbarPhone extends ToolbarLayout
         // - The right most visible location bar child view.
         // - The bottom of the viewport is aligned with the bottom of the location bar.
         // Additional padding can be applied for use during animations.
-        int verticalMargin = getLocationBarBackgroundVerticalMargin();
-        out.set(leftViewPosition,
-                mLocationBar.getTop() + verticalMargin,
-                rightViewPosition,
-                mLocationBar.getBottom() - verticalMargin);
-    }
-
-    /**
-     * @return The vertical margin to apply to the location bar background. The margin is used to
-     *         clip the background.
-     */
-    protected int getLocationBarBackgroundVerticalMargin() {
-        return (int) ((mLocationBar.getHeight() - mModernLocationBarBackgroundHeight) / 2);
+        out.set(leftViewPosition, mLocationBar.getTop() + mLocationBarBackgroundVerticalInset,
+                rightViewPosition, mLocationBar.getBottom() - mLocationBarBackgroundVerticalInset);
     }
 
     /**
@@ -1108,14 +1054,10 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         float locationBarTranslationX;
-        // Get the padding straight from the location bar instead of
-        // |mLocationBarBackgroundPadding|, because it might be different in incognito mode.
         if (isLocationBarRtl) {
-            locationBarTranslationX = locationBarBaseTranslationX
-                    + mLocationBarNtpOffsetRight - mLocationBar.getPaddingRight();
+            locationBarTranslationX = locationBarBaseTranslationX + mLocationBarNtpOffsetRight;
         } else {
-            locationBarTranslationX = locationBarBaseTranslationX
-                    + mLocationBarNtpOffsetLeft + mLocationBar.getPaddingLeft();
+            locationBarTranslationX = locationBarBaseTranslationX + mLocationBarNtpOffsetLeft;
         }
 
         mLocationBar.setTranslationX(locationBarTranslationX);
@@ -1443,8 +1385,7 @@ public class ToolbarPhone extends ToolbarLayout
             canvas.save();
 
             int translationY = (int) mLocationBar.getTranslationY();
-            int clipTop = mLocationBarBackgroundBounds.top - mLocationBarBackgroundPadding.top
-                    + translationY;
+            int clipTop = mLocationBarBackgroundBounds.top + translationY;
             if (mUrlExpansionPercent != 0f && clipTop < child.getBottom()) {
                 // For other child views, use the inverse clipping of the URL viewport.
                 // Only necessary during animations.
@@ -1453,8 +1394,7 @@ public class ToolbarPhone extends ToolbarLayout
                 // location bar.
                 boolean isLeft = isChildLeft(child);
 
-                int clipBottom = mLocationBarBackgroundBounds.bottom
-                        + mLocationBarBackgroundPadding.bottom + translationY;
+                int clipBottom = mLocationBarBackgroundBounds.bottom + translationY;
                 boolean verticalClip = false;
                 if (translationY > 0f) {
                     clipTop = child.getTop();
@@ -1464,12 +1404,10 @@ public class ToolbarPhone extends ToolbarLayout
 
                 if (isLeft) {
                     int clipRight = verticalClip ? child.getMeasuredWidth()
-                            : mLocationBarBackgroundBounds.left
-                                    - mLocationBarBackgroundPadding.left;
+                                                 : mLocationBarBackgroundBounds.left;
                     canvas.clipRect(0, clipTop, clipRight, clipBottom);
                 } else {
-                    int clipLeft = verticalClip ? 0 : mLocationBarBackgroundBounds.right
-                            + mLocationBarBackgroundPadding.right;
+                    int clipLeft = verticalClip ? 0 : mLocationBarBackgroundBounds.right;
                     canvas.clipRect(clipLeft, clipTop, getMeasuredWidth(), clipBottom);
                 }
             }
@@ -1505,14 +1443,11 @@ public class ToolbarPhone extends ToolbarLayout
                             .markPendingBoundsUpdateFromToolbar();
                 }
                 mActiveLocationBarBackground.setBounds(
-                        mLocationBarBackgroundBounds.left + mLocationBarBackgroundNtpOffset.left
-                                - mLocationBarBackgroundPadding.left,
-                        mLocationBarBackgroundBounds.top + mLocationBarBackgroundNtpOffset.top
-                                - mLocationBarBackgroundPadding.top,
-                        mLocationBarBackgroundBounds.right + mLocationBarBackgroundNtpOffset.right
-                                + mLocationBarBackgroundPadding.right,
-                        mLocationBarBackgroundBounds.bottom + mLocationBarBackgroundNtpOffset.bottom
-                                + mLocationBarBackgroundPadding.bottom);
+                        mLocationBarBackgroundBounds.left + mLocationBarBackgroundNtpOffset.left,
+                        mLocationBarBackgroundBounds.top + mLocationBarBackgroundNtpOffset.top,
+                        mLocationBarBackgroundBounds.right + mLocationBarBackgroundNtpOffset.right,
+                        mLocationBarBackgroundBounds.bottom
+                                + mLocationBarBackgroundNtpOffset.bottom);
                 mActiveLocationBarBackground.draw(canvas);
             }
 
@@ -1528,7 +1463,7 @@ public class ToolbarPhone extends ToolbarLayout
             // When unexpanded, the location bar's visible content boundaries are inset from the
             // viewport used to draw the background.  During expansion transitions, compensation
             // is applied to increase the clip regions such that when the location bar converts
-            // to the narrower collapsed layout that the visible content is the same.
+            // to the narrower collapsed layout the visible content is the same.
             if (mUrlExpansionPercent != 1f) {
                 int leftDelta = mUnfocusedLocationBarLayoutLeft
                         - getViewBoundsLeftOfLocationBar(mVisualState);
@@ -1538,6 +1473,16 @@ public class ToolbarPhone extends ToolbarLayout
                 float inversePercent = 1f - mUrlExpansionPercent;
                 locationBarClipLeft += leftDelta * inversePercent;
                 locationBarClipRight -= rightDelta * inversePercent;
+
+                // When the defocus animation is running, the location bar padding needs to be
+                // subtracted from the clip bounds so that the location bar text width in the last
+                // frame of the animation matches the text width of the unfocused location bar.
+                if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
+                    locationBarClipLeft +=
+                            ViewCompat.getPaddingStart(mLocationBar) * inversePercent;
+                } else {
+                    locationBarClipRight -= ViewCompat.getPaddingEnd(mLocationBar) * inversePercent;
+                }
             }
 
             // Clip the location bar child to the URL viewport calculated in onDraw.
@@ -1660,15 +1605,6 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void getLocationBarContentRect(Rect outRect) {
         updateLocationBarBackgroundBounds(outRect, VisualState.NORMAL);
-        // Remove the insets for the composited version.
-        // TODO(mdjones): The image asset used to render the location bar in java is different
-        // from the one used in the compositor. The java asset has padding applied to both sides
-        // while the compositor one does not. The value manipulation here is to account for that
-        // difference. Instead we should just remove the padding from the toolbar asset, but
-        // there is much more overhead in updating the animations. Fix this once modern is the
-        // new default.
-        outRect.left -= mModernLocationBarLateralInset;
-        outRect.right += mModernLocationBarLateralInset;
     }
 
     @Override
