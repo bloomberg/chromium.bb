@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -20,9 +21,11 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +69,36 @@ scoped_refptr<Extension> CreateDummyExtension(const std::string& id) {
       .SetID(id)
       .Build();
 }
+
+class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
+ public:
+  explicit TestExtensionRegistryObserver(ExtensionRegistry* registry) {
+    extension_registry_observer_.Add(registry);
+  }
+
+  ~TestExtensionRegistryObserver() override = default;
+
+  const std::vector<std::string>& uninstalled_extension_ids() {
+    return uninstalled_extension_ids_;
+  }
+
+  void ResetResults() { uninstalled_extension_ids_.clear(); }
+
+  // ExtensionRegistryObserver
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              UninstallReason reason) override {
+    uninstalled_extension_ids_.push_back(extension->id());
+  }
+
+ private:
+  std::vector<std::string> uninstalled_extension_ids_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(TestExtensionRegistryObserver);
+};
 
 }  // namespace
 
@@ -135,6 +168,15 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     test_system->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                         profile()->GetPath(),
                                         false /* autoupdate_enabled */);
+
+    test_extension_registry_observer_ =
+        std::make_unique<TestExtensionRegistryObserver>(
+            ExtensionRegistry::Get(profile()));
+  }
+
+  void TearDown() override {
+    test_extension_registry_observer_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   std::unique_ptr<content::WebContents> CreateTestWebContents(
@@ -179,11 +221,19 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     last_app_id_ = app_id;
   }
 
+  void UninstallCallback(const GURL& url, bool successfully_uninstalled) {
+    uninstall_callback_url_ = url;
+    last_uninstall_successful_ = successfully_uninstalled;
+  }
+
  protected:
   void ResetResults() {
     install_callback_url_.reset();
     last_app_id_.reset();
     installation_task_run_count_ = 0;
+    uninstall_callback_url_.reset();
+    last_uninstall_successful_.reset();
+    test_extension_registry_observer_->ResetResults();
   }
 
   const PendingBookmarkAppManager::WebContentsFactory&
@@ -233,12 +283,34 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   // called. Reflects how many times we've tried to create an Extension.
   size_t installation_task_run_count() { return installation_task_run_count_; }
 
+  const GURL& uninstall_callback_url() {
+    return uninstall_callback_url_.value();
+  }
+
+  bool last_uninstall_successful() {
+    return last_uninstall_successful_.value();
+  }
+
+  size_t uninstalls_count() {
+    return test_extension_registry_observer_->uninstalled_extension_ids()
+        .size();
+  }
+
+  const std::vector<std::string>& uninstalled_extension_ids() {
+    return test_extension_registry_observer_->uninstalled_extension_ids();
+  }
+
  private:
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<GURL> install_callback_url_;
   base::Optional<std::string> last_app_id_;
   std::unique_ptr<web_app::PendingAppManager::AppInfo> last_app_info_;
   size_t installation_task_run_count_ = 0;
+
+  std::unique_ptr<TestExtensionRegistryObserver>
+      test_extension_registry_observer_;
+  base::Optional<GURL> uninstall_callback_url_;
+  base::Optional<bool> last_uninstall_successful_;
 
   PendingBookmarkAppManager::WebContentsFactory test_web_contents_creator_;
   PendingBookmarkAppManager::TaskFactory successful_installation_task_creator_;
@@ -807,6 +879,18 @@ TEST_F(PendingBookmarkAppManagerTest, ExtensionUninstalled) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   registry->RemoveEnabled(app_id);
 
+  // Trying to uninstall the app should fail and have no effect.
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(GURL(kFooWebAppUrl), uninstall_callback_url());
+  EXPECT_FALSE(last_uninstall_successful());
+  EXPECT_EQ(0u, uninstalls_count());
+
+  // Try to install the app again.
   pending_app_manager->Install(
       GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
@@ -841,6 +925,18 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
   registry->RemoveEnabled(app_id);
   ExtensionPrefs::Get(profile())->OnExtensionUninstalled(
       app_id, Manifest::EXTERNAL_POLICY, false /* external_uninstall */);
+  ResetResults();
+
+  // Trying to uninstall the app should fail and have no effect.
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(GURL(kFooWebAppUrl), uninstall_callback_url());
+  EXPECT_FALSE(last_uninstall_successful());
+  EXPECT_EQ(0u, uninstalls_count());
 
   pending_app_manager->Install(
       GetFooAppInfo(),
@@ -852,6 +948,140 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
   // again.
   EXPECT_EQ(0u, installation_task_run_count());
   EXPECT_FALSE(install_succeeded());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  pending_app_manager->Install(
+      GetFooAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  const std::string app_id = last_app_id();
+
+  ResetResults();
+
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+  // Uninstalling posts a task to the IO thread so we need to wait for all
+  // threads to finish.
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(GURL(kFooWebAppUrl), uninstall_callback_url());
+  EXPECT_TRUE(last_uninstall_successful());
+  EXPECT_EQ(1u, uninstalls_count());
+  EXPECT_EQ(std::vector<std::string>{app_id}, uninstalled_extension_ids());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  const std::string first_app_id = last_app_id();
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  const std::string second_app_id = last_app_id();
+
+  ResetResults();
+
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl), GURL(kBarWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+  // Uninstalling posts a task to the IO thread so we need to wait for all
+  // threads to finish.
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(last_uninstall_successful());
+  EXPECT_EQ(2u, uninstalls_count());
+  EXPECT_EQ(std::vector<std::string>({first_app_id, second_app_id}),
+            uninstalled_extension_ids());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, UninstallApps_PendingInstall) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  pending_app_manager->Install(
+      GetFooAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+
+  // Uninstallation runs synchronously and since the app was not installed yet
+  // it fails.
+  EXPECT_EQ(GURL(kFooWebAppUrl), uninstall_callback_url());
+  EXPECT_FALSE(last_uninstall_successful());
+  EXPECT_EQ(0u, uninstalls_count());
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  const std::string app_id = last_app_id();
+}
+
+// Tests that uninstalling an app doesn't remove all previously installed apps.
+TEST_F(PendingBookmarkAppManagerTest, UninstallApps_TwoPreviouslyInstalled) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  const std::string first_app_id = last_app_id();
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  const std::string second_app_id = last_app_id();
+
+  ResetResults();
+
+  pending_app_manager->UninstallApps(
+      std::vector<GURL>{GURL(kFooWebAppUrl)},
+      base::BindRepeating(&PendingBookmarkAppManagerTest::UninstallCallback,
+                          base::Unretained(this)));
+  // Uninstalling posts a task to the IO thread so we need to wait for all
+  // threads to finish.
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(last_uninstall_successful());
+  EXPECT_EQ(1u, uninstalls_count());
+  EXPECT_EQ(std::vector<std::string>({first_app_id}),
+            uninstalled_extension_ids());
 }
 
 }  // namespace extensions

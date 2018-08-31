@@ -9,14 +9,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 
 namespace extensions {
 
@@ -92,6 +96,40 @@ void PendingBookmarkAppManager::InstallApps(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void PendingBookmarkAppManager::UninstallApps(
+    std::vector<GURL> apps_to_uninstall,
+    const UninstallCallback& callback) {
+  for (auto& app_to_uninstall : apps_to_uninstall) {
+    base::Optional<std::string> extension_id =
+        extension_ids_map_.Lookup(app_to_uninstall);
+    if (!extension_id) {
+      callback.Run(app_to_uninstall, false);
+      continue;
+    }
+
+    base::Optional<bool> opt =
+        IsExtensionPresentAndInstalled(extension_id.value());
+    if (!opt.has_value() || !opt.value()) {
+      callback.Run(app_to_uninstall, false);
+      continue;
+    }
+
+    DCHECK(opt.value());
+    base::string16 error;
+    bool uninstalled =
+        ExtensionSystem::Get(profile_)->extension_service()->UninstallExtension(
+            extension_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
+            &error);
+
+    if (!uninstalled) {
+      LOG(WARNING) << "Couldn't uninstall app with url " << app_to_uninstall
+                   << ". " << error;
+    }
+
+    callback.Run(app_to_uninstall, uninstalled);
+  }
+}
+
 void PendingBookmarkAppManager::SetFactoriesForTesting(
     WebContentsFactory web_contents_factory,
     TaskFactory task_factory) {
@@ -102,13 +140,6 @@ void PendingBookmarkAppManager::SetFactoriesForTesting(
 void PendingBookmarkAppManager::SetTimerForTesting(
     std::unique_ptr<base::OneShotTimer> timer) {
   timer_ = std::move(timer);
-}
-
-void PendingBookmarkAppManager::UninstallApps(
-    std::vector<GURL> apps_to_uninstall,
-    const UninstallCallback& callback) {
-  // TODO(crbug.com/876174) implement this method.
-  NOTIMPLEMENTED();
 }
 
 // Returns (as the base::Optional part) whether or not there is already a known
