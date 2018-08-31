@@ -91,8 +91,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
                             shared_url_loader_factory_);
-    job->SetGaiaToken(kGaiaAuthToken);
-    job->SetOAuthToken(kOAuthToken);
+    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_register_request();
     job->SetRetryCallback(base::Bind(
@@ -106,7 +105,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job = service_->CreateJob(
         DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
         shared_url_loader_factory_);
-    job->SetGaiaToken(kGaiaAuthToken);
+    job->SetAuthData(DMAuth::FromGaiaToken(kGaiaAuthToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_register_request();
     job->SetRetryCallback(base::Bind(
@@ -120,7 +119,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT,
                             shared_url_loader_factory_);
-    job->SetEnrollmentToken(kEnrollmentToken);
+    job->SetAuthData(DMAuth::FromEnrollmentToken(kEnrollmentToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_register_request();
     job->SetRetryCallback(base::BindRepeating(
@@ -134,8 +133,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job = service_->CreateJob(
         DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
         shared_url_loader_factory_);
-    job->SetGaiaToken(kGaiaAuthToken);
-    job->SetOAuthToken(kOAuthToken);
+    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_service_api_access_request();
     job->SetRetryCallback(base::Bind(
@@ -149,7 +147,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
                             shared_url_loader_factory_);
-    job->SetDMToken(kDMToken);
+    job->SetAuthData(DMAuth::FromDMToken(kDMToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_unregister_request();
     job->SetRetryCallback(base::Bind(
@@ -163,8 +161,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                             shared_url_loader_factory_);
-    job->SetGaiaToken(kGaiaAuthToken);
-    job->SetOAuthToken(kOAuthToken);
+    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
     job->SetClientID(kClientID);
     em::PolicyFetchRequest* fetch_request =
         job->GetRequest()->mutable_policy_request()->add_request();
@@ -180,8 +177,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                             shared_url_loader_factory_);
-    job->SetGaiaToken(kGaiaAuthToken);
-    job->SetOAuthToken(kOAuthToken);
+    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
     job->SetClientID(kClientID);
     job->SetCritical(true);
     em::PolicyFetchRequest* fetch_request =
@@ -198,6 +194,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
                             shared_url_loader_factory_);
+    job->SetAuthData(DMAuth::NoAuth());
     job->SetClientID(kClientID);
     em::DeviceAutoEnrollmentRequest* request =
         job->GetRequest()->mutable_auto_enrollment_request();
@@ -214,7 +211,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job = service_->CreateJob(
         DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
         shared_url_loader_factory_);
-    job->SetDMToken(kDMToken);
+    job->SetAuthData(DMAuth::FromDMToken(kDMToken));
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_app_install_report_request();
     job->SetRetryCallback(base::BindRepeating(

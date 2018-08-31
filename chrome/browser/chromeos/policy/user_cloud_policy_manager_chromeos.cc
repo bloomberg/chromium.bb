@@ -43,6 +43,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
@@ -580,8 +581,9 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
             : em::DeviceRegisterRequest::LIFETIME_INDEFINITE;
     client()->Register(em::DeviceRegisterRequest::USER,
                        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-                       lifetime, em::LicenseType::UNDEFINED, policy_token,
-                       std::string(), std::string(), std::string());
+                       lifetime, em::LicenseType::UNDEFINED,
+                       DMAuth::FromOAuthToken(policy_token), std::string(),
+                       std::string(), std::string());
   } else {
     UMA_HISTOGRAM_ENUMERATION(kUMAInitialFetchOAuth2Error,
                               error.state(),

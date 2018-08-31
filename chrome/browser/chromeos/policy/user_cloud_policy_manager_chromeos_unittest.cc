@@ -202,7 +202,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     ASSERT_TRUE(policy_data_.SerializeToString(
         policy_response->mutable_policy_data()));
 
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(AnyNumber());
 
     AccountId account_id =
@@ -311,7 +311,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_FALSE(manager_->core()->client()->is_registered());
 
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(AnyNumber());
 
     return register_request;
@@ -331,7 +331,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_TRUE(manager_->core()->client()->is_registered());
 
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(AnyNumber());
 
     if (timeout) {
@@ -798,9 +798,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestLifetimeReportingRegular) {
   em::DeviceManagementRequest register_request;
 
   EXPECT_CALL(device_management_service_,
-              StartJob(dm_protocol::kValueRequestRegister, _, _, _, _, _))
+              StartJob(dm_protocol::kValueRequestRegister, _, _, _, _, _, _))
       .Times(AtMost(1))
-      .WillOnce(SaveArg<5>(&register_request));
+      .WillOnce(SaveArg<6>(&register_request));
 
   MockDeviceManagementJob* register_job = IssueOAuthToken(false);
   ASSERT_TRUE(register_job);
@@ -822,9 +822,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestLifetimeReportingEphemeralUser) {
   em::DeviceManagementRequest register_request;
 
   EXPECT_CALL(device_management_service_,
-              StartJob(dm_protocol::kValueRequestRegister, _, _, _, _, _))
+              StartJob(dm_protocol::kValueRequestRegister, _, _, _, _, _, _))
       .Times(AtMost(1))
-      .WillOnce(SaveArg<5>(&register_request));
+      .WillOnce(SaveArg<6>(&register_request));
 
   MockDeviceManagementJob* register_job = IssueOAuthToken(false);
   ASSERT_TRUE(register_job);

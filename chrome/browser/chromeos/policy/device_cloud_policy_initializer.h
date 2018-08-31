@@ -50,6 +50,7 @@ namespace policy {
 class DeviceCloudPolicyManagerChromeOS;
 class DeviceCloudPolicyStoreChromeOS;
 class DeviceManagementService;
+class DMAuth;
 struct EnrollmentConfig;
 class EnrollmentHandlerChromeOS;
 class EnrollmentStatus;
@@ -91,7 +92,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       DeviceManagementService* device_management_service,
       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
-      const std::string& auth_token,
+      std::unique_ptr<DMAuth> dm_auth,
       const EnrollmentCallback& enrollment_callback);
 
   // Starts enrollment using server-based license type selection.

@@ -60,6 +60,8 @@ source_set("internal") {
     "cloud/component_cloud_policy_updater.h",
     "cloud/device_management_service.cc",
     "cloud/device_management_service.h",
+    "cloud/dm_auth.cc",
+    "cloud/dm_auth.h",
     "cloud/enterprise_metrics.cc",
     "cloud/enterprise_metrics.h",
     "cloud/external_policy_data_fetcher.cc",
