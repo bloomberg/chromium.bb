@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -283,7 +284,8 @@ void AdvancedProtectionStatusManager::OnTokenRefreshDone(
     const GoogleServiceAuthError& error) {
   DCHECK(request == access_token_request_.get());
 
-  // TODO(jialiul): LOG success or error code via UMA.
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.AdvancedProtection.TokenFetchStatus",
+                            error.state(), GoogleServiceAuthError::NUM_STATES);
   access_token_request_.reset();
 
   // If failure is transient, we'll retry in 5 minutes.
