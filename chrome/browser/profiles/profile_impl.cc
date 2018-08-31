@@ -29,7 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -241,7 +241,7 @@ const char kPrefExitTypeCrashed[] = "Crashed";
 const char kPrefExitTypeSessionEnded[] = "SessionEnded";
 
 void CreateProfileReadme(const base::FilePath& profile_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath readme_path = profile_path.Append(chrome::kReadmeFilename);
   std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   std::string readme_text = base::StringPrintf(
