@@ -26,13 +26,9 @@ extern NSString* const kTabStripViewFrameDidChangeNotification;
 
 // View class for the tabstrip.  Contains one TabView per open tab and manages
 // tab overflow behavior.
-@interface TabStripView : UIScrollView {
- @private
-  id<TabStripViewLayoutDelegate> __weak layoutDelegate_;
-}
+@interface TabStripView : UIScrollView
 
-@property(nonatomic, readwrite, weak) id<TabStripViewLayoutDelegate>
-    layoutDelegate;
+@property(nonatomic, weak) id<TabStripViewLayoutDelegate> layoutDelegate;
 
 @end
 
