@@ -13,6 +13,7 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
+#include "components/mirroring/mojom/constants.mojom.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_streams_registry.h"
@@ -21,7 +22,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -86,7 +89,6 @@ content::DesktopMediaID BuildMediaIdForWebContents(
   return media_id;
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Clamped resolution constraint to the screen size.
 gfx::Size GetCaptureResolutionConstraint() {
   // Default resolution constraint.
@@ -117,7 +119,6 @@ gfx::Size GetCaptureResolutionConstraint() {
   clamped_height = std::max(clamped_height, height_step);
   return gfx::Size(clamped_width, clamped_height);
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -171,24 +172,36 @@ void CastMirroringServiceHost::GetForOffscreenTab(
 
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
-    : source_media_id_(source_media_id) {
+    : source_media_id_(source_media_id), resource_provider_binding_(this) {
   // Observe the target WebContents for Tab mirroring.
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
     Observe(GetContents(source_media_id_.web_contents_id));
 }
 
-CastMirroringServiceHost::~CastMirroringServiceHost() {
-  // TODO(xjz): Stop the mirroring if connected to the MirroringService.
-  // Implementation will be added in a later CL.
-}
+CastMirroringServiceHost::~CastMirroringServiceHost() {}
 
 void CastMirroringServiceHost::Start(
     mojom::SessionParametersPtr session_params,
     mojom::SessionObserverPtr observer,
     mojom::CastMessageChannelPtr outbound_channel,
     mojom::CastMessageChannelRequest inbound_channel) {
-  // TODO(xjz): Connect to the Mirroring Service and start a mirroring session.
-  // Implementation will be added in a later CL.
+  // Start() should not be called in the middle of a mirroring session.
+  if (mirroring_service_) {
+    LOG(WARNING) << "Unexpected Start() call during an active"
+                 << "mirroring session";
+    return;
+  }
+
+  // Connect to the Mirroring Service.
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(mojom::kServiceName, &mirroring_service_);
+  mojom::ResourceProviderPtr provider;
+  resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
+  mirroring_service_->Start(
+      std::move(session_params), GetCaptureResolutionConstraint(),
+      std::move(observer), std::move(provider), std::move(outbound_channel),
+      std::move(inbound_channel));
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
@@ -256,8 +269,8 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
 }
 
 void CastMirroringServiceHost::WebContentsDestroyed() {
-  // TODO(xjz): Stop the mirroring if connected to the MirroringService.
-  // Implementation will be added in a later CL.
+  audio_stream_creator_.reset();
+  mirroring_service_.reset();
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
