@@ -17313,6 +17313,14 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="WebManifestIcon">Icon listed in a Web Manifest.</int>
 </enum>
 
+<enum name="FCMInvalidationSubscriptionStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network failure"/>
+  <int value="2" label="Http failure"/>
+  <int value="3" label="Parsing failure"/>
+  <int value="4" label="Failed"/>
+</enum>
+
 <enum name="FeatureObserver">
 <!-- Generated from third_party/blink/public/platform/web_feature.mojom.-->
 
