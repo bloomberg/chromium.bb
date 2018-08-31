@@ -298,30 +298,33 @@ TEST_PPAPI_NACL(MAYBE_NACL_Graphics3D)
 TEST_PPAPI_NACL(ImageData)
 
 // TCPSocket and TCPSocketPrivate tests.
-#define RUN_TCPSOCKET_SUBTESTS \
-  RunTestViaHTTP( \
-      LIST_TEST(TCPSocket_Connect) \
-      LIST_TEST(TCPSocket_ReadWrite) \
-      LIST_TEST(TCPSocket_SetOption) \
-      LIST_TEST(TCPSocket_Listen) \
-      LIST_TEST(TCPSocket_Backlog) \
-      LIST_TEST(TCPSocket_Interface_1_0) \
-  )
+#define PPAPI_SOCKET_TEST(_test)                                         \
+  IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, _test) {                 \
+    RunTestViaHTTP(LIST_TEST(_test));                                    \
+  }                                                                      \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(_test)) { \
+    RunTestViaHTTP(LIST_TEST(_test));                                    \
+  }                                                                      \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(_test)) {       \
+    RunTestViaHTTP(LIST_TEST(_test));                                    \
+  }                                                                      \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(_test)) { \
+    RunTestViaHTTP(LIST_TEST(_test));                                    \
+  }                                                                      \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,                       \
+                         MAYBE_PNACL_NONSFI(_test)) {                    \
+    RunTestViaHTTP(LIST_TEST(_test));                                    \
+  }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
-  RUN_TCPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(TCPSocket)) {
-  RUN_TCPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(TCPSocket)) {
-  RUN_TCPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(TCPSocket)) {
-  RUN_TCPSOCKET_SUBTESTS;
-}
-
+// Split tests into multiple tests, making it easier to isolate which tests are
+// failing, and reducing chance of timeout.
+PPAPI_SOCKET_TEST(TCPSocket_Connect);
+PPAPI_SOCKET_TEST(TCPSocket_ReadWrite);
+PPAPI_SOCKET_TEST(TCPSocket_SetOption);
+PPAPI_SOCKET_TEST(TCPSocket_Listen);
+PPAPI_SOCKET_TEST(TCPSocket_Backlog);
+PPAPI_SOCKET_TEST(TCPSocket_Interface_1_0);
+PPAPI_SOCKET_TEST(TCPSocket_UnexpectedCalls);
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_NACL(TCPServerSocketPrivate)
@@ -349,34 +352,15 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
 
 // UDPSocket tests.
 
-#define UDPSOCKET_TEST(_test) \
-  IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, _test) { \
-    RunTestViaHTTP(LIST_TEST(_test)); \
-  } \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(_test)) { \
-    RunTestViaHTTP(LIST_TEST(_test)); \
-  } \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(_test)) { \
-    RunTestViaHTTP(LIST_TEST(_test)); \
-  } \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(_test)) { \
-    RunTestViaHTTP(LIST_TEST(_test)); \
-  } \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
-                         MAYBE_PNACL_NONSFI(_test)) { \
-    RunTestViaHTTP(LIST_TEST(_test)); \
-  }
-
-// Instead of one single test for all UDPSocket features (like it is done for
-// TCPSocket), split them into multiple, making it easier to isolate which tests
-// are failing.
-UDPSOCKET_TEST(UDPSocket_ReadWrite)
-UDPSOCKET_TEST(UDPSocket_SetOption)
-UDPSOCKET_TEST(UDPSocket_SetOption_1_0)
-UDPSOCKET_TEST(UDPSocket_SetOption_1_1)
-UDPSOCKET_TEST(UDPSocket_Broadcast)
-UDPSOCKET_TEST(UDPSocket_ParallelSend)
-UDPSOCKET_TEST(UDPSocket_Multicast)
+// Split tests into multiple tests, making it easier to isolate which tests are
+// failing.
+PPAPI_SOCKET_TEST(UDPSocket_ReadWrite)
+PPAPI_SOCKET_TEST(UDPSocket_SetOption)
+PPAPI_SOCKET_TEST(UDPSocket_SetOption_1_0)
+PPAPI_SOCKET_TEST(UDPSocket_SetOption_1_1)
+PPAPI_SOCKET_TEST(UDPSocket_Broadcast)
+PPAPI_SOCKET_TEST(UDPSocket_ParallelSend)
+PPAPI_SOCKET_TEST(UDPSocket_Multicast)
 
 // UDPSocketPrivate tests.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
