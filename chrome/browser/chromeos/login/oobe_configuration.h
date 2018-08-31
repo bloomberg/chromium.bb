@@ -42,6 +42,10 @@ class OobeConfiguration {
   // initialized yet.
   static OobeConfiguration* Get();
 
+  static void set_skip_check_for_testing(bool value) {
+    skip_check_for_testing_ = value;
+  }
+
  private:
   void OnConfigurationCheck(bool has_configuration,
                             const std::string& configuration);
@@ -51,6 +55,12 @@ class OobeConfiguration {
   // externally.
   // Instance is owned by ChromeSessionManager
   static OobeConfiguration* instance;
+
+  // Some tests might require setting some expectations before configuration is
+  // loaded. This field allows tests to skip actual configuration check in
+  // CheckConfiguration() call. Once all expectations are set, test should set
+  // this flag back to false and run CheckConfiguration() to proceed.
+  static bool skip_check_for_testing_;
 
   // Non-null dictionary value with configuration
   std::unique_ptr<base::Value> configuration_;

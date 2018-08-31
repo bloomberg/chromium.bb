@@ -107,7 +107,7 @@ cr.define('cr.ui.Oobe', function() {
 
     /**
      * Updates OOBE configuration when it is loaded.
-     * @param {dictionary} configuration OOBE configuration.
+     * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
     updateOobeConfiguration: function(configuration) {
       Oobe.getInstance().updateOobeConfiguration_(configuration);

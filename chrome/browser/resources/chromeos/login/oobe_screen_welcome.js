@@ -70,6 +70,13 @@ login.createScreen('WelcomeScreen', 'connect', function() {
       $('oobe-welcome-md').updateLocalizedContent();
     },
 
+    /** Called when OOBE configuration is loaded.
+     * @param {!OobeTypes.OobeConfiguration} configuration
+     */
+    updateOobeConfiguration: function(configuration) {
+      $('oobe-welcome-md').updateOobeConfiguration(configuration);
+    },
+
     /**
      * Updates "device in tablet mode" state when tablet mode is changed.
      * @param {Boolean} isInTabletMode True when in tablet mode.

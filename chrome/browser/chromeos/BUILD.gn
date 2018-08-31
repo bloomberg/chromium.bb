@@ -948,6 +948,8 @@ source_set("chromeos") {
     "login/auth/chrome_login_performer.h",
     "login/chrome_restart_request.cc",
     "login/chrome_restart_request.h",
+    "login/configuration_keys.cc",
+    "login/configuration_keys.h",
     "login/demo_mode/demo_app_launcher.cc",
     "login/demo_mode/demo_app_launcher.h",
     "login/demo_mode/demo_extensions_external_loader.cc",

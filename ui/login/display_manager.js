@@ -273,9 +273,9 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Stored OOBE configuration for newly registered screens.
-     * @type {dictionary}
+     * @type {!OobeTypes.OobeConfiguration}
      */
-    oobe_configuration_: {},
+    oobe_configuration_: undefined,
 
     /**
      * Detects multi-tap gesture that invokes demo mode setup in OOBE.
@@ -415,7 +415,7 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Returns current OOBE configuration.
-     * @return {dictionary}
+     * @return {!OobeTypes.OobeConfiguration}
      */
     getOobeConfiguration: function() {
       return this.oobe_configuration_;
@@ -783,8 +783,8 @@ cr.define('cr.ui.login', function() {
       $('header-sections').appendChild(header);
       this.appendButtons_(el.buttons, screenId);
 
-      if (el.updateOobeConfiguration)
-        el.updateOobeConfiguration(oobe_configuration_);
+      if (el.updateOobeConfiguration && this.oobe_configuration_)
+        el.updateOobeConfiguration(this.oobe_configuration_);
     },
 
     /**
@@ -866,16 +866,16 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Updates Oobe configuration for screens.
-     * @param {dictionary} configuration OOBE configuration.
+     * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
     updateOobeConfiguration_: function(configuration) {
+      this.oobe_configuration_ = configuration;
       for (let i = 0; i < this.screens_.length; ++i) {
         let screenId = this.screens_[i];
         var screen = $(screenId);
         if (screen.updateOobeConfiguration)
           screen.updateOobeConfiguration(configuration);
       }
-      this.oobe_configuration_ = configuration;
     },
 
     /**

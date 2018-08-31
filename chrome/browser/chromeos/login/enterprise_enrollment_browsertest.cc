@@ -11,13 +11,19 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
+#include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/upstart_client.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -358,6 +364,103 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };
 
+class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
+ public:
+  EnterpriseEnrollmentConfigurationTest() = default;
+
+  void StartWizard() {
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
+    ASSERT_TRUE(host != nullptr);
+    host->StartWizard(OobeScreen::SCREEN_OOBE_WELCOME);
+
+    // Make sure that OOBE is run as an "official" build.
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
+
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+
+    ASSERT_TRUE(WizardController::default_controller() != nullptr);
+    ASSERT_FALSE(StartupUtils::IsOobeCompleted());
+  }
+
+  void LoadConfiguration() {
+    OobeConfiguration::set_skip_check_for_testing(false);
+    // Make sure configuration is loaded
+    base::RunLoop run_loop;
+    OOBEConfigurationWaiter waiter;
+
+    OobeConfiguration::Get()->CheckConfiguration();
+
+    const bool ready = waiter.IsConfigurationLoaded(run_loop.QuitClosure());
+    if (!ready)
+      run_loop.Run();
+
+    // Let screens to settle.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void ResetHelper() { enrollment_screen()->enrollment_helper_.reset(); }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    OobeConfiguration::set_skip_check_for_testing(true);
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+
+    fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient();
+
+    dbus_setter->SetUpdateEngineClient(
+        std::unique_ptr<chromeos::UpdateEngineClient>(
+            fake_update_engine_client_));
+
+    EnterpriseEnrollmentTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    const ::testing::TestInfo* const test_info =
+        ::testing::UnitTest::GetInstance()->current_test_info();
+    const std::string filename = std::string(test_info->name()) + ".json";
+
+    // File name is based on the test name.
+    base::FilePath file;
+    ASSERT_TRUE(chromeos::test_utils::GetTestDataPath("oobe_configuration",
+                                                      filename, &file));
+
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
+                                   file);
+
+    EnterpriseEnrollmentTest::SetUpCommandLine(command_line);
+  }
+
+  // Overridden from InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    // Set up fake networks.
+    // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
+    // automatically (https://crbug.com/847422).
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->SetupDefaultEnvironment();
+
+    EnterpriseEnrollmentTest::SetUpOnMainThread();
+
+    // Make sure that OOBE is run as an "official" build.
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
+
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
+  }
+
+ protected:
+  // Owned by DBusThreadManagerSetter
+  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
+};
+
 // Shows the enrollment screen and simulates an enrollment complete event. We
 // verify that the enrollmenth helper receives the correct auth code.
 // Flaky on MSAN. https://crbug.com/876362
@@ -598,4 +701,47 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_screen()->enrollment_helper_.reset();
 }
 
+// Check that configuration lets correctly pass Welcome screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestLeaveWelcomeScreen) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that configuration lets correctly select a network by GUID.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectNetwork) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
+  UpdateEngineClient::Status status;
+  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
+  status.download_progress = 0.1;
+  fake_update_engine_client_->set_default_status(status);
+
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  EXPECT_TRUE(IsStepDisplayed("signin"));
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
 }  // namespace chromeos

@@ -5069,6 +5069,8 @@ static_library("test_support") {
       "chromeos/login/session/user_session_manager_test_api.h",
       "chromeos/login/test/js_checker.cc",
       "chromeos/login/test/js_checker.h",
+      "chromeos/login/test/oobe_configuration_waiter.cc",
+      "chromeos/login/test/oobe_configuration_waiter.h",
       "chromeos/login/test/oobe_screen_waiter.cc",
       "chromeos/login/test/oobe_screen_waiter.h",
       "chromeos/login/ui/fake_login_display_host.cc",

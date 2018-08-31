@@ -458,6 +458,7 @@ class WizardController : public BaseScreenDelegate,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 
   friend class DemoSetupTest;
+  friend class EnterpriseEnrollmentConfigurationTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;
