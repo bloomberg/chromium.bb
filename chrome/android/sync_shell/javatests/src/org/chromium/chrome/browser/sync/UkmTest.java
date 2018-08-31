@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
@@ -187,6 +188,7 @@ public class UkmTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/879248")
     public void singleDisableHistorySyncCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.SingleDisableHistorySyncCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
