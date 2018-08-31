@@ -56,6 +56,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
@@ -713,6 +714,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_);
     if (handler_registry)
       handler_registry->ClearUserDefinedHandlers(delete_begin_, delete_end_);
+
+    ChromeTranslateClient::CreateTranslatePrefs(prefs)
+        ->DeleteBlacklistedSitesBetween(delete_begin_, delete_end_);
 
 #if !defined(OS_ANDROID)
     content::HostZoomMap* zoom_map =

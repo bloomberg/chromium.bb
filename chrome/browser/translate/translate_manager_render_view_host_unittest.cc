@@ -1334,8 +1334,9 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(translate::TranslatePrefs::kPrefTranslateSiteBlacklist,
-                pref_callback_);
+  registrar.Add(
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated,
+      pref_callback_);
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(host));
@@ -1343,7 +1344,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
       ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated);
   translate_prefs->BlacklistSite(host);
   EXPECT_TRUE(translate_prefs->IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
@@ -1358,7 +1359,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
 
   // Remove the site from the blacklist.
   SetPrefObserverExpectation(
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated);
   translate_prefs->RemoveSiteFromBlacklist(host);
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
