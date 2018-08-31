@@ -26083,6 +26083,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Actions"/>
 </enum>
 
+<enum name="IOSTabSwitcherPageChangeInteraction">
+  <int value="0" label="Unknown Interaction"/>
+  <int value="1" label="Scroll View Drag"/>
+  <int value="2" label="Page Control Tap"/>
+  <int value="3" label="Page Control Drag"/>
+</enum>
+
 <enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError">
   <int value="0" label="DESTINATION_FOUND">
     The brokerable attachment had a valid destination. This is the success case.
