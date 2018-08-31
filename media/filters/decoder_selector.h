@@ -26,9 +26,8 @@ class CdmContext;
 class DecryptingDemuxerStream;
 class MediaLog;
 
-// DecoderSelector (creates if necessary and) initializes the proper
-// Decoder for a given DemuxerStream. If the given DemuxerStream is
-// encrypted, a DecryptingDemuxerStream may also be created.
+// DecoderSelector handles construction and initialization of Decoders for a
+// DemuxerStream, and maintains the state required for decoder fallback.
 // The template parameter |StreamType| is the type of stream we will be
 // selecting a decoder for.
 template<DemuxerStream::Type StreamType>
@@ -44,87 +43,76 @@ class MEDIA_EXPORT DecoderSelector {
   using CreateDecodersCB =
       base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
 
-  // Indicates completion of Decoder selection.
-  // - First parameter: The initialized Decoder. If it's set to NULL, then
-  // Decoder initialization failed.
-  // - Second parameter: The initialized DecryptingDemuxerStream. If it's not
-  // NULL, then a DecryptingDemuxerStream is created and initialized to do
-  // decryption for the initialized Decoder.
-  // Note: The caller owns selected Decoder and DecryptingDemuxerStream.
+  // Emits the result of a single call to SelectDecoder(). Parameters are
+  //   1: The initialized Decoder. nullptr if selection failed.
+  //   2: The initialized DecryptingDemuxerStream, if one was created. This
+  //      happens at most once for a DecoderSelector instance.
+  // The caller owns the Decoder and DecryptingDemuxerStream.
+  //
   // The caller should call DecryptingDemuxerStream::Reset() before
   // calling Decoder::Reset() to release any pending decryption or read.
   using SelectDecoderCB =
-      base::Callback<void(std::unique_ptr<Decoder>,
-                          std::unique_ptr<DecryptingDemuxerStream>)>;
+      base::OnceCallback<void(std::unique_ptr<Decoder>,
+                              std::unique_ptr<DecryptingDemuxerStream>)>;
 
-  DecoderSelector(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      CreateDecodersCB create_decoders_cb,
-      MediaLog* media_log);
+  DecoderSelector(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                  CreateDecodersCB create_decoders_cb,
+                  MediaLog* media_log);
 
-  // Aborts pending Decoder selection and fires |select_decoder_cb| with
-  // null and null immediately if it's pending.
+  // Aborts any pending decoder selection.
   ~DecoderSelector();
 
-  // Initializes and selects the first Decoder that can decode the |stream|.
-  // The selected Decoder (and DecryptingDemuxerStream) is returned via
-  // the |select_decoder_cb|.
-  // Notes:
-  // 1. This must not be called again before |select_decoder_cb| is run.
-  // 2. |create_decoders_cb| will be called to create a list of candidate
-  //    decoders to select from.
-  // 3. The |blacklisted_decoder| will be skipped in the decoder selection
-  //    process, unless DecryptingDemuxerStream is chosen. This is because
-  //    DecryptingDemuxerStream updates the |config_|, and the blacklist should
-  //    only be applied to the original |stream| config.
-  // 4. All decoders that are not selected will be deleted upon returning
-  //    |select_decoder_cb|.
-  // 5. |cdm_context| is optional. If |cdm_context| is null, no CDM will be
-  //    available to perform decryption.
-  void SelectDecoder(StreamTraits* traits,
-                     DemuxerStream* stream,
-                     CdmContext* cdm_context,
-                     const std::string& blacklisted_decoder,
-                     const SelectDecoderCB& select_decoder_cb,
-                     const typename Decoder::OutputCB& output_cb,
-                     const base::Closure& waiting_for_decryption_key_cb);
+  // Initialize with stream parameters. Should be called exactly once.
+  void Initialize(StreamTraits* traits,
+                  DemuxerStream* stream,
+                  CdmContext* cdm_context,
+                  base::RepeatingClosure waiting_for_decryption_key_cb);
+
+  // Selects and initializes a decoder, which will be returned via
+  // |select_decoder_cb| posted to |task_runner|. Subsequent calls to
+  // SelectDecoder() will return different decoder instances, until all
+  // potential decoders have been exhausted.
+  //
+  // When the caller determines that decoder selection has succeeded (eg.
+  // because the decoder decoded a frame successfully), it should call
+  // FinalizeDecoderSelection().
+  //
+  // Must not be called while another selection is pending.
+  void SelectDecoder(SelectDecoderCB select_decoder_cb,
+                     typename Decoder::OutputCB output_cb);
+
+  // Signals that decoder selection has been completed (successfully). Future
+  // calls to SelectDecoder() will select from the full list of decoders.
+  void FinalizeDecoderSelection();
 
  private:
   void InitializeDecoder();
-  void DecoderInitDone(bool success);
+  void OnDecoderInitializeDone(bool success);
   void ReturnNullDecoder();
   void InitializeDecryptingDemuxerStream();
-  void DecryptingDemuxerStreamInitDone(PipelineStatus status);
+  void OnDecryptingDemuxerStreamInitializeDone(PipelineStatus status);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CreateDecodersCB create_decoders_cb_;
   MediaLog* media_log_;
 
-  StreamTraits* traits_;
+  StreamTraits* traits_ = nullptr;
+  DemuxerStream* stream_ = nullptr;
+  CdmContext* cdm_context_ = nullptr;
+  base::RepeatingClosure waiting_for_decryption_key_cb_;
 
-  // Could be the |stream| passed in SelectDecoder, or |decrypted_stream_| when
-  // a DecryptingDemuxerStream is selected.
-  DemuxerStream* input_stream_ = nullptr;
-
-  CdmContext* cdm_context_;
-  std::string blacklisted_decoder_;
-  SelectDecoderCB select_decoder_cb_;
-  typename Decoder::OutputCB output_cb_;
-  base::Closure waiting_for_decryption_key_cb_;
-
+  // Overall decoder selection state.
+  DecoderConfig config_;
+  bool is_selecting_decoders_ = false;
   std::vector<std::unique_ptr<Decoder>> decoders_;
 
+  // State for a single SelectDecoder() invocation.
+  SelectDecoderCB select_decoder_cb_;
+  typename Decoder::OutputCB output_cb_;
   std::unique_ptr<Decoder> decoder_;
-  std::unique_ptr<DecryptingDemuxerStream> decrypted_stream_;
+  std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
-  // Config of the |input_stream| used to initialize decoders.
-  DecoderConfig config_;
-
-  // Indicates if we tried to initialize |decrypted_stream_|.
-  bool tried_decrypting_demuxer_stream_ = false;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<DecoderSelector> weak_ptr_factory_;
+  base::WeakPtrFactory<DecoderSelector> weak_this_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderSelector);
 };

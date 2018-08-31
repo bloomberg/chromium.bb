@@ -200,6 +200,12 @@ AudioDecoderConfig TestAudioConfig::Normal() {
                             Unencrypted());
 }
 
+AudioDecoderConfig TestAudioConfig::NormalEncrypted() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
+                            AesCtrEncryptionScheme());
+}
+
 // static
 AudioParameters TestAudioParameters::Normal() {
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,

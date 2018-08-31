@@ -57,6 +57,8 @@ class FakeVideoDecoder : public VideoDecoder {
   void Reset(const base::Closure& closure) override;
   int GetMaxDecodeRequests() const override;
 
+  base::WeakPtr<FakeVideoDecoder> GetWeakPtr();
+
   // Holds the next init/decode/reset callback from firing.
   void HoldNextInit();
   void HoldDecode();
