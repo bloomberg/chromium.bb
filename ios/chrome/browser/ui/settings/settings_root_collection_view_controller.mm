@@ -61,7 +61,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
         [UIColor groupTableViewBackgroundColor];
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
     self.styler.separatorColor = UIColorFromRGB(kUIKitSeparatorColor);
-    self.appBar.headerViewController.headerView.backgroundColor =
+    self.appBarViewController.headerView.backgroundColor =
         [UIColor groupTableViewBackgroundColor];
   } else {
     self.styler.cellStyle = MDCCollectionViewCellStyleCard;

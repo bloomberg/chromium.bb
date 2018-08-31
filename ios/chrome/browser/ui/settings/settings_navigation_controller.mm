@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
@@ -535,7 +536,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (UIViewController*)wrappedControllerIfNeeded:(UIViewController*)controller {
   // If the controller can't be presented with an app bar, it needs to be
   // wrapped in an MDCAppBarContainerViewController.
-  if (![controller conformsToProtocol:@protocol(AppBarPresenting)]) {
+  if (![controller conformsToProtocol:@protocol(AppBarPresenting)] &&
+      ![controller
+          conformsToProtocol:@protocol(AppBarViewControllerPresenting)]) {
     MDCAppBarContainerViewController* appBarContainer =
         [[SettingsAppBarContainerViewController alloc]
             initWithContentViewController:controller];
