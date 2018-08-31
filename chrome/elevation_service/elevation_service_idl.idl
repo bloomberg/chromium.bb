@@ -14,11 +14,13 @@ import "ocidl.idl";
 ]
 interface IElevator : IUnknown
 {
-  // Returns the class factory for a specific elevator.
-  //
-  // @param elevator_id Unique id for the elevator.
-  HRESULT GetElevatorFactory([in, string] const WCHAR* elevator_id,
-                             [out] IClassFactory** factory);
+  // Elevators are exposed as methods on IElevator, and provide High Integrity
+  // actions. Any changes to add or change a method in IElevator will require a
+  // security review.
+  // ...
+  // For example, a method might be:
+  // HRESULT CopyAndVerifyComponent([in] BSTR component_id);
+  // ...
 };
 
 [
