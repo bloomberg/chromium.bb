@@ -7,11 +7,13 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/mirroring/mojom/mirroring_service.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 // TODO(https://crbug.com/879012): Remove the build flag. OffscreenTab should
 // not only be defined when extension is enabled.
@@ -29,8 +31,6 @@ namespace mirroring {
 
 // CastMirroringServiceHost starts/stops a mirroring session through Mirroring
 // Service, and provides the resources to the Mirroring Service as requested.
-//
-// TODO(xjz): Adds the implementation to connect to Mirroring Service.
 class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
                                        public mojom::ResourceProvider,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -95,6 +95,14 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // Describes the media source for this mirroring session.
   content::DesktopMediaID source_media_id_;
 
+  // The binding to this mojom::ResourceProvider implementation.
+  mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
+
+  // The Mojo pointer that will be bound to mojom::MirroringService
+  // implementation.
+  mojom::MirroringServicePtr mirroring_service_;
+
+  // Used to create an audio loopback stream through the Audio Service.
   std::unique_ptr<content::AudioLoopbackStreamCreator> audio_stream_creator_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
