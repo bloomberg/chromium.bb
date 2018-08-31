@@ -45,7 +45,7 @@ bool PositionWindowInScreenCoordinates(Widget* widget,
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
     : native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidget(this, parent)) {}
+      bridge_impl_(new BridgedNativeWidget(this, this, parent)) {}
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // Destroy the bridge first to prevent any calls back into this during
@@ -268,11 +268,31 @@ gfx::Rect BridgedNativeWidgetHostImpl::GetRestoredBounds() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHost:
+// BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHostHelper:
 
 NSView* BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
   return root_view_ ? root_view_->GetNativeViewAccessible() : nil;
 }
+
+void BridgedNativeWidgetHostImpl::DispatchKeyEvent(ui::KeyEvent* event) {
+  ignore_result(
+      root_view_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event));
+}
+
+bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
+    ui::KeyEvent* event) {
+  MenuController* menu_controller = MenuController::GetActiveInstance();
+  if (menu_controller && root_view_ &&
+      menu_controller->owner() == root_view_->GetWidget()) {
+    return menu_controller->OnWillDispatchKeyEvent(event) ==
+           ui::POST_DISPATCH_NONE;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidgetHostImpl,
+// views_bridge_mac::mojom::BridgedNativeWidgetHost:
 
 void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
   is_visible_ = window_visible;
@@ -290,53 +310,43 @@ void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
 }
 
 void BridgedNativeWidgetHostImpl::OnScrollEvent(
-    const ui::ScrollEvent& const_event) {
-  ui::ScrollEvent event = const_event;
-  root_view_->GetWidget()->OnScrollEvent(&event);
+    std::unique_ptr<ui::Event> event) {
+  root_view_->GetWidget()->OnScrollEvent(event->AsScrollEvent());
 }
 
 void BridgedNativeWidgetHostImpl::OnMouseEvent(
-    const ui::MouseEvent& const_event) {
-  ui::MouseEvent event = const_event;
-  root_view_->GetWidget()->OnMouseEvent(&event);
+    std::unique_ptr<ui::Event> event) {
+  root_view_->GetWidget()->OnMouseEvent(event->AsMouseEvent());
 }
 
 void BridgedNativeWidgetHostImpl::OnGestureEvent(
-    const ui::GestureEvent& const_event) {
-  ui::GestureEvent event = const_event;
-  root_view_->GetWidget()->OnGestureEvent(&event);
+    std::unique_ptr<ui::Event> event) {
+  root_view_->GetWidget()->OnGestureEvent(event->AsGestureEvent());
 }
 
-void BridgedNativeWidgetHostImpl::DispatchKeyEvent(
-    const ui::KeyEvent& const_event,
+bool BridgedNativeWidgetHostImpl::DispatchKeyEventRemote(
+    std::unique_ptr<ui::Event> event,
     bool* event_handled) {
-  ui::KeyEvent event = const_event;
-  ignore_result(
-      root_view_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event));
-  *event_handled = event.handled();
+  DispatchKeyEvent(event->AsKeyEvent());
+  *event_handled = event->handled();
+  return true;
 }
 
-void BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
-    const ui::KeyEvent& const_event,
+bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuControllerRemote(
+    std::unique_ptr<ui::Event> event,
     bool* event_swallowed,
     bool* event_handled) {
-  ui::KeyEvent event = const_event;
-  MenuController* menu_controller = MenuController::GetActiveInstance();
-  if (menu_controller && root_view_ &&
-      menu_controller->owner() == root_view_->GetWidget()) {
-    *event_swallowed = menu_controller->OnWillDispatchKeyEvent(&event) ==
-                       ui::POST_DISPATCH_NONE;
-  } else {
-    *event_swallowed = false;
-  }
-  *event_handled = event.handled();
+  *event_swallowed = DispatchKeyEventToMenuController(event->AsKeyEvent());
+  *event_handled = event->handled();
+  return true;
 }
 
-void BridgedNativeWidgetHostImpl::GetHasMenuController(
+bool BridgedNativeWidgetHostImpl::GetHasMenuController(
     bool* has_menu_controller) {
   MenuController* menu_controller = MenuController::GetActiveInstance();
   *has_menu_controller = menu_controller && root_view_ &&
                          menu_controller->owner() == root_view_->GetWidget();
+  return true;
 }
 
 void BridgedNativeWidgetHostImpl::SetViewSize(const gfx::Size& new_size) {
@@ -364,15 +374,16 @@ void BridgedNativeWidgetHostImpl::OnMouseCaptureActiveChanged(bool is_active) {
     native_widget_mac_->GetWidget()->OnMouseCaptureLost();
 }
 
-void BridgedNativeWidgetHostImpl::GetIsDraggableBackgroundAt(
+bool BridgedNativeWidgetHostImpl::GetIsDraggableBackgroundAt(
     const gfx::Point& location_in_content,
     bool* is_draggable_background) {
   int component =
       root_view_->GetWidget()->GetNonClientComponent(location_in_content);
   *is_draggable_background = component == HTCAPTION;
+  return true;
 }
 
-void BridgedNativeWidgetHostImpl::GetTooltipTextAt(
+bool BridgedNativeWidgetHostImpl::GetTooltipTextAt(
     const gfx::Point& location_in_content,
     base::string16* new_tooltip_text) {
   views::View* view =
@@ -384,6 +395,7 @@ void BridgedNativeWidgetHostImpl::GetTooltipTextAt(
     if (!view->GetTooltipText(view_point, new_tooltip_text))
       DCHECK(new_tooltip_text->empty());
   }
+  return true;
 }
 
 void BridgedNativeWidgetHostImpl::GetWordAt(
@@ -414,16 +426,18 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
   *found_word = true;
 }
 
-void BridgedNativeWidgetHostImpl::GetWidgetIsModal(bool* widget_is_modal) {
+bool BridgedNativeWidgetHostImpl::GetWidgetIsModal(bool* widget_is_modal) {
   *widget_is_modal = native_widget_mac_->GetWidget()->IsModal();
+  return true;
 }
 
-void BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
+bool BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
   views::FocusManager* focus_manager =
       root_view_ ? root_view_->GetWidget()->GetFocusManager() : nullptr;
   *is_textual = focus_manager && focus_manager->GetFocusedView() &&
                 focus_manager->GetFocusedView()->GetClassName() ==
                     views::Label::kViewClassName;
+  return true;
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
@@ -542,7 +556,7 @@ void BridgedNativeWidgetHostImpl::DoDialogButtonAction(
   }
 }
 
-void BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
+bool BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
     ui::DialogButton button,
     bool* button_exists,
     base::string16* button_label,
@@ -552,17 +566,94 @@ void BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
   ui::DialogModel* model =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
   if (!model || !(model->GetDialogButtons() & button))
-    return;
+    return true;
   *button_exists = true;
   *button_label = model->GetDialogButtonLabel(button);
   *is_button_enabled = model->IsDialogButtonEnabled(button);
   *is_button_default = button == model->GetDefaultDialogButton();
+  return true;
 }
 
-void BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
+bool BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
   ui::DialogModel* model =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
   *buttons_exist = model && model->GetDialogButtons();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidgetHostImpl,
+// views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
+
+void BridgedNativeWidgetHostImpl::DispatchKeyEventRemote(
+    std::unique_ptr<ui::Event> event,
+    DispatchKeyEventRemoteCallback callback) {
+  bool event_handled = false;
+  DispatchKeyEventRemote(std::move(event), &event_handled);
+  std::move(callback).Run(event_handled);
+}
+
+void BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuControllerRemote(
+    std::unique_ptr<ui::Event> event,
+    DispatchKeyEventToMenuControllerRemoteCallback callback) {
+  ui::KeyEvent* key_event = event->AsKeyEvent();
+  bool event_swallowed = DispatchKeyEventToMenuController(key_event);
+  std::move(callback).Run(event_swallowed, key_event->handled());
+}
+
+void BridgedNativeWidgetHostImpl::GetHasMenuController(
+    GetHasMenuControllerCallback callback) {
+  bool has_menu_controller = false;
+  GetHasMenuController(&has_menu_controller);
+  std::move(callback).Run(has_menu_controller);
+}
+
+void BridgedNativeWidgetHostImpl::GetIsDraggableBackgroundAt(
+    const gfx::Point& location_in_content,
+    GetIsDraggableBackgroundAtCallback callback) {
+  bool is_draggable_background = false;
+  GetIsDraggableBackgroundAt(location_in_content, &is_draggable_background);
+  std::move(callback).Run(is_draggable_background);
+}
+
+void BridgedNativeWidgetHostImpl::GetTooltipTextAt(
+    const gfx::Point& location_in_content,
+    GetTooltipTextAtCallback callback) {
+  base::string16 new_tooltip_text;
+  GetTooltipTextAt(location_in_content, &new_tooltip_text);
+  std::move(callback).Run(new_tooltip_text);
+}
+
+void BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(
+    GetIsFocusedViewTextualCallback callback) {
+  bool is_textual = false;
+  GetIsFocusedViewTextual(&is_textual);
+  std::move(callback).Run(is_textual);
+}
+
+void BridgedNativeWidgetHostImpl::GetWidgetIsModal(
+    GetWidgetIsModalCallback callback) {
+  bool widget_is_modal = false;
+  GetWidgetIsModal(&widget_is_modal);
+  std::move(callback).Run(widget_is_modal);
+}
+
+void BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
+    ui::DialogButton button,
+    GetDialogButtonInfoCallback callback) {
+  bool exists = false;
+  base::string16 label;
+  bool is_enabled = false;
+  bool is_default = false;
+  GetDialogButtonInfo(button, &exists, &label, &is_enabled, &is_default);
+  std::move(callback).Run(exists, label, is_enabled, is_default);
+}
+
+void BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(
+    GetDoDialogButtonsExistCallback callback) {
+  bool buttons_exist = false;
+  GetDoDialogButtonsExist(&buttons_exist);
+  std::move(callback).Run(buttons_exist);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

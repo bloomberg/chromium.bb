@@ -9,11 +9,14 @@ mojom("mojo") {
 
   sources = [
     "mojo/bridged_native_widget.mojom",
+    "mojo/bridged_native_widget_host.mojom",
   ]
 
   public_deps = [
     "//mojo/public/mojom/base",
     "//ui/base/mojo",
+    "//ui/display/mojo:interfaces",
+    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]

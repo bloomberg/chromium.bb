@@ -11,6 +11,7 @@
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/cocoa/bridged_native_widget_host.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
 
