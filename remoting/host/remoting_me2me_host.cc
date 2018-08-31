@@ -1425,7 +1425,7 @@ void HostProcess::InitializeSignaling() {
 
   // Create SignalingConnector.
   std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker(
-      new DnsBlackholeChecker(context_->url_request_context_getter(),
+      new DnsBlackholeChecker(context_->url_loader_factory(),
                               talkgadget_prefix_));
   std::unique_ptr<OAuthTokenGetter::OAuthAuthorizationCredentials>
       oauth_credentials(new OAuthTokenGetter::OAuthAuthorizationCredentials(

@@ -5,14 +5,12 @@
 #ifndef REMOTING_HOST_DNS_BLACKHOLE_CHECKER_H_
 #define REMOTING_HOST_DNS_BLACKHOLE_CHECKER_H_
 
-#include "net/url_request/url_fetcher_delegate.h"
-
 #include "base/callback.h"
 #include "base/macros.h"
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace remoting {
 
@@ -21,15 +19,12 @@ namespace remoting {
 // to change the prefix that is used.
 extern const char kDefaultHostTalkGadgetPrefix[];
 
-class DnsBlackholeChecker : public net::URLFetcherDelegate {
+class DnsBlackholeChecker {
  public:
   DnsBlackholeChecker(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::string talkgadget_prefix);
-  ~DnsBlackholeChecker() override;
-
-  // net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  ~DnsBlackholeChecker();
 
   // Initiates a check the verify that the host talkgadget has not been "DNS
   // blackholed" to prevent connections. If this is called again before the
@@ -37,11 +32,13 @@ class DnsBlackholeChecker : public net::URLFetcherDelegate {
   void CheckForDnsBlackhole(const base::Callback<void(bool)>& callback);
 
  private:
-  // URL request context getter to use to create the URL fetcher.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
-  // URL fetcher used to verify access to the host talkgadget.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // URL loader factory used to use to create the URL loader.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // URL loader used to verify access to the host talkgadget.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // The string pre-pended to '.talkgadget.google.com' to create the full
   // talkgadget domain name for the host.
