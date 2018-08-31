@@ -2882,7 +2882,6 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTabSwitchSuggestions",
                         "OmniboxTailSuggestions",
-                        "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
                         "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
                         "OmniboxUIExperimentVerticalMargin",
