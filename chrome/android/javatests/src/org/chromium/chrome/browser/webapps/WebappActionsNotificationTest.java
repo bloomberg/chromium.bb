@@ -34,8 +34,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for a standalone Web App notification governed by {@link WebappActionsNotificationManager}.

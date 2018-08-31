@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;

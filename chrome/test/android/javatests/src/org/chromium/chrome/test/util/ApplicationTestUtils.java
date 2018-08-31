@@ -25,9 +25,9 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.test.util.Coordinates;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Coordinates;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

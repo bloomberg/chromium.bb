@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrIntentUtils;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;

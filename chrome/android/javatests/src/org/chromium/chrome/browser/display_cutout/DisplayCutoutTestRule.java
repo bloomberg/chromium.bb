@@ -20,11 +20,11 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;

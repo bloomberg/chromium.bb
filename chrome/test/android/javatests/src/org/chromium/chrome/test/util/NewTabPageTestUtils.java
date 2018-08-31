@@ -10,8 +10,8 @@ import android.os.Build;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Utilities for testing the NTP.

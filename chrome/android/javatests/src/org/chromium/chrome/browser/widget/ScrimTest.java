@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
 

@@ -26,7 +26,7 @@ import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
-import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.content_public.browser.test.util.UiUtils;
 
 /**
  * Test class for {@link DistilledPagePrefs}.

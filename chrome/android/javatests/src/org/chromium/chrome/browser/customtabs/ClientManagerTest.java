@@ -27,9 +27,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)

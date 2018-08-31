@@ -12,10 +12,10 @@ import org.chromium.base.Log;
 import org.chromium.base.test.SetUpStatement;
 import org.chromium.base.test.SetUpTestRule;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 

@@ -65,9 +65,9 @@ import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 

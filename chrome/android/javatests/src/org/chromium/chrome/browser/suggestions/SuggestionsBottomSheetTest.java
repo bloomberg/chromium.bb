@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;

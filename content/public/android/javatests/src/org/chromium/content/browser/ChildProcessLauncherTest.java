@@ -22,9 +22,9 @@ import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 import org.chromium.content_shell_apk.IChildProcessTest;
 

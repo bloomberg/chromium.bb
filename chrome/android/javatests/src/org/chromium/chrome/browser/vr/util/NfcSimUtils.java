@@ -13,7 +13,7 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

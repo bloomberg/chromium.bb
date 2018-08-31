@@ -15,9 +15,9 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.HistoryUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.HistoryUtils;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 
 /**
  * Tests for a wanted clearHistory method.

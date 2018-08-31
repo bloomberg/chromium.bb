@@ -23,10 +23,10 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 

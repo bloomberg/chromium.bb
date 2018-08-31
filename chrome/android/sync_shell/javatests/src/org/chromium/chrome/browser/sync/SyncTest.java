@@ -31,8 +31,8 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Test suite for Sync.

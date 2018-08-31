@@ -25,8 +25,8 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;

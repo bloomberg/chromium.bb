@@ -15,9 +15,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.content.browser.test.mock.MockRenderFrameHost;
-import org.chromium.content.browser.test.mock.MockWebContents;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.mock.MockRenderFrameHost;
+import org.chromium.content_public.browser.test.mock.MockWebContents;
 
 import java.util.concurrent.ExecutionException;
 

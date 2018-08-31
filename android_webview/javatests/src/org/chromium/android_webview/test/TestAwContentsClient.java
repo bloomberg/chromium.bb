@@ -15,11 +15,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;

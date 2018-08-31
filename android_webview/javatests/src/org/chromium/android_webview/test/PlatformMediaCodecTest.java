@@ -15,8 +15,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 
 /**
  * Test that a page with a non-Chrome media codec can playback correctly; this

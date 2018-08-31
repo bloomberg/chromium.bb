@@ -23,8 +23,8 @@ import org.chromium.android_webview.test.util.CookieUtils.TestCallback;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;

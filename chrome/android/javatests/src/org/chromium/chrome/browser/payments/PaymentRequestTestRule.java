@@ -34,10 +34,10 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestOb
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.widget.prefeditor.EditorTextField;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;

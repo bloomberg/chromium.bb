@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * End-to-end tests for Daydream controller input while in the VR browser.

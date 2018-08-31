@@ -22,9 +22,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;

@@ -21,13 +21,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content.R;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.concurrent.TimeoutException;
 

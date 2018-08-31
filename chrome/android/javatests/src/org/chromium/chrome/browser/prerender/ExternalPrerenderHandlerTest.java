@@ -24,9 +24,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;

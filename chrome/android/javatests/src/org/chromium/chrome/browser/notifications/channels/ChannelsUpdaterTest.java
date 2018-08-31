@@ -31,7 +31,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -38,9 +38,9 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.net.HttpURLConnection;

@@ -17,8 +17,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Tests the InstallerDelegate to make sure that it functions correctly and responds to changes

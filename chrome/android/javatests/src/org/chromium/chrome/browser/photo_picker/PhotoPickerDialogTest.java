@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.PhotoPickerListener;
 
 import java.util.ArrayList;

@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionsList;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.ArrayList;
 import java.util.HashMap;

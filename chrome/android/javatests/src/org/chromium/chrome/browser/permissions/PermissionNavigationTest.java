@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.permissions.PermissionTestRule.DialogShownCri
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Test suite for interaction between permissions requests and navigation.

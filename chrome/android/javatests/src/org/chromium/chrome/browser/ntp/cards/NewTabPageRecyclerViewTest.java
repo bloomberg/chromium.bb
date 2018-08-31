@@ -53,8 +53,8 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 

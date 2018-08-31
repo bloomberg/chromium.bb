@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
 

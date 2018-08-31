@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for the NotificationsPreferences.

@@ -31,8 +31,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.TestContentProvider;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;

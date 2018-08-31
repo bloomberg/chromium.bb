@@ -47,9 +47,9 @@ import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;

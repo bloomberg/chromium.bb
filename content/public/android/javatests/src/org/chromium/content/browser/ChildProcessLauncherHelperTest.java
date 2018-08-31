@@ -31,10 +31,10 @@ import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.ChildProcessAllocatorSettings;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 

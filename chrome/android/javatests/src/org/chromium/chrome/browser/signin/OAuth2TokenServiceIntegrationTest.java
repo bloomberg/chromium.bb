@@ -26,7 +26,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
  * Integration test for the OAuth2TokenService.

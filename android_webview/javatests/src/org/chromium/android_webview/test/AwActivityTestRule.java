@@ -30,10 +30,10 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.InMemorySharedPreferences;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;

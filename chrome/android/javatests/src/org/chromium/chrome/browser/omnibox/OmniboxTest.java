@@ -54,11 +54,11 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResultBuilder;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestSuggestionResultsBuilder;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.KeyUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.KeyUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 

@@ -23,8 +23,8 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.List;

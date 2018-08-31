@@ -38,9 +38,9 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.ExecutionException;
