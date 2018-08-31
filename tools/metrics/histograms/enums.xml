@@ -25828,7 +25828,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="BLE not present"/>
   <int value="10" label="WiFi not present"/>
   <int value="11" label="Suspended"/>
-  <int value="12" label="MultiDevice host unverified"/>
+  <int value="12" label="Better Together suite disabled"/>
 </enum>
 
 <enum name="InstantTethering_HostScanResult">
@@ -25858,6 +25858,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Wi-Fi disabled"/>
   <int value="9" label="Bluetooth controller disappeared"/>
   <int value="10" label="MultiDevice host unverified"/>
+  <int value="11" label="Better Together suite disabled"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">

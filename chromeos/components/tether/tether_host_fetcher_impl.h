@@ -93,6 +93,7 @@ class TetherHostFetcherImpl
 
  private:
   void CacheCurrentTetherHosts();
+  cryptauth::RemoteDeviceRefList GenerateHostDeviceList();
 
   cryptauth::RemoteDeviceProvider* remote_device_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;
