@@ -27,7 +27,7 @@ class MESSAGE_CENTER_EXPORT MessageViewFactory {
   typedef base::Callback<std::unique_ptr<MessageView>(const Notification&)>
       CustomMessageViewFactoryFunction;
 
-  static MessageView* Create(const Notification& notification, bool top_level);
+  static MessageView* Create(const Notification& notification);
 
   // Sets the function that will be invoked to create a custom notification
   // view. This should be a repeating callback. It's an error to attempt to show

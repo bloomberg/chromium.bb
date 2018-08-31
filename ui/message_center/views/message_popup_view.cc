@@ -31,7 +31,7 @@ namespace message_center {
 MessagePopupView::MessagePopupView(const Notification& notification,
                                    PopupAlignmentDelegate* alignment_delegate,
                                    MessagePopupCollection* popup_collection)
-    : message_view_(MessageViewFactory::Create(notification, true)),
+    : message_view_(MessageViewFactory::Create(notification)),
       alignment_delegate_(alignment_delegate),
       popup_collection_(popup_collection),
       a11y_feedback_on_init_(

@@ -559,8 +559,9 @@ void MessageCenterView::OnViewPreferredSizeChanged(views::View* observed_view) {
 
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
-  MessageView* view = message_center::MessageViewFactory::Create(
-      notification, false);  // Not top-level.
+  MessageView* view = message_center::MessageViewFactory::Create(notification);
+  // Not top-level.
+  view->SetIsNested();
   view->AddObserver(this);
   view->set_scroller(scroller_);
   message_list_view_->AddNotificationAt(view, index);

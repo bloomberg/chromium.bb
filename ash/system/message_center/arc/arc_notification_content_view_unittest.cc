@@ -169,7 +169,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
   CreateNotificationView(const Notification& notification) {
     std::unique_ptr<ArcNotificationView> notification_view(
         static_cast<ArcNotificationView*>(
-            message_center::MessageViewFactory::Create(notification, true)));
+            message_center::MessageViewFactory::Create(notification)));
     notification_view->set_owned_by_client();
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

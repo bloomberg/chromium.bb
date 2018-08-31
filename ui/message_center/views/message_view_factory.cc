@@ -12,10 +12,6 @@
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/notification_view_md.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/shell.h"
-#endif
-
 namespace message_center {
 
 namespace {
@@ -26,8 +22,7 @@ base::LazyInstance<MessageViewFactory::CustomMessageViewFactoryFunction>::Leaky
 }  // namespace
 
 // static
-MessageView* MessageViewFactory::Create(const Notification& notification,
-                                        bool top_level) {
+MessageView* MessageViewFactory::Create(const Notification& notification) {
   MessageView* notification_view = nullptr;
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
@@ -56,21 +51,6 @@ MessageView* MessageViewFactory::Create(const Notification& notification,
                    << ". Falling back to simple notification type.";
       notification_view = new NotificationView(notification);
   }
-
-#if defined(OS_LINUX)
-  // Don't create shadows for notification toasts on Linux or CrOS.
-  if (top_level)
-    return notification_view;
-#endif
-
-#if defined(OS_WIN)
-  // Don't create shadows for notifications on Windows under classic theme.
-  if (top_level && !ui::win::IsAeroGlassEnabled()) {
-    return notification_view;
-  }
-#endif  // OS_WIN
-
-  notification_view->SetIsNested();
   return notification_view;
 }
 
