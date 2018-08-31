@@ -31,6 +31,8 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
+    "audio_sandbox_win.cc",
+    "audio_sandbox_win.h",
     "debug_recording.cc",
     "debug_recording.h",
     "delay_buffer.cc",
@@ -104,25 +106,9 @@ source_set("lib") {
     "//services/service_manager/sandbox:sandbox",
   ]
 
-  if (is_linux) {
-    sources += [
-      "audio_sandbox_hook_linux.cc",
-      "audio_sandbox_hook_linux.h",
-    ]
-    public_deps += [ "//sandbox/linux:sandbox_services" ]
-  }
-
   if (is_win) {
-    sources += [
-      "audio_sandbox_win.cc",
-      "audio_sandbox_win.h",
-    ]
     public_deps += [ "//sandbox/win:sandbox" ]
   }
-  configs += [
-    "//media:media_config",
-    "//media/audio:platform_config",
-  ]
 }
 
 source_set("tests") {

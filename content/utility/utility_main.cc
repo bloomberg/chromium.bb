@@ -20,7 +20,6 @@
 #include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_LINUX)
-#include "services/audio/audio_sandbox_hook_linux.h"
 #include "services/network/network_sandbox_hook_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
@@ -72,14 +71,10 @@ int UtilityMain(const MainFunctionParams& parameters) {
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(parameters.command_line);
   if (parameters.zygote_child ||
-      sandbox_type == service_manager::SANDBOX_TYPE_NETWORK ||
-      sandbox_type == service_manager::SANDBOX_TYPE_AUDIO) {
+      sandbox_type == service_manager::SANDBOX_TYPE_NETWORK) {
     service_manager::SandboxLinux::PreSandboxHook pre_sandbox_hook;
     if (sandbox_type == service_manager::SANDBOX_TYPE_NETWORK)
       pre_sandbox_hook = base::BindOnce(&network::NetworkPreSandboxHook);
-    else if (sandbox_type == service_manager::SANDBOX_TYPE_AUDIO)
-      pre_sandbox_hook = base::BindOnce(&audio::AudioPreSandboxHook);
-
     service_manager::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),
         service_manager::SandboxLinux::Options());
