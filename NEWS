@@ -1,6 +1,13 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.7.0 (2018-09-03)
+This release implements major improvements for back-translation thanks
+to concerted efforts by Bue Vester-Andersen, Bert Frees, Timothy Lee
+and others. In particular the input/output positions are now correct
+also for back-translation. There are new and improved Chinese Braille
+tables and some long awaited improvements to UEB. The release also has
+some code cleanups and documentation improvements.
+
 For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/17?closed=1][the list of closed
 issues]].
 
@@ -67,7 +74,11 @@ issues]].
   with UCS4 enabled.
 
 ** Deprecation notice
+- None
+
 ** Backwards incompatible changes
+- None
+
 ** New, renamed or removed tables
 *** New
 - zhcn-g1.ctb
