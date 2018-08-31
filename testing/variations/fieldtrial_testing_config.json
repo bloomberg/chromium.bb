@@ -509,7 +509,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "FullLaunch",
                     "enable_features": [
                         "AutofillDynamicForms"
                     ]
