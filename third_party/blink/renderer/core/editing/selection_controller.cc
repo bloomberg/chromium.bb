@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -993,6 +994,7 @@ void SelectionController::HandleMouseDraggedEvent(
   if (!Selection().IsAvailable())
     return;
   if (selection_state_ != SelectionState::kExtendedSelection) {
+    frame_->LocalFrameRoot().Client()->SetMouseCapture(true);
     HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
     HitTestLocation location(mouse_down_pos);
     HitTestResult result(request, location);
@@ -1065,6 +1067,9 @@ bool SelectionController::HandleMouseReleaseEvent(
 
     handled = true;
   }
+
+  if (frame_->LocalFrameRoot().Client())
+    frame_->LocalFrameRoot().Client()->SetMouseCapture(false);
 
   Selection().NotifyTextControlOfSelectionChange(SetSelectionBy::kUser);
 
