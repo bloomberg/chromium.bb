@@ -253,9 +253,6 @@ class Dispatcher : public content::RenderThreadObserver,
   // The delegate for this dispatcher to handle embedder-specific logic.
   std::unique_ptr<DispatcherDelegate> delegate_;
 
-  // True if the IdleNotification timer should be set.
-  bool set_idle_notifications_;
-
   // The IDs of extensions that failed to load, mapped to the error message
   // generated on failure.
   std::map<std::string, std::string> extension_load_errors_;

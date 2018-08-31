@@ -560,7 +560,6 @@ void RenderViewImpl::Initialize(
   UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params->renderer_preferences);
   OnSynchronizeVisualProperties(params->visual_properties);
-  RenderWidget::SetUpIdleUserDetector();
 
   GetContentClient()->renderer()->RenderViewCreated(this);
   page_zoom_level_ = 0;

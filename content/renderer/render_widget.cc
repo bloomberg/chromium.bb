@@ -61,7 +61,6 @@
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/gpu/queue_message_swap_promise.h"
-#include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -645,10 +644,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   }
 }
 
-void RenderWidget::SetUpIdleUserDetector() {
-  idle_user_detector_ = std::make_unique<IdleUserDetector>();
-}
-
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
     RenderWidget* origin_widget) {
   RenderWidgetScreenMetricsEmulator* emulator =
@@ -956,8 +951,6 @@ void RenderWidget::HandleInputEvent(
                             nullptr, base::nullopt);
     return;
   }
-  if (idle_user_detector_)
-    idle_user_detector_->ActivityDetected();
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
 }

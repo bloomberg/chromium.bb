@@ -75,11 +75,6 @@ class MockRenderThread : public RenderThread {
   std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   void RegisterExtension(v8::Extension* extension) override;
-  void ScheduleIdleHandler(int64_t initial_delay_ms) override;
-  void IdleHandler() override;
-  int64_t GetIdleNotificationDelayInMs() const override;
-  void SetIdleNotificationDelayInMs(
-      int64_t idle_notification_delay_in_ms) override;
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;

@@ -141,8 +141,6 @@ target(link_target_type, "renderer") {
     "history_entry.h",
     "history_serialization.cc",
     "history_serialization.h",
-    "idle_user_detector.cc",
-    "idle_user_detector.h",
     "image_capture/image_capture_frame_grabber.cc",
     "image_capture/image_capture_frame_grabber.h",
     "image_downloader/image_downloader_base.cc",
