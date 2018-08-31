@@ -107,6 +107,7 @@ class GestureEventQueueTest : public testing::Test,
       base::WeakPtr<FlingController> fling_controller) override {}
   void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) override {}
+  bool NeedsBeginFrameForFlingProgress() override { return false; }
 
  protected:
   static GestureEventQueue::Config DefaultConfig() {
