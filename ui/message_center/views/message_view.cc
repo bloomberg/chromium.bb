@@ -66,10 +66,6 @@ MessageView::MessageView(const Notification& notification)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  // Create the opaque background that's above the view's shadow.
-  background_view_ = new views::View();
-  AddChildView(background_view_);
-
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
 
@@ -157,7 +153,7 @@ void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
 }
 
 void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
-  background_view_->SetBackground(views::CreateBackgroundFromPainter(
+  SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(top_radius,
                                                       bottom_radius)));
   SchedulePaint();
@@ -237,15 +233,6 @@ void MessageView::OnBlur() {
   views::View::OnBlur();
   // We paint a focus indicator.
   SchedulePaint();
-}
-
-void MessageView::Layout() {
-  views::View::Layout();
-
-  gfx::Rect content_bounds = GetContentsBounds();
-
-  // Background.
-  background_view_->SetBoundsRect(content_bounds);
 }
 
 const char* MessageView::GetClassName() const {
@@ -352,8 +339,8 @@ void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {
-  background_view_->background()->SetNativeControlColor(
-      active ? kHoveredButtonBackgroundColor : kNotificationBackgroundColor);
+  background()->SetNativeControlColor(active ? kHoveredButtonBackgroundColor
+                                             : kNotificationBackgroundColor);
   SchedulePaint();
 }
 
