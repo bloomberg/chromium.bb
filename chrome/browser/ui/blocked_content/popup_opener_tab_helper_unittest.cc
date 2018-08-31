@@ -614,7 +614,7 @@ TEST_P(BlockTabUnderIncognitoTest, DisableFeature_LogsDidTabUnder) {
 }
 
 TEST_F(BlockTabUnderTest, LogsUkm) {
-  using UkmEntry = ukm::builders::AbusiveExperienceHeuristic;
+  using UkmEntry = ukm::builders::AbusiveExperienceHeuristic_TabUnder;
 
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;

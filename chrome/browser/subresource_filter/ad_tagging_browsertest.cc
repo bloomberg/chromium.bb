@@ -342,12 +342,12 @@ const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
 
 void ExpectLatestUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
                           size_t expected_num_entries,
-                          base::StringPiece metric_name,
                           bool from_main_frame,
                           const GURL& main_frame_url,
-                          int64_t expected_value) {
+                          bool from_ad_subframe,
+                          bool from_ad_script) {
   auto entries = ukm_recorder.GetEntriesByName(
-      ukm::builders::AbusiveExperienceHeuristic::kEntryName);
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kEntryName);
   EXPECT_EQ(expected_num_entries, entries.size());
 
   // Check that the event is keyed to |main_frame_url| only if it was from the
@@ -379,7 +379,14 @@ void ExpectLatestUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
             *ukm_recorder.GetEntryMetric(
                 dc_entry, ukm::builders::DocumentCreated::kIsMainFrameName));
 
-  ukm_recorder.ExpectEntryMetric(entries.back(), metric_name, expected_value);
+  ukm_recorder.ExpectEntryMetric(
+      entries.back(),
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kFromAdSubframeName,
+      from_ad_subframe);
+  ukm_recorder.ExpectEntryMetric(
+      entries.back(),
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kFromAdScriptName,
+      from_ad_script);
 }
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
@@ -402,10 +409,9 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
                         hostname, "/ad_tagging/frame_factory.html?1" + suffix));
       EXPECT_TRUE(content::ExecuteScript(child, "window.open();"));
       ExpectLatestUkmEntry(ukm_recorder, ++expected_num_entries,
-                           ukm::builders::AbusiveExperienceHeuristic::
-                               kDidWindowOpenFromAdSubframeName,
                            false /* from_main_frame */, main_frame_url,
-                           ad_frame);
+                           ad_frame /* from_ad_subframe */,
+                           false /* from_ad_script */);
     }
   }
 }
@@ -418,15 +424,13 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenWithScriptInStack) {
 
   EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromNonAdScript();"));
   ExpectLatestUkmEntry(
-      ukm_recorder, 1 /* expected_num_entries */,
-      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
-      true /* from_main_frame */, main_frame_url, false /* expected_value */);
+      ukm_recorder, 1 /* expected_num_entries */, true /* from_main_frame */,
+      main_frame_url, false /* from_ad_subframe */, false /* from_ad_script */);
 
   EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromAdScript();"));
-  ExpectLatestUkmEntry(
-      ukm_recorder, 2 /* expected_num_entries */,
-      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
-      true /* from_main_frame */, main_frame_url, true /* expected_value */);
+  ExpectLatestUkmEntry(ukm_recorder, 2 /* expected_num_entries */,
+                       true /* from_main_frame */, main_frame_url,
+                       false /* from_ad_subframe */, true /* from_ad_script */);
 }
 
 }  // namespace

@@ -22,8 +22,8 @@ be describing additional metrics about the same event.
   <owner>csharrison@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <summary>
-    Various metrics recording experiences which are commonly used for abusive
-    purposes.
+    Obsolete. Various metrics recording experiences which are commonly used for
+    abusive purposes.
   </summary>
   <metric name="DidTabUnder">
     <summary>
@@ -36,6 +36,32 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="DidWindowOpenFromAdSubframe">
+    <summary>
+      True if the page called window.open() from an ad subframe.
+    </summary>
+  </metric>
+</event>
+
+<event name="AbusiveExperienceHeuristic.TabUnder">
+  <owner>csharrison@chromium.org</owner>
+  <metric name="DidTabUnder">
+    <summary>
+      True if the page attempted a tab-under navigation.
+    </summary>
+  </metric>
+</event>
+
+<event name="AbusiveExperienceHeuristic.WindowOpen">
+  <owner>yaoxia@chromium.org</owner>
+  <summary>
+    Recorded whenever window.open() is called when AdTagging is enabled.
+  </summary>
+  <metric name="FromAdScript">
+    <summary>
+      True if the page called window.open() with an ad script in the stack.
+    </summary>
+  </metric>
+  <metric name="FromAdSubframe">
     <summary>
       True if the page called window.open() from an ad subframe.
     </summary>
