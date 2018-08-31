@@ -3225,5 +3225,124 @@ TEST_F(SynchronousRasterTileManagerTest, AlwaysUseImageCache) {
   TakeHostImpl();
 }
 
+class DecodedImageTrackerTileManagerTest : public TestLayerTreeHostBase {
+ public:
+  void TearDown() override {
+    // Allow all tasks on the image worker to run now. Any scheduled decodes
+    // will be aborted.
+    task_runner_->set_run_tasks_synchronously(true);
+  }
+
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettings settings = TestLayerTreeHostBase::CreateSettings();
+    settings.max_preraster_distance_in_screen_pixels = 100;
+    return settings;
+  }
+
+  std::unique_ptr<FakeLayerTreeHostImpl> CreateHostImpl(
+      const LayerTreeSettings& settings,
+      TaskRunnerProvider* task_runner_provider,
+      TaskGraphRunner* task_graph_runner) override {
+    task_runner_ = base::MakeRefCounted<SynchronousSimpleTaskRunner>();
+    return std::make_unique<FakeLayerTreeHostImpl>(
+        settings, task_runner_provider, task_graph_runner, task_runner_);
+  }
+
+  std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner() override {
+    return std::make_unique<SynchronousTaskGraphRunner>();
+  }
+
+  void FlushDecodeTasks() {
+    while (task_runner_->HasPendingTask()) {
+      task_runner_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+
+ private:
+  scoped_refptr<SynchronousSimpleTaskRunner> task_runner_;
+};
+
+TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
+  // Pick arbitrary IDs - they don't really matter as long as they're constant.
+  const int kLayerId = 7;
+
+  host_impl()->tile_manager()->SetTileTaskManagerForTesting(
+      std::make_unique<FakeTileTaskManagerImpl>());
+
+  // Create two test images, one will be positioned to be needed NOW, the other
+  // will be positioned to be prepaint.
+  int dimension = 250;
+  PaintImage image1 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image2 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+
+  // Add the images to our decoded_image_tracker.
+  host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
+      image1, gfx::ColorSpace(), base::DoNothing());
+  host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
+      image2, gfx::ColorSpace(), base::DoNothing());
+  EXPECT_EQ(0u, host_impl()
+                    ->tile_manager()
+                    ->decoded_image_tracker()
+                    .NumLockedImagesForTesting());
+  FlushDecodeTasks();
+  EXPECT_EQ(2u, host_impl()
+                    ->tile_manager()
+                    ->decoded_image_tracker()
+                    .NumLockedImagesForTesting());
+
+  // Add images to a fake recording source.
+  const gfx::Size layer_bounds(1000, 500);
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+  recording_source->add_draw_image(image1, gfx::Point(0, 0));
+  recording_source->add_draw_image(image2, gfx::Point(700, 0));
+  recording_source->Rerecord();
+
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFromRecordingSource(recording_source.get());
+
+  host_impl()->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+  pending_tree->SetDeviceViewportSize(
+      host_impl()->active_tree()->GetDeviceViewport().size());
+
+  // Steal from the recycled tree.
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
+                                                   pending_raster_source);
+  pending_layer->SetDrawsContent(true);
+
+  // The bounds() are half the recording source size, allowing for prepaint
+  // images.
+  pending_layer->SetBounds(gfx::Size(500, 500));
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
+
+  // Add tilings/tiles for the layer.
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl()->pending_tree()->UpdateDrawProperties();
+
+  // Build the raster queue and invalidate the top tile if partial raster is
+  // enabled.
+  std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
+      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
+  ASSERT_FALSE(queue->IsEmpty());
+
+  // PrepareTiles to schedule tasks. This should cause the decoded image tracker
+  // to release its lock.
+  EXPECT_EQ(2u, host_impl()
+                    ->tile_manager()
+                    ->decoded_image_tracker()
+                    .NumLockedImagesForTesting());
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_EQ(0u, host_impl()
+                    ->tile_manager()
+                    ->decoded_image_tracker()
+                    .NumLockedImagesForTesting());
+}
+
 }  // namespace
 }  // namespace cc

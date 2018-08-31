@@ -11,13 +11,18 @@ function runImageDecoderPerfTests(imageFile, testDescription) {
 
       // Issue a decode command
       image.decode().then(function () {
-        PerfTestRunner.measureValueAsync(PerfTestRunner.now() - startTime);
+        var runTime = PerfTestRunner.now() - startTime;
+        PerfTestRunner.measureValueAsync(runTime);
         PerfTestRunner.addRunTestEndMarker();
 
         // addRunTestEndMarker sets isDone to true once all iterations are
         // performed.
         if (!isDone) {
-          runTest();
+          // To avoid cache exhasution, ensure each run lasts at least 100ms,
+          // giving our image cache (which can hold on average 6 of the images
+          // used in this test) time to evict them.
+          var minRunTime = 100.0;
+          setTimeout(runTest, Math.max(0, minRunTime - runTime));
         }
       });
     }
