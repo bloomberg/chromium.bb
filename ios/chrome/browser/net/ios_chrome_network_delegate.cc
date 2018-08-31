@@ -90,25 +90,27 @@ void IOSChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
 
 bool IOSChromeNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    bool allowed_from_caller) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
-    return true;
+    return allowed_from_caller;
 
-  return cookie_settings_->IsCookieAccessAllowed(request.url(),
-                                                 request.site_for_cookies());
+  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
+                                    request.url(), request.site_for_cookies());
 }
 
 bool IOSChromeNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options) {
+    net::CookieOptions* options,
+    bool allowed_from_caller) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
-    return true;
+    return allowed_from_caller;
 
-  return cookie_settings_->IsCookieAccessAllowed(request.url(),
-                                                 request.site_for_cookies());
+  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
+                                    request.url(), request.site_for_cookies());
 }
 
 bool IOSChromeNetworkDelegate::OnCanAccessFile(

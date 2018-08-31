@@ -80,10 +80,12 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                       AuthCallback callback,
                                       AuthCredentials* credentials) final;
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list) final;
+                       const CookieList& cookie_list,
+                       bool allowed_from_caller) final;
   bool OnCanSetCookie(const URLRequest& request,
                       const net::CanonicalCookie& cookie,
-                      CookieOptions* options) final;
+                      CookieOptions* options,
+                      bool allowed_from_caller) final;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const final;
@@ -149,12 +151,14 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnPACScriptErrorInternal(int line_number,
                                         const base::string16& error);
 
-  virtual void OnCanGetCookiesInternal(const URLRequest& request,
-                                       const CookieList& cookie_list);
+  virtual bool OnCanGetCookiesInternal(const URLRequest& request,
+                                       const CookieList& cookie_list,
+                                       bool allowed_from_caller);
 
-  virtual void OnCanSetCookieInternal(const URLRequest& request,
+  virtual bool OnCanSetCookieInternal(const URLRequest& request,
                                       const net::CanonicalCookie& cookie,
-                                      CookieOptions* options);
+                                      CookieOptions* options,
+                                      bool allowed_from_caller);
 
   virtual void OnAuthRequiredInternal(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,
@@ -165,7 +169,9 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
       const base::FilePath& original_path,
       const base::FilePath& absolute_path) const;
 
-  virtual void OnCanEnablePrivacyModeInternal(
+  // If this returns false, it short circuits the corresponding call in any
+  // nested NetworkDelegates.
+  virtual bool OnCanEnablePrivacyModeInternal(
       const GURL& url,
       const GURL& site_for_cookies) const;
 

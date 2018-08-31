@@ -31,6 +31,20 @@ void CookieSettings::GetCookieSetting(const GURL& url,
                                       const GURL& first_party_url,
                                       content_settings::SettingSource* source,
                                       ContentSetting* cookie_setting) const {
+  if (base::ContainsKey(secure_origin_cookies_allowed_schemes_,
+                        first_party_url.scheme()) &&
+      url.SchemeIsCryptographic()) {
+    *cookie_setting = CONTENT_SETTING_ALLOW;
+    return;
+  }
+
+  if (base::ContainsKey(matching_scheme_cookies_allowed_schemes_,
+                        url.scheme()) &&
+      url.SchemeIs(first_party_url.scheme_piece())) {
+    *cookie_setting = CONTENT_SETTING_ALLOW;
+    return;
+  }
+
   // Default to allowing cookies.
   *cookie_setting = CONTENT_SETTING_ALLOW;
   bool block_third = block_third_party_cookies_;

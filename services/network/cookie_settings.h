@@ -29,6 +29,22 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
     block_third_party_cookies_ = block_third_party_cookies;
   }
 
+  void set_secure_origin_cookies_allowed_schemes(
+      const std::vector<std::string>& secure_origin_cookies_allowed_schemes) {
+    secure_origin_cookies_allowed_schemes_.clear();
+    secure_origin_cookies_allowed_schemes_.insert(
+        secure_origin_cookies_allowed_schemes.begin(),
+        secure_origin_cookies_allowed_schemes.end());
+  }
+
+  void set_matching_scheme_cookies_allowed_schemes(
+      const std::vector<std::string>& matching_scheme_cookies_allowed_schemes) {
+    matching_scheme_cookies_allowed_schemes_.clear();
+    matching_scheme_cookies_allowed_schemes_.insert(
+        matching_scheme_cookies_allowed_schemes.begin(),
+        matching_scheme_cookies_allowed_schemes.end());
+  }
+
   // Returns a predicate that takes the domain of a cookie and a bool whether
   // the cookie is secure and returns true if the cookie should be deleted on
   // exit.
@@ -47,6 +63,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
 
   ContentSettingsForOneType content_settings_;
   bool block_third_party_cookies_ = false;
+  std::set<std::string> secure_origin_cookies_allowed_schemes_;
+  std::set<std::string> matching_scheme_cookies_allowed_schemes_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettings);
 };

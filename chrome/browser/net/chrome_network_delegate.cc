@@ -267,48 +267,35 @@ ChromeNetworkDelegate::OnAuthRequired(net::URLRequest* request,
       request, auth_info, std::move(callback), credentials);
 }
 
-bool ChromeNetworkDelegate::OnCanGetCookies(
-    const net::URLRequest& request,
-    const net::CookieList& cookie_list) {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return true;
-
-  bool allow = cookie_settings_->IsCookieAccessAllowed(
-      request.url(), request.site_for_cookies());
-
+bool ChromeNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
+                                            const net::CookieList& cookie_list,
+                                            bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&TabSpecificContentSettings::CookiesRead,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie_list, !allow));
+                       request.site_for_cookies(), cookie_list,
+                       !allowed_from_caller));
   }
-
-  return allow;
+  return allowed_from_caller;
 }
 
 bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            const net::CanonicalCookie& cookie,
-                                           net::CookieOptions* options) {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return true;
-
-  bool allow = cookie_settings_->IsCookieAccessAllowed(
-      request.url(), request.site_for_cookies());
-
+                                           net::CookieOptions* options,
+                                           bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&TabSpecificContentSettings::CookieChanged,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie, !allow));
+                       request.site_for_cookies(), cookie,
+                       !allowed_from_caller));
   }
-
-  return allow;
+  return allowed_from_caller;
 }
 
 bool ChromeNetworkDelegate::OnCanAccessFile(
@@ -345,16 +332,6 @@ bool ChromeNetworkDelegate::IsAccessAllowed(
 // static
 void ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(bool enabled) {
   g_access_to_all_files_enabled = enabled;
-}
-
-bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
-    const GURL& url,
-    const GURL& site_for_cookies) const {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return false;
-
-  return !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 }
 
 bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {

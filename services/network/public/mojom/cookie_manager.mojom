@@ -15,6 +15,12 @@ struct CookieManagerParams {
 
   // Content settings for cookies.
   array<content_settings.mojom.ContentSettingPatternSource> settings;
+
+  // Schemes that unconditionally allow cookies from secure origins.
+  array<string> secure_origin_cookies_allowed_schemes;
+
+  // Schemes that unconditionally allow cookies from the same scheme.
+  array<string> matching_scheme_cookies_allowed_schemes;
 };
 
 enum CookiePriority {

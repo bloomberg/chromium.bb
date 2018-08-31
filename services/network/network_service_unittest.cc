@@ -1405,15 +1405,15 @@ TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
   manager_client.WaitForNotification(mojom::ConnectionType::CONNECTION_3G);
 }
 
-class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
+class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
  public:
-  NetworkServiceClearSiteDataTest() {
+  NetworkServiceNetworkDelegateTest() {
     // |NetworkServiceNetworkDelegate::HandleClearSiteDataHeader| requires
     // Network Service.
     scoped_feature_list_.InitAndEnableFeature(
         network::features::kNetworkService);
   }
-  ~NetworkServiceClearSiteDataTest() override = default;
+  ~NetworkServiceNetworkDelegateTest() override = default;
 
   void CreateNetworkContext() {
     mojom::NetworkContextParamsPtr context_params =
@@ -1459,7 +1459,7 @@ class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
         net::test_server::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_server_->RegisterRequestHandler(base::BindRepeating(
-        &NetworkServiceClearSiteDataTest::HandleHTTPSRequest,
+        &NetworkServiceNetworkDelegateTest::HandleHTTPSRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
   }
@@ -1494,7 +1494,7 @@ class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
   mojom::URLLoaderPtr loader_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceClearSiteDataTest);
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
 class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
@@ -1547,7 +1547,7 @@ class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
 
 // Check that |NetworkServiceNetworkDelegate| handles Clear-Site-Data header
 // w/ and w/o |NetworkServiceCient|.
-TEST_F(NetworkServiceClearSiteDataTest, ClearSiteDataNetworkServiceCient) {
+TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkServiceCient) {
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();
 
@@ -1574,7 +1574,7 @@ TEST_F(NetworkServiceClearSiteDataTest, ClearSiteDataNetworkServiceCient) {
 }
 
 // Check that headers are handled and passed to the client correctly.
-TEST_F(NetworkServiceClearSiteDataTest, HandleClearSiteDataHeaders) {
+TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   const char kClearCookiesHeaderValue[] = "\"cookies\"";
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();

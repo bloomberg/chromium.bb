@@ -309,6 +309,35 @@ class NetworkContext::ContextNetworkDelegate
     return true;
   }
 
+  bool OnCanGetCookiesInternal(const net::URLRequest& request,
+                               const net::CookieList& cookie_list,
+                               bool allowed_from_caller) override {
+    return allowed_from_caller &&
+           network_context_->cookie_manager()
+               ->cookie_settings()
+               .IsCookieAccessAllowed(request.url(),
+                                      request.site_for_cookies());
+  }
+
+  bool OnCanSetCookieInternal(const net::URLRequest& request,
+                              const net::CanonicalCookie& cookie,
+                              net::CookieOptions* options,
+                              bool allowed_from_caller) override {
+    return allowed_from_caller &&
+           network_context_->cookie_manager()
+               ->cookie_settings()
+               .IsCookieAccessAllowed(request.url(),
+                                      request.site_for_cookies());
+  }
+
+  bool OnCanEnablePrivacyModeInternal(
+      const GURL& url,
+      const GURL& site_for_cookies) const override {
+    return !network_context_->cookie_manager()
+                ->cookie_settings()
+                .IsCookieAccessAllowed(url, site_for_cookies);
+  }
+
   void set_enable_referrers(bool enable_referrers) {
     enable_referrers_ = enable_referrers;
   }
