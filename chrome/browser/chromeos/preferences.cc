@@ -160,9 +160,8 @@ Preferences::~Preferences() {
 // static
 void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
+  registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   // TODO(jamescook): Move ownership and registration into ash.
-  registry->RegisterBooleanPref(ash::prefs::kOwnerTapToClickEnabled, true,
-                                PrefRegistry::PUBLIC);
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
   registry->RegisterStringPref(prefs::kSigninScreenTimezone, std::string());
   registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
@@ -199,9 +198,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 
   registry->RegisterBooleanPref(
-      ash::prefs::kTapToClickEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
-          PrefRegistry::PUBLIC);
+      prefs::kTapToClickEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick, false);
   // This preference can only be set to true by policy or command_line flag
   // and it should not carry over to sessions were neither of these is set.
@@ -518,7 +517,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
 
   performance_tracing_enabled_.Init(prefs::kPerformanceTracingEnabled,
                                     prefs, callback);
-  tap_to_click_enabled_.Init(ash::prefs::kTapToClickEnabled, prefs, callback);
+  tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, callback);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
                                    prefs, callback);
   unified_desktop_enabled_by_default_.Init(
@@ -660,16 +659,20 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       tracing_manager_.reset();
     SystemTrayClient::Get()->SetPerformanceTracingIconVisible(enabled);
   }
-  if (reason != REASON_PREF_CHANGED ||
-      pref_name == ash::prefs::kTapToClickEnabled) {
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kTapToClickEnabled) {
     const bool enabled = tap_to_click_enabled_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetTapToClick(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started", enabled);
+
     // Save owner preference in local state to use on login screen.
-    // TODO(jamescook): move to ash once user session info could distinguish
-    // between owner and non-owner (http://crbug.com/857103).
     if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
-      if (prefs->GetBoolean(ash::prefs::kOwnerTapToClickEnabled) != enabled)
-        prefs->SetBoolean(ash::prefs::kOwnerTapToClickEnabled, enabled);
+      if (prefs->GetBoolean(prefs::kOwnerTapToClickEnabled) != enabled)
+        prefs->SetBoolean(prefs::kOwnerTapToClickEnabled, enabled);
     }
   }
   if (reason != REASON_PREF_CHANGED ||

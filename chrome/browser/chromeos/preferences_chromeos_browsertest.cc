@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -65,6 +64,7 @@ class PreferencesTest : public LoginManagerTest {
   // |variant| value. For opposite |variant| values all preferences receive
   // different values.
   void SetPrefs(PrefService* prefs, bool variant) {
+    prefs->SetBoolean(prefs::kTapToClickEnabled, variant);
     prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, !variant);
     prefs->SetBoolean(prefs::kMouseReverseScroll, variant);
     prefs->SetBoolean(prefs::kEnableTouchpadThreeFingerClick, !variant);
@@ -80,6 +80,8 @@ class PreferencesTest : public LoginManagerTest {
   }
 
   void CheckSettingsCorrespondToPrefs(PrefService* prefs) {
+    EXPECT_EQ(prefs->GetBoolean(prefs::kTapToClickEnabled),
+              input_settings_->current_touchpad_settings().GetTapToClick());
     EXPECT_EQ(prefs->GetBoolean(prefs::kPrimaryMouseButtonRight),
               input_settings_->current_mouse_settings()
                   .GetPrimaryButtonRight());
@@ -108,8 +110,8 @@ class PreferencesTest : public LoginManagerTest {
 
   void CheckLocalStateCorrespondsToPrefs(PrefService* prefs) {
     PrefService* local_state = g_browser_process->local_state();
-    EXPECT_EQ(local_state->GetBoolean(ash::prefs::kOwnerTapToClickEnabled),
-              prefs->GetBoolean(ash::prefs::kTapToClickEnabled));
+    EXPECT_EQ(local_state->GetBoolean(prefs::kOwnerTapToClickEnabled),
+              prefs->GetBoolean(prefs::kTapToClickEnabled));
     EXPECT_EQ(local_state->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight),
               prefs->GetBoolean(prefs::kPrimaryMouseButtonRight));
   }
@@ -201,11 +203,11 @@ IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
   // state prefs and vice versa.
   EXPECT_EQ(user_manager->GetOwnerAccountId(), test_users_[0]);
   CheckLocalStateCorrespondsToPrefs(prefs1);
-  prefs2->SetBoolean(ash::prefs::kTapToClickEnabled,
-                     !prefs1->GetBoolean(ash::prefs::kTapToClickEnabled));
+  prefs2->SetBoolean(prefs::kTapToClickEnabled,
+                     !prefs1->GetBoolean(prefs::kTapToClickEnabled));
   CheckLocalStateCorrespondsToPrefs(prefs1);
-  prefs1->SetBoolean(ash::prefs::kTapToClickEnabled,
-                     !prefs1->GetBoolean(ash::prefs::kTapToClickEnabled));
+  prefs1->SetBoolean(prefs::kTapToClickEnabled,
+                     !prefs1->GetBoolean(prefs::kTapToClickEnabled));
   CheckLocalStateCorrespondsToPrefs(prefs1);
 
   // Switch user back.
