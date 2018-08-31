@@ -157,7 +157,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
                     clientRecord.routeId, sink, clientRecord.clientId, "cast");
         }
 
-        mMessageHandler.onSessionStarted(sessionController());
+        mMessageHandler.onSessionStarted();
         sessionController().getSession().getRemoteMediaClient().requestStatus();
     }
 
@@ -194,7 +194,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     private CafMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         super(androidMediaRouter, manager);
-        mMessageHandler = new CafMessageHandler(this);
+        mMessageHandler = new CafMessageHandler(this, sessionController());
     }
 
     private boolean canJoinExistingSession(

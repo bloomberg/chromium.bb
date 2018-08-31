@@ -10,6 +10,7 @@ import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
+import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 
@@ -149,6 +150,8 @@ public abstract class CafBaseMediaRouteProvider
     public final void createRoute(String sourceId, String sinkId, String presentationId,
             String origin, int tabId, boolean isIncognito, int nativeRequestId) {
         Log.d(TAG, "createRoute");
+        CastUtils.getCastContext().getSessionManager().addSessionManagerListener(
+                this, CastSession.class);
         if (mPendingCreateRouteRequestInfo != null) {
             // TODO(zqzhang): do something.
         }
@@ -165,10 +168,21 @@ public abstract class CafBaseMediaRouteProvider
             return;
         }
 
-        mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(
-                source, sink, presentationId, origin, tabId, isIncognito, nativeRequestId);
+        MediaRouter.RouteInfo targetRouteInfo = null;
+        for (MediaRouter.RouteInfo routeInfo : getAndroidMediaRouter().getRoutes()) {
+            if (routeInfo.getId().equals(sink.getId())) {
+                targetRouteInfo = routeInfo;
+                break;
+            }
+        }
+        if (targetRouteInfo == null) {
+            mManager.onRouteRequestError("The sink does not exist", nativeRequestId);
+        }
 
-        mSessionController.requestSessionLaunch(mPendingCreateRouteRequestInfo);
+        mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(source, sink, presentationId,
+                origin, tabId, isIncognito, nativeRequestId, targetRouteInfo);
+
+        mSessionController.requestSessionLaunch();
     }
 
     @Override
@@ -226,22 +240,32 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void onSessionEnding(CastSession session) {
-        mSessionController.detachFromCastSession(session);
-        getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
-        removeAllRoutesWithError(/* error= */ null);
+        handleSessionEnd(/* error= */ null);
     }
 
     @Override
-    public final void onSessionEnded(CastSession session, int error) {}
+    public final void onSessionEnded(CastSession session, int error) {
+        handleSessionEnd((error == CastStatusCodes.SUCCESS)
+                        ? null
+                        : ("Session ended with error code " + error));
+    }
 
     @Override
     public final void onSessionSuspended(CastSession session, int reason) {
-        mSessionController.detachFromCastSession(session);
+        mSessionController.detachFromCastSession();
     }
 
     ///////////////////////////////////////////////////////
     // SessionManagerListener implementation end
     ///////////////////////////////////////////////////////
+
+    private void handleSessionEnd(String error) {
+        mSessionController.detachFromCastSession();
+        getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
+        removeAllRoutesWithError(error);
+        CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
+                this, CastSession.class);
+    }
 
     public @NonNull MediaRouter getAndroidMediaRouter() {
         return mAndroidMediaRouter;
@@ -289,5 +313,9 @@ public abstract class CafBaseMediaRouteProvider
     @Nullable
     public FlingingController getFlingingController(String routeId) {
         return null;
+    }
+
+    public CreateRouteRequestInfo getPendingCreateRouteRequestInfo() {
+        return mPendingCreateRouteRequestInfo;
     }
 }

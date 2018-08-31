@@ -19,6 +19,7 @@ public class CastOptionsProvider implements OptionsProvider {
         return new CastOptions.Builder()
                 .setCastMediaOptions(null)
                 .setEnableReconnectionService(false)
+                .setResumeSavedSession(false)
                 .build();
     }
 
