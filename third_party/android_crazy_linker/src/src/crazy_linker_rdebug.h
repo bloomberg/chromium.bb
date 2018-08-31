@@ -172,10 +172,11 @@ typedef void (*rdebug_callback_handler_t)(RDebug*, link_map_t*);
 
 class RDebug {
  public:
-  RDebug() : r_debug_(NULL), init_(false),
-             readonly_entries_(false), post_for_later_execution_(NULL),
-             post_for_later_execution_context_(NULL) {}
-  ~RDebug() {}
+  RDebug() = default;
+  ~RDebug() = default;
+
+  RDebug(const RDebug&) = delete;
+  RDebug& operator=(const RDebug&) = delete;
 
   // Add entries to and remove entries from the list. If post for later
   // execution is enabled, schedule callbacks, otherwise action immediately.
@@ -249,14 +250,10 @@ class RDebug {
   // list are performed.
   void CallRBrk(int state);
 
-  RDebug(const RDebug&);
-  RDebug& operator=(const RDebug&);
-
-  r_debug* r_debug_;
-  bool init_;
-  bool readonly_entries_;
-  rdebug_callback_poster_t post_for_later_execution_;
-  void* post_for_later_execution_context_;
+  r_debug* r_debug_ = nullptr;
+  bool init_ = false;
+  rdebug_callback_poster_t post_for_later_execution_ = nullptr;
+  void* post_for_later_execution_context_ = nullptr;
 };
 
 }  // namespace crazy

@@ -43,11 +43,8 @@ bool FindExecutablePath(String* exe_path) {
 // Given an ELF binary at |path| that is _already_ mapped in the process,
 // find the address of its dynamic section and its size.
 // |path| is the full path of the binary (as it appears in /proc/self/maps.
-// |self_maps| is an instance of ProcMaps that is used to inspect
-// /proc/self/maps. The function rewind + iterates over it.
-// On success, return true and set |*dynamic_offset| and |*dynamic_size|.
+// On success, return true and set |*dynamic_address| and |*dynamic_size|.
 bool FindElfDynamicSection(const char* path,
-                           ProcMaps* self_maps,
                            size_t* dynamic_address,
                            size_t* dynamic_size) {
   // Read the ELF header first.
@@ -118,9 +115,8 @@ bool FindElfDynamicSection(const char* path,
   // Parse /proc/self/maps to find the load address of the first
   // loadable segment.
   size_t path_len = strlen(path);
-  self_maps->Rewind();
-  ProcMaps::Entry entry;
-  while (self_maps->GetNextEntry(&entry)) {
+  ProcMaps self_maps;
+  for (const ProcMaps::Entry& entry : self_maps.entries()) {
     if (!entry.path || entry.path_len != path_len ||
         memcmp(entry.path, path, path_len) != 0)
       continue;
@@ -203,9 +199,7 @@ bool RDebug::Init() {
   if (!FindExecutablePath(&path))
     return false;
 
-  ProcMaps self_maps;
-  if (!FindElfDynamicSection(
-           path.c_str(), &self_maps, &dynamic_addr, &dynamic_size)) {
+  if (!FindElfDynamicSection(path.c_str(), &dynamic_addr, &dynamic_size)) {
     return false;
   }
 
@@ -227,16 +221,6 @@ bool RDebug::Init() {
           LOG("r_debug.r_version is %d, 1 expected.", r_debug_->r_version);
           r_debug_ = NULL;
         }
-
-        // The linker of recent Android releases maps its link map entries
-        // in read-only pages. Determine if this is the case and record it
-        // for later. The first entry in the list corresponds to the
-        // executable.
-        int prot = self_maps.GetProtectionFlagsForAddress(r_debug_->r_map);
-        readonly_entries_ = (prot & PROT_WRITE) == 0;
-
-        LOG("r_debug.readonly_entries=%s",
-            readonly_entries_ ? "true" : "false");
         return true;
       }
     }

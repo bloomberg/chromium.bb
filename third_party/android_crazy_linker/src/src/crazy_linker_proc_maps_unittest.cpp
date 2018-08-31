@@ -66,34 +66,6 @@ TEST(ProcMaps, FindElfBinaryForAddressWithBadAddress) {
       reinterpret_cast<void*>(0x50000000), &load_address, path, sizeof(path)));
 }
 
-TEST(ProcMaps, FindProtectionFlagsForAddress) {
-  ScopedTestEnv env;
-  static const struct {
-    uintptr_t address;
-    bool success;
-    int prot;
-  } kData[] = {{0x4000afff, false, 0},
-               {0x4000b000, true, PROT_READ},
-               {0x4000bfff, true, PROT_READ},
-               {0x4000c000, false, 0},
-               {0x4005bfff, false, 0},
-               {0x4005c000, true, PROT_READ | PROT_EXEC},
-               {0x40067832, true, PROT_READ | PROT_EXEC},
-               {0x40082000, true, PROT_READ},
-               {0x40083000, true, PROT_READ | PROT_WRITE},
-               {0x40084000, true, PROT_READ | PROT_WRITE}, };
-
-  int prot;
-  for (auto const& data : kData) {
-    void* address = reinterpret_cast<void*>(data.address);
-    EXPECT_EQ(data.success, FindProtectionFlagsForAddress(address, &prot))
-        << "Checking address " << address;
-    if (data.success) {
-      EXPECT_EQ(data.prot, prot) << "Checking address " << address;
-    }
-  }
-}
-
 TEST(ProcMaps, FindLoadAddressForFile) {
   ScopedTestEnv env;
   static const struct {
@@ -118,7 +90,7 @@ TEST(ProcMaps, FindLoadAddressForFile) {
   }
 }
 
-TEST(ProcMaps, GetNextEntry) {
+TEST(ProcMaps, Entries) {
   ScopedTestEnv env;
   //     "4000b000-4000c000 r--p 00000000 00:00 0\n"
   //     "4005c000-40081000 r-xp 00000000 b3:01 141        /system/bin/mksh\n"
@@ -179,6 +151,8 @@ TEST(ProcMaps, GetNextEntry) {
   ProcMaps self_maps;
   ProcMaps::Entry entry;
 
+  const Vector<ProcMaps::Entry>& entries = self_maps.entries();
+
   size_t count = 0;
   for (const auto& data : kData) {
     std::string text = "Checking entry #";
@@ -188,7 +162,9 @@ TEST(ProcMaps, GetNextEntry) {
     text += "-";
     text += std::to_string(data.vma_end);
 
-    EXPECT_TRUE(self_maps.GetNextEntry(&entry)) << text;
+    EXPECT_LT(count - 1U, entries.GetCount()) << text;
+
+    const ProcMaps::Entry& entry = entries[count - 1];
     EXPECT_EQ(data.vma_start, entry.vma_start) << text;
     EXPECT_EQ(data.vma_end, entry.vma_end) << text;
     EXPECT_EQ(data.prot_flags, entry.prot_flags) << text;
@@ -201,7 +177,7 @@ TEST(ProcMaps, GetNextEntry) {
           << text;
     }
   }
-  EXPECT_FALSE(self_maps.GetNextEntry(&entry));
+  EXPECT_EQ(count, entries.GetCount());
 }
 
 }  // namespace crazy
