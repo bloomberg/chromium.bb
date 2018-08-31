@@ -79,6 +79,10 @@ class OffscreenTab : protected content::WebContentsDelegate,
   void Close();
 
  private:
+#if defined(USE_AURA)
+  class WindowAdoptionAgent;
+#endif  // defined(USE_AURA)
+
   // content::WebContentsDelegate overrides to provide the desired behaviors.
   void CloseContents(content::WebContents* source) final;
   bool ShouldSuppressDialogs(content::WebContents* source) final;
@@ -177,6 +181,10 @@ class OffscreenTab : protected content::WebContentsDelegate,
 
   // Object consulted to determine which offscreen tab navigations are allowed.
   std::unique_ptr<media_router::NavigationPolicy> navigation_policy_;
+
+#if defined(USE_AURA)
+  std::unique_ptr<WindowAdoptionAgent> window_agent_;
+#endif  // defined(USE_AURA)
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenTab);
 };
