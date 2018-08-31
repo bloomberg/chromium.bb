@@ -13,7 +13,9 @@
 
   * Example usage:
 
-  gn gen out/coverage --args='use_clang_coverage=true is_component_build=false'
+  gn gen out/coverage \\
+      --args='use_clang_coverage=true is_component_build=false \\
+              dcheck_always_on=true'
   gclient runhooks
   python tools/code_coverage/coverage.py crypto_unittests url_unittests \\
       -b out/coverage -o out/report -c 'out/coverage/crypto_unittests' \\
