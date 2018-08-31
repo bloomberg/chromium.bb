@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
 
 class BrowserDistribution;
@@ -20,9 +17,6 @@ class FilePath;
 }
 
 namespace installer {
-
-class Product;
-class ProductOperations;
 
 // Represents an installation of a specific product which has a one-to-one
 // relation to a BrowserDistribution.  A product has registry settings, related
@@ -56,12 +50,8 @@ class Product {
                            const base::CommandLine& options,
                            int32_t* exit_code) const;
 
-  // See ProductOperations::AddKeyFiles.
-  void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
-
  protected:
   BrowserDistribution* const distribution_;
-  const std::unique_ptr<ProductOperations> operations_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Product);

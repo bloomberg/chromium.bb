@@ -10,14 +10,11 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/chrome_browser_operations.h"
-#include "chrome/installer/util/product_operations.h"
 
 namespace installer {
 
 Product::Product(BrowserDistribution* distribution)
-    : distribution_(distribution),
-      operations_(std::make_unique<ChromeBrowserOperations>()) {}
+    : distribution_(distribution) {}
 
 Product::~Product() {
 }
@@ -70,10 +67,6 @@ bool Product::LaunchChromeAndWait(const base::FilePath& application_path,
   }
 
   return success;
-}
-
-void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {
-  operations_->AddKeyFiles(key_files);
 }
 
 }  // namespace installer

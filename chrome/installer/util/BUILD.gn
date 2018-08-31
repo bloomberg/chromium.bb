@@ -53,8 +53,6 @@ static_library("with_no_strings") {
 
   if (is_win) {
     sources = [
-      "chrome_browser_operations.cc",
-      "chrome_browser_operations.h",
       "delete_after_reboot_helper.cc",
       "delete_after_reboot_helper.h",
       "experiment.cc",
@@ -79,7 +77,6 @@ static_library("with_no_strings") {
       "master_preferences.h",
       "product.cc",
       "product.h",
-      "product_operations.h",
       "registry_entry.cc",
       "registry_entry.h",
       "scoped_token_privilege.cc",
