@@ -14,19 +14,20 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
-#include "net/url_request/url_fetcher.h"
 #include "remoting/base/logging.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace remoting {
 
-GcdRestClient::GcdRestClient(const std::string& gcd_base_url,
-                             const std::string& gcd_device_id,
-                             const scoped_refptr<net::URLRequestContextGetter>&
-                                 url_request_context_getter,
-                             OAuthTokenGetter* token_getter)
+GcdRestClient::GcdRestClient(
+    const std::string& gcd_base_url,
+    const std::string& gcd_device_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    OAuthTokenGetter* token_getter)
     : gcd_base_url_(gcd_base_url),
       gcd_device_id_(gcd_device_id),
-      url_request_context_getter_(url_request_context_getter),
+      url_loader_factory_(url_loader_factory),
       token_getter_(token_getter),
       clock_(base::DefaultClock::GetInstance()) {}
 
@@ -63,25 +64,22 @@ void GcdRestClient::PatchState(
   patch_dict->Set("patches", std::move(patch_list));
 
   // Stringify the message.
-  std::string patch_string;
-  if (!base::JSONWriter::Write(*patch_dict, &patch_string)) {
+  if (!base::JSONWriter::Write(*patch_dict, &patch_string_)) {
     LOG(ERROR) << "Error building GCD device state patch.";
     callback.Run(OTHER_ERROR);
     return;
   }
-  DLOG(INFO) << "sending state patch: " << patch_string;
+  DLOG(INFO) << "sending state patch: " << patch_string_;
 
   std::string url =
       gcd_base_url_ + "/devices/" + gcd_device_id_ + "/patchState";
 
   // Prepare an HTTP request to issue once an auth token is available.
   callback_ = callback;
-  url_fetcher_ =
-      net::URLFetcher::Create(GURL(url), net::URLFetcher::POST, this);
-  url_fetcher_->SetUploadData("application/json", patch_string);
-  if (url_request_context_getter_) {
-    url_fetcher_->SetRequestContext(url_request_context_getter_.get());
-  }
+
+  resource_request_ = std::make_unique<network::ResourceRequest>();
+  resource_request_->url = GURL(url);
+  resource_request_->method = "POST";
 
   token_getter_->CallWithToken(
       base::Bind(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
@@ -98,7 +96,7 @@ void GcdRestClient::OnTokenReceived(OAuthTokenGetter::Status status,
 
   if (status != OAuthTokenGetter::SUCCESS) {
     LOG(ERROR) << "Error getting OAuth token for GCD request: "
-               << url_fetcher_->GetOriginalURL();
+               << resource_request_->url;
     if (status == OAuthTokenGetter::NETWORK_ERROR) {
       FinishCurrentRequest(NETWORK_ERROR);
     } else {
@@ -107,36 +105,78 @@ void GcdRestClient::OnTokenReceived(OAuthTokenGetter::Status status,
     return;
   }
 
-  url_fetcher_->SetExtraRequestHeaders(
-      "Authorization: Bearer " + access_token);
-  url_fetcher_->Start();
+  resource_request_->headers.SetHeader("Authorization",
+                                       std::string("Bearer ") + access_token);
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gcd_rest_client",
+                                          R"(
+        semantics {
+          sender: "Gcd Rest Client"
+          description: "Alternative signaling mechanism for Chrome Remote "
+            "Desktop."
+          trigger:
+            "The GCD code was added for an investigation about alternative "
+            "signaling mechanisms, but is not being used in production."
+          data: "No user data."
+          destination: OTHER
+          destination_other:
+            "The Chrome Remote Desktop client/host the user is connecting to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be stopped in settings, but will not be sent "
+            "if user does not use Chrome Remote Desktop."
+          policy_exception_justification:
+            "Not implemented."
+        })");
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request_),
+                                                 traffic_annotation);
+  url_loader_->AttachStringForUpload(patch_string_, "application/json");
+
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&GcdRestClient::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
 void GcdRestClient::FinishCurrentRequest(Result result) {
   DCHECK(HasPendingRequest());
-  url_fetcher_.reset();
+  resource_request_.reset();
+  url_loader_.reset();
   base::ResetAndReturn(&callback_).Run(result);
 }
 
-void GcdRestClient::OnURLFetchComplete(const net::URLFetcher* source) {
+void GcdRestClient::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK(HasPendingRequest());
 
-  const GURL& request_url = url_fetcher_->GetOriginalURL();
-  Result status = OTHER_ERROR;
-  int response = source->GetResponseCode();
-  if (response >= 200 && response < 300) {
+  const GURL& request_url = url_loader_->GetFinalURL();
+
+  Result status = !!response_body ? SUCCESS : OTHER_ERROR;
+
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  if (status == SUCCESS) {
+    DCHECK(response_code == -1 ||
+           (response_code >= 200 && response_code < 300));
     DLOG(INFO) << "GCD request succeeded:" << request_url;
-    status = SUCCESS;
-  } else if (response == 404) {
-    LOG(WARNING) << "Host not found (" << response
-                 << ") fetching URL: " << request_url;
+  } else if (response_code == 404) {
+    LOG(WARNING) << "Host not found (" << response_code
+                 << ") loading URL: " << request_url;
     status = NO_SUCH_HOST;
-  } else if (response == 0) {
-    LOG(ERROR) << "Network error (" << response
-               << ") fetching URL: " << request_url;
+  } else if (response_code == -1) {
+    LOG(ERROR) << "Network error (" << response_code
+               << ") loading URL: " << request_url;
     status = NETWORK_ERROR;
   } else {
-    LOG(ERROR) << "Error (" << response << ") fetching URL: " << request_url;
+    LOG(ERROR) << "Error (" << response_code
+               << ") loading URL: " << request_url;
   }
 
   FinishCurrentRequest(status);
