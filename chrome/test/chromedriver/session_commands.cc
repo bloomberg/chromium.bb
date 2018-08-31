@@ -944,15 +944,11 @@ Status ExecuteMaximizeWindow(Session* session,
   if (status.IsError())
     return status;
 
-  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo)
-    return desktop->MaximizeWindow(session->window);
-
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+  status = desktop->MaximizeWindow(session->window);
   if (status.IsError())
     return status;
 
-  return extension->MaximizeWindow();
+  return ExecuteGetWindowRect(session, params, value);
 }
 
 Status ExecuteMinimizeWindow(Session* session,
@@ -967,8 +963,7 @@ Status ExecuteMinimizeWindow(Session* session,
   if (status.IsError())
     return status;
 
-  ExecuteGetWindowRect(session, params, value);
-  return Status(kOk);
+  return ExecuteGetWindowRect(session, params, value);
 }
 
 Status ExecuteFullScreenWindow(Session* session,
@@ -979,15 +974,11 @@ Status ExecuteFullScreenWindow(Session* session,
   if (status.IsError())
     return status;
 
-  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo)
-    return desktop->FullScreenWindow(session->window);
-
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+  status = desktop->FullScreenWindow(session->window);
   if (status.IsError())
     return status;
 
-  return extension->FullScreenWindow();
+  return ExecuteGetWindowRect(session, params, value);
 }
 
 Status ExecuteGetAvailableLogTypes(Session* session,

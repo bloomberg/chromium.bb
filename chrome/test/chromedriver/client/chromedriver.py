@@ -471,23 +471,25 @@ class ChromeDriver(object):
     return [rect['width'], rect['height'], rect['x'], rect['y']]
 
   def SetWindowSize(self, width, height):
-    self.ExecuteCommand(
+    return self.ExecuteCommand(
         Command.SET_WINDOW_SIZE,
         {'windowHandle': 'current', 'width': width, 'height': height})
 
   def SetWindowRect(self, width, height, x, y):
-    self.ExecuteCommand(
-        Command.SET_WINDOW_SIZE,
+    return self.ExecuteCommand(
+        Command.SET_WINDOW_RECT,
         {'width': width, 'height': height, 'x': x, 'y': y})
 
   def MaximizeWindow(self):
-    self.ExecuteCommand(Command.MAXIMIZE_WINDOW, {'windowHandle': 'current'})
+    return self.ExecuteCommand(Command.MAXIMIZE_WINDOW,
+                               {'windowHandle': 'current'})
 
   def MinimizeWindow(self):
-    return self.ExecuteCommand(Command.MINIMIZE_WINDOW, {'windowHandle': 'current'})
+    return self.ExecuteCommand(Command.MINIMIZE_WINDOW,
+                               {'windowHandle': 'current'})
 
   def FullScreenWindow(self):
-    self.ExecuteCommand(Command.FULLSCREEN_WINDOW)
+    return self.ExecuteCommand(Command.FULLSCREEN_WINDOW)
 
   def Quit(self):
     """Quits the browser and ends the session."""
