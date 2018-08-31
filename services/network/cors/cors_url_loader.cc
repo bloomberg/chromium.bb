@@ -16,6 +16,8 @@ namespace cors {
 
 namespace {
 
+// This should be identical to CalculateCORSFlag defined in
+// //third_party/blink/renderer/platform/loader/cors/cors.cc.
 bool CalculateCORSFlag(const ResourceRequest& request) {
   if (request.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
       request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
@@ -24,6 +26,10 @@ bool CalculateCORSFlag(const ResourceRequest& request) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS should not work.
   DCHECK(request.request_initiator);
+
+  if (request.url.SchemeIs(url::kDataScheme))
+    return false;
+
   url::Origin url_origin = url::Origin::Create(request.url);
   url::Origin security_origin(request.request_initiator.value());
   return !security_origin.IsSameOriginWith(url_origin);

@@ -763,19 +763,16 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
       options.cors_handling_by_resource_fetcher ==
           kEnableCORSHandlingByResourceFetcher) {
-    if (CORS::IsCORSEnabledRequestMode(
-            resource_request.GetFetchRequestMode())) {
-      DCHECK(origin);
-      if (!origin->CanRequest(params.Url())) {
-        params.MutableOptions().cors_flag = true;
-        // Cross-origin requests are only allowed certain registered schemes.
-        if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
-                url.Protocol())) {
-          // This won't create a CORS related console error.
-          // TODO(yhirano): Fix this.
-          return ResourceRequestBlockedReason::kOther;
-        }
-      }
+    DCHECK(!options.cors_flag);
+    params.MutableOptions().cors_flag = CORS::CalculateCORSFlag(
+        params.Url(), origin ? origin.get() : Context().GetSecurityOrigin(),
+        resource_request.GetFetchRequestMode());
+    // Cross-origin requests are only allowed certain registered schemes.
+    if (options.cors_flag && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+                                 params.Url().Protocol())) {
+      // This won't create a CORS related console error.
+      // TODO(yhirano): Fix this.
+      return ResourceRequestBlockedReason::kOther;
     }
     resource_request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
         resource_request.GetFetchCredentialsMode(),

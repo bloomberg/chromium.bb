@@ -115,9 +115,14 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool CanAccess(const SecurityOrigin*) const;
 
   // Returns true if this SecurityOrigin can read content retrieved from
-  // the given URL. For example, call this function before issuing
-  // XMLHttpRequests.
-  bool CanRequest(const KURL&) const;
+  // the given URL.
+  // Note: This function may return false when |url| has data scheme, which
+  // is not aligned with CORS. If you want a CORS-aligned check, just use
+  // CORS mode (e.g., network::mojom::FetchRequestMode::kSameOrigin), or
+  // use CanReadContent.
+  // See
+  // https://docs.google.com/document/d/1_BD15unoPJVwKyf5yOUDu5kie492TTaBxzhJ58j1rD4/edit.
+  bool CanRequest(const KURL& url) const;
 
   // Returns true if content from this URL can be read without CORS from this
   // security origin. For example, call this function before drawing an image
@@ -147,7 +152,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Note: A SecurityOrigin might be allowed to load local resources
   //       without being able to issue an XMLHttpRequest for a local URL.
   //       To determine whether the SecurityOrigin can issue an
-  //       XMLHttpRequest for a URL, call canRequest(url).
+  //       XMLHttpRequest for a URL, call canReadContent(url).
   bool CanLoadLocalResources() const { return can_load_local_resources_; }
 
   // Explicitly grant the ability to load local resources to this

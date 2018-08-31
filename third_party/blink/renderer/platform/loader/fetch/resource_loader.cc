@@ -435,23 +435,22 @@ bool ResourceLoader::WillFollowRedirect(
   }
 
   if (ShouldCheckCORSInResourceLoader()) {
-    const auto origin = GetSourceOrigin();
-    if (CORS::IsCORSEnabledRequestMode(fetch_request_mode) &&
-        !origin->CanRequest(new_request->Url())) {
-      resource_->MutableOptions().cors_flag = true;
-    }
-    if (GetCORSFlag()) {
-      // Cross-origin requests are only allowed certain registered schemes.
-      if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
-              KURL(new_url).Protocol())) {
-        HandleError(ResourceError(
-            new_url, network::CORSErrorStatus(
-                         network::mojom::CORSError::kCORSDisabledScheme)));
-        return false;
-      }
+    bool new_cors_flag =
+        GetCORSFlag() ||
+        CORS::CalculateCORSFlag(new_request->Url(), GetSourceOrigin().get(),
+                                fetch_request_mode);
+    resource_->MutableOptions().cors_flag = new_cors_flag;
+    // Cross-origin requests are only allowed certain registered schemes.
+    if (GetCORSFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+                             new_request->Url().Protocol())) {
+      HandleError(
+          ResourceError(new_request->Url(),
+                        network::CORSErrorStatus(
+                            network::mojom::CORSError::kCORSDisabledScheme)));
+      return false;
     }
     response_tainting_ = CORS::CalculateResponseTainting(
-        new_request->Url(), fetch_request_mode, origin.get(),
+        new_request->Url(), fetch_request_mode, GetSourceOrigin().get(),
         GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
   }
 

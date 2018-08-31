@@ -96,6 +96,20 @@ PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
 
 PLATFORM_EXPORT bool IsOkStatus(int status);
 
+// Calculates and returns the CORS flag used in several "fetch" algorithms in
+// https://fetch.spec.whatwg.org/. This function is corresponding to the CORS
+// flag setting logic in https://fetch.spec.whatwg.org/#main-fetch.
+// This function can return true even when |request_mode| is |kSameOrigin|.
+// |origin| must not be nullptr when |request_mode| is neither |kNoCORS| nor
+// |kNavigate|.
+// This should be identical to CalculateCORSFlag defined in
+// //services/network/cors/cors_url_loader.cc.
+// This function will be removed when out-of-renderer CORS is enabled.
+PLATFORM_EXPORT bool CalculateCORSFlag(
+    const KURL& url,
+    const SecurityOrigin* origin,
+    network::mojom::FetchRequestMode request_mode);
+
 }  // namespace CORS
 
 }  // namespace blink

@@ -596,16 +596,6 @@ void FetchManager::Loader::DidReceiveResponse(
 
   Response* r =
       Response::Create(resolver_->GetExecutionContext(), tainted_response);
-  if (response.Url().ProtocolIsData()) {
-    // An "Access-Control-Allow-Origin" header is added for data: URLs
-    // but no headers except for "Content-Type" should exist,
-    // according to the spec:
-    // https://fetch.spec.whatwg.org/#concept-scheme-fetch
-    // "... return a response whose header list consist of a single header
-    //  whose name is `Content-Type` and value is the MIME type and
-    //  parameters returned from obtaining a resource"
-    r->headers()->HeaderList()->Remove(HTTPNames::Access_Control_Allow_Origin);
-  }
   r->headers()->SetGuard(Headers::kImmutableGuard);
 
   if (fetch_request_data_->Integrity().IsEmpty()) {
