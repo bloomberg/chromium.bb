@@ -508,12 +508,11 @@ Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
 
 Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
-Usage: Can be specified on methods, attributes or interfaces:
+Usage: Can be specified on interface methods or non-static interface attributes:
 
 ```webidl
 [Unforgeable] void func();
 [Unforgeable] attribute DOMString str;
-[Unforgeable] interface XXX { ... };
 ```
 
 By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.

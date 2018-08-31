@@ -185,7 +185,7 @@ def attribute_context(interface, attribute, interfaces):
         'is_save_same_object': is_save_same_object,
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
-        'is_unforgeable': is_unforgeable(interface, attribute),
+        'is_unforgeable': is_unforgeable(attribute),
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
@@ -579,7 +579,7 @@ def property_attributes(interface, attribute):
     if ('NotEnumerable' in extended_attributes or
             is_constructor_attribute(attribute)):
         property_attributes_list.append('v8::DontEnum')
-    if is_unforgeable(interface, attribute):
+    if is_unforgeable(attribute):
         property_attributes_list.append('v8::DontDelete')
     if not is_writable(attribute):
         property_attributes_list.append('v8::ReadOnly')
