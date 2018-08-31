@@ -1629,6 +1629,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
 		gl_pixel_type = GL_UNSIGNED_BYTE;
 		num_planes = 2;
+		gs->offset[1] = 0;
 		gs->hsub[1] = 2;
 		gs->vsub[1] = 1;
 		if (gr->has_gl_texture_rg)
