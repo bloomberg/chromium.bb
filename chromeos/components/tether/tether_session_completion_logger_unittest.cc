@@ -95,6 +95,12 @@ TEST_F(TetherSessionCompletionLoggerTest, TestMultiDeviceHostUnverified) {
           MULTIDEVICE_HOST_UNVERIFIED);
 }
 
+TEST_F(TetherSessionCompletionLoggerTest, TestBetterTogetherSuiteDisabled) {
+  TestSessionCompletionReasonRecorded(
+      TetherSessionCompletionLogger::SessionCompletionReason::
+          BETTER_TOGETHER_SUITE_DISABLED);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

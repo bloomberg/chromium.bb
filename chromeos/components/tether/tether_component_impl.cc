@@ -58,6 +58,9 @@ GetSessionCompletionReasonFromShutdownReason(
     case TetherComponent::ShutdownReason::MULTIDEVICE_HOST_UNVERIFIED:
       return TetherSessionCompletionLogger::SessionCompletionReason::
           MULTIDEVICE_HOST_UNVERIFIED;
+    case TetherComponent::ShutdownReason::BETTER_TOGETHER_SUITE_DISABLED:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          BETTER_TOGETHER_SUITE_DISABLED;
     default:
       break;
   }
