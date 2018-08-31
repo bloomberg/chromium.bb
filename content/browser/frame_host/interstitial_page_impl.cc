@@ -1090,4 +1090,16 @@ InterstitialPageImpl::GetOrCreateRootBrowserAccessibilityManager() {
   return web_contents_impl->GetOrCreateRootBrowserAccessibilityManager();
 }
 
+void InterstitialPageImpl::AudioContextPlaybackStarted(RenderFrameHost* host,
+                                                       int context_id) {
+  // Interstitial pages should not be playing any sound via WebAudio
+  NOTREACHED();
+}
+
+void InterstitialPageImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
+                                                       int context_id) {
+  // Interstitial pages should not be playing any sound via WebAudio.
+  NOTREACHED();
+}
+
 }  // namespace content

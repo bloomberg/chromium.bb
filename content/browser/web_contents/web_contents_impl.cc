@@ -6517,6 +6517,20 @@ int WebContentsImpl::GetCurrentlyPlayingVideoCount() {
   return currently_playing_video_count_;
 }
 
+void WebContentsImpl::AudioContextPlaybackStarted(RenderFrameHost* host,
+                                                  int context_id) {
+  WebContentsObserver::AudioContextId audio_context_id(host, context_id);
+  for (auto& observer : observers_)
+    observer.AudioContextPlaybackStarted(audio_context_id);
+}
+
+void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
+                                                  int context_id) {
+  WebContentsObserver::AudioContextId audio_context_id(host, context_id);
+  for (auto& observer : observers_)
+    observer.AudioContextPlaybackStopped(audio_context_id);
+}
+
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
   // (for power and speed impact assessment) or when

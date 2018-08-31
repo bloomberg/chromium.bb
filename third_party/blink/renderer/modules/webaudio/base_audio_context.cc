@@ -1001,18 +1001,4 @@ bool BaseAudioContext::WouldTaintOrigin(const KURL& url) const {
   return true;
 }
 
-void BaseAudioContext::NotifyAudibleAudioStarted() {
-  DCHECK(IsMainThread());
-  // TODO(crbug.com/855069): Actually notify the browser that audible audio has
-  // started.
-  VLOG(1) << this << ": Audible audio started @" << currentTime();
-}
-
-void BaseAudioContext::NotifyAudibleAudioStopped() {
-  DCHECK(IsMainThread());
-  // TODO(crbug.com/855069): Actually notify the browser that audible audio has
-  // started.
-  VLOG(1) << this << ": Audible audio stopped @" << currentTime();
-}
-
 }  // namespace blink
