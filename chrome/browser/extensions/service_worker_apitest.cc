@@ -62,10 +62,6 @@ namespace extensions {
 
 namespace {
 
-// Pass into ServiceWorkerTest::StartTestFromBackgroundPage to indicate that
-// registration is expected to succeed.
-std::string* const kExpectSuccess = nullptr;
-
 // Returns the newly added WebContents.
 content::WebContents* AddTab(Browser* browser, const GURL& url) {
   int starting_tab_count = browser->tab_strip_model()->count();
@@ -149,13 +145,7 @@ class ServiceWorkerTest : public ExtensionApiTest,
   //
   // This registers a service worker with |script_name|, and fetches the
   // registration result.
-  //
-  // If |error_or_null| is null (kExpectSuccess), success is expected and this
-  // will fail if there is an error.
-  // If |error_or_null| is not null, nothing is assumed, and the error (which
-  // may be empty) is written to it.
-  const Extension* StartTestFromBackgroundPage(const char* script_name,
-                                               std::string* error_or_null) {
+  const Extension* StartTestFromBackgroundPage(const char* script_name) {
     ExtensionTestMessageListener ready_listener("ready", false);
     const Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("service_worker/background"));
@@ -171,9 +161,7 @@ class ServiceWorkerTest : public ExtensionApiTest,
         background_host->host_contents(),
         base::StringPrintf("test.registerServiceWorker('%s')", script_name),
         &error));
-    if (error_or_null)
-      *error_or_null = error;
-    else if (!error.empty())
+    if (!error.empty())
       ADD_FAILURE() << "Got unexpected error " << error;
     return extension;
   }
@@ -532,7 +520,7 @@ class ServiceWorkerLazyBackgroundTest : public ServiceWorkerTest {
 };
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, RegisterSucceeds) {
-  StartTestFromBackgroundPage("register.js", kExpectSuccess);
+  StartTestFromBackgroundPage("register.js");
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
@@ -650,8 +638,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, FetchArbitraryPaths) {
-  const Extension* extension =
-      StartTestFromBackgroundPage("fetch.js", kExpectSuccess);
+  const Extension* extension = StartTestFromBackgroundPage("fetch.js");
 
   // Open some arbirary paths. Their contents should be what the service worker
   // responds with, which in this case is the path of the fetch.
@@ -673,8 +660,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, FetchArbitraryPaths) {
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
                        FetchExtensionResourceFromServiceWorker) {
-  const Extension* extension =
-      StartTestFromBackgroundPage("fetch_from_sw.js", kExpectSuccess);
+  const Extension* extension = StartTestFromBackgroundPage("fetch_from_sw.js");
   ASSERT_TRUE(extension);
 
   // The service worker in this test tries to load 'hello.txt' via fetch()
@@ -692,7 +678,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
   const Extension* extension =
-      StartTestFromBackgroundPage("replace_background.js", kExpectSuccess);
+      StartTestFromBackgroundPage("replace_background.js");
   ExtensionHost* background_page =
       process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(background_page);
@@ -717,8 +703,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPage) {
-  const Extension* extension =
-      StartTestFromBackgroundPage("fetch.js", kExpectSuccess);
+  const Extension* extension = StartTestFromBackgroundPage("fetch.js");
 
   std::string kExpectedInnerText = "background.html contents for testing.";
 
@@ -750,8 +735,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPage) {
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
                        ServiceWorkerPostsMessageToBackgroundClient) {
-  const Extension* extension = StartTestFromBackgroundPage(
-      "post_message_to_background_client.js", kExpectSuccess);
+  const Extension* extension =
+      StartTestFromBackgroundPage("post_message_to_background_client.js");
 
   // The service worker in this test simply posts a message to the background
   // client it receives from getBackgroundClient().
@@ -771,7 +756,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
                        BackgroundPagePostsMessageToServiceWorker) {
   const Extension* extension =
-      StartTestFromBackgroundPage("post_message_to_sw.js", kExpectSuccess);
+      StartTestFromBackgroundPage("post_message_to_sw.js");
 
   // The service worker in this test waits for a message, then echoes it back
   // by posting a message to the background page via getBackgroundClient().
@@ -793,8 +778,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
   std::string extension_id;
   GURL extension_url;
   {
-    const Extension* extension =
-        StartTestFromBackgroundPage("fetch.js", kExpectSuccess);
+    const Extension* extension = StartTestFromBackgroundPage("fetch.js");
     extension_id = extension->id();
     extension_url = extension->url();
   }
@@ -845,8 +829,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, BackgroundPageIsWokenIfAsleep) {
-  const Extension* extension =
-      StartTestFromBackgroundPage("wake_on_fetch.js", kExpectSuccess);
+  const Extension* extension = StartTestFromBackgroundPage("wake_on_fetch.js");
 
   // Navigate to special URLs that this test's service worker recognises, each
   // making a check then populating the response with either "true" or "false".
