@@ -339,9 +339,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
-  // Updates corner radius of the app list background.
-  void UpdateBackgroundRadius();
-
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
@@ -400,6 +397,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   std::unique_ptr<HideViewAnimationObserver> hide_view_animation_observer_;
 
   std::unique_ptr<TransitionAnimationObserver> transition_animation_observer_;
+
+  // The mask used to clip the |app_list_background_shield_|.
+  std::unique_ptr<ui::LayerOwner> app_list_background_shield_mask_;
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
