@@ -48,6 +48,8 @@ ChromeUnifiedConsentServiceClient::GetServiceState(Service service) {
       enabled = pref_service_->GetBoolean(prefs::kAlternateErrorPagesEnabled);
       break;
     case Service::kMetricsReporting:
+      if (!g_browser_process->metrics_service())
+        return ServiceState::kNotSupported;
       // Uploads are disabled for non-official builds, but UnifiedConsentService
       // only cares whether the user has manually disabled metrics reporting.
       enabled = g_browser_process->local_state()->GetBoolean(

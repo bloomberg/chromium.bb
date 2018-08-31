@@ -102,6 +102,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
   return SBErrorOptions(/*is_main_frame_load_blocked=*/false,
                         IsExtendedReportingOptInAllowed(pref_service),
                         web_contents.GetBrowserContext()->IsOffTheRecord(),
+                        /*is_unified_consent_enabled=*/false,
                         IsExtendedReportingEnabled(pref_service),
                         IsScout(pref_service),
                         IsExtendedReportingPolicyManaged(pref_service),
