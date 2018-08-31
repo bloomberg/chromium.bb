@@ -45,7 +45,6 @@ class CORE_EXPORT Response final : public Body {
                           const ResponseInit&,
                           ExceptionState&);
   static Response* Create(ExecutionContext*, FetchResponseData*);
-  static Response* Create(ScriptState*, const WebServiceWorkerResponse&);
   static Response* Create(ScriptState*, mojom::blink::FetchAPIResponse&);
 
   static Response* CreateClone(const Response&);

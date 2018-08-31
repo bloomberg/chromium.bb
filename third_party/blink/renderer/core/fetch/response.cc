@@ -77,44 +77,6 @@ FetchResponseData* FilterResponseData(
   return response;
 }
 
-FetchResponseData* CreateFetchResponseDataFromWebResponse(
-    ScriptState* script_state,
-    const WebServiceWorkerResponse& web_response) {
-  FetchResponseData* response = nullptr;
-  if (web_response.Status() > 0)
-    response = FetchResponseData::Create();
-  else
-    response = FetchResponseData::CreateNetworkErrorResponse();
-
-  const WebVector<WebURL>& web_url_list = web_response.UrlList();
-  Vector<KURL> url_list(web_url_list.size());
-  std::transform(web_url_list.begin(), web_url_list.end(), url_list.begin(),
-                 [](const WebURL& url) { return url; });
-  response->SetURLList(url_list);
-  response->SetStatus(web_response.Status());
-  response->SetStatusMessage(web_response.StatusText());
-  response->SetResponseTime(web_response.ResponseTime());
-  response->SetCacheStorageCacheName(web_response.CacheStorageCacheName());
-
-  for (HTTPHeaderMap::const_iterator i = web_response.Headers().begin(),
-                                     end = web_response.Headers().end();
-       i != end; ++i) {
-    response->HeaderList()->Append(i->key, i->value);
-  }
-
-  response->ReplaceBodyStreamBuffer(new BodyStreamBuffer(
-      script_state,
-      new BlobBytesConsumer(ExecutionContext::From(script_state),
-                            web_response.GetBlobDataHandle()),
-      nullptr /* AbortSignal */));
-
-  // Filter the response according to |webResponse|'s ResponseType.
-  response = FilterResponseData(web_response.ResponseType(), response,
-                                web_response.CorsExposedHeaderNames());
-
-  return response;
-}
-
 FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
     ScriptState* script_state,
     mojom::blink::FetchAPIResponse& fetch_api_response) {
@@ -340,13 +302,6 @@ Response* Response::Create(ScriptState* script_state,
 Response* Response::Create(ExecutionContext* context,
                            FetchResponseData* response) {
   return new Response(context, response);
-}
-
-Response* Response::Create(ScriptState* script_state,
-                           const WebServiceWorkerResponse& web_response) {
-  FetchResponseData* response_data =
-      CreateFetchResponseDataFromWebResponse(script_state, web_response);
-  return new Response(ExecutionContext::From(script_state), response_data);
 }
 
 Response* Response::Create(ScriptState* script_state,
