@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_base.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "ui/gfx/image/image.h"
@@ -44,12 +44,7 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
                                gfx::Image image);
 #endif
 
-  // Task runner used for the |worker_|.
-  scoped_refptr<base::SequencedTaskRunner> capture_task_runner_;
-
-  // An object that does all the work of getting list of sources on a background
-  // thread (see |capture_task_runner_|). Destroyed on |capture_task_runner_|
-  // after the model is destroyed.
+  base::Thread thread_;
   std::unique_ptr<Worker> worker_;
 
 #if defined(USE_AURA)
