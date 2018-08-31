@@ -80,13 +80,11 @@ cr.define('ntp', function() {
       this.uninstall_.addEventListener(
           'activate', this.onUninstall_.bind(this));
 
-      if (!cr.isChromeOS) {
-        this.createShortcutSeparator_ =
-            menu.appendChild(cr.ui.MenuItem.createSeparator());
-        this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
-        this.createShortcut_.addEventListener(
-            'activate', this.onCreateShortcut_.bind(this));
-      }
+      this.createShortcutSeparator_ =
+          menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
+      this.createShortcut_.addEventListener(
+          'activate', this.onCreateShortcut_.bind(this));
 
       document.body.appendChild(menu);
     },
@@ -143,11 +141,11 @@ cr.define('ntp', function() {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
         // There are three cases when a launch type is hidden:
-        //  1. packaged apps hide all launch types
+        //  1. if the launch type can't be changed.
         //  2. canHostedAppsOpenInWindows is false and type is launchTypeWindow
         //  3. enableNewBookmarkApps is true and type is anything except
         //     launchTypeWindow
-        launchTypeButton.hidden = app.appData.packagedApp ||
+        launchTypeButton.hidden = !app.appData.mayChangeLaunchType ||
             (!loadTimeData.getBoolean('canHostedAppsOpenInWindows') &&
              launchTypeButton == launchTypeWindow) ||
             (loadTimeData.getBoolean('enableNewBookmarkApps') &&
@@ -157,20 +155,16 @@ cr.define('ntp', function() {
       });
 
       this.launchTypeMenuSeparator_.hidden =
-          app.appData.packagedApp || !hasLaunchType;
+          !app.appData.mayChangeLaunchType || !hasLaunchType;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
       if (this.details_)
         this.details_.disabled = !app.appData.detailsUrl;
       this.uninstall_.disabled = !app.appData.mayDisable;
+      this.appinfo_.hidden = !app.appData.isLocallyInstalled;
 
-      if (cr.isMac) {
-        // On Windows and Linux, these should always be visible. On ChromeOS,
-        // they are never created. On Mac, shortcuts can only be created for
-        // new-style packaged apps, so hide the menu item.
-        this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
-            !app.appData.packagedApp;
-      }
+      this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
+          !app.appData.mayCreateShortcuts;
     },
 
     /** @private */
@@ -345,7 +339,7 @@ cr.define('ntp', function() {
     setIcon: function() {
       var src = this.useSmallIcon_ ? this.appData_.icon_small :
                                      this.appData_.icon_big;
-      if (!this.appData_.enabled ||
+      if (!this.appData_.enabled || !this.appData_.isLocallyInstalled ||
           (!this.appData_.offlineEnabled && !navigator.onLine)) {
         src += '?grayscale=true';
       }

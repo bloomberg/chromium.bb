@@ -20,11 +20,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -149,6 +152,22 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetBoolean("mayDisable", extensions::ExtensionSystem::Get(
       service->profile())->management_policy()->UserMayModifySettings(
       extension, NULL));
+
+  bool is_locally_installed =
+      !extension->is_hosted_app() ||
+      BookmarkAppIsLocallyInstalled(service->profile(), extension);
+  value->SetBoolean("mayChangeLaunchType",
+                    !extension->is_platform_app() && is_locally_installed);
+
+#if defined(OS_MACOSX)
+  // On Mac, only packaged apps can have shortcuts created.
+  value->SetBoolean("mayCreateShortcuts", extension->is_platform_app());
+#else
+  // On other platforms, any locally installed app can have shortcuts created.
+  value->SetBoolean("mayCreateShortcuts", is_locally_installed);
+#endif
+
+  value->SetBoolean("isLocallyInstalled", is_locally_installed);
 
   auto icon_size = extension_misc::EXTENSION_ICON_LARGE;
   auto match_type = ExtensionIconSet::MATCH_BIGGER;
