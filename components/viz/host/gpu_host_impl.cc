@@ -145,6 +145,10 @@ void GpuHostImpl::OnProcessCrashed() {
   }
 }
 
+void GpuHostImpl::AddConnectionErrorHandler(base::OnceClosure handler) {
+  connection_error_handlers_.push_back(std::move(handler));
+}
+
 void GpuHostImpl::BlockLiveOffscreenContexts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -223,6 +227,10 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
 
 void GpuHostImpl::SendOutstandingReplies() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& handler : connection_error_handlers_)
+    std::move(handler).Run();
+  connection_error_handlers_.clear();
 
   // Send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {

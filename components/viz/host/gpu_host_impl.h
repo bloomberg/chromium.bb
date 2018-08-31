@@ -9,7 +9,9 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -125,6 +127,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void OnProcessLaunched(base::ProcessId pid);
   void OnProcessCrashed();
 
+  // Adds a connection error handler for the GpuService.
+  void AddConnectionErrorHandler(base::OnceClosure handler);
+
   void BlockLiveOffscreenContexts();
 
   // Connects to FrameSinkManager running in the Viz service.
@@ -196,6 +201,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   gpu::GpuProcessHostActivityFlags activity_flags_;
 
   base::ProcessId pid_ = base::kNullProcessId;
+
+  // List of connection error handlers for the GpuService.
+  std::vector<base::OnceClosure> connection_error_handlers_;
 
   // Whether the GPU service has started successfully or not.
   bool initialized_ = false;
