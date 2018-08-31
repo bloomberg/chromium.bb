@@ -1473,6 +1473,7 @@ crbug.com/798572 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe
 crbug.com/868956 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
 
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Slow ]
+crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Slow ]
 
 crbug.com/877104 external/wpt/editing/run/delete.html?1-1000 [ Slow ]
 crbug.com/877104 external/wpt/editing/run/delete.html?1001-2000 [ Slow ]
