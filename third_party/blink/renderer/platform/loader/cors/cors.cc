@@ -270,11 +270,7 @@ bool CalculateCORSFlag(const KURL& url,
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS should not work.
   DCHECK(origin);
-
-  if (url.ProtocolIsData())
-    return false;
-
-  return !origin->CanRequest(url);
+  return !origin->CanReadContent(url);
 }
 
 }  // namespace CORS

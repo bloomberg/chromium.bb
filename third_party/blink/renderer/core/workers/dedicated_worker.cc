@@ -172,10 +172,6 @@ void DedicatedWorker::Start() {
         network::mojom::FetchRequestMode::kSameOrigin;
     network::mojom::FetchCredentialsMode fetch_credentials_mode =
         network::mojom::FetchCredentialsMode::kSameOrigin;
-    if (script_request_url_.ProtocolIsData()) {
-      fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-      fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
-    }
     classic_script_loader_ = WorkerClassicScriptLoader::Create();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), script_request_url_,

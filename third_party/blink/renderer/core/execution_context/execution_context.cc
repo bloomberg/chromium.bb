@@ -116,9 +116,7 @@ bool ExecutionContext::ShouldSanitizeScriptError(
   if (cors_status == kOpaqueResource)
     return true;
   const KURL& url = CompleteURL(source_url);
-  if (url.ProtocolIsData())
-    return false;
-  return !(GetSecurityOrigin()->CanRequest(url) ||
+  return !(GetSecurityOrigin()->CanReadContent(url) ||
            cors_status == kSharableCrossOrigin);
 }
 
