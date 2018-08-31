@@ -8,13 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
-#include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/html/html_html_element.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -48,39 +42,6 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
     GetElementById("arrow-3")->DispatchEvent(*event);
   }
 
-  Document& CreateTestDocumentWithBody() {
-    Document* document = Document::CreateForTest();
-    HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
-    document->AppendChild(html);
-    document->documentElement()->SetInnerHTMLFromString("<body></body>");
-    return *document;
-  }
-
-  void CreateTestOverlayPlayButton(Document& test_document) {
-    // Create a video element so that a MediaControlsImpl is created.
-    HTMLVideoElement* media_element = HTMLVideoElement::Create(test_document);
-    media_element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
-    test_document.body()->AppendChild(media_element);
-
-    MediaControlsImpl* media_controls =
-        static_cast<MediaControlsImpl*>(media_element->GetMediaControls());
-    ASSERT_NE(nullptr, media_controls);
-
-    // Create a MediaControlOverlayPlayButtonElement for testing.
-    overlay_play_button_ =
-        new MediaControlOverlayPlayButtonElement(*media_controls);
-  }
-
-  void SimulateKeepEventInNode() {
-    MouseEventInit mouse_initializer;
-    mouse_initializer.setView(GetDocument().domWindow());
-    mouse_initializer.setButton(1);
-
-    MouseEvent* mouse_event =
-        MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
-    overlay_play_button_->KeepEventInNode(*mouse_event);
-  }
-
  private:
   bool SVGElementHasDisplayValue() {
     return GetElementById("jump")->InlineStyle()->HasProperty(
@@ -93,7 +54,6 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
     return GetDocument().body()->getElementById(id);
   }
 
-  Persistent<MediaControlOverlayPlayButtonElement> overlay_play_button_;
   Persistent<MediaControlOverlayPlayButtonElement::AnimatedArrow>
       arrow_element_;
 };
@@ -117,14 +77,6 @@ TEST_F(MediaControlOverlayPlayButtonElementTest, ShowIncrementsCounter) {
   // Start a new show.
   SimulateShow();
   ExpectPresentAndShown();
-}
-
-TEST_F(MediaControlOverlayPlayButtonElementTest,
-       KeepEventInNodeWithoutLayoutViewDoesntCrash) {
-  ScopedModernMediaControlsForTest enable_modern_media_controls(true);
-  Document& document_without_layout_view = CreateTestDocumentWithBody();
-  CreateTestOverlayPlayButton(document_without_layout_view);
-  SimulateKeepEventInNode();
 }
 
 }  // namespace blink
