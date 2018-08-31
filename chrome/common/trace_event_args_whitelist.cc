@@ -30,9 +30,10 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "typeNames", nullptr},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
-    {"toplevel", "*", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
-    {"omnibox", "HistoryQuickProvider::Start", nullptr},
+    {"task_scheduler", "*", nullptr},
+    {"toplevel", "*", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "StackCpuSampling", nullptr},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
