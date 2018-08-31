@@ -52,6 +52,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ToggleAlwaysShowIconItem);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
+                           ToggleMediaRemotingItem);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ActionShownByPolicy);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            NotifyActionController);
@@ -72,6 +74,9 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   // dialog asking the user to acknowledge the Google Privacy Policy before
   // enabling the services.
   void ToggleCloudServices();
+
+  // Toggles the preference to enable or disable media remoting.
+  void ToggleMediaRemoting();
 
   // Opens feedback page loaded from the media router extension.
   void ReportIssue();

@@ -231,6 +231,25 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
       IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
 }
 
+TEST_F(MediaRouterContextualMenuUnitTest, ToggleMediaRemotingItem) {
+  MediaRouterContextualMenu menu(browser(), kInToolbar, kShownByPolicy,
+                                 &observer_);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kMediaRouterMediaRemotingEnabled, false);
+  EXPECT_FALSE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING, 0);
+  EXPECT_TRUE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+  EXPECT_TRUE(
+      pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
+
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING, 0);
+  EXPECT_FALSE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+  EXPECT_FALSE(
+      pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
+}
+
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleAlwaysShowIconItem) {
   MediaRouterContextualMenu menu(browser(), kInToolbar, kShownByUser,
                                  &observer_);

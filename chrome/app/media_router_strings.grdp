@@ -85,6 +85,9 @@
   <message name="IDS_MEDIA_ROUTER_SHOWN_BY_POLICY" desc="Title of a menu item, which indicates that the Media Router action icon was added to the toolbar by the policy enabled by the user's administrator.">
     Added by your administrator
   </message>
+  <message name="IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING" desc="Title of a menu item which, on click, toggles (enables or disables) the feature to optimize casting fullscreen videos to a Chromecast device. This menu item has a checkmark when the feature is enabled.">
+    Optimize fullscreen videos
+  </message>
 
   <!-- First Run Flow -->
   <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_PREF_TEXT" desc="Text of the cloud services preferences text in the first run flow, which is shown to the user if they are currently signed in and have enabled sync.">

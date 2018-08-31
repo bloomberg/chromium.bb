@@ -82,7 +82,11 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
         IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
         IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
   }
-  if (!media_router::ShouldUseViewsDialog()) {
+  if (media_router::ShouldUseViewsDialog()) {
+    menu_model_->AddCheckItemWithStringId(
+        IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
+        IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
+  } else {
     menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR,
                                      GetChangeVisibilityTextId());
   }
@@ -118,13 +122,17 @@ void MediaRouterContextualMenu::SetAlwaysShowActionPref(bool always_show) {
 }
 
 bool MediaRouterContextualMenu::IsCommandIdChecked(int command_id) const {
-  if (command_id == IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE) {
-    return browser_->profile()->GetPrefs()->GetBoolean(
-        prefs::kMediaRouterEnableCloudServices);
+  PrefService* pref_service = browser_->profile()->GetPrefs();
+  switch (command_id) {
+    case IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE:
+      return pref_service->GetBoolean(prefs::kMediaRouterEnableCloudServices);
+    case IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION:
+      return GetAlwaysShowActionPref();
+    case IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING:
+      return pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled);
+    default:
+      return false;
   }
-  if (command_id == IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION)
-    return GetAlwaysShowActionPref();
-  return false;
 }
 
 bool MediaRouterContextualMenu::IsCommandIdEnabled(int command_id) const {
@@ -188,6 +196,9 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
               ComponentToolbarActionsFactory::kMediaRouterActionId,
               !is_action_in_toolbar_);
       break;
+    case IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING:
+      ToggleMediaRemoting();
+      break;
     default:
       NOTREACHED();
   }
@@ -211,6 +222,13 @@ void MediaRouterContextualMenu::ToggleCloudServices() {
     // If the user hasn't enabled cloud services before, show the opt-in dialog.
     media_router::ShowCloudServicesDialog(browser_);
   }
+}
+
+void MediaRouterContextualMenu::ToggleMediaRemoting() {
+  PrefService* pref_service = browser_->profile()->GetPrefs();
+  pref_service->SetBoolean(
+      prefs::kMediaRouterMediaRemotingEnabled,
+      !pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
 }
 
 void MediaRouterContextualMenu::ReportIssue() {
