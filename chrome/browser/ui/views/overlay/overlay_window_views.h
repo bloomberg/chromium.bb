@@ -45,8 +45,12 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetVideoBounds() override;
 
   // views::Widget:
+  void OnNativeBlur() override;
+  void OnNativeWidgetDestroyed() override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
+  void OnNativeWidgetMove() override;
+  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
   void OnNativeWidgetWorkspaceChanged() override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -54,12 +58,6 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::internal::NativeWidgetDelegate:
-  void OnNativeBlur() override;
-  void OnNativeWidgetMove() override;
-  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
-  void OnNativeWidgetDestroyed() override;
 
   // Gets the bounds of the controls.
   gfx::Rect GetCloseControlsBounds();
