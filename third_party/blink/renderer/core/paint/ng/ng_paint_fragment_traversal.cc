@@ -250,6 +250,11 @@ void NGPaintFragmentTraversal::MoveToPrevious() {
     Push(*current_, current_->Children().size() - 1);
 }
 
+NGPaintFragmentTraversal::AncestorRange
+NGPaintFragmentTraversal::InclusiveAncestorsOf(const NGPaintFragment& start) {
+  return AncestorRange(start);
+}
+
 Vector<NGPaintFragmentWithContainerOffset>
 NGPaintFragmentTraversal::DescendantsOf(const NGPaintFragment& container) {
   Vector<NGPaintFragmentWithContainerOffset> result;
@@ -358,6 +363,18 @@ NGPaintFragmentTraversal::NextInlineLeafOfIgnoringLineBreak(
   while (!runner.IsNull() && IsLineBreak(runner))
     runner = NextInlineLeafOf(runner);
   return runner;
+}
+
+// ----
+NGPaintFragment* NGPaintFragmentTraversal::AncestorRange::Iterator::operator->()
+    const {
+  DCHECK(current_);
+  return current_;
+}
+
+void NGPaintFragmentTraversal::AncestorRange::Iterator::operator++() {
+  DCHECK(current_);
+  current_ = current_->Parent();
 }
 
 }  // namespace blink

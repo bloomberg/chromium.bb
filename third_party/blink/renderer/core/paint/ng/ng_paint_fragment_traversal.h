@@ -99,6 +99,47 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   // functions are not as cheap as their DOM versions. When traversing more than
   // once, instace functions are recommended.
 
+  class AncestorRange final {
+    STACK_ALLOCATED();
+
+   public:
+    class Iterator final
+        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
+      STACK_ALLOCATED();
+
+     public:
+      explicit Iterator(NGPaintFragment* current) : current_(current) {}
+
+      NGPaintFragment* operator*() const { return operator->(); }
+      NGPaintFragment* operator->() const;
+
+      void operator++();
+
+      bool operator==(const Iterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const Iterator& other) const {
+        return !operator==(other);
+      }
+
+     private:
+      NGPaintFragment* current_;
+    };
+
+    explicit AncestorRange(const NGPaintFragment& start) : start_(&start) {}
+
+    Iterator begin() const {
+      return Iterator(const_cast<NGPaintFragment*>(start_));
+    }
+    Iterator end() const { return Iterator(nullptr); }
+
+   private:
+    const NGPaintFragment* const start_;
+  };
+
+  // Returns inclusive ancestors.
+  static AncestorRange InclusiveAncestorsOf(const NGPaintFragment&);
+
   // Returns descendants without paint layer in preorder.
   static Vector<NGPaintFragmentWithContainerOffset> DescendantsOf(
       const NGPaintFragment&);
