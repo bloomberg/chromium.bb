@@ -2373,10 +2373,13 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::CVC);
+  int expected_detected_value = CreditCardSaveManager::DetectedValue::CVC;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
@@ -2392,10 +2395,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
@@ -2417,10 +2424,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::ADDRESS_NAME;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -2443,11 +2454,15 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bits.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
-                CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
+  int expected_detected_values =
+      CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
+      CreditCardSaveManager::DetectedValue::ADDRESS_NAME;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_values,
+            expected_detected_values);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -2494,10 +2509,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::POSTAL_CODE);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::POSTAL_CODE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -2548,10 +2567,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::ADDRESS_LINE);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::ADDRESS_LINE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
@@ -2573,10 +2596,13 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::LOCALITY);
+  int expected_detected_value = CreditCardSaveManager::DetectedValue::LOCALITY;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
@@ -2598,10 +2624,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
@@ -2623,10 +2653,14 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::COUNTRY_CODE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -2648,10 +2682,14 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bit.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT);
+  int expected_detected_value =
+      CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_value,
+            expected_detected_value);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
@@ -2678,17 +2716,21 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bits.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::CVC |
-                CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
-                CreditCardSaveManager::DetectedValue::ADDRESS_NAME |
-                CreditCardSaveManager::DetectedValue::ADDRESS_LINE |
-                CreditCardSaveManager::DetectedValue::LOCALITY |
-                CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
-                CreditCardSaveManager::DetectedValue::POSTAL_CODE |
-                CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
+  int expected_detected_values =
+      CreditCardSaveManager::DetectedValue::CVC |
+      CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
+      CreditCardSaveManager::DetectedValue::ADDRESS_NAME |
+      CreditCardSaveManager::DetectedValue::ADDRESS_LINE |
+      CreditCardSaveManager::DetectedValue::LOCALITY |
+      CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
+      CreditCardSaveManager::DetectedValue::POSTAL_CODE |
+      CreditCardSaveManager::DetectedValue::COUNTRY_CODE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_values,
+            expected_detected_values);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -2714,13 +2756,17 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bits.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::CVC |
-                CreditCardSaveManager::DetectedValue::LOCALITY |
-                CreditCardSaveManager::DetectedValue::POSTAL_CODE |
-                CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
+  int expected_detected_values =
+      CreditCardSaveManager::DetectedValue::CVC |
+      CreditCardSaveManager::DetectedValue::LOCALITY |
+      CreditCardSaveManager::DetectedValue::POSTAL_CODE |
+      CreditCardSaveManager::DetectedValue::COUNTRY_CODE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_values,
+            expected_detected_values);
 }
 
 // This test checks that ADDRESS_LINE, LOCALITY, ADMINISTRATIVE_AREA, and
@@ -2759,13 +2805,17 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // No CVC set
 
-  // Submit the form and check what detected_values for an upload save would be.
+  // Submit the form and ensure the detected_values for an upload save contained
+  // the expected bits.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
-            CreditCardSaveManager::DetectedValue::ADDRESS_LINE |
-                CreditCardSaveManager::DetectedValue::LOCALITY |
-                CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
-                CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
+  int expected_detected_values =
+      CreditCardSaveManager::DetectedValue::ADDRESS_LINE |
+      CreditCardSaveManager::DetectedValue::LOCALITY |
+      CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
+      CreditCardSaveManager::DetectedValue::COUNTRY_CODE;
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details() &
+                expected_detected_values,
+            expected_detected_values);
 }
 
 TEST_F(CreditCardSaveManagerTest,
