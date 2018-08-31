@@ -25,15 +25,6 @@
 }
 
 - (void)setScript:(NSString*)script {
-  // The translation script uses performance.now() for metrics, which is not
-  // supported except on iOS 8.0. To make the translation script work on these
-  // iOS versions, add some JavaScript to |script| that defines an
-  // implementation of performance.now().
-  NSString* const kPerformancePlaceholder =
-      @"var performance = window['performance'] || {};"
-      @"performance.now = performance['now'] ||"
-      @"(function () { return Date.now(); });\n";
-  script = [kPerformancePlaceholder stringByAppendingString:script];
   NSString* path =
       [base::mac::FrameworkBundle() pathForResource:@"translate_ios"
                                              ofType:@"js"];
