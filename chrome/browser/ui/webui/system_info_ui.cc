@@ -45,6 +45,7 @@ using system_logs::SystemLogsResponse;
 class SystemInfoUIHTMLSource : public content::URLDataSource{
  public:
   SystemInfoUIHTMLSource();
+  ~SystemInfoUIHTMLSource() override {}
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -66,8 +67,6 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   }
 
  private:
-  ~SystemInfoUIHTMLSource() override {}
-
   void SysInfoComplete(std::unique_ptr<SystemLogsResponse> response);
   void RequestComplete();
   void WaitForData();

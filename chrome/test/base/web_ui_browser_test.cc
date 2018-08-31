@@ -323,10 +323,9 @@ namespace {
 class MockWebUIDataSource : public content::URLDataSource {
  public:
   MockWebUIDataSource() {}
-
- private:
   ~MockWebUIDataSource() override {}
 
+ private:
   std::string GetSource() const override { return "dummyurl"; }
 
   void StartDataRequest(
