@@ -110,4 +110,8 @@ cc::TouchAction MockInputRouterClient::GetAndResetWhiteListedTouchAction() {
   return white_listed_touch_action;
 }
 
+bool MockInputRouterClient::NeedsBeginFrameForFlingProgress() {
+  return false;
+}
+
 }  // namespace content
