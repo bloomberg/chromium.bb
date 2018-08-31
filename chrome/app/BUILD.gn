@@ -386,10 +386,6 @@ static_library("test_support") {
       "//services/ws/public/mojom:constants",
     ]
   }
-
-  if (use_cups) {
-    configs += [ "//printing:cups" ]
-  }
 }
 
 service_manifest("chrome_manifest") {
