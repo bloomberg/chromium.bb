@@ -493,6 +493,42 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
 
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);
+
+  if (platform_settings.display_surface) {
+    WTF::String value;
+    switch (platform_settings.display_surface.value()) {
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor:
+        value = "monitor";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow:
+        value = "window";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kApplication:
+        value = "application";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser:
+        value = "browser";
+        break;
+    }
+    settings.setDisplaySurface(value);
+  }
+  if (platform_settings.logical_surface)
+    settings.setLogicalSurface(platform_settings.logical_surface.value());
+  if (platform_settings.cursor) {
+    WTF::String value;
+    switch (platform_settings.cursor.value()) {
+      case WebMediaStreamTrack::CursorCaptureType::kNever:
+        value = "never";
+        break;
+      case WebMediaStreamTrack::CursorCaptureType::kAlways:
+        value = "always";
+        break;
+      case WebMediaStreamTrack::CursorCaptureType::kMotion:
+        value = "motion";
+        break;
+    }
+    settings.setCursor(value);
+  }
 }
 
 ScriptPromise MediaStreamTrack::applyConstraints(

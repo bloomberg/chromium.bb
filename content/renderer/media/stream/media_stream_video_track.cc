@@ -390,6 +390,12 @@ void MediaStreamVideoTrack::GetSettings(
     settings.focal_length_x = calibration->focal_length_x;
     settings.focal_length_y = calibration->focal_length_y;
   }
+  if (source_->device().display_media_info.has_value()) {
+    const auto& info = source_->device().display_media_info.value();
+    settings.display_surface = ToWebDisplaySurface(info.display_surface);
+    settings.logical_surface = info.logical_surface;
+    settings.cursor = ToWebCursorCaptureType(info.cursor);
+  }
 }
 
 void MediaStreamVideoTrack::OnReadyStateChanged(

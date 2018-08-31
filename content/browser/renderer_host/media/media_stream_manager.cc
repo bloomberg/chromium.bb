@@ -55,6 +55,7 @@
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/display_media_information.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video/fake_video_capture_device.h"
@@ -190,14 +191,20 @@ MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
                                               : MEDIA_NO_SERVICE;
 }
 
-// Returns DesktopMediaID with fake initializers if
-// |kUseFakeDeviceForMediaStream| is set. Returns the default DesktopMediaID
-// otherwise.
-DesktopMediaID FindDesktopMediaIDFromFakeDeviceConfig() {
+// Returns MediaStreamDevice built with DesktopMediaID with fake
+// initializers if |kUseFakeDeviceForMediaStream| is set. Returns a
+// MediaStreamDevice with default DesktopMediaID otherwise.
+MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
   // TODO(emircan): When getDisplayMedia() accepts constraints, pick
   // the corresponding type.
-  DesktopMediaID media_id =
-      DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId);
+  DesktopMediaID media_id(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId);
+
+  MediaStreamDevice device(MEDIA_DISPLAY_VIDEO_CAPTURE, media_id.ToString(),
+                           media_id.ToString());
+  media::DisplayCaptureSurfaceType display_surface =
+      media::DisplayCaptureSurfaceType::MONITOR;
+  device.display_media_info = media::DisplayMediaInformation(
+      display_surface, true, media::CursorCaptureType::NEVER);
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -210,26 +217,31 @@ DesktopMediaID FindDesktopMediaIDFromFakeDeviceConfig() {
                 switches::kUseFakeDeviceForMediaStream),
             &config);
     if (config.empty())
-      return media_id;
+      return device;
 
     DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_NONE;
     switch (config[0].display_media_type) {
       case media::FakeVideoCaptureDevice::DisplayMediaType::ANY:
-        desktop_media_type = DesktopMediaID::TYPE_SCREEN;
-        break;
       case media::FakeVideoCaptureDevice::DisplayMediaType::MONITOR:
         desktop_media_type = DesktopMediaID::TYPE_SCREEN;
+        display_surface = media::DisplayCaptureSurfaceType::MONITOR;
         break;
       case media::FakeVideoCaptureDevice::DisplayMediaType::WINDOW:
         desktop_media_type = DesktopMediaID::TYPE_WINDOW;
+        display_surface = media::DisplayCaptureSurfaceType::WINDOW;
         break;
       case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
         desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
+        display_surface = media::DisplayCaptureSurfaceType::BROWSER;
         break;
     }
     media_id = DesktopMediaID(desktop_media_type, DesktopMediaID::kFakeId);
   }
-  return media_id;
+  device = MediaStreamDevice(MEDIA_DISPLAY_VIDEO_CAPTURE, media_id.ToString(),
+                             media_id.ToString());
+  device.display_media_info = media::DisplayMediaInformation(
+      display_surface, true, media::CursorCaptureType::NEVER);
+  return device;
 }
 
 }  // namespace
@@ -1089,10 +1101,7 @@ void MediaStreamManager::PostRequestToUI(
 
     if (request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE) {
       DCHECK(devices.empty());
-      DesktopMediaID media_id = FindDesktopMediaIDFromFakeDeviceConfig();
-      devices.push_back(MediaStreamDevice(MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                          media_id.ToString(),
-                                          media_id.ToString()));
+      devices.push_back(MediaStreamDeviceFromFakeDeviceConfig());
     }
     std::unique_ptr<FakeMediaStreamUIProxy> fake_ui = fake_ui_factory_.Run();
     fake_ui->SetAvailableDevices(devices);
