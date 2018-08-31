@@ -68,8 +68,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           service_worker_provider_info,
       int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          script_loader_factory_info,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+          main_script_loader_factory,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider);
@@ -129,13 +129,14 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // ServiceWorkerProviderHost on the browser.
   mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
       service_worker_provider_info_;
-  // NetworkService: The URLLoaderFactory used for loading the shared worker
-  // script.
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory_info_;
 
-  // S13nServiceWorker: The factory bundle used for loads from this shared
-  // worker.
-  scoped_refptr<HostChildURLLoaderFactoryBundle> loader_factories_;
+  // NetworkService: The URLLoaderFactory used for loading the shared worker
+  // main script.
+  network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory_;
+
+  // S13nServiceWorker: The factory bundle used for loading subresources for
+  // this shared worker.
+  scoped_refptr<HostChildURLLoaderFactoryBundle> subresource_loader_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
