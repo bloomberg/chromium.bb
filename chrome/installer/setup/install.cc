@@ -391,7 +391,7 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   // |base_properties|: The basic properties to set on every shortcut installed
   // (to be refined on a per-shortcut basis).
   ShellUtil::ShortcutProperties base_properties(shortcut_level);
-  product.AddDefaultShortcutProperties(target, &base_properties);
+  ShellUtil::AddDefaultShortcutProperties(target, &base_properties);
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {

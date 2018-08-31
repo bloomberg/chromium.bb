@@ -333,6 +333,10 @@ class ShellUtil {
                               ShellChange level,
                               base::FilePath* path);
 
+  // Populates the uninitialized members of |properties| with default values.
+  static void AddDefaultShortcutProperties(const base::FilePath& target_exe,
+                                           ShortcutProperties* properties);
+
   // Move an existing shortcut from |old_location| to |new_location| for the
   // set |shortcut_level|.  If the folder containing |old_location| is then
   // empty, it will be removed.

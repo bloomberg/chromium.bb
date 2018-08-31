@@ -23,7 +23,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -221,9 +220,8 @@ class ProfileShortcutManagerTest : public testing::Test {
         GetUserShortcutsDirectory().Append(shortcut_name + installer::kLnkExt);
     EXPECT_FALSE(base::PathExists(shortcut_path)) << location.ToString();
 
-    installer::Product product(GetDistribution());
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-    product.AddDefaultShortcutProperties(GetExePath(), &properties);
+    ShellUtil::AddDefaultShortcutProperties(GetExePath(), &properties);
     properties.set_shortcut_name(shortcut_name);
     PostCreateOrUpdateShortcut(location, properties);
     EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
@@ -234,9 +232,8 @@ class ProfileShortcutManagerTest : public testing::Test {
   base::FilePath CreateRegularSystemLevelShortcut(
       const base::Location& location) {
     BrowserDistribution* distribution = GetDistribution();
-    installer::Product product(distribution);
     ShellUtil::ShortcutProperties properties(ShellUtil::SYSTEM_LEVEL);
-    product.AddDefaultShortcutProperties(GetExePath(), &properties);
+    ShellUtil::AddDefaultShortcutProperties(GetExePath(), &properties);
     PostCreateOrUpdateShortcut(location, properties);
     const base::FilePath system_level_shortcut_path =
         GetSystemShortcutsDirectory().Append(distribution->GetShortcutName() +

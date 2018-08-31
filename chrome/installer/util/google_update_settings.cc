@@ -31,7 +31,6 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
 using install_static::InstallDetails;

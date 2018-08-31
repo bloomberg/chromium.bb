@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/installer/util/shell_util.h"
 
 class BrowserDistribution;
 
 namespace base {
 class CommandLine;
+class FilePath;
 }
 
 namespace installer {
@@ -58,11 +58,6 @@ class Product {
 
   // See ProductOperations::AddKeyFiles.
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
-
-  // See ProductOperations::AddDefaultShortcutProperties.
-  void AddDefaultShortcutProperties(
-      const base::FilePath& target_exe,
-      ShellUtil::ShortcutProperties* properties) const;
 
  protected:
   BrowserDistribution* const distribution_;
