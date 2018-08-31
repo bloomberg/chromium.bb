@@ -7,6 +7,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+
+// Wrapper to use Action Cells in Chrome Table Views.
+@interface ManualFillActionItem : TableViewItem
+
+- (instancetype)initWithTitle:(NSString*)title
+                       action:(void (^)(void))action NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
+
+@end
+
 // A table view cell which contains a button and holds an action block, which
 // is called when the button is touched.
 @interface ManualFillActionCell : UITableViewCell

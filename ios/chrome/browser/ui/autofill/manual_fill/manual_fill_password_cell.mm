@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -14,6 +15,36 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface ManualFillCredentialItem ()
+// The credential for this item.
+@property(nonatomic, strong, readonly) ManualFillCredential* credential;
+// The delegate for this item.
+@property(nonatomic, weak, readonly) id<ManualFillContentDelegate> delegate;
+@end
+
+@implementation ManualFillCredentialItem
+@synthesize delegate = _delegate;
+@synthesize credential = _credential;
+
+- (instancetype)initWithCredential:(ManualFillCredential*)credential
+                          delegate:(id<ManualFillContentDelegate>)delegate {
+  self = [super initWithType:kItemTypeEnumZero];
+  if (self) {
+    _credential = credential;
+    _delegate = delegate;
+    self.cellClass = [ManualFillPasswordCell class];
+  }
+  return self;
+}
+
+- (void)configureCell:(ManualFillPasswordCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
+  [cell setUpWithCredential:self.credential delegate:self.delegate];
+}
+
+@end
 
 namespace {
 // Left and right margins of the cell content.
@@ -47,7 +78,7 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 @property(nonatomic, strong) UILabel* siteNameLabel;
 // A button showing the username, or "No Username".
 @property(nonatomic, strong) UIButton* usernameButton;
-// A button showing the "••••••••" to resemble a password.
+// A button showing "••••••••" to resemble a password.
 @property(nonatomic, strong) UIButton* passwordButton;
 // The delegate in charge of processing the user actions in this cell.
 @property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
@@ -62,6 +93,15 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 @synthesize delegate = _delegate;
 
 #pragma mark - Public
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.siteNameLabel.text = @"";
+  [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
+  self.usernameButton.enabled = YES;
+  [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
+  self.manualFillCredential = nil;
+}
 
 - (void)setUpWithCredential:(ManualFillCredential*)credential
                    delegate:(id<ManualFillContentDelegate>)delegate {
@@ -107,15 +147,6 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
   if (credential.password.length) {
     [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
   }
-}
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
-  self.siteNameLabel.text = @"";
-  [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
-  self.usernameButton.enabled = YES;
-  [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
-  self.manualFillCredential = nil;
 }
 
 #pragma mark - Private
