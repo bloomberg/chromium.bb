@@ -3318,7 +3318,7 @@ LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
 
 FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const FloatPoint& local_point) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
+  if (ParentFrameView()) {
     auto* layout_object = frame_->OwnerLayoutObject();
     if (!layout_object)
       return local_point;
@@ -3476,10 +3476,8 @@ void LocalFrameView::AddScrollableArea(
     scrollable_areas_ = new ScrollableAreaSet;
   scrollable_areas_->insert(scrollable_area);
 
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
+  if (GetScrollingCoordinator())
     ScrollableAreasDidChange();
-  }
 }
 
 void LocalFrameView::RemoveScrollableArea(
@@ -3488,10 +3486,8 @@ void LocalFrameView::RemoveScrollableArea(
     return;
   scrollable_areas_->erase(scrollable_area);
 
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
+  if (GetScrollingCoordinator())
     ScrollableAreasDidChange();
-  }
 }
 
 void LocalFrameView::AddAnimatingScrollableArea(
@@ -3889,10 +3885,8 @@ void LocalFrameView::SetSelfVisible(bool visible) {
 void LocalFrameView::Show() {
   if (!IsSelfVisible()) {
     SetSelfVisible(true);
-    if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator()) {
+    if (GetScrollingCoordinator())
       GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
-    }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     if (IsParentVisible()) {
       ForAllChildViewsAndPlugins(
@@ -3912,10 +3906,8 @@ void LocalFrameView::Hide() {
           });
     }
     SetSelfVisible(false);
-    if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator()) {
+    if (GetScrollingCoordinator())
       GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
-    }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 }
