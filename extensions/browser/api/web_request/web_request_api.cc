@@ -516,6 +516,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
 }
 
 WebRequestAPI::~WebRequestAPI() {
+  proxies_->SetAPIDestroyed();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProxySet::Shutdown, std::move(proxies_)));
