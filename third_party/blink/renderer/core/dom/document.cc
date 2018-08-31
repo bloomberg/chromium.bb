@@ -3108,7 +3108,7 @@ void Document::open() {
   if (frame_ && frame_->Loader().HasProvisionalNavigation()) {
     frame_->Loader().StopAllLoaders();
     // Navigations handled by the client should also be cancelled.
-    if (frame_->Client())
+    if (frame_ && frame_->Client())
       frame_->Client()->AbortClientNavigation();
   }
 
