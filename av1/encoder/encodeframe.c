@@ -4412,10 +4412,11 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
       (unsigned int)(cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop -
                      cpi->tplist[tile_row][tile_col][sb_row_in_tile].start);
 
-  assert(tok - cpi->tplist[tile_row][tile_col][sb_row_in_tile].start <=
-         get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
-                         cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
-                         num_planes));
+  assert(
+      (unsigned int)(tok -
+                     cpi->tplist[tile_row][tile_col][sb_row_in_tile].start) <=
+      get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
+                      cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes));
 
   (void)tile_mb_cols;
   (void)num_mb_rows_in_sb;
