@@ -225,10 +225,10 @@ void AppendKeyValue(base::ListValue* list,
                     std::string value,
                     std::string clazz = std::string()) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetPath({kKey}, base::Value(std::move(key)));
-  dict->SetPath({kValue}, base::Value(std::move(value)));
+  dict->SetKey(kKey, base::Value(std::move(key)));
+  dict->SetKey(kValue, base::Value(std::move(value)));
   if (!clazz.empty())
-    dict->SetPath({kClass}, base::Value(std::move(clazz)));
+    dict->SetKey(kClass, base::Value(std::move(clazz)));
   list->GetList().push_back(std::move(*dict));
 }
 
