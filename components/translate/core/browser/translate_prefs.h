@@ -124,7 +124,10 @@ class TranslatePrefs {
  public:
   static const char kPrefLanguageProfile[];
   static const char kPrefForceTriggerTranslateCount[];
-  static const char kPrefTranslateSiteBlacklist[];
+  // TODO(crbug.com/524927): Remove kPrefTranslateSiteBlacklist after
+  // 3 milestones (M74).
+  static const char kPrefTranslateSiteBlacklistDeprecated[];
+  static const char kPrefTranslateSiteBlacklistWithTime[];
   static const char kPrefTranslateWhitelists[];
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateIgnoredCount[];
@@ -214,6 +217,10 @@ class TranslatePrefs {
   void BlacklistSite(const std::string& site);
   void RemoveSiteFromBlacklist(const std::string& site);
 
+  std::vector<std::string> GetBlacklistedSitesBetween(base::Time begin,
+                                                      base::Time end) const;
+  void DeleteBlacklistedSitesBetween(base::Time begin, base::Time end);
+
   bool HasWhitelistedLanguagePairs() const;
 
   bool IsLanguagePairWhitelisted(const std::string& original_language,
@@ -298,6 +305,10 @@ class TranslatePrefs {
   // kOverrideTranslateTriggerInIndia experiment made translate trigger on an
   // English page when it otherwise wouldn't have.
   void ReportAcceptedAfterForceTriggerOnEnglishPages();
+
+  // Migrate the sites blacklist from a list to a dictionary that maps sites
+  // to a timestamp of the creation of this entry.
+  void MigrateSitesBlacklist();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs,

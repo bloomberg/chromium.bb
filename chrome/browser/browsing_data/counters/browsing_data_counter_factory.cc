@@ -112,7 +112,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 #else
         nullptr,
 #endif
-        ProtocolHandlerRegistryFactory::GetForBrowserContext(profile));
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(profile),
+        profile->GetPrefs());
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -1131,7 +1133,7 @@ class ClearNetworkErrorLoggingTester {
     request_context->set_network_error_logging_service(nullptr);
   }
 
-  const MockNetworkErrorLoggingService& mock() { return *service_; };
+  const MockNetworkErrorLoggingService& mock() { return *service_; }
 
  private:
   TestingProfile* profile_;
@@ -2271,6 +2273,30 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveZoomLevel) {
   EXPECT_EQ("print", levels[0].host);
 }
 #endif
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveTranslateBlacklist) {
+  auto translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetProfile()->GetPrefs());
+  translate_prefs->BlacklistSite("google.com");
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  base::Time t = base::Time::Now();
+  translate_prefs->BlacklistSite("maps.google.com");
+
+  EXPECT_TRUE(translate_prefs->IsSiteBlacklisted("google.com"));
+  EXPECT_TRUE(translate_prefs->IsSiteBlacklisted("maps.google.com"));
+
+  BlockUntilBrowsingDataRemoved(
+      t, base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+  EXPECT_TRUE(translate_prefs->IsSiteBlacklisted("google.com"));
+  EXPECT_FALSE(translate_prefs->IsSiteBlacklisted("maps.google.com"));
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+  EXPECT_FALSE(translate_prefs->IsSiteBlacklisted("google.com"));
+  EXPECT_FALSE(translate_prefs->IsSiteBlacklisted("maps.google.com"));
+}
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
   // Add our settings.

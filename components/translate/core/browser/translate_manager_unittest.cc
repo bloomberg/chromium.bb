@@ -109,10 +109,29 @@ using namespace ::testing;
 using namespace base;
 using namespace translate::TranslateBrowserMetrics;
 
+// The constructor of this class is used to register preferences before
+// TranslatePrefs gets created.
+struct ProfilePrefRegistration {
+  ProfilePrefRegistration(sync_preferences::TestingPrefServiceSyncable* prefs) {
+    prefs->registry()->RegisterStringPref(accept_languages_prefs,
+                                          std::string());
+#if defined(OS_CHROMEOS)
+    prefs->registry()->RegisterStringPref(preferred_languages_prefs,
+                                          std::string());
+#endif
+    TranslatePrefs::RegisterProfilePrefs(prefs->registry());
+    // TODO(groby): Figure out RegisterProfilePrefs() should register this.
+    prefs->registry()->RegisterBooleanPref(
+        prefs::kOfferTranslateEnabled, true,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  }
+};
+
 class TranslateManagerTest : public ::testing::Test {
  protected:
   TranslateManagerTest()
-      : translate_prefs_(&prefs_,
+      : registration_(&prefs_),
+        translate_prefs_(&prefs_,
                          accept_languages_prefs,
                          preferred_languages_prefs),
         manager_(TranslateDownloadManager::GetInstance()),
@@ -123,17 +142,7 @@ class TranslateManagerTest : public ::testing::Test {
   void SetUp() override {
     // Ensure we're not requesting a server-side translate language list.
     TranslateLanguageList::DisableUpdate();
-    prefs_.registry()->RegisterStringPref(accept_languages_prefs,
-                                          std::string());
-#if defined(OS_CHROMEOS)
-    prefs_.registry()->RegisterStringPref(preferred_languages_prefs,
-                                          std::string());
-#endif
-    TranslatePrefs::RegisterProfilePrefs(prefs_.registry());
-    // TODO(groby): Figure out RegisterProfilePrefs() should register this.
-    prefs_.registry()->RegisterBooleanPref(
-        prefs::kOfferTranslateEnabled, true,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
     manager_->ResetForTesting();
   }
 
@@ -174,7 +183,7 @@ class TranslateManagerTest : public ::testing::Test {
   }
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-
+  ProfilePrefRegistration registration_;
   // TODO(groby): request TranslatePrefs from |mock_translate_client_| instead.
   TranslatePrefs translate_prefs_;
   TranslateDownloadManager* manager_;
