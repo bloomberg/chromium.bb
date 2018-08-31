@@ -94,14 +94,18 @@ using InputMethodMusTest = test::AuraTestBaseMus;
 namespace {
 
 // Used in closure supplied to processing the event.
-void RunFunctionWithEventResult(bool* was_run, ws::mojom::EventResult result) {
+void RunFunctionWithEventResult(bool* was_run,
+                                ws::mojom::EventResult* result_out,
+                                ws::mojom::EventResult result) {
   *was_run = true;
+  *result_out = result;
 }
 
 }  // namespace
 
 TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
   bool was_event_result_callback_run = false;
+  ws::mojom::EventResult event_result = ws::mojom::EventResult::UNHANDLED;
   // Create an InputMethodMus and foward an event to it.
   {
     TestInputMethodDelegate input_method_delegate;
@@ -109,8 +113,9 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
     TestInputMethod test_input_method;
     InputMethodMusTestApi::SetInputMethod(&input_method_mus,
                                           &test_input_method);
-    EventResultCallback callback = base::BindOnce(
-        &RunFunctionWithEventResult, &was_event_result_callback_run);
+    EventResultCallback callback =
+        base::BindOnce(&RunFunctionWithEventResult,
+                       &was_event_result_callback_run, &event_result);
 
     ui::EventDispatchDetails details =
         InputMethodMusTestApi::CallSendKeyEventToInputMethod(
@@ -136,14 +141,16 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
 
 TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
   bool was_event_result_callback_run = false;
+  ws::mojom::EventResult event_result = ws::mojom::EventResult::UNHANDLED;
   ui::DummyTextInputClient test_input_client;
   // Create an InputMethodMus and foward an event to it.
   TestInputMethodDelegate input_method_delegate;
   InputMethodMus input_method_mus(&input_method_delegate, nullptr);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
-                                                &was_event_result_callback_run);
+  EventResultCallback callback =
+      base::BindOnce(&RunFunctionWithEventResult,
+                     &was_event_result_callback_run, &event_result);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
           &input_method_mus,
@@ -159,18 +166,21 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
       &input_method_mus, nullptr, &test_input_client);
   // Changing the focused client should trigger running the callback.
   EXPECT_TRUE(was_event_result_callback_run);
+  EXPECT_EQ(ws::mojom::EventResult::HANDLED, event_result);
 }
 
 TEST_F(InputMethodMusTest,
        PendingCallbackRunFromOnDidChangeFocusedClientToNull) {
   bool was_event_result_callback_run = false;
+  ws::mojom::EventResult event_result = ws::mojom::EventResult::UNHANDLED;
   // Create an InputMethodMus and foward an event to it.
   TestInputMethodDelegate input_method_delegate;
   InputMethodMus input_method_mus(&input_method_delegate, nullptr);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
-                                                &was_event_result_callback_run);
+  EventResultCallback callback =
+      base::BindOnce(&RunFunctionWithEventResult,
+                     &was_event_result_callback_run, &event_result);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
           &input_method_mus,
@@ -186,6 +196,7 @@ TEST_F(InputMethodMusTest,
                                                       nullptr, nullptr);
   // Changing the focused client should trigger running the callback.
   EXPECT_TRUE(was_event_result_callback_run);
+  EXPECT_EQ(ws::mojom::EventResult::HANDLED, event_result);
 }
 
 // See description of ChangeTextInputTypeWhileProcessingCallback for details.
@@ -224,6 +235,7 @@ class TestInputMethodDelegate2 : public ui::internal::InputMethodDelegate {
 // scenario and the callback is correctly called.
 TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
   bool was_event_result_callback_run = false;
+  ws::mojom::EventResult event_result = ws::mojom::EventResult::UNHANDLED;
   ui::DummyTextInputClient test_input_client;
   // Create an InputMethodMus and foward an event to it.
   TestInputMethodDelegate2 input_method_delegate;
@@ -232,8 +244,9 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
                                                 &test_input_client);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
-                                                &was_event_result_callback_run);
+  EventResultCallback callback =
+      base::BindOnce(&RunFunctionWithEventResult,
+                     &was_event_result_callback_run, &event_result);
   const ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
@@ -243,10 +256,12 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
   ASSERT_EQ(1u, test_input_method.process_key_event_callbacks()->size());
   // Callback should not have been run yet.
   EXPECT_FALSE(was_event_result_callback_run);
-  std::move((*test_input_method.process_key_event_callbacks())[0]).Run(false);
+  const bool handled = true;
+  std::move((*test_input_method.process_key_event_callbacks())[0]).Run(handled);
 
   // Callback should have been run.
   EXPECT_TRUE(was_event_result_callback_run);
+  EXPECT_EQ(ws::mojom::EventResult::HANDLED, event_result);
 }
 
 // Calling OnTextInputTypeChanged from unfocused client should

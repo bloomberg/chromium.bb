@@ -64,10 +64,13 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
 
   void UpdateTextInputType();
 
-  // Runs all pending callbacks with UNHANDLED. This is called during shutdown,
+  // Runs all pending callbacks with HANDLED. This is called during shutdown,
   // or any time |input_method_ptr_| is reset to ensure we don't leave mus
-  // waiting for an ack.
-  void AckPendingCallbacksUnhandled();
+  // waiting for an ack. We ack HANDLED because the input method can be reset
+  // due to focus changes in response to shortcuts (e.g. Ctrl-T opening a tab)
+  // and we don't want the window manager to try to process the accelerators.
+  // https://crbug.com/874098
+  void AckPendingCallbacks();
 
   // Called when the server responds to our request to process an event.
   void ProcessKeyEventCallback(
