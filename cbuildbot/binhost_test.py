@@ -40,7 +40,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
   # Boards that don't have Chromium PFQs.
   # TODO(davidjames): Empty this list.
-  BOARDS_WITHOUT_CHROMIUM_PFQS = ['rush_ryu', 'smaug', 'veyron_rialto']
+  BOARDS_WITHOUT_CHROMIUM_PFQS = ['veyron_rialto']
 
   site_config = config_lib.GetConfig()
 
