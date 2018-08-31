@@ -38,6 +38,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -268,8 +269,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
     policy_manager->core()->client()->Register(
         registration_type, em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-        em::LicenseType::UNDEFINED, "bogus", std::string(), std::string(),
-        std::string());
+        em::LicenseType::UNDEFINED, DMAuth::FromOAuthToken("bogus"),
+        std::string(), std::string(), std::string());
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager->core()->client()->RemoveObserver(&observer);

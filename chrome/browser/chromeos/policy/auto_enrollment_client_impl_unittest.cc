@@ -82,8 +82,8 @@ class AutoEnrollmentClientImplTest
   void CreateClient(int power_initial, int power_limit) {
     state_ = AUTO_ENROLLMENT_STATE_PENDING;
     service_.reset(new MockDeviceManagementService());
-    EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _))
-        .WillRepeatedly(SaveArg<5>(&last_request_));
+    EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _, _))
+        .WillRepeatedly(SaveArg<6>(&last_request_));
     auto progress_callback =
         base::BindRepeating(&AutoEnrollmentClientImplTest::ProgressCallback,
                             base::Unretained(this));
@@ -783,16 +783,16 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   InSequence sequence;
   // The default client uploads 4 bits. Make the server ask for 5.
   ServerWillReply(1 << 5, false, false);
-  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _));
+  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _, _));
   // Then reply with a valid response and include the hash.
   ServerWillReply(-1, true, true);
-  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _));
+  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _, _));
   // State download triggers.
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
       kDisabledMessage);
-  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _));
+  EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _, _));
 
   // Trigger a network change event.
   client()->OnConnectionChanged(

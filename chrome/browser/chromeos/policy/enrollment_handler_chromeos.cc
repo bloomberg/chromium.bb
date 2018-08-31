@@ -34,6 +34,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -156,7 +157,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
-    const std::string& auth_token,
+    std::unique_ptr<DMAuth> dm_auth,
     const std::string& client_id,
     const std::string& requisition,
     const EnrollmentCallback& completion_callback)
@@ -168,17 +169,17 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       background_task_runner_(background_task_runner),
       ad_join_delegate_(ad_join_delegate),
       enrollment_config_(enrollment_config),
-      auth_token_(auth_token),
       client_id_(client_id),
       requisition_(requisition),
       completion_callback_(completion_callback),
       enrollment_step_(STEP_PENDING),
       weak_ptr_factory_(this) {
+  dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   CHECK((enrollment_config_.is_mode_attestation() ||
          enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) ==
-        auth_token_.empty());
+        dm_auth_->empty());
   CHECK_NE(enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO,
            enrollment_config.offline_policy_path.empty());
   CHECK(enrollment_config_.auth_mechanism !=
@@ -200,7 +201,7 @@ void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   available_licenses_callback_ = license_callback;
   client_->RequestAvailableLicenses(
-      auth_token_,
+      dm_auth_->Clone(),
       base::Bind(&EnrollmentHandlerChromeOS::HandleAvailableLicensesResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -391,6 +392,7 @@ void EnrollmentHandlerChromeOS::HandleStateKeysResult(
   StartRegistration();
 }
 
+// TODO(antrim):oauth
 void EnrollmentHandlerChromeOS::StartRegistration() {
   DCHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (!store_->is_initialized()) {
@@ -408,7 +410,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        auth_token_, client_id_, requisition_, current_state_key_);
+        dm_auth_->Clone(), client_id_, requisition_, current_state_key_);
   }
 }
 
@@ -540,7 +542,8 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     } else {
       domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
       SetStep(STEP_ROBOT_AUTH_FETCH);
-      client_->FetchRobotAuthCodes(auth_token_);
+      // TODO(antrim): it could be DMToken or OAuth token here, need to check.
+      client_->FetchRobotAuthCodes(dm_auth_->Clone());
     }
   } else {
     ReportResult(EnrollmentStatus::ForValidationError(validator->status()));
