@@ -104,6 +104,9 @@ namespace network {
 
 namespace {
 
+const GURL kURL("http://foo.com");
+const GURL kOtherURL("http://other.com");
+
 // Sends an HttpResponse for requests for "/" that result in sending an HPKP
 // report.  Ignores other paths to avoid catching the subsequent favicon
 // request.
@@ -132,6 +135,26 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
   // configuration.
   params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
   return params;
+}
+
+void SetContentSetting(const GURL& primary_pattern,
+                       const GURL& secondary_pattern,
+                       ContentSetting setting,
+                       NetworkContext* network_context) {
+  network_context->cookie_manager()->SetContentSettings(
+      {ContentSettingPatternSource(
+          ContentSettingsPattern::FromURL(primary_pattern),
+          ContentSettingsPattern::FromURL(secondary_pattern),
+          base::Value(setting), std::string(), false)});
+}
+
+void SetDefaultContentSetting(ContentSetting setting,
+                              NetworkContext* network_context) {
+  network_context->cookie_manager()->SetContentSettings(
+      {ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                   ContentSettingsPattern::Wildcard(),
+                                   base::Value(setting), std::string(),
+                                   false)});
 }
 
 // ProxyLookupClient that drives proxy lookups and can wait for the responses to
@@ -2971,6 +2994,133 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   EXPECT_EQ(1, internal_resolver->num_cancellations());
   EXPECT_TRUE(control_handle_closed);
   EXPECT_TRUE(resolver_closed);
+}
+
+TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->CanEnablePrivacyMode(kURL, kOtherURL));
+}
+
+TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  SetContentSetting(kURL, kOtherURL, CONTENT_SETTING_BLOCK,
+                    network_context.get());
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_delegate()
+                  ->CanEnablePrivacyMode(kURL, kOtherURL));
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->CanEnablePrivacyMode(kOtherURL, kURL));
+}
+
+TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  SetContentSetting(kURL, kOtherURL, CONTENT_SETTING_ALLOW,
+                    network_context.get());
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->CanEnablePrivacyMode(kURL, kOtherURL));
+}
+
+TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  // URLs are switched so setting should not apply.
+  SetContentSetting(kOtherURL, kURL, CONTENT_SETTING_BLOCK,
+                    network_context.get());
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->CanEnablePrivacyMode(kURL, kOtherURL));
+}
+
+TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::NetworkDelegate* delegate =
+      network_context->url_request_context()->network_delegate();
+
+  network_context->cookie_manager()->BlockThirdPartyCookies(true);
+  EXPECT_TRUE(delegate->CanEnablePrivacyMode(kURL, kOtherURL));
+  EXPECT_FALSE(delegate->CanEnablePrivacyMode(kURL, kURL));
+
+  network_context->cookie_manager()->BlockThirdPartyCookies(false);
+  EXPECT_FALSE(delegate->CanEnablePrivacyMode(kURL, kOtherURL));
+  EXPECT_FALSE(delegate->CanEnablePrivacyMode(kURL, kURL));
+}
+
+TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
+                              base::Time(), base::Time(), base::Time(), false,
+                              false, net::CookieSameSite::NO_RESTRICTION,
+                              net::COOKIE_PRIORITY_LOW);
+
+  EXPECT_TRUE(
+      network_context->url_request_context()->network_delegate()->CanSetCookie(
+          *request, cookie, nullptr, true));
+  SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
+  EXPECT_FALSE(
+      network_context->url_request_context()->network_delegate()->CanSetCookie(
+          *request, cookie, nullptr, true));
+}
+
+TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
+                              base::Time(), base::Time(), base::Time(), false,
+                              false, net::CookieSameSite::NO_RESTRICTION,
+                              net::COOKIE_PRIORITY_LOW);
+
+  SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
+  EXPECT_TRUE(
+      network_context->url_request_context()->network_delegate()->CanSetCookie(
+          *request, cookie, nullptr, true));
+}
+
+TEST_F(NetworkContextTest, CanGetCookiesFalseIfCookiesBlocked) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  EXPECT_TRUE(
+      network_context->url_request_context()->network_delegate()->CanGetCookies(
+          *request, {}, true));
+  SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
+  EXPECT_FALSE(
+      network_context->url_request_context()->network_delegate()->CanGetCookies(
+          *request, {}, true));
+}
+
+TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
+  EXPECT_TRUE(
+      network_context->url_request_context()->network_delegate()->CanGetCookies(
+          *request, {}, true));
 }
 
 // Gets notified by the EmbeddedTestServer on incoming connections being

@@ -29,9 +29,14 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
@@ -219,6 +224,16 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       network::mojom::CookieManagerParams::New();
   network_context_params->cookie_manager_params->block_third_party_cookies =
       block_third_party_cookies_.GetValue();
+  network_context_params->cookie_manager_params
+      ->secure_origin_cookies_allowed_schemes.push_back(
+          content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network_context_params->cookie_manager_params
+        ->matching_scheme_cookies_allowed_schemes.push_back(
+            extensions::kExtensionScheme);
+  }
+#endif
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(

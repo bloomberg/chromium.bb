@@ -244,7 +244,6 @@ source_set("tests") {
     "network_change_manager_unittest.cc",
     "network_context_unittest.cc",
     "network_quality_estimator_manager_unittest.cc",
-    "network_service_network_delegate_unittest.cc",
     "network_service_unittest.cc",
     "network_usage_accumulator_unittest.cc",
     "p2p/socket_tcp_server_unittest.cc",

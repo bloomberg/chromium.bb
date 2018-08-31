@@ -83,11 +83,13 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
                                       AuthCredentials* credentials) override;
 
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list) override;
+                       const CookieList& cookie_list,
+                       bool allowed_from_caller) override;
 
   bool OnCanSetCookie(const URLRequest& request,
                       const net::CanonicalCookie& cookie,
-                      CookieOptions* options) override;
+                      CookieOptions* options,
+                      bool allowed_from_caller) override;
 
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,

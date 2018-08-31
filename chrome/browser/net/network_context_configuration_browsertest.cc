@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -58,6 +59,7 @@
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -601,6 +603,35 @@ class NetworkContextConfigurationBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       SecureCookiesAllowedForChromeScheme) {
+  // Cookies are only allowed for chrome:// schemes requesting a secure origin,
+  // so create an HTTPS server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&https_server);
+  ASSERT_TRUE(https_server.Start());
+  if (GetPrefService()->FindPreference(prefs::kBlockThirdPartyCookies))
+    GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = https_server.GetURL("/echoheader?Cookie");
+  request->site_for_cookies = GURL(chrome::kChromeUIPrintURL);
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  EXPECT_EQ(200, simple_loader->ResponseInfo()->headers->response_code());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ("cookie", *simple_loader_helper.response_body());
+}
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   std::unique_ptr<network::ResourceRequest> request =
