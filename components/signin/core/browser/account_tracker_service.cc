@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -221,19 +222,8 @@ AccountTrackerService::GetMigrationState() const {
   return GetMigrationState(pref_service_);
 }
 
-void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
-  pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
-}
-
 void AccountTrackerService::SetMigrationDone() {
   SetMigrationState(MIGRATION_DONE);
-}
-
-// static
-AccountTrackerService::AccountIdMigrationState
-AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
-  return static_cast<AccountTrackerService::AccountIdMigrationState>(
-      pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
 
 void AccountTrackerService::NotifyAccountUpdated(const AccountState& state) {
@@ -355,55 +345,92 @@ void AccountTrackerService::SetIsAdvancedProtectionAccount(
   SaveToPrefs(state);
 }
 
-bool AccountTrackerService::IsMigratable() const {
-  if (!IsMigrationSupported())
-    return false;
-
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end(); ++it) {
-    const AccountState& state = it->second;
-    if ((it->first).empty() || state.info.gaia.empty())
-      return false;
-  }
-  return true;
-}
-
 void AccountTrackerService::MigrateToGaiaId() {
-  std::set<std::string> to_remove;
-  std::map<std::string, AccountState> migrated_accounts;
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end(); ++it) {
-    const AccountState& state = it->second;
-    std::string account_id = it->first;
-    if (account_id != state.info.gaia) {
-      std::string new_account_id = state.info.gaia;
-      if (!base::ContainsKey(accounts_, new_account_id)) {
-        AccountState new_state = state;
-        new_state.info.account_id = new_account_id;
-        migrated_accounts.insert(make_pair(new_account_id, new_state));
-        SaveToPrefs(new_state);
-      }
-      to_remove.insert(account_id);
-    }
+  DCHECK_EQ(GetMigrationState(), MIGRATION_IN_PROGRESS);
+
+  std::vector<std::string> to_remove;
+  std::vector<AccountState> migrated_accounts;
+  for (const auto& pair : accounts_) {
+    const std::string& new_account_id = pair.second.info.gaia;
+    if (pair.first == new_account_id)
+      continue;
+
+    to_remove.push_back(pair.first);
+
+    // If there is already an account keyed to the current account's gaia id,
+    // assume this is the result of a partial migration and skip the account
+    // that is currently inspected.
+    if (base::ContainsKey(accounts_, new_account_id))
+      continue;
+
+    AccountState new_state = pair.second;
+    new_state.info.account_id = new_account_id;
+    SaveToPrefs(new_state);
+    migrated_accounts.emplace_back(std::move(new_state));
+  }
+
+  // Insert the new migrated accounts.
+  for (AccountState& new_state : migrated_accounts) {
+    // Copy the AccountState |gaia| member field so that it is not left in
+    // an undeterminate state in the structure after std::map::emplace call.
+    std::string account_id = new_state.info.gaia;
+    SaveToPrefs(new_state);
+
+    accounts_.emplace(std::move(account_id), std::move(new_state));
   }
 
   // Remove any obsolete account.
-  for (auto account_id : to_remove) {
-    if (base::ContainsKey(accounts_, account_id)) {
-      AccountState& state = accounts_[account_id];
-      RemoveFromPrefs(state);
-      RemoveAccountImageFromDisk(account_id);
-      accounts_.erase(account_id);
-    }
+  for (const auto& account_id : to_remove) {
+    DCHECK(base::ContainsKey(accounts_, account_id));
+    AccountState& state = accounts_[account_id];
+    RemoveAccountImageFromDisk(account_id);
+    RemoveFromPrefs(state);
+    accounts_.erase(account_id);
+  }
+}
+
+bool AccountTrackerService::IsMigrationDone() const {
+  if (!IsMigrationSupported())
+    return false;
+
+  for (const auto& pair : accounts_) {
+    if (pair.first != pair.second.info.gaia)
+      return false;
   }
 
-  for (std::map<std::string, AccountState>::const_iterator it =
-           migrated_accounts.begin();
-       it != migrated_accounts.end(); ++it) {
-    accounts_.insert(*it);
+  return true;
+}
+
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::ComputeNewMigrationState() const {
+  // If migration is not supported, skip migration.
+  if (!IsMigrationSupported())
+    return MIGRATION_NOT_STARTED;
+
+  bool migration_required = false;
+  for (const auto& pair : accounts_) {
+    // If there is any non-migratable account, skip migration.
+    if (pair.first.empty() || pair.second.info.gaia.empty())
+      return MIGRATION_NOT_STARTED;
+
+    // Migration is required if at least one account is not keyed to its
+    // gaia id.
+    migration_required |= (pair.first != pair.second.info.gaia);
   }
+
+  return migration_required ? MIGRATION_IN_PROGRESS : MIGRATION_DONE;
+}
+
+void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
+  DCHECK(state != MIGRATION_DONE || IsMigrationDone());
+  pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
+}
+
+// static
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
+  return static_cast<AccountTrackerService::AccountIdMigrationState>(
+      pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
 
 base::FilePath AccountTrackerService::GetImagePathFor(
@@ -520,6 +547,9 @@ void AccountTrackerService::LoadFromPrefs() {
     }
   }
 
+  UMA_HISTOGRAM_BOOLEAN("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
+                        contains_deprecated_service_flags);
+
   if (contains_deprecated_service_flags)
     RemoveDeprecatedServiceFlags(pref_service_);
 
@@ -531,16 +561,22 @@ void AccountTrackerService::LoadFromPrefs() {
     RemoveAccountImageFromDisk(account_id);
   }
 
-  if (GetMigrationState() != MIGRATION_DONE) {
-    if (IsMigratable()) {
-      if (accounts_.empty()) {
-        SetMigrationDone();
-      } else {
-        SetMigrationState(MIGRATION_IN_PROGRESS);
+  if (IsMigrationSupported()) {
+    if (GetMigrationState() != MIGRATION_DONE) {
+      const AccountIdMigrationState new_state = ComputeNewMigrationState();
+      SetMigrationState(new_state);
+
+      if (new_state == MIGRATION_IN_PROGRESS) {
         MigrateToGaiaId();
       }
     }
+  } else {
+    DCHECK_EQ(GetMigrationState(), MIGRATION_NOT_STARTED);
   }
+
+  DCHECK(GetMigrationState() != MIGRATION_DONE || IsMigrationDone());
+  UMA_HISTOGRAM_ENUMERATION("Signin.AccountTracker.GaiaIdMigrationState",
+                            GetMigrationState(), NUM_MIGRATION_STATES);
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {
