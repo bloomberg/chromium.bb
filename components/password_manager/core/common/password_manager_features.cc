@@ -28,11 +28,6 @@ const base::Feature kDeleteUndecryptableLogins = {
 const base::Feature kHtmlBasedUsernameDetector = {
     "HtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable a context menu item in the password field that allows the user
-// to manually enforce saving of their password.
-const base::Feature kPasswordForceSaving = {
-    "PasswordForceSaving", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the ability to generate passwords that fit sites' requirements.
 const base::Feature kPasswordGenerationRequirements = {
     "PasswordGenerationRequirements", base::FEATURE_ENABLED_BY_DEFAULT};

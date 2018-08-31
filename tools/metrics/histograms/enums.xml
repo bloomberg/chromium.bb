@@ -3474,7 +3474,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED"/>
   <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED"/>
   <int value="3" label="CPMD_BAD_ORIGIN_FORM_SUBMITTED"/>
-  <int value="4" label="CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND"/>
+  <int value="4" label="CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND_OBSOLETE"/>
   <int value="5" label="CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION"/>
   <int value="6" label="CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED"/>
   <int value="7" label="CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD"/>
@@ -46100,7 +46100,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Same document navigation"/>
   <int value="3" label="XHR succeeded"/>
   <int value="4" label="Frame detached"/>
-  <int value="5" label="By context menu"/>
+  <int value="5" label="(obsolete) By context menu"/>
   <int value="6" label="DOM mutation after XHR"/>
   <int value="7" label="Provisionally saved form on start provisional load"/>
   <int value="8" label="(obsolete) Filled form on start provisional load"/>

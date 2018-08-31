@@ -164,10 +164,6 @@ class ChromePasswordManagerClient
   // on this |url|.
   static bool CanShowBubbleOnURL(const GURL& url);
 
-  // Informs the embedder that the user has manually requested to save the
-  // password in the focused password field.
-  void ForceSavePassword();
-
 #if defined(UNIT_TEST)
   bool was_store_ever_called() const { return was_store_ever_called_; }
   bool has_binding_for_credential_manager() const {

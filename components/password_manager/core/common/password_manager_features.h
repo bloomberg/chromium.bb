@@ -23,7 +23,6 @@ extern const base::Feature kDeleteUndecryptableLogins;
 extern const base::Feature kHtmlBasedUsernameDetector;
 extern const base::Feature kPasswordGenerationRequirements;
 extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
-extern const base::Feature kPasswordForceSaving;
 extern const base::Feature kShowAllSavedPasswordsContextMenu;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kMigrateLinuxToLoginDB;

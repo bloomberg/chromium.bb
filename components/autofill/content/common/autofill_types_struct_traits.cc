@@ -274,8 +274,6 @@ EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
     case autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
       return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
           FRAME_DETACHED;
-    case autofill::PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE;
     case autofill::PasswordForm::SubmissionIndicatorEvent::
         DOM_MUTATION_AFTER_XHR:
       return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
@@ -284,6 +282,8 @@ EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
         PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
       return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        DEPRECATED_MANUAL_SAVE:
     case autofill::PasswordForm::SubmissionIndicatorEvent::
         DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD:
     case autofill::PasswordForm::SubmissionIndicatorEvent::
@@ -324,9 +324,6 @@ bool EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
     case autofill::mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED:
       *output =
           autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
-      return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
       return true;
     case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
         DOM_MUTATION_AFTER_XHR:

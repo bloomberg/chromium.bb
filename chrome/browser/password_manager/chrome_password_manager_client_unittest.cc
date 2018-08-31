@@ -161,9 +161,6 @@ class FakePasswordAutofillAgent
   void AutofillUsernameAndPasswordDataReceived(
       const autofill::FormsPredictionsMap& predictions) override {}
 
-  void FindFocusedPasswordForm(
-      FindFocusedPasswordFormCallback callback) override {}
-
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;
   // Records data received via SetLoggingState() call.

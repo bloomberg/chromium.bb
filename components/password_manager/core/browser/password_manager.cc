@@ -524,17 +524,6 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
     OnLoginSuccessful();
 }
 
-void PasswordManager::OnPasswordFormForceSaveRequested(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
-  // TODO(msramek): This is just a sketch. We will need to show a custom bubble,
-  // mark the form as force saved, and recreate the pending login managers,
-  // because the password store might have changed.
-  ProvisionallySavePassword(password_form, driver);
-  if (provisional_save_manager_)
-    OnLoginSuccessful();
-}
-
 void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {

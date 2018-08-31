@@ -128,12 +128,6 @@ void ContentPasswordManagerDriver::ClearPreviewedForm() {
   GetAutofillAgent()->ClearPreviewedForm();
 }
 
-void ContentPasswordManagerDriver::ForceSavePassword() {
-  GetPasswordAutofillAgent()->FindFocusedPasswordForm(
-      base::BindOnce(&ContentPasswordManagerDriver::OnFocusedPasswordFormFound,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void ContentPasswordManagerDriver::GeneratePassword() {
   GetPasswordGenerationAgent()->UserTriggeredGeneratePassword();
 }
@@ -174,15 +168,6 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
     GetPasswordManager()->DidNavigateMainFrame();
     GetPasswordAutofillManager()->DidNavigateMainFrame();
   }
-}
-
-void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
-    const autofill::PasswordForm& password_form) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND))
-    return;
-  GetPasswordManager()->OnPasswordFormForceSaveRequested(this, password_form);
 }
 
 const autofill::mojom::AutofillAgentAssociatedPtr&

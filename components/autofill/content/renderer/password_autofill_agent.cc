@@ -1617,38 +1617,6 @@ void PasswordAutofillAgent::AutofillUsernameAndPasswordDataReceived(
   form_predictions_.insert(predictions.begin(), predictions.end());
 }
 
-void PasswordAutofillAgent::FindFocusedPasswordForm(
-    FindFocusedPasswordFormCallback callback) {
-  std::unique_ptr<PasswordForm> password_form;
-
-  WebElement element =
-      render_frame()->GetWebFrame()->GetDocument().FocusedElement();
-  if (!element.IsNull() && element.HasHTMLTagName("input")) {
-    WebInputElement input = element.To<WebInputElement>();
-    if (input.IsPasswordFieldForAutofill()) {
-      if (!input.Form().IsNull()) {
-        password_form = GetPasswordFormFromWebForm(input.Form());
-      } else {
-        password_form = GetPasswordFormFromUnownedInputElements();
-        // Only try to use this form if |input| is one of the password elements
-        // for |password_form|.
-        if (password_form->password_element !=
-                input.NameForAutofill().Utf16() &&
-            password_form->new_password_element !=
-                input.NameForAutofill().Utf16())
-          password_form.reset();
-      }
-    }
-  }
-
-  if (!password_form)
-    password_form.reset(new PasswordForm());
-
-  password_form->submission_event =
-      PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
-  std::move(callback).Run(*password_form);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 

@@ -882,9 +882,6 @@ extern const char kPassiveDocumentEventListenersDescription[];
 extern const char kPassiveDocumentWheelEventListenersName[];
 extern const char kPassiveDocumentWheelEventListenersDescription[];
 
-extern const char kPasswordForceSavingName[];
-extern const char kPasswordForceSavingDescription[];
-
 extern const char kPasswordExportName[];
 extern const char kPasswordExportDescription[];
 
