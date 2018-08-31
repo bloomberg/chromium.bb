@@ -959,10 +959,6 @@ void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   }
 }
 
-void GpuProcessHost::AddConnectionErrorHandler(base::OnceClosure handler) {
-  connection_error_handlers_.push_back(std::move(handler));
-}
-
 #if defined(OS_ANDROID)
 void GpuProcessHost::OnDestroyingVideoSurfaceAck() {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyingVideoSurfaceAck");
@@ -1216,10 +1212,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
 void GpuProcessHost::SendOutstandingReplies() {
   valid_ = false;
-
-  for (auto& handler : connection_error_handlers_)
-    std::move(handler).Run();
-  connection_error_handlers_.clear();
 
   if (gpu_host_)
     gpu_host_->SendOutstandingReplies();

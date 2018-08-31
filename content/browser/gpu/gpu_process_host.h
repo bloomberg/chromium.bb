@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
@@ -97,9 +96,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
-
-  // Adds a connection error handler for the GpuService.
-  void AddConnectionErrorHandler(base::OnceClosure handler);
 
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
@@ -188,9 +184,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // GPU process id in case GPU is not in-process.
   base::ProcessId process_id_ = base::kNullProcessId;
-
-  // List of connection error handlers for the GpuService.
-  std::vector<base::OnceClosure> connection_error_handlers_;
 
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;

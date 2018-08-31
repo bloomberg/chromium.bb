@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
@@ -18,7 +19,8 @@ GpuMemoryBufferManagerSingleton* g_gpu_memory_buffer_manager;
 viz::mojom::GpuService* GetGpuService(
     base::OnceClosure connection_error_handler) {
   if (auto* host = GpuProcessHost::Get()) {
-    host->AddConnectionErrorHandler(std::move(connection_error_handler));
+    host->gpu_host()->AddConnectionErrorHandler(
+        std::move(connection_error_handler));
     return host->gpu_service();
   }
   return nullptr;
