@@ -15,8 +15,6 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
--CrExtensionsRuntimeHostPermissionsTest.All
--CrExtensionsRuntimeHostsDialogTest.All
 -CrSettingsAllSitesTest.All
 -CrSettingsLanguagesPageTest.InputMethods
 -CrSettingsMainPageTest.MainPage
@@ -166,6 +164,8 @@ CrExtensionsManagerUnitTest.*
 CrExtensionsNavigationHelperTest.*
 CrExtensionsOptionsDialogTest.*
 CrExtensionsPackDialogTest.*
+CrExtensionsRuntimeHostPermissionsTest.*
+CrExtensionsRuntimeHostsDialogTest.*
 CrExtensionsShortcutInputTest.*
 CrExtensionsShortcutTest.*
 CrExtensionsSidebarTest.*
