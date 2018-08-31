@@ -72,13 +72,6 @@ class ThreadProfiler {
   static void StartOnChildThread(
       metrics::CallStackProfileParams::Thread thread);
 
-  // Sets the callback to use for reporting browser process profiles. This
-  // indirection is required to avoid a dependency on unnecessary metrics code
-  // in child processes.
-  static void SetBrowserProcessReceiverCallback(
-      const base::RepeatingCallback<void(base::TimeTicks,
-                                         metrics::SampledProfile)>& callback);
-
   // This function must be called within child processes to supply the Service
   // Manager's connector, to bind the interface through which a profile is sent
   // back to the browser process.
