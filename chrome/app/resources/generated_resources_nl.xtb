@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Pizzapunt</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1468571364034902819">Dit profiel kan niet worden gebruikt</translation>
-<translation id="1470533772306424441">We installeren deze apps voor je. In de Play Store vind je nog meer apps voor je apparaat.</translation>
 <translation id="1470811252759861213">Als je je extensies wilt gebruiken op al je computers, moet je <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">'<ph name="FILENAME" />' is niet geüpload. Er is onvoldoende ruimte beschikbaar in je Google Drive.</translation>
 <translation id="1475502736924165259">Je hebt certificaten die niet in een van de andere categorieën vallen</translation>
@@ -2632,7 +2631,6 @@
 <translation id="5027562294707732951">Extensie toevoegen</translation>
 <translation id="5029568752722684782">Kopie wissen</translation>
 <translation id="5030338702439866405">Verleend door</translation>
-<translation id="503155457707535043">Apps downloaden</translation>
 <translation id="503498442187459473"><ph name="HOST" /> wil gebruikmaken van je camera en microfoon</translation>
 <translation id="5036662165765606524">Sites niet toestaan automatisch meerdere bestanden te downloaden</translation>
 <translation id="5037676449506322593">Selecteer alles</translation>
@@ -2788,7 +2786,6 @@
 <translation id="5265797726250773323">Fout bij het installeren</translation>
 <translation id="5266113311903163739">Fout bij het importeren van de certificeringsinstantie</translation>
 <translation id="5269977353971873915">Afdrukken mislukt</translation>
-<translation id="5271549068863921519">Wachtwoord opslaan</translation>
 <translation id="5275352920323889391">Hond</translation>
 <translation id="5275973617553375938">Bestanden hersteld vanaf Google Drive</translation>
 <translation id="527605719918376753">Tabblad dempen</translation>
@@ -3687,7 +3684,6 @@
 <translation id="6596745167571172521">Caps Lock uitschakelen</translation>
 <translation id="6596816719288285829">IP-adres</translation>
 <translation id="6597017209724497268">Voorbeelden</translation>
-<translation id="6597332018579308636">Toegang toestaan</translation>
 <translation id="659934686219830168">De synchronisatie wordt gestart zodra je deze pagina verlaat</translation>
 <translation id="6602353599068390226">venster verplaatsen naar een ander scherm</translation>
 <translation id="6602956230557165253">Gebruik de pijl naar links en naar rechts om te navigeren.</translation>
@@ -3960,7 +3956,6 @@
 <translation id="7025325401470358758">Volgend deelvenster</translation>
 <translation id="7027125358315426638">Naam database:</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
-<translation id="7030031465713069059">Wachtwoord opslaan</translation>
 <translation id="7031962166228839643">TPM wordt voorbereid, even geduld (dit kan een paar minuten duren)...</translation>
 <translation id="7035437538340499453">Smart Lock is helemaal ingesteld</translation>
 <translation id="7037509989619051237">Tekst voor voorbeeld</translation>
@@ -4549,7 +4544,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Je wachtwoord is gewijzigd op de server. Log uit en weer in.</translation>
 <translation id="7915471803647590281">Vertel ons wat er aan de hand is voordat je de feedback verzendt.</translation>
-<translation id="7916556741383518510">Bij klik</translation>
 <translation id="792514962475806987">Gedockt zoomniveau:</translation>
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME" />...</translation>
@@ -5098,7 +5092,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8758418656925882523">Dicteren inschakelen (spreken om te typen)</translation>
 <translation id="8759408218731716181">Kan toegang tot meerdere accounts niet instellen</translation>
 <translation id="8759753423332885148">Meer informatie.</translation>
-<translation id="8762207669047572135">Toegang toestaan</translation>
 <translation id="8767621466733104912">Chrome automatisch updaten voor alle gebruikers</translation>
 <translation id="8770406935328356739">Hoofddirectory van extensie</translation>
 <translation id="8770507190024617908">Mensen beheren</translation>

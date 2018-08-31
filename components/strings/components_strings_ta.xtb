@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />குக்கீகளை அழிக்கவும்<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">தேர்ந்தெடுத்த அமர்வு இல்லை.</translation>
 <translation id="1323433172918577554">மேலும் காட்டு</translation>
+<translation id="132390688737681464">முகவரிகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="1333989956347591814">இருப்பினும், பின்வரும் தரப்பினர் உங்கள் செயல்பாட்டைப் <ph name="BEGIN_EMPHASIS" />பார்க்க முடியும்<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />நீங்கள் பார்வையிடும் இணையதளங்கள்
@@ -111,6 +112,7 @@
 <translation id="1645368109819982629">ஆதரிக்கப்படாத நெறிமுறை</translation>
 <translation id="1655462015569774233">{1,plural, =1{இந்தச் சேவையகம் தான் <ph name="DOMAIN" /> என்பதை நிரூபிக்க முடியவில்லை; இதன் பாதுகாப்புச் சான்றிதழ் நேற்று காலாவதியானது. இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம். உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_DATE" /> என அமைக்கப்பட்டுள்ளது. அது சரியாக இருக்கிறதா? இல்லை என்றால், உங்கள் முறைமையின் கடிகாரத்தைச் சரிசெய்து, பின்னர் இந்தப் பக்கத்தைப் புதுப்பிக்க வேண்டும்.}other{இந்தச் சேவையகம் தான் <ph name="DOMAIN" /> என்பதை நிரூபிக்க முடியவில்லை; இதன் பாதுகாப்புச் சான்றிதழ் # நாட்களுக்கு முன்பு காலாவதியானது. இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம். உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_DATE" /> என அமைக்கப்பட்டுள்ளது. அது சரியாக இருக்கிறதா? இல்லை என்றால், உங்கள் முறைமையின் கடிகாரத்தைச் சரிசெய்து, பின்னர் இந்தப் பக்கத்தைப் புதுப்பிக்க வேண்டும்.}}</translation>
 <translation id="1656489000284462475">பிக்கப்</translation>
+<translation id="1662550410081243962">கட்டண முறைகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="1663943134801823270">கார்டுகளும் முகவரிகளும் Chrome இலிருந்து பெறப்பட்டவையாகும். <ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> அவற்றை நிர்வகிக்கலாம்.</translation>
 <translation id="1676269943528358898">வழக்கமாக, <ph name="SITE" /> உங்கள் தகவலைப் பாதுகாப்பதற்காக முறைமையாக்கத்தைப் பயன்படுத்துகிறது. இந்த முறை <ph name="SITE" /> உடன் இணைவதற்கு Google Chrome முயற்சித்தபோது வழக்கத்திற்கு மாறான மற்றும் தவறான நற்சான்றிதழ்களை இணையதளம் வழங்கியது. தாக்குபவர் தன்னை <ph name="SITE" /> ஆகக் காட்ட முயற்சிக்கும் போது அல்லது இணைப்பை வைஃபை உள்நுழைவுத் திரை குறுக்கிடும் போது இது ஏற்படலாம். இருப்பினும், தரவு எதுவும் பரிமாற்றப்படுவதற்கு முன் Google Chrome இணைப்பை நிறுத்தியதால் உங்கள் தகவல் பாதுகாப்பாகவே இருக்கிறது.</translation>
 <translation id="168841957122794586">சேவையக சான்றிதழில் வலுவற்ற குறியீட்டாக்க விசை இருக்கிறது.</translation>
@@ -196,6 +198,7 @@
 <translation id="225207911366869382">இந்த கொள்கைக்கான மதிப்பு தடுக்கப்பட்டது.</translation>
 <translation id="2262243747453050782">HTTP பிழை</translation>
 <translation id="2270484714375784793">தொலைபேசி எண்</translation>
+<translation id="2283340219607151381">முகவரிகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="2292556288342944218">உங்கள் இணைய அணுகல் தடுக்கப்பட்டது</translation>
 <translation id="2316887270356262533">1 மெ.பை. அளவிற்கும் குறைவான இடத்தைக் காலியாக்கும். நீங்கள் அடுத்த முறை பார்வையிடும் போது, சில தளங்கள் மிகவும் மெதுவாக ஏற்றப்படலாம்.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />க்குப் பயனர்பெயரும் கடவுச்சொல்லும் தேவை.</translation>
@@ -856,6 +859,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">Gaia ஐடி:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="7179323680825933600">கட்டண முறைகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="7182878459783632708">கொள்கைகள் அமைக்கப்படவில்லை</translation>
 <translation id="7186367841673660872">இந்தப் பக்கமானது<ph name="ORIGINAL_LANGUAGE" />இலிருந்து<ph name="LANGUAGE_LANGUAGE" />க்கு மொழிபெயர்க்கப்பட்டது</translation>

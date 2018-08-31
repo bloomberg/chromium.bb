@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Fatia de pizza</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1468571364034902819">Não é possível usar esse perfil</translation>
-<translation id="1470533772306424441">Instalaremos os apps para você. Você pode encontrar mais apps para seu dispositivo na Play Store.</translation>
 <translation id="1470811252759861213">Para ter suas extensões em todos os computadores, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">Não foi feito o upload de "<ph name="FILENAME" />". Não há espaço livre suficiente no seu Google Drive.</translation>
 <translation id="1475502736924165259">Você tem certificados no arquivo que não correspondem a nenhuma das outras categorias</translation>
@@ -2632,7 +2631,6 @@
 <translation id="5027562294707732951">Adicionar extensão</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="5030338702439866405">Emitido por</translation>
-<translation id="503155457707535043">Fazendo o download dos apps</translation>
 <translation id="503498442187459473"><ph name="HOST" /> quer usar sua câmera e seu microfone</translation>
 <translation id="5036662165765606524">Não permitir que nenhum site faça download de vários arquivos automaticamente</translation>
 <translation id="5037676449506322593">Selecionar tudo</translation>
@@ -2787,7 +2785,6 @@
 <translation id="5265797726250773323">Erro ao instalar</translation>
 <translation id="5266113311903163739">Erro de importação da Autoridade de certificação</translation>
 <translation id="5269977353971873915">Falha ao imprimir</translation>
-<translation id="5271549068863921519">Salvar senha</translation>
 <translation id="5275352920323889391">Cachorro</translation>
 <translation id="5275973617553375938">Arquivos recuperados a partir do Google Drive</translation>
 <translation id="527605719918376753">Desativar som da guia</translation>
@@ -3688,7 +3685,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6596745167571172521">Desativar Caps Lock</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="6597017209724497268">Exemplos</translation>
-<translation id="6597332018579308636">Permitir acesso</translation>
 <translation id="659934686219830168">A sincronização começará assim que você sair desta página</translation>
 <translation id="6602353599068390226">mover janela para outra tela</translation>
 <translation id="6602956230557165253">Use as setas para esquerda e direita para navegar.</translation>
@@ -3961,7 +3957,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7025325401470358758">Próximo painel</translation>
 <translation id="7027125358315426638">Nome do banco de dados:</translation>
 <translation id="7029809446516969842">Senhas</translation>
-<translation id="7030031465713069059">Salvar senha</translation>
 <translation id="7031962166228839643">O TPM está sendo preparado. Aguarde, esse processo pode demorar alguns minutos...</translation>
 <translation id="7035437538340499453">O Smart Lock está pronto</translation>
 <translation id="7037509989619051237">Texto para visualização</translation>
@@ -4551,7 +4546,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Sua senha foi alterada no servidor. Saia e faça login novamente.</translation>
 <translation id="7915471803647590281">Conte-nos o que está acontecendo antes de enviar comentários.</translation>
-<translation id="7916556741383518510">Ao Clicar</translation>
 <translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="7925285046818567682">Aguardando <ph name="HOST_NAME" />...</translation>
@@ -5100,7 +5094,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8758418656925882523">Ativar ditado (fale para digitar)</translation>
 <translation id="8759408218731716181">Não é possível configurar o login múltiplo</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
-<translation id="8762207669047572135">Permitir Acesso</translation>
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os usuários</translation>
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerenciar pessoas</translation>

@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Шматок піци</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1468571364034902819">Цей профіль вимкнено</translation>
-<translation id="1470533772306424441">Ці додатки буде встановлено. Більше додатків для вашого пристрою можна знайти в Play Маркеті.</translation>
 <translation id="1470811252759861213">Щоб користуватися розширеннями на всіх своїх комп’ютерах, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">Файл "<ph name="FILENAME" />" не додано. Замало вільного місця на Google Диску.</translation>
 <translation id="1475502736924165259">У вас є сертифікати, які не відповідають іншим категоріям</translation>
@@ -2632,7 +2631,6 @@
 <translation id="5027562294707732951">Додати розширення</translation>
 <translation id="5029568752722684782">Видалити копію</translation>
 <translation id="5030338702439866405">Ким видано:</translation>
-<translation id="503155457707535043">Завантаження додатків</translation>
 <translation id="503498442187459473">Сайт <ph name="HOST" /> хоче отримати доступ до ваших камери й мікрофона</translation>
 <translation id="5036662165765606524">Заборонити всім сайтам автоматично завантажувати декілька файлів</translation>
 <translation id="5037676449506322593">Вибрати всі</translation>
@@ -2787,7 +2785,6 @@
 <translation id="5265797726250773323">Помилка під час встановлення</translation>
 <translation id="5266113311903163739">Помилка імпортування центру сертифікації</translation>
 <translation id="5269977353971873915">Помилка друку</translation>
-<translation id="5271549068863921519">Зберегти пароль</translation>
 <translation id="5275352920323889391">Собака</translation>
 <translation id="5275973617553375938">Відновлені файли з Google Диска</translation>
 <translation id="527605719918376753">Вимкнути звук на вкладці</translation>
@@ -3686,7 +3683,6 @@
 <translation id="6596745167571172521">Вимкнути Caps Lock</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
 <translation id="6597017209724497268">Зразки</translation>
-<translation id="6597332018579308636">Надати доступ</translation>
 <translation id="659934686219830168">Синхронізація почнеться, щойно ви закриєте цю сторінку</translation>
 <translation id="6602353599068390226">перемістити вікно на інший дисплей</translation>
 <translation id="6602956230557165253">Використовуйте ліву та праву клавіші зі стрілками для навігації.</translation>
@@ -3959,7 +3955,6 @@
 <translation id="7025325401470358758">Наступна панель</translation>
 <translation id="7027125358315426638">Назва бази даних:</translation>
 <translation id="7029809446516969842">Паролі</translation>
-<translation id="7030031465713069059">Зберегти пароль</translation>
 <translation id="7031962166228839643">Триває підготовка модуля TPM, зачекайте (це може тривати декілька хвилин)...</translation>
 <translation id="7035437538340499453">Smart Lock налаштовано</translation>
 <translation id="7037509989619051237">Текст для попереднього прослуховування</translation>
@@ -4549,7 +4544,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Ваш пароль змінено на сервері. Вийдіть і знову ввійдіть в обліковий запис.</translation>
 <translation id="7915471803647590281">Перед тим як надіслати відгук, повідомте нас, що відбувається.</translation>
-<translation id="7916556741383518510">Після натискання</translation>
 <translation id="792514962475806987">Рівень масштабування закріпленої лупи:</translation>
 <translation id="7925247922861151263">Помилка перевірки AAA</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" />...</translation>
@@ -5097,7 +5091,6 @@
 <translation id="8758418656925882523">Увімкнути диктування (голосовий набір тексту)</translation>
 <translation id="8759408218731716181">Не вдається налаштувати паралельний вхід</translation>
 <translation id="8759753423332885148">Докладніше.</translation>
-<translation id="8762207669047572135">Надати доступ</translation>
 <translation id="8767621466733104912">Автоматично оновлювати Chrome для всіх користувачів</translation>
 <translation id="8770406935328356739">Кореневий каталог розширення</translation>
 <translation id="8770507190024617908">Керувати користувачами</translation>

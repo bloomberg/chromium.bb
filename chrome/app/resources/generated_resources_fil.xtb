@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Hiwa ng pizza</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1468571364034902819">Hindi magagamit ang profile na ito</translation>
-<translation id="1470533772306424441">Ii-install namin ang mga app na iyon para sa iyo. Makakakita ka ng higit pang app para sa iyong device sa Play Store.</translation>
 <translation id="1470811252759861213">Upang mailagay ang iyong mga extension sa lahat ng iyong computer, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">Hindi na-upload ang "<ph name="FILENAME" />." Walang sapat na bakanteng espasyo sa iyong Google Drive.</translation>
 <translation id="1475502736924165259">Mayroon kang mga certificate sa file na hindi umaangkop sa alinman sa iba pang mga kategorya</translation>
@@ -2632,7 +2631,6 @@
 <translation id="5027562294707732951">Idagdag ang extension</translation>
 <translation id="5029568752722684782">I-clear ang kopya</translation>
 <translation id="5030338702439866405">Ibinigay Ni</translation>
-<translation id="503155457707535043">Dina-download ang mga app</translation>
 <translation id="503498442187459473">Gustong gamitin ng <ph name="HOST" /> ang iyong camera at mikropono</translation>
 <translation id="5036662165765606524">Huwag payagan ang anumang site na awtomatikong mag-download ng maraming file</translation>
 <translation id="5037676449506322593">Select All</translation>
@@ -2787,7 +2785,6 @@
 <translation id="5265797726250773323">Nagkaroon ng error habang nag-i-install</translation>
 <translation id="5266113311903163739">Error sa Pag-import ng Certification Authority</translation>
 <translation id="5269977353971873915">Nabigo ang Pag-print</translation>
-<translation id="5271549068863921519">I-save ang password</translation>
 <translation id="5275352920323889391">Aso</translation>
 <translation id="5275973617553375938">Mga nabawing file mula sa Google Drive</translation>
 <translation id="527605719918376753">I-mute ang tab</translation>
@@ -3686,7 +3683,6 @@
 <translation id="6596745167571172521">I-disable ang Caps Lock</translation>
 <translation id="6596816719288285829">IP Address</translation>
 <translation id="6597017209724497268">Mga Sample</translation>
-<translation id="6597332018579308636">Payagan ang pag-access</translation>
 <translation id="659934686219830168">Magsisimula ang pag-sync sa sandaling umalis ka sa page na ito</translation>
 <translation id="6602353599068390226">ilipat ang window sa ibang display</translation>
 <translation id="6602956230557165253">Gamitin ang kaliwa at kanang mga arrow key upang mag-navigate.</translation>
@@ -3959,7 +3955,6 @@
 <translation id="7025325401470358758">Susunod na pane</translation>
 <translation id="7027125358315426638">Pangalan ng database:</translation>
 <translation id="7029809446516969842">Mga Password</translation>
-<translation id="7030031465713069059">I-save ang Password</translation>
 <translation id="7031962166228839643">Ang TPM ay ihinahanda, mangyaring maghintay (maaaring tumagal ito nang ilang minuto)...</translation>
 <translation id="7035437538340499453">Handa na ang Smart Lock</translation>
 <translation id="7037509989619051237">Text na ipi-preview</translation>
@@ -4549,7 +4544,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Napalitan na ang iyong password sa server. Mag-sign out at muling mag-sign in.</translation>
 <translation id="7915471803647590281">Mangyaring sabihin sa amin kung ano ang nangyayari bago ang pagpapadala ng feedback.</translation>
-<translation id="7916556741383518510">Sa Pag-click</translation>
 <translation id="792514962475806987">Antas ng naka-dock na pag-zoom:</translation>
 <translation id="7925247922861151263">Nabigo ang pagsusuri sa AAA</translation>
 <translation id="7925285046818567682">Naghihintay para sa <ph name="HOST_NAME" />...</translation>
@@ -5098,7 +5092,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8758418656925882523">I-enable ang pagdidikta (magsalita para mag-type)</translation>
 <translation id="8759408218731716181">Hindi maaaring mag-set up ng multiple na pag-sign in</translation>
 <translation id="8759753423332885148">Matuto nang higit pa.</translation>
-<translation id="8762207669047572135">Payagan ang Pag-access</translation>
 <translation id="8767621466733104912">Awtomatikong i-update ang Chrome para sa lahat ng user</translation>
 <translation id="8770406935328356739">Root directory ng extension</translation>
 <translation id="8770507190024617908">Pamahalaan ang Mga Tao</translation>

@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
 <translation id="2501278716633472235">戻る</translation>
-<translation id="2512222046227390255">フォームへの自動入力</translation>
 <translation id="2513403576141822879">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください</translation>
 <translation id="2523184218357549926">アクセスしたページの URL を Google に送信します</translation>
 <translation id="2526148617758225454">データセーバーが有効です。設定で管理できます。</translation>
@@ -249,7 +248,6 @@
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
 <translation id="2900528713135656174">予定を作成</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
-<translation id="2903493209154104877">住所</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合:</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ストレージ</translation>
@@ -577,7 +575,6 @@
 <translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
 <translation id="55737423895878184">現在地の使用と通知の送信が許可されています</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
-<translation id="5585019845078534178">カード</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5620299005957670886">サイトによるセンサーへのアクセスを許可する（推奨）</translation>

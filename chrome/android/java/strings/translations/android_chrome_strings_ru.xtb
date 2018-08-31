@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2512222046227390255">Заполнять формы автоматически</translation>
 <translation id="2513403576141822879">Остальные настройки конфиденциальности, безопасности и сбора данных вы можете найти в разделе <ph name="BEGIN_LINK" />Синхронизация сервисов Google<ph name="END_LINK" />.</translation>
 <translation id="2523184218357549926">Отправлять URL посещенных страниц в Google</translation>
 <translation id="2526148617758225454">Экономия трафика включена. Управление доступно в настройках.</translation>
@@ -249,7 +248,6 @@
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2900528713135656174">Создать мероприятие</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
-<translation id="2903493209154104877">Адреса</translation>
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2932150158123903946">Хранилище Google <ph name="APP_NAME" /></translation>
@@ -577,7 +575,6 @@
 <translation id="557283862590186398">Для этого сайта Chrome запрашивает разрешение на доступ к микрофону.</translation>
 <translation id="55737423895878184">Может определять местоположение и отправлять уведомления</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Подсказки</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
 <translation id="5620299005957670886">Разрешить сайтам использовать датчики (рекомендуется)</translation>

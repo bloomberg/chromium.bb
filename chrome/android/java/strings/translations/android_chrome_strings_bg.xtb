@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">История на сърфирането</translation>
 <translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2512222046227390255">Попълвайте автоматично формуляри</translation>
 <translation id="2513403576141822879">За още настройки за поверителността, сигурността и събирането на данни вижте <ph name="BEGIN_LINK" />Синхронизиране и услуги на Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Изпраща до Google URL адресите на страниците, които посещавате</translation>
 <translation id="2526148617758225454">Разширението Икономия на данни е включено. Управлявайте го от „Настройки“.</translation>
@@ -249,7 +248,6 @@
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
 <translation id="2900528713135656174">Създайте събитие</translation>
 <translation id="2902702728133930130">Стартирането на Chrome не бе успешно поради неочаквана грешка.</translation>
-<translation id="2903493209154104877">Адреси</translation>
 <translation id="290376772003165898">Страницата не е на <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Разрешаване на сайтовете да запазват „бисквитки“ и да четат данни от такива (препоръчително)</translation>
 <translation id="2932150158123903946">Хранилище на Google <ph name="APP_NAME" /></translation>
@@ -577,7 +575,6 @@
 <translation id="557283862590186398">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт.</translation>
 <translation id="55737423895878184">Достъпът до местоположението и известията са разрешени</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Карти</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
 <translation id="5620299005957670886">Разрешаване на достъпа на сайтовете до сензорите ви 

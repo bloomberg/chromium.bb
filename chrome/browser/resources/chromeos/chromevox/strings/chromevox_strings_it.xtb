@@ -16,7 +16,7 @@
 <translation id="1065552602950927991">Dati non validi</translation>
 <translation id="1080471004309605942">Fine del testo corsivo</translation>
 <translation id="1082209053475788238">Nessuna intestazione livello 6 precedente.</translation>
-<translation id="1087788677726983142">Nascondi i filtri della sequenza di eventi</translation>
+<translation id="1087788677726983142">Nascondi i filtri del flusso di eventi</translation>
 <translation id="1088219014394087294">Nessuna intestazione.</translation>
 <translation id="1106741348836243114">Attiva o disattiva feedback audio (icone audio).</translation>
 <translation id="1108651818222110612">sottotitolo</translation>
@@ -79,7 +79,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1618597272655350600">Fornisce una descrizione completa della posizione corrente</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{simbolo di maggiore}other{# simboli di maggiore}}</translation>
 <translation id="1653266918374749391">Intestazione livello 3 precedente</translation>
-<translation id="1657616855184033958">Mostra i filtri della sequenza di eventi</translation>
+<translation id="1657616855184033958">Mostra i filtri del flusso di eventi</translation>
 <translation id="1659072772017912254">Non selezionato</translation>
 <translation id="1669290819662866522">settimana</translation>
 <translation id="1674262202423278359">Navigazione in ChromeVox</translation>
@@ -413,7 +413,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4255943572433203166">Utilizza le opzioni sotto per personalizzare ChromeVox. Le modifiche hanno effetto immediato.</translation>
 <translation id="4271220233568730077">Espressione matematica successiva</translation>
 <translation id="4271521365602459209">Nessun altro risultato.</translation>
-<translation id="4275397969489577657">Abilita la registrazione della sequenza di eventi</translation>
+<translation id="4275397969489577657">Abilita la registrazione del flusso di eventi</translation>
 <translation id="4287520460805643128">Nessun articolo successivo.</translation>
 <translation id="4289540628985791613">Panoramica</translation>
 <translation id="4300318234632215983">Pronuncia l'URL di un link</translation>

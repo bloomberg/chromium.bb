@@ -361,6 +361,7 @@
 <translation id="199764499252435679">Dayakan kemas kini komponen dalam <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Pengurusan kuasa</translation>
 <translation id="201557587962247231">Kekerapan muat naik laporan status peranti</translation>
+<translation id="2017301949684549118">URL untuk Apl Web yang dipasang secara senyap.</translation>
 <translation id="2018836497795982119">Menentukan tempoh dalam milisaat ketika perkhidmatan pengurusan peranti diminta maklumat dasar pengguna.
 
       Tindakan menetapkan dasar ini akan mengatasi nilai lalai iaitu 3 jam. Nilai yang sah untuk dasar ini ialah dalam julat 1800000 (30 minit) hingga 86400000 (1 hari). Sebarang nilai yang tidak berada dalam julat ini akan diapit ke sempadan masing-masing. Jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah.
@@ -673,6 +674,11 @@
           URL carian Google boleh ditentukan sebagai: <ph name="GOOGLE_SEARCH_URL" />.
 
           Pilihan ini hendaklah ditetapkan apabila dasar 'DefaultSearchProviderEnabled' didayakan dan hanya akan diambil kira dalam keadaan ini.</translation>
+<translation id="2659019163577049044">Jika tetapan ini didayakan, pengguna akan dibenarkan untuk menyediakan peranti mereka bagi menyegerakkan mesej SMS antara telefon mereka dengan Chromebook. Sila ambil perhatian bahawa jika dasar ini dibenarkan, pengguna mesti mengikut serta ciri ini secara eksplisit dengan melengkapkan aliran penyediaan. Setelah aliran penyediaan lengkap, pengguna akan dapat menghantar dan menerima mesej SMS pada Chromebook mereka.
+
+      Jika tetapan ini dilumpuhkan, pengguna tidak akan dibenarkan untuk menyediakan penyegerakan SMS.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan lalai tidak dibenarkan untuk pengguna terurus dan dibenarkan untuk pengguna tidak terurus.</translation>
 <translation id="2660846099862559570">Jangan sekali-kali menggunakan proksi</translation>
 <translation id="267596348720209223">Menentukan pengekodan aksara yang disokong oleh penyedia carian. Pengekodan ialah nama halaman kod seperti UTF-8, GB2312 dan ISO-8859-1. Ia diuji dalam urutan yang diberikan.
 
@@ -1102,6 +1108,7 @@
       Setiap masukan senarai mengandungi kamus yang mesti merangkumi ID sambungan dalam medan 'extension-id' dan URL kemas kininya dalam medan 'update-url'.</translation>
 <translation id="3874773863217952418">Dayakan Ketik untuk Mencari</translation>
 <translation id="3877517141460819966">Mod pengesahan faktor kedua bersepadu</translation>
+<translation id="3879208481373875102">Konfigurasikan senarai Apl Web pemasangan paksa</translation>
 <translation id="388237772682176890">Dasar ini ditamatkan dalam M53 dan dialih keluar dalam M54 kerana sokongan SPDY/3.1 dialih keluar.
 
       Melumpuhkan penggunaan protokol SPDY dalam <ph name="PRODUCT_NAME" />.
@@ -1345,6 +1352,10 @@
           Untuk mendapatkan perihalan penuh tentang tetapan dan struktur berkemungkinan dasar ini, sila lawati https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Mod pemprosesan gelung balik dasar pengguna</translation>
+<translation id="4554841826517980623">Dasar ini mengawal sama ada ciri Perkongsian Fail Rangkaian <ph name="PRODUCT_NAME" /> harus menggunakan <ph name="NETBIOS_PROTOCOL" /> untuk menemui perkongsian di rangkaian.
+      Apabila dasar ini ditetapkan kepada Benar, penemuan perkongsian akan menggunakan protokol <ph name="NETBIOS_PROTOCOL" /> untuk menemui perkongsian di rangkaian.
+      Apabila dasar ini ditetapkan kepada Palsu, penemuan perkongsian tidak akan menggunakan protokol <ph name="NETBIOS_PROTOCOL" /> untuk menemui perkongsian.
+      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan lalai dilumpuhkan untuk pengguna diurus perusahaan dan didayakan untuk pengguna tidak terurus.</translation>
 <translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baharu penyedia carian lalai</translation>
 <translation id="4567137030726189378">Benarkan penggunaan Alat Pembangun</translation>
@@ -1765,6 +1776,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, maklum balas pertuturan dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan maklum balas pertuturan pada bila-bila masa dan statusnya pada skrin log masuk berterusan antara pengguna.</translation>
 <translation id="5868414965372171132">Konfigurasi rangkaian tahap pengguna</translation>
+<translation id="5879014913445067283">Mengawal Penemuan Perkongsian Fail Rangkaian melalui <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Tetapan kuki lalai</translation>
 <translation id="5887414688706570295">Mengkonfigurasi awalan TalkGadget yang akan digunakan oleh hos akses jauh dan menghalang pengguna daripada menukarnya.
 
@@ -2226,6 +2238,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau mengimport mungkin berlaku secara automatik.</translation>
 <translation id="7063895219334505671">Benarkan pop muncul pada halaman ini</translation>
+<translation id="706568410943497889">
+      Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> dibenarkan untuk mengumpul log acara WebRTC daripada perkhidmatan Google (mis. Google Meet) dan memuat naik log itu ke Google.
+
+      Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> tidak boleh mengumpul mahupun memuat naik log tersebut.
+
+      Log ini mengandungi maklumat diagnostik yang berguna apabila menyahpepijat isu berkaitan panggilan audio atau video dalam Chrome, seperti masa dan saiz paket RTP yang diterima dan dihantar, maklum balas tentang kesesakan di rangkaian dan metadata tentang masa dan mutu bingkai audio dan video. Log ini tidak mengandungi kandungan audio atau video daripada panggilan.
+
+      Pengumpulan data oleh Chrome ini hanya boleh dicetuskan oleh perkhidmatan web Google, seperti Google Hangouts atau Google Meet.
+
+      Google boleh mengaitkan log ini, melalui penggunaan ID sesi, dengan log lain yang dikumpul oleh perkhidmatan Google itu sendiri, yang bertujuan untuk lebih memudahkan penyahpepijatan.
+      </translation>
 <translation id="706669471845501145">Benarkan tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="7072208053150563108">Kadar penukaran kata laluan mesin</translation>
 <translation id="7074513465313721551">Konfigurasikan senarai domain yang akan dipercayai oleh Safe Browsing. Ini bermakna:
@@ -2359,6 +2382,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7343497214039883642">Fail konfigurasi pencetak perusahaan untuk peranti</translation>
+<translation id="7349338075015720646">Menyatakan senarai tapak web yang dipasang secara senyap, tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun dilumpuhkan oleh pengguna.
+
+      Setiap senarai item dasar ialah objek dengan dua ahli: "url" dan "launch_container". "url" ialah URL apl web yang hendak dipasang dan "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang. Jika "launch_container" tidak dimasukkan, apl akan dilancarkan dalam tetingkap jika Chrome menganggapnya sebagai Apl Web Progresif dan jika sebaliknya, apl akan dilancarkan dalam tab.</translation>
 <translation id="7367028210010532881">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang dibenderakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan daripada halaman amaran ke tapak yang bersifat hasad tersebut.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
@@ -2822,6 +2848,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       "Versi" di sini bermaksud versi tepat seperti '61.0.3163.120' atau awalan versi, contohnya '61.0'  </translation>
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Benarkan Mesej SMS disegerakkan dari telefon ke Chromebook.</translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
 <translation id="8586528890725660268">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
@@ -2867,6 +2894,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini dibiarkan tidak ditetapkan, perkhidmatan perlindungan kata laluan hanya akan melindungi kata laluan Google tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="867410340948518937">U2F (Faktor Kedua Universal)</translation>
+<translation id="8682611302223077049">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
+
+      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila peningkatan dikesan. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, apl menu akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila satu pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
+
+      Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Amaran perlindungan kata laluan dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8704831857353097849">Senarai pemalam yang dilumpuhkan</translation>
@@ -2911,6 +2943,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
           Faktor skala mesti 100% atau lebih. Nilai yang akan menyebabkan kelewatan melahu dalam mod penyampaian lebih pendek daripada kelewatan melahu biasa tidak dibenarkan.</translation>
 <translation id="8798099450830957504">Lalai</translation>
+<translation id="8801680448782904838">Maklumi pengguna bahawa pelancaran semula penyemak imbas atau mula semula peranti disyorkan atau diperlukan</translation>
 <translation id="8818173863808665831">Laporkan lokasi geografi peranti.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, lokasi tersebut tidak akan dilaporkan.</translation>
@@ -3078,6 +3111,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9152473318295429890">Dayakan cadangan kontekstual halaman web yang berkaitan</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
+<translation id="9159126470527871268">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
+
+      Tetapan dasar ini mendayakan pemberitahuan untuk memaklumi pengguna bahawa pelancaran semula penyemak imbas atau mula semula peranti adalah disyorkan atau diperlukan. Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menunjukkan kepada pengguna bahawa pelancaran semula diperlukan melalui perubahan kecil pada menunya, manakala <ph name="PRODUCT_OS_NAME" /> akan menunjukkan perkara yang sama melalui pemberitahuan dalam dulang sistem. Jika ditetapkan kepada 'Disyorkan', amaran berulang akan dipaparkan kepada pengguna bahawa pelancaran semula disyorkan. Pengguna boleh mengabaikan amaran ini untuk menangguhkan pelancaran semula. Jika ditetapkan kepada 'Diperlukan', amaran berulang akan dipaparkan kepada pengguna yang menunjukkan bahawa pelancaran semula penyemak imbas akan dilakukan secara paksa apabila tempoh pemberitahuan tamat. Tempoh lalai ialah tujuh hari untuk <ph name="PRODUCT_NAME" /> dan empat hari untuk <ph name="PRODUCT_OS_NAME" /> serta boleh dikonfigurasi melalui tetapan dasar <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Sesi pengguna akan dipulihkan selepas pelancaran semula/mula semula.</translation>
 <translation id="9165792353046089850">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti USB yang disambungkan. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti USB yang disambungkan.
 
           Dasar ini boleh diatasi untuk corak URL tertentu menggunakan dasar 'WebUsbAskForUrls' dan 'WebUsbBlockedForUrls'.

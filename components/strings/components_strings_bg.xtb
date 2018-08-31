@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">Избраната сесия не съществува.</translation>
 <translation id="1323433172918577554">Показване на още</translation>
+<translation id="132390688737681464">Запазване и попълване на адреси</translation>
 <translation id="1333989956347591814">Активността ви <ph name="BEGIN_EMPHASIS" />може да остане видима<ph name="END_EMPHASIS" /> за:
 <ph name="BEGIN_LIST" />
 <ph name="LIST_ITEM" />уебсайтовете, които посещавате;
@@ -111,6 +112,7 @@
 <translation id="1645368109819982629">Неподдържан протокол</translation>
 <translation id="1655462015569774233">{1,plural, =1{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е изтекъл вчера. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. Понастоящем часовникът на компютъра ви показва <ph name="CURRENT_DATE" />. Това изглежда ли правилно? Ако не е, трябва да сверите системния часовник и след това да опресните страницата.}other{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е изтекъл преди # дни. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. Понастоящем часовникът на компютъра ви показва <ph name="CURRENT_DATE" />. Това изглежда ли правилно? Ако не е, трябва да сверите системния часовник и след това да опресните страницата.}}</translation>
 <translation id="1656489000284462475">Вземане</translation>
+<translation id="1662550410081243962">Запазване и попълване на начини на плащане</translation>
 <translation id="1663943134801823270">Картите и адресите са от Chrome. Можете да ги управлявате от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898">Обикновено <ph name="SITE" /> използва шифроване за защита на информацията ви. Когато Google Chrome опита да установи връзка с/ъс <ph name="SITE" /> този път, уебсайтът върна необичайни и неправилни идентификационни данни. Това може да се случи, когато извършител на атака пробва да се представи за <ph name="SITE" /> или връзката е прекъсната от екран за вход в Wi-Fi. Информацията ви продължава да е защитена, тъй като Chrome спря връзката, преди да бъдат обменени данни.</translation>
 <translation id="168841957122794586">Сертификатът на сървъра съдържа слаб криптографски ключ.</translation>
@@ -196,6 +198,7 @@
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2270484714375784793">Телефонен номер</translation>
+<translation id="2283340219607151381">Запазване и попълване на адреси</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="2316887270356262533">Ще освободите по-малко от 1 МБ. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="2317259163369394535">Изискват се потребителско име и парола за <ph name="DOMAIN" />.</translation>
@@ -860,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">Идентификатор в GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="7179323680825933600">Запазване и попълване на начини на плащане</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7182878459783632708">Няма зададени правила</translation>
 <translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE" />на<ph name="LANGUAGE_LANGUAGE" /></translation>

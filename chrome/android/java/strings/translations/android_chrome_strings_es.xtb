@@ -204,7 +204,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2498359688066513246">Ayuda y sugerencias</translation>
 <translation id="2501278716633472235">Volver</translation>
-<translation id="2512222046227390255">Autocompletar formularios</translation>
 <translation id="2513403576141822879">Para ver más opciones relacionadas con la privacidad, la seguridad y la recogida de datos, accede a <ph name="BEGIN_LINK" />Servicios de Google y sincronización<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envía las URL de las páginas que visitas en Google</translation>
 <translation id="2526148617758225454">El ahorro de datos está activado. Puedes administrarlo en la configuración.</translation>
@@ -249,7 +248,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2902702728133930130">Se ha producido un error inesperado en Chrome durante el inicio.</translation>
-<translation id="2903493209154104877">Direcciones</translation>
 <translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Permitir que los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2932150158123903946">Almacenamiento de Google <ph name="APP_NAME" /></translation>
@@ -577,7 +575,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="557283862590186398">Chrome necesita permiso para acceder al micrófono en este sitio web.</translation>
 <translation id="55737423895878184">Las notificaciones y la ubicación están permitidas</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Tarjetas</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
 <translation id="5620299005957670886">Permitir que los sitios web accedan a tus sensores (recomendado)</translation>

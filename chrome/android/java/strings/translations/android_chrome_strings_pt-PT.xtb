@@ -204,7 +204,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2501278716633472235">Retroceder</translation>
-<translation id="2512222046227390255">Preencher autom. formulários</translation>
 <translation id="2513403576141822879">Para obter mais definições relacionadas com privacidade, segurança e recolha de dados, consulte <ph name="BEGIN_LINK" />Sincronização e serviços Google<ph name="END_LINK" />.</translation>
 <translation id="2523184218357549926">Envia para a Google os URLs das páginas que visita.</translation>
 <translation id="2526148617758225454">A Poupança de dados está ativada. Pode geri-la nas Definições.</translation>
@@ -249,7 +248,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2891154217021530873">Parar carregamento da página</translation>
 <translation id="2900528713135656174">Criar evento</translation>
 <translation id="2902702728133930130">O Chrome falhou durante o arranque com um erro inesperado.</translation>
-<translation id="2903493209154104877">Endereços</translation>
 <translation id="290376772003165898">A página não está em <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
 <translation id="2932150158123903946">Armazenamento do Google <ph name="APP_NAME" /></translation>
@@ -577,7 +575,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="557283862590186398">O Chrome necessita de autorização de acesso ao microfone para este site.</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas.</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Cartões</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5620299005957670886">Permitir que os sites acedam aos sensores (recomendado)</translation>

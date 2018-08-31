@@ -835,7 +835,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli ta opcja zostanie wyłączona, wbudowany klient DNS w ogóle nie będzie używany.
 
       W przypadku nieskonfigurowania tego ustawienia użytkownicy będą mogli wybrać, czy używać wbudowanego klienta DNS. W tym celu trzeba edytować chrome://flags lub podać opcje wiersza poleceń.</translation>
-<translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
+<translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony głównej z aktualnej przeglądarki domyślnej.
+
+Jeśli zasada będzie wyłączona, strona główna nie zostanie zaimportowana.
+
+Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
 <translation id="3219421230122020860">Tryb incognito dostępny</translation>
 <translation id="3220624000494482595">Jeśli aplikacja kiosku jest aplikacją na Androida, nie będzie mieć żadnej kontroli nad wersją <ph name="PRODUCT_OS_NAME" />, nawet jeśli ta zasada jest ustawiona na <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Wzorce URL-ów, z których dozwolone jest instalowanie rozszerzeń, aplikacji i skryptów użytkownika</translation>
@@ -1255,7 +1259,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4476769083125004742">Ustawienie tej zasady na <ph name="BLOCK_GEOLOCATION_SETTING" /> odbiera aplikacjom na Androida dostęp do informacji o lokalizacji. Jeśli zasada ma inną wartość lub jest nieskonfigurowana, użytkownik będzie pytany o zgodę, gdy aplikacja na Androida będzie chciała uzyskać dostęp do informacji o lokalizacji.</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtra SafeSearch</translation>
-<translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
+<translation id="4482640907922304445">Powoduje pokazanie przycisku strony głównej na pasku narzędzi <ph name="PRODUCT_NAME" />.
+
+Jeśli włączysz to ustawienie, przycisk strony głównej będzie zawsze widoczny.
+
+W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny.
+
+Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
+
+W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony głównej był pokazywany.</translation>
 <translation id="4483649828988077221">Wyłącz automatyczne aktualizacje</translation>
 <translation id="4485425108474077672">Skonfiguruj URL strony nowej karty</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
@@ -1527,7 +1539,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą przesyłać treści na urządzenie. Jeśli jest ustawiona na wartość prawda – mogą to robić. Jeśli ta zasada nie jest ustawiona, użytkownicy nie mogą przesyłać treści na zarejestrowane urządzenia z Chrome OS. Mogą przesyłać treści na urządzenia niezarejestrowane.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
-<translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
+<translation id="5365946944967967336">Pokaż przycisk strony głównej na pasku narzędzi</translation>
 <translation id="5366745336748853475">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których jest automatycznie wybierany certyfikat klienta na ekranie logowania w ramce obsługującej proces SAML, jeśli witryna zażąda certyfikatu. Przykładowe użycie to skonfigurowanie certyfikatu dla całego urządzenia, który będzie okazywany dostawcy tożsamości SAML.
 
       Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
@@ -1570,7 +1582,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Wartość zasady należy określić w milisekundach.</translation>
 <translation id="5511702823008968136">Włącz pasek zakładek</translation>
-<translation id="5512418063782665071">Adres URL strony startowej</translation>
+<translation id="5512418063782665071">Adres URL strony głównej</translation>
 <translation id="551639594034811656">Ta zasada zawiera listę wartości procentowych określających, jaki odsetek urządzeń z systemem <ph name="PRODUCT_OS_NAME" /> w OU ma być aktualizowany dziennie, począwszy od dnia wykrycia aktualizacji. Moment wykrycia jest późniejszy niż moment opublikowania, ponieważ może minąć trochę czasu między opublikowaniem aktualizacji a sprawdzeniem jej dostępności przez urządzenie.
 
       Każda para (dzień, procent) określa procent urządzeń, który ma zostać zaktualizowany w ciągu danej liczby dni od wykrycia aktualizacji. Na przykład: jeśli mamy pary [(4, 40), (10, 70), (15, 100)], to 40% urządzeń powinno zostać zaktualizowanych w ciągu 4 dni od wykrycia aktualizacji, 70% powinno zostać zaktualizowanych w ciągu 10 dni itd.
@@ -1848,7 +1860,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="6367755442345892511">Czy użytkownik ma mieć możliwość skonfigurowania kanału wersji</translation>
-<translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
+<translation id="6368011194414932347">Konfiguruj adres URL strony głównej</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>
 <translation id="6376659517206731212">Może być obowiązkowa</translation>
 <translation id="6378076389057087301">Określ, czy aktywność związana z dźwiękiem wpływa na zarządzanie energią</translation>
@@ -2790,7 +2802,9 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
 <translation id="8818768076343557335">Przewiduj działania w dowolnej sieci innej niż komórkowa.
           Opcja wycofana w wersji 50, usunięta z wersji 52. Po wersji 52 wartość ustawiona na 1 będzie traktowana jako wartość 0 – włączone jest przewidywanie działań przy dowolnym połączeniu sieciowym.</translation>
 <translation id="8825782996899863372">Ostrzeżenie dotyczące ochrony hasłem jest wyzwalane przez użycie tego samego hasła na stronie stosującej phishing</translation>
-<translation id="8828766846428537606">Pozwala skonfigurować domyślną stronę startową w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jej zmianę. Jeśli jako stronę startową ustawisz stronę Nowa karta albo adres URL (wpisany ręcznie), ustawienia strony startowej użytkownika zostaną całkowicie zablokowane. Jeśli adres URL strony startowej nie zostanie określony, użytkownik jako stronę startową będzie mógł ustawić stronę Nowa karta, podając adres „chrome://newtab”.</translation>
+<translation id="8828766846428537606">Pozwala skonfigurować domyślną stronę główną w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jej zmianę. 
+
+Jeśli jako stronę główną ustawisz stronę Nowa karta albo adres URL (wpisany ręcznie), ustawienia strony głównej użytkownika zostaną całkowicie zablokowane. Jeśli adres URL strony głównej nie zostanie określony, użytkownik jako stronę główną będzie mógł ustawić stronę Nowa karta, podając adres „chrome://newtab”.</translation>
 <translation id="8833109046074170275">Uwierzytelnianie przez domyślny proces GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> zapisuje w pamięci podręcznej aplikacje i rozszerzenia instalowane przez różnych użytkowników na jednym urządzeniu, by uniknąć pobierania ich ponownie dla każdego użytkownika.
       Jeśli ta zasada jest nieskonfigurowana albo wartość jest mniejsza niż 1 MB, <ph name="PRODUCT_OS_NAME" /> użyje domyślnego rozmiaru pamięci podręcznej.</translation>
@@ -2806,7 +2820,7 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
       Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić go w <ph name="PRODUCT_NAME" />.
 
       Jeśli ustawienie pozostanie nieskonfigurowane, użytkownik może sam zdecydować, czy będzie korzystać z tej funkcji.</translation>
-<translation id="8870318296973696995">Strona startowa</translation>
+<translation id="8870318296973696995">Strona główna</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
 <translation id="890403179930035128">Wymusza włączenie sprawdzania pisowni. Nierozpoznane języki z tej listy będą ignorowane.
 

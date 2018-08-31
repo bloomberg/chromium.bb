@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">பீட்சா துண்டு</translation>
 <translation id="1467432559032391204">இடது</translation>
 <translation id="1468571364034902819">இந்தச் சுயவிவரத்தைப் பயன்படுத்த முடியாது</translation>
-<translation id="1470533772306424441">அந்த ஆப்ஸ்களை நிறுவுவோம். உங்கள் சாதனத்திற்குப் பொருத்தமான மேலும் பல ஆப்ஸ்களை Play ஸ்டோரில் கண்டறியலாம்.</translation>
 <translation id="1470811252759861213">உங்கள் நீட்டிப்புகளை உங்கள் கணினிகள் அனைத்திலும் பெற, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" ஏற்றப்படவில்லை. உங்கள் Google இயக்ககத்தில் போதுமான காலியிடம் இல்லை.</translation>
 <translation id="1475502736924165259">பிற வகைகள் எவற்றிலும் பொருந்தாத சான்றிதழ்கள் கோப்பில் உள்ளன</translation>
@@ -2632,7 +2631,6 @@
 <translation id="5027562294707732951">நீட்டிப்பைச் சேர்</translation>
 <translation id="5029568752722684782">நகலை அழி</translation>
 <translation id="5030338702439866405">வழங்கியது</translation>
-<translation id="503155457707535043">ஆப்ஸ் பதிவிறக்கப்படுகின்றன</translation>
 <translation id="503498442187459473"><ph name="HOST" /> உங்கள் கேமராவையும் மைக்ரோஃபோனையும் பயன்படுத்த விரும்புகிறது</translation>
 <translation id="5036662165765606524">எந்தத் தளத்தையும் பல கோப்புகளைத் தானாகப் பதிவிறக்க அனுமதிக்காதே</translation>
 <translation id="5037676449506322593">எல்லாம் தேர்ந்தெடு</translation>
@@ -2787,7 +2785,6 @@
 <translation id="5265797726250773323">நிறுவும்போது பிழை நேர்ந்தது</translation>
 <translation id="5266113311903163739">சான்றளிக்கும் மைய இறக்குமதி பிழை</translation>
 <translation id="5269977353971873915">அச்சிடுதல் தோல்வி</translation>
-<translation id="5271549068863921519">கடவுச்சொல்லைச் சேமி</translation>
 <translation id="5275352920323889391">நாய்</translation>
 <translation id="5275973617553375938">Google இயக்கத்திலிருந்து மீட்கப்பட்ட கோப்புகள்</translation>
 <translation id="527605719918376753">ஒலி வேண்டாம்</translation>
@@ -3687,7 +3684,6 @@
 <translation id="6596745167571172521">கேப்ஸ் லாக்கை முடக்கவும்</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
 <translation id="6597017209724497268">மாதிரிகள்</translation>
-<translation id="6597332018579308636">அணுகலை அனுமதி</translation>
 <translation id="659934686219830168">இந்தப் பக்கத்திலிருந்து நீங்கள் வெளியேறியதும், ஒத்திசைவு தொடங்கும்</translation>
 <translation id="6602353599068390226">மற்றொரு திரைக்குச் சாளரத்தை நகர்த்தவும்.</translation>
 <translation id="6602956230557165253">வழிசெலுத்த இடது மற்றும் வலது அம்புக்குறி விசைகளைப் பயன்படுத்தவும்.</translation>
@@ -3960,7 +3956,6 @@
 <translation id="7025325401470358758">அடுத்த பலகம்</translation>
 <translation id="7027125358315426638">தரவுத்தளப் பெயர்:</translation>
 <translation id="7029809446516969842">கடவுச்சொற்கள்</translation>
-<translation id="7030031465713069059">கடவுச்சொல்லைச் சேமி</translation>
 <translation id="7031962166228839643">TPM தயாரிக்கப்படுவதால், தயவுசெய்து காத்திருங்கள் (இதற்கு சில நிமிடங்கள் ஆகக்கூடும்)...</translation>
 <translation id="7035437538340499453">Smart Lockஐப் பயன்படுத்தத் தயாராகிவிட்டீர்கள்</translation>
 <translation id="7037509989619051237">மாதிரிக்காட்சி உரை</translation>
@@ -4548,7 +4543,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">சேவையகத்தில் உங்கள் கடவுச்சொல் மாற்றப்பட்டது. வெளியேறி, மீண்டும் உள்நுழையவும்.</translation>
 <translation id="7915471803647590281">மறுமொழி அனுப்புவதற்கு முன், என்ன நடந்துகொண்டிருக்கிறது என்பதை எங்களிடம் தெரியப்படுத்துங்கள்.</translation>
-<translation id="7916556741383518510">கிளிக் செய்யும் போது</translation>
 <translation id="792514962475806987">டாக் செய்யப்பட்ட பெரிதாக்கியின் அளவை மாற்றுவதற்கான நிலை:</translation>
 <translation id="7925247922861151263">AAA சோதனை தோல்வியுற்றது</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> க்காக காத்திருக்கிறது...</translation>
@@ -5096,7 +5090,6 @@
 <translation id="8758418656925882523">சொல்வதை எழுதும் அம்சத்தை இயக்கு (பேச்சு மூலம் உள்ளிடும் வசதி)</translation>
 <translation id="8759408218731716181">பல உள்நுழைவை அமைக்க முடியாது</translation>
 <translation id="8759753423332885148">மேலும் அறிக.</translation>
-<translation id="8762207669047572135">அணுகலை அனுமதி</translation>
 <translation id="8767621466733104912">எல்லாப் பயனர்களுக்கும் தானாகவே Chromeஐப் புதுப்பி</translation>
 <translation id="8770406935328356739">நீட்டிப்பு மூலக் கோப்பகம்</translation>
 <translation id="8770507190024617908">நபர்களை நிர்வகி</translation>

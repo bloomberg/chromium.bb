@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Pizzascheibe</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1468571364034902819">Dieses Profil kann nicht verwendet werden</translation>
-<translation id="1470533772306424441">Wir installieren diese Apps für Sie. Weitere Apps für Ihr Gerät finden Sie im Play Store.</translation>
 <translation id="1470811252759861213">Um die Erweiterungen auf allen Ihren Computern zu nutzen, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" konnte nicht hochgeladen werden. In Ihrem Google Drive-Konto ist nicht genügend Speicherplatz frei.</translation>
 <translation id="1475502736924165259">Einige Ihrer gespeicherten Zertifikate passen zu keiner der anderen Kategorien</translation>
@@ -1507,7 +1506,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3285322247471302225">Neuer &amp;Tab</translation>
 <translation id="3288047731229977326">Erweiterungen im Entwicklermodus können auf Ihrem Computer Schaden anrichten. Wenn Sie kein Entwickler sind, sollten Sie diese Erweiterungen im Entwicklermodus deaktivieren, um sicher zu sein.</translation>
 <translation id="3289856944988573801">Verwenden Sie Ethernet oder WLAN zur Suche nach Updates.</translation>
-<translation id="3292421191230118801">Sie können sich Websites, die Sie auf Mobilgeräten aufgerufen haben, anschließend weiter auf Ihrem Chromebook ansehen</translation>
+<translation id="3292421191230118801">Auf Mobilgeräten geöffnete Websites weiter auf meinem Chromebook ansehen</translation>
 <translation id="32939749466444286">Der Linux-Container konnte nicht gestartet werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="329838636886466101">Reparieren</translation>
@@ -2628,7 +2627,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5027562294707732951">Erweiterung hinzufügen</translation>
 <translation id="5029568752722684782">Kopie löschen</translation>
 <translation id="5030338702439866405">Ausgestellt von</translation>
-<translation id="503155457707535043">Apps werden heruntergeladen</translation>
 <translation id="503498442187459473"><ph name="HOST" /> möchte Ihre Kamera und Ihr Mikrofon verwenden</translation>
 <translation id="5036662165765606524">Keiner Website gestatten, automatisch mehrere Dateien herunterzuladen</translation>
 <translation id="5037676449506322593">Alle auswählen</translation>
@@ -2783,7 +2781,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5265797726250773323">Fehler bei der Installation</translation>
 <translation id="5266113311903163739">Zertifizierungsstelle - Fehler beim Import</translation>
 <translation id="5269977353971873915">Fehler beim Drucken</translation>
-<translation id="5271549068863921519">Passwort speichern</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="5275973617553375938">Wiederhergestellte Dateien von Google Drive</translation>
 <translation id="527605719918376753">Stummschalten</translation>
@@ -3682,7 +3679,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6596745167571172521">Feststelltaste deaktivieren</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="6597017209724497268">Proben</translation>
-<translation id="6597332018579308636">Zugriff erlauben</translation>
 <translation id="659934686219830168">Die Synchronisierung wird gestartet, sobald Sie diese Seite verlassen</translation>
 <translation id="6602353599068390226">Fenster auf einen anderen Bildschirm verschieben</translation>
 <translation id="6602956230557165253">Verwenden Sie zum Navigieren den Rechts- und Linkspfeil.</translation>
@@ -3955,7 +3951,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7025325401470358758">Nächster Bereich</translation>
 <translation id="7027125358315426638">Datenbankname:</translation>
 <translation id="7029809446516969842">Passwörter</translation>
-<translation id="7030031465713069059">Passwort speichern</translation>
 <translation id="7031962166228839643">TPM wird vorbereitet, bitte warten (dies kann einige Minuten dauern)...</translation>
 <translation id="7035437538340499453">Smart Lock wurde eingerichtet</translation>
 <translation id="7037509989619051237">Text zum Anhören</translation>
@@ -4545,7 +4540,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Ihr Passwort wurde auf dem Server geändert. Bitte melden Sie sich ab und dann wieder an.</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
-<translation id="7916556741383518510">Bei Klick</translation>
 <translation id="792514962475806987">Zoomstufe für angedockte Lupe:</translation>
 <translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME" />...</translation>
@@ -5094,7 +5088,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8758418656925882523">Diktierfunktion aktivieren (zum Tippen sprechen)</translation>
 <translation id="8759408218731716181">Mehrfachanmeldung kann nicht eingerichtet werden</translation>
 <translation id="8759753423332885148">Weitere Informationen</translation>
-<translation id="8762207669047572135">Zugriff erlauben</translation>
 <translation id="8767621466733104912">Chrome automatisch für alle Nutzer aktualisieren</translation>
 <translation id="8770406935328356739">Stammverzeichnis der Erweiterung</translation>
 <translation id="8770507190024617908">Nutzer verwalten</translation>

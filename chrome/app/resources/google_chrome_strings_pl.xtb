@@ -277,7 +277,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS uruchomi się ponownie za 1 minutę}few{Chrome OS uruchomi się ponownie za # minuty}many{Chrome OS uruchomi się ponownie za # minut}other{Chrome OS uruchomi się ponownie za # minuty}}</translation>
 <translation id="8796108026289707191">Należy teraz ponownie uruchomić Google Chrome.</translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
-<translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony startowej.</translation>
+<translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony głównej.</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
 <translation id="8914504000324227558">Uruchom Chrome ponownie</translation>
 <translation id="9026991721384951619">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>

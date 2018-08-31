@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Item updated</translation>
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Use other password...</translation>
 <translation id="1076421457278169141">Code scanned</translation>
 <translation id="1084365883616172403">Facebook post completed.</translation>
 <translation id="1104948393051856124">Accept &amp; Continue</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Send usage data</translation>
 <translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
+<translation id="191179954310195971">Other Google services</translation>
 <translation id="1941314575388338491">Double tap to copy.</translation>
 <translation id="1952728750904661634">Sign in with managed account</translation>
 <translation id="1974060860693918893">Advanced</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Use other password</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3779810277399252432">No Internet connection.</translation>
 <translation id="3783017676699494206">Save Image</translation>
@@ -315,6 +318,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6344783595350022745">Clear Text</translation>
 <translation id="6346549652287021269">Start new download?</translation>
 <translation id="6362362396625799311">No Incognito Tabs</translation>
+<translation id="6363526231572697780">No username</translation>
 <translation id="6374469231428023295">Try Again</translation>
 <translation id="6380866119319257197">If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Name on Card</translation>

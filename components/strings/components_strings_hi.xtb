@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">चुना गया सत्र मौजूद नहीं है.</translation>
 <translation id="1323433172918577554">और दिखाएं</translation>
+<translation id="132390688737681464">पतों की जानकारी सेव करें और भरें</translation>
 <translation id="1333989956347591814">आपकी गतिविधि <ph name="BEGIN_EMPHASIS" />अभी भी इन्हें दिखाई दे सकती है<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />जिन वेबसाइट पर आप जाते हैं
@@ -111,6 +112,7 @@
 <translation id="1645368109819982629">असमर्थित प्रोटोकॉल</translation>
 <translation id="1655462015569774233">{1,plural, =1{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा कल समाप्त हो गई थी. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? यदि नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}one{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा # दिन पहले समाप्त हो गई है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? यदि नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}other{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा # दिन पहले समाप्त हो गई है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? यदि नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}}</translation>
 <translation id="1656489000284462475">पिकअप</translation>
+<translation id="1662550410081243962">भुगतान के तरीके सेव करें और भरें</translation>
 <translation id="1663943134801823270">कार्ड और पते Chrome से मिलते हैं. आप उन्हें <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में प्रबंधित कर सकते हैं.</translation>
 <translation id="1676269943528358898">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आमतौर पर एन्क्रिप्शन का उपयोग करती है. जब Google Chrome ने इस बार <ph name="SITE" /> से कनेक्ट करने का प्रयास किया, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने का प्रयास कर रहा हो या किसी वाई-फ़ाई प्रवेश स्क्रीन ने कनेक्शन को बाधित कर दिया हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा के आदान-प्रदान से पहले ही Google Chrome ने कनेक्शन को रोक दिया था.</translation>
 <translation id="168841957122794586">सर्वर प्रमाणपत्र में कमज़ोर क्रिप्टोग्राफ़िक कुंजी है.</translation>
@@ -196,6 +198,7 @@
 <translation id="225207911366869382">यह मान इस नीति के लिए हटा दिया गया है.</translation>
 <translation id="2262243747453050782">HTTP गड़बड़ी</translation>
 <translation id="2270484714375784793">फ़ोन नंबर</translation>
+<translation id="2283340219607151381">पतों की जानकारी सेव करें और भरें</translation>
 <translation id="2292556288342944218">आपका इंटरनेट कनेक्शन अवरुद्ध है</translation>
 <translation id="2316887270356262533">1 MB से भी कम जगह खाली करता है. जब आप अगली बार विज़िट करेंगे तो, कुछ साइटें और धीमे लोड हो सकती हैं.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> के लिए उपयोगकर्ता नाम और पासवर्ड आवश्यक है.</translation>
@@ -860,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}one{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}other{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}}</translation>
 <translation id="717330890047184534">Gaia आईडी:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}one{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}other{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}}</translation>
+<translation id="7179323680825933600">भुगतान के तरीके सेव करें और भरें</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7182878459783632708">कोई नीति सेट नहीं की गई है</translation>
 <translation id="7186367841673660872">इस पेज का <ph name="ORIGINAL_LANGUAGE" />से<ph name="LANGUAGE_LANGUAGE" /> में अनुवाद कर दिया गया है</translation>
