@@ -3697,7 +3697,8 @@
         "name": "webkit_layout_tests",
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 12
         }
       }
     ]

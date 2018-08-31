@@ -2481,7 +2481,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-annotator-rel': {
