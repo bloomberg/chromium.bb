@@ -61,7 +61,7 @@
 <translation id="2896972712917208084">રેડિઓ જૂથ</translation>
 <translation id="2908441821576996758">કૃપા કરીને અલ્પવિરામથી વિભાજિત ઇમેઇલ સરનામાંઓની સૂચિ દાખલ કરો.</translation>
 <translation id="2940813599313844715">ઑબ્જેક્ટ</translation>
-<translation id="2942448076852699108">હાઇલાઇટ કરેલ સામગ્રી</translation>
+<translation id="2942448076852699108">હાઇલાઇટ કરેલું કન્ટેન્ટ</translation>
 <translation id="3040011195152428237">લિંક</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" />MB</translation>
 <translation id="3075154866155599887">કૃપા કરીને માન્ય કિંમત દાખલ કરો. ફીલ્ડ અપૂર્ણ છે અથવા અમાન્ય તારીખ ધરાવે છે.</translation>
@@ -92,7 +92,7 @@
 <translation id="4201051445878709314">પહેલાનો મહિનો દર્શાવો</translation>
 <translation id="421884353938374759">રંગ ચૂંટનાર</translation>
 <translation id="4248100235867064564">મેનૂ બાર</translation>
-<translation id="4254339807215791271">સામગ્રી માહિતી</translation>
+<translation id="4254339807215791271">કન્ટેન્ટની માહિતી</translation>
 <translation id="4360991593054037559">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. બે નિકટતમ માન્ય મૂલ્યો <ph name="VALID_VALUE_LOW" /> અને <ph name="VALID_VALUE_HIGHER" /> છે.</translation>
 <translation id="4384583879834880242">પ્રશ્ન અને જવાબ</translation>
 <translation id="4413860115965805769">મેનૂ બટન</translation>
@@ -190,7 +190,7 @@
 <translation id="7681220483256441252">અનુક્રમણિકા</translation>
 <translation id="7720026100085573005">બાકીનો સમય</translation>
 <translation id="7740016676195725605">વિગતવાર ઉપશીર્ષકનું પ્રદર્શન અટકાવો</translation>
-<translation id="7740050170769002709">HTML સામગ્રી</translation>
+<translation id="7740050170769002709">HTML માહિતી</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="7802800022689234070">પ્રકટીકરણ ત્રિકોણ</translation>

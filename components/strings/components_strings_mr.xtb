@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />आपल्या कुकीज साफ करून पहा<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">निवडलेले सेशन अस्तित्वात नाही.</translation>
 <translation id="1323433172918577554">अधिक दाखवा</translation>
+<translation id="132390688737681464">पत्ते भरा आणि सेव्ह करा</translation>
 <translation id="1333989956347591814">आपले पुढील क्रियाकलाप <ph name="BEGIN_EMPHASIS" />अद्याप दिसतील<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />आपण पाहत असलेल्या वेबसाइट
@@ -111,6 +112,7 @@
 <translation id="1645368109819982629">असमर्थित प्रोटोकॉल</translation>
 <translation id="1655462015569774233">{1,plural, =1{हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षा प्रमाणपत्र काल कालबाह्य झाले. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. आपले कॉंप्युटर सध्या <ph name="CURRENT_DATE" /> वर सेट आहे. ते योग्य दिसते आहे? नसल्यास, आपण आपल्या सिस्टीमचे घड्याळ दुरूस्त करावे आणि त्यानंतर हे पृष्ठ रिफ्रेश करा.}one{हा सर्व्हर हे <ph name="DOMAIN" />असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षा प्रमाणपत्र # दिवसांपूर्वी कालबाह्य झाले. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. आपले कॉंप्युटर सध्या <ph name="CURRENT_DATE" /> वर सेट आहे. ते योग्य दिसते आहे? नसल्यास, आपण आपल्या सिस्टीमचे घड्याळ दुरूस्त करावे आणि त्यानंतर हे पृष्ठ रिफ्रेश करा.}other{हा सर्व्हर हे <ph name="DOMAIN" />असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षा प्रमाणपत्र # दिवसांपूर्वी कालबाह्य झाले. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. आपले कॉंप्युटर सध्या <ph name="CURRENT_DATE" /> वर सेट आहे. ते योग्य दिसते आहे? नसल्यास, आपण आपल्या सिस्टीमचे घड्याळ दुरूस्त करावे आणि त्यानंतर हे पृष्ठ रिफ्रेश करा.}}</translation>
 <translation id="1656489000284462475">घेणे</translation>
+<translation id="1662550410081243962">पेमेंट पद्धती सेव्ह करा आणि भरा</translation>
 <translation id="1663943134801823270">कार्ड आणि पत्ते Chrome कडील आहेत. आपण त्यांना <ph name="BEGIN_LINK" />सेटिंग्‍ज<ph name="END_LINK" /> मधून व्यवस्थापित करू शकता.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः कूटबद्धीकरण वापरते. Google Chrome ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेन्शियल परत पाठविले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Google Chrome ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
 <translation id="168841957122794586">सर्व्हर प्रमाणपत्रात एक कमकुवत क्रिप्टोग्राफिक की आहे.</translation>
@@ -196,6 +198,7 @@
 <translation id="225207911366869382">हे मूल्य या धोरणासाठी नापसंत करण्‍यात आले आहे.</translation>
 <translation id="2262243747453050782">HTTP एरर</translation>
 <translation id="2270484714375784793">फोन नंबर</translation>
+<translation id="2283340219607151381">पत्ते भरा आणि सेव्ह करा</translation>
 <translation id="2292556288342944218">आपला इंटरनेट प्रवेश अवरोधित केला आहे</translation>
 <translation id="2316887270356262533">1 MB पेक्षा कमी जागा मोकळी करते. काही साइट तुमच्या पुढील भेटीच्या वेळी आणखी धीम्या गतीने लोड होऊ शकतात.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> साठी वापरकर्तानाव आणि पासवर्ड आवश्यक आहेत.</translation>
@@ -861,6 +864,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}one{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}other{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}}</translation>
 <translation id="717330890047184534">Gaia आयडी:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}one{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}other{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}}</translation>
+<translation id="7179323680825933600">पेमेंट पद्धती सेव्ह करा आणि भरा</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7182878459783632708">कोणतीही धोरणे सेट नाहीत</translation>
 <translation id="7186367841673660872">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मधून<ph name="LANGUAGE_LANGUAGE" />मध्ये अनुवादित केले गेले आहे</translation>

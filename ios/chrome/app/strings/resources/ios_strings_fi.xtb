@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Kohde päivitettiin</translation>
 <translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Käytä toista salasanaa…</translation>
 <translation id="1076421457278169141">Koodi skannattiin.</translation>
 <translation id="1084365883616172403">Facebook-viesti julkaistu.</translation>
 <translation id="1104948393051856124">Hyväksy ja jatka</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Lähetä käyttötietoja</translation>
 <translation id="1886928167269928266">Alusta asti</translation>
 <translation id="1911619930368729126">Lähetä Google Driveen</translation>
+<translation id="191179954310195971">Muut Google-palvelut</translation>
 <translation id="1941314575388338491">Kopioi kaksoisnapauttamalla.</translation>
 <translation id="1952728750904661634">Kirjaudu sisään hallinnoidulla tilillä</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Lukulistasi on käytettävissä offline-tilassa. Lisää sivu lukulistaasi valitsemalla <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Käytä toista salasanaa</translation>
 <translation id="3771033907050503522">Incognito</translation>
 <translation id="3779810277399252432">Ei internetyhteyttä</translation>
 <translation id="3783017676699494206">Tallenna kuva</translation>
@@ -315,6 +318,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6346549652287021269">Aloitetaanko uusi lataus?</translation>
 <translation id="6362362396625799311">Ei incognito-välilehtiä</translation>
+<translation id="6363526231572697780">Ei käyttäjänimeä</translation>
 <translation id="6374469231428023295">Yritä uudelleen</translation>
 <translation id="6380866119319257197">Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="6389470377220713856">Nimi kortissa</translation>

@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Спробуйте видалити файли cookie<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">Вибраний сеанс не існує.</translation>
 <translation id="1323433172918577554">Показати більше</translation>
+<translation id="132390688737681464">Зберігати й заповнювати адреси</translation>
 <translation id="1333989956347591814">Дані про вашу активність <ph name="BEGIN_EMPHASIS" />усе ще можуть бачити<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />адміністратори веб-сайтів, які ви відвідуєте
@@ -111,6 +112,7 @@
 <translation id="1645368109819982629">Протокол не підтримується</translation>
 <translation id="1655462015569774233">{1,plural, =1{Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Його сертифікат перестав діяти учора. Можливо, сервер налаштовано неправильно або хтось намагається перехопити ваші дані. На годиннику вашого комп’ютера зараз <ph name="CURRENT_DATE" />. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.}one{Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Його сертифікат перестав діяти # день тому. Можливо, сервер налаштовано неправильно або хтось намагається перехопити ваші дані. На годиннику вашого комп’ютера зараз <ph name="CURRENT_DATE" />. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.}few{Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Його сертифікат перестав діяти # дні тому. Можливо, сервер налаштовано неправильно або хтось намагається перехопити ваші дані. На годиннику вашого комп’ютера зараз <ph name="CURRENT_DATE" />. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.}many{Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Його сертифікат перестав діяти # днів тому. Можливо, сервер налаштовано неправильно або хтось намагається перехопити ваші дані. На годиннику вашого комп’ютера зараз <ph name="CURRENT_DATE" />. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.}other{Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Його сертифікат перестав діяти # дня тому. Можливо, сервер налаштовано неправильно або хтось намагається перехопити ваші дані. На годиннику вашого комп’ютера зараз <ph name="CURRENT_DATE" />. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.}}</translation>
 <translation id="1656489000284462475">Отримання</translation>
+<translation id="1662550410081243962">Зберігати й заповнювати способи оплати</translation>
 <translation id="1663943134801823270">Дані картки та список адрес містяться в Chrome. Ними можна керувати в <ph name="BEGIN_LINK" />Налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898">Веб-сайт <ph name="SITE" /> зазвичай використовує шифрування для захисту вашої інформації. Під час цієї спроби Chrome під’єднатися до сторінки <ph name="SITE" /> з неї отримано незвичні й неправильні облікові дані. Це може статися, коли зловмисник намагається видавати себе за веб-сайт <ph name="SITE" /> або з’єднання перервано екраном входу Wi-Fi. Ваша інформація залишається захищеною, оскільки Chrome припинив з’єднання до того, як почався обмін будь-якими даними.</translation>
 <translation id="168841957122794586">Сертифікат сервера містить слабкий криптографічний ключ.</translation>
@@ -196,6 +198,7 @@
 <translation id="225207911366869382">Дію цього значення припинено для цього правила</translation>
 <translation id="2262243747453050782">Помилка HTTP</translation>
 <translation id="2270484714375784793">Номер телефону</translation>
+<translation id="2283340219607151381">Зберігати й заповнювати адреси</translation>
 <translation id="2292556288342944218">Ваш доступ до Інтернету заблоковано</translation>
 <translation id="2316887270356262533">Звільняє менше 1 Мб. Деякі сайти можуть завантажуватися повільніше під час наступного відвідування.</translation>
 <translation id="2317259163369394535">Для сайту <ph name="DOMAIN" /> потрібно ввести ім’я користувача та пароль.</translation>
@@ -860,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="7179323680825933600">Зберігати й заповнювати способи оплати</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7182878459783632708">Правила не встановлено</translation>
 <translation id="7186367841673660872">Цю сторінку перекладено. Мова оригіналу:<ph name="ORIGINAL_LANGUAGE" />мова перекладу:<ph name="LANGUAGE_LANGUAGE" /></translation>

@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Fatia de piza</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1468571364034902819">Não é possível utilizar este perfil</translation>
-<translation id="1470533772306424441">Vamos instalar essas aplicações. Pode encontrar mais aplicações para o seu dispositivo na Play Store.</translation>
 <translation id="1470811252759861213">Para obter as suas extensões em todos os computadores, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" não foi carregado. Não existe espaço livre suficiente no seu Google Drive.</translation>
 <translation id="1475502736924165259">Tem certificados em arquivo que não encaixam em nenhuma das restantes categorias</translation>
@@ -2633,7 +2632,6 @@ Pretende pará-lo?</translation>
 <translation id="5027562294707732951">Adicionar extensão</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="5030338702439866405">Emitido por</translation>
-<translation id="503155457707535043">A transferir aplicações…</translation>
 <translation id="503498442187459473"><ph name="HOST" /> pretende utilizar a câmara e o microfone.</translation>
 <translation id="5036662165765606524">Não permitir que os sites transfiram vários ficheiros automaticamente</translation>
 <translation id="5037676449506322593">Selecionar tudo</translation>
@@ -2788,7 +2786,6 @@ Pretende pará-lo?</translation>
 <translation id="5265797726250773323">Ocorreu um erro ao instalar</translation>
 <translation id="5266113311903163739">Erro ao importar autoridade de certificação</translation>
 <translation id="5269977353971873915">Falha de Impressão</translation>
-<translation id="5271549068863921519">Guardar palavra-passe</translation>
 <translation id="5275352920323889391">Cão</translation>
 <translation id="5275973617553375938">Ficheiros recuperados do Google Drive</translation>
 <translation id="527605719918376753">Desativar som do separador</translation>
@@ -3688,7 +3685,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6596745167571172521">Desativar o Caps Lock</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="6597017209724497268">Amostras</translation>
-<translation id="6597332018579308636">Permitir acesso</translation>
 <translation id="659934686219830168">A sincronização começa assim que sair desta página.</translation>
 <translation id="6602353599068390226">mover a janela para outro ecrã</translation>
 <translation id="6602956230557165253">Utilize as teclas de seta para a esquerda e direita para navegar.</translation>
@@ -3961,7 +3957,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7025325401470358758">Painel seguinte</translation>
 <translation id="7027125358315426638">Nome da base de dados:</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
-<translation id="7030031465713069059">Guardar palavra-passe</translation>
 <translation id="7031962166228839643">O TPM está a ser preparado, aguarde (pode demorar alguns minutos)...</translation>
 <translation id="7035437538340499453">O Smart Lock está pronto</translation>
 <translation id="7037509989619051237">Texto para pré-visualização</translation>
@@ -4234,7 +4229,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7464490149090366184">Falha na criação de zip; o item existe: "$1"</translation>
 <translation id="7465778193084373987">URL de revogação do certificado Netscape</translation>
 <translation id="7469406957790636836">Para ativar esta opção, ative primeiro a verificação ortográfica em <ph name="BEGIN_LINK" />Idiomas e introdução<ph name="END_LINK" />.</translation>
-<translation id="7469518857922439236">Enviar-lhe notificações e memorizar este computador para mensagens como predefinição</translation>
+<translation id="7469518857922439236">Enviar-lhe notificações e memorizar este computador para a aplicação Mensagens como predefinição</translation>
 <translation id="7469894403370665791">Ligar automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: não foi possível descodificar a extensão</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
@@ -4551,7 +4546,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">A sua palavra-passe foi alterada no servidor. Termine e inicie sessão novamente.</translation>
 <translation id="7915471803647590281">Indique-nos o que está a acontecer antes de enviar os comentários.</translation>
-<translation id="7916556741383518510">Ao clicar</translation>
 <translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">A verificação AAA falhou</translation>
 <translation id="7925285046818567682">A aguardar por <ph name="HOST_NAME" />...</translation>
@@ -5099,7 +5093,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8758418656925882523">Ativar o ditado (falar para escrever)</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
-<translation id="8762207669047572135">Permitir acesso</translation>
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os utilizadores</translation>
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerir pessoas</translation>

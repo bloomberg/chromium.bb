@@ -33,7 +33,7 @@
 <translation id="1201402288615127009">পরবর্তী</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome কে ভয়েস প্রদান</translation>
-<translation id="1225437811932752266">অভিনন্দন! আপনি ChromeVox ব্যবহার করার অত্যাবশ্যক বিষয়গুলি শিখে নিয়েছেন। মনে রাখবেন যে, আপনি যেকোনও সময় সার্চ+ফুলস্টপ টিপে ChromeVox কমান্ড মেনু খুলতে পারেন। ChromeVox এবং Chrome OS সম্পর্কে আরও জানার জন্য, নিম্নোক্ত নিবন্ধগুলি দেখুন।
+<translation id="1225437811932752266">অভিনন্দন! আপনি ChromeVox ব্যবহার করার অত্যাবশ্যক বিষয়গুলি শিখে নিয়েছেন। মনে রাখবেন যে, আপনি যেকোনও সময় সার্চ+ফুলস্টপ টিপে ChromeVox কম্যান্ড মেনু খুলতে পারেন। ChromeVox এবং Chrome OS সম্পর্কে আরও জানার জন্য, নিম্নোক্ত নিবন্ধগুলি দেখুন।
 টিউটোরিয়ালটি শেষ করার পর, ChromeVox ব্যবহার করে বন্ধ করার বোতামে নেভিগেট করে সেটিতে ক্লিক করুন।</translation>
 <translation id="1229276918471378188">পূর্ববর্তী জাম্প</translation>
 <translation id="1236794971743289975">এন্ডনোট</translation>
@@ -150,7 +150,7 @@
 <translation id="2417948780551741035">এন্ডনোট</translation>
 <translation id="2421113964388408478">মোছা হচ্ছে</translation>
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
-<translation id="2428534162001909979">কমান্ড মেনুগুলি</translation>
+<translation id="2428534162001909979">কম্যান্ড মেনুগুলি</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429">এখন <ph name="KEY" /> হল নতুন ChromeVox সংশোধক৷</translation>
 <translation id="2450814015951372393">চেকবাক্স</translation>
@@ -367,7 +367,7 @@
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3909320334364316587">পূর্ববর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="3914173277599553213">প্রয়োজন</translation>
-<translation id="3914732343065571127">ChromeVox কমান্ড রেফারেন্স</translation>
+<translation id="3914732343065571127">ChromeVox কম্যান্ড রেফারেন্স</translation>
 <translation id="3930498801443296724">পুলকোট</translation>
 <translation id="3962990492275676168">বর্তমান লোকেশন থেকে পড়া শুরু করুন</translation>
 <translation id="4004802134384979325">চেক করা</translation>
@@ -569,7 +569,7 @@
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5574412348552378458">ChromeVox শিখন মোড</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5585044216466955529">ইমেল এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
+<translation id="5585044216466955529">ইমেল আইডি এন্ট্রি, টেক্সট সম্পাদনা করুন</translation>
 <translation id="5597170376237141345">পরবর্তী চেকবাক্স</translation>
 <translation id="5597933780944041114">কোনো পরবর্তী শিরোনাম নেই৷</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, রেডিও বোতাম নির্বাচিত নেই</translation>
@@ -883,7 +883,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>
 <translation id="8538744478902126321">বর্তমান কক্ষের সারি শিরোলেখে একটি অনুমান করে</translation>
 <translation id="8540054775867439484">শীর্ষে সম্পৃক্ত রয়েছে</translation>
-<translation id="8542271685829952264">সব ChromeVox কমান্ড এবং শর্টকাটগুলি ঘুরে দেখার জন্য, সার্চ + ফুলস্টপ টিপুন, তারপর মেনুতে নেভিগেট করার জন্য তীরচিহ্ন কীগুলি ব্যবহার করুন, এবং কোনো কমান্ড সক্রিয় করতে Enter ব্যবহার করুন। এখানে ফেরার জন্য সার্চ+o ও এরপর t টিপুন।</translation>
+<translation id="8542271685829952264">সব ChromeVox কম্যান্ড এবং শর্টকাটগুলি ঘুরে দেখার জন্য, Search + Period টিপুন, তারপর মেনুতে নেভিগেট করার জন্য তীরচিহ্ন কীগুলি ব্যবহার করুন, এবং কোনও কম্যান্ড সক্রিয় করতে Enter ব্যবহার করুন। এখানে ফেরার জন্য Search+o ও এরপর t টিপুন।</translation>
 <translation id="8548973727659841685">চরিত্র</translation>
 <translation id="8561322612995434619">পপ আপ রয়েছে</translation>
 <translation id="8571096049907249734">বহুনির্বাচন</translation>

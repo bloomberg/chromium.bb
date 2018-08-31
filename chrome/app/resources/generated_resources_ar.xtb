@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">شريحة بيتزا</translation>
 <translation id="1467432559032391204">اليسار</translation>
 <translation id="1468571364034902819">يتعذّر استخدام هذا الملف الشخصي</translation>
-<translation id="1470533772306424441">‏سوف نثبّت لك هذه التطبيقات. يمكنك العثور على المزيد من التطبيقات لجهازك في متجرPlay .</translation>
 <translation id="1470811252759861213">للحصول على الإضافات على جميع أجهزة الكمبيوتر، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">‏لم يتم تحميل "<ph name="FILENAME" />". حيث لا توجد لديك مساحة فارغة كافية في Google Drive.</translation>
 <translation id="1475502736924165259">لديك شهادات في الملف لا تندرج تحت أي فئة من الفئات الأخرى</translation>
@@ -2626,7 +2625,6 @@
 <translation id="5027562294707732951">تثبيت إضافة</translation>
 <translation id="5029568752722684782">محو النسخة</translation>
 <translation id="5030338702439866405">جهة الإصدار</translation>
-<translation id="503155457707535043">تنزيل التطبيقات</translation>
 <translation id="503498442187459473">يريد <ph name="HOST" /> استخدام الكاميرا والميكروفون.</translation>
 <translation id="5036662165765606524">عدم السماح لأي موقع بتنزيل عدة ملفات تلقائيًا</translation>
 <translation id="5037676449506322593">تحديد الكل</translation>
@@ -2781,7 +2779,6 @@
 <translation id="5265797726250773323">حدث خطأ أثناء التثبيت</translation>
 <translation id="5266113311903163739">خطأ استيراد مرجع مصدق</translation>
 <translation id="5269977353971873915">تعذّرت الطباعة</translation>
-<translation id="5271549068863921519">حفظ كلمة المرور</translation>
 <translation id="5275352920323889391">كلب</translation>
 <translation id="5275973617553375938">‏الملفات المستردة من Google Drive</translation>
 <translation id="527605719918376753">تجاهل علامة التبويب</translation>
@@ -3681,7 +3678,6 @@
 <translation id="6596745167571172521">‏إيقاف مفتاح Caps Lock</translation>
 <translation id="6596816719288285829">‏عنوان IP</translation>
 <translation id="6597017209724497268">نماذج</translation>
-<translation id="6597332018579308636">السماح بالوصول</translation>
 <translation id="659934686219830168">ستبدأ المزامنة بعد مغادرتك هذه الصفحة.</translation>
 <translation id="6602353599068390226">نقل نافذة إلى شاشة عرض أخرى</translation>
 <translation id="6602956230557165253">استخدام مفتاحي السهمين لليمين واليسار للتنقل.</translation>
@@ -3954,7 +3950,6 @@
 <translation id="7025325401470358758">الجزء التالي</translation>
 <translation id="7027125358315426638">اسم قاعدة البيانات:</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
-<translation id="7030031465713069059">حفظ كلمة المرور</translation>
 <translation id="7031962166228839643">‏يتم حاليًا تحضير TPM، يرجى الانتظار (قد يستغرق ذلك بضع دقائق)...</translation>
 <translation id="7035437538340499453">‏Smart Lock جاهز تمامًا</translation>
 <translation id="7037509989619051237">نص للمعاينة</translation>
@@ -4545,7 +4540,6 @@
 <translation id="7911118814695487383">‏نظام التشغيل Linux</translation>
 <translation id="7912080627461681647">تم تغيير كلمة المرور على الخادم. يُرجى الخروج ثم تسجيل الدخول مجددًا.</translation>
 <translation id="7915471803647590281">يُرجى إخبارنا بما يحدث قبل إرسال التعليقات.</translation>
-<translation id="7916556741383518510">عند النقر</translation>
 <translation id="792514962475806987">مستوى التكبير الذي تم إرساؤه:</translation>
 <translation id="7925247922861151263">‏تعذّر فحص AAA</translation>
 <translation id="7925285046818567682">في انتظار <ph name="HOST_NAME" />‏ ...</translation>
@@ -5093,7 +5087,6 @@
 <translation id="8758418656925882523">تفعيل الإملاء (التحدُّث للكتابة)</translation>
 <translation id="8759408218731716181">يتعذر إعداد الدخول المتعدد</translation>
 <translation id="8759753423332885148">معرفة المزيد.</translation>
-<translation id="8762207669047572135">السماح بالوصول</translation>
 <translation id="8767621466733104912">‏تحديث Chrome لجميع المستخدمين تلقائيًا</translation>
 <translation id="8770406935328356739">الدليل الجذر للإضافة</translation>
 <translation id="8770507190024617908">إدارة الأشخاص</translation>

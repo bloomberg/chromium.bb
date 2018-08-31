@@ -359,6 +359,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="199764499252435679">Dovoli posodobitve komponent v izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Upravljanje porabe</translation>
 <translation id="201557587962247231">Pogostost nalaganja poročil o stanju naprave</translation>
+<translation id="2017301949684549118">URL-ji za spletne aplikacije za namestitev brez obveščanja.</translation>
 <translation id="2018836497795982119">Določa obdobje v milisekundah, po katerem se storitvi za upravljanje naprave pošlje poizvedba za uporabniške podatke pravilnika.
 
       Z nastavitvijo tega pravilnika se preglasi privzeta vrednost 3 ur. Veljavne vrednosti za ta pravilnik so med 1.800.000 (30 minut) in 86.400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo spremenjene na ustrezno mejo obsega. Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur, ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev.
@@ -673,6 +674,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Googlov URL za iskanje je mogoče določiti kot: <ph name="GOOGLE_SEARCH_URL" />.
 
           Ta možnost mora biti nastavljena, ko je omogočen pravilnik »DefaultSearchProviderEnabled«, in bo veljala samo v tem primeru.</translation>
+<translation id="2659019163577049044">Če je ta nastavitev omogočena, bo uporabnikom dovoljeno, da v napravah nastavijo sinhroniziranje sporočil SMS med telefoni in Chromebooki. Upoštevajte: če je ta pravilnik dovoljen, morajo uporabniki to funkcijo izrecno omogočiti, in sicer tako, da opravijo postopek nastavitve. Ko ga opravijo, bodo uporabniki lahko pošiljali in prejemali sporočila SMS v Chromebookih.
+
+      Če je ta nastavitev onemogočena, uporabnikom ne bo dovoljeno nastaviti sinhroniziranja sporočil SMS.
+
+      Če ta pravilnik ni nastavljen, funkcije privzeto ni dovoljeno uporabljati upravljanim uporabnikom, dovoljeno pa jo je uporabljati uporabnikom, ki niso upravljani.</translation>
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
 <translation id="267596348720209223">Določa kodiranja znakov, ki jih podpira ponudnik iskanja. Kodiranja so imena kodnih strani, na primer UTF-8, GB2312 in ISO-8859-1. Poskusi uporabe potekajo po navedenem vrstnem redu.
 
@@ -1107,6 +1113,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Vsak vnos na seznamu vsebuje slovar, ki mora vključevati ID razširitve v polju »extension-id« in URL za posodobitev v polju »update-url«.</translation>
 <translation id="3874773863217952418">Omogoči »Iskanje z dotikom«</translation>
 <translation id="3877517141460819966">Integriran način dvojnega preverjanja pristnosti</translation>
+<translation id="3879208481373875102">Konfiguriranje seznama vsiljeno nameščenih spletnih aplikacij</translation>
 <translation id="388237772682176890">Ta pravilnik je zastarel v različici M53 in je odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
 
       Onemogoči uporabo protokola SPDY v brskalniku <ph name="PRODUCT_NAME" />.
@@ -1350,6 +1357,10 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Način obdelave povratnih zank pri uporabniških pravilnikih</translation>
+<translation id="4554841826517980623">Ta pravilnik nadzira, ali naj funkcija omrežnih datotečnih sredstev v skupni rabi za izdelek <ph name="PRODUCT_NAME" /> uporablja protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
+      Če je ta pravilnik omogočen, bo mehanizem za odkrivanje sredstev v skupni rabi uporabljal protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
+      Če je ta pravilnik onemogočen, mehanizem za odkrivanje sredstev v skupni rabi ne bo uporabljal protokola <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
+      Če pravilnik ni nastavljen, je funkcija privzeto onemogočena za uporabnike, ki jih upravlja podjetje, in omogočena za uporabnike, ki niso upravljani.</translation>
 <translation id="4555850956567117258">Omogoči oddaljeno potrditev za uporabnika</translation>
 <translation id="4557134566541205630">URL novega zavihka s povezavami privzetega iskalnika</translation>
 <translation id="4567137030726189378">Omogočena uporaba orodij za izvajalce</translation>
@@ -1773,6 +1784,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če pravilnika ne nastavite, je izgovorjava onemogočena, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo izgovorjavo, pri čemer se njeno stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
 <translation id="5868414965372171132">Konfiguracija omrežja na ravni uporabnika</translation>
+<translation id="5879014913445067283">Nadzira odkrivanje omrežnih datotečnih sredstev v skupni rabi prek protokola <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Privzeta nastavitev piškotkov</translation>
 <translation id="5887414688706570295">Nastavi predpono »TalkGadget«, ki jo bodo uporabljali gostitelji oddaljenega dostopa, in prepreči uporabnikom njeno spreminjanje.
 
@@ -2234,6 +2246,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj zaznamke uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="7063895219334505671">Dovoli pojavna okna na teh mestih</translation>
+<translation id="706568410943497889">
+      Če je pravilnik omogočen, je izdelku <ph name="PRODUCT_NAME" /> dovoljeno zbiranje dnevnikov dogodkov tehnologije WebRTC iz Googlovih storitev (npr. iz Googla Meet) ter nalaganje teh dnevnikov v Google.
+
+      Če je pravilnik onemogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> tovrstnih dnevnikov ne sme zbirati ne nalagati.
+
+      Ti dnevniki vsebujejo diagnostične podatke, ki so koristni pri odpravljanju težav z zvočnimi klici ali videoklici v Chromu, na primer čas in velikost poslanih ter prejetih paketov RTP, povratne informacije o preobremenjenosti omrežja ter metapodatki o času in kakovosti zvočnih ter slikovnih okvirov. Ti dnevniki ne vsebujejo zvočne ali slikovne vsebine klica.
+
+      To zbiranje podatkov v Chromu lahko sprožijo samo Googlove spletne storitve, na primer Google Hangouts ali Google Meet.
+
+      Google lahko te dnevnike pred ID-ja seje poveže z drugimi dnevniki, ki jih zbira sama Googlova storitev, in sicer zaradi lažjega odpravljanja napak.
+      </translation>
 <translation id="706669471845501145">Mestom dovoli prikazovanje namiznih obvestil</translation>
 <translation id="7072208053150563108">Hitrost spreminjanja gesla naprave</translation>
 <translation id="7074513465313721551">Konfiguriranje seznama domeni, ki jim Varno brskanje zaupa. To pomeni:
@@ -2367,6 +2390,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="7343497214039883642">Datoteka s konfiguracijami tiskalnikov v podjetjih za naprave</translation>
+<translation id="7349338075015720646">Določa seznam spletnih mest, ki se namestijo brez obveščanja in brez poseganja uporabnika ter ki jih uporabnik ne more ne odstraniti ne onemogočiti.
+
+      Vsak element na seznamu pravilnika je predmet z dvema členoma: »url« in »launch_container«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« pa »window« (okno) ali »tab« (zavihek), s čimer je nakazano, kako se bo spletna aplikacija odprla po namestitvi. Če »launch_container« izpustite, se bo aplikacija zagnala v oknu, če jo bo Chrome obravnaval kot moderno spletno aplikacijo, v nasprotnem primeru pa na zavihku.</translation>
 <translation id="7367028210010532881">Storitev Varno brskanje prikaže opozorilno stran, ko uporabniki pridejo na spletna mesta, ki so označena kot potencialno zlonamerna. Če je ta nastavitev omogočena, uporabniki z opozorilne strani ne morejo na zlonamerno spletno mesto.
 
       Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki po prikazu opozorila nadaljujejo na označeno spletno mesto.
@@ -2829,6 +2855,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 
       »Različica« pomeni točno različico, na primer »61.0.3163.120«, ali predpono različice, na primer »61.0«.  </translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Dovolitev sinhroniziranja sporočil SMS med telefonom in Chromebookom.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="8586528890725660268">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
@@ -2873,6 +2900,11 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       Če ta pravilnik ni nastavljen, storitev zaščite z geslom ščiti samo gesla za Google, vendar lahko uporabnik to nastavitev spremeni.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Omogoči nastavitev časovnega obdobja v milisekundah, v katerem so uporabniki obveščeni, da mora biti brskalnik <ph name="PRODUCT_NAME" /> znova zagnan ali da mora biti naprava <ph name="PRODUCT_OS_NAME" /> znova zagnana za uveljavitev čakajoče posodobitve.
+
+      V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. Ko je zaznana nadgradnja, se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, prav tako velja ta pravilnik.
+
+      Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 millisekund (štirje dnevi), za brskalnike <ph name="PRODUCT_NAME" /> pa 604.800.000 milisekund (en teden).</translation>
 <translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
@@ -2917,6 +2949,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 
           Vrednost prilagoditve mora biti najmanj 100 %. Vrednosti, ki bi povzročile, da je časovni zamik zatemnitve zaslona v načinu predstavitve krajši od običajnega časovnega zamika zatemnitve zaslona, niso dovoljene.</translation>
 <translation id="8798099450830957504">Privzeto</translation>
+<translation id="8801680448782904838">Obveščanje uporabnika, da je priporočen ali obvezen vnovičen zagon brskalnika ali naprave</translation>
 <translation id="8818173863808665831">Prijava zemljepisne lokacije naprave.
 
       Če pravilnik ni nastavljen ali je nastavljen na »False«, lokacija ne bo prijavljena.</translation>
@@ -3082,6 +3115,11 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       Če je ta pravilnik omogočen, bo <ph name="PRODUCT_OS_NAME" /> sprožil vnovični zagon, ko uporabnik zaustavi napravo. <ph name="PRODUCT_OS_NAME" /> nadomesti vse gumbe za zaustavitev v uporabniškem vmesniku z gumbi za vnovični zagon. Če uporabnik zaustavi napravo z gumbom za vklop, se naprava ne bo samodejno zagnala znova, tudi če je pravilnik omogočen.</translation>
 <translation id="9152473318295429890">Omogočeni kontekstni predlogi sorodnih spletnih strani</translation>
 <translation id="9158929520101169054">Omogočanje prijave z več računi v brskalniku</translation>
+<translation id="9159126470527871268">Obvesti uporabnike, da je treba zaradi uveljavitve posodobitve na čakanju znova zagnati brskalnik <ph name="PRODUCT_NAME" /> ali napravo <ph name="PRODUCT_OS_NAME" />.
+
+      Ta nastavitev pravilnika omogoči obvestila, ki uporabnika obvestijo, da je priporočen ali obvezen vnovičen zagon brskalnika ali naprave. Če pravilnik ni nastavljen, brskalnik <ph name="PRODUCT_NAME" /> uporabnika glede potrebnega vnovičnega zagona obvesti prek manjših sprememb menija, medtem ko ga naprava <ph name="PRODUCT_OS_NAME" /> obvesti o tem prek obvestila v sistemski vrstici. Če je pravilnik nastavljen na »Recommended« (priporočeno), je uporabniku prikazano ponavljajoče se opozorilo, da je priporočen vnovičen zagon. Uporabnik lahko opozorilo opusti in tako odloži vnovičen zagon. Če je pravilnik nastavljen na »Required« (obvezno), je uporabniku prikazano ponavljajoče se opozorilo, da bo po izteku obdobja za obveščanje vsiljen vnovičen zagon brskalnika. To obdobje privzeto traja sedem dni za brskalnik <ph name="PRODUCT_NAME" /> in štiri dni za napravo <ph name="PRODUCT_OS_NAME" /> ter ga je mogoče konfigurirati v nastavitvi pravilnika <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Uporabniška seja je po vnovičnem zagonu brskalnika/naprave obnovljena.</translation>
 <translation id="9165792353046089850">Omogoča nastavitev, ali lahko spletna mesta dostopajo do povezanih naprav USB. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do povezanih naprav USB.
 
           Ta pravilnik je mogoče preglasiti za določene vzorce URL-jev, ki uporabljajo pravilnika »WebUsbAskForUrls« in »WebUsbBlockedForUrls«.

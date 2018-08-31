@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Парче пица</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1468571364034902819">Не можете да използвате този потребителски профил</translation>
-<translation id="1470533772306424441">Ще инсталираме тези приложения за вас. Можете да намерите още приложения за устройството си в Google Play Магазин.</translation>
 <translation id="1470811252759861213"><ph name="SIGN_IN_LINK" />, за да получите разширенията си на всичките си компютри.</translation>
 <translation id="1474339897586437869">Файлът „<ph name="FILENAME" />“ не бе качен. Нямате достатъчно свободно място в Google Диск.</translation>
 <translation id="1475502736924165259">Разполагате със сертификати, които не отговарят на нито една от другите категории</translation>
@@ -2631,7 +2630,6 @@
 <translation id="5027562294707732951">Добавяне на разширението</translation>
 <translation id="5029568752722684782">Изчистване на копието</translation>
 <translation id="5030338702439866405">Издаден от</translation>
-<translation id="503155457707535043">Приложенията се изтеглят</translation>
 <translation id="503498442187459473"><ph name="HOST" /> иска да използва камерата и микрофона ви</translation>
 <translation id="5036662165765606524">Да не се разрешава на сайтовете да изтеглят автоматично няколко файла</translation>
 <translation id="5037676449506322593">Избиране на всички</translation>
@@ -2786,7 +2784,6 @@
 <translation id="5265797726250773323">Грешка при инсталирането</translation>
 <translation id="5266113311903163739">Грешка при импортирането на сертифициращ орган</translation>
 <translation id="5269977353971873915">Отпечатването не бе успешно</translation>
-<translation id="5271549068863921519">Запазване на паролата</translation>
 <translation id="5275352920323889391">Куче</translation>
 <translation id="5275973617553375938">Възстановени от Google Диск файлове</translation>
 <translation id="527605719918376753">Спиране на звука на раздела</translation>
@@ -3686,7 +3683,6 @@
 <translation id="6596745167571172521">Деактивиране на „Caps Lock“</translation>
 <translation id="6596816719288285829">IP адрес</translation>
 <translation id="6597017209724497268">Извадки</translation>
-<translation id="6597332018579308636">Разрешаване на достъп</translation>
 <translation id="659934686219830168">Синхронизирането ще започне, след като напуснете тази страница</translation>
 <translation id="6602353599068390226">преместване на прозореца на друг екран</translation>
 <translation id="6602956230557165253">Използвайте клавишите със стрелки за наляво и за надясно, за да се придвижвате.</translation>
@@ -3959,7 +3955,6 @@
 <translation id="7025325401470358758">Следващият панел</translation>
 <translation id="7027125358315426638">Име на базата от данни:</translation>
 <translation id="7029809446516969842">Пароли</translation>
-<translation id="7030031465713069059">Запазване на паролата</translation>
 <translation id="7031962166228839643">Модулът TPM се подготвя. Моля, изчакайте (това може да отнеме няколко минути)...</translation>
 <translation id="7035437538340499453">Функцията Smart Lock е настроена</translation>
 <translation id="7037509989619051237">Текст за прослушване</translation>
@@ -4549,7 +4544,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Паролата ви е променена в сървъра. Моля, излезте от профила си и влезте отново в него.</translation>
 <translation id="7915471803647590281">Моля, кажете ни какво става, преди да изпратите отзивите.</translation>
-<translation id="7916556741383518510">При кликване</translation>
 <translation id="792514962475806987">Ниво на мащаба при прикрепен режим:</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="7925285046818567682">Изчаква се отговор от <ph name="HOST_NAME" />...</translation>
@@ -5097,7 +5091,6 @@
 <translation id="8758418656925882523">Активиране на режима на диктуване (въвеждане чрез говор)</translation>
 <translation id="8759408218731716181">Централизираният вход не може да се настрои</translation>
 <translation id="8759753423332885148">Научете повече.</translation>
-<translation id="8762207669047572135">Разрешаване на достъп</translation>
 <translation id="8767621466733104912">Автоматично актуализиране на Chrome за всички потребители</translation>
 <translation id="8770406935328356739">Основна директория на разширението</translation>
 <translation id="8770507190024617908">Управление на хората</translation>

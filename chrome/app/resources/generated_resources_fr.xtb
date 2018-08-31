@@ -319,7 +319,6 @@
 <translation id="1465827627707997754">Part de pizza</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1468571364034902819">Impossible d'utiliser ce profil</translation>
-<translation id="1470533772306424441">Nous installerons ces applications à votre place. Rendez-vous sur le Play Store pour en trouver d'autres à installer sur votre appareil.</translation>
 <translation id="1470811252759861213">Pour synchroniser vos extensions sur tous vos ordinateurs, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">Le fichier "<ph name="FILENAME" />" n'a pas été importé, car l'espace disponible sur Google Drive est insuffisant.</translation>
 <translation id="1475502736924165259">Vous disposez de certificats qui n'appartiennent à aucune autre catégorie.</translation>
@@ -2632,7 +2631,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5027562294707732951">Ajouter l'extension</translation>
 <translation id="5029568752722684782">Effacer la copie</translation>
 <translation id="5030338702439866405">Émis par</translation>
-<translation id="503155457707535043">Téléchargement des applications</translation>
 <translation id="503498442187459473"><ph name="HOST" /> souhaite utiliser votre appareil photo et votre micro</translation>
 <translation id="5036662165765606524">N'autoriser le téléchargement automatique de plusieurs fichiers pour aucun site</translation>
 <translation id="5037676449506322593">Tout sélectionner</translation>
@@ -2787,7 +2785,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5265797726250773323">Erreur lors de l'installation</translation>
 <translation id="5266113311903163739">Erreur d'importation de l'autorité de certification</translation>
 <translation id="5269977353971873915">Échec de l'impression</translation>
-<translation id="5271549068863921519">Enregistrer le mot de passe</translation>
 <translation id="5275352920323889391">Chien</translation>
 <translation id="5275973617553375938">Fichiers récupérés sur Google Drive</translation>
 <translation id="527605719918376753">Couper le son de l'onglet</translation>
@@ -3687,7 +3684,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6596745167571172521">Désactiver le verrouillage des majuscules</translation>
 <translation id="6596816719288285829">Adresse IP</translation>
 <translation id="6597017209724497268">échantillons</translation>
-<translation id="6597332018579308636">Autoriser l'accès</translation>
 <translation id="659934686219830168">La synchronisation commencera une fois que vous aurez quitté cette page</translation>
 <translation id="6602353599068390226">transférer la fenêtre vers un autre écran</translation>
 <translation id="6602956230557165253">Utilisez les touches fléchées gauche et droite pour naviguer.</translation>
@@ -3960,7 +3956,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7025325401470358758">Volet suivant</translation>
 <translation id="7027125358315426638">Nom de la base de données :</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
-<translation id="7030031465713069059">Enregistrer le mot de passe</translation>
 <translation id="7031962166228839643">Préparation du module de plate-forme sécurisée (TPM) en cours. Veuillez patienter, l'opération peut prendre quelques minutes.</translation>
 <translation id="7035437538340499453">Smart Lock est prêt</translation>
 <translation id="7037509989619051237">Texte à prévisualiser</translation>
@@ -4550,7 +4545,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Votre mot de passe a été modifié sur le serveur. Veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="7915471803647590281">Veuillez nous indiquer ce qu'il se passe avant d'envoyer votre rapport.</translation>
-<translation id="7916556741383518510">En cas de clic</translation>
 <translation id="792514962475806987">Niveau de zoom ancré :</translation>
 <translation id="7925247922861151263">Échec de la vérification AAA</translation>
 <translation id="7925285046818567682">En attente de <ph name="HOST_NAME" />...</translation>
@@ -5098,7 +5092,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8758418656925882523">Activer la dictée (parlez pour que vos propos soient saisis)</translation>
 <translation id="8759408218731716181">Impossible de configurer la connexion multicompte.</translation>
 <translation id="8759753423332885148">En savoir plus</translation>
-<translation id="8762207669047572135">Autoriser l'accès</translation>
 <translation id="8767621466733104912">Mettre à jour Chrome automatiquement pour tous les utilisateurs</translation>
 <translation id="8770406935328356739">Répertoire racine de l'extension</translation>
 <translation id="8770507190024617908">Gérer les utilisateurs</translation>
