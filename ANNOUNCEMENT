@@ -1,7 +1,7 @@
-liblouis 3.6.0 has been released
+liblouis 3.7.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.6.0. The release is available for download at:
+3.7.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,11 +18,12 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-This release contains the usual assortment of braille table
-improvements, cleanups and bug fixes. The most prominent change is the
-refactoring of the call APIs by Bert Frees that makes the code much
-more manageable and solid and will help us in the future to evolve the
-library.
+This release implements major improvements for back-translation thanks
+to concerted efforts by Bue Vester-Andersen, Bert Frees, Timothy Lee
+and others. In particular the input/output positions are now correct
+also for back-translation. There are new and improved Chinese Braille
+tables and some long awaited improvements to UEB. The release also has
+some code cleanups and documentation improvements.
 
 For a detailed list of all the changes refer to the list of closed
 issues[3].
@@ -30,81 +31,77 @@ issues[3].
 New features
 ~~~~~~~~~~~~
 
-- Add metadata fields `name' and `display-name' to tables thanks to
-  Bert Frees. The `name' contains a description of the table in the
-  native language. `display-name' contains an English description.
-- YAML test enhancements
-  - You can now test both forward and backwards translation with in
-    the same YAML file and for the same set of tables tests thanks to
-    Bue Vester-Andersen. See the documentation for the
-    `bothDirections' testmode.
-  - Add `maxOutputLength' option in YAML tests.
+- Added a new opcode `midendnumericmodechars'. Characters defined with
+  this opcode can appear in the middle or at the end of a number
+  without canceling numeric mode. Thanks to Bue Vester-Andersen.
 
 Bug fixes
 ~~~~~~~~~
 
-- Fix a bunch of buffer overflow errors in table parsing thanks to
-  Samuel Thibault and Christian Egli (CVE-2018-11410 and
-  CVE-2018-11440).
-- Fix input-output mapping of context rules thanks to Bert Frees.
-- Fix back tracking with all caps words thanks to Bert Frees.
-- Fix context rules with lookback thanks to Bert Frees.
-- Fix a memory leak in default table resolver thanks to Timothy Lee.
-- Fix an array out of bounds error which caused a crash on i386 thanks
-  to Samuel Thibault.
-- Fix numerous stack-based buffer overflow in table parsing thanks
-  that were reported by Henri Salo thanks to Christian Egli
-  (CVE-2018-11683, CVE-2018-11684 and CVE-2018-11685).
+- Fix another stack-based buffer overflow in input parsing reported by
+  Henri Salo thanks to Christian Egli.
+- Fix input/output positions for back-translation. Thanks to excellent
+  bug reports and patches by Timothy Lee, Bert Frees heroically sat
+  down and reworked the handling of the input/output positions for
+  back-translation. This solves numerous issues with backward
+  translation.
+- The returned `inlen' and `outlen' now always match thanks to the
+  above work on input/output positions by Bert Frees.
+- Major improvements in the back-translation of capitalized words
+  (`capsword') in conjunction with punctuation and numbers. Thanks to
+  Bue Vester-Andersen
+- Fixed a problem in the back-translation of numbers in conjunction
+  with punctuation and letters. Thanks to Rimas Kudelis and Bue
+  Vester-Andersen
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Fix some forward- and back-translation errors in Unified French
-  Grade 2 thanks to André-Abush Clause.
-- Updates to the Simplified-Chinese Braille Translation Table thanks
-  to Roshanson
-  - Added many polygraphs to distinguish different meanings of a word
-  - Letter identifiers have been modified. In China's school for the
-    blind, when many visually impaired students learn, the lowercase
-    letters often do not have to mark the identifiers deliberately. So
-    in this version, we this item has been deleted.
-  - Fixed a bug in the braille code that revises the space and 0
-- Updates to Bopomofo-based Chinese Braille Table thanks to Bo-Cheng
-  Jhan
-  - Redefine some Chinese words and phrases
-  - Add various Nemeth symbols such as arrows and parenthesis
-  - Complete the support of CJK Compatibility block
-  - Fix the support of various parentheses, brackets, and braces
-  - Minor fixes (kana rules, punctuation marks, Greek alphabets)
-- New 8 dot computer braille table for Czech thanks to Jan Hegr.
-- Fixes to Czech 6 dot table thanks to Jan Hegr
-  - Fixed curly brackets representation
-  - Fixed number sign representation
-  - Added copyright sign
-- Minor fixes to Hebrew thanks to Erez Kugler.
+- Danish grade 2 tables: Reduced hyphenation to only the hyphens
+  necessary for correct Braille translation. Replaced the longer rules
+  with hyphenation for better cursor positioning. Corrected some
+  words. Thanks to Bue Vester-Andersen.
+- New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
+  Sunian Loomee. The first one is for Chinese Common Braille, commonly
+  known as the old Braille where a Chinese character is composed of
+  three Braille Symbols, consonants, vowels and tones. The second
+  table is for Chinese double spelling Braille, commonly known as the
+  new Braille where Chinese character is composed of two Braille
+  Symbols, consonants and vowels and the tones are included in vowels.
+- Major update to the Urdu tables thanks to Jake Kyle.
+- Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
+  and Swedish has been fixed thanks to Bue Vester-Andersen.
+- Improvements to UEB such as handling of /BLT/, /BLVD/ and /LLC/,
+  number sign placement, final-letter groupsign usage and final-letter
+  back-translation thanks to Mike Gray.
+- Significant changes to Bopomofo-based Chinese Braille. Among other
+  things there is now complete the support of /CJK Unified Ideographs
+  Extension A/ and some symbols were added for Nemeth. Thanks to
+  Sponge Jhan and 黃偉豪.
 
 Other changes
 ~~~~~~~~~~~~~
 
-- Refactoring thanks to Bert Frees
-  - Simplify the emphasis class handling by combining all related vars
-    in a struct `EmphasisClass'
-  - Simplify input/output buffer handling
-  - Combine `emphasisBuffer' and `transnoteBuffer'
-  - Group match related vars in a struct `PassRuleMatch'
-  - Remove dead code
-- Fixed many warnings thanks to Christian Egli
+- Added documentation of opcodes which were previously introduced as
+  part of the UEB work. Thanks to Bue Vester-Andersen.
+- Test suite improvements: In addition to checking the translation the
+  tests now also check if the provided `inlen' is the same as the
+  returned `inlen' and retry the test with a larger output buffer.
+- Fix a problem in the Makefiles that prevented liblouis from being
+  built with automake 1.16. This is fixed now thanks to a patch from
+  Samuel Thibault.
+- Removal of the code for the /scripting language/ for multipass
+  opcodes. This code was originally introduced in 2012 but never
+  documented. Consequently it was never used. Meanwhile the original
+  code for multipass opcodes was much improved. So there is no more
+  need for this (duplicate) code and we are removing it.
+- The nightly snapshots of pre-built windows binaries are now built
+  with UCS4 enabled.
 
 Deprecation notice
 ~~~~~~~~~~~~~~~~~~
 
-- The `mode' parameter in `lou_dotsToChar' never had any effect and is
-  now deprecated.
-- In 2012 a new way to specify the test and action part in context and
-  multipass opcodes was introduced. It was never documented and has no
-  known usage in the wild. However it opens up the attack surface to
-  the table parsing code. Therefore it is deprecated and will be
-  removed in the next release.
+- None
 
 Backwards incompatible changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,7 +114,8 @@ New, renamed or removed tables
 New
 ---
 
-  - cs-comp8.utb
+  - zhcn-g1.ctb
+  - zhcn-g2.ctb
 
 Renamed
 -------
@@ -127,12 +125,12 @@ Renamed
 Removed
 -------
 
-  - Cz-Cz-g1.utb
+  - None
 
 Next release
 ============
 
-The next release will be published on September 3 2018 so please keep
+The next release will be published on December 3 2018 so please keep
 up the excellent work and keep those improvements coming.
 
 Share and Enjoy!
@@ -144,4 +142,4 @@ Footnotes
 
 [1]  https://github.com/liblouis/liblouis/tree/master/tables
 [2]  https://github.com/liblouis/liblouisutdml
-[3]  https://github.com/liblouis/liblouis/milestone/16?closed=1
+[3]  https://github.com/liblouis/liblouis/milestone/17?closed=1
