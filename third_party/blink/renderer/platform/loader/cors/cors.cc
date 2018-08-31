@@ -260,6 +260,23 @@ bool IsOkStatus(int status) {
   return network::cors::IsOkStatus(status);
 }
 
+bool CalculateCORSFlag(const KURL& url,
+                       const SecurityOrigin* origin,
+                       network::mojom::FetchRequestMode request_mode) {
+  if (request_mode == network::mojom::FetchRequestMode::kNavigate ||
+      request_mode == network::mojom::FetchRequestMode::kNoCORS) {
+    return false;
+  }
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS should not work.
+  DCHECK(origin);
+
+  if (url.ProtocolIsData())
+    return false;
+
+  return !origin->CanRequest(url);
+}
+
 }  // namespace CORS
 
 }  // namespace blink

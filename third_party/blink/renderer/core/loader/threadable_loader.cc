@@ -254,12 +254,9 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   if (request.GetFetchRequestMode() ==
       network::mojom::FetchRequestMode::kNoCORS) {
     SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(request_context_));
-  } else if (request.GetFetchRequestMode() ==
-             network::mojom::FetchRequestMode::kNavigate) {
-    // Do nothing.
-  } else {
-    cors_flag_ = !GetSecurityOrigin()->CanRequest(request.Url());
   }
+  cors_flag_ = CORS::CalculateCORSFlag(request.Url(), GetSecurityOrigin(),
+                                       request.GetFetchRequestMode());
 
   // The CORS flag variable is not yet used at the step in the spec that
   // corresponds to this line, but divert |cors_flag_| here for convenience.
@@ -645,7 +642,9 @@ bool ThreadableLoader::RedirectReceived(
 
     // Allow same origin requests to continue after allowing clients to audit
     // the redirect.
-    if (IsAllowedRedirect(new_request.GetFetchRequestMode(), new_url)) {
+    if (!(cors_flag_ ||
+          CORS::CalculateCORSFlag(new_url, GetSecurityOrigin(),
+                                  new_request.GetFetchRequestMode()))) {
       bool follow =
           client_->WillFollowRedirect(new_url, redirect_response_to_pass);
       response_tainting_ = CORS::CalculateResponseTainting(
@@ -1101,15 +1100,6 @@ void ThreadableLoader::LoadRequest(
   } else {
     RawResource::FetchSynchronously(new_params, fetcher, this);
   }
-}
-
-bool ThreadableLoader::IsAllowedRedirect(
-    network::mojom::FetchRequestMode fetch_request_mode,
-    const KURL& url) const {
-  if (fetch_request_mode == network::mojom::FetchRequestMode::kNoCORS)
-    return true;
-
-  return !cors_flag_ && GetSecurityOrigin()->CanRequest(url);
 }
 
 const SecurityOrigin* ThreadableLoader::GetSecurityOrigin() const {

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -306,13 +307,11 @@ BaseFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kOther;
   }
 
-  if (resource_request.GetFetchRequestMode() ==
-      network::mojom::FetchRequestMode::kSameOrigin) {
-    DCHECK(security_origin);
-    if (!security_origin->CanRequest(url)) {
-      PrintAccessDeniedMessage(url);
-      return ResourceRequestBlockedReason::kOrigin;
-    }
+  const auto request_mode = resource_request.GetFetchRequestMode();
+  if (request_mode == network::mojom::FetchRequestMode::kSameOrigin &&
+      CORS::CalculateCORSFlag(url, security_origin, request_mode)) {
+    PrintAccessDeniedMessage(url);
+    return ResourceRequestBlockedReason::kOrigin;
   }
 
   // User Agent CSS stylesheets should only support loading images and should be

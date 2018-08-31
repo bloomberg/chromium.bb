@@ -37,7 +37,6 @@ int URLRequestDataJob::BuildResponse(const GURL& url,
     if (!charset->empty())
       content_type_header.append(";charset=" + *charset);
     headers->AddHeader(content_type_header);
-    headers->AddHeader("Access-Control-Allow-Origin: *");
   }
 
   return OK;
