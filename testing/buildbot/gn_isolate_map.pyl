@@ -495,7 +495,7 @@
   },
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
-    "type": "additional_compile_target",
+    "type": "console_test_launcher",
   },
   "cros_vm_sanity_test": {
     "label": "//chromeos:cros_vm_sanity_test",
