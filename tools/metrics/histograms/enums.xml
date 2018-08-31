@@ -16581,6 +16581,7 @@ Called by update_net_error_codes.py.-->
   <int value="1267" label="AUTOTESTPRIVATE_RUNCROSTINIINSTALLER"/>
   <int value="1268" label="AUTOFILLPRIVATE_MIGRATECREDITCARDS"/>
   <int value="1269" label="AUTOTESTPRIVATE_ISAPPSHOWN"/>
+  <int value="1270" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEID"/>
 </enum>
 
 <enum name="ExtensionIconState">
