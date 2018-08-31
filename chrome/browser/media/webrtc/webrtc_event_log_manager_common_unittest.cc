@@ -82,7 +82,7 @@ TEST_F(GzipLogCompressorTest, EmptyStreamReasonableMaxSize) {
   ASSERT_TRUE(compressor->CreateFooter(&footer));
 
   const std::string simulated_file = header + footer;
-  EXPECT_EQ(Decompress(simulated_file), "");
+  EXPECT_EQ(Decompress(simulated_file), std::string());
 }
 
 TEST_F(GzipLogCompressorTest, EmptyStreamMinimalSize) {
@@ -99,7 +99,7 @@ TEST_F(GzipLogCompressorTest, EmptyStreamMinimalSize) {
   ASSERT_TRUE(compressor->CreateFooter(&footer));
 
   const std::string simulated_file = header + footer;
-  EXPECT_EQ(Decompress(simulated_file), "");
+  EXPECT_EQ(Decompress(simulated_file), std::string());
 }
 
 TEST_F(GzipLogCompressorTest, SingleCallToCompress) {
@@ -218,7 +218,7 @@ TEST_F(GzipLogCompressorTest, BudgetExceededByFirstCompressYieldsEmptyFile) {
   // Note that |log| is not supposed to be written to the file, because
   // Compress() has disallowed it.
   const std::string simulated_file = header + footer;
-  EXPECT_EQ(Decompress(simulated_file), "");
+  EXPECT_EQ(Decompress(simulated_file), std::string());
 }
 
 TEST_F(GzipLogCompressorTest,
@@ -529,7 +529,7 @@ TEST_F(UncompressedLogFileWriterTest, CallToWriteFailsWhenCapacityExceeded) {
   EXPECT_FALSE(writer->Write(log));
 
   ASSERT_TRUE(writer->Close());
-  ExpectFileContents(path_, "");
+  ExpectFileContents(path_, std::string());
 }
 
 TEST_F(UncompressedLogFileWriterTest, WriteCompleteMessagesOnly) {

@@ -29,8 +29,6 @@ const char kBoundary[] = "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
 
 constexpr size_t kExpectedMimeOverheadBytes = 1000;  // Intentional overshot.
 
-constexpr size_t kMaxResponseSizeBytes = 1024;
-
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
 #if defined(OS_WIN)
 const char kProduct[] = "Chrome";
@@ -146,9 +144,27 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
       callback_(std::move(callback)),
       max_log_file_size_bytes_(max_log_file_size_bytes),
       io_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  std::string upload_data;
+  history_file_writer_ = WebRtcEventLogHistoryFileWriter::Create(
+      GetWebRtcEventLogHistoryFilePath(log_file_.path));
+  if (!history_file_writer_) {
+    // File either could not be created, or, if a different error occurred,
+    // Create() will have tried to remove the file it has created.
+    ReportResult(false);
+    return;
+  }
 
+  const base::Time now = std::max(base::Time::Now(), log_file.last_modified);
+  if (!history_file_writer_->WriteCaptureTime(log_file.last_modified) ||
+      !history_file_writer_->WriteUploadTime(now)) {
+    LOG(ERROR) << "Writing to history file failed.";
+    DeleteHistoryFile();  // Avoid partial, potentially-corrupt history files.
+    ReportResult(false);
+    return;
+  }
+
+  std::string upload_data;
   if (!PrepareUploadData(&upload_data)) {
+    // History file will reflect a failed upload attempt.
     ReportResult(false);
     return;
   }
@@ -185,18 +201,19 @@ const WebRtcLogFileInfo& WebRtcEventLogUploaderImpl::GetWebRtcLogFileInfo()
 bool WebRtcEventLogUploaderImpl::Cancel() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  if (!url_loader_) {
-    // The upload either already completed, or was never properly started (due
-    // to a file read failure, etc.).
-    return false;
-  }
+  // The upload either already completed, or was never properly started (due
+  // to a file read failure, etc.).
+  const bool upload_was_active = (url_loader_.get() != nullptr);
 
   // Note that in this case, it might still be that the last bytes hit the
   // wire right as we attempt to cancel the upload. OnURLFetchComplete, however,
-  // would not be called.
+  // will not be called.
   url_loader_.reset();
+
   DeleteLogFile();
-  return true;
+  DeleteHistoryFile();
+
+  return upload_was_active;
 }
 
 bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
@@ -220,12 +237,15 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
 
   const char* filename = filename_str.c_str();
 
-  net::AddMultipartValueForUpload("prod", kProduct, kBoundary, "", upload_data);
+  net::AddMultipartValueForUpload("prod", kProduct, kBoundary, std::string(),
+                                  upload_data);
   net::AddMultipartValueForUpload("ver",
                                   version_info::GetVersionNumber() + "-webrtc",
-                                  kBoundary, "", upload_data);
-  net::AddMultipartValueForUpload("guid", "0", kBoundary, "", upload_data);
-  net::AddMultipartValueForUpload("type", filename, kBoundary, "", upload_data);
+                                  kBoundary, std::string(), upload_data);
+  net::AddMultipartValueForUpload("guid", "0", kBoundary, std::string(),
+                                  upload_data);
+  net::AddMultipartValueForUpload("type", filename, kBoundary, std::string(),
+                                  upload_data);
   AddFileContents(filename, log_file_contents, "application/log", upload_data);
   net::AddMultipartFinalDelimiterForUpload(kBoundary, upload_data);
 
@@ -262,7 +282,7 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
       url_loader_factory_ptr.get(),
       base::BindOnce(&WebRtcEventLogUploaderImpl::OnURLLoadComplete,
                      base::Unretained(this)),
-      kMaxResponseSizeBytes);
+      kWebRtcEventLogMaxUploadIdBytes);
 }
 
 void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
@@ -270,17 +290,26 @@ void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(url_loader_);
 
-  const bool upload_successful = (response_body != nullptr);
+  if (response_body.get() != nullptr && response_body->empty()) {
+    LOG(WARNING) << "SimpleURLLoader reported upload successful, "
+                 << "but report ID unknown.";
+  }
+
+  const bool upload_successful =
+      (response_body.get() != nullptr && !response_body->empty());
+
+  DCHECK(history_file_writer_);
   if (upload_successful) {
-    // TODO(crbug.com/775415): Update chrome://webrtc-logs.
-    if (response_body->empty()) {
-      LOG(WARNING) << "WebRTC event log completed, but report ID unknown.";
-    } else {
-      // TODO(crbug.com/775415): Remove this when chrome://webrtc-logs updated.
-      VLOG(1) << "WebRTC event log successfully uploaded: " << *response_body;
+    if (!history_file_writer_->WriteUploadId(*response_body)) {
+      // Discard the incomplete, potentially now corrupt history file, but the
+      // upload is still considered successful.
+      LOG(ERROR) << "Failed to write upload ID to history file.";
+      DeleteHistoryFile();
     }
   } else {
-    LOG(WARNING) << "WebRTC event log upload failed.";
+    LOG(WARNING) << "Upload unsuccessful.";
+    // By not writing an UploadId to the history file, it is inferrable that
+    // the upload was initiated, but did not end successfully.
   }
 
   url_loader_.reset();  // Explicitly maintain determinant.
@@ -300,6 +329,9 @@ void WebRtcEventLogUploaderImpl::ReportResult(bool result) {
   // TODO(crbug.com/775415): Provide refined retrial behavior.
   DeleteLogFile();
 
+  // Release hold of history file, allowing it to be read, moved or deleted.
+  history_file_writer_.reset();
+
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback_), log_file_.path, result));
 }
@@ -313,6 +345,17 @@ void WebRtcEventLogUploaderImpl::DeleteLogFile() {
     // try to upload this file again next time Chrome launches.
     LOG(ERROR) << "Could not delete pending WebRTC event log file.";
   }
+}
+
+void WebRtcEventLogUploaderImpl::DeleteHistoryFile() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (!history_file_writer_) {
+    LOG(ERROR) << "Deletion of history file attempted after uploader "
+               << "has relinquished ownership of it.";
+    return;
+  }
+  history_file_writer_->Delete();
+  history_file_writer_.reset();
 }
 
 }  // namespace webrtc_event_logging

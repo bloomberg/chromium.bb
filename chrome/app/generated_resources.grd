@@ -4426,8 +4426,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">
         WebRTC logs
       </message>
-      <message name="IDS_WEBRTC_LOGS_LOG_COUNT_BANNER_FORMAT" desc="Format for WebRTC log count banner on chrome://webrtc-logs">
-        WebRTC logs (<ph name="WEBRTC_LOG_COUNT">$1<ex>3</ex></ph>)
+      <message name="IDS_WEBRTC_TEXT_LOGS_LOG_COUNT_BANNER_FORMAT" desc="Format for WebRTC text log count banner on chrome://webrtc-logs">
+        WebRTC text logs (<ph name="WEBRTC_TEXT_LOG_COUNT">$1<ex>3</ex></ph>)
+      </message>
+      <message name="IDS_WEBRTC_EVENT_LOGS_LOG_COUNT_BANNER_FORMAT" desc="Format for WebRTC event log count banner on chrome://webrtc-logs">
+        WebRTC event logs (<ph name="WEBRTC_EVENT_LOG_COUNT">$1<ex>3</ex></ph>)
       </message>
       <message name="IDS_WEBRTC_LOGS_LOG_HEADER_FORMAT" desc="Format for uploaded log entry headings on chrome://webrtc-logs">
         WebRTC log captured <ph name="WEBRTC_LOG_CAPTURE_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
@@ -4441,17 +4444,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBRTC_LOGS_LOG_UPLOAD_TIME_FORMAT" desc="Format for uploaded log entry upload time on chrome://webrtc-logs">
         Uploaded <ph name="WEBRTC_LOG_UPLOAD_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
       </message>
-      <message name="IDS_WEBRTC_LOGS_LOG_REPORT_ID_FORMAT" desc="Format for uploaded log entry report ID on chrome://webrtc-logs">
+      <message name="IDS_WEBRTC_LOGS_LOG_FAILED_UPLOAD_TIME_FORMAT" desc="Format for a log's failed upload attempt entry on chrome://webrtc-logs">
+        Upload failed (<ph name="WEBRTC_LOG_UPLOAD_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>).
+      </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_REPORT_ID_FORMAT" desc="Format for uploaded log entry report ID on chrome://webrtc-logs. This is the ID on the server to which the log was uploaded.">
         Report ID <ph name="WEBRTC_LOG_REPORT_ID">$1<ex>8fa95dbb6f2ec862</ex></ph>
       </message>
       <message name="IDS_WEBRTC_LOGS_BUG_LINK_LABEL" desc="Link text for filing a bug on chrome://webrtc-logs">
         File bug
       </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_PENDING_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when the log is still pending upload.">
+        Log upload pending.
+      </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_ACTIVELY_UPLOADED_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when the log is currently being uploaded.">
+        Log upload underway.
+      </message>
       <message name="IDS_WEBRTC_LOGS_LOG_NOT_UPLOADED_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when the log has not been uploaded">
         Log not uploaded.
       </message>
-      <message name="IDS_WEBRTC_LOGS_NO_LOGS_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there are no captured logs">
-        You have no recently captured WebRTC logs.
+      <message name="IDS_WEBRTC_LOGS_EVENT_LOG_LOCAL_LOG_ID" desc="The ID of the log. This ID is assigned even if the log is not uploaded.">
+        Local log ID: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID">$1<ex>A83BC19927509874309F2EE002174235</ex></ph>.
+      </message>
+      <message name="IDS_WEBRTC_LOGS_NO_TEXT_LOGS_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there are no captured text logs">
+        You have no recently captured WebRTC text logs.
+      </message>
+      <message name="IDS_WEBRTC_LOGS_NO_EVENT_LOGS_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there are no captured event logs">
+        You have no recently captured WebRTC event logs.
       </message>
 
       <!-- Plugin placeholders -->

@@ -105,6 +105,15 @@ WebRtcEventLogManager* WebRtcEventLogManager::GetInstance() {
   return g_webrtc_event_log_manager;
 }
 
+base::FilePath WebRtcEventLogManager::GetRemoteBoundWebRtcEventLogsDir(
+    content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context);
+  // Incognito BrowserContext will return their parent profile's directory.
+  return webrtc_event_logging::GetRemoteBoundWebRtcEventLogsDir(
+      browser_context->GetPath());
+}
+
 WebRtcEventLogManager::WebRtcEventLogManager()
     : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -344,9 +353,9 @@ void WebRtcEventLogManager::StartRemoteLogging(
   }
 
   if (error) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(reply), false, "", std::string(error)));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(reply), false,
+                                           std::string(), std::string(error)));
     return;
   }
 
@@ -372,13 +381,29 @@ void WebRtcEventLogManager::ClearCacheForBrowserContext(
   const auto browser_context_id = GetBrowserContextId(browser_context);
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
           &WebRtcEventLogManager::ClearCacheForBrowserContextInternal,
           base::Unretained(this), browser_context_id, delete_begin, delete_end),
       std::move(reply));
+}
+
+void WebRtcEventLogManager::GetHistory(
+    BrowserContextId browser_context_id,
+    base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
+        reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(reply);
+
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebRtcEventLogManager::GetHistoryInternal,
+                                base::Unretained(this), browser_context_id,
+                                std::move(reply)));
 }
 
 void WebRtcEventLogManager::SetLocalLogsObserver(
@@ -779,6 +804,15 @@ void WebRtcEventLogManager::ClearCacheForBrowserContextInternal(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   remote_logs_manager_.ClearCacheForBrowserContext(browser_context_id,
                                                    delete_begin, delete_end);
+}
+
+void WebRtcEventLogManager::GetHistoryInternal(
+    BrowserContextId browser_context_id,
+    base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
+        reply) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(reply);
+  remote_logs_manager_.GetHistory(browser_context_id, std::move(reply));
 }
 
 void WebRtcEventLogManager::RenderProcessExitedInternal(int render_process_id) {
