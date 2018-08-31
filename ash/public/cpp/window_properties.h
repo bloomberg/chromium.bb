@@ -58,6 +58,11 @@ ASH_PUBLIC_EXPORT void RegisterWindowProperties(
 
 // Alphabetical sort.
 
+// A property key to store the ARC package name for a window's associated
+// ARC app.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
+    kArcPackageNameKey;
+
 // A property key to specify if the window should (or should not) have a
 // backdrop window (typically black) that covers the desktop behind the window.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
@@ -172,7 +177,7 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kSearchKeyAcceleratorReservedKey;
 
-// A property key to store the id for a window's shelf item.
+// A property key to store the serialized id for a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
     kShelfIDKey;
 

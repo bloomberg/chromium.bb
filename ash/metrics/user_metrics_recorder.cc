@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/login/ui/lock_screen.h"
+#include "ash/metrics/demo_session_metrics_recorder.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -439,6 +440,11 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
   }
 }
 
+void UserMetricsRecorder::StartDemoSessionMetricsRecording() {
+  demo_session_metrics_recorder_ =
+      std::make_unique<DemoSessionMetricsRecorder>();
+}
+
 void UserMetricsRecorder::OnShellInitialized() {
   // Lazy creation of the DesktopTaskSwitchMetricRecorder because it accesses
   // Shell::Get() which is not available when |this| is instantiated.
@@ -450,6 +456,7 @@ void UserMetricsRecorder::OnShellInitialized() {
 }
 
 void UserMetricsRecorder::OnShellShuttingDown() {
+  demo_session_metrics_recorder_.reset();
   desktop_task_switch_metric_recorder_.reset();
 
   // To clean up pointer_metrics_recorder_ properly, a valid shell instance is

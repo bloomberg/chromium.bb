@@ -204,6 +204,8 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
                                      std::unique_ptr<PrefService> pref_service);
 
  private:
+  // Marks the session as a demo session for Demo Mode.
+  void SetIsDemoSession();
   void SetSessionState(session_manager::SessionState state);
   void AddUserSession(mojom::UserSessionPtr user_session);
 
@@ -247,6 +249,7 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   bool can_lock_ = false;
   bool should_lock_screen_automatically_ = false;
   bool is_running_in_app_mode_ = false;
+  bool is_demo_session_ = false;
   AddUserSessionPolicy add_user_session_policy_ = AddUserSessionPolicy::ALLOWED;
   session_manager::SessionState state_;
 

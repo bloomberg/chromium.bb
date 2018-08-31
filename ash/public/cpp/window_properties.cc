@@ -32,6 +32,8 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
 namespace ash {
 
 void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
+  property_converter->RegisterStringProperty(
+      kArcPackageNameKey, ws::mojom::WindowManager::kArcPackageName_Property);
   property_converter->RegisterPrimitiveProperty(
       aura::client::kAppType, mojom::kAppType_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -123,6 +125,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kArcPackageNameKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
                              kBackdropWindowMode,
                              BackdropWindowMode::kAuto);

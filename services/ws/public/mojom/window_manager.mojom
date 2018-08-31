@@ -74,6 +74,10 @@ interface WindowManager {
   // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
   const string kAppIcon_Property = "prop:app-icon";
 
+  // The Android Java-style package name for an ARC++ window, such as
+  // "com.google.Photos". Type: mojom::String.
+  const string kArcPackageName_Property = "prop:arc-package-name";
+
   // Whether the window is trying to draw attention to itself (e.g. pulsing its
   // shelf icon). Type: bool.
   const string kDrawAttention_Property = "prop:draw-attention";
