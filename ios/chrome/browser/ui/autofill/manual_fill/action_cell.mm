@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,6 +31,35 @@ static const CGFloat TopBaseSystemSpacingMultiplier = 1.78;
 static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
 }  // namespace
 
+@interface ManualFillActionItem ()
+// The action block to be called when the user taps the title.
+@property(nonatomic, copy, readonly) void (^action)(void);
+// The title for the action.
+@property(nonatomic, copy, readonly) NSString* title;
+@end
+
+@implementation ManualFillActionItem
+@synthesize action = _action;
+@synthesize title = _title;
+
+- (instancetype)initWithTitle:(NSString*)title action:(void (^)(void))action {
+  self = [super initWithType:kItemTypeEnumZero];
+  if (self) {
+    _title = [title copy];
+    _action = [action copy];
+    self.cellClass = [ManualFillActionCell class];
+  }
+  return self;
+}
+
+- (void)configureCell:(ManualFillActionCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
+  [cell setUpWithTitle:self.title action:self.action];
+}
+
+@end
+
 @interface ManualFillActionCell ()
 // The action block to be called when the user taps the title button.
 @property(nonatomic, copy) void (^action)(void);
@@ -43,6 +73,11 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
 
 #pragma mark - Public
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.action = nil;
+}
+
 - (void)setUpWithTitle:(NSString*)title action:(void (^)(void))action {
   if (self.contentView.subviews.count == 0) {
     [self createView];
@@ -51,17 +86,12 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
   self.action = action;
 }
 
-- (void)prepareForReuse {
-  [super prepareForReuse];
-  self.action = nil;
-}
-
 #pragma mark - Private
 
 - (void)createView {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.titleButton = [[UIButton alloc] init];
+  self.titleButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
                          forState:UIControlStateNormal];
   self.titleButton.translatesAutoresizingMaskIntoConstraints = NO;
