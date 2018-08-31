@@ -458,6 +458,7 @@ int main(int ac, char **av) {
         break;
       case 's':
         seed = strtoul(optarg, (char **) NULL, 0);
+        break;
       case 'v':
         ++g_verbosity;
         break;

@@ -41,7 +41,8 @@ int nacl_thread_nice(int nacl_nice) {
       if (0 == setpriority(PRIO_PROCESS, 0, kRealTimePriority)) {
         return 0;  /* success */
       }
-      /* Sorry; no RT priviledges. Fall through to NICE_NORMAL */
+      /* Sorry; no RT priviledges. Try NICE_NORMAL */
+      /* fallthrough */
     case NICE_NORMAL:
       if (0 == setpriority(PRIO_PROCESS, 0, kNormalPriority)) {
         return 0;  /* success */
