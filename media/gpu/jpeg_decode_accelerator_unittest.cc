@@ -20,8 +20,9 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/strings/string_piece.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -51,7 +52,7 @@ const base::FilePath::CharType* kOddJpegFilenames[] = {
     FILE_PATH_LITERAL("peach_pi-40x23.jpg"),
     FILE_PATH_LITERAL("peach_pi-41x22.jpg"),
     FILE_PATH_LITERAL("peach_pi-41x23.jpg")};
-int kDefaultPerfDecodeTimes = 600;
+constexpr int kDefaultPerfDecodeTimes = 600;
 // Decide to save decode results to files or not. Output files will be saved
 // in the same directory with unittest. File name is like input file but
 // changing the extension to "yuv".
@@ -59,22 +60,80 @@ bool g_save_to_file = false;
 // Threshold for mean absolute difference of hardware and software decode.
 // Absolute difference is to calculate the difference between each pixel in two
 // images. This is used for measuring of the similarity of two images.
-const double kDecodeSimilarityThreshold = 1.0;
+constexpr double kDecodeSimilarityThreshold = 1.0;
 
 // Environment to create test data for all test cases.
 class JpegDecodeAcceleratorTestEnvironment;
 JpegDecodeAcceleratorTestEnvironment* g_env;
 
-struct TestImageFile {
-  explicit TestImageFile(const base::FilePath::StringType& filename)
-      : filename(filename) {}
+// This struct holds a parsed, complete JPEG blob. It can be created from a
+// FilePath or can be simply a black image.
+struct ParsedJpegImage {
+  static std::unique_ptr<ParsedJpegImage> CreateFromFile(
+      const base::FilePath& file_path) {
+    auto image = std::make_unique<ParsedJpegImage>(file_path);
 
-  base::FilePath::StringType filename;
+    LOG_ASSERT(base::ReadFileToString(file_path, &image->data_str))
+        << file_path;
 
-  // The input content of |filename|.
+    JpegParseResult parse_result;
+    LOG_ASSERT(ParseJpegPicture(
+        reinterpret_cast<const uint8_t*>(image->data_str.data()),
+        image->data_str.size(), &parse_result));
+
+    image->InitializeSizes(parse_result.frame_header.visible_width,
+                           parse_result.frame_header.visible_height);
+    return image;
+  }
+
+  static std::unique_ptr<ParsedJpegImage> CreateBlackImage(int width,
+                                                           int height) {
+    base::FilePath filename;
+    LOG_ASSERT(base::GetTempDir(&filename));
+    filename =
+        filename.Append(base::StringPrintf("black-%dx%d.jpg", width, height));
+
+    auto image = std::make_unique<ParsedJpegImage>(filename);
+
+    constexpr size_t kBytesPerPixel = 4;
+    constexpr int kJpegQuality = 100;
+    const std::vector<unsigned char> input_buffer(width * height *
+                                                  kBytesPerPixel);
+    std::vector<unsigned char> encoded;
+    const SkImageInfo info = SkImageInfo::Make(
+        width, height, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+    const SkPixmap src(info, input_buffer.data(), width * kBytesPerPixel);
+    LOG_ASSERT(gfx::JPEGCodec::Encode(src, kJpegQuality, &encoded));
+
+    image->data_str.append(encoded.begin(), encoded.end());
+    image->InitializeSizes(width, height);
+    return image;
+  }
+
+  explicit ParsedJpegImage(const base::FilePath& path) : file_path(path) {}
+
+  void InitializeSizes(int width, int height) {
+    visible_size.SetSize(width, height);
+    // The parse result yields a coded size that rounds up to a whole MCU.
+    // However, we can use a smaller coded size for the decode result. Here, we
+    // simply round up to the next even dimension. That way, when we are
+    // building the video frame to hold the result of the decoding, the strides
+    // and pointers for the UV planes are computed correctly for JPEGs that
+    // require even-sized allocation (see
+    // VideoFrame::RequiresEvenSizeAllocation()) and whose visible size has at
+    // least one odd dimension.
+    coded_size.SetSize((visible_size.width() + 1) & ~1,
+                       (visible_size.height() + 1) & ~1);
+    output_size = VideoFrame::AllocationSize(PIXEL_FORMAT_I420, coded_size);
+  }
+
+  const base::FilePath::StringType& filename() const {
+    return file_path.value();
+  }
+
+  const base::FilePath file_path;
+
   std::string data_str;
-
-  JpegParseResult parse_result;
   gfx::Size visible_size;
   gfx::Size coded_size;
   size_t output_size;
@@ -90,7 +149,7 @@ enum ClientState {
 class JpegClient : public JpegDecodeAccelerator::Client {
  public:
   // JpegClient takes ownership of |note|.
-  JpegClient(const std::vector<TestImageFile*>& test_image_files,
+  JpegClient(const std::vector<ParsedJpegImage*>& test_image_files,
              std::unique_ptr<ClientStateNotification<ClientState>> note,
              bool is_skip);
   ~JpegClient() override;
@@ -123,7 +182,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   double GetMeanAbsoluteDifference();
 
   // JpegClient doesn't own |test_image_files_|.
-  const std::vector<TestImageFile*>& test_image_files_;
+  const std::vector<ParsedJpegImage*>& test_image_files_;
 
   ClientState state_;
 
@@ -168,7 +227,7 @@ base::ScopedClosureRunner CreateClientDestroyer(
 }
 
 JpegClient::JpegClient(
-    const std::vector<TestImageFile*>& test_image_files,
+    const std::vector<ParsedJpegImage*>& test_image_files,
     std::unique_ptr<ClientStateNotification<ClientState>> note,
     bool is_skip)
     : test_image_files_(test_image_files),
@@ -241,7 +300,7 @@ void JpegClient::NotifyError(int32_t bitstream_buffer_id,
 }
 
 void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
   size_t input_size = image_file->data_str.size();
   if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
@@ -275,7 +334,7 @@ void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
                             const scoped_refptr<VideoFrame>& in_frame,
                             const std::string& suffix) {
   LOG_ASSERT(in_frame.get());
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
   // First convert to ARGB format. Note that in our case, the coded size and the
   // visible size will be the same.
@@ -310,7 +369,7 @@ void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
       true, /* discard_transparency */
       std::vector<gfx::PNGCodec::Comment>(), &png_output);
   LOG_ASSERT(png_encode_status);
-  const base::FilePath in_filename(image_file->filename);
+  const base::FilePath in_filename(image_file->filename());
   const base::FilePath out_filename =
       in_filename.ReplaceExtension(".png").InsertBeforeExtension(suffix);
   const int size = base::checked_cast<int>(png_output.size());
@@ -351,7 +410,7 @@ double JpegClient::GetMeanAbsoluteDifference() {
 void JpegClient::StartDecode(int32_t bitstream_buffer_id,
                              bool do_prepare_memory) {
   DCHECK_LT(static_cast<size_t>(bitstream_buffer_id), test_image_files_.size());
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
   if (do_prepare_memory) {
     PrepareMemory(bitstream_buffer_id);
@@ -371,7 +430,7 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
   sw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
       PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
@@ -392,103 +451,76 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
                             sw_out_frame_->visible_rect().width(),
                             sw_out_frame_->visible_rect().height(),
                             libyuv::kRotate0, libyuv::FOURCC_MJPG) != 0) {
-    LOG(ERROR) << "Software decode " << image_file->filename << " failed.";
+    LOG(ERROR) << "Software decode " << image_file->filename() << " failed.";
     return false;
   }
   return true;
 }
 
+// Global singleton to hold on to common data and other user-defined options.
 class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
  public:
   JpegDecodeAcceleratorTestEnvironment(
       const base::FilePath::CharType* jpeg_filenames,
-      int perf_decode_times) {
-    user_jpeg_filenames_ =
-        jpeg_filenames ? jpeg_filenames : kDefaultJpegFilename;
-    perf_decode_times_ =
-        perf_decode_times ? perf_decode_times : kDefaultPerfDecodeTimes;
-  }
+      int perf_decode_times)
+      : perf_decode_times_(perf_decode_times ? perf_decode_times
+                                             : kDefaultPerfDecodeTimes),
+        user_jpeg_filenames_(jpeg_filenames ? jpeg_filenames
+                                            : kDefaultJpegFilename) {}
   void SetUp() override;
-  void TearDown() override;
 
-  // Create all black test image with |width| and |height| size.
-  bool CreateTestJpegImage(int width, int height, base::FilePath* filename);
+  // Creates and returns a FilePath for the pathless |name|. The current folder
+  // is used if |name| exists in it, otherwise //media/test/data is used.
+  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
+    LOG_ASSERT(std::find_if(name.begin(), name.end(),
+                            base::FilePath::IsSeparator) == name.end())
+        << name << " should be just a file name and not have a path";
+    const base::FilePath original_file_path = base::FilePath(name);
+    if (base::PathExists(original_file_path))
+      return original_file_path;
+    return GetTestDataFilePath(name);
+  }
 
-  // Read image from |filename| to |image_data|.
-  void ReadTestJpegImage(base::FilePath& filename, TestImageFile* image_data);
-
-  // Returns a file path for a file in what name specified or media/test/data
-  // directory.  If the original file path is existed, returns it first.
-  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name);
-
-  // Parsed data of |test_1280x720_jpeg_file_|.
-  std::unique_ptr<TestImageFile> image_data_1280x720_black_;
-  // Parsed data of |test_640x368_jpeg_file_|.
-  std::unique_ptr<TestImageFile> image_data_640x368_black_;
-  // Parsed data of |test_640x360_jpeg_file_|.
-  std::unique_ptr<TestImageFile> image_data_640x360_black_;
+  // Used for InputSizeChange test case. The image size should be smaller than
+  // |kDefaultJpegFilename|.
+  std::unique_ptr<ParsedJpegImage> image_data_1280x720_black_;
+  // Used for ResolutionChange test case.
+  std::unique_ptr<ParsedJpegImage> image_data_640x368_black_;
+  // Used for testing some drivers which will align the output resolution to a
+  // multiple of 16. 640x360 will be aligned to 640x368.
+  std::unique_ptr<ParsedJpegImage> image_data_640x360_black_;
   // Parsed data of "peach_pi-1280x720.jpg".
-  std::unique_ptr<TestImageFile> image_data_1280x720_default_;
+  std::unique_ptr<ParsedJpegImage> image_data_1280x720_default_;
   // Parsed data of failure image.
-  std::unique_ptr<TestImageFile> image_data_invalid_;
+  std::unique_ptr<ParsedJpegImage> image_data_invalid_;
   // Parsed data for images with at least one odd dimension.
-  std::vector<std::unique_ptr<TestImageFile>> image_data_odd_;
+  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_odd_;
   // Parsed data from command line.
-  std::vector<std::unique_ptr<TestImageFile>> image_data_user_;
+  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_user_;
   // Decode times for performance measurement.
   int perf_decode_times_;
 
  private:
   const base::FilePath::CharType* user_jpeg_filenames_;
-
-  // Used for InputSizeChange test case. The image size should be smaller than
-  // |kDefaultJpegFilename|.
-  base::FilePath test_1280x720_jpeg_file_;
-  // Used for ResolutionChange test case.
-  base::FilePath test_640x368_jpeg_file_;
-  // Used for testing some drivers which will align the output resolution to a
-  // multiple of 16. 640x360 will be aligned to 640x368.
-  base::FilePath test_640x360_jpeg_file_;
 };
 
 void JpegDecodeAcceleratorTestEnvironment::SetUp() {
-  ASSERT_TRUE(CreateTestJpegImage(1280, 720, &test_1280x720_jpeg_file_));
-  ASSERT_TRUE(CreateTestJpegImage(640, 368, &test_640x368_jpeg_file_));
-  ASSERT_TRUE(CreateTestJpegImage(640, 360, &test_640x360_jpeg_file_));
+  image_data_1280x720_black_ = ParsedJpegImage::CreateBlackImage(1280, 720);
+  image_data_640x368_black_ = ParsedJpegImage::CreateBlackImage(640, 368);
+  image_data_640x360_black_ = ParsedJpegImage::CreateBlackImage(640, 360);
 
-  image_data_1280x720_black_.reset(
-      new TestImageFile(test_1280x720_jpeg_file_.value()));
-  ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_1280x720_jpeg_file_,
-                                            image_data_1280x720_black_.get()));
+  image_data_1280x720_default_ = ParsedJpegImage::CreateFromFile(
+      GetOriginalOrTestDataFilePath(kDefaultJpegFilename));
 
-  image_data_640x368_black_.reset(
-      new TestImageFile(test_640x368_jpeg_file_.value()));
-  ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x368_jpeg_file_,
-                                            image_data_640x368_black_.get()));
-
-  image_data_640x360_black_.reset(
-      new TestImageFile(test_640x360_jpeg_file_.value()));
-  ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x360_jpeg_file_,
-                                            image_data_640x360_black_.get()));
-
-  base::FilePath default_jpeg_file =
-      GetOriginalOrTestDataFilePath(kDefaultJpegFilename);
-  image_data_1280x720_default_.reset(new TestImageFile(kDefaultJpegFilename));
-  ASSERT_NO_FATAL_FAILURE(
-      ReadTestJpegImage(default_jpeg_file, image_data_1280x720_default_.get()));
-
-  image_data_invalid_.reset(new TestImageFile("failure.jpg"));
+  image_data_invalid_ =
+      std::make_unique<ParsedJpegImage>(base::FilePath("failure.jpg"));
   image_data_invalid_->data_str.resize(100, 0);
-  image_data_invalid_->visible_size.SetSize(1280, 720);
-  image_data_invalid_->coded_size = image_data_invalid_->visible_size;
-  image_data_invalid_->output_size = VideoFrame::AllocationSize(
-      PIXEL_FORMAT_I420, image_data_invalid_->coded_size);
+  image_data_invalid_->InitializeSizes(1280, 720);
 
   // Load test images with at least one odd dimension.
   for (const auto* filename : kOddJpegFilenames) {
-    base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = std::make_unique<TestImageFile>(filename);
-    ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data.get()));
+    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
+    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
     image_data_odd_.push_back(std::move(image_data));
   }
 
@@ -497,81 +529,15 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
       user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& filename : filenames) {
-    base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = std::make_unique<TestImageFile>(filename);
-    ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data.get()));
+    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
+    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
     image_data_user_.push_back(std::move(image_data));
   }
 }
 
-void JpegDecodeAcceleratorTestEnvironment::TearDown() {
-  base::DeleteFile(test_1280x720_jpeg_file_, false);
-  base::DeleteFile(test_640x368_jpeg_file_, false);
-  base::DeleteFile(test_640x360_jpeg_file_, false);
-}
-
-bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
-    int width,
-    int height,
-    base::FilePath* filename) {
-  const int kBytesPerPixel = 4;
-  const int kJpegQuality = 100;
-  std::vector<unsigned char> input_buffer(width * height * kBytesPerPixel);
-  std::vector<unsigned char> encoded;
-  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
-                                       kOpaque_SkAlphaType);
-  SkPixmap src(info, &input_buffer[0], width * kBytesPerPixel);
-  if (!gfx::JPEGCodec::Encode(src, kJpegQuality, &encoded)) {
-    return false;
-  }
-
-  LOG_ASSERT(base::CreateTemporaryFile(filename));
-  EXPECT_TRUE(base::AppendToFile(
-      *filename, reinterpret_cast<char*>(&encoded[0]), encoded.size()));
-  return true;
-}
-
-void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
-    base::FilePath& input_file,
-    TestImageFile* image_data) {
-  ASSERT_TRUE(base::ReadFileToString(input_file, &image_data->data_str))
-      << input_file;
-
-  ASSERT_TRUE(ParseJpegPicture(
-      reinterpret_cast<const uint8_t*>(image_data->data_str.data()),
-      image_data->data_str.size(), &image_data->parse_result));
-  image_data->visible_size.SetSize(
-      image_data->parse_result.frame_header.visible_width,
-      image_data->parse_result.frame_header.visible_height);
-  // The parse result yields a coded size that rounds up to a whole MCU.
-  // However, we can use a smaller coded size for the decode result. Here, we
-  // simply round up to the next even dimension. That way, when we are building
-  // the video frame to hold the result of the decoding, the strides and
-  // pointers for the UV planes are computed correctly for JPEGs that require
-  // even-sized allocation (see VideoFrame::RequiresEvenSizeAllocation()) and
-  // whose visible size has at least one odd dimension.
-  image_data->coded_size.SetSize((image_data->visible_size.width() + 1) & ~1,
-                                 (image_data->visible_size.height() + 1) & ~1);
-  image_data->output_size =
-      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->coded_size);
-}
-
-base::FilePath
-JpegDecodeAcceleratorTestEnvironment::GetOriginalOrTestDataFilePath(
-    const std::string& name) {
-  base::FilePath original_file_path = base::FilePath(name);
-  base::FilePath return_file_path = GetTestDataFilePath(name);
-
-  if (PathExists(original_file_path))
-    return_file_path = original_file_path;
-
-  VLOG(3) << "Use file path " << return_file_path.value();
-  return return_file_path;
-}
-
 class JpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
-  JpegDecodeAcceleratorTest() {}
+  JpegDecodeAcceleratorTest() = default;
 
   void TestDecode(size_t num_concurrent_decoders);
   void PerfDecodeByJDA(int decode_times);
@@ -579,7 +545,7 @@ class JpegDecodeAcceleratorTest : public ::testing::Test {
 
   // The elements of |test_image_files_| are owned by
   // JpegDecodeAcceleratorTestEnvironment.
-  std::vector<TestImageFile*> test_image_files_;
+  std::vector<ParsedJpegImage*> test_image_files_;
   std::vector<ClientState> expected_status_;
 
  protected:
@@ -717,7 +683,7 @@ scoped_refptr<VideoFrame> GetTestDecodedData() {
 }
 
 TEST(JpegClientTest, GetMeanAbsoluteDifference) {
-  JpegClient client(std::vector<TestImageFile*>(), nullptr, false);
+  JpegClient client(std::vector<ParsedJpegImage*>(), nullptr, false);
   client.hw_out_frame_ = GetTestDecodedData();
   client.sw_out_frame_ = GetTestDecodedData();
 
