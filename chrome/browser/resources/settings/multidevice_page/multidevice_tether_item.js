@@ -130,7 +130,7 @@ Polymer({
       this.deviceState_ =
           deviceStates.find(
               deviceState => deviceState.Type == CrOnc.Type.TETHER) ||
-          null;
+          {Type: CrOnc.Type.TETHER, State: CrOnc.DeviceState.DISABLED};
     });
   },
 
