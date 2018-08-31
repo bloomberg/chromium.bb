@@ -478,14 +478,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         base::saturated_cast<int>(utilization * 100.0f + 0.5f));
   }
 
+  // See TODO in SetFormat(). For now, always assume Rec. 709.
+  frame->set_color_space(gfx::ColorSpace::CreateREC709());
+
   // At this point, the capture is going to proceed. Populate the VideoFrame's
   // metadata, and notify the oracle.
   VideoFrameMetadata* const metadata = frame->metadata();
   metadata->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
                          clock_->NowTicks());
-  // See TODO in SetFormat(). For now, always assume Rec. 709.
-  metadata->SetInteger(VideoFrameMetadata::COLOR_SPACE,
-                       media::COLOR_SPACE_HD_REC709);
   metadata->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
                          oracle_.estimated_frame_duration());
   metadata->SetDouble(VideoFrameMetadata::FRAME_RATE,
@@ -715,6 +715,7 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   info->pixel_format = frame->format();
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();
+  info->color_space = frame->ColorSpace();
   const gfx::Rect update_rect = frame->visible_rect();
 
   // Create an InFlightFrameDelivery for this frame, owned by its mojo binding.
