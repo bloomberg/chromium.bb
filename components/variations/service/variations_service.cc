@@ -129,6 +129,7 @@ enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_NOT_ALLOWED_EULA_NOT_ACCEPTED,
   RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN,
   RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED,
+  RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_STATE_NOT_INITIALIZED,
   RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE,
 };
 
@@ -157,6 +158,9 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
       return RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN;
     case ResourceRequestAllowedNotifier::DISALLOWED_COMMAND_LINE_DISABLED:
       return RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED;
+    case ResourceRequestAllowedNotifier::
+        DISALLOWED_NETWORK_STATE_NOT_INITIALIZED:
+      return RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_STATE_NOT_INITIALIZED;
     case ResourceRequestAllowedNotifier::ALLOWED:
       return RESOURCE_REQUESTS_ALLOWED;
   }
@@ -419,12 +423,15 @@ std::unique_ptr<VariationsService> VariationsService::Create(
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager,
     const char* disable_network_switch,
-    const UIStringOverrider& ui_string_overrider) {
+    const UIStringOverrider& ui_string_overrider,
+    web_resource::ResourceRequestAllowedNotifier::NetworkConnectionTrackerGetter
+        network_connection_tracker_getter) {
   std::unique_ptr<VariationsService> result;
   result.reset(new VariationsService(
       std::move(client),
       std::make_unique<web_resource::ResourceRequestAllowedNotifier>(
-          local_state, disable_network_switch),
+          local_state, disable_network_switch,
+          std::move(network_connection_tracker_getter)),
       local_state, state_manager, ui_string_overrider));
   return result;
 }
@@ -478,8 +485,7 @@ void VariationsService::InitResourceRequestedAllowedNotifier() {
   // ResourceRequestAllowedNotifier does not install an observer if there is no
   // NetworkChangeNotifier, which results in never being notified of changes to
   // network status.
-  DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
-  resource_request_allowed_notifier_->Init(this);
+  resource_request_allowed_notifier_->Init(this, false /* leaky */);
 }
 
 bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
