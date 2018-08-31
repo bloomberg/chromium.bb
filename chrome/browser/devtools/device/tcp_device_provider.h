@@ -16,10 +16,13 @@
 // BUILDFLAG is set.
 class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
-  static scoped_refptr<TCPDeviceProvider> CreateForLocalhost(uint16_t port);
+  static scoped_refptr<TCPDeviceProvider> CreateForLocalhost(
+      uint16_t port,
+      content::BrowserContext* context);
 
   using HostPortSet = std::set<net::HostPortPair>;
-  explicit TCPDeviceProvider(const HostPortSet& targets);
+  TCPDeviceProvider(const HostPortSet& targets,
+                    content::BrowserContext* context);
 
   void QueryDevices(const SerialsCallback& callback) override;
 
@@ -32,6 +35,8 @@ class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
 
   void ReleaseDevice(const std::string& serial) override;
 
+  void set_targets(HostPortSet targets) { targets_ = std::move(targets); }
+
   void set_release_callback_for_test(const base::Closure& callback);
 
   HostPortSet get_targets_for_test() { return targets_; }
@@ -39,8 +44,13 @@ class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  private:
   ~TCPDeviceProvider() override;
 
+  void InitializeHostResolver();
+  void InitializeHostResolverOnUI(network::mojom::HostResolverRequest request);
+
   HostPortSet targets_;
   base::Closure release_callback_;
+  content::BrowserContext* context_;
+  network::mojom::HostResolverPtr host_resolver_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_

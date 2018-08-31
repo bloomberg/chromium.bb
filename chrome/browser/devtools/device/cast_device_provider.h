@@ -23,7 +23,7 @@ class CastDeviceProvider
     : public AndroidDeviceManager::DeviceProvider,
       public local_discovery::ServiceDiscoveryDeviceLister::Delegate {
  public:
-  CastDeviceProvider();
+  explicit CastDeviceProvider(content::BrowserContext* context);
 
   // DeviceProvider implementation:
   void QueryDevices(const SerialsCallback& callback) override;
