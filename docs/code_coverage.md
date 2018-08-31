@@ -31,7 +31,7 @@ Here is an example usage:
 
 ```
 $ gn gen out/coverage \
-    --args='use_clang_coverage=true is_component_build=false'
+    --args='use_clang_coverage=true is_component_build=false dcheck_always_on=true'
 $ python tools/code_coverage/coverage.py \
     crypto_unittests url_unittests \
     -b out/coverage -o out/report \
@@ -40,7 +40,7 @@ $ python tools/code_coverage/coverage.py \
     -f url/ -f crypto/
 ```
 The command above builds `crypto_unittests` and `url_unittests` targets and then
-runs them individually with their commands and arguments specified by the `-c` flag. 
+runs them individually with their commands and arguments specified by the `-c` flag.
 For `url_unittests`, it only runs the test `URLParser.PathURL`. The coverage report
 is filtered to include only files and sub-directories under `url/` and `crypto/`
 directories.
@@ -182,12 +182,19 @@ information.
 
 ### How do crashes affect code coverage?
 
-If a crash of any type occurs (Segmentation Fault, CHECK failure, ASan error),
-the crashing process will not dump coverage information necessary to generate
+If a crash of any type occurs (e.g. Segmentation Fault or ASan error), the
+crashing process might not dump coverage information necessary to generate
 code coverage report. For single-process applications (e.g. fuzz targets), that
-means no coverage will be reported at all. For multi-process applications, the
-report will be incomplete. It is important to fix the crash first. If this is
+means no coverage might be reported at all. For multi-process applications, the
+report might be incomplete. It is important to fix the crash first. If this is
 happening only in the coverage instrumented build, please [file a bug].
+
+### How do assertions affect code coverage?
+
+If a crash is caused by CHECK or DCHECK, the coverage dump will still be written
+on the disk ([crrev.com/c/1172932]). However, if a crashing process calls the
+standard [assert] directly or through a custom wrapper, the dump will not be
+written (see [How do crashes affect code coverage?]).
 
 ### Is it possible to obtain code coverage from a full Chromium build?
 
@@ -239,6 +246,7 @@ tests for the same code, the coverage should be reported from those. For more
 information, see [crbug.com/842424].
 
 
+[assert]: http://man7.org/linux/man-pages/man3/assert.3.html
 [chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
 [code-coverage repository]: https://chrome-internal.googlesource.com/chrome/tools/code-coverage
 [coverage dashboard]: https://chromium-coverage.appspot.com/
@@ -250,12 +258,14 @@ information, see [crbug.com/842424].
 [crbug.com/831939]: https://crbug.com/831939
 [crbug.com/834781]: https://crbug.com/834781
 [crbug.com/842424]: https://crbug.com/842424
+[crrev.com/c/1172932]: https://crrev.com/c/1172932
 [clang roll]: https://crbug.com/841908
 [dead code example]: https://chromium.googlesource.com/chromium/src/+/ac6e09311fcc7e734be2ef21a9ccbbe04c4c4706
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
+[How do crashes affect code coverage?]: #how-do-crashes-affect-code-coverage
 [https://chromium-coverage.appspot.com/]: https://chromium-coverage.appspot.com/
 [known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
 [link]: https://storage.googleapis.com/chromium-browser-clang-staging/
