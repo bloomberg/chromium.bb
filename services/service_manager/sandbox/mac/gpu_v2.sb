@@ -34,7 +34,7 @@
   (allow file-read* (subpath "/System/Library/Extensions")))
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
-(if (= os-version 1013)
+(if (>= os-version 1013)
   (allow mach-lookup (global-name "com.apple.coremedia.videodecoder")))
 
 (if (> os-version 1009)

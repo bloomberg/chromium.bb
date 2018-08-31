@@ -109,7 +109,7 @@
   (path "/dev/random")
   (path "/dev/urandom"))
 
-(if (= os-version 1013)
+(if (>= os-version 1013)
   (begin (allow file-read* (subpath "/private/var/db/timezone"))
          (allow file-read-data (subpath "/usr/share/zoneinfo.default"))))
 
