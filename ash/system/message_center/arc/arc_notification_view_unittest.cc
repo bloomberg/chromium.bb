@@ -73,7 +73,7 @@ class ArcNotificationViewTest : public AshTestBase {
     std::unique_ptr<Notification> notification = CreateSimpleNotification();
 
     notification_view_.reset(static_cast<ArcNotificationView*>(
-        message_center::MessageViewFactory::Create(*notification, true)));
+        message_center::MessageViewFactory::Create(*notification)));
     notification_view_->set_owned_by_client();
     surface_ = std::make_unique<MockArcNotificationSurface>(
         kDefaultNotificationKey, Shell::Get()->aura_env());

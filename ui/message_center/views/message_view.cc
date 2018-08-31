@@ -34,8 +34,6 @@ namespace message_center {
 namespace {
 
 const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
-const int kShadowCornerRadius = 0;
-const int kShadowElevation = 2;
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -109,20 +107,8 @@ void MessageView::SetIsNested() {
   // Update enability since it might be changed by "is_nested" flag.
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
 
-  if (ShouldRoundMessageViewCorners()) {
-    SetBorder(views::CreateRoundedRectBorder(
-        kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
-  } else {
-    const auto& shadow =
-        gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
-    gfx::Insets ninebox_insets =
-        gfx::ShadowValue::GetBlurRegion(shadow.values) +
-        gfx::Insets(kShadowCornerRadius);
-    SetBorder(views::CreateBorderPainter(
-        views::Painter::CreateImagePainter(shadow.ninebox_image,
-                                           ninebox_insets),
-        -gfx::ShadowValue::GetMargin(shadow.values)));
-  }
+  SetBorder(views::CreateRoundedRectBorder(
+      kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
 
   if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
     return;

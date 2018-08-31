@@ -342,8 +342,8 @@ void UnifiedMessageCenterView::Update() {
 void UnifiedMessageCenterView::AddNotificationAt(
     const Notification& notification,
     int index) {
-  MessageView* view = message_center::MessageViewFactory::Create(
-      notification, /*top-level=*/false);
+  MessageView* view = message_center::MessageViewFactory::Create(notification);
+  view->SetIsNested();
   view->AddObserver(this);
   view->AddSlideObserver(message_list_view_);
   view->set_scroller(scroller_);
