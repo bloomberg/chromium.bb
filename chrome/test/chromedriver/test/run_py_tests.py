@@ -96,6 +96,11 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
+_VERSION_SPECIFIC_FILTER['70'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
+
 _VERSION_SPECIFIC_FILTER['69'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
     'HeadlessInvalidCertificateTest.*',
@@ -103,7 +108,6 @@ _VERSION_SPECIFIC_FILTER['69'] = [
 
 _VERSION_SPECIFIC_FILTER['68'] = []
 
-_VERSION_SPECIFIC_FILTER['67'] = []
 
 
 _OS_SPECIFIC_FILTER = {}

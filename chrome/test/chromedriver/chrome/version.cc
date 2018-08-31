@@ -9,7 +9,7 @@
 namespace {
 
 // This variable must be able to be found and parsed by the upload script.
-const int kMinimumSupportedChromeVersion[] = {67, 0, 3396, 0};
+const int kMinimumSupportedChromeVersion[] = {68, 0, 3440, 0};
 
 }  // namespace
 
