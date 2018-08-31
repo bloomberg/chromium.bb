@@ -542,7 +542,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuDisabled() throws Exception {
         // Ensure there are no saved passwords reported to settings.
         setPasswordSource(null);
@@ -562,7 +561,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuEnabled() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -576,36 +574,11 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Check that if "PasswordExport" feature is not explicitly enabled, there is no menu item to
-     * export passwords.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures("PasswordExport")
-    public void testExportMenuMissing() throws Exception {
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
-
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
-
-        // Ideally this would need the same matcher (Espresso.OVERFLOW_BUTTON_MATCHER) as used
-        // inside Espresso.openActionBarOverflowOrOptionsMenu(), but that is private to Espresso.
-        // Matching the overflow menu with the class name "OverflowMenuButton" won't work on
-        // obfuscated release builds, so matching the description remains. The
-        // OVERFLOW_BUTTON_MATCHER specifies the string directly, not via string resource, so this
-        // is also done below.
-        Espresso.onView(withContentDescription("More options")).check(doesNotExist());
-    }
-
-    /**
      * Check that tapping the export menu requests the passwords to be serialised in the background.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportTriggersSerialization() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -637,7 +610,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuItem() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -672,7 +644,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportReauthAfterCancel() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -727,7 +698,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuItemNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -756,7 +726,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuItemReenabledNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -785,7 +754,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportMenuItemReenabledReauthFailure() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -818,7 +786,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportRequiresReauth() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -858,7 +825,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportIntent() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -915,7 +881,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportIntentPaused() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -976,7 +941,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportCancelOnWarning() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1004,7 +968,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportWarningOnResume() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1045,7 +1008,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportWarningTimeoutOnResume() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1093,7 +1055,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportCancelOnWarningDismissal() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1124,7 +1085,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportProgressMinimalTime() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1188,7 +1148,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportProgress() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1245,7 +1204,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportCancelOnProgress() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1291,7 +1249,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportCancelOnError() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1333,7 +1290,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportRetry() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1371,7 +1327,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportHelpSite() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -1420,7 +1375,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("PasswordExport")
     public void testExportErrorUiAfterConfirmation() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
