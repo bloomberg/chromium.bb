@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -67,6 +68,20 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
     params["warmup_url_fetch_min_timeout_seconds"] = "10";
     params["warmup_url_fetch_max_timeout_seconds"] = "60";
     params["warmup_url_fetch_init_http_rtt_multiplier"] = "12";
+    scoped_feature_list->InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyRobustConnection, params);
+  }
+
+  static void InitExperimentWithFetchWaitTimeParams(
+      base::test::ScopedFeatureList* scoped_feature_list,
+      base::TimeDelta first_retry,
+      base::TimeDelta second_retry) {
+    std::map<std::string, std::string> params;
+    params["warmup_fetch_callback_enabled"] = "true";
+    params["warmup_url_fetch_wait_timer_first_retry_seconds"] =
+        base::IntToString(first_retry.InSeconds());
+    params["warmup_url_fetch_wait_timer_second_retry_seconds"] =
+        base::IntToString(second_retry.InSeconds());
     scoped_feature_list->InitAndEnableFeatureWithParameters(
         features::kDataReductionProxyRobustConnection, params);
   }
@@ -551,6 +566,65 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
   warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_EQ(http_rtt * 12, warmup_url_fetcher.GetFetchTimeout());
+}
+
+TEST(WarmupURLFetcherTest, TestFetchWaitTime) {
+  base::HistogramTester histogram_tester;
+  base::MessageLoopForIO message_loop;
+
+  std::unique_ptr<net::TestURLRequestContext> test_request_context(
+      new net::TestURLRequestContext(true));
+
+  test_request_context->Init();
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      new net::TestURLRequestContextGetter(message_loop.task_runner(),
+                                           std::move(test_request_context));
+
+  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
+
+  warmup_url_fetcher.FetchWarmupURL(1);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
+            warmup_url_fetcher.GetFetchWaitTime());
+
+  warmup_url_fetcher.FetchWarmupURL(2);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30),
+            warmup_url_fetcher.GetFetchWaitTime());
+
+  warmup_url_fetcher.FetchWarmupURL(1);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
+            warmup_url_fetcher.GetFetchWaitTime());
+}
+
+TEST(WarmupURLFetcherTest, TestFetchWaitTimeWithFieldTrial) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::TimeDelta first_retry(base::TimeDelta::FromSeconds(30));
+  base::TimeDelta second_retry(base::TimeDelta::FromSeconds(60));
+  WarmupURLFetcherTest::InitExperimentWithFetchWaitTimeParams(
+      &scoped_feature_list, first_retry, second_retry);
+
+  base::HistogramTester histogram_tester;
+  base::MessageLoopForIO message_loop;
+
+  std::unique_ptr<net::TestURLRequestContext> test_request_context(
+      new net::TestURLRequestContext(true));
+
+  test_request_context->Init();
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      new net::TestURLRequestContextGetter(message_loop.task_runner(),
+                                           std::move(test_request_context));
+
+  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
+
+  warmup_url_fetcher.FetchWarmupURL(1);
+  EXPECT_EQ(first_retry, warmup_url_fetcher.GetFetchWaitTime());
+
+  warmup_url_fetcher.FetchWarmupURL(2);
+  EXPECT_EQ(second_retry, warmup_url_fetcher.GetFetchWaitTime());
+
+  warmup_url_fetcher.FetchWarmupURL(1);
+  EXPECT_EQ(first_retry, warmup_url_fetcher.GetFetchWaitTime());
 }
 
 TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasingWithFieldTrial) {
