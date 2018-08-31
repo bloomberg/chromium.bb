@@ -26,6 +26,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:maxHeight="@dimen/webapp_splash_image_size_ideal"
+        android:maxWidth="@dimen/webapp_splash_image_size_ideal"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
         tools:ignore="ContentDescription" />
 
     <TextView
