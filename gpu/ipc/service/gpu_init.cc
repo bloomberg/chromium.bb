@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
@@ -36,6 +37,10 @@
 #if defined(OS_WIN)
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "ui/gl/gl_surface_egl.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/android/android_image_reader_compat.h"
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -322,6 +327,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
+
+#if defined(OS_ANDROID)
+  // Disable AImageReader if the workaround is enabled.
+  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
+    base::android::AndroidImageReader::DisableSupport();
+  }
+#endif
+
   return true;
 }
 
@@ -338,6 +351,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                          &gpu_feature_info_);
 
   default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+
+  // Disable AImageReader if the workaround is enabled.
+  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
+    base::android::AndroidImageReader::DisableSupport();
+  }
 }
 #else
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
