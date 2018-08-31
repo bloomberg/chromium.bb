@@ -497,10 +497,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
 
-    # Linux Intel HD 630
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
-        ['linux', ('intel', 0x5912)], bug=745888)
-
     # Linux passthrough Intel
     self.Fail('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
