@@ -78,8 +78,6 @@ bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
 
 bool PrepareNativeLocalFileForWritableApp(const base::FilePath& path,
                                           bool is_directory) {
-  base::AssertBlockingAllowed();
-
   // Don't allow links.
   if (base::PathExists(path) && base::IsLink(path))
     return false;
