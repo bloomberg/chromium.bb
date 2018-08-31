@@ -591,6 +591,12 @@ TEST_P(BasicMSEPlaybackTest, NewByPts_PlayToEnd) {
   PlayToEnd();
 }
 
+const PlaybackTestData kOpenCodecsTests[] = {{"bear-vp9-i422.webm", 0, 2736}};
+
+INSTANTIATE_TEST_CASE_P(OpenCodecs,
+                        BasicPlaybackTest,
+                        testing::ValuesIn(kOpenCodecsTests));
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 const PlaybackTestData kADTSTests[] = {
