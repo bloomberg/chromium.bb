@@ -363,8 +363,17 @@ bool SyncedBookmarkTracker::IsEmpty() const {
   return sync_id_to_entities_map_.empty();
 }
 
-std::size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
+size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
   return sync_id_to_entities_map_.size();
+}
+
+size_t SyncedBookmarkTracker::TrackedBookmarksCountForDebugging() const {
+  return bookmark_node_to_entities_map_.size();
+}
+
+size_t SyncedBookmarkTracker::TrackedUncommittedTombstonesCountForDebugging()
+    const {
+  return ordered_local_tombstones_.size();
 }
 
 }  // namespace sync_bookmarks

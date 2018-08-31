@@ -158,7 +158,14 @@ class SyncedBookmarkTracker {
   bool IsEmpty() const;
 
   // Returns number of tracked entities. Used only in test.
-  std::size_t TrackedEntitiesCountForTest() const;
+  size_t TrackedEntitiesCountForTest() const;
+
+  // Returns number of tracked bookmarks that aren't deleted.
+  size_t TrackedBookmarksCountForDebugging() const;
+
+  // Returns number of bookmarks that have been deleted but the server hasn't
+  // confirmed the deletion yet.
+  size_t TrackedUncommittedTombstonesCountForDebugging() const;
 
  private:
   // Reorders |entities| that represents local non-deletions such that parent
