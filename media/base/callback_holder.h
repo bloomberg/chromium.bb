@@ -17,8 +17,6 @@ template <typename CB> class CallbackHolder {
   CallbackHolder() : hold_(false) {}
 
   ~CallbackHolder() {
-    // Make sure all callbacks are satisfied!
-    DCHECK(!hold_);
     DCHECK(original_cb_.is_null());
     DCHECK(held_cb_.is_null());
   }
