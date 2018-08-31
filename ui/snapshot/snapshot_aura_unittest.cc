@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -98,6 +99,10 @@ class SnapshotAuraTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+
     // The ContextFactory must exist before any Compositors are created.
     // Snapshot test tests real drawing and readback, so needs pixel output.
     bool enable_pixel_output = true;
@@ -118,6 +123,7 @@ class SnapshotAuraTest : public testing::Test {
     helper_->RunAllPendingInMessageLoop();
     helper_->TearDown();
     ui::TerminateContextFactoryForTests();
+    scoped_task_environment_.reset();
     testing::Test::TearDown();
   }
 
@@ -178,6 +184,7 @@ class SnapshotAuraTest : public testing::Test {
     bool completed_;
   };
 
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
   std::unique_ptr<aura::Window> test_window_;
   std::unique_ptr<TestPaintingWindowDelegate> delegate_;
