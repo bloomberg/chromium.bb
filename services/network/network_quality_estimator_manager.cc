@@ -26,6 +26,19 @@ const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 
 // Returns true if |past_value| is significantly different from |current_value|.
 bool MetricChangedMeaningfully(int32_t past_value, int32_t current_value) {
+  // A negative value indicates that the value of the corresponding metric is
+  // unavailable. A difference in signature between the |past_value| and
+  // |current_value| indicates change in the availability of the value of that
+  // metric.
+  if (past_value < 0 && current_value >= 0)
+    return true;
+
+  if (past_value >= 0 && current_value < 0)
+    return true;
+
+  if (past_value < 0 && current_value < 0)
+    return false;
+
   // Metric changed meaningfully only if (i) the difference between the two
   // values exceed the threshold; and, (ii) the ratio of the values also exceeds
   // the threshold.

@@ -253,6 +253,39 @@ TEST_F(NetworkQualityTrackerTest, ECTObserverNotified) {
   EXPECT_EQ(2u, effective_connection_type_observer()->num_notifications());
 }
 
+// Test that network quality tracker sets the network quality values correctly
+// when the network quality is unavailable.
+TEST_F(NetworkQualityTrackerTest, ECTObserverNotifiedUnknown) {
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            effective_connection_type_observer()->effective_connection_type());
+
+  SimulateEffectiveConnectionTypeChange(net::EFFECTIVE_CONNECTION_TYPE_3G);
+  effective_connection_type_observer()->WaitForNotification(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
+            effective_connection_type_observer()->effective_connection_type());
+  // Typical RTT and downlink values when effective connection type is 3G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
+            network_quality_tracker()->GetHttpRTT());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(400),
+            network_quality_tracker()->GetTransportRTT());
+  EXPECT_EQ(400, network_quality_tracker()->GetDownstreamThroughputKbps());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, effective_connection_type_observer()->num_notifications());
+
+  SimulateEffectiveConnectionTypeChange(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  effective_connection_type_observer()->WaitForNotification(
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            effective_connection_type_observer()->effective_connection_type());
+  // RTT and downlink values when effective connection type is UNKNOWN.
+  EXPECT_EQ(base::TimeDelta(), network_quality_tracker()->GetHttpRTT());
+  EXPECT_EQ(base::TimeDelta(), network_quality_tracker()->GetTransportRTT());
+  EXPECT_EQ(std::numeric_limits<int32_t>::max(),
+            network_quality_tracker()->GetDownstreamThroughputKbps());
+}
+
 TEST_F(NetworkQualityTrackerTest, RttThroughputObserverNotified) {
   // One notification must be received by rtt_throughput_observer() as soon as
   // it is registered as an observer.
