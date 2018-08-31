@@ -125,6 +125,7 @@ customBackgrounds.CLASSES = {
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
+  SINGLE_ATTR: 'single-attr'
 };
 
 /**
@@ -236,24 +237,27 @@ customBackgrounds.setAttribution = function(
   var attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
   var attr1 = document.createElement('div');
   var attr2 = document.createElement('div');
-  if (attributionLine1 != '') {
+  if (attributionLine1 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr1.textContent = attributionLine1;
     attr1.classList.add(customBackgrounds.CLASSES.ATTR_1);
     $(customBackgrounds.IDS.ATTRIBUTIONS).appendChild(attr1);
   }
-  if (attributionLine2 != '') {
+  if (attributionLine2 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr2.textContent = attributionLine2;
     attr2.classList.add(customBackgrounds.CLASSES.ATTR_2);
     attributionBox.appendChild(attr2);
   }
-  if (attributionActionUrl != '') {
-    var attr = (attributionLine2 != '' ? attr2 : attr1);
+  if (attributionActionUrl !== '') {
+    var attr = (attributionLine2 !== '' ? attr2 : attr1);
     attr.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
 
     var linkIcon = document.createElement('div');
     linkIcon.id = customBackgrounds.IDS.LINK_ICON;
+    // Enlarge link-icon when there is only one line of attribution
+    if (attributionLine2 === '')
+      linkIcon.classList.add(customBackgrounds.CLASSES.SINGLE_ATTR);
     attr.insertBefore(linkIcon, attr.firstChild);
 
     attributionBox.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
