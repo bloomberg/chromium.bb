@@ -6,9 +6,11 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -122,6 +124,10 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     if (GetParam().tablet_mode) {
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
     }
+
+    // TODO(crbug.com/879404): Fix tests to work with NativeSMB.
+    // Tests assume that no native FSPs are enabled.
+    scoped_feature_list_.InitAndDisableFeature(features::kNativeSmb);
   }
 
   GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
@@ -151,6 +157,7 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetIsOffline() const override { return GetParam().offline; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
 };
 
