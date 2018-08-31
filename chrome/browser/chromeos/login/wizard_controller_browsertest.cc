@@ -2115,11 +2115,6 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
   ~WizardControllerDemoSetupTest() override = default;
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WizardControllerFlowTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
-  }
-
   void SetUpOnMainThread() override {
     WizardControllerFlowTest::SetUpOnMainThread();
     testing::Mock::VerifyAndClearExpectations(mock_welcome_screen_);
@@ -2414,11 +2409,6 @@ class WizardControllerDemoSetupDeviceDisabledTest
   ~WizardControllerDemoSetupDeviceDisabledTest() override = default;
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WizardControllerDeviceStateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
-  }
-
   void SetUpOnMainThread() override {
     WizardControllerDeviceStateTest::SetUpOnMainThread();
     testing::Mock::VerifyAndClearExpectations(mock_welcome_screen_);
