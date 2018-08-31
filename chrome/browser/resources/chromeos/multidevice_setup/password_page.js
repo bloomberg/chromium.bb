@@ -29,6 +29,12 @@ Polymer({
     },
 
     /** Overridden from UiPageContainerBehavior. */
+    backwardButtonTextId: {
+      type: String,
+      value: 'cancel',
+    },
+
+    /** Overridden from UiPageContainerBehavior. */
     headerId: {
       type: String,
       value: 'passwordPageHeader',
@@ -39,6 +45,18 @@ Polymer({
      * @type {string}
      */
     authToken: {type: String, value: '', notify: true},
+
+    /** @private {string} */
+    profilePhotoUrl_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private {string} */
+    email_: {
+      type: String,
+      value: '',
+    },
 
     /** @private {!QuickUnlockPrivate} */
     quickUnlockPrivate_: {type: Object, value: chrome.quickUnlockPrivate},
@@ -57,6 +75,9 @@ Polymer({
     },
   },
 
+  /** @private {?multidevice_setup.BrowserProxy} */
+  browserProxy_: null,
+
   /**
    * Function which clears this.authToken after it has expired.
    * @private {number|undefined}
@@ -68,7 +89,17 @@ Polymer({
   },
 
   /** @override */
+  created: function() {
+    this.browserProxy_ = multidevice_setup.BrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
   attached: function() {
+    this.browserProxy_.getProfileInfo().then((profileInfo) => {
+      this.profilePhotoUrl_ = profileInfo.profilePhotoUrl;
+      this.email_ = profileInfo.email;
+    });
+
     this.$.passwordInput.focus();
   },
 
