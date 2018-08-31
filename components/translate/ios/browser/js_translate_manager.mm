@@ -34,7 +34,9 @@
                                                 encoding:NSUTF8StringEncoding
                                                    error:&error];
   DCHECK(!error && [content length]);
-  script = [script stringByAppendingString:content];
+  // Prepend so callbacks defined in translate_ios.js can be installed.
+  script = [content stringByAppendingString:script];
+
   _translationScript = [script copy];
 }
 
