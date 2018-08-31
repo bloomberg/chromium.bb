@@ -986,20 +986,26 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
   bool isSecureContext = (executionContext && executionContext->IsSecureContext());
   {% endif %}
 
-  {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list  %}
-  {% if attributes_on_instance or conditional_interface_objects %}
+  {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list %}
+  {% set methods_on_instance = conditional_methods | selectattr('on_instance') | list %}
+  {% if attributes_on_instance or conditional_interface_objects or methods_on_instance %}
   if (!instanceObject.IsEmpty()) {
     {{install_conditional_attributes(attributes_on_instance) | trim | indent(4)}}
     {{install_conditional_interface_objects(conditional_interface_objects) | trim | indent(4)}}
+    {{install_conditional_methods(methods_on_instance) | trim | indent(4)}}
   }
   {% endif %}
 
-  {% set attributes_on_prototype = conditional_attributes | selectattr('on_prototype') | list  %}
-  {% set attributes_on_interface = conditional_attributes | selectattr('on_interface') | list  %}
+  {% set attributes_on_prototype = conditional_attributes | selectattr('on_prototype') | list %}
+  {% set attributes_on_interface = conditional_attributes | selectattr('on_interface') | list %}
+  {% set methods_on_prototype = conditional_methods | selectattr('on_prototype') | list %}
+  {% set methods_on_interface = conditional_methods | selectattr('on_interface') | list %}
+  {% if attributes_on_prototype or attributes_on_interface or methods_on_prototype or methods_on_interface %}
   if (!prototypeObject.IsEmpty() || !interfaceObject.IsEmpty()) {
     {{install_conditional_attributes(attributes_on_prototype + attributes_on_interface) | trim | indent(4)}}
-    {{install_conditional_methods() | trim | indent(4)}}
+    {{install_conditional_methods(methods_on_prototype + methods_on_interface) | trim | indent(4)}}
   }
+  {% endif %}
   {% endif %}{# conditional_attributes or conditional_methods #}
 }
 {% endif %}
