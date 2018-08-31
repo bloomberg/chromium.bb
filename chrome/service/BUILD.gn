@@ -78,14 +78,15 @@ static_library("service") {
     "//chrome/common:service_process_mojom",
   ]
 
-  if (use_cups) {
-    sources += [ "cloud_print/print_system_cups.cc" ]
-    configs += [ "//printing:cups" ]
-  } else if (is_win) {
+  if (is_win) {
     sources += [
       "service_utility_process_host.cc",
       "service_utility_process_host.h",
     ]
+  } else {
+    assert(use_cups)
+    sources += [ "cloud_print/print_system_cups.cc" ]
+    configs += [ "//printing:cups" ]
   }
 }
 
