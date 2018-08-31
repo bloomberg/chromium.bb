@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/invalidation/public/identity_provider.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/model_type.h"
@@ -213,6 +214,7 @@ class ProfileSyncService : public syncer::SyncService,
     identity::IdentityManager* identity_manager;
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
+    invalidation::IdentityProvider* invalidations_identity_provider = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -739,6 +741,11 @@ class ProfileSyncService : public syncer::SyncService,
   // The gaia cookie manager. Used for monitoring cookie jar changes to detect
   // when the user signs out of the content area.
   GaiaCookieManagerService* const gaia_cookie_manager_service_;
+
+  // This provider tells the invalidations code which identity to register for.
+  // The account that it registers for should be the same as the currently
+  // syncing account, so we'll need to update this whenever the account changes.
+  invalidation::IdentityProvider* const invalidations_identity_provider_;
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 

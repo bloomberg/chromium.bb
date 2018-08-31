@@ -66,13 +66,14 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateUninitializedInvalidationService() {
-    gcm_driver_.reset(new gcm::FakeGCMDriver());
-    invalidation_service_.reset(new TiclInvalidationService(
-        "TestUserAgent",
-        std::make_unique<ProfileIdentityProvider>(
-            identity_test_env_.identity_manager()),
+    gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
+    identity_provider_ = std::make_unique<ProfileIdentityProvider>(
+        identity_test_env_.identity_manager());
+    DCHECK(identity_provider_);
+    invalidation_service_ = std::make_unique<TiclInvalidationService>(
+        "TestUserAgent", identity_provider_.get(),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_driver_.get(), nullptr, nullptr));
+        gcm_driver_.get(), nullptr, nullptr);
   }
 
   void InitializeInvalidationService() {
@@ -101,8 +102,11 @@ class TiclInvalidationServiceTestDelegate {
 
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
+  std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 
+  // The service has to be below the provider since the service keeps
+  // a non-owned pointer to the provider.
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 };
 

@@ -102,8 +102,10 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     return testing_factory_(context).release();
 
 #if defined(OS_ANDROID)
+  // Android does not need an IdentityProvider, because it gets the account
+  // on the java side.
   auto service = std::make_unique<InvalidationServiceAndroid>();
-  return new ProfileInvalidationProvider(std::move(service));
+  return new ProfileInvalidationProvider(std::move(service), nullptr);
 #else
 
   std::unique_ptr<IdentityProvider> identity_provider;
@@ -124,10 +126,9 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     identity_provider.reset(new ProfileIdentityProvider(
         IdentityManagerFactory::GetForProfile(profile)));
   }
-
   std::unique_ptr<FCMInvalidationService> service =
       std::make_unique<FCMInvalidationService>(
-          std::move(identity_provider),
+          identity_provider.get(),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
               ->driver(),
@@ -139,7 +140,8 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
               ->GetURLLoaderFactoryForBrowserProcess()
               .get());
   service->Init();
-  return new ProfileInvalidationProvider(std::move(service));
+  return new ProfileInvalidationProvider(std::move(service),
+                                         std::move(identity_provider));
 #endif
 }
 

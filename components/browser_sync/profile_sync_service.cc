@@ -195,6 +195,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
+      invalidations_identity_provider_(
+          init_params.invalidations_identity_provider),
       network_resources_(
           std::make_unique<syncer::HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
@@ -332,6 +334,10 @@ void ProfileSyncService::Initialize() {
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
+    if (invalidations_identity_provider_) {
+      invalidations_identity_provider_->SetActiveAccountId(
+          GetAuthenticatedAccountInfo().account_id);
+    }
 
     if (!IsSignedIn()) {
       // Clean up in case of previous crash during signout.
@@ -459,6 +465,11 @@ void ProfileSyncService::AccountStateChanged() {
     DCHECK(!engine_);
 #endif
     startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+  }
+
+  if (invalidations_identity_provider_) {
+    invalidations_identity_provider_->SetActiveAccountId(
+        GetAuthenticatedAccountInfo().account_id);
   }
 }
 

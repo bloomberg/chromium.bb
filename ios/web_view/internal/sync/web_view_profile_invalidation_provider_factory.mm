@@ -78,7 +78,7 @@ WebViewProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
-      std::move(identity_provider),
+      identity_provider.get(),
       std::make_unique<invalidation::TiclProfileSettingsProvider>(
           browser_state->GetPrefs()),
       WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state)
@@ -88,7 +88,8 @@ WebViewProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   service->Init(
       std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 
-  return std::make_unique<ProfileInvalidationProvider>(std::move(service));
+  return std::make_unique<ProfileInvalidationProvider>(
+      std::move(service), std::move(identity_provider));
 }
 
 void WebViewProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(

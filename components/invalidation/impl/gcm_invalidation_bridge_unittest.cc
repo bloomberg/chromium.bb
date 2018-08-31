@@ -57,12 +57,14 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   void SetUp() override {
     gcm_driver_.reset(new CustomFakeGCMDriver());
 
-    identity_test_env_.MakePrimaryAccountAvailable("me@me.com");
+    AccountInfo account =
+        identity_test_env_.MakePrimaryAccountAvailable("me@me.com");
 
     identity_provider_.reset(
         new ProfileIdentityProvider(identity_test_env_.identity_manager()));
     bridge_.reset(new GCMInvalidationBridge(gcm_driver_.get(),
                                             identity_provider_.get()));
+    identity_provider_->SetActiveAccountId(account.account_id);
 
     delegate_ = bridge_->CreateDelegate();
     delegate_->Initialize(

@@ -38,7 +38,7 @@ class FCMInvalidationService : public InvalidationService,
                                public IdentityProvider::Observer,
                                public syncer::InvalidationHandler {
  public:
-  FCMInvalidationService(std::unique_ptr<IdentityProvider> identity_provider,
+  FCMInvalidationService(IdentityProvider* identity_provider,
                          gcm::GCMDriver* gcm_driver,
                          instance_id::InstanceIDDriver* instance_id_driver,
                          PrefService* pref_service,
@@ -97,7 +97,7 @@ class FCMInvalidationService : public InvalidationService,
   gcm::GCMDriver* gcm_driver_;
   instance_id::InstanceIDDriver* instance_id_driver_;
 
-  std::unique_ptr<IdentityProvider> identity_provider_;
+  IdentityProvider* identity_provider_;
   PrefService* pref_service_;
   syncer::ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* loader_factory_;

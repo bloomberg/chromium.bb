@@ -29,11 +29,9 @@ class ProfileIdentityProvider : public IdentityProvider,
       ActiveAccountAccessTokenCallback callback) override;
   void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
+  void SetActiveAccountId(const std::string& account_id) override;
 
   // identity::IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override;
   void OnRefreshTokenRemovedForAccount(
@@ -41,6 +39,8 @@ class ProfileIdentityProvider : public IdentityProvider,
 
  private:
   identity::IdentityManager* const identity_manager_;
+
+  std::string active_account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIdentityProvider);
 };

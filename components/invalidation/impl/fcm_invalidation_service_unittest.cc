@@ -40,13 +40,15 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   void CreateUninitializedInvalidationService() {
-    gcm_driver_.reset(new gcm::FakeGCMDriver());
-    invalidation_service_.reset(new FCMInvalidationService(
-        std::make_unique<ProfileIdentityProvider>(
-            identity_test_env_.identity_manager()),
-        gcm_driver_.get(), nullptr, nullptr,
+    gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
+
+    identity_provider_ = std::make_unique<ProfileIdentityProvider>(
+        identity_test_env_.identity_manager());
+
+    invalidation_service_ = std::make_unique<FCMInvalidationService>(
+        identity_provider_.get(), gcm_driver_.get(), nullptr, nullptr,
         base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-        &url_loader_factory_));
+        &url_loader_factory_);
   }
 
   void InitializeInvalidationService() {
@@ -69,11 +71,14 @@ class FCMInvalidationServiceTestDelegate {
     fake_invalidator_->EmitOnIncomingInvalidation(invalidation_map);
   }
 
-  identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
+  identity::IdentityTestEnvironment identity_test_env_;
+  std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
   syncer::FCMFakeInvalidator* fake_invalidator_;  // Owned by the service.
   network::TestURLLoaderFactory url_loader_factory_;
 
+  // The service has to be below the provider since the service keeps
+  // a non-owned pointer to the provider.
   std::unique_ptr<FCMInvalidationService> invalidation_service_;
 };
 

@@ -58,13 +58,13 @@ namespace invalidation {
 
 TiclInvalidationService::TiclInvalidationService(
     const std::string& user_agent,
-    std::unique_ptr<IdentityProvider> identity_provider,
+    IdentityProvider* identity_provider,
     std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : user_agent_(user_agent),
-      identity_provider_(std::move(identity_provider)),
+      identity_provider_(identity_provider),
       settings_provider_(std::move(settings_provider)),
       invalidator_registrar_(new syncer::DeprecatedInvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
@@ -366,8 +366,8 @@ void TiclInvalidationService::StartInvalidator(
       break;
     }
     case GCM_NETWORK_CHANNEL: {
-      gcm_invalidation_bridge_.reset(new GCMInvalidationBridge(
-          gcm_driver_, identity_provider_.get()));
+      gcm_invalidation_bridge_ = std::make_unique<GCMInvalidationBridge>(
+          gcm_driver_, identity_provider_);
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
               url_loader_factory_->Clone(),

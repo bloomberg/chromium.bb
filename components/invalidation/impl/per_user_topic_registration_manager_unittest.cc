@@ -91,11 +91,13 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   void SetUp() override {
     PerUserTopicRegistrationManager::RegisterProfilePrefs(
         pref_service_.registry());
-    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    AccountInfo account =
+        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
     identity_provider_ =
         std::make_unique<invalidation::ProfileIdentityProvider>(
             identity_test_env_.identity_manager());
+    identity_provider_->SetActiveAccountId(account.account_id);
   }
 
   std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager() {
@@ -136,7 +138,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
 
   identity::IdentityTestEnvironment identity_test_env_;
-  std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
+  std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationManagerTest);
 };
