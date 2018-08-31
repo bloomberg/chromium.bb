@@ -61,9 +61,6 @@
 -NetInternalsTest.netInternalsTimelineViewZoomOut
 -NetInternalsTest.netInternalsTourTabs
 
-# https://crbug.com/721398
--WebViewTest.ClearDataCache
-
 # https://crbug.com/853256
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/0
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/1
