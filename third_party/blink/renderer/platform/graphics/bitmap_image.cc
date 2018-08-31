@@ -208,8 +208,9 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
   // here as a sanity check.
   if (!all_data_received_ && all_data_received && decoder_ &&
       decoder_->Data() && decoder_->FilenameExtension() == "jpg" &&
-      IsSizeAvailable() && Size().Width() >= 100 && Size().Height() >= 100) {
+      IsSizeAvailable()) {
     BitmapImageMetrics::CountImageJpegDensity(
+        std::min(Size().Width(), Size().Height()),
         ImageDensityInCentiBpp(Size(), decoder_->Data()->size()));
   }
 

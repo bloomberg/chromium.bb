@@ -49,7 +49,10 @@ class PLATFORM_EXPORT BitmapImageMetrics {
 
   static void CountDecodedImageType(const String& type);
   static void CountImageOrientation(const ImageOrientationEnum);
-  static void CountImageJpegDensity(int64_t density_centi_bpp);
+  // Report the JPEG compression density in 0.01 bits per pixel for an image
+  // with a smallest side (width or length) of |image_min_side|.
+  static void CountImageJpegDensity(int image_min_side,
+                                    int64_t density_centi_bpp);
   static void CountImageGammaAndGamut(const skcms_ICCProfile*);
 
  private:
