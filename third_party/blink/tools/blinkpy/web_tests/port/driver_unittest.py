@@ -61,6 +61,9 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(driver.test_to_uri('http/tests/https/bar.html'), 'https://127.0.0.1:8443/https/bar.html')
         self.assertEqual(driver.test_to_uri('http/tests/bar.https.html'), 'https://127.0.0.1:8443/bar.https.html')
         self.assertEqual(driver.test_to_uri('http/tests/barhttps.html'), 'http://127.0.0.1:8000/barhttps.html')
+        self.assertEqual(driver.test_to_uri('external/wpt/foo/bar.html'), 'http://web-platform.test:8001/foo/bar.html')
+        self.assertEqual(driver.test_to_uri('external/wpt/foo/bar.https.html'), 'https://web-platform.test:8444/foo/bar.https.html')
+        self.assertEqual(driver.test_to_uri('external/wpt/foo/bar.serviceworker.html'), 'https://web-platform.test:8444/foo/bar.serviceworker.html')
 
     def test_uri_to_test(self):
         port = self.make_port()
@@ -69,6 +72,9 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(driver.uri_to_test('http://127.0.0.1:8000/foo.html'), 'http/tests/foo.html')
         self.assertEqual(driver.uri_to_test('https://127.0.0.1:8443/https/bar.html'), 'http/tests/https/bar.html')
         self.assertEqual(driver.uri_to_test('https://127.0.0.1:8443/bar.https.html'), 'http/tests/bar.https.html')
+        self.assertEqual(driver.uri_to_test('http://web-platform.test:8001/foo/bar.html'), 'external/wpt/foo/bar.html')
+        self.assertEqual(driver.uri_to_test('https://web-platform.test:8444/foo/bar.https.html'), 'external/wpt/foo/bar.https.html')
+        self.assertEqual(driver.uri_to_test('https://web-platform.test:8444/foo/bar.serviceworker.html'), 'external/wpt/foo/bar.serviceworker.html')
 
     def test_read_block(self):
         port = self.make_port()

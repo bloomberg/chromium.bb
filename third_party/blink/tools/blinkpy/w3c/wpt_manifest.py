@@ -21,7 +21,7 @@ _log = logging.getLogger(__file__)
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
-BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_4.json'
+BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_5.json'
 
 # TODO(robertma): Use the official wpt.manifest module.
 
