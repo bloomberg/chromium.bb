@@ -232,6 +232,15 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
 }
 
 void NGBlockNode::PrepareForLayout() {
+  if (box_->IsLayoutBlock()) {
+    LayoutBlock* block = ToLayoutBlock(box_);
+    if (block->HasOverflowClip()) {
+      DCHECK(block->GetScrollableArea());
+      if (block->GetScrollableArea()->ShouldPerformScrollAnchoring())
+        block->GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
+    }
+  }
+
   if (IsListItem())
     ToLayoutNGListItem(box_)->UpdateMarkerTextIfNeeded();
 }
