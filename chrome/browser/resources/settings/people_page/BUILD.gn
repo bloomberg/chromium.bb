@@ -24,6 +24,7 @@ js_type_check("closure_compile") {
     ":manage_profile_browser_proxy",
     ":people_page",
     ":profile_info_browser_proxy",
+    ":settings_setup_pin_keyboard",
     ":setup_fingerprint_dialog",
     ":setup_pin_dialog",
     ":sync_account_control",
@@ -215,8 +216,16 @@ js_library("setup_fingerprint_dialog") {
 
 js_library("setup_pin_dialog") {
   deps = [
-    ":lock_screen_constants",
     ":lock_screen_password_prompt_dialog",
+    ":settings_setup_pin_keyboard",
+    "..:route",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("settings_setup_pin_keyboard") {
+  deps = [
+    ":lock_screen_constants",
     "..:route",
     "//ui/webui/resources/js:i18n_behavior",
   ]

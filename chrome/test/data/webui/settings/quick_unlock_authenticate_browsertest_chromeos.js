@@ -22,10 +22,15 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       element = element.parentElement;
 
-      // cr-dialog itself will always be 0x0. It's the inner native <dialog>
-      // that has actual dimensions.
-      if (element && element.tagName == 'CR-DIALOG')
-        element = element.getNative();
+      if (element) {
+        // cr-dialog itself will always be 0x0. It's the inner native <dialog>
+        // that has actual dimensions.
+        // (The same about PIN-KEYBOARD.)
+        if (element.tagName == 'CR-DIALOG')
+          element = element.getNative();
+        else if (element.tagName == 'PIN-KEYBOARD')
+          element = element.$.root;
+      }
     }
 
     return true;
@@ -46,7 +51,10 @@ cr.define('settings_people_page_quick_unlock', function() {
    * @return {Element}
    */
   function getFromElement(selector) {
-    const childElement = testElement.$$(selector);
+    let childElement = testElement.$$(selector);
+    if (!childElement && testElement.$.pinKeyboard)
+      childElement = testElement.$.pinKeyboard.$$(selector);
+
     assertTrue(!!childElement);
     return childElement;
   }
@@ -415,14 +423,15 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         // Create setup-pin element.
         testElement = document.createElement('settings-setup-pin-dialog');
-        testElement.quickUnlockPrivate_ = quickUnlockPrivateApi;
-        testElement.setModes = (modes, credentials, onComplete) => {
+        let testPinKeyboard = testElement.$.pinKeyboard;
+        testPinKeyboard.quickUnlockPrivate_ = quickUnlockPrivateApi;
+        testPinKeyboard.setModes = (modes, credentials, onComplete) => {
           quickUnlockPrivateApi.setModes(
               quickUnlockPrivateApi.getFakeToken(), modes, credentials, () => {
                 onComplete(true);
               });
         };
-        testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
+        testPinKeyboard.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
 
         document.body.appendChild(testElement);
         Polymer.dom.flush();

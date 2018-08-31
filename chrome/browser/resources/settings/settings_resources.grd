@@ -1489,6 +1489,14 @@
         <structure name="IDR_SETTINGS_PEOPLE_SETUP_PIN_DIALOG_JS"
                    file="people_page/setup_pin_dialog.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_PEOPLE_SETUP_PIN_KEYBOARD_JS"
+                   file="people_page/settings_setup_pin_keyboard.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_PEOPLE_SETTINGS_SETUP_PIN_KEYBOARD_HTML"
+                   file="people_page/settings_setup_pin_keyboard.html"
+                   type="chrome_html"
+                   preprocess="true"
+                   allowexternalscript="true" />
         <structure name="IDR_SETTINGS_PEOPLE_SETUP_PIN_DIALOG_HTML"
                    file="people_page/setup_pin_dialog.html"
                    type="chrome_html"
