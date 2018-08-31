@@ -169,7 +169,9 @@ class ThreadTestHelper;
 // a socket, rename or delete a file, enumerate files in a directory, etc.
 // Acquiring a low contention lock is not considered a blocking call.
 
-// Asserts that blocking calls are allowed in the current scope.
+// Asserts that blocking calls are allowed in the current scope. Prefer using 
+// ScopedBlockingCall instead, which also serves as a precise annotation of the 
+// scope that may/will block.
 //
 // Style tip: It's best if you put AssertBlockingAllowed() checks as close to
 // the blocking call as possible. For example:
