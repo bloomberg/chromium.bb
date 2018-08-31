@@ -33,6 +33,8 @@ component("sandbox") {
   ]
   if (is_linux) {
     sources += [
+      "linux/bpf_audio_policy_linux.cc",
+      "linux/bpf_audio_policy_linux.h",
       "linux/bpf_base_policy_linux.cc",
       "linux/bpf_base_policy_linux.h",
       "linux/bpf_broker_policy_linux.cc",
@@ -61,6 +63,10 @@ component("sandbox") {
       "linux/sandbox_linux.h",
       "linux/sandbox_seccomp_bpf_linux.cc",
       "linux/sandbox_seccomp_bpf_linux.h",
+    ]
+    configs += [
+      "//media:media_config",
+      "//media/audio:platform_config",
     ]
     deps += [
       ":chromecast_sandbox_whitelist_buildflags",

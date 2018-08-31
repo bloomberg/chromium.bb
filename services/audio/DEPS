@@ -5,4 +5,5 @@ include_rules = [
    "+media/webrtc",
    "+sandbox",
    "+services/audio/public",
+   "+services/service_manager/sandbox",
 ]
