@@ -29,7 +29,6 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -57,7 +56,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;
   }
-  std::string pan_first_six_in_upload_details() const { return pan_first_six_; }
+
   const std::vector<const char*>& active_experiments_in_request() const {
     return active_experiments_;
   }

@@ -80,11 +80,6 @@ class PaymentsClientTest : public testing::Test {
 
   void TearDown() override { client_.reset(); }
 
-  void EnableAutofillUpstreamSendPanFirstSixExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillUpstreamSendPanFirstSix);
-  }
-
   void EnableAutofillSendExperimentIdsInPaymentsRPCs() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillSendExperimentIdsInPaymentsRPCs);
@@ -160,8 +155,7 @@ class PaymentsClientTest : public testing::Test {
       identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
 
     client_->GetUploadDetails(
-        BuildTestProfiles(), kAllDetectableValues,
-        /*pan_first_six=*/"411111", std::vector<const char*>(),
+        BuildTestProfiles(), kAllDetectableValues, std::vector<const char*>(),
         "language-LOCALE",
         base::BindOnce(&PaymentsClientTest::OnDidGetUploadDetails,
                        weak_ptr_factory_.GetWeakPtr()),
@@ -503,26 +497,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
   EXPECT_TRUE(value.empty());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest,
-       GetDetailsIncludesPanFirstSixInRequestIfExperimentOn) {
-  EnableAutofillUpstreamSendPanFirstSixExperiment();
-
-  StartGettingUploadDetails();
-
-  // Verify that the value of pan_first_six was included in the request.
-  EXPECT_TRUE(GetUploadData().find("\"pan_first6\":\"411111\"") !=
-              std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       GetDetailsDoesNotIncludePanFirstSixInRequestIfExperimentOff) {
-  StartGettingUploadDetails();
-
-  // Verify that the value of pan_first_six was left out of the request.
-  EXPECT_TRUE(GetUploadData().find("\"pan_first6\":\"411111\"") ==
-              std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {

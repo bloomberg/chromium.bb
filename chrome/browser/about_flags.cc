@@ -3103,12 +3103,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
-    {"enable-autofill-credit-card-upload-send-pan-first-six",
-     flag_descriptions::kEnableAutofillCreditCardUploadSendPanFirstSixName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadSendPanFirstSixDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstreamSendPanFirstSix)},
     {"enable-autofill-credit-card-upload-update-prompt-explanation",
      flag_descriptions::
          kEnableAutofillCreditCardUploadUpdatePromptExplanationName,
