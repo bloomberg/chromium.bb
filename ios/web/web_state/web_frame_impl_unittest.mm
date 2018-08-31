@@ -13,9 +13,9 @@
 #include "base/values.h"
 #include "crypto/aead.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -73,7 +73,7 @@ RouteMessageParameters ParametersFromFunctionCallString(
 
 namespace web {
 
-using WebFrameImplTest = PlatformTest;
+typedef web::WebTest WebFrameImplTest;
 
 // Tests creation of a WebFrame for the main frame.
 TEST_F(WebFrameImplTest, CreateWebFrameForMainFrame) {
@@ -227,6 +227,11 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
   EXPECT_TRUE(result_dict->GetInteger("messageId", &decrypted_message_id));
   EXPECT_EQ(initial_message_id, decrypted_message_id);
 
+  bool decrypted_respond_with_result = true;
+  EXPECT_TRUE(result_dict->GetBoolean("replyWithResult",
+                                      &decrypted_respond_with_result));
+  EXPECT_FALSE(decrypted_respond_with_result);
+
   std::string decrypted_functionName;
   EXPECT_TRUE(result_dict->GetString("functionName", &decrypted_functionName));
   EXPECT_STREQ("functionName", decrypted_functionName.c_str());
@@ -235,6 +240,62 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
   EXPECT_TRUE(result_dict->GetList("parameters", &decrypted_parameters));
   EXPECT_EQ(function_params.size(), decrypted_parameters->GetList().size());
   EXPECT_EQ(plaintext_param, decrypted_parameters->GetList()[0].GetString());
+}
+
+// Tests that the WebFrame properly encodes and encrypts the respondWithResult
+// value when |CallJavaScriptFunction| is called with a callback.
+TEST_F(WebFrameImplTest, CallJavaScriptFunctionRespondWithResult) {
+  std::unique_ptr<SymmetricKey> key = CreateKey();
+  const std::string key_string = key->key();
+  // Use an arbitrary nonzero message id to ensure it isn't matching a zero
+  // value by chance.
+  const int initial_message_id = 11;
+
+  TestWebState test_web_state;
+  GURL security_origin;
+  WebFrameImpl web_frame(kFrameId, std::move(key), initial_message_id,
+                         /*is_main_frame=*/false, security_origin,
+                         &test_web_state);
+
+  std::vector<base::Value> function_params;
+  std::string plaintext_param("plaintextParam");
+  function_params.push_back(base::Value(plaintext_param));
+  web_frame.CallJavaScriptFunction("functionName", function_params,
+                                   base::BindOnce(^(const base::Value* value){
+                                   }),
+                                   base::TimeDelta::FromSeconds(5));
+
+  NSString* last_script =
+      base::SysUTF16ToNSString(test_web_state.GetLastExecutedJavascript());
+  RouteMessageParameters params = ParametersFromFunctionCallString(last_script);
+
+  std::string decoded_ciphertext;
+  EXPECT_TRUE(
+      base::Base64Decode(base::SysNSStringToUTF8(params.encoded_function_json),
+                         &decoded_ciphertext));
+
+  std::string decoded_iv;
+  EXPECT_TRUE(base::Base64Decode(base::SysNSStringToUTF8(params.encoded_iv),
+                                 &decoded_iv));
+
+  // Decrypt message
+  crypto::Aead aead(crypto::Aead::AES_256_GCM);
+  aead.Init(&key_string);
+  std::string plaintext;
+  EXPECT_TRUE(aead.Open(decoded_ciphertext, decoded_iv,
+                        /*additional_data=*/nullptr, &plaintext));
+
+  std::unique_ptr<base::Value> parsed_result(
+      base::JSONReader::Read(plaintext, false));
+  EXPECT_TRUE(parsed_result.get());
+
+  base::DictionaryValue* result_dict;
+  ASSERT_TRUE(parsed_result->GetAsDictionary(&result_dict));
+
+  bool decrypted_respond_with_result = false;
+  EXPECT_TRUE(result_dict->GetBoolean("replyWithResult",
+                                      &decrypted_respond_with_result));
+  EXPECT_TRUE(decrypted_respond_with_result);
 }
 
 }  // namespace web
