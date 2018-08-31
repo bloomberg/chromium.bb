@@ -400,9 +400,6 @@ void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
 }
 
 void WebRequestProxyingWebSocket::OnError(int error_code) {
-  if (proxies_->IsAPIDestroyed())
-    return;
-
   if (!is_done_) {
     is_done_ = true;
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
