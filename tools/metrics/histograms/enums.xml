@@ -10130,6 +10130,31 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Encryption unavailable"/>
 </enum>
 
+<enum name="DemoModeApp">
+  <summary>
+    Pre-installed app or other window type available in Chrome OS Demo Mode.
+  </summary>
+  <int value="0" label="Browser"/>
+  <int value="1" label="Other Chrome app"/>
+  <int value="2" label="Other ARC app"/>
+  <int value="3" label="Other window"/>
+  <int value="4" label="Highlights"/>
+  <int value="5" label="Asphalt 8"/>
+  <int value="6" label="Camera"/>
+  <int value="7" label="Files"/>
+  <int value="8" label="Get Help"/>
+  <int value="9" label="Google Keep"/>
+  <int value="10" label="Google Photos"/>
+  <int value="11" label="Google Sheets"/>
+  <int value="12" label="Google Slides"/>
+  <int value="13" label="Infinite Painter"/>
+  <int value="14" label="MyScript Nebo"/>
+  <int value="15" label="Play Store"/>
+  <int value="16" label="Squid"/>
+  <int value="17" label="Web Store"/>
+  <int value="18" label="YouTube"/>
+</enum>
+
 <enum name="DemoModeResourcesRemovalReason">
   <int value="0" label="Low available disk space"/>
   <int value="1" label="Device enterprise enrolled"/>

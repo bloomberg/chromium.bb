@@ -2533,6 +2533,43 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
                                          shelf_controller->GetLastItemImage()));
 }
 
+TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
+  InitLauncherController();
+  SendListOfArcApps();
+
+  std::string window_app_id1("org.chromium.arc.1");
+  std::string window_app_id2("org.chromium.arc.2");
+  std::string window_app_id3("org.chromium.arc.3");
+  views::Widget* arc_window1 = CreateArcWindow(window_app_id1);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
+  const std::string* package_name1 =
+      arc_window1->GetNativeWindow()->GetProperty(ash::kArcPackageNameKey);
+  ASSERT_TRUE(package_name1);
+  EXPECT_EQ(*package_name1, arc_test_.fake_apps()[0].package_name);
+
+  views::Widget* arc_window2 = CreateArcWindow(window_app_id2);
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
+                                            std::string());
+  const std::string* package_name2 =
+      arc_window2->GetNativeWindow()->GetProperty(ash::kArcPackageNameKey);
+  ASSERT_TRUE(package_name2);
+  EXPECT_EQ(*package_name2, arc_test_.fake_apps()[1].package_name);
+
+  // Create another window with the same package name.
+  views::Widget* arc_window3 = CreateArcWindow(window_app_id3);
+  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[1],
+                                            std::string());
+  const std::string* package_name3 =
+      arc_window3->GetNativeWindow()->GetProperty(ash::kArcPackageNameKey);
+  ASSERT_TRUE(package_name3);
+  EXPECT_EQ(*package_name3, arc_test_.fake_apps()[1].package_name);
+
+  arc_window1->CloseNow();
+  arc_window2->CloseNow();
+  arc_window3->CloseNow();
+}
+
 // Check that with multi profile V1 apps are properly added / removed from the
 // shelf.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
