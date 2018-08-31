@@ -16,6 +16,7 @@
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/push_client_channel.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -64,7 +65,8 @@ class FCMInvalidatorTestDelegate {
 
   void TriggerOnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) {
-    invalidator_->OnInvalidate(invalidation_map);
+    invalidator_->OnInvalidate(
+        ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
   }
 
  private:

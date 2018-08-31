@@ -21,6 +21,8 @@ namespace {
 const char kSourceKey[] = "source";
 const char kNameKey[] = "name";
 
+const int kDeprecatedSource = 2000;
+
 }  // namespace
 
 namespace syncer {
@@ -134,6 +136,24 @@ std::string InvalidationObjectIdToString(
   std::string str;
   base::JSONWriter::Write(*InvalidationObjectIdToValue(object_id), &str);
   return str;
+}
+
+TopicSet ConvertIdsToTopics(ObjectIdSet ids) {
+  TopicSet topics;
+  for (const auto& id : ids)
+    topics.insert(id.name());
+  return topics;
+}
+
+ObjectIdSet ConvertTopicsToIds(TopicSet topics) {
+  ObjectIdSet ids;
+  for (const auto& topic : topics)
+    ids.insert(invalidation::ObjectId(kDeprecatedSource, topic));
+  return ids;
+}
+
+invalidation::ObjectId ConvertTopicToId(const Topic& topic) {
+  return invalidation::ObjectId(kDeprecatedSource, topic);
 }
 
 }  // namespace syncer

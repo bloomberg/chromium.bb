@@ -34,21 +34,21 @@ const char kTypeRegisteredForInvalidation[] =
 
 const char kFakeInstanceIdToken[] = "fake_instance_id_token";
 
-invalidation::InvalidationObjectId GetIdForIndex(size_t index) {
+std::string IndexToName(size_t index) {
   char name[2] = "a";
   name[0] += static_cast<char>(index);
-  return invalidation::InvalidationObjectId(1 + index, name);
+  return name;
 }
 
-InvalidationObjectIdSet GetSequenceOfIdsStartingAt(size_t start, size_t count) {
-  InvalidationObjectIdSet ids;
+TopicSet GetSequenceOfTopicsStartingAt(size_t start, size_t count) {
+  TopicSet ids;
   for (size_t i = start; i < start + count; ++i)
-    ids.insert(GetIdForIndex(i));
+    ids.insert(IndexToName(i));
   return ids;
 }
 
-InvalidationObjectIdSet GetSequenceOfIds(size_t count) {
-  return GetSequenceOfIdsStartingAt(0, count);
+TopicSet GetSequenceOfTopics(size_t count) {
+  return GetSequenceOfTopicsStartingAt(0, count);
 }
 
 network::ResourceResponseHead CreateHeadersForTest(int responce_code) {
@@ -142,8 +142,8 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 };
 
 TEST_F(PerUserTopicRegistrationManagerTest,
-       EmptyPrivateTopicShouldNotUpdateRegisteredIds) {
-  InvalidationObjectIdSet ids = GetSequenceOfIds(kInvalidationObjectIdsCount);
+       EmptyPrivateTopicShouldNotUpdateRegisteredTopics) {
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
 
@@ -156,7 +156,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
       FullSubscriptionUrl(), CreateHeadersForTest(net::HTTP_OK), response_body,
       CreateStatusForTest(net::OK, response_body));
 
-  per_user_topic_registration_manager->UpdateRegisteredIds(
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -165,8 +165,8 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredIds) {
-  InvalidationObjectIdSet ids = GetSequenceOfIds(kInvalidationObjectIdsCount);
+TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
 
@@ -174,7 +174,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredIds) {
 
   AddCorrectSubscriptionResponce();
 
-  per_user_topic_registration_manager->UpdateRegisteredIds(
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -183,34 +183,34 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredIds) {
   for (const auto& id : ids) {
     const base::DictionaryValue* topics =
         pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
-    const base::Value* private_topic_value = topics->FindKeyOfType(
-        SerializeInvalidationObjectId(id), base::Value::Type::STRING);
+    const base::Value* private_topic_value =
+        topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
   }
 }
 
 TEST_F(PerUserTopicRegistrationManagerTest,
        ShouldDisableIdsAndDeleteFromPrefs) {
-  InvalidationObjectIdSet ids = GetSequenceOfIds(kInvalidationObjectIdsCount);
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   AddCorrectSubscriptionResponce();
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
   EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
 
-  per_user_topic_registration_manager->UpdateRegisteredIds(
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
 
   // Disable some ids.
-  InvalidationObjectIdSet disabled_ids = GetSequenceOfIds(3);
-  InvalidationObjectIdSet enabled_ids =
-      GetSequenceOfIdsStartingAt(3, kInvalidationObjectIdsCount - 3);
+  TopicSet disabled_ids = GetSequenceOfTopics(3);
+  TopicSet enabled_ids =
+      GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
   for (const auto& id : disabled_ids)
-    AddCorrectUnSubscriptionResponceForTopic(id.name());
+    AddCorrectUnSubscriptionResponceForTopic(id);
 
-  per_user_topic_registration_manager->UpdateRegisteredIds(
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
       enabled_ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -218,8 +218,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   for (const auto& id : disabled_ids) {
     const base::DictionaryValue* topics =
         pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
-    const base::Value* private_topic_value =
-        topics->FindKey(SerializeInvalidationObjectId(id));
+    const base::Value* private_topic_value = topics->FindKey(id);
     ASSERT_EQ(private_topic_value, nullptr);
   }
 
@@ -227,8 +226,8 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   for (const auto& id : enabled_ids) {
     const base::DictionaryValue* topics =
         pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
-    const base::Value* private_topic_value = topics->FindKeyOfType(
-        SerializeInvalidationObjectId(id), base::Value::Type::STRING);
+    const base::Value* private_topic_value =
+        topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
   }
 }

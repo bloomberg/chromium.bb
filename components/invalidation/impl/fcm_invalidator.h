@@ -7,9 +7,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/fcm_sync_invalidation_listener.h"
 #include "components/invalidation/impl/invalidator.h"
+#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -40,6 +40,9 @@ class FCMInvalidator : public Invalidator,
   void RegisterHandler(InvalidationHandler* handler) override;
   bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override;
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
+                           const TopicSet& topics) override;
+
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;
   void UpdateCredentials(const std::string& email,
@@ -49,14 +52,14 @@ class FCMInvalidator : public Invalidator,
       const override;
 
   // SyncInvalidationListener::Delegate implementation.
-  void OnInvalidate(const ObjectIdInvalidationMap& invalidation_map) override;
+  void OnInvalidate(const TopicInvalidationMap& invalidation_map) override;
   void OnInvalidatorStateChange(InvalidatorState state) override;
 
  private:
   friend class FCMInvalidatorTestDelegate;
 
   bool is_started_ = false;
-  DeprecatedInvalidatorRegistrar registrar_;
+  InvalidatorRegistrar registrar_;
 
   // The invalidation listener.
   FCMSyncInvalidationListener invalidation_listener_;

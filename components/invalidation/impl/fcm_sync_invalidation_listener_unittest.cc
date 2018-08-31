@@ -18,6 +18,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,11 +36,8 @@ const char kPayload2[] = "payload2";
 const int64_t kVersion1 = 1LL;
 const int64_t kVersion2 = 2LL;
 
-const int kChromeSyncSourceId = 1004;
-
-
 // Fake invalidation::InvalidationClient implementation that keeps
-// track of registered IDs and acked handles.
+// track of registered topics and acked handles.
 class FakeInvalidationClient : public InvalidationClient {
  public:
   FakeInvalidationClient() : started_(false) {}
@@ -63,8 +61,8 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
       : state_(TRANSIENT_INVALIDATION_ERROR) {}
   ~FakeDelegate() override {}
 
-  size_t GetInvalidationCount(const ObjectId& id) const {
-    Map::const_iterator it = invalidations_.find(id);
+  size_t GetInvalidationCount(const Topic& topic) const {
+    Map::const_iterator it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       return 0;
     } else {
@@ -72,40 +70,40 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
     }
   }
 
-  int64_t GetVersion(const ObjectId& id) const {
-    Map::const_iterator it = invalidations_.find(id);
+  int64_t GetVersion(const Topic& topic) const {
+    Map::const_iterator it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
-      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      ADD_FAILURE() << "No invalidations for topic " << topic;
       return 0;
     } else {
       return it->second.back().version();
     }
   }
 
-  std::string GetPayload(const ObjectId& id) const {
-    Map::const_iterator it = invalidations_.find(id);
+  std::string GetPayload(const Topic& topic) const {
+    Map::const_iterator it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
-      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      ADD_FAILURE() << "No invalidations for topic " << topic;
       return nullptr;
     } else {
       return it->second.back().payload();
     }
   }
 
-  bool IsUnknownVersion(const ObjectId& id) const {
-    Map::const_iterator it = invalidations_.find(id);
+  bool IsUnknownVersion(const Topic& topic) const {
+    Map::const_iterator it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
-      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      ADD_FAILURE() << "No invalidations for topic " << topic;
       return false;
     } else {
       return it->second.back().is_unknown_version();
     }
   }
 
-  bool StartsWithUnknownVersion(const ObjectId& id) const {
-    Map::const_iterator it = invalidations_.find(id);
+  bool StartsWithUnknownVersion(const Topic& topic) const {
+    Map::const_iterator it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
-      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      ADD_FAILURE() << "No invalidations for topic " << topic;
       return false;
     } else {
       return it->second.front().is_unknown_version();
@@ -114,29 +112,29 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
 
   InvalidatorState GetInvalidatorState() const { return state_; }
 
-  void AcknowledgeNthInvalidation(const ObjectId& id, size_t n) {
-    List& list = invalidations_[id];
+  void AcknowledgeNthInvalidation(const Topic& topic, size_t n) {
+    List& list = invalidations_[topic];
     List::iterator it = list.begin() + n;
     it->Acknowledge();
   }
 
-  void AcknowledgeAll(const ObjectId& id) {
-    List& list = invalidations_[id];
+  void AcknowledgeAll(const Topic& topic) {
+    List& list = invalidations_[topic];
     for (List::iterator it = list.begin(); it != list.end(); ++it) {
       it->Acknowledge();
     }
   }
 
-  void DropNthInvalidation(const ObjectId& id, size_t n) {
-    List& list = invalidations_[id];
+  void DropNthInvalidation(const Topic& topic, size_t n) {
+    List& list = invalidations_[topic];
     List::iterator it = list.begin() + n;
     it->Drop();
-    dropped_invalidations_map_.erase(id);
-    dropped_invalidations_map_.insert(std::make_pair(id, *it));
+    dropped_invalidations_map_.erase(topic);
+    dropped_invalidations_map_.insert(std::make_pair(topic, *it));
   }
 
-  void RecoverFromDropEvent(const ObjectId& id) {
-    DropMap::iterator it = dropped_invalidations_map_.find(id);
+  void RecoverFromDropEvent(const Topic& topic) {
+    DropMap::iterator it = dropped_invalidations_map_.find(topic);
     if (it != dropped_invalidations_map_.end()) {
       it->second.Acknowledge();
       dropped_invalidations_map_.erase(it);
@@ -144,12 +142,12 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
   }
 
   // FCMSyncInvalidationListener::Delegate implementation.
-  void OnInvalidate(const ObjectIdInvalidationMap& invalidation_map) override {
-    ObjectIdSet ids = invalidation_map.GetObjectIds();
-    for (ObjectIdSet::iterator it = ids.begin(); it != ids.end(); ++it) {
+  void OnInvalidate(const TopicInvalidationMap& invalidation_map) override {
+    TopicSet topics = invalidation_map.GetTopics();
+    for (const auto& topic : topics) {
       const SingleObjectInvalidationSet& incoming =
-          invalidation_map.ForObject(*it);
-      List& list = invalidations_[*it];
+          invalidation_map.ForTopic(topic);
+      List& list = invalidations_[topic];
       list.insert(list.end(), incoming.begin(), incoming.end());
     }
   }
@@ -160,8 +158,8 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
 
  private:
   typedef std::vector<Invalidation> List;
-  typedef std::map<ObjectId, List, ObjectIdLessThan> Map;
-  typedef std::map<ObjectId, Invalidation, ObjectIdLessThan> DropMap;
+  typedef std::map<Topic, List> Map;
+  typedef std::map<Topic, Invalidation> DropMap;
 
   Map invalidations_;
   InvalidatorState state_;
@@ -188,19 +186,18 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* loader_factory */,
             base::BindRepeating(&syncer::JsonUnsafeParser::Parse)) {}
   ~MockRegistrationManager() override {}
-  MOCK_METHOD2(UpdateRegisteredIds,
-               void(const InvalidationObjectIdSet& ids,
-                    const std::string& token));
+  MOCK_METHOD2(UpdateRegisteredTopics,
+               void(const TopicSet& topics, const std::string& token));
   MOCK_METHOD0(Init, void());
 };
 
 class FCMSyncInvalidationListenerTest : public testing::Test {
  protected:
   FCMSyncInvalidationListenerTest()
-      : kBookmarksId_(kChromeSyncSourceId, "BOOKMARK"),
-        kPreferencesId_(kChromeSyncSourceId, "PREFERENCE"),
-        kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
-        kAppsId_(kChromeSyncSourceId, "APP"),
+      : kBookmarksTopic_("BOOKMARK"),
+        kPreferencesTopic_("PREFERENCE"),
+        kExtensionsTopic_("EXTENSION"),
+        kAppsTopic_("APP"),
         fcm_sync_network_channel_(new FCMSyncNetworkChannel()),
         fake_invalidation_client_(nullptr),
         listener_(base::WrapUnique(fcm_sync_network_channel_)),
@@ -209,14 +206,14 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
   void SetUp() override {
     StartClient();
 
-    registered_ids_.insert(kBookmarksId_);
-    registered_ids_.insert(kPreferencesId_);
-    listener_.UpdateRegisteredIds(registered_ids_);
+    registred_topics_.insert(kBookmarksTopic_);
+    registred_topics_.insert(kPreferencesTopic_);
+    listener_.UpdateRegisteredTopics(registred_topics_);
   }
 
   void TearDown() override { StopClient(); }
 
-  // Restart client without re-registering IDs.
+  // Restart client without re-registering topics.
   void RestartClient() {
     StopClient();
     StartClient();
@@ -243,64 +240,68 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
     listener_.StopForTest();
   }
 
-  size_t GetInvalidationCount(const ObjectId& id) const {
-    return fake_delegate_.GetInvalidationCount(id);
+  size_t GetInvalidationCount(const Topic& topic) const {
+    return fake_delegate_.GetInvalidationCount(topic);
   }
 
-  int64_t GetVersion(const ObjectId& id) const {
-    return fake_delegate_.GetVersion(id);
+  std::string GetPayload(const Topic& topic) const {
+    return fake_delegate_.GetPayload(topic);
   }
 
-  std::string GetPayload(const ObjectId& id) const {
-    return fake_delegate_.GetPayload(id);
+  int64_t GetVersion(const Topic& topic) const {
+    return fake_delegate_.GetVersion(topic);
   }
 
-  bool IsUnknownVersion(const ObjectId& id) const {
-    return fake_delegate_.IsUnknownVersion(id);
+  bool IsUnknownVersion(const Topic& topic) const {
+    return fake_delegate_.IsUnknownVersion(topic);
   }
 
-  bool StartsWithUnknownVersion(const ObjectId& id) const {
-    return fake_delegate_.StartsWithUnknownVersion(id);
+  bool StartsWithUnknownVersion(const Topic& topic) const {
+    return fake_delegate_.StartsWithUnknownVersion(topic);
   }
 
-  void AcknowledgeNthInvalidation(const ObjectId& id, size_t n) {
-    fake_delegate_.AcknowledgeNthInvalidation(id, n);
+  void AcknowledgeNthInvalidation(const Topic& topic, size_t n) {
+    fake_delegate_.AcknowledgeNthInvalidation(topic, n);
   }
 
-  void DropNthInvalidation(const ObjectId& id, size_t n) {
-    return fake_delegate_.DropNthInvalidation(id, n);
+  void DropNthInvalidation(const Topic& topic, size_t n) {
+    return fake_delegate_.DropNthInvalidation(topic, n);
   }
 
-  void RecoverFromDropEvent(const ObjectId& id) {
-    return fake_delegate_.RecoverFromDropEvent(id);
+  void RecoverFromDropEvent(const Topic& topic) {
+    return fake_delegate_.RecoverFromDropEvent(topic);
   }
 
   InvalidatorState GetInvalidatorState() {
     return fake_delegate_.GetInvalidatorState();
   }
 
-  void AcknowledgeAll(const ObjectId& id) { fake_delegate_.AcknowledgeAll(id); }
+  void AcknowledgeAll(const Topic& topic) {
+    fake_delegate_.AcknowledgeAll(topic);
+  }
 
-  ObjectIdSet GetRegisteredIds() const {
+  TopicSet GetRegisteredTopics() const {
     return listener_.GetRegisteredIdsForTest();
   }
 
   // |payload| can be NULL.
-  void FireInvalidate(const ObjectId& object_id,
+  void FireInvalidate(const Topic& topic,
                       int64_t version,
                       const char* payload) {
     invalidation::Invalidation inv;
     if (payload) {
-      inv = invalidation::Invalidation(object_id, version, payload);
+      inv =
+          invalidation::Invalidation(ConvertTopicToId(topic), version, payload);
     } else {
-      inv = invalidation::Invalidation(object_id, version);
+      inv = invalidation::Invalidation(ConvertTopicToId(topic), version);
     }
     listener_.Invalidate(fake_invalidation_client_, inv);
   }
 
   // |payload| can be NULL, but not |type_name|.
-  void FireInvalidateUnknownVersion(const ObjectId& object_id) {
-    listener_.InvalidateUnknownVersion(fake_invalidation_client_, object_id);
+  void FireInvalidateUnknownVersion(const Topic& topic) {
+    listener_.InvalidateUnknownVersion(fake_invalidation_client_,
+                                       ConvertTopicToId(topic));
   }
 
   void FireInvalidateAll() {
@@ -316,12 +317,12 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
     fcm_sync_network_channel_->NotifyChannelStateChange(state);
   }
 
-  const ObjectId kBookmarksId_;
-  const ObjectId kPreferencesId_;
-  const ObjectId kExtensionsId_;
-  const ObjectId kAppsId_;
+  const Topic kBookmarksTopic_;
+  const Topic kPreferencesTopic_;
+  const Topic kExtensionsTopic_;
+  const Topic kAppsTopic_;
 
-  ObjectIdSet registered_ids_;
+  TopicSet registred_topics_;
 
  private:
   base::MessageLoop message_loop_;
@@ -344,79 +345,80 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 // Fire an invalidation without a payload.  It should be processed,
 // the payload should remain empty, and the version should be updated.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateNoPayload) {
-  const ObjectId& id = kBookmarksId_;
+  const Topic& topic = kBookmarksTopic_;
 
-  FireInvalidate(id, kVersion1, nullptr);
+  FireInvalidate(topic, kVersion1, nullptr);
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kVersion1, GetVersion(id));
-  EXPECT_EQ("", GetPayload(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kVersion1, GetVersion(topic));
+  EXPECT_EQ("", GetPayload(topic));
 }
 
 // Fire an invalidation with an empty payload.  It should be
 // processed, the payload should remain empty, and the version should
 // be updated.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateEmptyPayload) {
-  const ObjectId& id = kBookmarksId_;
+  const Topic& topic = kBookmarksTopic_;
 
-  FireInvalidate(id, kVersion1, "");
+  FireInvalidate(topic, kVersion1, "");
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kVersion1, GetVersion(id));
-  EXPECT_EQ("", GetPayload(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kVersion1, GetVersion(topic));
+  EXPECT_EQ("", GetPayload(topic));
 }
 
 // Fire an invalidation with a payload.  It should be processed, and
 // both the payload and the version should be updated.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateWithPayload) {
-  const ObjectId& id = kPreferencesId_;
+  const Topic& topic = kPreferencesTopic_;
 
-  FireInvalidate(id, kVersion1, kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kVersion1, GetVersion(id));
-  EXPECT_EQ(kPayload1, GetPayload(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kVersion1, GetVersion(topic));
+  EXPECT_EQ(kPayload1, GetPayload(topic));
 }
 
 // Fire ten invalidations in a row.  All should be received.
 TEST_F(FCMSyncInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const int kRepeatCount = 10;
-  const ObjectId& id = kPreferencesId_;
+  const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(id, i, kPayload1);
+    FireInvalidate(topic, i, kPayload1);
   }
-  ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kPayload1, GetPayload(id));
-  EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(id));
+  ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kPayload1, GetPayload(topic));
+  EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(topic));
 }
 
-// Fire an invalidation for an unregistered object ID with a payload.  It should
-// still be processed, and both the payload and the version should be updated.
+// Fire an invalidation for an unregistered object topic with a payload.  It
+// should still be processed, and both the payload and the version should be
+// updated.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
-  const ObjectId kUnregisteredId(kChromeSyncSourceId, "unregistered");
-  const ObjectId& id = kUnregisteredId;
-  ObjectIdSet ids;
-  ids.insert(id);
+  const Topic kUnregisteredId = "unregistered";
+  const Topic& topic = kUnregisteredId;
+  TopicSet topics;
+  topics.insert(topic);
 
-  EXPECT_EQ(0U, GetInvalidationCount(id));
+  EXPECT_EQ(0U, GetInvalidationCount(topic));
 
-  FireInvalidate(id, kVersion1, kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
-  ASSERT_EQ(0U, GetInvalidationCount(id));
+  ASSERT_EQ(0U, GetInvalidationCount(topic));
 
   EnableNotifications();
   listener_.Ready(fake_invalidation_client_);
-  listener_.UpdateRegisteredIds(ids);
+  listener_.UpdateRegisteredTopics(topics);
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kVersion1, GetVersion(id));
-  EXPECT_EQ(kPayload1, GetPayload(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kVersion1, GetVersion(topic));
+  EXPECT_EQ(kPayload1, GetPayload(topic));
 }
 
 // Fire ten invalidations before an object registers.  Some invalidations will
@@ -424,84 +426,83 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
   const int kRepeatCount =
       UnackedInvalidationSet::kMaxBufferedInvalidations + 1;
-  const ObjectId kUnregisteredId(kChromeSyncSourceId, "unregistered");
-  const ObjectId& id = kUnregisteredId;
-  ObjectIdSet ids;
-  ids.insert(id);
+  const Topic kUnregisteredId("unregistered");
+  const Topic& topic = kUnregisteredId;
+  TopicSet topics;
+  topics.insert(topic);
 
-  EXPECT_EQ(0U, GetInvalidationCount(id));
+  EXPECT_EQ(0U, GetInvalidationCount(topic));
 
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(id, i, kPayload1);
+    FireInvalidate(topic, i, kPayload1);
   }
 
   EnableNotifications();
   listener_.Ready(fake_invalidation_client_);
-  listener_.UpdateRegisteredIds(ids);
+  listener_.UpdateRegisteredTopics(topics);
 
   ASSERT_EQ(UnackedInvalidationSet::kMaxBufferedInvalidations,
-            GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(id));
-  EXPECT_EQ(kPayload1, GetPayload(id));
-  EXPECT_TRUE(StartsWithUnknownVersion(id));
+            GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(topic));
+  EXPECT_EQ(kPayload1, GetPayload(topic));
+  EXPECT_TRUE(StartsWithUnknownVersion(topic));
 }
 
 // Fire an invalidation, then fire another one with a lower version.  Both
 // should be received.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateVersion) {
-  const ObjectId& id = kPreferencesId_;
+  const Topic& topic = kPreferencesTopic_;
 
-  FireInvalidate(id, kVersion2, kPayload2);
+  FireInvalidate(topic, kVersion2, kPayload2);
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
-  EXPECT_EQ(kVersion2, GetVersion(id));
-  EXPECT_EQ(kPayload2, GetPayload(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
+  EXPECT_EQ(kVersion2, GetVersion(topic));
+  EXPECT_EQ(kPayload2, GetPayload(topic));
 
-  FireInvalidate(id, kVersion1, kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
-  ASSERT_EQ(2U, GetInvalidationCount(id));
-  ASSERT_FALSE(IsUnknownVersion(id));
+  ASSERT_EQ(2U, GetInvalidationCount(topic));
+  ASSERT_FALSE(IsUnknownVersion(topic));
 
-  EXPECT_EQ(kVersion1, GetVersion(id));
-  EXPECT_EQ(kPayload1, GetPayload(id));
+  EXPECT_EQ(kVersion1, GetVersion(topic));
+  EXPECT_EQ(kPayload1, GetPayload(topic));
 }
 
 // Fire an invalidation with an unknown version.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateUnknownVersion) {
-  const ObjectId& id = kBookmarksId_;
+  const Topic& topic = kBookmarksTopic_;
 
-  FireInvalidateUnknownVersion(id);
+  FireInvalidateUnknownVersion(topic);
 
-  ASSERT_EQ(1U, GetInvalidationCount(id));
-  EXPECT_TRUE(IsUnknownVersion(id));
+  ASSERT_EQ(1U, GetInvalidationCount(topic));
+  EXPECT_TRUE(IsUnknownVersion(topic));
 }
 
-// Fire an invalidation for all enabled IDs.
+// Fire an invalidation for all enabled topics.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateAll) {
   FireInvalidateAll();
 
-  for (ObjectIdSet::const_iterator it = registered_ids_.begin();
-       it != registered_ids_.end(); ++it) {
-    ASSERT_EQ(1U, GetInvalidationCount(*it));
-    EXPECT_TRUE(IsUnknownVersion(*it));
+  for (const auto& topic : registred_topics_) {
+    ASSERT_EQ(1U, GetInvalidationCount(topic));
+    EXPECT_TRUE(IsUnknownVersion(topic));
   }
 }
 
-// Test a simple scenario for multiple IDs.
+// Test a simple scenario for multiple topics.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateMultipleIds) {
-  FireInvalidate(kBookmarksId_, 3, nullptr);
+  FireInvalidate(kBookmarksTopic_, 3, nullptr);
 
-  ASSERT_EQ(1U, GetInvalidationCount(kBookmarksId_));
-  ASSERT_FALSE(IsUnknownVersion(kBookmarksId_));
-  EXPECT_EQ(3, GetVersion(kBookmarksId_));
-  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
+  ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
+  EXPECT_EQ(3, GetVersion(kBookmarksTopic_));
+  EXPECT_EQ("", GetPayload(kBookmarksTopic_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsId_, 2, nullptr);
-  ASSERT_EQ(0U, GetInvalidationCount(kExtensionsId_));
+  FireInvalidate(kExtensionsTopic_, 2, nullptr);
+  ASSERT_EQ(0U, GetInvalidationCount(kExtensionsTopic_));
 }
 
 // Without readying the client, disable notifications, then enable
@@ -571,21 +572,27 @@ class FCMSyncInvalidationListenerTest_WithInitialState
     : public FCMSyncInvalidationListenerTest {
  public:
   void SetUp() override {
-    UnackedInvalidationSet bm_state(kBookmarksId_);
-    UnackedInvalidationSet ext_state(kExtensionsId_);
+    UnackedInvalidationSet bm_state(ConvertTopicToId(kBookmarksTopic_));
+    UnackedInvalidationSet ext_state(ConvertTopicToId(kExtensionsTopic_));
 
-    Invalidation bm_unknown = Invalidation::InitUnknownVersion(kBookmarksId_);
-    Invalidation bm_v100 = Invalidation::Init(kBookmarksId_, 100, "hundred");
+    Invalidation bm_unknown =
+        Invalidation::InitUnknownVersion(ConvertTopicToId(kBookmarksTopic_));
+    Invalidation bm_v100 =
+        Invalidation::Init(ConvertTopicToId(kBookmarksTopic_), 100, "hundred");
     bm_state.Add(bm_unknown);
     bm_state.Add(bm_v100);
 
-    Invalidation ext_v10 = Invalidation::Init(kExtensionsId_, 10, "ten");
-    Invalidation ext_v20 = Invalidation::Init(kExtensionsId_, 20, "twenty");
+    Invalidation ext_v10 =
+        Invalidation::Init(ConvertTopicToId(kExtensionsTopic_), 10, "ten");
+    Invalidation ext_v20 =
+        Invalidation::Init(ConvertTopicToId(kExtensionsTopic_), 20, "twenty");
     ext_state.Add(ext_v10);
     ext_state.Add(ext_v20);
 
-    initial_state.insert(std::make_pair(kBookmarksId_, bm_state));
-    initial_state.insert(std::make_pair(kExtensionsId_, ext_state));
+    initial_state.insert(
+        std::make_pair(ConvertTopicToId(kBookmarksTopic_), bm_state));
+    initial_state.insert(
+        std::make_pair(ConvertTopicToId(kExtensionsTopic_), ext_state));
 
     fake_tracker_.SetSavedInvalidations(initial_state);
 

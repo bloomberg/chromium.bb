@@ -91,6 +91,10 @@ bool DeserializeInvalidationObjectId(const std::string& serialized,
 INVALIDATION_EXPORT std::string InvalidationObjectIdToString(
     const invalidation::InvalidationObjectId& object_id);
 
+TopicSet ConvertIdsToTopics(ObjectIdSet ids);
+ObjectIdSet ConvertTopicsToIds(TopicSet topics);
+invalidation::ObjectId ConvertTopicToId(const Topic& topic);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_INVALIDATION_PUBLIC_INVALIDATION_UTIL_H_

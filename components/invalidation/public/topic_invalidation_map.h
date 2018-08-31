@@ -15,6 +15,7 @@
 #include "components/invalidation/public/single_object_invalidation_set.h"
 
 namespace syncer {
+class ObjectIdInvalidationMap;
 
 // A set of notifications with some helper methods to organize them by object ID
 // and version number.
@@ -65,6 +66,9 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
 
   TopicToListMap map_;
 };
+
+TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
+    ObjectIdInvalidationMap object_ids_map);
 
 }  // namespace syncer
 

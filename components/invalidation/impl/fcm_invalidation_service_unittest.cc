@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "components/invalidation/impl/fake_invalidator.h"
+#include "components/invalidation/impl/fcm_fake_invalidator.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
@@ -50,7 +50,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   void InitializeInvalidationService() {
-    fake_invalidator_ = new syncer::FakeInvalidator();
+    fake_invalidator_ = new syncer::FCMFakeInvalidator();
     invalidation_service_->InitForTest(fake_invalidator_);
   }
 
@@ -71,7 +71,7 @@ class FCMInvalidationServiceTestDelegate {
 
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-  syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
+  syncer::FCMFakeInvalidator* fake_invalidator_;  // Owned by the service.
   network::TestURLLoaderFactory url_loader_factory_;
 
   std::unique_ptr<FCMInvalidationService> invalidation_service_;

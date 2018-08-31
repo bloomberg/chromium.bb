@@ -42,6 +42,12 @@ class RegistrarInvalidator : public Invalidator {
     return registrar_.UpdateRegisteredTopics(handler, topics);
   }
 
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
+                           const TopicSet& ids) override {
+    NOTREACHED();
+    return false;
+  }
+
   void UnregisterHandler(InvalidationHandler* handler) override {
     registrar_.UnregisterHandler(handler);
   }
