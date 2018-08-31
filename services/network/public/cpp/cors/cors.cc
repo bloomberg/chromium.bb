@@ -479,6 +479,23 @@ bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type) {
   }
 }
 
+bool CalculateCredentialsFlag(mojom::FetchCredentialsMode credentials_mode,
+                              mojom::FetchResponseType response_tainting) {
+  // Let |credentials flag| be set if one of
+  //  - |request|’s credentials mode is "include"
+  //  - |request|’s credentials mode is "same-origin" and |request|’s
+  //    response tainting is "basic"
+  // is true, and unset otherwise.
+  switch (credentials_mode) {
+    case network::mojom::FetchCredentialsMode::kOmit:
+      return false;
+    case network::mojom::FetchCredentialsMode::kSameOrigin:
+      return response_tainting == network::mojom::FetchResponseType::kBasic;
+    case network::mojom::FetchCredentialsMode::kInclude:
+      return true;
+  }
+}
+
 }  // namespace cors
 
 }  // namespace network

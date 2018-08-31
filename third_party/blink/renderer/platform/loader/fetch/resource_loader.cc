@@ -370,20 +370,8 @@ bool ResourceLoader::WillFollowRedirect(
 
   base::Optional<ResourceResponse> redirect_response_with_type;
   if (ShouldCheckCORSInResourceLoader()) {
-    if (fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
-      bool allow_stored_credentials = false;
-      switch (fetch_credentials_mode) {
-        case network::mojom::FetchCredentialsMode::kOmit:
-          break;
-        case network::mojom::FetchCredentialsMode::kSameOrigin:
-          allow_stored_credentials = !options.cors_flag;
-          break;
-        case network::mojom::FetchCredentialsMode::kInclude:
-          allow_stored_credentials = true;
-          break;
-      }
-      new_request->SetAllowStoredCredentials(allow_stored_credentials);
-    }
+    new_request->SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+        fetch_credentials_mode, response_tainting_));
     if (!redirect_response.WasFetchedViaServiceWorker()) {
       auto response_type = response_tainting_;
       if (initial_request.GetFetchRedirectMode() ==
