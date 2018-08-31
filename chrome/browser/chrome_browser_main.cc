@@ -134,6 +134,7 @@
 #include "components/language/core/common/language_experiments.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -758,6 +759,14 @@ bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
 #endif
 }
 
+// Sets up the ThreadProfiler for the browser process, runs it, and returns the
+// profiler.
+std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
+  ThreadProfiler::SetBrowserProcessReceiverCallback(base::BindRepeating(
+      &metrics::CallStackProfileMetricsProvider::ReceiveCompletedProfile));
+  return ThreadProfiler::CreateAndStartOnMainThread();
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -785,7 +794,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
-      ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()),
+      ui_thread_profiler_(CreateAndStartBrowserMainThreadProfiler()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
       profile_(NULL),

@@ -290,7 +290,7 @@ static_library("common") {
   ]
 
   deps = [
-    "//components/metrics:call_stack_profile",
+    "//components/metrics:call_stack_profile_builder",
   ]
 
   if (enable_plugins) {

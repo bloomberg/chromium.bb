@@ -12,9 +12,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "components/metrics/call_stack_profile_encoding.h"
-#include "components/metrics/call_stack_profile_metrics_provider.h"
 
 namespace metrics {
 
@@ -23,6 +23,14 @@ namespace {
 // Only used by child processes.
 base::LazyInstance<ChildCallStackProfileCollector>::Leaky
     g_child_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
+
+base::RepeatingCallback<void(base::TimeTicks, SampledProfile)>&
+GetBrowserProcessReceiverCallbackInstance() {
+  static base::NoDestructor<
+      base::RepeatingCallback<void(base::TimeTicks, SampledProfile)>>
+      instance;
+  return *instance;
+}
 
 // Identifies an unknown module.
 const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
@@ -266,11 +274,18 @@ void CallStackProfileBuilder::OnProfileCompleted(
     std::move(completed_callback_).Run();
 }
 
+// static
+void CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
+    const base::RepeatingCallback<void(base::TimeTicks, SampledProfile)>&
+        callback) {
+  GetBrowserProcessReceiverCallbackInstance() = callback;
+}
+
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(
     SampledProfile sampled_profile) {
   if (profile_params_.process == CallStackProfileParams::BROWSER_PROCESS) {
-    CallStackProfileMetricsProvider::ReceiveCompletedProfile(
-        profile_start_time_, std::move(sampled_profile));
+    GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time_,
+                                                    std::move(sampled_profile));
   } else {
     g_child_call_stack_profile_collector.Get()
         .ChildCallStackProfileCollector::Collect(profile_start_time_,

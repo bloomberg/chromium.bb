@@ -7,10 +7,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -18,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,8 +83,15 @@ void AddContentTypeHandler(content::WebPluginInfo* info,
 
 }  // namespace
 
-typedef testing::Test ChromeContentRendererClientTest;
-
+class ChromeContentRendererClientTest : public testing::Test {
+ public:
+  void SetUp() override {
+    // Ensure that this looks like the renderer process based on the command
+    // line.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kProcessType, switches::kRendererProcess);
+  }
+};
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 scoped_refptr<const extensions::Extension> CreateTestExtension(
@@ -462,17 +472,25 @@ class ChromeContentRendererClientMetricsTest : public testing::Test {
  public:
   ChromeContentRendererClientMetricsTest() = default;
 
+  void SetUp() override {
+    // Ensure that this looks like the renderer process based on the command
+    // line.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kProcessType, switches::kRendererProcess);
+    client_ = std::make_unique<ChromeContentRendererClient>();
+  }
+
   std::unique_ptr<base::HistogramSamples> GetHistogramSamples() {
     return histogram_tester_.GetHistogramSamplesSinceCreation(
         internal::kFlashYouTubeRewriteUMA);
   }
 
   void OverrideFlashEmbed(const GURL& gurl) {
-    client_.OverrideFlashEmbedWithHTML(gurl);
+    client_->OverrideFlashEmbedWithHTML(gurl);
   }
 
  private:
-  ChromeContentRendererClient client_;
+  std::unique_ptr<ChromeContentRendererClient> client_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClientMetricsTest);

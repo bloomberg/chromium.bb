@@ -147,6 +147,13 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
 }
 
 // static
+void ThreadProfiler::SetBrowserProcessReceiverCallback(
+    const base::RepeatingCallback<void(base::TimeTicks,
+                                       metrics::SampledProfile)>& callback) {
+  metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
+}
+
+// static
 void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
     service_manager::Connector* connector) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
