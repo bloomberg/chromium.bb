@@ -88,6 +88,10 @@ class UiElementContainerView : public AssistantScrollView,
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       ui_elements_exit_animation_observer_;
 
+  // Whether or not the card we are adding is the first card for the current
+  // Assistant response. The first card requires the addition of a top margin.
+  bool is_first_card_ = true;
+
   // Weak pointer factory used for card rendering requests.
   base::WeakPtrFactory<UiElementContainerView> render_request_weak_factory_;
 
