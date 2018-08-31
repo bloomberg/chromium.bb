@@ -18,11 +18,8 @@ package org.chromium.base;
 
 import android.os.Binder;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.os.Process;
 import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import java.lang.reflect.Field;
@@ -529,6 +526,8 @@ public abstract class AsyncTask<Result> {
      * Waits if necessary for the computation to complete, and then
      * retrieves its result.
      *
+     * TODO(smaier): Don't inline so that stack traces can be read easily for tracing once in base/.
+     *
      * @return The computed result.
      *
      * @throws CancellationException If the computation was cancelled.
@@ -537,7 +536,20 @@ public abstract class AsyncTask<Result> {
      *         while waiting.
      */
     public final Result get() throws InterruptedException, ExecutionException {
-        return mFuture.get();
+        Result r;
+        if (getStatus() != Status.FINISHED && ThreadUtils.runningOnUiThread()) {
+            StackTraceElement[] stackTrace = new Exception().getStackTrace();
+            String caller = "";
+            if (stackTrace.length > 1) {
+                caller = stackTrace[1].getClassName() + '.' + stackTrace[1].getMethodName() + '.';
+            }
+            try (TraceEvent e = TraceEvent.scoped(caller + "AsyncTask.get")) {
+                r = mFuture.get();
+            }
+        } else {
+            r = mFuture.get();
+        }
+        return r;
     }
 
     /**
