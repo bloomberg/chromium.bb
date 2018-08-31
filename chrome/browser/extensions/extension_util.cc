@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -341,6 +342,8 @@ const Extension* GetInstalledPwaForUrl(
   for (scoped_refptr<const Extension> app :
        ExtensionRegistry::Get(context)->enabled_extensions()) {
     if (!app->from_bookmark())
+      continue;
+    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
       continue;
     if (launch_container_filter &&
         GetLaunchContainer(prefs, app.get()) != *launch_container_filter) {
