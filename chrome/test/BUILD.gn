@@ -5452,6 +5452,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/single_client_printers_sync_test.cc",
       "../browser/sync/test/integration/single_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/single_client_sessions_sync_test.cc",
+      "../browser/sync/test/integration/single_client_standalone_transport_sync_test.cc",
       "../browser/sync/test/integration/single_client_themes_sync_test.cc",
       "../browser/sync/test/integration/single_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/single_client_user_consents_sync_test.cc",
