@@ -209,8 +209,8 @@ KeyDerivationMethod GetKeyDerivationMethodFromNigori(
 }
 
 std::string GetScryptSaltFromNigori(const sync_pb::NigoriSpecifics& nigori) {
-  DCHECK(nigori.custom_passphrase_key_derivation_method() ==
-         sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
+  DCHECK_EQ(nigori.custom_passphrase_key_derivation_method(),
+            sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
   DCHECK(nigori.has_custom_passphrase_key_derivation_salt());
   std::string decoded_salt;
   bool result = base::Base64Decode(
