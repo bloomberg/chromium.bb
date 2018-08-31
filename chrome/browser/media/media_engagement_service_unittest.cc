@@ -162,7 +162,16 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void RecordVisit(GURL url) { service_->RecordVisit(url); }
 
-  void RecordPlayback(GURL url) { service_->RecordPlayback(url); }
+  void RecordPlayback(GURL url) {
+    RecordPlaybackForService(service_.get(), url);
+  }
+
+  void RecordPlaybackForService(MediaEngagementService* service, GURL url) {
+    MediaEngagementScore score = service->CreateEngagementScore(url);
+    score.IncrementMediaPlaybacks();
+    score.set_last_media_playback_time(service->clock()->Now());
+    score.Commit();
+  }
 
   void ExpectScores(MediaEngagementService* service,
                     GURL url,
@@ -370,7 +379,7 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   }
 
   incognito_service->RecordVisit(kUrl1);
-  incognito_service->RecordPlayback(kUrl2);
+  RecordPlaybackForService(incognito_service, kUrl2);
 
   // Score shouldn't have changed in regular profile.
   {
