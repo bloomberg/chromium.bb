@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -76,6 +77,9 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
   const std::vector<std::string>& hints =
       GetResourceLoadingHintsResourcePatternsToBlock(
           navigation_handle->GetURL());
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", !hints.empty());
 
   if (hints.empty())
     return;

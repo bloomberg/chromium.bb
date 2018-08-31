@@ -326,6 +326,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
       1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
@@ -344,6 +346,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
       2);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 2);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);

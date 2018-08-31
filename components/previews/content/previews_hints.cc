@@ -177,6 +177,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   // Process hint configuration.
   for (const auto hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
+    // One |hint| applies to one host URL suffix.
     if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX)
       continue;
 
@@ -218,6 +219,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 
     // Cache hints that have PageHints.
     if (ShouldProcessPageHints() && !hint.page_hints().empty()) {
+      UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.ResourceHints.ProcessedCount",
+                           hint.page_hints().size());
       hints->initial_hints_.push_back(hint);
     }
   }
