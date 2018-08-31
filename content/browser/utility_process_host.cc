@@ -105,8 +105,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   service_manager::ZygoteHandle GetZygote() override {
     if (service_manager::IsUnsandboxedSandboxType(sandbox_type_) ||
-        sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
-        sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO) {
+        sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK) {
       return nullptr;
     }
     return service_manager::GetGenericZygote();

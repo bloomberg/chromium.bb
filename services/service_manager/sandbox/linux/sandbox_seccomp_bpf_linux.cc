@@ -11,7 +11,6 @@
 #include <sys/types.h>
 
 #include <memory>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -33,7 +32,6 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
-#include "services/service_manager/sandbox/linux/bpf_audio_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cdm_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
@@ -167,8 +165,6 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<PdfCompositorProcessPolicy>();
     case SANDBOX_TYPE_NETWORK:
       return std::make_unique<NetworkProcessPolicy>();
-    case SANDBOX_TYPE_AUDIO:
-      return std::make_unique<AudioProcessPolicy>();
     case SANDBOX_TYPE_NO_SANDBOX:
     default:
       NOTREACHED();
