@@ -132,6 +132,8 @@ list(APPEND AOM_COMMON_APP_UTIL_SOURCES
             "${AOM_ROOT}/common/tools_common.c"
             "${AOM_ROOT}/common/tools_common.h"
             "${AOM_ROOT}/common/video_common.h"
+            "${AOM_ROOT}/common/rawenc.c"
+            "${AOM_ROOT}/common/rawenc.h"
             "${AOM_ROOT}/common/y4menc.c"
             "${AOM_ROOT}/common/y4menc.h")
 

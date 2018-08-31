@@ -40,6 +40,7 @@
 #include "common/webmdec.h"
 #endif
 
+#include "common/rawenc.h"
 #include "common/y4menc.h"
 
 #if CONFIG_LIBYUV
@@ -252,44 +253,6 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
       return obudec_read_temporal_unit(input->obu_ctx, buf, bytes_in_buffer,
                                        buffer_size);
     default: return 1;
-  }
-}
-
-static void update_image_md5(const aom_image_t *img, const int planes[3],
-                             MD5Context *md5) {
-  int i, y;
-
-  for (i = 0; i < 3; ++i) {
-    const int plane = planes[i];
-    const unsigned char *buf = img->planes[plane];
-    const int stride = img->stride[plane];
-    const int w = aom_img_plane_width(img, plane) *
-                  ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
-    const int h = aom_img_plane_height(img, plane);
-
-    for (y = 0; y < h; ++y) {
-      MD5Update(md5, buf, w);
-      buf += stride;
-    }
-  }
-}
-
-static void write_image_file(const aom_image_t *img, const int *planes,
-                             const int num_planes, FILE *file) {
-  int i, y;
-  const int bytes_per_sample = ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
-
-  for (i = 0; i < num_planes; ++i) {
-    const int plane = planes[i];
-    const unsigned char *buf = img->planes[plane];
-    const int stride = img->stride[plane];
-    const int w = aom_img_plane_width(img, plane);
-    const int h = aom_img_plane_height(img, plane);
-
-    for (y = 0; y < h; ++y) {
-      fwrite(buf, bytes_per_sample, w, file);
-      buf += stride;
-    }
   }
 }
 
@@ -904,6 +867,7 @@ static int main_loop(int argc, const char **argv_) {
             scaled_img =
                 aom_img_alloc(NULL, img->fmt, render_width, render_height, 16);
             scaled_img->bit_depth = img->bit_depth;
+            scaled_img->monochrome = img->monochrome;
           }
 
           if (img->d_w != scaled_img->d_w || img->d_h != scaled_img->d_h) {
@@ -960,8 +924,7 @@ static int main_loop(int argc, const char **argv_) {
         aom_input_ctx.width = img->d_w;
         aom_input_ctx.height = img->d_h;
 
-        int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;
-
+        int num_planes = (opt_raw && img->monochrome) ? 1 : 3;
         if (single_file) {
           if (use_y4m) {
             char y4m_buf[Y4M_BUFFER_SIZE] = { 0 };
@@ -970,8 +933,8 @@ static int main_loop(int argc, const char **argv_) {
               // Y4M file header
               len = y4m_write_file_header(
                   y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
-                  aom_input_ctx.height, &aom_input_ctx.framerate, img->fmt,
-                  img->bit_depth);
+                  aom_input_ctx.height, &aom_input_ctx.framerate,
+                  img->monochrome, img->fmt, img->bit_depth);
               if (do_md5) {
                 MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
               } else {
@@ -983,8 +946,10 @@ static int main_loop(int argc, const char **argv_) {
             len = y4m_write_frame_header(y4m_buf, sizeof(y4m_buf));
             if (do_md5) {
               MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
+              y4m_update_image_md5(img, planes, &md5_ctx);
             } else {
               fputs(y4m_buf, outfile);
+              y4m_write_image_file(img, planes, outfile);
             }
           } else {
             if (frame_out == 1) {
@@ -1008,24 +973,31 @@ static int main_loop(int argc, const char **argv_) {
                 }
               }
             }
-          }
-
-          if (do_md5) {
-            update_image_md5(img, planes, &md5_ctx);
-          } else {
-            write_image_file(img, planes, num_planes, outfile);
+            if (do_md5) {
+              raw_update_image_md5(img, planes, num_planes, &md5_ctx);
+            } else {
+              raw_write_image_file(img, planes, num_planes, outfile);
+            }
           }
         } else {
           generate_filename(outfile_pattern, outfile_name, PATH_MAX, img->d_w,
                             img->d_h, frame_in);
           if (do_md5) {
             MD5Init(&md5_ctx);
-            update_image_md5(img, planes, &md5_ctx);
+            if (use_y4m) {
+              y4m_update_image_md5(img, planes, &md5_ctx);
+            } else {
+              raw_update_image_md5(img, planes, num_planes, &md5_ctx);
+            }
             MD5Final(md5_digest, &md5_ctx);
             print_md5(md5_digest, outfile_name);
           } else {
             outfile = open_outfile(outfile_name);
-            write_image_file(img, planes, num_planes, outfile);
+            if (use_y4m) {
+              y4m_write_image_file(img, planes, outfile);
+            } else {
+              raw_write_image_file(img, planes, num_planes, outfile);
+            }
             fclose(outfile);
           }
         }
