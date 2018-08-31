@@ -151,10 +151,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 
   // Add active experiments to the request payload.
-  if (features::IsAutofillUpstreamSendPanFirstSixExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
-        features::kAutofillUpstreamSendPanFirstSix.name);
-  }
   if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
         features::kAutofillUpstreamUpdatePromptExplanation.name);
@@ -176,8 +172,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     observer_for_testing_->OnDecideToRequestUploadSave();
   payments_client_->GetUploadDetails(
       upload_request_.profiles, detected_values,
-      base::UTF16ToASCII(CreditCard::StripSeparators(card.number()))
-          .substr(0, 6),
       upload_request_.active_experiments, app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),

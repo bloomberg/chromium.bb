@@ -137,11 +137,6 @@ class CreditCardSaveManagerTest : public testing::Test {
     request_context_ = nullptr;
   }
 
-  void EnableAutofillUpstreamSendPanFirstSixExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillUpstreamSendPanFirstSix);
-  }
-
   void EnableAutofillUpstreamUpdatePromptExplanationExperiment() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillUpstreamUpdatePromptExplanation);
@@ -3290,43 +3285,6 @@ TEST_F(CreditCardSaveManagerTest,
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
-  EnableAutofillUpstreamSendPanFirstSixExperiment();
-
-  // Create, fill and submit an address form in order to establish a recent
-  // profile which can be selected for the upload request.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen(std::vector<FormData>(1, address_form));
-  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4444333322221111");
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  // Confirm that the first six digits of the credit card number were included
-  // in the request.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_EQ(payments_client_->pan_first_six_in_upload_details(), "444433");
-  // Confirm that the "send pan first six" experiment flag and enabled
-  // UpdatePromptExplanation experiment flag state was sent in the request.
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamSendPanFirstSix.name,
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadOfLocalCard) {

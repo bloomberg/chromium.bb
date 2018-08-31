@@ -137,20 +137,17 @@ class PaymentsClient {
   // Determine if the user meets the Payments service's conditions for upload.
   // The service uses |addresses| (from which names and phone numbers are
   // removed) and |app_locale| to determine which legal message to display.
-  // |pan_first_six| is the first six digits of the number of the credit card
-  // being considered for upload. |detected_values| is a bitmask of
-  // CreditCardSaveManager::DetectedValue values that relays what data is
-  // actually available for upload in order to make more informed upload
-  // decisions. |callback| is the callback function when get response from
-  // server. |billable_service_number| is used to set the billable service
-  // number in the GetUploadDetails request. If the conditions are met, the
-  // legal message will be returned via |callback|. |active_experiments| is used
-  // by Payments server to track requests that were triggered by enabled
-  // features.
+  // |detected_values| is a bitmask of CreditCardSaveManager::DetectedValue
+  // values that relays what data is actually available for upload in order to
+  // make more informed upload decisions. |callback| is the callback function
+  // when get response from server. |billable_service_number| is used to set the
+  // billable service number in the GetUploadDetails request. If the conditions
+  // are met, the legal message will be returned via |callback|.
+  // |active_experiments| is use by Payments server to track requests that were
+  // triggered by enabled features.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,

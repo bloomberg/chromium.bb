@@ -21,7 +21,6 @@ TestPaymentsClient::~TestPaymentsClient() {}
 void TestPaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const int detected_values,
-    const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -30,7 +29,6 @@ void TestPaymentsClient::GetUploadDetails(
     const int billable_service_number) {
   upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
-  pan_first_six_ = pan_first_six;
   active_experiments_ = active_experiments;
   std::move(callback).Run(app_locale == "en-US"
                               ? AutofillClient::SUCCESS

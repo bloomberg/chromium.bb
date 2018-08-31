@@ -77,11 +77,8 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
     return;
   migration_request_ = payments::PaymentsClient::MigrationRequestDetails();
 
-  // Don't send pan_first_six, as potentially migrating multiple local cards at
-  // once will negate its usefulness.
   payments_client_->GetUploadDetails(
       std::vector<AutofillProfile>(), GetDetectedValues(),
-      /*pan_first_six=*/std::string(),
       /*active_experiments=*/std::vector<const char*>(), app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),

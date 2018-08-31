@@ -300,7 +300,6 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   GetUploadDetailsRequest(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -309,7 +308,6 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       const int billable_service_number)
       : addresses_(addresses),
         detected_values_(detected_values),
-        pan_first_six_(pan_first_six),
         active_experiments_(active_experiments),
         app_locale_(app_locale),
         callback_(std::move(callback)),
@@ -347,10 +345,6 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     // Payments will decide if the provided data is enough to offer upload save.
     request_dict.SetInteger("detected_values", detected_values_);
 
-    if (features::IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
-        !pan_first_six_.empty())
-      request_dict.SetString("pan_first6", pan_first_six_);
-
     SetActiveExperiments(active_experiments_, &request_dict);
 
     std::string request_content;
@@ -377,7 +371,6 @@ class GetUploadDetailsRequest : public PaymentsRequest {
  private:
   const std::vector<AutofillProfile> addresses_;
   const int detected_values_;
-  const std::string pan_first_six_;
   const std::vector<const char*> active_experiments_;
   std::string app_locale_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -651,18 +644,16 @@ void PaymentsClient::UnmaskCard(
 void PaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const int detected_values,
-    const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
                             std::unique_ptr<base::DictionaryValue>)> callback,
     const int billable_service_number) {
-  IssueRequest(
-      std::make_unique<GetUploadDetailsRequest>(
-          addresses, detected_values, pan_first_six, active_experiments,
-          app_locale, std::move(callback), billable_service_number),
-      false);
+  IssueRequest(std::make_unique<GetUploadDetailsRequest>(
+                   addresses, detected_values, active_experiments, app_locale,
+                   std::move(callback), billable_service_number),
+               false);
 }
 
 void PaymentsClient::UploadCard(
