@@ -636,6 +636,7 @@ void PreviewsOptimizationGuideTest::InitializeResourceLoadingHints() {
 }
 
 TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -654,6 +655,8 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
       base::DoNothing()));
 
   RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourceHints.ProcessedCount", 2, 1);
 
   // Verify loaded hint data for www.somedomain.org
   EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
