@@ -45,6 +45,7 @@ class HitTestResult;
 class IdTargetObserverRegistry;
 class SVGTreeScopeResources;
 class ScopedStyleResolver;
+class StyleSheetList;
 
 // The root node of a document tree (in which case this is a Document) or of a
 // shadow tree (in which case this is a ShadowRoot). Various things, like
@@ -139,6 +140,10 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   SVGTreeScopeResources& EnsureSVGTreeScopedResources();
 
+  bool HasAdoptedStyleSheets() const;
+  StyleSheetList& AdoptedStyleSheets();
+  void SetAdoptedStyleSheets(StyleSheetList*);
+
  protected:
   TreeScope(ContainerNode&, Document&);
   TreeScope(Document&);
@@ -168,6 +173,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   RadioButtonGroupScope radio_button_group_scope_;
 
   Member<SVGTreeScopeResources> svg_tree_scoped_resources_;
+
+  Member<StyleSheetList> adopted_style_sheets_;
 };
 
 inline bool TreeScope::HasElementWithId(const AtomicString& id) const {

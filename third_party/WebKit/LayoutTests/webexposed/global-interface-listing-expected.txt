@@ -1455,6 +1455,7 @@ interface Document : Node
     attribute @@unscopables
     getter URL
     getter activeElement
+    getter adoptedStyleSheets
     getter alinkColor
     getter all
     getter anchors
@@ -1672,6 +1673,7 @@ interface Document : Node
     method webkitExitFullscreen
     method write
     method writeln
+    setter adoptedStyleSheets
     setter alinkColor
     setter bgColor
     setter body
@@ -6957,6 +6959,7 @@ interface ServiceWorkerRegistration : EventTarget
 interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
+    getter adoptedStyleSheets
     getter delegatesFocus
     getter fullscreenElement
     getter host
@@ -6969,6 +6972,7 @@ interface ShadowRoot : DocumentFragment
     method elementFromPoint
     method elementsFromPoint
     method getSelection
+    setter adoptedStyleSheets
     setter fullscreenElement
     setter innerHTML
 interface SharedWorker : EventTarget

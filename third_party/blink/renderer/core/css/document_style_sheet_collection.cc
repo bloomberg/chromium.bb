@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_candidate.h"
+#include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -84,6 +85,24 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
       continue;
 
     CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    collector.AppendActiveStyleSheet(
+        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+  }
+  if (!GetTreeScope().HasAdoptedStyleSheets())
+    return;
+
+  StyleSheetList& adopted_style_sheets = GetTreeScope().AdoptedStyleSheets();
+  unsigned length = adopted_style_sheets.length();
+  for (unsigned index = 0; index < length; ++index) {
+    StyleSheet* sheet = adopted_style_sheets.item(index);
+    if (!sheet)
+      continue;
+    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    if (!css_sheet ||
+        !css_sheet->CanBeActivated(
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
+      continue;
+    collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
         std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
   }

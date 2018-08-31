@@ -126,6 +126,14 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetAllowRuleAccessFromOrigin(
       scoped_refptr<const SecurityOrigin> allowed_origin);
 
+  void AddedAdoptedToTreeScope(TreeScope& tree_scope) {
+    adopted_tree_scopes_.insert(&tree_scope);
+  }
+
+  void RemovedAdoptedFromTreeScope(TreeScope& tree_scope) {
+    adopted_tree_scopes_.erase(&tree_scope);
+  }
+
   class RuleMutationScope {
     STACK_ALLOCATED();
 
@@ -226,6 +234,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
+  HeapHashSet<Member<TreeScope>> adopted_tree_scopes_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;
