@@ -101,6 +101,7 @@
 #include "extensions/common/constants.h"
 #endif
 
+using autofill::password_generation::PasswordGenerationUserEvent;
 using password_manager::metrics_util::PasswordType;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
@@ -822,6 +823,13 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
   if (popup_controller_)
     popup_controller_->UpdatePassword(password_form.password_value);
 
+#if defined(OS_ANDROID)
+  PasswordAccessoryController* password_accessory =
+      PasswordAccessoryController::FromWebContents(web_contents());
+  if (password_accessory)
+    password_accessory->MaybeGeneratedPasswordChanged(
+        password_form.password_value);
+#endif
   password_manager_.OnPresaveGeneratedPassword(password_form);
 }
 
@@ -839,6 +847,12 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
           PasswordGenerationPopupController::kEditGeneratedPassword) {
     HidePasswordGenerationPopup();
   }
+#if defined(OS_ANDROID)
+  PasswordAccessoryController* password_accessory =
+      PasswordAccessoryController::FromWebContents(web_contents());
+  if (password_accessory)
+    password_accessory->GeneratedPasswordDeleted();
+#endif
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

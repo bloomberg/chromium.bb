@@ -58,6 +58,10 @@ void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
                             event, EVENT_ENUM_COUNT);
 }
 
+void LogPasswordGenerationUserEvent(PasswordGenerationUserEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.UserEvent", event);
+}
+
 bool IsPasswordGenerationEnabled() {
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutomaticPasswordGeneration))
