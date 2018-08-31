@@ -17,7 +17,7 @@ const base::Feature kDragAppsInTabletMode{"DragAppsInTabletMode",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
