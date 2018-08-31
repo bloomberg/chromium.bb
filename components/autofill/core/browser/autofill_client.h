@@ -144,9 +144,11 @@ class AutofillClient : public RiskDataLoader {
   virtual void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) = 0;
 
-  // Runs |closure| if the user would like the selected
-  // |migratable_credit_cards| to be uploaded to cloud.
+  // Shows a dialog with the given |legal_message|. Runs |closure| if
+  // the user would like the selected |migratable_credit_cards| to be
+  // uploaded to cloud.
   virtual void ConfirmMigrateLocalCardToCloud(
+      std::unique_ptr<base::DictionaryValue> legal_message,
       std::vector<MigratableCreditCard>& migratable_credit_cards,
       base::OnceClosure start_migrating_cards_closure) = 0;
 
