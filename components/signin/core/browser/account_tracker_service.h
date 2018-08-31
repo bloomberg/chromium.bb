@@ -65,11 +65,13 @@ class AccountTrackerService : public KeyedService {
   };
 
   // Possible values for the kAccountIdMigrationState preference.
+  // Keep in sync with OAuth2LoginAccountRevokedMigrationState histogram enum.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum AccountIdMigrationState {
-    MIGRATION_NOT_STARTED,
-    MIGRATION_IN_PROGRESS,
-    MIGRATION_DONE,
-    // Keep in sync with OAuth2LoginAccountRevokedMigrationState histogram enum.
+    MIGRATION_NOT_STARTED = 0,
+    MIGRATION_IN_PROGRESS = 1,
+    MIGRATION_DONE = 2,
     NUM_MIGRATION_STATES
   };
 
@@ -135,8 +137,6 @@ class AccountTrackerService : public KeyedService {
 
   AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
-  static AccountIdMigrationState GetMigrationState(
-      const PrefService* pref_service);
 
  protected:
   // Available to be called in tests.
@@ -177,10 +177,25 @@ class AccountTrackerService : public KeyedService {
                               const gfx::Image& image);
   void RemoveAccountImageFromDisk(const std::string& account_id);
 
-  // Gaia id migration.
-  bool IsMigratable() const;
+  // Migrate accounts to be keyed by gaia id instead of normalized email.
+  // Requires that the migration state is set to MIGRATION_IN_PROGRESS.
   void MigrateToGaiaId();
+
+  // Returns whether the accounts are all keyed by gaia id. This should
+  // be the case when the migration state is set to MIGRATION_DONE.
+  bool IsMigrationDone() const;
+
+  // Computes the new migration state. The state is saved to preference
+  // before performing the migration in order to support resuming the
+  // migration if necessary during the next load.
+  AccountIdMigrationState ComputeNewMigrationState() const;
+
+  // Updates the migration state in the preferences.
   void SetMigrationState(AccountIdMigrationState state);
+
+  // Returns the saved migration state in the preferences.
+  static AccountIdMigrationState GetMigrationState(
+      const PrefService* pref_service);
 
   PrefService* pref_service_ = nullptr;  // Not owned.
   std::map<std::string, AccountState> accounts_;

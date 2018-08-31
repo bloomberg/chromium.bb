@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
@@ -945,6 +946,56 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
   }
 }
 
+TEST_F(AccountTrackerServiceTest, NoDeprecatedServiceFlags) {
+  std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
+  std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
+
+  {
+    ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
+
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
+    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    update->Append(std::move(dict));
+  }
+
+  {
+    base::HistogramTester tester;
+
+    ResetAccountTracker();
+    tester.ExpectBucketCount(
+        "Signin.AccountTracker.DeprecatedServiceFlagDeleted", false, 1);
+  }
+}
+
+TEST_F(AccountTrackerServiceTest, MigrateDeprecatedServiceFlags) {
+  std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
+  std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
+
+  {
+    ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
+
+    std::unique_ptr<base::ListValue> service_flags(new base::ListValue());
+    service_flags->Append(std::make_unique<base::Value>("uca"));
+
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
+    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetList("service_flags", std::move(service_flags));
+    update->Append(std::move(dict));
+  }
+
+  {
+    base::HistogramTester tester;
+
+    ResetAccountTracker();
+    tester.ExpectBucketCount(
+        "Signin.AccountTracker.DeprecatedServiceFlagDeleted", true, 1);
+  }
+}
+
 TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
   if (!AccountTrackerService::IsMigrationSupported())
     return;
@@ -971,8 +1022,11 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
   }
 
   {
+    base::HistogramTester tester;
     ResetAccountTracker();
 
+    tester.ExpectBucketCount("Signin.AccountTracker.GaiaIdMigrationState",
+                             AccountTrackerService::MIGRATION_IN_PROGRESS, 1);
     EXPECT_EQ(account_tracker()->GetMigrationState(),
               AccountTrackerService::MIGRATION_IN_PROGRESS);
 
@@ -1016,8 +1070,11 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
   }
 
   {
+    base::HistogramTester tester;
     ResetAccountTracker();
 
+    tester.ExpectBucketCount("Signin.AccountTracker.GaiaIdMigrationState",
+                             AccountTrackerService::MIGRATION_NOT_STARTED, 1);
     EXPECT_EQ(account_tracker()->GetMigrationState(),
               AccountTrackerService::MIGRATION_NOT_STARTED);
 
@@ -1068,8 +1125,11 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
   }
 
   {
+    base::HistogramTester tester;
     ResetAccountTracker();
 
+    tester.ExpectBucketCount("Signin.AccountTracker.GaiaIdMigrationState",
+                             AccountTrackerService::MIGRATION_IN_PROGRESS, 1);
     EXPECT_EQ(account_tracker()->GetMigrationState(),
               AccountTrackerService::MIGRATION_IN_PROGRESS);
 
@@ -1088,10 +1148,13 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
   }
 
   {
+    base::HistogramTester tester;
     ResetAccountTracker();
 
+    tester.ExpectBucketCount("Signin.AccountTracker.GaiaIdMigrationState",
+                             AccountTrackerService::MIGRATION_DONE, 1);
     EXPECT_EQ(account_tracker()->GetMigrationState(),
-              AccountTrackerService::MIGRATION_IN_PROGRESS);
+              AccountTrackerService::MIGRATION_DONE);
 
     AccountInfo account_info = account_tracker()->GetAccountInfo(gaia_alpha);
     EXPECT_EQ(account_info.account_id, gaia_alpha);
