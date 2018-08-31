@@ -17,9 +17,6 @@ from gn_helpers import ToGNString
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-chrome_src = os.path.abspath(os.path.join(script_dir, os.pardir))
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 
