@@ -44611,6 +44611,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Notification interaction"/>
 </enum>
 
+<enum name="SiteIsolatedCodeCacheBehaviour">
+  <int value="0" label="Hit">Available in code cache</int>
+  <int value="1" label="Miss">Not available in cache</int>
+  <int value="2" label="Clear">
+    Clear a cache entry. Typically used when there is a stale entry
+  </int>
+  <int value="3" label="Update">Update an existing entry</int>
+  <int value="4" label="Create">Create a new entry</int>
+  <int value="5" label="Error">
+    Errror in handling the request because either opening backend failed or URL
+    should not be cached
+  </int>
+</enum>
+
 <enum name="SiteIsolationMimeType">
   <int value="0" label="HTML"/>
   <int value="1" label="XML"/>
