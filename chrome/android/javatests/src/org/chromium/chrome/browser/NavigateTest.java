@@ -250,6 +250,7 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
+    @DisabledTest(message = "crbug.com/879153")
     @RetryOnFailure
     public void testRequestDesktopSiteSettingPers() throws Exception {
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
