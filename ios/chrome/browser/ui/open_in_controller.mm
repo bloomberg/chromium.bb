@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/base/load_flags.h"
@@ -65,11 +67,15 @@ const CGFloat kOverlayedViewLabelBottomMargin = 60;
 
 }  // anonymous namespace
 
-@interface OpenInController () {
+@interface OpenInController ()<CRWWebViewScrollViewProxyObserver> {
   // AlertCoordinator for showing an alert if no applications were found to open
   // the current document.
   AlertCoordinator* _alertCoordinator;
 }
+
+// Property storing the Y content offset the scroll view the last time it was
+// updated. Used to know in which direction the scroll view is scrolling.
+@property(nonatomic, assign) CGFloat previousScrollViewOffset;
 
 // URLFetcher delegate method called when |fetcher_| completes a request.
 - (void)urlFetchDidComplete:(const net::URLFetcher*)source;
@@ -79,8 +85,9 @@ const CGFloat kOverlayedViewLabelBottomMargin = 60;
 // Starts downloading the file at path |kDocumentsTempPath| with the name
 // |suggestedFilename_|.
 - (void)startDownload;
-// Shows the overlayed toolbar |openInToolbar_|.
-- (void)showOpenInToolbar;
+// Shows the overlayed toolbar |openInToolbar_|. If |withTimer| is YES, it would
+// be hidden after a certain amount of time.
+- (void)showOpenInToolbarWithTimer:(BOOL)withTimer;
 // Hides the overlayed toolbar |openInToolbar_|.
 - (void)hideOpenInToolbar;
 // Called when there is a tap on the |webController_|'s view to display the
@@ -208,6 +215,7 @@ class OpenInControllerBridge
 }
 
 @synthesize baseView = _baseView;
+@synthesize previousScrollViewOffset = _previousScrollViewOffset;
 
 - (id)initWithRequestContext:(net::URLRequestContextGetter*)requestContext
                webController:(CRWWebController*)webController {
@@ -222,6 +230,7 @@ class OpenInControllerBridge
     sequencedTaskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
     isOpenInMenuDisplayed_ = NO;
+    _previousScrollViewOffset = 0;
   }
   return self;
 }
@@ -233,8 +242,9 @@ class OpenInControllerBridge
   [webController_ addGestureRecognizerToWebView:tapRecognizer_];
   [self openInToolbar].alpha = 0.0f;
   [self.baseView addSubview:[self openInToolbar]];
+  [webController_.webViewProxy.scrollViewProxy addObserver:self];
 
-  [self showOpenInToolbar];
+  [self showOpenInToolbarWithTimer:NO];
 }
 
 - (void)disable {
@@ -244,6 +254,8 @@ class OpenInControllerBridge
     bridge_->OnOwnerDisabled();
   bridge_ = nil;
   [webController_ removeGestureRecognizerFromWebView:tapRecognizer_];
+  [webController_.webViewProxy.scrollViewProxy removeObserver:self];
+  self.previousScrollViewOffset = 0;
   [[self openInToolbar] removeFromSuperview];
   [documentController_ dismissMenuAnimated:NO];
   [documentController_ setDelegate:nil];
@@ -268,23 +280,30 @@ class OpenInControllerBridge
     if (isOpenInToolbarDisplayed_) {
       [self hideOpenInToolbar];
     } else {
-      [self showOpenInToolbar];
+      [self showOpenInToolbarWithTimer:YES];
     }
   }
 }
 
-- (void)showOpenInToolbar {
-  if ([openInTimer_ isValid]) {
-    [openInTimer_ setFireDate:([NSDate dateWithTimeIntervalSinceNow:
-                                           kOpenInToolbarDisplayDuration])];
+- (void)showOpenInToolbarWithTimer:(BOOL)withTimer {
+  if (withTimer) {
+    if ([openInTimer_ isValid]) {
+      [openInTimer_ setFireDate:([NSDate dateWithTimeIntervalSinceNow:
+                                             kOpenInToolbarDisplayDuration])];
+    } else {
+      openInTimer_ =
+          [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
+                                           target:self
+                                         selector:@selector(hideOpenInToolbar)
+                                         userInfo:nil
+                                          repeats:NO];
+    }
   } else {
-    openInTimer_ =
-        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
-                                         target:self
-                                       selector:@selector(hideOpenInToolbar)
-                                       userInfo:nil
-                                        repeats:NO];
-    OpenInToolbar* openInToolbar = [self openInToolbar];
+    [openInTimer_ invalidate];
+  }
+
+  OpenInToolbar* openInToolbar = [self openInToolbar];
+  if (!isOpenInToolbarDisplayed_) {
     openInToolbar.bottomMarginConstraint.active = YES;
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
@@ -648,6 +667,27 @@ class OpenInControllerBridge
 
   CGPoint location = [gestureRecognizer locationInView:[self openInToolbar]];
   return ![[self openInToolbar] pointInside:location withEvent:nil];
+}
+
+#pragma mark - CRWWebViewScrollViewProxyObserver
+
+- (void)webViewScrollViewDidScroll:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  // Store the values.
+  CGFloat previousScrollOffset = self.previousScrollViewOffset;
+  CGFloat currentScrollOffset = webViewScrollViewProxy.contentOffset.y;
+  self.previousScrollViewOffset = currentScrollOffset;
+
+  if (previousScrollOffset - currentScrollOffset > 0) {
+    if (!isOpenInToolbarDisplayed_ ||
+        (isOpenInToolbarDisplayed_ && [openInTimer_ isValid])) {
+      // Shows the OpenInToolbar only if it isn't displayed, or if it is
+      // displayed with a timer to have the timer reset.
+      [self showOpenInToolbarWithTimer:YES];
+    }
+  } else if (webViewScrollViewProxy.dragging) {
+    [self hideOpenInToolbar];
+  }
 }
 
 #pragma mark - TestingAditions
