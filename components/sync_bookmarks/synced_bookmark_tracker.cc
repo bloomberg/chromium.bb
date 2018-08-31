@@ -10,10 +10,12 @@
 #include "base/base64.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace sync_bookmarks {
 
@@ -64,6 +66,15 @@ bool SyncedBookmarkTracker::Entity::MatchesSpecificsHash(
   std::string hash;
   HashSpecifics(specifics, &hash);
   return hash == metadata_->specifics_hash();
+}
+
+size_t SyncedBookmarkTracker::Entity::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  // Include the size of the pointer to the bookmark node.
+  memory_usage += sizeof(bookmark_node_);
+  memory_usage += EstimateMemoryUsage(metadata_);
+  return memory_usage;
 }
 
 SyncedBookmarkTracker::SyncedBookmarkTracker(
@@ -361,6 +372,16 @@ void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {
 
 bool SyncedBookmarkTracker::IsEmpty() const {
   return sync_id_to_entities_map_.empty();
+}
+
+size_t SyncedBookmarkTracker::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(sync_id_to_entities_map_);
+  memory_usage += EstimateMemoryUsage(bookmark_node_to_entities_map_);
+  memory_usage += EstimateMemoryUsage(ordered_local_tombstones_);
+  memory_usage += EstimateMemoryUsage(model_type_state_);
+  return memory_usage;
 }
 
 size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
