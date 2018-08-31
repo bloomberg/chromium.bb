@@ -5645,10 +5645,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
           << " url:" << params->url << " origin:" << params->origin;
     }
   }
-
-  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
-  if (extra_data)
-    params->request_id = extra_data->request_id();
+  params->request_id = response.RequestId();
 
   return params;
 }

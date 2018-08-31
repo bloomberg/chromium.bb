@@ -5,18 +5,25 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
+#include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -147,4 +154,124 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       2, 1);
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.All.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
+}
+
+class AdsPageLoadMetricsTestWaiter
+    : public page_load_metrics::PageLoadMetricsTestWaiter {
+ public:
+  explicit AdsPageLoadMetricsTestWaiter(content::WebContents* web_contents)
+      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents){};
+  void AddMinimumAdResourceExpectation(int num_ad_resources) {
+    expected_minimum_num_ad_resources_ = num_ad_resources;
+  };
+
+ protected:
+  bool ExpectationsSatisfied() const override {
+    int num_ad_resources = 0;
+    for (auto& kv : page_resources_) {
+      if (kv.second->reported_as_ad_resource)
+        num_ad_resources++;
+    }
+    return num_ad_resources >= expected_minimum_num_ad_resources_ &&
+           PageLoadMetricsTestWaiter::ExpectationsSatisfied();
+  };
+
+ private:
+  int expected_minimum_num_ad_resources_ = 0;
+};
+
+class AdsPageLoadMetricsObserverResourceBrowserTest
+    : public subresource_filter::SubresourceFilterBrowserTest {
+ public:
+  AdsPageLoadMetricsObserverResourceBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kAdsFeature);
+  }
+
+  ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
+  void SetUpOnMainThread() override {
+    g_browser_process->subresource_filter_ruleset_service()
+        ->SetIsAfterStartupForTesting();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetRulesetWithRules(
+        {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
+         subresource_filter::testing::CreateSuffixRule("create_frame.js")});
+  }
+
+ protected:
+  std::unique_ptr<AdsPageLoadMetricsTestWaiter>
+  CreateAdsPageLoadMetricsTestWaiter() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    return std::make_unique<AdsPageLoadMetricsTestWaiter>(web_contents);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedAdResources) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  // Both subresources should have been reported as ads.
+  waiter->AddMinimumAdResourceExpectation(2);
+  waiter->Wait();
+}
+
+// Main resources for adframes are counted as ad resources.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedMainResourceAds) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('frame_factory.html', '');"));
+  // Both pages subresources should have been reported as ad. The iframe
+  // resource should also be reported as an ad.
+  waiter->AddMinimumAdResourceExpectation(5);
+  waiter->Wait();
+}
+
+// Subframe navigations report ad resources correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedSubframeNavigationAds) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('frame_factory.html', 'test');"));
+  waiter->AddMinimumAdResourceExpectation(5);
+  waiter->Wait();
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  // All resources except the top-level main resource should be reported as an
+  // ad.
+  waiter->AddMinimumAdResourceExpectation(8);
+  waiter->Wait();
 }

@@ -147,6 +147,20 @@ void PageTimingMetricsSender::DidCancelResponse(int resource_id) {
   resource_it->second.DidCancelResponse();
 }
 
+void PageTimingMetricsSender::UpdateResourceMetadata(
+    int resource_id,
+    bool reported_as_ad_resource,
+    bool is_main_frame_resource) {
+  auto it = page_resource_data_use_.find(resource_id);
+  if (it == page_resource_data_use_.end())
+    return;
+  // This can get called multiple times for resources, and this
+  // flag will only be true once.
+  if (reported_as_ad_resource)
+    it->second.SetReportedAsAdResource(reported_as_ad_resource);
+  it->second.SetIsMainFrameResource(is_main_frame_resource);
+}
+
 void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
   if (last_timing_->Equals(*timing)) {
     return;

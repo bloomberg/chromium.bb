@@ -53,6 +53,10 @@ class PageTimingMetricsSender {
 
   void Send(mojom::PageLoadTimingPtr timing);
 
+  void UpdateResourceMetadata(int resource_id,
+                              bool is_ad_resource,
+                              bool is_main_frame_resource);
+
  protected:
   base::OneShotTimer* timer() const { return timer_.get(); }
 

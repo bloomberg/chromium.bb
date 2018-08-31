@@ -35,14 +35,20 @@ namespace subresource_filter {
 
 SubresourceFilterAgent::SubresourceFilterAgent(
     content::RenderFrame* render_frame,
-    UnverifiedRulesetDealer* ruleset_dealer)
+    UnverifiedRulesetDealer* ruleset_dealer,
+    std::unique_ptr<AdResourceTracker> ad_resource_tracker)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SubresourceFilterAgent>(render_frame),
-      ruleset_dealer_(ruleset_dealer) {
+      ruleset_dealer_(ruleset_dealer),
+      ad_resource_tracker_(std::move(ad_resource_tracker)) {
   DCHECK(ruleset_dealer);
 }
 
-SubresourceFilterAgent::~SubresourceFilterAgent() = default;
+SubresourceFilterAgent::~SubresourceFilterAgent() {
+  // Filter may outlive us, so reset the ad tracker.
+  if (filter_for_last_committed_load_)
+    filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
+}
 
 GURL SubresourceFilterAgent::GetDocumentURL() {
   return render_frame()->GetWebFrame()->GetDocument().Url();
@@ -191,6 +197,9 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   if (is_same_document_navigation)
     return;
 
+  // Filter may outlive us, so reset the ad tracker.
+  if (filter_for_last_committed_load_)
+    filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
   filter_for_last_committed_load_.reset();
 
   // TODO(csharrison): Use WebURL and WebSecurityOrigin for efficiency here,
@@ -225,7 +234,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   auto filter = std::make_unique<WebDocumentSubresourceFilterImpl>(
       url::Origin::Create(url), activation_state, std::move(ruleset),
       std::move(first_disallowed_load_callback), IsAdSubframe());
-
+  filter->set_ad_resource_tracker(ad_resource_tracker_.get());
   filter_for_last_committed_load_ = filter->AsWeakPtr();
   SetSubresourceFilterForCommittedLoad(std::move(filter));
 }

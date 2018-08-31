@@ -55,6 +55,14 @@ class PageLoadMetricsTestWaiter
 
   int64_t current_resource_bytes() const { return current_resource_bytes_; }
 
+ protected:
+  virtual bool ExpectationsSatisfied() const;
+  // Map of all resources loaded by the page, keyed by resource request id.
+  // Contains ongoing and completed resources. Contains only the most recent
+  // update (version) of the resource.
+  std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
+      page_resources_;
+
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsTestWaiter to observe
   // metrics updates.
@@ -146,8 +154,6 @@ class PageLoadMetricsTestWaiter
 
   bool ResourceUseExpectationsSatisfied() const;
 
-  virtual bool ExpectationsSatisfied() const;
-
   std::unique_ptr<base::RunLoop> run_loop_;
 
   TimingFieldBitSet page_expected_fields_;
@@ -162,11 +168,6 @@ class PageLoadMetricsTestWaiter
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
-
-  // Map of all resources loaded by the page, keyed by resource request id.
-  // Contains ongoing and completed resources. Contains only the most recent
-  // update (version) of the resource.
-  std::map<int, page_load_metrics::mojom::ResourceDataUpdate*> page_resources_;
 
   base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_;
 };
