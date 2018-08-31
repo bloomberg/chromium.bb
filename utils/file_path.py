@@ -402,8 +402,8 @@ if sys.platform == 'win32':
         # Killing is asynchronous.
         os.kill(pid, 9)
         sys.stderr.write('- %d killed\n' % pid)
-      except OSError:
-        sys.stderr.write('- failed to kill %s\n' % pid)
+      except OSError as e:
+        sys.stderr.write('- failed to kill %s, error %s\n' % (pid, e))
     return True
 
 
