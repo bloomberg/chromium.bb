@@ -8,3 +8,6 @@
 # Doing so triggers an obfuscation error in chrome_public_test_apk, which has a
 # -keep for **.test.**.
 -keepnames class **.test.** { *; }
+
+# Do not mark classes as final, as doing so may interfere with mocking.
+-optimizations !class/marking/final
