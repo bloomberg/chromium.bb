@@ -203,6 +203,7 @@
   CGFloat finalProgress = animator.finalProgress;
   [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];
+    [self.view layoutIfNeeded];
   }];
 }
 
