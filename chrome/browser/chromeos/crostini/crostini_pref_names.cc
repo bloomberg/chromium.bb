@@ -13,10 +13,12 @@ namespace prefs {
 // Crostini (Called "Linux Apps" in UI).
 const char kCrostiniEnabled[] = "crostini.enabled";
 const char kCrostiniRegistry[] = "crostini.registry";
+const char kCrostiniMimeTypes[] = "crostini.mime_types";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
+  registry->RegisterDictionaryPref(kCrostiniMimeTypes);
 }
 
 }  // namespace prefs

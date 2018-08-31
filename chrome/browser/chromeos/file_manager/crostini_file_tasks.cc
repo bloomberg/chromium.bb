@@ -14,6 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -36,6 +38,11 @@ namespace {
 constexpr base::TimeDelta kIconLoadTimeout =
     base::TimeDelta::FromMilliseconds(100);
 constexpr size_t kIconSizeInDip = 16;
+// When MIME type detection is done; if we can't be properly determined then
+// the detection system will end up guessing one of the 2 values below depending
+// upon whether it "thinks" it is binary or text content.
+constexpr char kUnknownBinaryMimeType[] = "application/octet-stream";
+constexpr char kUnknownTextMimeType[] = "text/plain";
 
 GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
   std::vector<unsigned char> output;
@@ -86,14 +93,12 @@ void FindCrostiniTasks(Profile* profile,
     return;
   }
 
-  std::set<std::string> target_mime_types;
-  for (const extensions::EntryInfo& entry : entries)
-    target_mime_types.insert(entry.mime_type);
-
   std::vector<std::string> result_app_ids;
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  crostini::CrostiniMimeTypesService* mime_types_service =
+      crostini::CrostiniMimeTypesServiceFactory::GetForProfile(profile);
   for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
     crostini::CrostiniRegistryService::Registration registration =
         *registry_service->GetRegistration(app_id);
@@ -101,10 +106,22 @@ void FindCrostiniTasks(Profile* profile,
     const std::set<std::string>& supported_mime_types =
         registration.MimeTypes();
     bool had_unsupported_mime_type = false;
-    for (const std::string& target_mime_type : target_mime_types) {
-      if (supported_mime_types.find(target_mime_type) !=
+    for (const extensions::EntryInfo& entry : entries) {
+      if (supported_mime_types.find(entry.mime_type) !=
           supported_mime_types.end())
         continue;
+      // If we see either of these then we use the Linux container MIME type
+      // mappings as alternates for finding an appropriate app since these are
+      // the defaults when Chrome can't figure out the exact MIME type (but they
+      // can also be the actual MIME type, so we don't exclude them above).
+      if (entry.mime_type == kUnknownBinaryMimeType ||
+          entry.mime_type == kUnknownTextMimeType) {
+        std::string alternate_mime_type = mime_types_service->GetMimeType(
+            entry.path, registration.VmName(), registration.ContainerName());
+        if (supported_mime_types.find(alternate_mime_type) !=
+            supported_mime_types.end())
+          continue;
+      }
       had_unsupported_mime_type = true;
       break;
     }
