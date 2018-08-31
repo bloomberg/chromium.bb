@@ -66,8 +66,22 @@ bool IsFileAttributesSupported(const base::FilePath& path) {
 // Sets extended file attribute as |name| |value| pair.
 bool SetExtendedFileAttributes(const base::FilePath& path,
     const std::string& name, const std::string& value) {
-  return setxattr(path.value().c_str(), name.c_str(), value.c_str(),
-      value.size() + 1, 0) == 0;
+  if (setxattr(path.value().c_str(), name.c_str(), value.c_str(),
+               value.size() + 1, 0) != 0) {
+    PLOG(ERROR) << "setxattr: " << path.value();
+    return false;
+  }
+  return true;
+}
+
+// Remove extended file attribute with |name|.
+bool UnsetExtendedFileAttributes(const base::FilePath& path,
+                                 const std::string& name) {
+  if (removexattr(path.value().c_str(), name.c_str()) != 0) {
+    PLOG(ERROR) << "removexattr: " << path.value();
+    return false;
+  }
+  return true;
 }
 
 // Changes attributes of the file with |flags|, e.g. FS_NODUMP_FL (cryptohome
@@ -112,10 +126,10 @@ bool SetRemovable(const base::FilePath& path) {
     return true;
   }
   FileAttributes flags = GetFileAttributes(path);
-  if (flags < 0) return false;
-  if ((flags & FS_NODUMP_FL) == FS_NODUMP_FL) return true;
-
-  return SetFileAttributes(path, flags | FS_NODUMP_FL);
+  bool xattr = flags >= 0 && SetFileAttributes(path, flags | FS_NODUMP_FL);
+  bool fattr = SetExtendedFileAttributes(
+      path, FileCache::kGCacheRemovableAttribute, "1");
+  return xattr || fattr;
 }
 
 // Marks the cache file to be unremovable by cryptohome, or do nothing if
@@ -127,10 +141,10 @@ bool UnsetRemovable(const base::FilePath& path) {
     return true;
   }
   FileAttributes flags = GetFileAttributes(path);
-  if (flags < 0) return false;
-  if ((flags & FS_NODUMP_FL) == 0) return true;
-
-  return SetFileAttributes(path, flags & ~FS_NODUMP_FL);
+  bool xattr = flags >= 0 && SetFileAttributes(path, flags & ~FS_NODUMP_FL);
+  bool fattr =
+      UnsetExtendedFileAttributes(path, FileCache::kGCacheRemovableAttribute);
+  return xattr || fattr;
 }
 
 // Marks |path| as drive cache dir, or do nothing if underlying filesystem
@@ -165,6 +179,7 @@ const size_t kMaxNumOfEvictedCacheFiles = 30000;
 
 // static
 const char FileCache::kGCacheFilesAttribute[] = "user.GCacheFiles";
+const char FileCache::kGCacheRemovableAttribute[] = "user.GCacheRemovable";
 
 FileCache::FileCache(ResourceMetadataStorage* storage,
                      const base::FilePath& cache_file_directory,

@@ -65,6 +65,15 @@ bool HasRemovableFlag(const base::FilePath& file_path) {
   return (GetFileAttributes(file_path) & FS_NODUMP_FL) == FS_NODUMP_FL;
 }
 
+bool HasRemovableAttribute(const base::FilePath& file_path) {
+  return getxattr(file_path.value().c_str(),
+                  FileCache::kGCacheRemovableAttribute, nullptr, 0) >= 0;
+}
+
+bool IsMarkedAsRemovable(const base::FilePath& path) {
+  return HasRemovableFlag(path) && HasRemovableAttribute(path);
+}
+
 }  // namespace
 
 // Tests FileCache methods working with the blocking task runner.
@@ -440,7 +449,7 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_TRUE(base::ContentsEqual(src_file_path, cache_file_path));
 
   base::FilePath dest_file_path = GetCacheFilePath(id);
-  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file_path));
 
   // Store a non-existent file.
   EXPECT_EQ(FILE_ERROR_FAILED, cache_->Store(
@@ -455,7 +464,7 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
   EXPECT_TRUE(entry.file_specific_info().cache_state().md5().empty());
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
-  EXPECT_FALSE(HasRemovableFlag((dest_file_path)));
+  EXPECT_FALSE(IsMarkedAsRemovable(dest_file_path));
 
   // No free space available.
   fake_free_disk_space_getter_->set_default_value(0);
@@ -482,21 +491,21 @@ TEST_F(FileCacheTest, PinAndUnpin) {
   const base::FilePath dest_file_path = GetCacheFilePath(id);
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
-  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file_path));
 
   // Pin the existing file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id));
 
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_pinned());
-  EXPECT_FALSE(HasRemovableFlag((dest_file_path)));
+  EXPECT_FALSE(IsMarkedAsRemovable(dest_file_path));
 
   // Unpin the file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id));
 
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
-  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file_path));
 
   // Pin a non-present file.
   std::string id_non_present = "id_non_present";
@@ -571,7 +580,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   const base::FilePath dest_file = GetCacheFilePath(id);
-  EXPECT_TRUE(HasRemovableFlag((dest_file)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file));
 
   // Open (1).
   std::unique_ptr<base::ScopedClosureRunner> file_closer1;
@@ -581,7 +590,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   // Entry is dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
-  EXPECT_FALSE(HasRemovableFlag((dest_file)));
+  EXPECT_FALSE(IsMarkedAsRemovable((dest_file)));
 
   // Open (2).
   std::unique_ptr<base::ScopedClosureRunner> file_closer2;
@@ -663,7 +672,7 @@ TEST_F(FileCacheTest, ClearDirty) {
                                          FileCache::FILE_OPERATION_COPY));
 
   const base::FilePath dest_file = GetCacheFilePath(id);
-  EXPECT_TRUE(HasRemovableFlag((dest_file)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file));
 
   // Open the file.
   std::unique_ptr<base::ScopedClosureRunner> file_closer;
@@ -672,11 +681,11 @@ TEST_F(FileCacheTest, ClearDirty) {
   // Entry is dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
-  EXPECT_FALSE(HasRemovableFlag((dest_file)));
+  EXPECT_FALSE(IsMarkedAsRemovable(dest_file));
 
   // Cannot clear the dirty bit of an opened entry.
   EXPECT_EQ(FILE_ERROR_IN_USE, cache_->ClearDirty(id));
-  EXPECT_FALSE(HasRemovableFlag((dest_file)));
+  EXPECT_FALSE(IsMarkedAsRemovable(dest_file));
 
   // Close the file and clear the dirty bit.
   file_closer.reset();
@@ -686,7 +695,7 @@ TEST_F(FileCacheTest, ClearDirty) {
   // Entry is not dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
-  EXPECT_TRUE(HasRemovableFlag((dest_file)));
+  EXPECT_TRUE(IsMarkedAsRemovable(dest_file));
 }
 
 TEST_F(FileCacheTest, Remove) {
@@ -852,10 +861,10 @@ TEST_F(FileCacheTest, FixMetadataAndFileAttributes) {
   ASSERT_TRUE(cache_->Initialize());
 
   // Check result.
-  EXPECT_FALSE(HasRemovableFlag(file_path_a));
-  EXPECT_FALSE(HasRemovableFlag((file_path_b)));
-  EXPECT_TRUE(HasRemovableFlag((file_path_c)));
-  EXPECT_FALSE(HasRemovableFlag((file_path_d)));
+  EXPECT_FALSE(IsMarkedAsRemovable(file_path_a));
+  EXPECT_FALSE(IsMarkedAsRemovable(file_path_b));
+  EXPECT_TRUE(IsMarkedAsRemovable(file_path_c));
+  EXPECT_FALSE(IsMarkedAsRemovable(file_path_d));
   EXPECT_FALSE(base::PathExists(file_path_f));
 
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_e, &entry_e));
@@ -864,7 +873,7 @@ TEST_F(FileCacheTest, FixMetadataAndFileAttributes) {
   EXPECT_FALSE(entry_f.file_specific_info().cache_state().is_present());
 
   // Check the cache dir has appropriate attributes.
-  EXPECT_TRUE(HasRemovableFlag((cache_files_dir_)));
+  EXPECT_TRUE(HasRemovableFlag(cache_files_dir_));
   EXPECT_GE(getxattr(cache_files_dir_.value().c_str(),
       FileCache::kGCacheFilesAttribute, nullptr, 0), 0);
 }

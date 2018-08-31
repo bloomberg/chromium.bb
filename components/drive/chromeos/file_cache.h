@@ -55,6 +55,8 @@ class FileCache {
  public:
   // The file extended attribute assigned to Drive cache directory.
   static const char kGCacheFilesAttribute[];
+  // The file extended attribute assigned to files that can be removed.
+  static const char kGCacheRemovableAttribute[];
 
   // Enum defining type of file operation e.g. copy or move, etc.
   enum FileOperationType {
