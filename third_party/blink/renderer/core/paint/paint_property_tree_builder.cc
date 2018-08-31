@@ -1381,15 +1381,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           -scrollable_area->ScrollOrigin() + state.container_rect.Location(),
           scrollable_area->PixelSnappedContentsSize(
               context_.current.paint_offset));
-
-      // In flipped blocks writing mode, if there is scrollbar on the right,
-      // we move the contents to the left with extra amount of ScrollTranslation
-      // (-VerticalScrollbarWidth, 0). As contents_rect is in the space of
-      // ScrollTranslation, we need to compensate the extra ScrollTranslation
-      // to get correct contents_rect origin.
-      if (box.HasFlippedBlocksWritingMode())
-        state.contents_rect.Move(box.VerticalScrollbarWidth(), 0);
-
       state.user_scrollable_horizontal =
           scrollable_area->UserInputScrollable(kHorizontalScrollbar);
       state.user_scrollable_vertical =
@@ -1491,19 +1482,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   if (!object_.IsBoxModelObject() && !properties_)
     return;
 
-  if (object_.IsLayoutBlockFlow()) {
+  if (object_.IsLayoutBlockFlow())
     context_.paint_offset_for_float = context_.current.paint_offset;
-    // TODO(crbug.com/858843): For now floating object's PhysicalLocation() is
-    // in the scrolling contents space, so if there is scrollbar on the left,
-    // we adjust the paint offset origin.
-    const auto& box = ToLayoutBox(object_);
-    if (box.ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-      context_.paint_offset_for_float.Move(box.VerticalScrollbarWidth(), 0);
-  }
 
-  if (object_.CanContainAbsolutePositionObjects()) {
+  if (object_.CanContainAbsolutePositionObjects())
     context_.absolute_position = context_.current;
-  }
 
   if (object_.IsLayoutView()) {
     const auto* initial_fixed_transform = context_.fixed_position.transform;

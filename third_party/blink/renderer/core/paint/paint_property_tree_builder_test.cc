@@ -347,15 +347,13 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
-  EXPECT_EQ(TransformationMatrix().Translate(-15, 0),
-            scroll_translation->Matrix());
+  EXPECT_EQ(TransformationMatrix(), scroll_translation->Matrix());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 10: border width. 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
-  // The content is placed at (-290, 10) so that its right edge aligns with the
-  // right edge of the container's client box, with the initial
-  // ScrollTranslation applied.
-  EXPECT_EQ(IntRect(-290, 10, 400, 400), scroll->ContentsRect());
+  // The content is placed at (-305, 10) so that its right edge aligns with the
+  // right edge of the container's client box.
+  EXPECT_EQ(IntRect(-305, 10, 400, 400), scroll->ContentsRect());
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -5857,10 +5855,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutPoint(85, 100), paint_offset("float-right"));
   EXPECT_EQ(LayoutPoint(15, 0), paint_offset("float-left-rtl"));
   EXPECT_EQ(LayoutPoint(100, 100), paint_offset("float-right-rtl"));
-  EXPECT_EQ(LayoutPoint(100, 0), paint_offset("float-left-vrl"));
-  EXPECT_EQ(LayoutPoint(0, 85), paint_offset("float-right-vrl"));
-  EXPECT_EQ(LayoutPoint(100, 0), paint_offset("float-left-rtl-vrl"));
-  EXPECT_EQ(LayoutPoint(0, 85), paint_offset("float-right-rtl-vrl"));
+  EXPECT_EQ(LayoutPoint(85, 0), paint_offset("float-left-vrl"));
+  EXPECT_EQ(LayoutPoint(-15, 85), paint_offset("float-right-vrl"));
+  EXPECT_EQ(LayoutPoint(85, 0), paint_offset("float-left-rtl-vrl"));
+  EXPECT_EQ(LayoutPoint(-15, 85), paint_offset("float-right-rtl-vrl"));
   EXPECT_EQ(LayoutPoint(0, 0), paint_offset("float-left-vlr"));
   EXPECT_EQ(LayoutPoint(100, 85), paint_offset("float-right-vlr"));
   EXPECT_EQ(LayoutPoint(0, 0), paint_offset("float-left-rtl-vlr"));

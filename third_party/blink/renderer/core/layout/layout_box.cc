@@ -526,25 +526,28 @@ void LayoutBox::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-// More IE extensions.  clientWidth and clientHeight represent the interior of
-// an object excluding border and scrollbar.
+// ClientWidth and ClientHeight represent the interior of an object excluding
+// border and scrollbar.
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::ClientWidth() const {
-  // We need to clamp negative values. The scrollbar may be wider than the
-  // padding box. Another reason: While border side values are currently limited
-  // to 2^20px (a recent change in the code), if this limit is raised again in
-  // the future, we'd have ill effects of saturated arithmetic otherwise.
+  // We need to clamp negative values. This function may be called during layout
+  // before frame_rect_ gets the final proper value. Another reason: While
+  // border side values are currently limited to 2^20px (a recent change in the
+  // code), if this limit is raised again in the future, we'd have ill effects
+  // of saturated arithmetic otherwise.
   return (frame_rect_.Width() - BorderLeft() - BorderRight() -
-          VerticalScrollbarWidth())
+          VerticalScrollbarWidthClampedToContentBox())
       .ClampNegativeToZero();
 }
 
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::ClientHeight() const {
-  // We need to clamp negative values. The scrollbar may be wider than the
-  // padding box. Another reason: While border side values are currently limited
-  // to 2^20px (a recent change in the code), if this limit is raised again in
-  // the future, we'd have ill effects of saturated arithmetic otherwise.
+  // We need to clamp negative values. This function can be called during layout
+  // before frame_rect_ gets the final proper value. The scrollbar may be wider
+  // than the padding box. Another reason: While border side values are
+  // currently limited to 2^20px (a recent change in the code), if this limit is
+  // raised again in the future, we'd have ill effects of saturated arithmetic
+  // otherwise.
   return (frame_rect_.Height() - BorderTop() - BorderBottom() -
           HorizontalScrollbarHeight())
       .ClampNegativeToZero();
@@ -1163,26 +1166,14 @@ bool LayoutBox::NeedsPreferredWidthsRecalculation() const {
 }
 
 IntSize LayoutBox::OriginAdjustmentForScrollbars() const {
-  IntSize size;
-  int adjustment_width = VerticalScrollbarWidth();
-  if (HasFlippedBlocksWritingMode() ||
-      (IsHorizontalWritingMode() &&
-       ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())) {
-    size.Expand(adjustment_width, 0);
-  }
-  return size;
+  return IntSize(LeftScrollbarWidth().ToInt(), 0);
 }
 
 IntSize LayoutBox::ScrolledContentOffset() const {
   DCHECK(HasOverflowClip());
-  DCHECK(HasLayer());
+  DCHECK(GetScrollableArea());
   // FIXME: Return DoubleSize here. crbug.com/414283.
-  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-    return scrollable_area->ScrollOffsetInt();
-  IntSize result = scrollable_area->ScrollOffsetInt();
-  result.Expand(VerticalScrollbarWidth(), 0);
-  return result;
+  return GetScrollableArea()->ScrollOffsetInt();
 }
 
 LayoutRect LayoutBox::ClippingRect(const LayoutPoint& location) const {
@@ -4035,11 +4026,9 @@ void LayoutBox::ComputeInlineStaticDistance(
     LayoutUnit static_position = child->Layer()->StaticInlinePosition() +
                                  container_logical_width +
                                  container_block->BorderLogicalLeft();
-    if (container_block->IsBox() &&
-        ToLayoutBox(container_block)
-            ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    if (container_block->IsBox()) {
       static_position +=
-          ToLayoutBox(container_block)->OriginAdjustmentForScrollbars().Width();
+          ToLayoutBox(container_block)->LogicalLeftScrollbarWidth();
     }
     for (LayoutObject* curr = child->Parent(); curr; curr = curr->Container()) {
       if (curr->IsBox()) {
@@ -4194,22 +4183,25 @@ void LayoutBox::ComputeLogicalLeftPositionedOffset(
     LayoutUnit logical_width_value,
     const LayoutBoxModelObject* container_block,
     LayoutUnit container_logical_width) {
-  // Deal with differing writing modes here. Our offset needs to be in the
-  // containing block's coordinate space. If the containing block is flipped
-  // along this axis, then we need to flip the coordinate. This can only happen
-  // if the containing block is both a flipped mode and perpendicular to us.
-  if (container_block->IsHorizontalWritingMode() !=
-          child->IsHorizontalWritingMode() &&
-      container_block->StyleRef().IsFlippedBlocksWritingMode()) {
-    logical_left_pos =
-        container_logical_width - logical_width_value - logical_left_pos;
-    logical_left_pos +=
-        (child->IsHorizontalWritingMode() ? container_block->BorderRight()
-                                          : container_block->BorderBottom());
+  if (child->IsHorizontalWritingMode()) {
+    if (container_block->HasFlippedBlocksWritingMode()) {
+      // Deal with differing writing modes here. Our offset needs to be in the
+      // containing block's coordinate space. If the containing block is flipped
+      // along this axis, then we need to flip the coordinate. This can only
+      // happen if the containing block has flipped mode and is perpendicular
+      // to us.
+      logical_left_pos =
+          container_logical_width - logical_width_value - logical_left_pos;
+      logical_left_pos += container_block->BorderRight();
+      if (container_block->IsBox())
+        logical_left_pos += ToLayoutBox(container_block)->RightScrollbarWidth();
+    } else {
+      logical_left_pos += container_block->BorderLeft();
+      if (container_block->IsBox())
+        logical_left_pos += ToLayoutBox(container_block)->LeftScrollbarWidth();
+    }
   } else {
-    logical_left_pos +=
-        (child->IsHorizontalWritingMode() ? container_block->BorderLeft()
-                                          : container_block->BorderTop());
+    logical_left_pos += container_block->BorderTop();
   }
 }
 
@@ -4448,15 +4440,6 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
     }
   }
 
-  if (container_block->IsBox() &&
-      container_block->IsHorizontalWritingMode() == IsHorizontalWritingMode() &&
-      ToLayoutBox(container_block)->ScrollsOverflowY() &&
-      ToLayoutBox(container_block)
-          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-    logical_left_value = logical_left_value +
-                         ToLayoutBox(container_block)->VerticalScrollbarWidth();
-  }
-
   computed_values.position_ = logical_left_value + margin_logical_left_value;
   ComputeLogicalLeftPositionedOffset(computed_values.position_, this,
                                      computed_values.extent_, container_block,
@@ -4493,8 +4476,15 @@ void LayoutBox::ComputeBlockStaticDistance(
     ToLayoutFlowThread(box).FlowThreadToContainingCoordinateSpace(
         static_logical_top, dummy_inline_position);
   }
-  logical_top.SetValue(kFixed,
-                       static_logical_top - container_block->BorderBefore());
+
+  // Now static_logical_top is relative to container_block's logical top.
+  // Convert it to be relative to containing_block's logical client top.
+  static_logical_top -= container_block->BorderBefore();
+  if (container_block->IsBox()) {
+    static_logical_top -=
+        ToLayoutBox(container_block)->LogicalTopScrollbarHeight();
+  }
+  logical_top.SetValue(kFixed, static_logical_top);
 }
 
 void LayoutBox::ComputePositionedLogicalHeight(
@@ -4611,24 +4601,23 @@ void LayoutBox::ComputeLogicalTopPositionedOffset(
       (child->StyleRef().IsFlippedBlocksWritingMode() !=
            container_block->StyleRef().IsFlippedBlocksWritingMode() &&
        child->IsHorizontalWritingMode() ==
-           container_block->IsHorizontalWritingMode()))
+           container_block->IsHorizontalWritingMode())) {
     logical_top_pos =
         container_logical_height - logical_height_value - logical_top_pos;
+  }
 
-  // Our offset is from the logical bottom edge in a flipped environment, e.g.,
-  // right for vertical-rl.
-  if (container_block->StyleRef().IsFlippedBlocksWritingMode() &&
-      child->IsHorizontalWritingMode() ==
-          container_block->IsHorizontalWritingMode()) {
-    if (child->IsHorizontalWritingMode())
-      logical_top_pos += container_block->BorderBottom();
-    else
-      logical_top_pos += container_block->BorderRight();
+  // Convert logical_top_pos from container's client space to container's border
+  // box space.
+  if (child->IsHorizontalWritingMode()) {
+    logical_top_pos += container_block->BorderTop();
+  } else if (container_block->HasFlippedBlocksWritingMode()) {
+    logical_top_pos += container_block->BorderRight();
+    if (container_block->IsBox())
+      logical_top_pos += ToLayoutBox(container_block)->RightScrollbarWidth();
   } else {
-    if (child->IsHorizontalWritingMode())
-      logical_top_pos += container_block->BorderTop();
-    else
-      logical_top_pos += container_block->BorderLeft();
+    logical_top_pos += container_block->BorderLeft();
+    if (container_block->IsBox())
+      logical_top_pos += ToLayoutBox(container_block)->LeftScrollbarWidth();
   }
 }
 
@@ -4805,15 +4794,6 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
     }
   }
   computed_values.extent_ = logical_height_value;
-
-  if (container_block->IsBox() &&
-      container_block->IsHorizontalWritingMode() != IsHorizontalWritingMode() &&
-      ToLayoutBox(container_block)->ScrollsOverflowY() &&
-      ToLayoutBox(container_block)
-          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-    logical_top_value = logical_top_value +
-                         ToLayoutBox(container_block)->VerticalScrollbarWidth();
-  }
 
   // Use computed values to calculate the vertical position.
   computed_values.position_ =
@@ -5484,40 +5464,8 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
 
 DISABLE_CFI_PERF
 LayoutRect LayoutBox::NoOverflowRect() const {
-  // Because of the special coordinate system used for overflow rectangles and
-  // many other rectangles (not quite logical, not quite physical), we need to
-  // flip the block progression coordinate in vertical-rl writing mode. In other
-  // words, the rectangle returned is physical, except for the block direction
-  // progression coordinate (x in vertical writing mode), which is always
-  // "logical top". Apart from the flipping, this method does the same thing as
-  // clientBoxRect().
-
-  const int scroll_bar_width = VerticalScrollbarWidth();
-  const int scroll_bar_height = HorizontalScrollbarHeight();
-  LayoutUnit left(BorderLeft() +
-                  (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()
-                       ? scroll_bar_width
-                       : 0));
-  LayoutUnit top(BorderTop());
-  LayoutUnit right(BorderRight());
-  LayoutUnit bottom(BorderBottom());
-  LayoutRect rect(left, top, Size().Width() - left - right,
-                  Size().Height() - top - bottom);
+  auto rect = PhysicalPaddingBoxRect();
   FlipForWritingMode(rect);
-  // Subtract space occupied by scrollbars. Order is important here: first flip,
-  // then subtract scrollbars. This may seem backwards and weird, since one
-  // would think that a vertical scrollbar at the physical right in vertical-rl
-  // ought to be at the logical left (physical right), between the logical left
-  // (physical right) border and the logical left (physical right) padding. But
-  // this is how the rest of the code expects us to behave. This is highly
-  // related to https://bugs.webkit.org/show_bug.cgi?id=76129
-  // FIXME: when the above mentioned bug is fixed, it should hopefully be
-  // possible to call clientBoxRect() or paddingBoxRect() in this method, rather
-  // than fiddling with the edges on our own.
-  if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    rect.Contract(0, scroll_bar_height);
-  else
-    rect.Contract(scroll_bar_width, scroll_bar_height);
   return rect;
 }
 

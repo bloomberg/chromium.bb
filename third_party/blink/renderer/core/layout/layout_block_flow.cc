@@ -596,8 +596,13 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
   ResetLayout();
 
   LayoutUnit before_edge = BorderBefore() + PaddingBefore();
-  LayoutUnit after_edge =
-      BorderAfter() + PaddingAfter() + ScrollbarLogicalHeight();
+  LayoutUnit after_edge = BorderAfter() + PaddingAfter();
+
+  if (HasFlippedBlocksWritingMode())
+    before_edge += ScrollbarLogicalHeight();
+  else
+    after_edge += ScrollbarLogicalHeight();
+
   SetLogicalHeight(before_edge);
 
   if (ChildrenInline())
@@ -671,8 +676,7 @@ DISABLE_CFI_PERF
 void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
   LayoutUnit start_position = BorderStart() + PaddingStart();
   LayoutUnit initial_start_position = start_position;
-  if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    start_position -= VerticalScrollbarWidthClampedToContentBox();
+  start_position -= LogicalLeftScrollbarWidth();
   LayoutUnit total_available_logical_width =
       BorderAndPaddingLogicalWidth() + AvailableLogicalWidth();
 

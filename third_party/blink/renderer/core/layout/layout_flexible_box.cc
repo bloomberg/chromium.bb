@@ -159,10 +159,10 @@ LayoutUnit LayoutFlexibleBox::SynthesizedBaselineFromContentBox(
     LineDirectionMode direction) {
   if (direction == kHorizontalLine) {
     return box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
-           box.VerticalScrollbarWidth();
+           box.BottomScrollbarHeight();
   }
   return box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
-         box.HorizontalScrollbarHeight();
+         box.LeftScrollbarWidth();
 }
 
 LayoutUnit LayoutFlexibleBox::BaselinePosition(FontBaseline,
@@ -237,60 +237,6 @@ LayoutUnit LayoutFlexibleBox::InlineBlockBaseline(
   LayoutUnit margin_ascent =
       direction == kHorizontalLine ? MarginTop() : MarginRight();
   return SynthesizedBaselineFromContentBox(*this, direction) + margin_ascent;
-}
-
-IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
-  IntSize size;
-  int adjustment_width = VerticalScrollbarWidth();
-  int adjustment_height = HorizontalScrollbarHeight();
-  if (!adjustment_width && !adjustment_height)
-    return size;
-
-  EFlexDirection flex_direction = StyleRef().FlexDirection();
-  TextDirection text_direction = StyleRef().Direction();
-  WritingMode writing_mode = StyleRef().GetWritingMode();
-
-  if (flex_direction == EFlexDirection::kRow) {
-    if (text_direction == TextDirection::kRtl) {
-      if (blink::IsHorizontalWritingMode(writing_mode))
-        size.Expand(adjustment_width, 0);
-      else
-        size.Expand(0, adjustment_height);
-    }
-    if (IsFlippedBlocksWritingMode(writing_mode))
-      size.Expand(adjustment_width, 0);
-  } else if (flex_direction == EFlexDirection::kRowReverse) {
-    if (text_direction == TextDirection::kLtr) {
-      if (blink::IsHorizontalWritingMode(writing_mode))
-        size.Expand(adjustment_width, 0);
-      else
-        size.Expand(0, adjustment_height);
-    }
-    if (IsFlippedBlocksWritingMode(writing_mode))
-      size.Expand(adjustment_width, 0);
-  } else if (flex_direction == EFlexDirection::kColumn) {
-    if (IsFlippedBlocksWritingMode(writing_mode))
-      size.Expand(adjustment_width, 0);
-  } else {
-    if (blink::IsHorizontalWritingMode(writing_mode))
-      size.Expand(0, adjustment_height);
-    else if (IsFlippedLinesWritingMode(writing_mode))
-      size.Expand(adjustment_width, 0);
-  }
-  return size;
-}
-
-IntSize LayoutFlexibleBox::ScrolledContentOffset() const {
-  DCHECK(HasOverflowClip());
-  DCHECK(HasLayer());
-  // FIXME: Return DoubleSize here. crbug.com/414283.
-  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  IntSize result =
-      scrollable_area->ScrollOffsetInt() + OriginAdjustmentForScrollbars();
-  if (IsHorizontalWritingMode() &&
-      ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    result.Expand(-VerticalScrollbarWidth(), 0);
-  return result;
 }
 
 bool LayoutFlexibleBox::HasTopOverflow() const {
@@ -617,90 +563,53 @@ LayoutUnit LayoutFlexibleBox::ComputeMainAxisExtentForChild(
          border_and_padding;
 }
 
-LayoutUnit LayoutFlexibleBox::FlowAwareBorderStart() const {
-  if (IsHorizontalFlow())
-    return IsLeftToRightFlow() ? BorderLeft() : BorderRight();
-  return IsLeftToRightFlow() ? BorderTop() : BorderBottom();
+LayoutUnit LayoutFlexibleBox::ContentInsetRight() const {
+  return BorderRight() + PaddingRight() + RightScrollbarWidth();
 }
 
-LayoutUnit LayoutFlexibleBox::FlowAwareBorderEnd() const {
-  if (IsHorizontalFlow())
-    return IsLeftToRightFlow() ? BorderRight() : BorderLeft();
-  return IsLeftToRightFlow() ? BorderBottom() : BorderTop();
+LayoutUnit LayoutFlexibleBox::ContentInsetBottom() const {
+  return BorderBottom() + PaddingBottom() + BottomScrollbarHeight();
 }
 
-LayoutUnit LayoutFlexibleBox::FlowAwareBorderBefore() const {
+LayoutUnit LayoutFlexibleBox::FlowAwareContentInsetStart() const {
+  if (IsHorizontalFlow())
+    return IsLeftToRightFlow() ? ContentLeft() : ContentInsetRight();
+  return IsLeftToRightFlow() ? ContentTop() : ContentInsetBottom();
+}
+
+LayoutUnit LayoutFlexibleBox::FlowAwareContentInsetEnd() const {
+  if (IsHorizontalFlow())
+    return IsLeftToRightFlow() ? ContentInsetRight() : ContentLeft();
+  return IsLeftToRightFlow() ? ContentInsetBottom() : ContentTop();
+}
+
+LayoutUnit LayoutFlexibleBox::FlowAwareContentInsetBefore() const {
   switch (FlexLayoutAlgorithm::GetTransformedWritingMode(StyleRef())) {
     case TransformedWritingMode::kTopToBottomWritingMode:
-      return BorderTop();
+      return ContentTop();
     case TransformedWritingMode::kBottomToTopWritingMode:
-      return BorderBottom();
+      return ContentInsetBottom();
     case TransformedWritingMode::kLeftToRightWritingMode:
-      return BorderLeft();
+      return ContentLeft();
     case TransformedWritingMode::kRightToLeftWritingMode:
-      return BorderRight();
+      return ContentInsetRight();
   }
   NOTREACHED();
-  return BorderTop();
 }
 
 DISABLE_CFI_PERF
-LayoutUnit LayoutFlexibleBox::FlowAwareBorderAfter() const {
+LayoutUnit LayoutFlexibleBox::FlowAwareContentInsetAfter() const {
   switch (FlexLayoutAlgorithm::GetTransformedWritingMode(StyleRef())) {
     case TransformedWritingMode::kTopToBottomWritingMode:
-      return BorderBottom();
+      return ContentInsetBottom();
     case TransformedWritingMode::kBottomToTopWritingMode:
-      return BorderTop();
+      return ContentTop();
     case TransformedWritingMode::kLeftToRightWritingMode:
-      return BorderRight();
+      return ContentInsetRight();
     case TransformedWritingMode::kRightToLeftWritingMode:
-      return BorderLeft();
+      return ContentLeft();
   }
   NOTREACHED();
-  return BorderTop();
-}
-
-LayoutUnit LayoutFlexibleBox::FlowAwarePaddingStart() const {
-  if (IsHorizontalFlow())
-    return IsLeftToRightFlow() ? PaddingLeft() : PaddingRight();
-  return IsLeftToRightFlow() ? PaddingTop() : PaddingBottom();
-}
-
-LayoutUnit LayoutFlexibleBox::FlowAwarePaddingEnd() const {
-  if (IsHorizontalFlow())
-    return IsLeftToRightFlow() ? PaddingRight() : PaddingLeft();
-  return IsLeftToRightFlow() ? PaddingBottom() : PaddingTop();
-}
-
-LayoutUnit LayoutFlexibleBox::FlowAwarePaddingBefore() const {
-  switch (FlexLayoutAlgorithm::GetTransformedWritingMode(StyleRef())) {
-    case TransformedWritingMode::kTopToBottomWritingMode:
-      return PaddingTop();
-    case TransformedWritingMode::kBottomToTopWritingMode:
-      return PaddingBottom();
-    case TransformedWritingMode::kLeftToRightWritingMode:
-      return PaddingLeft();
-    case TransformedWritingMode::kRightToLeftWritingMode:
-      return PaddingRight();
-  }
-  NOTREACHED();
-  return PaddingTop();
-}
-
-DISABLE_CFI_PERF
-LayoutUnit LayoutFlexibleBox::FlowAwarePaddingAfter() const {
-  switch (FlexLayoutAlgorithm::GetTransformedWritingMode(StyleRef())) {
-    case TransformedWritingMode::kTopToBottomWritingMode:
-      return PaddingBottom();
-    case TransformedWritingMode::kBottomToTopWritingMode:
-      return PaddingTop();
-    case TransformedWritingMode::kLeftToRightWritingMode:
-      return PaddingRight();
-    case TransformedWritingMode::kRightToLeftWritingMode:
-      return PaddingLeft();
-  }
-  NOTREACHED();
-  return PaddingTop();
 }
 
 LayoutUnit LayoutFlexibleBox::CrossAxisScrollbarExtent() const {
@@ -923,13 +832,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
   FlexLayoutAlgorithm flex_algorithm(Style(), line_break_length, all_items);
-  LayoutUnit cross_axis_offset =
-      FlowAwareBorderBefore() + FlowAwarePaddingBefore();
+  LayoutUnit cross_axis_offset = FlowAwareContentInsetBefore();
   LayoutUnit logical_width = LogicalWidth();
-  // TODO(cbiesinger): I don't know why this is necessary but without it we
-  // incorrectly lay out vertical+RTL row flexboxes that overflow.
-  if (!ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    logical_width -= ScrollbarLogicalWidth();
   FlexLine* current_line;
   while ((current_line = flex_algorithm.ComputeNextFlexLine(logical_width))) {
     DCHECK_GE(current_line->line_items.size(), 0ULL);
@@ -944,14 +848,7 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
 
     LayoutLineItems(current_line, relayout_children, layout_scope);
 
-    LayoutUnit main_axis_offset =
-        FlowAwareBorderStart() + FlowAwarePaddingStart();
-    if (StyleRef().FlexDirection() == EFlexDirection::kRowReverse &&
-        ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-      main_axis_offset += IsHorizontalFlow() ? VerticalScrollbarWidth()
-                                             : HorizontalScrollbarHeight();
-    }
-
+    LayoutUnit main_axis_offset = FlowAwareContentInsetStart();
     current_line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
     ApplyLineItemsPosition(current_line);
     if (number_of_in_flow_children_on_first_line_ == -1) {
@@ -1378,8 +1275,7 @@ void LayoutFlexibleBox::PrepareChildForPositionedLayout(LayoutBox& child) {
   DCHECK(child.IsOutOfFlowPositioned());
   child.ContainingBlock()->InsertPositionedObject(&child);
   PaintLayer* child_layer = child.Layer();
-  LayoutUnit static_inline_position =
-      FlowAwareBorderStart() + FlowAwarePaddingStart();
+  LayoutUnit static_inline_position = FlowAwareContentInsetStart();
   if (child_layer->StaticInlinePosition() != static_inline_position) {
     child_layer->SetStaticInlinePosition(static_inline_position);
     if (child.StyleRef().HasStaticInlinePosition(
@@ -1387,8 +1283,7 @@ void LayoutFlexibleBox::PrepareChildForPositionedLayout(LayoutBox& child) {
       child.SetChildNeedsLayout(kMarkOnlyThis);
   }
 
-  LayoutUnit static_block_position =
-      FlowAwareBorderBefore() + FlowAwarePaddingBefore();
+  LayoutUnit static_block_position = FlowAwareContentInsetBefore();
   if (child_layer->StaticBlockPosition() != static_block_position) {
     child_layer->SetStaticBlockPosition(static_block_position);
     if (child.StyleRef().HasStaticBlockPosition(
@@ -1533,15 +1428,13 @@ void LayoutFlexibleBox::ApplyLineItemsPosition(FlexLine* current_line) {
   }
 
   if (IsColumnFlow()) {
-    SetLogicalHeight(std::max(
-        LogicalHeight(), current_line->main_axis_extent + FlowAwareBorderEnd() +
-                             FlowAwarePaddingEnd() + ScrollbarLogicalHeight()));
+    SetLogicalHeight(std::max(LogicalHeight(), current_line->main_axis_extent +
+                                                   FlowAwareContentInsetEnd()));
   } else {
-    SetLogicalHeight(std::max(
-        LogicalHeight(), current_line->cross_axis_offset +
-                             FlowAwareBorderAfter() + FlowAwarePaddingAfter() +
-                             current_line->cross_axis_extent +
-                             CrossAxisScrollbarExtent()));
+    SetLogicalHeight(
+        std::max(LogicalHeight(), current_line->cross_axis_offset +
+                                      FlowAwareContentInsetAfter() +
+                                      current_line->cross_axis_extent));
   }
 
   if (StyleRef().FlexDirection() == EFlexDirection::kColumnReverse) {
@@ -1564,12 +1457,9 @@ void LayoutFlexibleBox::LayoutColumnReverse(Vector<FlexItem>& children,
   // This is similar to the logic in layoutAndPlaceChildren, except we place
   // the children starting from the end of the flexbox. We also don't need to
   // layout anything since we're just moving the children to a new position.
-  LayoutUnit main_axis_offset =
-      LogicalHeight() - FlowAwareBorderEnd() - FlowAwarePaddingEnd();
+  LayoutUnit main_axis_offset = LogicalHeight() - FlowAwareContentInsetEnd();
   main_axis_offset -= FlexLayoutAlgorithm::InitialContentPositionOffset(
       available_free_space, justify_content, children.size());
-  main_axis_offset -= IsHorizontalFlow() ? VerticalScrollbarWidth()
-                                         : HorizontalScrollbarHeight();
 
   for (size_t i = 0; i < children.size(); ++i) {
     FlexItem& flex_item = children[i];
@@ -1784,11 +1674,8 @@ void LayoutFlexibleBox::FlipForRightToLeftColumn(
 
       LayoutPoint location = FlowAwareLocationForChild(*flex_item.box);
       // For vertical flows, setFlowAwareLocationForChild will transpose x and
-      // y,
-      // so using the y axis for a column cross axis extent is correct.
+      // y, so using the y axis for a column cross axis extent is correct.
       location.SetY(cross_extent - flex_item.cross_axis_size - location.Y());
-      if (!IsHorizontalWritingMode())
-        location.Move(LayoutSize(0, -HorizontalScrollbarHeight()));
       SetFlowAwareLocationForChild(*flex_item.box, location);
     }
   }

@@ -723,8 +723,6 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
       }
       break;
   }
-  if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    logical_left += VerticalScrollbarWidthClampedToContentBox();
 }
 
 bool LayoutBlockFlow::CanContainFirstFormattedLine() const {
