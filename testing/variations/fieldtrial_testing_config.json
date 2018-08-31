@@ -3638,7 +3638,7 @@
             ],
             "experiments": [
                 {
-                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3_V2",
+                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3_V3",
                     "params": {
                         "HIGHEST": "HIGH",
                         "IDLE": "LOW",
