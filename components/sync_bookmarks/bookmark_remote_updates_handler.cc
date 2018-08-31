@@ -171,11 +171,11 @@ void BookmarkRemoteUpdatesHandler::Process(
       continue;
     }
     if (update_entity.is_deleted()) {
-      ProcessRemoteDelete(update_entity, tracked_entity);
+      ProcessDelete(update_entity, tracked_entity);
       continue;
     }
     if (!tracked_entity) {
-      ProcessRemoteCreate(*update);
+      ProcessCreate(*update);
       continue;
     }
     // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only care
@@ -183,7 +183,7 @@ void BookmarkRemoteUpdatesHandler::Process(
     if (bookmark_model_->is_permanent_node(tracked_entity->bookmark_node())) {
       continue;
     }
-    ProcessRemoteUpdate(*update, tracked_entity);
+    ProcessUpdate(*update, tracked_entity);
   }
 }
 
@@ -273,7 +273,7 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
   return ordered_updates;
 }
 
-void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
+void BookmarkRemoteUpdatesHandler::ProcessCreate(
     const syncer::UpdateResponseData& update) {
   const syncer::EntityData& update_entity = update.entity.value();
   DCHECK(!update_entity.is_deleted());
@@ -322,7 +322,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
                          update_entity.specifics);
 }
 
-void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
+void BookmarkRemoteUpdatesHandler::ProcessUpdate(
     const syncer::UpdateResponseData& update,
     const SyncedBookmarkTracker::Entity* tracked_entity) {
   const syncer::EntityData& update_entity = update.entity.value();
@@ -370,7 +370,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
                     bookmark_tracker_, favicon_service_);
 }
 
-void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
+void BookmarkRemoteUpdatesHandler::ProcessDelete(
     const syncer::EntityData& update_entity,
     const SyncedBookmarkTracker::Entity* tracked_entity) {
   DCHECK(update_entity.is_deleted());
@@ -436,7 +436,7 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     // Only local node has been deleted. It should be restored from the server
     // data as a remote creation.
     bookmark_tracker_->Remove(update_entity.id);
-    ProcessRemoteCreate(update);
+    ProcessCreate(update);
     DLOG(WARNING) << "Conflict: USE_REMOTE";
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
                               syncer::ConflictResolution::USE_REMOTE,
