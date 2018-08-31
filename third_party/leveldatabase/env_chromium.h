@@ -109,10 +109,6 @@ LEVELDB_EXPORT int GetNumCorruptionCodes();
 LEVELDB_EXPORT std::string GetCorruptionMessage(const leveldb::Status& status);
 LEVELDB_EXPORT bool IndicatesDiskFull(const leveldb::Status& status);
 
-// Returns the name for a temporary database copy during RewriteDB().
-LEVELDB_EXPORT std::string DatabaseNameForRewriteDB(
-    const std::string& original_name);
-
 // Determine the appropriate leveldb write buffer size to use. The default size
 // (4MB) may result in a log file too large to be compacted given the available
 // storage space. This function will return smaller values for smaller disks,
@@ -353,16 +349,6 @@ class LEVELDB_EXPORT DBTracker {
 LEVELDB_EXPORT leveldb::Status OpenDB(const leveldb_env::Options& options,
                                       const std::string& name,
                                       std::unique_ptr<leveldb::DB>* dbptr);
-
-// Copies the content of |dbptr| into a fresh database to remove traces of
-// deleted data. |options| and |name| of the old database are required to create
-// an identical copy. |dbptr| will be replaced with the new database on success.
-// If the rewrite fails e.g. because we can't write to the temporary location,
-// the old db is returned if possible, otherwise |*dbptr| can become NULL.
-// The rewrite will only be performed if |kLevelDBRewriteFeature| is enabled.
-LEVELDB_EXPORT leveldb::Status RewriteDB(const leveldb_env::Options& options,
-                                         const std::string& name,
-                                         std::unique_ptr<leveldb::DB>* dbptr);
 
 LEVELDB_EXPORT base::StringPiece MakeStringPiece(const leveldb::Slice& s);
 LEVELDB_EXPORT leveldb::Slice MakeSlice(const base::StringPiece& s);
