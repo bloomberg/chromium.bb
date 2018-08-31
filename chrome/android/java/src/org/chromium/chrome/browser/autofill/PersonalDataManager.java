@@ -909,6 +909,15 @@ public class PersonalDataManager {
     }
 
     /**
+     * TODO(crbug.com/879420): Remove this once Clank downstream uses isAutofillProfileEnabled and
+     *                         isAutofillCreditCardEnabled.
+     * @return Whether the Autofill feature is enabled.
+     */
+    public static boolean isAutofillEnabled() {
+        return isAutofillProfileEnabled() && isAutofillCreditCardEnabled();
+    }
+
+    /**
      * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
     public static boolean isAutofillProfileEnabled() {
@@ -920,6 +929,17 @@ public class PersonalDataManager {
      */
     public static boolean isAutofillCreditCardEnabled() {
         return nativeGetPref(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
+    }
+
+    /**
+     * Enables or disables the Autofill feature.
+     * TODO(crbug.com/879420): Remove this once Clank downstream uses setAutofillProfileEnabled and
+     *                         setAutofillCreditCardEnabled.
+     * @param enable True to disable Autofill, false otherwise.
+     */
+    public static void setAutofillEnabled(boolean enable) {
+        setAutofillProfileEnabled(enable);
+        setAutofillCreditCardEnabled(enable);
     }
 
     /**
