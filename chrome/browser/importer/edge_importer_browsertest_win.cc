@@ -232,6 +232,10 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
 }
 
 IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
+  // We only do legacy fallback on versions < VERSION_WIN10_TH2.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10_TH2)
+    return;
+
   const BookmarkInfo kEdgeBookmarks[] = {
       {false, 0, {}, L"Google", "http://www.google.com/"}};
   std::vector<BookmarkInfo> bookmark_entries(
