@@ -158,83 +158,6 @@ jumbo_component("base") {
     "allocator/allocator_shim.h",
     "allocator/malloc_zone_functions_mac.cc",
     "allocator/malloc_zone_functions_mac.h",
-    "android/android_hardware_buffer_compat.cc",
-    "android/android_hardware_buffer_compat.h",
-    "android/android_image_reader_abi.h",
-    "android/android_image_reader_compat.cc",
-    "android/android_image_reader_compat.h",
-    "android/animation_frame_time_histogram.cc",
-    "android/apk_assets.cc",
-    "android/apk_assets.h",
-    "android/application_status_listener.cc",
-    "android/application_status_listener.h",
-    "android/base_jni_onload.cc",
-    "android/base_jni_onload.h",
-    "android/build_info.cc",
-    "android/build_info.h",
-    "android/callback_android.cc",
-    "android/callback_android.h",
-    "android/child_process_binding_types.h",
-    "android/child_process_service.cc",
-    "android/command_line_android.cc",
-    "android/content_uri_utils.cc",
-    "android/content_uri_utils.h",
-    "android/cpu_features.cc",
-    "android/early_trace_event_binding.cc",
-    "android/early_trace_event_binding.h",
-    "android/event_log.cc",
-    "android/event_log.h",
-    "android/field_trial_list.cc",
-    "android/important_file_writer_android.cc",
-    "android/java_exception_reporter.cc",
-    "android/java_exception_reporter.h",
-    "android/java_handler_thread.cc",
-    "android/java_handler_thread.h",
-    "android/java_runtime.cc",
-    "android/java_runtime.h",
-    "android/jni_android.cc",
-    "android/jni_android.h",
-    "android/jni_array.cc",
-    "android/jni_array.h",
-    "android/jni_generator/jni_generator_helper.h",
-    "android/jni_int_wrapper.h",
-    "android/jni_registrar.cc",
-    "android/jni_registrar.h",
-    "android/jni_string.cc",
-    "android/jni_string.h",
-    "android/jni_utils.cc",
-    "android/jni_utils.h",
-    "android/jni_weak_ref.cc",
-    "android/jni_weak_ref.h",
-    "android/library_loader/anchor_functions.cc",
-    "android/library_loader/anchor_functions.h",
-    "android/library_loader/library_load_from_apk_status_codes.h",
-    "android/library_loader/library_loader_hooks.cc",
-    "android/library_loader/library_loader_hooks.h",
-    "android/library_loader/library_prefetcher.cc",
-    "android/library_loader/library_prefetcher.h",
-    "android/locale_utils.cc",
-    "android/locale_utils.h",
-    "android/memory_pressure_listener_android.cc",
-    "android/memory_pressure_listener_android.h",
-    "android/path_service_android.cc",
-    "android/path_utils.cc",
-    "android/path_utils.h",
-    "android/record_histogram.cc",
-    "android/record_user_action.cc",
-    "android/scoped_hardware_buffer_handle.cc",
-    "android/scoped_hardware_buffer_handle.h",
-    "android/scoped_java_ref.cc",
-    "android/scoped_java_ref.h",
-    "android/statistics_recorder_android.cc",
-    "android/sys_utils.cc",
-    "android/sys_utils.h",
-    "android/time_utils.cc",
-    "android/timezone_utils.cc",
-    "android/timezone_utils.h",
-    "android/trace_event_binding.cc",
-    "android/unguessable_token_android.cc",
-    "android/unguessable_token_android.h",
     "at_exit.cc",
     "at_exit.h",
     "atomic_ref_count.h",
@@ -360,10 +283,6 @@ jumbo_component("base") {
     "files/file_path_constants.cc",
     "files/file_path_watcher.cc",
     "files/file_path_watcher.h",
-    "files/file_path_watcher_fsevents.cc",
-    "files/file_path_watcher_fsevents.h",
-    "files/file_path_watcher_kqueue.cc",
-    "files/file_path_watcher_kqueue.h",
     "files/file_path_watcher_linux.cc",
     "files/file_path_watcher_mac.cc",
     "files/file_path_watcher_win.cc",
@@ -630,10 +549,6 @@ jumbo_component("base") {
     "native_library_ios.mm",
     "native_library_mac.mm",
     "native_library_win.cc",
-    "nix/mime_util_xdg.cc",
-    "nix/mime_util_xdg.h",
-    "nix/xdg_util.cc",
-    "nix/xdg_util.h",
     "no_destructor.h",
     "observer_list.h",
     "observer_list_threadsafe.cc",
@@ -720,7 +635,6 @@ jumbo_component("base") {
     "rand_util.cc",
     "rand_util.h",
     "rand_util_nacl.cc",
-    "rand_util_win.cc",
     "run_loop.cc",
     "run_loop.h",
     "sampling_heap_profiler/lock_free_address_hash_set.cc",
@@ -810,19 +724,12 @@ jumbo_component("base") {
     "sys_byteorder.h",
     "sys_info.cc",
     "sys_info.h",
-    "sys_info_android.cc",
-    "sys_info_chromeos.cc",
     "sys_info_internal.h",
-    "syslog_logging.cc",
-    "syslog_logging.h",
 
     #"sys_info_freebsd.cc",  # Unused in Chromium build.
-    "sys_info_ios.mm",
-    "sys_info_linux.cc",
-    "sys_info_mac.mm",
-
     #"sys_info_openbsd.cc",  # Unused in Chromium build.
-    "sys_info_win.cc",
+    "syslog_logging.cc",
+    "syslog_logging.h",
     "system_monitor/system_monitor.cc",
     "system_monitor/system_monitor.h",
     "task/cancelable_task_tracker.cc",
@@ -1157,13 +1064,6 @@ jumbo_component("base") {
     "win/wrapped_window_proc.h",
   ]
 
-  # winternl.h and NTSecAPI.h have different definitions of UNICODE_STRING.
-  # There's only one client of NTSecAPI.h in base but several of winternl.h,
-  # so exclude the NTSecAPI.h one.
-  if (is_win) {
-    jumbo_excluded_sources = [ "rand_util_win.cc" ]
-  }
-
   if (is_posix) {
     sources += [
       "base_paths_posix.h",
@@ -1337,9 +1237,87 @@ jumbo_component("base") {
   if (is_android) {
     sources -= [ "debug/stack_trace_posix.cc" ]
     sources += [
+      "android/android_hardware_buffer_compat.cc",
+      "android/android_hardware_buffer_compat.h",
+      "android/android_image_reader_abi.h",
+      "android/android_image_reader_compat.cc",
+      "android/android_image_reader_compat.h",
+      "android/animation_frame_time_histogram.cc",
+      "android/apk_assets.cc",
+      "android/apk_assets.h",
+      "android/application_status_listener.cc",
+      "android/application_status_listener.h",
+      "android/base_jni_onload.cc",
+      "android/base_jni_onload.h",
+      "android/build_info.cc",
+      "android/build_info.h",
+      "android/callback_android.cc",
+      "android/callback_android.h",
+      "android/child_process_binding_types.h",
+      "android/child_process_service.cc",
+      "android/command_line_android.cc",
+      "android/content_uri_utils.cc",
+      "android/content_uri_utils.h",
+      "android/cpu_features.cc",
+      "android/early_trace_event_binding.cc",
+      "android/early_trace_event_binding.h",
+      "android/event_log.cc",
+      "android/event_log.h",
+      "android/field_trial_list.cc",
+      "android/important_file_writer_android.cc",
+      "android/java_exception_reporter.cc",
+      "android/java_exception_reporter.h",
+      "android/java_handler_thread.cc",
+      "android/java_handler_thread.h",
+      "android/java_runtime.cc",
+      "android/java_runtime.h",
+      "android/jni_android.cc",
+      "android/jni_android.h",
+      "android/jni_array.cc",
+      "android/jni_array.h",
+      "android/jni_generator/jni_generator_helper.h",
+      "android/jni_int_wrapper.h",
+      "android/jni_registrar.cc",
+      "android/jni_registrar.h",
+      "android/jni_string.cc",
+      "android/jni_string.h",
+      "android/jni_utils.cc",
+      "android/jni_utils.h",
+      "android/jni_weak_ref.cc",
+      "android/jni_weak_ref.h",
+      "android/library_loader/anchor_functions.cc",
+      "android/library_loader/anchor_functions.h",
+      "android/library_loader/library_load_from_apk_status_codes.h",
+      "android/library_loader/library_loader_hooks.cc",
+      "android/library_loader/library_loader_hooks.h",
+      "android/library_loader/library_prefetcher.cc",
+      "android/library_loader/library_prefetcher.h",
+      "android/locale_utils.cc",
+      "android/locale_utils.h",
+      "android/memory_pressure_listener_android.cc",
+      "android/memory_pressure_listener_android.h",
+      "android/path_service_android.cc",
+      "android/path_utils.cc",
+      "android/path_utils.h",
+      "android/record_histogram.cc",
+      "android/record_user_action.cc",
+      "android/scoped_hardware_buffer_handle.cc",
+      "android/scoped_hardware_buffer_handle.h",
+      "android/scoped_java_ref.cc",
+      "android/scoped_java_ref.h",
+      "android/statistics_recorder_android.cc",
+      "android/sys_utils.cc",
+      "android/sys_utils.h",
+      "android/time_utils.cc",
+      "android/timezone_utils.cc",
+      "android/timezone_utils.h",
+      "android/trace_event_binding.cc",
+      "android/unguessable_token_android.cc",
+      "android/unguessable_token_android.h",
       "memory/platform_shared_memory_region_android.cc",
       "memory/shared_memory_android.cc",
       "memory/shared_memory_handle_android.cc",
+      "sys_info_android.cc",
       "time/time_android.cc",
     ]
 
@@ -1393,7 +1371,10 @@ jumbo_component("base") {
 
   # Chromeos.
   if (is_chromeos) {
-    sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
+    sources += [
+      "power_monitor/power_monitor_device_source_chromeos.cc",
+      "sys_info_chromeos.cc",
+    ]
   }
 
   # Fuchsia.
@@ -1621,6 +1602,8 @@ jumbo_component("base") {
       "power_monitor/power_monitor_device_source_win.cc",
       "profiler/win32_stack_frame_unwinder.cc",
       "profiler/win32_stack_frame_unwinder.h",
+      "rand_util_win.cc",
+      "sys_info_win.cc",
       "time/time_win.cc",
     ]
 
@@ -1631,6 +1614,11 @@ jumbo_component("base") {
       "memory/shared_memory_helper.h",
       "strings/string16.cc",
     ]
+
+    # winternl.h and NTSecAPI.h have different definitions of UNICODE_STRING.
+    # There's only one client of NTSecAPI.h in base but several of winternl.h,
+    # so exclude the NTSecAPI.h one.
+    jumbo_excluded_sources = [ "rand_util_win.cc" ]
 
     deps += [
       "//base/trace_event/etw_manifest:chrome_events_win",
@@ -1668,11 +1656,16 @@ jumbo_component("base") {
       "sampling_heap_profiler/module_cache_posix.cc",
     ]
     sources += [
+      "files/file_path_watcher_fsevents.cc",
+      "files/file_path_watcher_fsevents.h",
+      "files/file_path_watcher_kqueue.cc",
+      "files/file_path_watcher_kqueue.h",
       "mac/scoped_typeref.h",
       "memory/platform_shared_memory_region_mac.cc",
       "memory/shared_memory_handle_mac.cc",
       "memory/shared_memory_mac.cc",
       "power_monitor/power_monitor_device_source_mac.mm",
+      "sys_info_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_exploded_posix.cc",
       "time/time_mac.cc",
@@ -1697,14 +1690,6 @@ jumbo_component("base") {
       "synchronization/waitable_event_watcher_posix.cc",
       "threading/platform_thread_internal_posix.cc",
     ]
-  } else {
-    # Non-Mac/ios.
-    sources -= [
-      "files/file_path_watcher_fsevents.cc",
-      "files/file_path_watcher_fsevents.h",
-      "files/file_path_watcher_kqueue.cc",
-      "files/file_path_watcher_kqueue.h",
-    ]
   }
 
   # Linux.
@@ -1715,10 +1700,18 @@ jumbo_component("base") {
       linux_configs += [ "//build/config/linux:glib" ]
     }
 
-    defines += [ "USE_SYMBOLIZE" ]
-
     configs += linux_configs
     all_dependent_configs += linux_configs
+
+    sources += [
+      "nix/mime_util_xdg.cc",
+      "nix/mime_util_xdg.h",
+      "nix/xdg_util.cc",
+      "nix/xdg_util.h",
+      "sys_info_linux.cc",
+    ]
+
+    defines += [ "USE_SYMBOLIZE" ]
 
     # These dependencies are not required on Android, and in the case
     # of xdg_mime must be excluded due to licensing restrictions.
@@ -1728,14 +1721,6 @@ jumbo_component("base") {
       "//base/third_party/xdg_user_dirs",
     ]
   } else {
-    # Non-Linux.
-    sources -= [
-      "nix/mime_util_xdg.cc",
-      "nix/mime_util_xdg.h",
-      "nix/xdg_util.cc",
-      "nix/xdg_util.h",
-    ]
-
     if (!is_android) {
       sources -= [
         "linux_util.cc",
@@ -1751,10 +1736,6 @@ jumbo_component("base") {
     sources -= [
       "files/file_path_watcher.cc",
       "files/file_path_watcher.h",
-      "files/file_path_watcher_fsevents.cc",
-      "files/file_path_watcher_fsevents.h",
-      "files/file_path_watcher_kqueue.cc",
-      "files/file_path_watcher_kqueue.h",
       "memory/discardable_shared_memory.cc",
       "memory/discardable_shared_memory.h",
       "process/kill.cc",
@@ -1809,6 +1790,7 @@ jumbo_component("base") {
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
+      "sys_info_ios.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
