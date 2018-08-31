@@ -5,6 +5,10 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- Added a new opcode ~midendnumericmodechars~. Characters defined with
+  this opcode can appear in the middle or at the end of a number
+  without canceling numeric mode. Thanks to Bue Vester-Andersen.
+
 ** Bug fixes
 - Fix another stack-based buffer overflow in input parsing reported by
   Henri Salo thanks to Christian Egli.
@@ -15,11 +19,12 @@ issues]].
   translation.
 - The returned ~inlen~ and ~outlen~ now always match thanks to the
   above work on input/output positions by Bert Frees.
-- Major improvements on back-translation with ~capsword~ and
-  punctuation/math thanks to Bue Vester-Andersen.
-- Fix a problem when defining the same combination of dots as both
-  ~endcapsword~ and ~nocontractsign~ or ~letsign~ during
-  back-translation thanks to Bue Vester-Andersen and Rimas Kudelis.
+- Major improvements in the back-translation of capitalized words
+  (~capsword~) in conjunction with punctuation and numbers. Thanks to
+  Bue Vester-Andersen
+- Fixed a problem in the back-translation of numbers in conjunction
+  with punctuation and letters. Thanks to Rimas Kudelis and Bue
+  Vester-Andersen
 
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
@@ -45,6 +50,8 @@ issues]].
   Sponge Jhan and 黃偉豪.
 
 ** Other changes
+- Added documentation of opcodes which were previously introduced as
+  part of the UEB work. Thanks to Bue Vester-Andersen.
 - Test suite improvements: In addition to checking the translation the
   tests now also check if the provided ~inlen~ is the same as the
   returned ~inlen~ and retry the test with a larger output buffer.
