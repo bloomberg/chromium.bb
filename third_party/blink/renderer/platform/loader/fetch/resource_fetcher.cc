@@ -777,18 +777,18 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         }
       }
     }
-    bool allow_stored_credentials = false;
-    switch (resource_request.GetFetchCredentialsMode()) {
-      case network::mojom::FetchCredentialsMode::kOmit:
-        break;
-      case network::mojom::FetchCredentialsMode::kSameOrigin:
-        allow_stored_credentials = !params.Options().cors_flag;
-        break;
-      case network::mojom::FetchCredentialsMode::kInclude:
-        allow_stored_credentials = true;
-        break;
-    }
-    resource_request.SetAllowStoredCredentials(allow_stored_credentials);
+    resource_request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+        resource_request.GetFetchCredentialsMode(),
+        CORS::CalculateResponseTainting(
+            params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
+            params.Options().cors_flag ? CORSFlag::Set : CORSFlag::Unset)));
+  }
+
+  if (RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+      resource_request.GetFetchCredentialsMode() ==
+          network::mojom::FetchCredentialsMode::kOmit) {
+    // See comments at network::ResourceRequest::fetch_credentials_mode.
+    resource_request.SetAllowStoredCredentials(false);
   }
 
   return base::nullopt;

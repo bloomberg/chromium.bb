@@ -202,6 +202,13 @@ network::mojom::FetchResponseType CalculateResponseTainting(
       url, request_mode, origin_to_pass, cors_flag == CORSFlag::Set);
 }
 
+bool CalculateCredentialsFlag(
+    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchResponseType response_tainting) {
+  return network::cors::CalculateCredentialsFlag(credentials_mode,
+                                                 response_tainting);
+}
+
 bool IsCORSSafelistedMethod(const String& method) {
   DCHECK(!method.IsNull());
   CString utf8_method = method.Utf8();

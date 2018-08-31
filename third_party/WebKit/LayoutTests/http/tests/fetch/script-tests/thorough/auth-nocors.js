@@ -43,7 +43,7 @@ var TEST_TARGETS = [
   onlyOnServiceWorkerProxiedTest(
     [OTHER_BASE_URL + 'Auth&credentials=same-origin',
      [fetchResolved, noBody, typeOpaque],
-     [authCheck2]]),
+     [checkJsonpError]]),
 
   // Tests for cross-origin requests.
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=omit',
@@ -54,7 +54,7 @@ var TEST_TARGETS = [
    onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=same-origin',
    [fetchResolved, noBody, typeOpaque],
-   onlyOnServiceWorkerProxiedTest([authCheck2])],
+   onlyOnServiceWorkerProxiedTest([checkJsonpError])],
 ];
 
 if (self.importScripts) {

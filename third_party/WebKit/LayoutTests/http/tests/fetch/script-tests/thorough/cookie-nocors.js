@@ -70,11 +70,11 @@ TEST_TARGETS.push(
    onlyOnServiceWorkerProxiedTest([cookieCheck2])],
   [OTHER_CHECK_URL + 'otherCheck2', [fetchResolved], [cookieCheckC]],
 
-  // Set cookieA with opaque response. Response is opaque, but cookie is set.
+  // Set cookieA with opaque response. Response is opaque and cookie is not set.
   [OTHER_BASE_URL + 'mode=no-cors&credentials=same-origin&SetCookie=cookieA',
    [fetchResolved, noBody, typeOpaque],
-   onlyOnServiceWorkerProxiedTest([cookieCheckC])],
-  [OTHER_CHECK_URL + 'otherCheck3', [fetchResolved], [cookieCheckA]]
+   onlyOnServiceWorkerProxiedTest([cookieCheckNone])],
+  [OTHER_CHECK_URL + 'otherCheck3', [fetchResolved], [cookieCheckC]]
 );
 
 if (self.importScripts) {

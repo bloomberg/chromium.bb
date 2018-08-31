@@ -1050,31 +1050,23 @@ void ThreadableLoader::LoadRequest(
   resource_loader_options.cors_handling_by_resource_fetcher =
       kDisableCORSHandlingByResourceFetcher;
 
-  if (!out_of_blink_cors_ && actual_request_.IsNull()) {
-    response_tainting_ = CORS::CalculateResponseTainting(
-        request.Url(), request.GetFetchRequestMode(), GetSecurityOrigin(),
-        cors_flag_ ? CORSFlag::Set : CORSFlag::Unset);
+  if (out_of_blink_cors_) {
+    if (request.GetFetchCredentialsMode() ==
+        network::mojom::FetchCredentialsMode::kOmit) {
+      // See comments at network::ResourceRequest::fetch_credentials_mode.
+      request.SetAllowStoredCredentials(false);
+    }
+  } else {
+    if (actual_request_.IsNull()) {
+      response_tainting_ = CORS::CalculateResponseTainting(
+          request.Url(), request.GetFetchRequestMode(), GetSecurityOrigin(),
+          cors_flag_ ? CORSFlag::Set : CORSFlag::Unset);
+      request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+          request.GetFetchCredentialsMode(), response_tainting_));
+    } else {
+      request.SetAllowStoredCredentials(false);
+    }
   }
-
-  bool allow_stored_credentials = false;
-  switch (request.GetFetchCredentialsMode()) {
-    case network::mojom::FetchCredentialsMode::kOmit:
-      break;
-    case network::mojom::FetchCredentialsMode::kSameOrigin:
-      // TODO(toyoshim): It's wrong to use |cors_flag| here. Fix it to use the
-      // response tainting.
-      //
-      // TODO(toyoshim): The credentials mode must work even when the "no-cors"
-      // mode is in use. See the following issues:
-      // - https://github.com/whatwg/fetch/issues/130
-      // - https://github.com/whatwg/fetch/issues/169
-      allow_stored_credentials = !cors_flag_;
-      break;
-    case network::mojom::FetchCredentialsMode::kInclude:
-      allow_stored_credentials = true;
-      break;
-  }
-  request.SetAllowStoredCredentials(allow_stored_credentials);
 
   resource_loader_options.security_origin = security_origin_;
 

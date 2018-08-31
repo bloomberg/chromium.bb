@@ -79,6 +79,10 @@ PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
     const SecurityOrigin* origin,
     CORSFlag cors_flag);
 
+PLATFORM_EXPORT bool CalculateCredentialsFlag(
+    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchResponseType response_tainting);
+
 // Thin wrapper functions that will not be removed even after out-of-renderer
 // CORS is enabled.
 PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);

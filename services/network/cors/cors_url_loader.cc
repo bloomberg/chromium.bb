@@ -170,15 +170,6 @@ void CORSURLLoader::FollowRedirect(
     request_finalizer_.Run(request_id_);
   network_client_binding_.Unbind();
 
-  if (request_.fetch_credentials_mode ==
-      mojom::FetchCredentialsMode::kSameOrigin) {
-    // If the credentials mode is "same-origin" and CORS flag is set, we must
-    // not send credentials. As network::URLLoaderImpl doesn't understand
-    // |fetch_credentials_mode|, we need to set the load flags here.
-    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
   StartRequest();
 }
 
@@ -394,6 +385,13 @@ void CORSURLLoader::StartRequest() {
   response_tainting_ =
       CalculateResponseTainting(request_.url, request_.fetch_request_mode,
                                 request_.request_initiator, fetch_cors_flag_);
+
+  if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
+                                response_tainting_)) {
+    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+    request_.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
 
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin

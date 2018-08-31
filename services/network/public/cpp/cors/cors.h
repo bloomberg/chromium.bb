@@ -143,6 +143,12 @@ bool IsCORSSameOriginResponseType(mojom::FetchResponseType type);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type);
 
+// Returns true if the credentials flag should be set for the given arguments
+// as in https://fetch.spec.whatwg.org/#http-network-or-cache-fetch.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool CalculateCredentialsFlag(mojom::FetchCredentialsMode credentials_mode,
+                              mojom::FetchResponseType response_tainting);
+
 }  // namespace cors
 
 }  // namespace network
