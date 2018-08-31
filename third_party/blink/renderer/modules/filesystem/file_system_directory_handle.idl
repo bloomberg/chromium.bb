@@ -9,4 +9,7 @@
     [CallWith=ScriptState] Promise<FileSystemFileHandle> getFile(USVString name);
     [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getDirectory(USVString name);
     // TODO(mek): Other methods such as getEntries etc.
+
+    [CallWith=ScriptState]
+    static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);
 };

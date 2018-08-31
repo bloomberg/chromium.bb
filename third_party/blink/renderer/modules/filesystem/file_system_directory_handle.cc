@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 
 namespace blink {
 
@@ -33,6 +34,24 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(ScriptState* script_state,
       this, name, FileSystemFlags(),
       new EntryCallbacks::OnDidGetEntryPromiseImpl(resolver),
       new PromiseErrorCallback(resolver));
+  return result;
+}
+
+// static
+ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
+    ScriptState* script_state,
+    const GetSystemDirectoryOptions& options) {
+  auto* context = ExecutionContext::From(script_state);
+
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  LocalFileSystem::From(*context)->RequestFileSystem(
+      context, mojom::blink::FileSystemType::kTemporary, /*size=*/0,
+      FileSystemCallbacks::Create(
+          new FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl(resolver),
+          new PromiseErrorCallback(resolver), context,
+          mojom::blink::FileSystemType::kTemporary));
   return result;
 }
 

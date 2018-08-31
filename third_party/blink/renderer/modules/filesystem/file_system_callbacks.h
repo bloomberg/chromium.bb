@@ -249,6 +249,16 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8FileSystemCallback>> callback_;
   };
 
+  class OnDidOpenFileSystemPromiseImpl : public OnDidOpenFileSystemCallback {
+   public:
+    explicit OnDidOpenFileSystemPromiseImpl(ScriptPromiseResolver*);
+    void Trace(Visitor*) override;
+    void OnSuccess(DOMFileSystem*) override;
+
+   private:
+    Member<ScriptPromiseResolver> resolver_;
+  };
+
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
       OnDidOpenFileSystemCallback*,
       ErrorCallbackBase*,
