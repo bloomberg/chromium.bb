@@ -300,42 +300,35 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             newIntent.setFlags(newIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
-        // Handle activity started in a new task.
-        // See https://developer.android.com/guide/components/activities/tasks-and-back-stack
+        // If a CCT intent triggers First Run, then NEW_TASK will be automatically applied.  As
+        // part of that, it will inherit the EXCLUDE_FROM_RECENTS bit from ChromeLauncherActivity,
+        // so explicitly remove it to ensure the CCT does not get lost in recents.
         if ((newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
                 || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
-            // If a CCT intent triggers First Run, then NEW_TASK will be automatically applied. As
-            // part of that, it will inherit the EXCLUDE_FROM_RECENTS bit from
-            // ChromeLauncherActivity, so explicitly remove it to ensure the CCT does not get lost
-            // in recents.
             newIntent.setFlags(newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-
-            // Android will try to find and reuse an existing CCT activity in the background. Use
-            // this flag to always start a new one instead.
+            String uuid = UUID.randomUUID().toString();
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-
-            // Provide the general feeling of supporting multi tasks in Android version that did not
-            // fully support them. Reuse the least recently used SeparateTaskCustomTabActivity
-            // instance.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                String uuid = UUID.randomUUID().toString();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Force a new document L+ to ensure the proper task/stack creation.
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+            } else {
                 int activityIndex = ActivityAssigner
                                             .instance(ActivityAssigner.ActivityAssignerNamespace
                                                               .SEPARATE_TASK_CCT_NAMESPACE)
                                             .assign(uuid);
                 String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
                 newIntent.setClassName(context, className);
-
-                String url = IntentHandler.getUrlFromIntent(newIntent);
-                assert url != null;
-                newIntent.setData(new Uri.Builder()
-                                          .scheme(UrlConstants.CUSTOM_TAB_SCHEME)
-                                          .authority(uuid)
-                                          .query(url)
-                                          .build());
             }
-        }
 
+            String url = IntentHandler.getUrlFromIntent(newIntent);
+            assert url != null;
+            newIntent.setData(new Uri.Builder()
+                                      .scheme(UrlConstants.CUSTOM_TAB_SCHEME)
+                                      .authority(uuid)
+                                      .query(url)
+                                      .build());
+        }
         IntentUtils.safeRemoveExtra(intent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
 
         return newIntent;
