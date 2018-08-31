@@ -43,10 +43,7 @@ declare_args() {
 
   # Enables support for ThinLTO, which links 3x-10x faster than full LTO. See
   # also http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html
-  # NOTE: See http://crbug.com/871722 to understand why this is disabled for
-  # 32-bit Android/ARM
-  use_thin_lto =
-      is_cfi || (is_android && is_official_build && target_cpu != "arm")
+  use_thin_lto = is_cfi || (is_android && is_official_build)
 
   # Tell VS to create a PDB that references information in .obj files rather
   # than copying it all. This should improve linker performance. mspdbcmf.exe
