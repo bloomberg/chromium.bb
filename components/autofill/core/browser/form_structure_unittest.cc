@@ -2330,9 +2330,13 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
                                                  &encoded_query5));
 }
 
-TEST_F(FormStructureTest, EncodeUploadRequest) {
+TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
+  ////////////////
+  // Setup
+  ////////////////
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2342,45 +2346,51 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST},
+      {AutofillProfile::UNVALIDATED});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST},
+      {AutofillProfile::UNVALIDATED});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
 
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "email";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
+      {AutofillProfile::INVALID});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
 
   field.label = ASCIIToUTF16("Phone");
   field.name = ASCIIToUTF16("phone");
   field.form_control_type = "number";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {PHONE_HOME_WHOLE_NUMBER}, {AutofillProfile::EMPTY});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(PHONE_HOME_WHOLE_NUMBER);
 
   field.label = ASCIIToUTF16("Country");
   field.name = ASCIIToUTF16("country");
   field.form_control_type = "select-one";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
 
   // Add checkable field.
   FormFieldData checkable_field;
   checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
   form.fields.push_back(checkable_field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
 
   form_structure.reset(new FormStructure(form));
   form_structure->set_password_attributes_vote(
@@ -2388,8 +2398,448 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   form_structure->set_password_length_vote(10u);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(ADDRESS_BILLING_LINE1);
+  available_field_types.insert(ADDRESS_BILLING_LINE2);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+
+  // Prepare the expected proto string.
+  AutofillUploadContents upload;
+  upload.set_submission(true);
+  upload.set_client_version("6.1.1715.1442/en (GGLL)");
+  upload.set_form_signature(8736493185895608956U);
+  upload.set_autofill_used(false);
+  upload.set_data_present("144200030e");
+  upload.set_passwords_revealed(false);
+  upload.set_password_has_numeric(true);
+  upload.set_password_length(10u);
+  upload.set_action_signature(15724779818122431245U);
+
+  test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
+                        nullptr, 3U, 0);
+  test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
+                        nullptr, 5U, 0);
+  test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
+                        nullptr, 9U, 3);
+  test::FillUploadField(upload.add_field(), 466116101U, "phone", "number",
+                        nullptr, 14U, 1);
+  test::FillUploadField(upload.add_field(), 2799270304U, "country",
+                        "select-one", nullptr, 36U, 2);
+
+  ////////////////
+  // Verification
+  ////////////////
+  std::string expected_upload_string;
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+
+  AutofillUploadContents encoded_upload;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, false, std::string(), true, &encoded_upload));
+
+  std::string encoded_upload_string;
+  encoded_upload.SerializeToString(&encoded_upload_string);
+  EXPECT_EQ(expected_upload_string, encoded_upload_string);
+
+  // Set the "autofillused" attribute to true.
+  upload.set_autofill_used(true);
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+
+  AutofillUploadContents encoded_upload2;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, true, std::string(), true, &encoded_upload2));
+
+  encoded_upload2.SerializeToString(&encoded_upload_string);
+  EXPECT_EQ(expected_upload_string, encoded_upload_string);
+
+  ////////////////
+  // Setup
+  ////////////////
+  // Add 2 address fields - this should be still a valid form.
+  for (size_t i = 0; i < 2; ++i) {
+    field.label = ASCIIToUTF16("Address");
+    field.name = ASCIIToUTF16("address");
+    field.form_control_type = "text";
+    form.fields.push_back(field);
+    test::InitializePossibleTypesAndValidities(
+        possible_field_types, possible_field_types_validities,
+        {ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_BILLING_LINE1,
+         ADDRESS_BILLING_LINE2},
+        {AutofillProfile::VALID, AutofillProfile::VALID,
+         AutofillProfile::INVALID, AutofillProfile::INVALID});
+  }
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->set_password_attributes_vote(
+      std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
+
+  // Adjust the expected proto string.
+  upload.set_form_signature(7816485729218079147U);
+  upload.set_autofill_used(false);
+  // Create an additional 2 fields (total of 7).  Put the appropriate autofill
+  // type on the different address fields.
+  test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
+                        nullptr, {30U, 31U, 37U, 38U}, {2, 2, 3, 3});
+  test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
+                        nullptr, {30U, 31U, 37U, 38U}, {2, 2, 3, 3});
+
+  ////////////////
+  // Verification
+  ////////////////
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+
+  AutofillUploadContents encoded_upload3;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, false, std::string(), true, &encoded_upload3));
+
+  encoded_upload3.SerializeToString(&encoded_upload_string);
+  EXPECT_EQ(expected_upload_string, encoded_upload_string);
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest_WithNonMatchingValidities) {
+  ////////////////
+  // Setup
+  ////////////////
+  std::unique_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST},
+      {AutofillProfile::UNVALIDATED});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST},
+      {AutofillProfile::UNVALIDATED});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
+      {AutofillProfile::INVALID});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.form_control_type = "number";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {PHONE_HOME_WHOLE_NUMBER}, {AutofillProfile::EMPTY});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "select-one";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
+  form.fields.push_back(checkable_field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->set_password_attributes_vote(
+      std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(ADDRESS_BILLING_LINE1);
+  available_field_types.insert(ADDRESS_BILLING_LINE2);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+
+  // Prepare the expected proto string.
+  AutofillUploadContents upload;
+  upload.set_submission(true);
+  upload.set_client_version("6.1.1715.1442/en (GGLL)");
+  upload.set_form_signature(8736493185895608956U);
+  upload.set_autofill_used(false);
+  upload.set_data_present("144200030e");
+  upload.set_passwords_revealed(false);
+  upload.set_password_has_numeric(true);
+  upload.set_password_length(10u);
+  upload.set_action_signature(15724779818122431245U);
+
+  test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
+                        nullptr, 3U, 0);
+  test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
+                        nullptr, 5U, 0);
+  test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
+                        nullptr, 9U, 3);
+  test::FillUploadField(upload.add_field(), 466116101U, "phone", "number",
+                        nullptr, 14U, 1);
+  test::FillUploadField(upload.add_field(), 2799270304U, "country",
+                        "select-one", nullptr, 36U,
+                        1);  // Non-matching validities
+
+  ////////////////
+  // Verification
+  ////////////////
+  std::string expected_upload_string;
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+
+  AutofillUploadContents encoded_upload;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, false, std::string(), true, &encoded_upload));
+
+  std::string encoded_upload_string;
+  encoded_upload.SerializeToString(&encoded_upload_string);
+  EXPECT_NE(expected_upload_string, encoded_upload_string);
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
+  ////////////////
+  // Setup
+  ////////////////
+  std::unique_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST},
+      {AutofillProfile::UNVALIDATED, AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST},
+      {AutofillProfile::UNVALIDATED, AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
+      {AutofillProfile::INVALID, AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.form_control_type = "number";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {PHONE_HOME_WHOLE_NUMBER},
+      {AutofillProfile::EMPTY, AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "select-one";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID, AutofillProfile::VALID});
+  form.fields.push_back(field);
+
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities,
+      {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID, AutofillProfile::VALID});
+  form.fields.push_back(checkable_field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->set_password_attributes_vote(
+      std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(ADDRESS_BILLING_LINE1);
+  available_field_types.insert(ADDRESS_BILLING_LINE2);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+
+  // Prepare the expected proto string.
+  AutofillUploadContents upload;
+  upload.set_submission(true);
+  upload.set_client_version("6.1.1715.1442/en (GGLL)");
+  upload.set_form_signature(8736493185895608956U);
+  upload.set_autofill_used(false);
+  upload.set_data_present("144200030e");
+  upload.set_passwords_revealed(false);
+  upload.set_password_has_numeric(true);
+  upload.set_password_length(10u);
+  upload.set_action_signature(15724779818122431245U);
+
+  test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
+                        nullptr, 3U, {0, 2});
+  test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
+                        nullptr, 5U, {0, 2});
+  test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
+                        nullptr, 9U, {3, 2});
+  test::FillUploadField(upload.add_field(), 466116101U, "phone", "number",
+                        nullptr, 14U, {1, 2});
+  test::FillUploadField(upload.add_field(), 2799270304U, "country",
+                        "select-one", nullptr, 36U, {2, 2});
+
+  ////////////////
+  // Verification
+  ////////////////
+  std::string expected_upload_string;
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+
+  AutofillUploadContents encoded_upload;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, false, std::string(), true, &encoded_upload));
+
+  std::string encoded_upload_string;
+  encoded_upload.SerializeToString(&encoded_upload_string);
+  EXPECT_EQ(expected_upload_string, encoded_upload_string);
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest) {
+  std::unique_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.form_control_type = "number";
+  test::InitializePossibleTypesAndValidities(possible_field_types,
+                                             possible_field_types_validities,
+                                             {PHONE_HOME_WHOLE_NUMBER});
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "select-one";
+  test::InitializePossibleTypesAndValidities(possible_field_types,
+                                             possible_field_types_validities,
+                                             {ADDRESS_HOME_COUNTRY});
+  form.fields.push_back(field);
+
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  test::InitializePossibleTypesAndValidities(possible_field_types,
+                                             possible_field_types_validities,
+                                             {ADDRESS_HOME_COUNTRY});
+  form.fields.push_back(checkable_field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->set_password_attributes_vote(
+      std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2453,20 +2903,25 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
     field.name = ASCIIToUTF16("address");
     field.form_control_type = "text";
     form.fields.push_back(field);
-    possible_field_types.push_back(ServerFieldTypeSet());
-    possible_field_types.back().insert(ADDRESS_HOME_LINE1);
-    possible_field_types.back().insert(ADDRESS_HOME_LINE2);
-    possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
-    possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
+    test::InitializePossibleTypesAndValidities(
+        possible_field_types, possible_field_types_validities,
+        {ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_BILLING_LINE1,
+         ADDRESS_BILLING_LINE2});
   }
 
   form_structure.reset(new FormStructure(form));
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasNumeric, true));
   form_structure->set_password_length_vote(10u);
+
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   // Adjust the expected proto string.
   upload.set_form_signature(7816485729218079147U);
@@ -2477,12 +2932,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
                           nullptr, 30U);
   }
   // Put the appropriate autofill type on the different address fields.
-  upload.mutable_field(5)->add_autofill_type(31U);
-  upload.mutable_field(5)->add_autofill_type(37U);
-  upload.mutable_field(5)->add_autofill_type(38U);
-  upload.mutable_field(6)->add_autofill_type(31U);
-  upload.mutable_field(6)->add_autofill_type(37U);
-  upload.mutable_field(6)->add_autofill_type(38U);
+  test::FillUploadField(upload.mutable_field(5), 509334676U, "address", "text",
+                        nullptr, {31U, 37U, 38U});
+  test::FillUploadField(upload.mutable_field(6), 509334676U, "address", "text",
+                        nullptr, {31U, 37U, 38U});
+
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload3;
@@ -2491,7 +2945,6 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
-
   // Add 150 address fields - now the form is invalid, as it has too many
   // fields.
   for (size_t i = 0; i < 150; ++i) {
@@ -2499,16 +2952,20 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
     field.name = ASCIIToUTF16("address");
     field.form_control_type = "text";
     form.fields.push_back(field);
-    possible_field_types.push_back(ServerFieldTypeSet());
-    possible_field_types.back().insert(ADDRESS_HOME_LINE1);
-    possible_field_types.back().insert(ADDRESS_HOME_LINE2);
-    possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
-    possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
+    test::InitializePossibleTypesAndValidities(
+        possible_field_types, possible_field_types_validities,
+        {ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_BILLING_LINE1,
+         ADDRESS_BILLING_LINE2});
   }
   form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   AutofillUploadContents encoded_upload4;
   EXPECT_FALSE(form_structure->EncodeUploadRequest(
@@ -2519,6 +2976,7 @@ TEST_F(FormStructureTest,
        EncodeUploadRequestWithAdditionalPasswordFormSignature) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2528,43 +2986,45 @@ TEST_F(FormStructureTest,
   field.name = ASCIIToUTF16("firstname");
   field.autocomplete_attribute = "given-name";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = "text";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(USERNAME);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {USERNAME});
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
   field.form_control_type = "password";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(ACCOUNT_CREATION_PASSWORD);
-
+  test::InitializePossibleTypesAndValidities(possible_field_types,
+                                             possible_field_types_validities,
+                                             {ACCOUNT_CREATION_PASSWORD});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+
     if (form_structure->field(i)->name == ASCIIToUTF16("password")) {
       form_structure->field(i)->set_generation_type(
           AutofillUploadContents::Field::
@@ -2636,6 +3096,7 @@ TEST_F(FormStructureTest,
 TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2647,29 +3108,32 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   field.name = ASCIIToUTF16("firstname");
   field.autocomplete_attribute = "given-name";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2710,6 +3174,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2724,9 +3189,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   field.id = ASCIIToUTF16("last_name");
@@ -2735,9 +3199,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.properties_mask =
       FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.id = ASCIIToUTF16("e-mail");
@@ -2747,14 +3210,19 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.properties_mask =
       FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2797,6 +3265,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2807,27 +3276,30 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "email";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2867,6 +3339,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
 TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -2876,24 +3349,27 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
 
   // No label for the first field.
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2931,32 +3407,36 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
 
   FormFieldData field;
   field.form_control_type = "text";
 
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.css_classes = ASCIIToUTF16("last_name_field");
   field.id = ASCIIToUTF16("lastname_id");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.css_classes = ASCIIToUTF16("email_field required_field");
   field.id = ASCIIToUTF16("email_id");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -3004,6 +3484,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
 TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   // Setting the form name which we expect to see in the upload.
   form.name = ASCIIToUTF16("myform");
@@ -3014,22 +3495,25 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   field.form_control_type = "text";
 
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -3069,6 +3553,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
 TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -3080,28 +3565,31 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   // neither.
   // No label.
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -3143,6 +3631,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
@@ -3156,18 +3645,16 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   field.id = ASCIIToUTF16("last_name");
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.id = ASCIIToUTF16("e-mail");
@@ -3175,14 +3662,19 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  ASSERT_EQ(form_structure->field_count(),
+            possible_field_types_validities.size());
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -3239,10 +3731,16 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   FormStructure form_structure(form);
 
-  ServerFieldTypeSet unknown_type;
-  unknown_type.insert(UNKNOWN_TYPE);
-  for (size_t i = 0; i < form_structure.field_count(); ++i)
-    form_structure.field(i)->set_possible_types(unknown_type);
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
+
+  for (size_t i = 0; i < form_structure.field_count(); ++i) {
+    test::InitializePossibleTypesAndValidities(
+        possible_field_types, possible_field_types_validities, {UNKNOWN_TYPE});
+    form_structure.field(i)->set_possible_types(possible_field_types[i]);
+    form_structure.field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   // No available types.
   // datapresent should be "" == trimmmed(0x0000000000000000) ==
@@ -3484,6 +3982,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   // Check that multiple types for the field are processed correctly.
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
+  std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
 
   FormFieldData field;
@@ -3492,31 +3991,35 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("last");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
+  test::InitializePossibleTypesAndValidities(
+      possible_field_types, possible_field_types_validities, {NAME_LAST});
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
   form.fields.push_back(field);
-  possible_field_types.push_back(ServerFieldTypeSet());
-  possible_field_types.back().insert(ADDRESS_HOME_LINE1);
+  test::InitializePossibleTypesAndValidities(possible_field_types,
+                                             possible_field_types_validities,
+                                             {ADDRESS_HOME_LINE1});
 
   form_structure.reset(new FormStructure(form));
 
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    form_structure->field(i)->set_possible_types_validities(
+        possible_field_types_validities[i]);
+  }
 
   // Prepare the expected proto string.
   AutofillUploadContents upload;
@@ -3554,8 +4057,12 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   // Modify the expected upload.
   // Add the NAME_FIRST prediction to the third field.
-  upload.mutable_field(2)->add_autofill_type(3);
+  test::FillUploadField(upload.mutable_field(2), 2404144663U, "last", "text",
+                        nullptr, 3U);
+
   upload.mutable_field(2)->mutable_autofill_type()->SwapElements(0, 1);
+  upload.mutable_field(2)->mutable_autofill_type_validities()->SwapElements(0,
+                                                                            1);
 
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
@@ -3565,7 +4072,6 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
-
   // Match last field as both address home line 1 and 2.
   possible_field_types[3].insert(ADDRESS_HOME_LINE2);
   form_structure->field(form_structure->field_count() - 1)
@@ -3573,7 +4079,8 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
           possible_field_types[form_structure->field_count() - 1]);
 
   // Adjust the expected upload proto.
-  upload.mutable_field(3)->add_autofill_type(31U);
+  test::FillUploadField(upload.mutable_field(3), 509334676U, "address", "text",
+                        nullptr, 31U);
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload3;
@@ -3590,9 +4097,15 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   form_structure->field(form_structure->field_count() - 1)
       ->set_possible_types(
           possible_field_types[form_structure->field_count() - 1]);
+  possible_field_types_validities[3].clear();
+  form_structure->field(form_structure->field_count() - 1)
+      ->set_possible_types_validities(
+          possible_field_types_validities[form_structure->field_count() - 1]);
 
   // Adjust the expected upload proto.
+  upload.mutable_field(3)->mutable_autofill_type_validities(1)->set_type(60);
   upload.mutable_field(3)->set_autofill_type(1, 60);
+
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload4;

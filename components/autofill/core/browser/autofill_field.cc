@@ -167,6 +167,15 @@ void AutofillField::SetPasswordRequirements(PasswordRequirementsSpec spec) {
   password_requirements_ = std::move(spec);
 }
 
+void AutofillField::NormalizePossibleTypesValidities() {
+  for (const auto& possible_type : possible_types_) {
+    if (possible_types_validities_[possible_type].empty()) {
+      possible_types_validities_[possible_type].push_back(
+          AutofillProfile::UNVALIDATED);
+    }
+  }
+}
+
 bool AutofillField::IsCreditCardPrediction() const {
   return AutofillType(server_type_).group() == CREDIT_CARD ||
          AutofillType(heuristic_type_).group() == CREDIT_CARD;
