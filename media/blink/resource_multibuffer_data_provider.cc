@@ -22,6 +22,7 @@
 #include "media/blink/url_index.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -34,25 +35,6 @@ using blink::WebURLRequest;
 using blink::WebURLResponse;
 
 namespace media {
-
-namespace {
-
-bool IsOpaqueData(network::mojom::FetchResponseType response_type) {
-  switch (response_type) {
-    case network::mojom::FetchResponseType::kBasic:
-    case network::mojom::FetchResponseType::kCORS:
-    case network::mojom::FetchResponseType::kDefault:
-      return false;
-    case network::mojom::FetchResponseType::kError:
-    case network::mojom::FetchResponseType::kOpaque:
-    case network::mojom::FetchResponseType::kOpaqueRedirect:
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-}  // namespace
 
 // The number of milliseconds to wait before retrying a failed load.
 const int kLoaderFailedRetryDelayMs = 250;
@@ -344,7 +326,8 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
 
   // This is vital for security! A service worker can respond with a response
   // from a different origin, so this response type is needed to detect that.
-  destination_url_data->set_has_opaque_data(IsOpaqueData(response.GetType()));
+  destination_url_data->set_has_opaque_data(
+      network::cors::IsCORSCrossOriginResponseType(response.GetType()));
 
   if (destination_url_data != url_data_) {
     // At this point, we've encountered a redirect, or found a better url data

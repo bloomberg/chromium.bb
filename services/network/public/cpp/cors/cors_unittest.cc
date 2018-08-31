@@ -307,6 +307,76 @@ TEST_F(CORSTest, CheckPreflightDetectsErrors) {
   EXPECT_EQ("TRUE", error3->failed_parameter);
 }
 
+TEST_F(CORSTest, CalculateResponseTainting) {
+  using mojom::FetchResponseType;
+  using mojom::FetchRequestMode;
+
+  const GURL same_origin_url("https://example.com/");
+  const GURL cross_origin_url("https://example2.com/");
+  const url::Origin origin = url::Origin::Create(GURL("https://example.com"));
+  const base::Optional<url::Origin> no_origin;
+
+  // CORS flag is false, same-origin request
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kSameOrigin, origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kNoCORS, origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kCORS, origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kCORSWithForcedPreflight,
+                origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kNavigate, origin, false));
+
+  // CORS flag is false, cross-origin request
+  EXPECT_EQ(FetchResponseType::kOpaque,
+            cors::CalculateResponseTainting(
+                cross_origin_url, FetchRequestMode::kNoCORS, origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                cross_origin_url, FetchRequestMode::kNavigate, origin, false));
+
+  // CORS flag is true, same-origin request
+  EXPECT_EQ(FetchResponseType::kCORS,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kCORS, origin, true));
+  EXPECT_EQ(FetchResponseType::kCORS,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kCORSWithForcedPreflight,
+                origin, true));
+
+  // CORS flag is true, cross-origin request
+  EXPECT_EQ(FetchResponseType::kCORS,
+            cors::CalculateResponseTainting(
+                cross_origin_url, FetchRequestMode::kCORS, origin, true));
+  EXPECT_EQ(FetchResponseType::kCORS,
+            cors::CalculateResponseTainting(
+                cross_origin_url, FetchRequestMode::kCORSWithForcedPreflight,
+                origin, true));
+
+  // Origin is not provided.
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                same_origin_url, FetchRequestMode::kNoCORS, no_origin, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      cors::CalculateResponseTainting(
+          same_origin_url, FetchRequestMode::kNavigate, no_origin, false));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            cors::CalculateResponseTainting(
+                cross_origin_url, FetchRequestMode::kNoCORS, no_origin, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      cors::CalculateResponseTainting(
+          cross_origin_url, FetchRequestMode::kNavigate, no_origin, false));
+}
+
 TEST_F(CORSTest, CheckCORSSafelist) {
   // Method check should be case-insensitive.
   EXPECT_TRUE(cors::IsCORSSafelistedMethod("get"));

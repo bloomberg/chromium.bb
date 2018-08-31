@@ -32,6 +32,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -301,6 +302,14 @@ class PLATFORM_EXPORT ResourceResponse final {
     response_type_ = value;
   }
   bool IsOpaqueResponseFromServiceWorker() const;
+  // https://html.spec.whatwg.org/#cors-same-origin
+  bool IsCORSSameOrigin() const {
+    return network::cors::IsCORSSameOriginResponseType(response_type_);
+  }
+  // https://html.spec.whatwg.org/#cors-cross-origin
+  bool IsCORSCrossOrigin() const {
+    return network::cors::IsCORSCrossOriginResponseType(response_type_);
+  }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {

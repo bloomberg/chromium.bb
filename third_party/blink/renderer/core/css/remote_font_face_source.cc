@@ -333,7 +333,7 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
 
     enum { kCORSFail, kCORSSuccess, kCORSEnumMax };
     int cors_value =
-        font->IsSameOriginOrCORSSuccessful() ? kCORSSuccess : kCORSFail;
+        font->GetResponse().IsCORSSameOrigin() ? kCORSSuccess : kCORSFail;
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
                                     ("WebFont.CORSSuccess", kCORSEnumMax));
     cors_histogram.Count(cors_value);

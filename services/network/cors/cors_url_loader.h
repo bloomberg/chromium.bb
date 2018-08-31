@@ -114,6 +114,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // different if redirects happen.
   GURL last_response_url_;
 
+  // https://fetch.spec.whatwg.org/#concept-request-response-tainting
+  // As "response tainting" is subset of "response type", we use
+  // mojom::FetchResponseType for convenience.
+  mojom::FetchResponseType response_tainting_ =
+      mojom::FetchResponseType::kBasic;
+
   // A flag to indicate that the instance is waiting for that forwarding_client_
   // calls FollowRedirect.
   bool is_waiting_follow_redirect_call_ = false;

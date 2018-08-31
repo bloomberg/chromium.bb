@@ -33,6 +33,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -139,8 +140,6 @@ class PLATFORM_EXPORT ResourceLoader final
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, DetermineCORSStatus);
-
   friend class SubresourceIntegrityTest;
 
   // Assumes ResourceFetcher and Resource are non-null.
@@ -162,8 +161,6 @@ class PLATFORM_EXPORT ResourceLoader final
   FetchContext& Context() const;
   scoped_refptr<const SecurityOrigin> GetSourceOrigin() const;
 
-  CORSStatus DetermineCORSStatus(const ResourceResponse&, StringBuilder&) const;
-
   void CancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);
   void RequestSynchronously(const ResourceRequest&);
@@ -180,12 +177,17 @@ class PLATFORM_EXPORT ResourceLoader final
       WebURLRequest::RequestContext,
       const ResourceResponse&) const;
 
+  bool ShouldCheckCORSInResourceLoader() const;
+
   std::unique_ptr<WebURLLoader> loader_;
   ResourceLoadScheduler::ClientId scheduler_client_id_;
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
 
+  // https://fetch.spec.whatwg.org/#concept-request-response-tainting
+  network::mojom::FetchResponseType response_tainting_ =
+      network::mojom::FetchResponseType::kBasic;
   uint32_t inflight_keepalive_bytes_;
   bool is_cache_aware_loading_activated_;
 

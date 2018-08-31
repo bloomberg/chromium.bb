@@ -410,18 +410,7 @@ void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {
 }
 
 bool ResourceResponse::IsOpaqueResponseFromServiceWorker() const {
-  switch (response_type_) {
-    case network::mojom::FetchResponseType::kBasic:
-    case network::mojom::FetchResponseType::kCORS:
-    case network::mojom::FetchResponseType::kDefault:
-    case network::mojom::FetchResponseType::kError:
-      return false;
-    case network::mojom::FetchResponseType::kOpaque:
-    case network::mojom::FetchResponseType::kOpaqueRedirect:
-      return true;
-  }
-  NOTREACHED();
-  return false;
+  return IsCORSCrossOrigin() && WasFetchedViaServiceWorker();
 }
 
 KURL ResourceResponse::OriginalURLViaServiceWorker() const {
