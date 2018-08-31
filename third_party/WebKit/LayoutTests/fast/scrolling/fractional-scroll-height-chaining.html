@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/gesture-util.js"></script>
+<script src="../../resources/js-test.js"></script>
 <style>
 
 #scroller {
-  background-color: #ccc;
-  margin-top: 20px;
-  overflow: scroll;
+    background-color: #ccc;
+    margin-top: 20px;
+    overflow: scroll;
 }
 
 #fracheight {
-  height: 1200.3px;
+    height: 1200.3px;
 }
 
 </style>
@@ -19,12 +17,17 @@
   <div id="fracheight"></div>
 </div>
 <script>
-internals.settings.setScrollAnimatorEnabled(false);
-promise_test(async () => {
-  var x = 100;
-  var y = 400;
-  await smoothScroll(40, x, y, GestureSourceType.MOUSE_INPUT,'down', SPEED_INSTANT);
-  await waitFor(() => {return approx_equals(scrollY, 40, 4); });
-}, "Verifies that main-thread scrolls chain correctly from a " +
+description("Verifies that main-thread scrolls chain correctly from a " +
             "fractional-height scroller to its parent.");
+
+if (window.eventSender) {
+    internals.settings.setScrollAnimatorEnabled(false);
+    eventSender.mouseMoveTo(100, 400);
+    eventSender.mouseScrollBy(0, -1);
+    shouldBe("scrollY", "40");
+}
+else
+    debug("To run interactively, try to scroll the page with the mouse " +
+          "wheel while the pointer is inside the gray box below.")
+
 </script>
