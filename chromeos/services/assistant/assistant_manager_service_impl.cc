@@ -963,10 +963,19 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
     ax::mojom::AssistantExtraPtr assistant_extra,
     std::unique_ptr<ui::AssistantTree> assistant_tree,
     const std::vector<uint8_t>& assistant_screenshot) {
-  assistant_manager_internal_->SendScreenContextRequest(
-      {CreateContextProto(AssistantBundle{std::move(assistant_extra),
-                                          std::move(assistant_tree)}),
-       CreateContextProto(assistant_screenshot)});
+  std::vector<std::string> context_protos;
+
+  // Screen context can have the assistant_extra and assistant_tree set to
+  // nullptr. This happens in the case where the screen context is coming from
+  // the metalayer. For this scenario, we don't create a context proto for the
+  // AssistantBundle that consists of the assistant_extra and assistant_tree.
+  if (assistant_extra && assistant_tree) {
+    context_protos.emplace_back(CreateContextProto(AssistantBundle{
+        std::move(assistant_extra), std::move(assistant_tree)}));
+  }
+
+  context_protos.emplace_back(CreateContextProto(assistant_screenshot));
+  assistant_manager_internal_->SendScreenContextRequest(context_protos);
   assistant_screenshot_.clear();
 }
 
