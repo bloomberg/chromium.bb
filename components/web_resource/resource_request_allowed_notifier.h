@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 class PrefService;
 
@@ -37,6 +39,7 @@ namespace web_resource {
 // global instance.
 class ResourceRequestAllowedNotifier
     : public EulaAcceptedNotifier::Observer,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Observes resource request allowed state changes.
@@ -52,22 +55,29 @@ class ResourceRequestAllowedNotifier
     DISALLOWED_EULA_NOT_ACCEPTED,
     DISALLOWED_NETWORK_DOWN,
     DISALLOWED_COMMAND_LINE_DISABLED,
+    DISALLOWED_NETWORK_STATE_NOT_INITIALIZED,
   };
+
+  using NetworkConnectionTrackerGetter =
+      base::OnceCallback<network::NetworkConnectionTracker*()>;
 
   // Creates a new ResourceRequestAllowedNotifier.
   // |local_state| is the PrefService to observe.
   // |disable_network_switch| is the command line switch to disable network
   // activity. It is expected to outlive the ResourceRequestAllowedNotifier and
   // may be null.
-  ResourceRequestAllowedNotifier(PrefService* local_state,
-                                 const char* disable_network_switch);
+  ResourceRequestAllowedNotifier(
+      PrefService* local_state,
+      const char* disable_network_switch,
+      NetworkConnectionTrackerGetter network_connection_tracker_getter);
   ~ResourceRequestAllowedNotifier() override;
 
   // Sets |observer| as the service to be notified by this instance, and
   // performs initial checks on the criteria. |observer| may not be null.
   // This is to be called immediately after construction of an instance of
-  // ResourceRequestAllowedNotifier to pass it the interested service.
-  void Init(Observer* observer);
+  // ResourceRequestAllowedNotifier to pass it the interested service. Set
+  // |leaky| to true if this class will not be destructed before shutdown.
+  void Init(Observer* observer, bool leaky);
 
   // Returns whether resource requests are allowed, per the various criteria.
   // If not, this call will set some flags so it knows to notify the observer
@@ -82,6 +92,8 @@ class ResourceRequestAllowedNotifier
 
   void SetWaitingForEulaForTesting(bool waiting);
   void SetObserverRequestedForTesting(bool requested);
+  void SetConnectionTypeForTesting(
+      network::mojom::ConnectionType connection_type);
 
  protected:
   // Notifies the observer if all criteria needed for resource requests are met.
@@ -99,6 +111,12 @@ class ResourceRequestAllowedNotifier
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
+  void SetConnectionType(network::mojom::ConnectionType connection_type);
+  bool IsOffline();
 
   // Name of the command line switch to disable the network activity.
   const char* disable_network_switch_;
@@ -120,8 +138,18 @@ class ResourceRequestAllowedNotifier
   // Observing service interested in request permissions.
   Observer* observer_;
 
+  NetworkConnectionTrackerGetter network_connection_tracker_getter_;
+  network::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
+  network::mojom::ConnectionType connection_type_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  bool connection_initialized_ = false;
+
+  base::WeakPtrFactory<ResourceRequestAllowedNotifier> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestAllowedNotifier);
 };
+
+extern const base::Feature kResourceRequestAllowedMigration;
 
 }  // namespace web_resource
 

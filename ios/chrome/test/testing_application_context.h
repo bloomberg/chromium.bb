@@ -59,6 +59,7 @@ class TestingApplicationContext : public ApplicationContext {
   gcm::GCMDriver* GetGCMDriver() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
+  network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
 
  private:
   base::ThreadChecker thread_checker_;

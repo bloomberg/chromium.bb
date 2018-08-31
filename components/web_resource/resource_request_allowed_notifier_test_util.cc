@@ -6,11 +6,19 @@
 
 namespace web_resource {
 
-TestRequestAllowedNotifier::TestRequestAllowedNotifier(PrefService* local_state)
-    : ResourceRequestAllowedNotifier(local_state, nullptr),
+TestRequestAllowedNotifier::TestRequestAllowedNotifier(
+    PrefService* local_state,
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : ResourceRequestAllowedNotifier(
+          local_state,
+          nullptr,
+          base::BindOnce(
+              [](network::NetworkConnectionTracker* tracker) {
+                return tracker;
+              },
+              network_connection_tracker)),
       override_requests_allowed_(false),
-      requests_allowed_(true) {
-}
+      requests_allowed_(true) {}
 
 TestRequestAllowedNotifier::~TestRequestAllowedNotifier() {
 }
@@ -19,7 +27,7 @@ void TestRequestAllowedNotifier::InitWithEulaAcceptNotifier(
     Observer* observer,
     std::unique_ptr<EulaAcceptedNotifier> eula_notifier) {
   test_eula_notifier_.swap(eula_notifier);
-  Init(observer);
+  Init(observer, false /* leaky */);
 }
 
 void TestRequestAllowedNotifier::SetRequestsAllowedOverride(bool allowed) {

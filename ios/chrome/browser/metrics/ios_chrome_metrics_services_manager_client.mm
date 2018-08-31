@@ -76,7 +76,9 @@ IOSChromeMetricsServicesManagerClient::CreateVariationsService() {
   return variations::VariationsService::Create(
       std::make_unique<IOSChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), "dummy-disable-background-switch",
-      ::CreateUIStringOverrider());
+      ::CreateUIStringOverrider(),
+      base::BindOnce(&ApplicationContext::GetNetworkConnectionTracker,
+                     base::Unretained(GetApplicationContext())));
 }
 
 std::unique_ptr<metrics::MetricsServiceClient>
