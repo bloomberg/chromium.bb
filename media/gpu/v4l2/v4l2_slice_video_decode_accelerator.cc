@@ -70,8 +70,7 @@ const uint32_t V4L2SliceVideoDecodeAccelerator::supported_input_fourccs_[] = {
     V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME, V4L2_PIX_FMT_VP9_FRAME,
 };
 
-class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
-    : public base::RefCounted<V4L2DecodeSurface> {
+class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  public:
   using ReleaseCB = base::Callback<void(int)>;
 
@@ -126,28 +125,27 @@ class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
   DISALLOW_COPY_AND_ASSIGN(V4L2DecodeSurface);
 };
 
-V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::V4L2DecodeSurface(
-    int input_record,
-    int output_record,
-    const ReleaseCB& release_cb)
+V4L2DecodeSurface::V4L2DecodeSurface(int input_record,
+                                     int output_record,
+                                     const ReleaseCB& release_cb)
     : input_record_(input_record),
       output_record_(output_record),
       config_store_(input_record + 1),
       decoded_(false),
       release_cb_(release_cb) {}
 
-V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::~V4L2DecodeSurface() {
+V4L2DecodeSurface::~V4L2DecodeSurface() {
   DVLOGF(5) << "Releasing output record id=" << output_record_;
   release_cb_.Run(output_record_);
 }
 
-void V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::SetReferenceSurfaces(
+void V4L2DecodeSurface::SetReferenceSurfaces(
     const std::vector<scoped_refptr<V4L2DecodeSurface>>& ref_surfaces) {
   DCHECK(reference_surfaces_.empty());
   reference_surfaces_ = ref_surfaces;
 }
 
-void V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::SetDecoded() {
+void V4L2DecodeSurface::SetDecoded() {
   DCHECK(!decoded_);
   decoded_ = true;
 
@@ -160,8 +158,7 @@ void V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::SetDecoded() {
     base::ResetAndReturn(&done_cb_).Run();
 }
 
-std::string V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::ToString()
-    const {
+std::string V4L2DecodeSurface::ToString() const {
   std::string out;
   base::StringAppendF(&out, "Buffer %d -> %d. ", input_record_, output_record_);
   base::StringAppendF(&out, "Reference surfaces:");
@@ -378,84 +375,63 @@ class V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator
 // This allows us to keep decoders oblivious of our implementation details.
 class V4L2H264Picture : public H264Picture {
  public:
-  explicit V4L2H264Picture(
-      const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-          dec_surface);
+  explicit V4L2H264Picture(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   V4L2H264Picture* AsV4L2H264Picture() override { return this; }
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-  dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<V4L2DecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~V4L2H264Picture() override;
 
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-      dec_surface_;
+  scoped_refptr<V4L2DecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2H264Picture);
 };
 
 V4L2H264Picture::V4L2H264Picture(
-    const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-        dec_surface)
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface)
     : dec_surface_(dec_surface) {}
 
 V4L2H264Picture::~V4L2H264Picture() {}
 
 class V4L2VP8Picture : public VP8Picture {
  public:
-  explicit V4L2VP8Picture(
-      const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-          dec_surface);
+  explicit V4L2VP8Picture(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   V4L2VP8Picture* AsV4L2VP8Picture() override { return this; }
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-  dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<V4L2DecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~V4L2VP8Picture() override;
 
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-      dec_surface_;
+  scoped_refptr<V4L2DecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VP8Picture);
 };
 
 V4L2VP8Picture::V4L2VP8Picture(
-    const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-        dec_surface)
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface)
     : dec_surface_(dec_surface) {}
 
 V4L2VP8Picture::~V4L2VP8Picture() {}
 
 class V4L2VP9Picture : public VP9Picture {
  public:
-  explicit V4L2VP9Picture(
-      const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-          dec_surface);
+  explicit V4L2VP9Picture(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   V4L2VP9Picture* AsV4L2VP9Picture() override { return this; }
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-  dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<V4L2DecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~V4L2VP9Picture() override;
 
-  scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-      dec_surface_;
+  scoped_refptr<V4L2DecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VP9Picture);
 };
 
 V4L2VP9Picture::V4L2VP9Picture(
-    const scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>&
-        dec_surface)
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface)
     : dec_surface_(dec_surface) {}
 
 V4L2VP9Picture::~V4L2VP9Picture() {}
@@ -2591,10 +2567,10 @@ V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::OutputPicture(
     const scoped_refptr<H264Picture>& pic) {
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      H264PictureToV4L2DecodeSurface(pic);
-  dec_surface->set_visible_rect(pic->visible_rect());
-  v4l2_dec_->SurfaceReady(pic->bitstream_id(), dec_surface);
+  // TODO(crbug.com/647725): Insert correct color space.
+  v4l2_dec_->SurfaceReady(H264PictureToV4L2DecodeSurface(pic),
+                          pic->bitstream_id(), pic->visible_rect(),
+                          VideoColorSpace());
   return true;
 }
 
@@ -2604,9 +2580,9 @@ void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::Reset() {
   memset(&v4l2_slice_params_, 0, sizeof(v4l2_slice_params_));
 }
 
-scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::
-    H264PictureToV4L2DecodeSurface(const scoped_refptr<H264Picture>& pic) {
+scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecodeAccelerator::
+    V4L2H264Accelerator::H264PictureToV4L2DecodeSurface(
+        const scoped_refptr<H264Picture>& pic) {
   V4L2H264Picture* v4l2_pic = pic->AsV4L2H264Picture();
   CHECK(v4l2_pic);
   return v4l2_pic->dec_surface();
@@ -2827,16 +2803,16 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::OutputPicture(
     const scoped_refptr<VP8Picture>& pic) {
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      VP8PictureToV4L2DecodeSurface(pic);
-  dec_surface->set_visible_rect(pic->visible_rect());
-  v4l2_dec_->SurfaceReady(pic->bitstream_id(), dec_surface);
+  // TODO(crbug.com/647725): Insert correct color space.
+  v4l2_dec_->SurfaceReady(VP8PictureToV4L2DecodeSurface(pic),
+                          pic->bitstream_id(), pic->visible_rect(),
+                          VideoColorSpace());
   return true;
 }
 
-scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::
-    VP8PictureToV4L2DecodeSurface(const scoped_refptr<VP8Picture>& pic) {
+scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecodeAccelerator::
+    V4L2VP8Accelerator::VP8PictureToV4L2DecodeSurface(
+        const scoped_refptr<VP8Picture>& pic) {
   V4L2VP8Picture* v4l2_pic = pic->AsV4L2VP8Picture();
   CHECK(v4l2_pic);
   return v4l2_pic->dec_surface();
@@ -3131,10 +3107,10 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::SubmitDecode(
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::OutputPicture(
     const scoped_refptr<VP9Picture>& pic) {
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      VP9PictureToV4L2DecodeSurface(pic);
-  dec_surface->set_visible_rect(pic->visible_rect());
-  v4l2_dec_->SurfaceReady(pic->bitstream_id(), dec_surface);
+  // TODO(crbug.com/647725): Insert correct color space.
+  v4l2_dec_->SurfaceReady(VP9PictureToV4L2DecodeSurface(pic),
+                          pic->bitstream_id(), pic->visible_rect(),
+                          VideoColorSpace());
   return true;
 }
 
@@ -3201,20 +3177,23 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::GetFrameContext(
   return true;
 }
 
-scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
-V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::
-    VP9PictureToV4L2DecodeSurface(const scoped_refptr<VP9Picture>& pic) {
+scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecodeAccelerator::
+    V4L2VP9Accelerator::VP9PictureToV4L2DecodeSurface(
+        const scoped_refptr<VP9Picture>& pic) {
   V4L2VP9Picture* v4l2_pic = pic->AsV4L2VP9Picture();
   CHECK(v4l2_pic);
   return v4l2_pic->dec_surface();
 }
 
 void V4L2SliceVideoDecodeAccelerator::SurfaceReady(
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
     int32_t bitstream_id,
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    const gfx::Rect& visible_rect,
+    const VideoColorSpace& /* color_space */) {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
+  dec_surface->set_visible_rect(visible_rect);
   decoder_display_queue_.push(std::make_pair(bitstream_id, dec_surface));
   TryOutputSurfaces();
 }
@@ -3265,7 +3244,7 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   output_record.cleared = true;
 }
 
-scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
+scoped_refptr<V4L2DecodeSurface>
 V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecoding);
