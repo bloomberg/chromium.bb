@@ -106,7 +106,6 @@ class BrowserPlugin;
 class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameSwapMessageQueue;
-class IdleUserDetector;
 class ImeEventGuard;
 class LayerTreeView;
 class MainThreadEventQueue;
@@ -558,11 +557,6 @@ class CONTENT_EXPORT RenderWidget
   // should be null if Show() won't be triggered for this widget.
   void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
 
-  // Initialization methods used by the RenderViewImpl subclass.
-  //
-  // Idle user detector is optionally set up and destroyed during
-  // initialization/teardown.
-  void SetUpIdleUserDetector();
   // Update the web view's device scale factor.
   void UpdateWebViewWithDeviceScaleFactor();
   // Informs that Show() will not happen.
@@ -1019,9 +1013,6 @@ class CONTENT_EXPORT RenderWidget
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   mojo::Binding<mojom::Widget> widget_binding_;
-  // IdleUserDetector is setup optionally on RenderWidget by its creator, so may
-  // be null.
-  std::unique_ptr<IdleUserDetector> idle_user_detector_;
 
   gfx::Rect compositor_visible_rect_;
 

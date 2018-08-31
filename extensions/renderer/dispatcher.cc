@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -129,7 +128,6 @@ namespace extensions {
 
 namespace {
 
-static const int64_t kInitialExtensionIdleHandlerDelayMs = 5 * 1000;
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
@@ -200,20 +198,8 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
       v8_schema_registry_(new V8SchemaRegistry),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
-  const base::CommandLine& command_line =
-      *(base::CommandLine::ForCurrentProcess());
-
   bindings_system_ = CreateBindingsSystem(
       IPCMessageSender::CreateMainThreadIPCMessageSender());
-
-  set_idle_notifications_ =
-      command_line.HasSwitch(switches::kExtensionProcess) ||
-      command_line.HasSwitch(::switches::kSingleProcess);
-
-  if (set_idle_notifications_) {
-    RenderThread::Get()->SetIdleNotificationDelayInMs(
-        kInitialExtensionIdleHandlerDelayMs);
-  }
 
   script_context_set_.reset(new ScriptContextSet(&active_extension_ids_));
   user_script_set_manager_.reset(new UserScriptSetManager());
@@ -606,15 +592,6 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
       base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
                  base::Unretained(bindings_system_.get()), event_name,
                  &event_args, filtering_info));
-
-  // Reset the idle handler each time there's any activity like event or message
-  // dispatch.
-  // TODO(devlin): It's likely this is totally wrong. See
-  // https://groups.google.com/a/chromium.org/forum/#!msg/scheduler-dev/iTRVbcmmpAs/pfqyUyEeAAAJ
-  if (set_idle_notifications_) {
-    RenderThread::Get()->ScheduleIdleHandler(
-        kInitialExtensionIdleHandlerDelayMs);
-  }
 }
 
 void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
@@ -625,15 +602,6 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
   script_context_set_->ForEach(
       extension_id, render_frame,
       base::Bind(&CallModuleMethod, module_name, function_name, &args));
-
-  // Reset the idle handler each time there's any activity like event or message
-  // dispatch.
-  // TODO(devlin): It's likely this is totally wrong. See
-  // https://groups.google.com/a/chromium.org/forum/#!msg/scheduler-dev/iTRVbcmmpAs/pfqyUyEeAAAJ
-  if (set_idle_notifications_) {
-    RenderThread::Get()->ScheduleIdleHandler(
-        kInitialExtensionIdleHandlerDelayMs);
-  }
 }
 
 // static
@@ -886,10 +854,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     return;
 
   active_extension_ids_.insert(extension_id);
-
-  // This is called when starting a new extension page, so start the idle
-  // handler ticking.
-  RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
   if (activity_logging_enabled_) {
     DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,

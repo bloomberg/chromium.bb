@@ -224,18 +224,6 @@ void MockRenderThread::RegisterExtension(v8::Extension* extension) {
   blink::WebScriptController::RegisterExtension(extension);
 }
 
-void MockRenderThread::ScheduleIdleHandler(int64_t initial_delay_ms) {}
-
-void MockRenderThread::IdleHandler() {
-}
-
-int64_t MockRenderThread::GetIdleNotificationDelayInMs() const {
-  return 0;
-}
-
-void MockRenderThread::SetIdleNotificationDelayInMs(
-    int64_t idle_notification_delay_in_ms) {}
-
 int MockRenderThread::PostTaskToAllWebWorkers(const base::Closure& closure) {
   return 0;
 }
