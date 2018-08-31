@@ -270,6 +270,8 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
   account_tracker_.Initialize(&pref_service_, base::FilePath());
   signin_manager_.Initialize(&pref_service_);
   local_session_event_router_ = std::make_unique<DummyRouter>();
+  identity_provider_ = std::make_unique<invalidation::ProfileIdentityProvider>(
+      identity_manager());
   ON_CALL(sync_sessions_client_, GetLocalSessionEventRouter())
       .WillByDefault(testing::Return(local_session_event_router_.get()));
 }
@@ -286,6 +288,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.identity_manager = identity_manager();
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
+  init_params.invalidations_identity_provider = identity_provider_.get();
   init_params.network_time_update_callback = base::DoNothing();
   init_params.url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

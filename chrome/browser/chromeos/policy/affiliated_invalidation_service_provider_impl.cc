@@ -309,18 +309,21 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
       url_loader_factory = g_browser_process->system_network_context_manager()
                                ->GetSharedURLLoaderFactory();
     }
+
+    identity_provider_ = std::make_unique<chromeos::DeviceIdentityProvider>(
+        chromeos::DeviceOAuth2TokenServiceFactory::Get());
+
+    DCHECK(identity_provider_);
     // If no other connected invalidation service was found and no device-global
     // invalidation service exists, create one.
-    device_invalidation_service_.reset(
-        new invalidation::TiclInvalidationService(
-            GetUserAgent(),
-            std::make_unique<chromeos::DeviceIdentityProvider>(
-                chromeos::DeviceOAuth2TokenServiceFactory::Get()),
+    device_invalidation_service_ =
+        std::make_unique<invalidation::TiclInvalidationService>(
+            GetUserAgent(), identity_provider_.get(),
             std::unique_ptr<invalidation::TiclSettingsProvider>(
                 new TiclDeviceSettingsProvider),
             g_browser_process->gcm_driver(),
             g_browser_process->system_request_context(),
-            std::move(url_loader_factory)));
+            std::move(url_loader_factory));
     device_invalidation_service_->Init(
         std::unique_ptr<syncer::InvalidationStateTracker>(
             new invalidation::InvalidatorStorage(
@@ -351,6 +354,7 @@ void
 AffiliatedInvalidationServiceProviderImpl::DestroyDeviceInvalidationService() {
   device_invalidation_service_observer_.reset();
   device_invalidation_service_.reset();
+  identity_provider_.reset();
 }
 
 }  // namespace policy

@@ -68,7 +68,7 @@ ProfileIdentityProvider::~ProfileIdentityProvider() {
 }
 
 std::string ProfileIdentityProvider::GetActiveAccountId() {
-  return identity_manager_->GetPrimaryAccountInfo().account_id;
+  return active_account_id_;
 }
 
 bool ProfileIdentityProvider::IsActiveAccountAvailable() {
@@ -77,6 +77,19 @@ bool ProfileIdentityProvider::IsActiveAccountAvailable() {
     return false;
 
   return true;
+}
+
+void ProfileIdentityProvider::SetActiveAccountId(
+    const std::string& account_id) {
+  if (account_id == active_account_id_)
+    return;
+
+  if (!active_account_id_.empty())
+    FireOnActiveAccountLogout();
+
+  active_account_id_ = account_id;
+  if (!active_account_id_.empty())
+    FireOnActiveAccountLogin();
 }
 
 std::unique_ptr<ActiveAccountAccessTokenFetcher>
@@ -94,16 +107,6 @@ void ProfileIdentityProvider::InvalidateAccessToken(
     const std::string& access_token) {
   identity_manager_->RemoveAccessTokenFromCache(GetActiveAccountId(), scopes,
                                                 access_token);
-}
-
-void ProfileIdentityProvider::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
-  FireOnActiveAccountLogin();
-}
-
-void ProfileIdentityProvider::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
-  FireOnActiveAccountLogout();
 }
 
 void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(

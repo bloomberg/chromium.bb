@@ -291,6 +291,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
         });
   }
 
+  invalidation::ProfileIdentityProvider* identity_provider() {
+    return profile_sync_service_bundle_.identity_provider();
+  }
+
   AccountTrackerService* account_tracker() {
     return profile_sync_service_bundle_.account_tracker();
   }
@@ -690,7 +694,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest,
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
 // things that deal with concepts like "signing out" and policy.
 #if !defined(OS_CHROMEOS)
-TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
+TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
   InitializeForNthSync();
@@ -700,6 +704,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            identity_provider()->GetActiveAccountId());
 
   identity_manager()->ClearPrimaryAccount(
       identity::IdentityManager::ClearAccountTokensAction::kDefault,
@@ -711,6 +717,13 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
+  EXPECT_EQ("", identity_provider()->GetActiveAccountId());
+
+  identity::MakePrimaryAccountAvailable(signin_manager(), auth_service(),
+                                        identity_manager(),
+                                        "new_user@gmail.com");
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            identity_provider()->GetActiveAccountId());
 }
 #endif  // !defined(OS_CHROMEOS)
 

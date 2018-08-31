@@ -27,6 +27,17 @@ std::string DeviceIdentityProvider::GetActiveAccountId() {
   return token_service_->GetRobotAccountId();
 }
 
+void DeviceIdentityProvider::SetActiveAccountId(const std::string& account_id) {
+  // On ChromeOs, the account shouldn't change during runtime, so no need to
+  // alert observers here.
+  if (!account_id.empty()) {
+    // TODO(melandory): figire out why ProfileSyncService is created
+    // with empty account id for the Kiosk mode.
+    CHECK(token_service_->GetRobotAccountId() == account_id);
+  }
+  return;
+}
+
 bool DeviceIdentityProvider::IsActiveAccountAvailable() {
   if (GetActiveAccountId().empty() || !token_service_ ||
       !token_service_->RefreshTokenIsAvailable(GetActiveAccountId()))
