@@ -216,6 +216,7 @@ class MEDIA_EXPORT DecoderStream {
   std::unique_ptr<DecoderStreamTraits<StreamType>> traits_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  CreateDecodersCB create_decoders_cb_;
   MediaLog* media_log_;
 
   State state_;
@@ -236,11 +237,20 @@ class MEDIA_EXPORT DecoderStream {
   // Whether |decoder_| has produced a frame yet. Reset on fallback.
   bool decoder_produced_a_frame_;
 
+  // Whether we have already fallen back once on decode error, used to prevent
+  // issues like infinite fallback like:
+  // 1. select decoder 1
+  // 2. decode error on decoder 1
+  // 3. black list decoder 1 and select decoder 2
+  // 4. decode error again on decoder 2
+  // 5. black list decoder 2 and select decoder 1
+  // 6. go to (2)
+  bool has_fallen_back_once_on_decode_error_;
+
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
-  // Note: Holds pointers to |traits_|, |stream_|, |decrypting_demuxer_stream_|,
-  // and |cdm_context_|.
-  DecoderSelector<StreamType> decoder_selector_;
+  // Destruct before |decrypting_demuxer_stream_| or |decoder_|.
+  std::unique_ptr<DecoderSelector<StreamType>> decoder_selector_;
 
   ConfigChangeObserverCB config_change_observer_cb_;
   DecoderChangeObserverCB decoder_change_observer_cb_;
