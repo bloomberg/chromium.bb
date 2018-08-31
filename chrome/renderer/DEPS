@@ -31,7 +31,8 @@ include_rules = [
   "+components/safe_browsing/common",
   "+components/safe_browsing/features.h",
   "+components/safe_browsing/renderer",
-  "+components/spellcheck",
+  "+components/spellcheck/renderer",
+  "+components/spellcheck/spellcheck_buildflags.h",
   "+components/startup_metric_utils/common",
   "+components/strings/grit",
   "+components/subresource_filter/content/common",
@@ -47,14 +48,12 @@ include_rules = [
   "+components/web_cache/renderer",
   "+content/app/strings/grit",
   "+content/public/child",
-  "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/buildflags",
   "+extensions/renderer",
   "+gin",
   "+media/base",
-  "+ppapi/c",
   "+ppapi/shared_impl",
   "+services/network/public/cpp",
   "+skia",
@@ -62,7 +61,6 @@ include_rules = [
   "+third_party/blink/public/mojom",
   "+third_party/metrics_proto",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
-  "-components/spellcheck/browser",  # Allow all spellcheck but browser.
 ]
 
 specific_include_rules = {
