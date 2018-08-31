@@ -7,16 +7,17 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_history.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_uploader.h"
+#include "components/upload_list/upload_list.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-
-// TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
 namespace webrtc_event_logging {
 
@@ -132,6 +133,12 @@ class WebRtcRemoteEventLogManager final
                                    const base::Time& delete_begin,
                                    const base::Time& delete_end);
 
+  // See documentation of same method in WebRtcEventLogManager for details.
+  void GetHistory(
+      BrowserContextId browser_context_id,
+      base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
+          reply);
+
   // Works on not-enabled BrowserContext-s, which means the logs are never made
   // eligible for upload. Useful when a BrowserContext is loaded which in
   // the past had remote-logging enabled, but no longer does.
@@ -190,12 +197,42 @@ class WebRtcRemoteEventLogManager final
   // existed, or it was successfully created).
   bool MaybeCreateLogsDirectory(const base::FilePath& remote_bound_logs_dir);
 
-  // Scans the user data directory associated with this BrowserContext for
-  // remote-bound logs that were created during previous Chrome sessions.
-  // This function does *not* protect against manipulation by the user,
-  // who might seed the directory with more files than were permissible.
-  void AddPendingLogs(BrowserContextId browser_context_id,
-                      const base::FilePath& remote_bound_logs_dir);
+  // Scans the user data directory associated with the BrowserContext
+  // associated with the given BrowserContextId remote-bound logs that were
+  // created during previous Chrome sessions and for history files,
+  // then process them (discard expired files, etc.)
+  void LoadLogsDirectory(BrowserContextId browser_context_id,
+                         const base::FilePath& remote_bound_logs_dir);
+
+  // Loads the pending log file whose path is |path|, into the BrowserContext
+  // indicated by |browser_context_id|. Note that the contents of the file are
+  // note read by this method.
+  // Returns true if the file was loaded correctly, and should be kept on disk;
+  // false if the file was not loaded (e.g. incomplete or expired), and needs
+  // to be deleted.
+  bool LoadPendingLogInfo(BrowserContextId browser_context_id,
+                          const base::FilePath& path,
+                          base::Time last_modified);
+
+  // Loads a history file. Returns a WebRtcEventLogHistoryFileReader if the
+  // file was loaded correctly, and should be kept on disk; nullptr otherwise,
+  // signaling that the file should be deleted.
+  // |prune_begin| and |prune_end| define a time range where, if the log falls
+  // within the range, it will not be loaded.
+  std::unique_ptr<WebRtcEventLogHistoryFileReader> LoadHistoryFile(
+      BrowserContextId browser_context_id,
+      const base::FilePath& path,
+      const base::Time& prune_begin,
+      const base::Time& prune_end);
+
+  // Deletes any history logs associated with |browser_context_id| captured or
+  // uploaded between |prune_begin| and |prune_end|, inclusive, then returns a
+  // set of readers for the remaining (meaning not-pruned) history files.
+  std::set<WebRtcEventLogHistoryFileReader>
+  PruneAndLoadHistoryFilesForBrowserContext(
+      const base::Time& prune_begin,
+      const base::Time& prune_end,
+      BrowserContextId browser_context_id);
 
   // Attempts the creation of a locally stored file into which a remote-bound
   // log may be written. The log-identifier is returned if successful, the empty
@@ -223,36 +260,59 @@ class WebRtcRemoteEventLogManager final
   // Note that the last modification date of a file, which is the value measured
   // against for retention, is only read from disk once per file, meaning
   // this check is not too expensive.
-  void PrunePendingLogs();
+  // If a |browser_context_id| is provided, logs are only pruned for it.
+  void PrunePendingLogs(
+      base::Optional<BrowserContextId> browser_context_id = base::nullopt);
 
-  // PrunePendingLogs() and schedule the next proactive prune.
-  void RecurringPendingLogsPrune();
+  // PrunePendingLogs() and schedule the next proactive pending logs prune.
+  void RecurringlyPrunePendingLogs();
 
-  // Removes pending logs files which match the given filter criteria, as
-  // described by LogFileMatchesFilter's documentation.
-  void MaybeRemovePendingLogs(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      base::Optional<BrowserContextId> browser_context_id =
-          base::Optional<BrowserContextId>());
+  // Removes expired history files.
+  // Since these are small, and since looking for them is not as cheap as
+  // looking for pending logs, we do not make an effort to remove them as
+  // soon as possible.
+  void PruneHistoryFiles();
+
+  // PruneHistoryFiles() and schedule the next proactive history files prune.
+  void RecurringlyPruneHistoryFiles();
 
   // Cancels and deletes active logs which match the given filter criteria, as
-  // described by LogFileMatchesFilter's documentation.
+  // described by MatchesFilter's documentation.
+  // This method not trigger any pending logs to be uploaded, allowing it to
+  // be safely used in a context that clears browsing data.
   void MaybeCancelActiveLogs(const base::Time& delete_begin,
                              const base::Time& delete_end,
                              BrowserContextId browser_context_id);
 
+  // Removes pending logs files which match the given filter criteria, as
+  // described by MatchesFilter's documentation.
+  // This method not trigger any pending logs to be uploaded, allowing it to
+  // be safely used in a context that clears browsing data.
+  void MaybeRemovePendingLogs(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      base::Optional<BrowserContextId> browser_context_id = base::nullopt);
+
+  // Remove all history files associated with |browser_context_id| which were
+  // either captured or uploaded between |delete_begin| and |delete_end|.
+  // This method not trigger any pending logs to be uploaded, allowing it to
+  // be safely used in a context that clears browsing data.
+  void MaybeRemoveHistoryFiles(const base::Time& delete_begin,
+                               const base::Time& delete_end,
+                               BrowserContextId browser_context_id);
+
   // If the currently uploaded file matches the given filter criteria, as
-  // described by LogFileMatchesFilter's documentation, the upload will be
+  // described by MatchesFilter's documentation, the upload will be
   // cancelled, and the log file deleted. If this happens, the next pending log
   // file will be considered for upload.
   // This method is used to ensure that clearing of browsing data by the user
   // does not leave the currently-uploaded file on disk, even for the duration
   // of the upload.
+  // This method not trigger any pending logs to be uploaded, allowing it to
+  // be safely used in a context that clears browsing data.
   void MaybeCancelUpload(const base::Time& delete_begin,
                          const base::Time& delete_end,
-                         base::Optional<BrowserContextId> browser_context_id =
-                             base::Optional<BrowserContextId>());
+                         BrowserContextId browser_context_id);
 
   // Checks whether a log file matches a range and (potentially) BrowserContext:
   // * A file matches if its last modification date was at or later than
@@ -262,12 +322,11 @@ class WebRtcRemoteEventLogManager final
   //   "end-of-time", respectively.
   // * If |filter_browser_context_id| is set, only log files associated with it
   //   can match the filter.
-  bool LogFileMatchesFilter(
-      BrowserContextId log_browser_context_id,
-      const base::Time& log_last_modification,
-      base::Optional<BrowserContextId> filter_browser_context_id,
-      const base::Time& filter_range_begin,
-      const base::Time& filter_range_end) const;
+  bool MatchesFilter(BrowserContextId log_browser_context_id,
+                     const base::Time& log_last_modification,
+                     base::Optional<BrowserContextId> filter_browser_context_id,
+                     const base::Time& filter_range_begin,
+                     const base::Time& filter_range_end) const;
 
   // Return |true| if and only if we can start another active log (with respect
   // to limitations on the numbers active and pending logs).
@@ -323,15 +382,14 @@ class WebRtcRemoteEventLogManager final
   // This may be disabled from the command line.
   const bool upload_suppression_disabled_;
 
-  // Proactive pruning will be done only if this is non-zero, in which case,
-  // every |proactive_prune_scheduling_delta_|, pending logs will be pruned.
-  // This avoids them staying around on disk for longer than their expiration
-  // if no event occurs which triggers reactive pruning.
-  const base::TimeDelta proactive_prune_scheduling_delta_;
-
   // The conditions for upload must hold for this much time, uninterrupted,
   // before an upload may be initiated.
   const base::TimeDelta upload_delay_;
+
+  // If non-zero, every |proactive_pending_logs_prune_delta_|, pending logs
+  // will be pruned. This avoids them staying around on disk for longer than
+  // their expiration if no event occurs which triggers reactive pruning.
+  const base::TimeDelta proactive_pending_logs_prune_delta_;
 
   // Proactive pruning, if enabled, starts with the first enabled browser
   // context. To avoid unnecessary complexity, if that browser context is
@@ -343,8 +401,9 @@ class WebRtcRemoteEventLogManager final
   // decide when to ask WebRTC to start/stop sending event logs.
   WebRtcRemoteEventLogsObserver* const observer_;
 
-  // The IDs of the BrowserContexts for which logging is enabled.
-  std::set<BrowserContextId> enabled_browser_contexts_;
+  // The IDs of the BrowserContexts for which logging is enabled, mapped to
+  // the directory where each BrowserContext's remote-bound logs are stored.
+  std::map<BrowserContextId, base::FilePath> enabled_browser_contexts_;
 
   // Currently active peer connections, mapped to their ID (as per the
   // RTCPeerConnection.id origin trial). PeerConnections which have been closed

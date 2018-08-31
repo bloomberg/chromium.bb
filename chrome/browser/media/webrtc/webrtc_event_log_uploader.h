@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_history.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -53,9 +54,10 @@ class WebRtcEventLogUploader {
   // Can be called for ongoing, completed, failed or cancelled uploads.
   virtual const WebRtcLogFileInfo& GetWebRtcLogFileInfo() const = 0;
 
-  // Cancels the upload. Returns true if the upload was cancelled due to this
-  // call, and false if the upload was already completed or aborted before this
-  // call. (Aborted uploads are ones where the file could not be read, etc.)
+  // Cancels the upload, then deletes the log file and its history file.
+  // Returns true if the upload was cancelled due to this call, and false if
+  // the upload was already completed or aborted before this call.
+  // (Aborted uploads are ones where the file could not be read, etc.)
   virtual bool Cancel() = 0;
 };
 
@@ -90,12 +92,12 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
 
   bool Cancel() override;
 
- protected:
+ private:
   friend class WebRtcEventLogUploaderImplTest;
 
   // Primes the log file for uploading. Returns true if the file could be read,
   // in which case |upload_data| will be populated with the data to be uploaded
-  // (both the log file's contents as well as metadata for Crash).
+  // (both the log file's contents as well as history for Crash).
   // TODO(crbug.com/775415): Avoid reading the entire file into memory.
   bool PrepareUploadData(std::string* upload_data);
 
@@ -113,10 +115,9 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // Remove the log file which is owned by |this|.
   void DeleteLogFile();
 
-  // Allows testing the behavior for excessively large files.
-  void SetMaxRemoteLogFileSizeBytesForTesting(size_t max_size_bytes);
+  // Remove the log file which is owned by |this|.
+  void DeleteHistoryFile();
 
- private:
   // The URL used for uploading the logs.
   static const char kUploadURL[];
 
@@ -130,6 +131,10 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // Maximum allowed file size. In production code, this is a hard-coded,
   // but unit tests may set other values.
   const size_t max_log_file_size_bytes_;
+
+  // Owns a history file which allows the state of the uploaded log to be
+  // remembered after it has been uploaded and/or deleted.
+  std::unique_ptr<WebRtcEventLogHistoryFileWriter> history_file_writer_;
 
   // This object is in charge of the actual upload.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

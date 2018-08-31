@@ -468,6 +468,8 @@ jumbo_split_static_library("browser") {
     "lifetime/browser_shutdown.h",
     "media/webrtc/audio_debug_recordings_handler.cc",
     "media/webrtc/audio_debug_recordings_handler.h",
+    "media/webrtc/webrtc_event_log_history.cc",
+    "media/webrtc/webrtc_event_log_history.h",
     "media/webrtc/webrtc_event_log_manager.cc",
     "media/webrtc/webrtc_event_log_manager.h",
     "media/webrtc/webrtc_event_log_manager_common.cc",

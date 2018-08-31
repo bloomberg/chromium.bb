@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_local.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/upload_list/upload_list.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/webrtc_event_logger.h"
 
@@ -72,6 +74,13 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // Returns the object previously constructed using CreateSingletonInstance(),
   // if it was constructed and was not yet destroyed; nullptr otherwise.
   static WebRtcEventLogManager* GetInstance();
+
+  // Given a BrowserContext, return the path to the directory where its
+  // remote-bound event logs are kept.
+  // Since incognito sessions don't have such a directory, an empty
+  // base::FilePath will be returned for them.
+  static base::FilePath GetRemoteBoundWebRtcEventLogsDir(
+      content::BrowserContext* browser_context);
 
   ~WebRtcEventLogManager() override;
 
@@ -135,6 +144,19 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const base::Time& delete_begin,
       const base::Time& delete_end,
       base::OnceClosure reply);
+
+  // Get the logging history (relevant only to remote-bound logs). This includes
+  // information such as when logs were captured, when they were uploaded,
+  // and what their ID in the remote server was.
+  // Must be called on the UI thread.
+  // The results to the query are posted using |reply| back to the UI thread.
+  // If |browser_context_id| is not the ID a profile for which remote-bound
+  // logging is enabled, an empty list is returned.
+  // The returned vector is sorted by capture time in ascending order.
+  void GetHistory(
+      BrowserContextId browser_context_id,
+      base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
+          reply);
 
   // Set (or unset) an observer that will be informed whenever a local log file
   // is started/stopped. The observer needs to be able to either run from
@@ -264,6 +286,11 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void ClearCacheForBrowserContextInternal(BrowserContextId browser_context_id,
                                            const base::Time& delete_begin,
                                            const base::Time& delete_end);
+
+  void GetHistoryInternal(
+      BrowserContextId browser_context_id,
+      base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
+          reply);
 
   void RenderProcessExitedInternal(int render_process_id);
 

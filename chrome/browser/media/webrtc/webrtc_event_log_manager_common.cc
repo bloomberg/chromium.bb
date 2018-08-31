@@ -494,8 +494,8 @@ void GzipLogCompressor::CreateHeader(std::string* output) {
   DCHECK(output->empty());
   DCHECK_EQ(state_, State::PRE_HEADER);
 
-  const Result result =
-      CompressInternal("", output, /*budgeted=*/false, /*last=*/false);
+  const Result result = CompressInternal(std::string(), output,
+                                         /*budgeted=*/false, /*last=*/false);
   DCHECK_EQ(result, Result::OK);
   DCHECK_EQ(output->size(), kGzipHeaderBytes);
 
@@ -533,8 +533,8 @@ bool GzipLogCompressor::CreateFooter(std::string* output) {
   DCHECK(output->empty());
   DCHECK(state_ == State::ACTIVE || state_ == State::FULL);
 
-  const Result result =
-      CompressInternal("", output, /*budgeted=*/false, /*last=*/true);
+  const Result result = CompressInternal(std::string(), output,
+                                         /*budgeted=*/false, /*last=*/true);
   if (result != Result::OK) {  // !budgeted -> Result::DISALLOWED impossible.
     DCHECK_EQ(result, Result::ERROR_ENCOUNTERED);
     // An error message was logged by CompressInternal().
@@ -682,6 +682,8 @@ const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[] =
     FILE_PATH_LITERAL("log");
 const base::FilePath::CharType kWebRtcEventLogGzippedExtension[] =
     FILE_PATH_LITERAL("log.gz");
+const base::FilePath::CharType kWebRtcEventLogHistoryExtension[] =
+    FILE_PATH_LITERAL("hist");
 
 size_t BaseLogFileWriterFactory::MinFileSizeBytes() const {
   // No overhead incurred; data written straight to the file without metadata.
@@ -811,6 +813,31 @@ base::FilePath GetRemoteBoundWebRtcEventLogsDir(
   const base::FilePath::CharType kRemoteBoundLogSubDirectory[] =
       FILE_PATH_LITERAL("webrtc_event_logs");
   return browser_context_dir.Append(kRemoteBoundLogSubDirectory);
+}
+
+base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& log) {
+  return log.RemoveExtension().AddExtension(kWebRtcEventLogHistoryExtension);
+}
+
+std::string ExtractRemoteBoundWebRtcEventLogLocalIdFromPath(
+    const base::FilePath& path) {
+  const std::string filename = path.BaseName().RemoveExtension().MaybeAsASCII();
+
+  if (filename.empty()) {
+    LOG(WARNING) << "Non-ASCII or empty filename.";
+    return std::string();
+  }
+
+  const std::string prefix =
+      base::FilePath(kRemoteBoundWebRtcEventLogFileNamePrefix).MaybeAsASCII();
+  DCHECK(!prefix.empty());
+
+  if (filename.find(prefix) != 0) {
+    LOG(WARNING) << "Filename does not begin with expected prefix.";
+    return std::string();
+  }
+
+  return filename.substr(prefix.length());
 }
 
 }  // namespace webrtc_event_logging
