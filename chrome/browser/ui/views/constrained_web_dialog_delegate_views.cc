@@ -82,6 +82,7 @@ class ConstrainedDialogWebView : public views::WebView,
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   base::string16 GetWindowTitle() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
@@ -291,6 +292,12 @@ const views::Widget* ConstrainedDialogWebView::GetWidget() const {
 base::string16 ConstrainedDialogWebView::GetWindowTitle() const {
   return impl_->closed_via_webui() ? base::string16()
                                    : GetWebDialogDelegate()->GetDialogTitle();
+}
+
+base::string16 ConstrainedDialogWebView::GetAccessibleWindowTitle() const {
+  return impl_->closed_via_webui()
+             ? base::string16()
+             : GetWebDialogDelegate()->GetAccessibleDialogTitle();
 }
 
 views::View* ConstrainedDialogWebView::GetContentsView() {

@@ -140,6 +140,12 @@ base::string16 WebDialogView::GetWindowTitle() const {
   return base::string16();
 }
 
+base::string16 WebDialogView::GetAccessibleWindowTitle() const {
+  if (delegate_)
+    return delegate_->GetAccessibleDialogTitle();
+  return GetWindowTitle();
+}
+
 std::string WebDialogView::GetWindowName() const {
   if (delegate_)
     return delegate_->GetDialogName();
