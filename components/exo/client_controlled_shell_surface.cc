@@ -591,6 +591,14 @@ bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
 }
 
 void ClientControlledShellSurface::OnSetFrame(SurfaceFrameType type) {
+  if (container_ == ash::kShellWindowId_SystemModalContainer &&
+      type != SurfaceFrameType::NONE) {
+    LOG(WARNING)
+        << "A surface in system modal container should not have a frame:"
+        << static_cast<int>(type);
+    return;
+  }
+
   // TODO(oshima): We shouldn't send the synthesized motion event when just
   // changing the frame type. The better solution would be to keep the window
   // position regardless of the frame state, but that won't be available until
