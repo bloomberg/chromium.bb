@@ -108,9 +108,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // Remote address of the socket which fetched this resource.
   net::HostPortPair socket_address;
 
-  // True if the response came from cache.
-  bool was_fetched_via_cache = false;
-
   // True if the response was delivered through a proxy.
   bool was_fetched_via_proxy;
 
