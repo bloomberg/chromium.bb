@@ -607,6 +607,52 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   EXPECT_TRUE(base::ContainsValue(languages, "hi"));
 }
 
+TEST_F(TranslateManagerTest,
+       RedundantLanguageNotAddedToAcceptLanguagesAfterTranslation) {
+  manager_->set_application_locale("en");
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
+      .WillByDefault(Return(true));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  // Add a regional variant locale to the list of accepted languages.
+  mock_translate_client_.GetTranslatePrefs()->AddToLanguageList("en-US", false);
+
+  // Accept languages shouldn't contain "en" before translating to that language
+  std::vector<std::string> languages;
+  mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
+  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateTranslation("fr");
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1),
+                          Bucket(INITIATION_STATUS_SHOW_ICON, 1)));
+
+  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+  translate_manager_->TranslatePage("fr", "en", false);
+
+  // Accept languages should not contain "en" because it is redundant
+  // with "en-US" already being present.
+  languages.clear();
+  mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
+  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+}
+
 TEST_F(TranslateManagerTest, DontTranslateOffline) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   translate_manager_.reset(new translate::TranslateManager(

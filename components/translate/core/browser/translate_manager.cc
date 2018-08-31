@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -630,10 +631,27 @@ bool TranslateManager::ShouldSuppressBubbleUI(
 
 void TranslateManager::AddTargetLanguageToAcceptLanguages(
     const std::string& target_language_code) {
+  std::string target_language, tail;
+  // |target_language_code| should satisfy BCP47 and consist of a language code
+  // and an optional region code joined by an hyphen.
+  language::SplitIntoMainAndTail(target_language_code, &target_language, &tail);
+
+  std::function<bool(const std::string&)> is_redundant;
+  if (tail.empty()) {
+    is_redundant = [&target_language](const std::string& language) {
+      return language::ExtractBaseLanguage(language) == target_language;
+    };
+  } else {
+    is_redundant = [&target_language_code](const std::string& language) {
+      return language == target_language_code;
+    };
+  }
+
   auto prefs = translate_client_->GetTranslatePrefs();
   std::vector<std::string> languages;
   prefs->GetLanguageList(&languages);
-  if (!base::ContainsValue(languages, target_language_code)) {
+
+  if (std::none_of(languages.begin(), languages.end(), is_redundant)) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
   }
 }
