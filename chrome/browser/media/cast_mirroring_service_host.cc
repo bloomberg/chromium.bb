@@ -22,6 +22,8 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 using content::BrowserThread;
 
@@ -84,6 +86,39 @@ content::DesktopMediaID BuildMediaIdForWebContents(
   return media_id;
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Clamped resolution constraint to the screen size.
+gfx::Size GetCaptureResolutionConstraint() {
+  // Default resolution constraint.
+  constexpr gfx::Size kMaxResolution(1920, 1080);
+  display::Screen* screen = display::Screen::GetScreen();
+  if (!screen) {
+    DVLOG(1) << "Cannot get the Screen object.";
+    return kMaxResolution;
+  }
+  const gfx::Size screen_resolution = screen->GetPrimaryDisplay().size();
+  const int width_step = 160;
+  const int height_step = 90;
+  int clamped_width = 0;
+  int clamped_height = 0;
+  if (kMaxResolution.height() * screen_resolution.width() <
+      kMaxResolution.width() * screen_resolution.height()) {
+    clamped_width = std::min(kMaxResolution.width(), screen_resolution.width());
+    clamped_width = clamped_width - (clamped_width % width_step);
+    clamped_height = clamped_width * height_step / width_step;
+  } else {
+    clamped_height =
+        std::min(kMaxResolution.height(), screen_resolution.height());
+    clamped_height = clamped_height - (clamped_height % height_step);
+    clamped_width = clamped_height * width_step / height_step;
+  }
+
+  clamped_width = std::max(clamped_width, width_step);
+  clamped_height = std::max(clamped_height, height_step);
+  return gfx::Size(clamped_width, clamped_height);
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 }  // namespace
 
 // static
@@ -120,11 +155,24 @@ void CastMirroringServiceHost::GetForDesktop(
   }
 }
 
+// static
+void CastMirroringServiceHost::GetForOffscreenTab(
+    content::BrowserContext* context,
+    const GURL& presentation_url,
+    const std::string& presentation_id,
+    mojom::MirroringServiceHostRequest request) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  auto host = std::make_unique<mirroring::CastMirroringServiceHost>(
+      content::DesktopMediaID());
+  host->OpenOffscreenTab(context, presentation_url, presentation_id);
+  mojo::MakeStrongBinding(std::move(host), std::move(request));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
     : source_media_id_(source_media_id) {
-  DCHECK(source_media_id_.type != content::DesktopMediaID::TYPE_NONE);
-  // Observe the target WebContents for Tab/OffscreenTab mirroring.
+  // Observe the target WebContents for Tab mirroring.
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
     Observe(GetContents(source_media_id_.web_contents_id));
 }
@@ -211,5 +259,33 @@ void CastMirroringServiceHost::WebContentsDestroyed() {
   // TODO(xjz): Stop the mirroring if connected to the MirroringService.
   // Implementation will be added in a later CL.
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void CastMirroringServiceHost::RequestMediaAccessPermission(
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback) {
+  // This should not be called when mirroring an OffscreenTab through the
+  // mirroring service.
+  NOTREACHED();
+}
+
+void CastMirroringServiceHost::DestroyTab(OffscreenTab* tab) {
+  if (offscreen_tab_ && (offscreen_tab_.get() == tab))
+    offscreen_tab_.reset();
+}
+
+void CastMirroringServiceHost::OpenOffscreenTab(
+    content::BrowserContext* context,
+    const GURL& presentation_url,
+    const std::string& presentation_id) {
+  DCHECK(!offscreen_tab_);
+  offscreen_tab_ = std::make_unique<OffscreenTab>(this, context);
+  offscreen_tab_->Start(presentation_url, GetCaptureResolutionConstraint(),
+                        presentation_id);
+  source_media_id_ = BuildMediaIdForWebContents(offscreen_tab_->web_contents());
+  DCHECK_EQ(content::DesktopMediaID::TYPE_WEB_CONTENTS, source_media_id_.type);
+  Observe(offscreen_tab_->web_contents());
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace mirroring
