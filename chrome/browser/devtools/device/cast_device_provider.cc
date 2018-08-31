@@ -141,11 +141,7 @@ class CastDeviceProvider::DeviceListerDelegate
   std::unique_ptr<ServiceDiscoveryDeviceLister> device_lister_;
 };
 
-CastDeviceProvider::CastDeviceProvider(content::BrowserContext* context)
-    : tcp_provider_(base::MakeRefCounted<TCPDeviceProvider>(
-          TCPDeviceProvider::HostPortSet(),
-          context)),
-      weak_factory_(this) {}
+CastDeviceProvider::CastDeviceProvider() : weak_factory_(this) {}
 
 CastDeviceProvider::~CastDeviceProvider() {}
 
@@ -161,7 +157,7 @@ void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   std::set<net::HostPortPair> targets;
   for (const auto& device_entry : device_info_map_)
     targets.insert(net::HostPortPair(device_entry.first, kCastInspectPort));
-  tcp_provider_->set_targets(std::move(targets));
+  tcp_provider_ = new TCPDeviceProvider(targets);
   tcp_provider_->QueryDevices(callback);
 }
 
