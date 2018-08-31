@@ -287,7 +287,7 @@
       Play the same audio through all speakers (mono audio)
     </message>
     <message name="IDS_SETTINGS_STARTUP_SOUND_LABEL" desc="Label for checkbox which enables startup sound.">
-      Play an audio indicator on startup
+      Play sound on startup
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="Informational message at the top of the accessibility section of the settings page about enabling additional accessibility-related features.">
       Enable accessibility features to make your device easier to use.
