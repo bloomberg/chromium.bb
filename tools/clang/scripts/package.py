@@ -415,12 +415,34 @@ def main():
     os.makedirs(os.path.join(llddir, 'bin'))
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'lld'),
                 os.path.join(llddir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-ar'),
+                os.path.join(llddir, 'bin'))
     os.symlink('lld', os.path.join(llddir, 'bin', 'lld-link'))
     os.symlink('lld', os.path.join(llddir, 'bin', 'ld.lld'))
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
     MaybeUpload(args, llddir, platform)
+
+  # On Linux and Mac, package and upload llvm-strip in a separate zip.
+  # This is used for the Fuchsia build.
+  if sys.platform == 'darwin' or sys.platform.startswith('linux'):
+    stripdir = 'llvmstrip-' + stamp
+    shutil.rmtree(stripdir, ignore_errors=True)
+    os.makedirs(os.path.join(stripdir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-strip'),
+                os.path.join(stripdir, 'bin'))
+    llvmstrip_stamp_file_base = 'llvmstrip_build_revision'
+    llvmstrip_stamp_file = os.path.join(stripdir, llvmstrip_stamp_file_base)
+    with open(llvmstrip_stamp_file, 'w') as f:
+      f.write(expected_stamp)
+      f.write('\n')
+    with tarfile.open(stripdir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(stripdir, 'bin'), arcname='bin',
+              filter=PrintTarProgress)
+      tar.add(llvmstrip_stamp_file, arcname=llvmstrip_stamp_file_base,
+              filter=PrintTarProgress)
+    MaybeUpload(args, stripdir, platform)
 
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp
