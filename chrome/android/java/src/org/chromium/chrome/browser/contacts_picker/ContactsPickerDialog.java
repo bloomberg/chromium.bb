@@ -32,7 +32,7 @@ public class ContactsPickerDialog extends AlertDialog {
         super(context, R.style.FullscreenWhite);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context);
+        mCategoryView = new PickerCategoryView(context, allowMultiple);
         mCategoryView.initialize(this, listener, mimeTypes);
         setView(mCategoryView);
     }
