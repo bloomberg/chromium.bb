@@ -44,6 +44,8 @@
 #import "ios/chrome/browser/web/error_page_content.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -114,6 +116,7 @@ using web::WebStateImpl;
 @interface BVCTestTabModel : OCMockComplexTypeHelper
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) WebStateList* webStateList;
 @end
 
 @implementation BVCTestTabModel {
@@ -170,11 +173,16 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     id currentTab = [[BVCTestTabMock alloc]
         initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
 
+    // Enable web usage for the mock TabModel's WebStateList.
+    WebStateListWebUsageEnabler* enabler =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            chrome_browser_state_.get());
+    enabler->SetWebStateList([tabModel webStateList]);
+    enabler->SetWebUsageEnabled(true);
+
     // Stub methods for TabModel.
     NSUInteger tabCount = 1;
     [[[tabModel stub] andReturnValue:OCMOCK_VALUE(tabCount)] count];
-    BOOL enabled = YES;
-    [[[tabModel stub] andReturnValue:OCMOCK_VALUE(enabled)] webUsageEnabled];
     [[[tabModel stub] andReturn:currentTab] currentTab];
     [[[tabModel stub] andReturn:currentTab] tabAtIndex:0];
     [[tabModel stub] addObserver:[OCMArg any]];

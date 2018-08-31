@@ -26,6 +26,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -304,11 +306,19 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (!self.closedSessionWindow)
     return;
   DCHECK(self.tabModel.browserState);
+  // Don't trigger the initial load for these restored WebStates since the
+  // number of WKWebViews is unbounded and may lead to an OOM crash.
+  WebStateListWebUsageEnabler* webUsageEnabler =
+      WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+          self.tabModel.browserState);
+  webUsageEnabler->SetTriggersInitialLoad(false);
   web::WebState::CreateParams createParams(self.tabModel.browserState);
   DeserializeWebStateList(
       self.webStateList, self.closedSessionWindow,
       base::BindRepeating(&web::WebState::CreateWithStorageSession,
                           createParams));
+  webUsageEnabler->SetTriggersInitialLoad(true);
+
   self.closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   self.closedTabsCount = 0;

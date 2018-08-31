@@ -243,6 +243,8 @@
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
@@ -659,6 +661,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, assign, getter=isBroadcasting) BOOL broadcasting;
 // Whether the controller is currently dismissing a presented view controller.
 @property(nonatomic, assign, getter=isDismissingModal) BOOL dismissingModal;
+// Whether web usage is enabled for the WebStates in |_model|.
+@property(nonatomic, assign, getter=isWebUsageEnabled) BOOL webUsageEnabled;
 // Returns YES if the toolbar has not been scrolled out by fullscreen.
 @property(nonatomic, assign, readonly, getter=isToolbarOnScreen)
     BOOL toolbarOnScreen;
@@ -1111,7 +1115,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   }
 
-  [_model setWebUsageEnabled:active];
+  self.webUsageEnabled = active;
   [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
 
@@ -1274,6 +1278,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (BOOL)isWebUsageEnabled {
+  return _browserState && !_isShutdown &&
+         WebStateListWebUsageEnablerFactory::GetInstance()
+             ->GetForBrowserState(_browserState)
+             ->IsWebUsageEnabled();
+}
+
+- (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
+  if (!_browserState || _isShutdown)
+    return;
+  WebStateListWebUsageEnablerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebUsageEnabled(webUsageEnabled);
+}
+
 - (BOOL)isToolbarOnScreen {
   return [self nonFullscreenToolbarHeight] - [self currentHeaderOffset] > 0;
 }
@@ -1421,6 +1440,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model browserStateDestroyed];
 
   TextToSpeechPlaybackControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(nullptr);
+
+  WebStateListWebUsageEnablerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
       ->SetWebStateList(nullptr);
 
@@ -1815,7 +1838,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // If the controller is suspended, or has been paged out due to low memory,
   // updating the view will be handled when it's displayed again.
-  if (![_model webUsageEnabled] || !self.contentArea)
+  if (!self.webUsageEnabled || !self.contentArea)
     return;
   // Update the displayed tab (if any; the switcher may not have created one
   // yet) in case it changed while showing the switcher.
@@ -2096,6 +2119,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _browserState = browserState;
   _isOffTheRecord = browserState->IsOffTheRecord() ? YES : NO;
   _model = model;
+  WebStateListWebUsageEnablerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(_model.webStateList);
 
   [_model addObserver:self];
 
@@ -3143,7 +3169,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Ignore changes while the tab stack view is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
-  if (!self.visible || ![_model webUsageEnabled])
+  if (!self.visible || !self.webUsageEnabled)
     return;
 
   [self displayTab:tab];
@@ -3319,9 +3345,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
-  if (!self.tabModel.webUsageEnabled) {
+  if (!self.webUsageEnabled)
     return @[];
-  }
 
   NSMutableArray* overlays = [NSMutableArray array];
   UIView* voiceSearchView = [self voiceSearchOverlayViewForTab:tab];
@@ -5190,7 +5215,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Do nothing if browsing is currently suspended.  The BVC will set everything
   // up correctly when browsing resumes.
-  if (!self.visible || ![_model webUsageEnabled])
+  if (!self.visible || !self.webUsageEnabled)
     return;
 
   // Block that starts voice search at the end of new Tab animation if
@@ -5253,7 +5278,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Ignore changes while the tab stack view is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
-  if (!self.visible || !model.webUsageEnabled)
+  if (!self.visible || !self.webUsageEnabled)
     return;
 
   // Remove the find bar for now.

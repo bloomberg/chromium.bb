@@ -48,7 +48,6 @@
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
-#import "ios/chrome/browser/tabs/tab_model_web_usage_enabled_observer.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -56,6 +55,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/load_committed_details.h"
@@ -255,6 +256,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 // Session window for the contents of the tab model.
 @property(nonatomic, readonly) SessionIOS* sessionForSaving;
+// Whether the underlying WebStateList's web usage is enabled.
+@property(nonatomic, readonly, getter=isWebUsageEnabled) BOOL webUsageEnabled;
 
 // Helper method to restore a saved session and control if the state should
 // be persisted or not. Used to implement the public -restoreSessionWindow:
@@ -267,7 +270,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 @implementation TabModel
 
 @synthesize browserState = _browserState;
-@synthesize webUsageEnabled = _webUsageEnabled;
 
 #pragma mark - Overriden
 
@@ -395,9 +397,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
         std::make_unique<WebStateListMetricsObserver>();
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
-
-    _webStateListObservers.push_back(
-        std::make_unique<TabModelWebUsageEnabledObserver>(self));
 
     auto tabModelNotificationObserver =
         std::make_unique<TabModelNotificationObserver>(self);
@@ -616,16 +615,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self didChangeTabSnapshot:tab withImage:image];
 }
 
-- (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
-  if (_webUsageEnabled == webUsageEnabled)
-    return;
-  _webUsageEnabled = webUsageEnabled;
-  for (int index = 0; index < _webStateList->count(); ++index) {
-    web::WebState* webState = _webStateList->GetWebStateAt(index);
-    webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
-  }
-}
-
 - (void)setPrimary:(BOOL)primary {
   if (_tabUsageRecorder) {
     _tabUsageRecorder->RecordPrimaryTabModelChange(primary,
@@ -740,6 +729,13 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
       initWithWindows:@[ SerializeWebStateList(_webStateList.get()) ]];
 }
 
+- (BOOL)isWebUsageEnabled {
+  DCHECK(_browserState);
+  return WebStateListWebUsageEnablerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->IsWebUsageEnabled();
+}
+
 - (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
                 persistState:(BOOL)persistState {
   DCHECK(_browserState);
@@ -827,7 +823,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
-  if (_webUsageEnabled && self.currentTab) {
+  if (self.webUsageEnabled && self.currentTab) {
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
         willBeSavedGreyWhenBackgrounding:self.currentTab.tabId];
   }
@@ -851,7 +847,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [self saveSessionImmediately:YES];
 
   // Write out a grey version of the current website to disk.
-  if (_webUsageEnabled && self.currentTab) {
+  if (self.webUsageEnabled && self.currentTab) {
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
         saveGreyInBackgroundForSessionID:self.currentTab.tabId];
   }
