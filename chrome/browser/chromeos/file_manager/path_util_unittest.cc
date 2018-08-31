@@ -48,6 +48,11 @@ TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
   EXPECT_EQ("Google Drive \u203a foo",
             GetDownloadLocationText(
                 &profile, "/special/drive-0123456789abcdef/root/foo"));
+  EXPECT_EQ(
+      "Team Drives \u203a A Team Drive \u203a foo",
+      GetDownloadLocationText(
+          &profile,
+          "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
   EXPECT_EQ("Play files \u203a foo \u203a bar",
             GetDownloadLocationText(
                 &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));

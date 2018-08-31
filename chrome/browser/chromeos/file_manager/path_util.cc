@@ -36,6 +36,7 @@ namespace {
 const char kDownloadsFolderName[] = "Downloads";
 const char kGoogleDriveDisplayName[] = "Google Drive";
 const char kRootRelativeToDriveMount[] = "root";
+const char kTeamDrivesRelativeToDriveMount[] = "team_drives";
 
 // Sync with the file provider in ARC++ side.
 constexpr char kArcFileProviderUrl[] =
@@ -301,6 +302,12 @@ std::string GetDownloadLocationText(Profile* profile, const std::string& path) {
                                .Append(kRootRelativeToDriveMount)
                                .value(),
                            kGoogleDriveDisplayName)) {
+  } else if (ReplacePrefix(&result,
+                           drive::util::GetDriveMountPointPath(profile)
+                               .Append(kTeamDrivesRelativeToDriveMount)
+                               .value(),
+                           l10n_util::GetStringUTF8(
+                               IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))) {
   } else if (ReplacePrefix(&result, kAndroidFilesPath,
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL))) {
