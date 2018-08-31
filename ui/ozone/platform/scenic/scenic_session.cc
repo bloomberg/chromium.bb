@@ -261,12 +261,12 @@ void ScenicSession::Close() {
   session_listener_binding_.Unbind();
 }
 
-void ScenicSession::OnError(fidl::StringPtr error) {
+void ScenicSession::OnScenicError(fidl::StringPtr error) {
   Close();
   listener_->OnScenicError(error);
 }
 
-void ScenicSession::OnEvent(
+void ScenicSession::OnScenicEvent(
     fidl::VectorPtr<fuchsia::ui::scenic::Event> events) {
   listener_->OnScenicEvents(events.get());
 }
