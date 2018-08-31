@@ -308,6 +308,7 @@ crbug.com/859233 external/wpt/css/css-break/hit-test-inline-fragmentation-with-b
 crbug.com/845902 external/wpt/css/css-sizing/whitespace-and-break.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
+crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
