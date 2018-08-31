@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -61,7 +60,6 @@ public class VrBrowserJavaScriptModalDialogTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/879130")
     @Feature({"Browser", "RenderTest"})
     public void testAlertModalDialog() throws ExecutionException, IOException {
         testModalDialogImpl("js_modal_view_vr_alert", "alert('Hello Android!')");
@@ -72,7 +70,6 @@ public class VrBrowserJavaScriptModalDialogTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/879130")
     @Feature({"Browser", "RenderTest"})
     public void testConfirmModalDialog() throws ExecutionException, IOException {
         testModalDialogImpl("js_modal_view_vr_confirm", "confirm('Deny?')");
@@ -83,7 +80,6 @@ public class VrBrowserJavaScriptModalDialogTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/879130")
     @Feature({"Browser", "RenderTest"})
     public void testPromptModalDialog() throws ExecutionException, IOException {
         testModalDialogImpl(
