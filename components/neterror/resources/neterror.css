@@ -320,6 +320,18 @@ a {
   color: #BBB;
 }
 
+#download-link:before, #download-link-clicked:before {
+  content: url(offline_content/download-blue.svg);
+  display: inline-block;
+  margin-inline-end: 4px;
+  vertical-align: -webkit-baseline-middle;
+}
+
+#download-link-clicked:before {
+  width: 0px;
+  opacity: 0;
+}
+
 .offline-content-suggestion-image {
   height: 35vw;
   line-height: 0;
