@@ -532,6 +532,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-036.xht [ Skip ]
 
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/inline-block-and-column-span-all.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-003.html [ Failure ]
@@ -2715,7 +2716,6 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/inline-block-and-column-span-all.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/no-media-call.html [ Timeout ]
