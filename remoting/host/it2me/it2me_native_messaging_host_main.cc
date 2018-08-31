@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -97,6 +98,8 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   // Required to find the ICU data file, used by some file_util routines.
   base::i18n::InitializeICU();
+
+  mojo::core::Init();
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("It2Me");
 
