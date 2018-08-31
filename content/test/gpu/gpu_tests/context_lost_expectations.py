@@ -54,6 +54,10 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost_WebGLContextLostInHiddenTab',
               ['android'], bug=609629)
 
+    # Flaking on Nexus 5X
+    self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
+              ['android'], bug=879423)
+
     # Nexus 6
     # The Nexus 6 times out on these tests while waiting for the JS to complete
     self.Fail('ContextLost_WebGLContextLostFromLoseContextExtension',
