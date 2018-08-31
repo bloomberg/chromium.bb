@@ -245,11 +245,17 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   extensions_delegate_->NotifyCompleted(request, started, net_error);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
+  extensions_delegate_->ForwardProxyErrors(request, net_error);
   extensions_delegate_->ForwardDoneRequestStatus(request);
 }
 
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
   extensions_delegate_->NotifyURLRequestDestroyed(request);
+}
+
+void ChromeNetworkDelegate::OnPACScriptError(int line_number,
+                                             const base::string16& error) {
+  extensions_delegate_->NotifyPACScriptError(line_number, error);
 }
 
 net::NetworkDelegate::AuthRequiredResponse

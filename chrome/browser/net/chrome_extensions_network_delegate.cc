@@ -100,6 +100,7 @@ class ChromeExtensionsNetworkDelegateImpl
 
  private:
   // ChromeExtensionsNetworkDelegate implementation.
+  void ForwardProxyErrors(net::URLRequest* request, int net_error) override;
   void ForwardStartRequestStatus(net::URLRequest* request) override;
   void ForwardDoneRequestStatus(net::URLRequest* request) override;
   int OnBeforeURLRequest(net::URLRequest* request,
@@ -123,6 +124,7 @@ class ChromeExtensionsNetworkDelegateImpl
                    bool started,
                    int net_error) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
+  void OnPACScriptError(int line_number, const base::string16& error) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
@@ -157,6 +159,19 @@ ChromeExtensionsNetworkDelegateImpl::~ChromeExtensionsNetworkDelegateImpl() {
   DCHECK(active_requests_.empty());
 }
 
+void ChromeExtensionsNetworkDelegateImpl::ForwardProxyErrors(
+    net::URLRequest* request,
+    int net_error) {
+  if (net_error != net::OK) {
+    switch (net_error) {
+      case net::ERR_PROXY_AUTH_UNSUPPORTED:
+      case net::ERR_PROXY_CONNECTION_FAILED:
+      case net::ERR_TUNNEL_CONNECTION_FAILED:
+        extensions::ProxyEventRouter::GetInstance()->OnProxyError(
+            event_router_.get(), profile_, net_error);
+    }
+  }
+}
 
 void ChromeExtensionsNetworkDelegateImpl::ForwardStartRequestStatus(
     net::URLRequest* request) {
@@ -238,6 +253,7 @@ void ChromeExtensionsNetworkDelegateImpl::OnResponseStarted(
   info->AddResponseInfoFromURLRequest(request);
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       profile_, extension_info_map_.get(), info, net_error);
+  ForwardProxyErrors(request, net_error);
 }
 
 void ChromeExtensionsNetworkDelegateImpl::OnCompleted(net::URLRequest* request,
@@ -268,6 +284,13 @@ void ChromeExtensionsNetworkDelegateImpl::OnURLRequestDestroyed(
   ExtensionWebRequestEventRouter::GetInstance()->OnRequestWillBeDestroyed(
       profile_, it->second.get());
   active_requests_.erase(it);
+}
+
+void ChromeExtensionsNetworkDelegateImpl::OnPACScriptError(
+    int line_number,
+    const base::string16& error) {
+  extensions::ProxyEventRouter::GetInstance()->OnPACScriptError(
+      event_router_.get(), profile_, line_number, error);
 }
 
 net::NetworkDelegate::AuthRequiredResponse
@@ -309,6 +332,10 @@ void ChromeExtensionsNetworkDelegate::set_extension_info_map(
   extension_info_map_ = extension_info_map;
 #endif
 }
+
+void ChromeExtensionsNetworkDelegate::ForwardProxyErrors(
+    net::URLRequest* request,
+    int net_error) {}
 
 void ChromeExtensionsNetworkDelegate::ForwardStartRequestStatus(
     net::URLRequest* request) {

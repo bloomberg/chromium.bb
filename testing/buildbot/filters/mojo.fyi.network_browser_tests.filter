@@ -94,6 +94,15 @@
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttp
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsNoWhitelisted
 
+# https://crbug.com/851609
+# Extension listeners for "chrome.proxy.onProxyError" are not called for errors
+# in PAC scripts.
+-ProxySettingsApiTest.ProxyEventsParseError
+# https://crbug.com/876568
+# Extension listeners for "chrome.proxy.onProxyError" are not called for
+# failures connecting to proxy.
+-ProxySettingsApiTest.ProxyEventsInvalidProxy
+
 # https://crbug.com/827582
 # Editing response cookies through headers with webRequest is not supported with
 # the network service.

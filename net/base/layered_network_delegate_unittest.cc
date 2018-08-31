@@ -254,7 +254,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_before_redirect_count"]);
   }
 
-  void OnResponseStartedInternal(URLRequest* request, int net_error) override {
+  void OnResponseStartedInternal(URLRequest* request) override {
     ++(*counters_)["on_response_started_count"];
     EXPECT_EQ(1, (*counters_)["on_response_started_count"]);
   }
