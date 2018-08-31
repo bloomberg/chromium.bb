@@ -3,6 +3,21 @@
 // found in the LICENSE file.
 
 cr.define('settings_payments_section', function() {
+  suite('PaymentSectionUiTest', function() {
+    test('testAutofillExtensionIndicator', function() {
+      // Initializing with fake prefs
+      const section = document.createElement('settings-payments-section');
+      section.prefs = {autofill: {enabled: {}, credit_card_enabled: {}}};
+      document.body.appendChild(section);
+
+      assertFalse(!!section.$$('#autofillExtensionIndicator'));
+      section.set('prefs.autofill.credit_card_enabled.extensionId', 'test-id');
+      Polymer.dom.flush();
+
+      assertTrue(!!section.$$('#autofillExtensionIndicator'));
+    });
+  });
+
   suite('PaymentsSection', function() {
     /** @type {settings.SyncBrowserProxy} */
     let syncBrowserProxy = null;
@@ -59,15 +74,6 @@ cr.define('settings_payments_section', function() {
       assertTrue(section.$$('#creditCardsHeading').hidden);
       assertFalse(section.$$('#autofillCreditCardToggle').disabled);
       assertFalse(section.$$('#addCreditCard').disabled);
-    });
-
-    test('verifyDisabled', function() {
-      const section = createPaymentsSection(
-          [],
-          {enabled: {value: false}, credit_card_enabled: {value: true}});
-
-      assertTrue(section.$$('#autofillCreditCardToggle').disabled);
-      assertTrue(section.$$('#addCreditCard').disabled);
     });
 
     test('verifyCreditCardsDisabled', function() {

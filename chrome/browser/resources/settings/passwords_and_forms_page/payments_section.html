@@ -45,9 +45,22 @@
         class="settings-box first"
         aria-label="$i18n{creditCards}" no-extension-indicator
         label="$i18n{enableCreditCardsLabel}"
-        pref="{{prefs.autofill.credit_card_enabled}}"
-        disabled$="[[!prefs.autofill.enabled.value]]">
+        sub-label="$i18n{enableCreditCardsSublabel}"
+        pref="{{prefs.autofill.credit_card_enabled}}">
     </settings-toggle-button>
+    <template is="dom-if"
+        if="[[prefs.autofill.credit_card_enabled.extensionId]]">
+      <div class="settings-box continuation">
+        <extension-controlled-indicator class="start"
+            id="autofillExtensionIndicator"
+            extension-id="[[prefs.autofill.credit_card_enabled.extensionId]]"
+            extension-name="[[
+                prefs.autofill.credit_card_enabled.controlledByName]]"
+            extension-can-be-disabled="[[
+                prefs.autofill.credit_card_enabled.extensionCanBeDisabled]]">
+        </extension-controlled-indicator>
+      </div>
+    </template>
     <div class="settings-box continuation">
       <h2 class="start">$i18n{creditCards}</h2>
       <paper-button id="addCreditCard"
