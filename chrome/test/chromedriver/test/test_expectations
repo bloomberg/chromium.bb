@@ -12,48 +12,6 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
-    'AvailableLogsTest.driverLogShouldBeEnabledByDefault',
-    'ChromeOptionsFunctionalTest.*',
-    'ClickTest.testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports',
-    'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',
-    'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',
-    'CorrectEventFiringTest.testShouldFireFocusEventWhenClicking',
-    'ExecutingAsyncJavascriptTest.throwsIfScriptTriggersAlertWhichTimesOut',
-    'ExecutingJavascriptTest.testShouldThrowExceptionIfExecutingOnNoPage',
-    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1249
-    'FrameSwitchingTest.testGetCurrentUrl',
-    'I18nTest.testShouldBeAbleToActivateIMEEngine',
-    # Broken because AddWebStorage.java is broken.
-    'LocalStorageTest.*',
-    'LocationContextTest.*',
-    'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
-    'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',
-    # PerformanceLoggingTest is for firefox only; "performance" log deprecated.
-    'PerformanceLoggingTest.*',
-    'ProxySettingTest.canConfigureProxyWithRequiredCapability',
-    'ProxySettingTest.requiredProxyCapabilityShouldHavePriority',
-    'RenderedWebElementTest.testShouldHandleNonIntegerPositionAndSize',
-    # Broken because AddWebStorage.java is broken.
-    'SessionStorageTest.*',
-    'SqlDatabaseTest.*',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePage',
-    'TakesScreenshotTest.testShouldCaptureScreenshotWithLongX',
-    'TakesScreenshotTest.testShouldCaptureScreenshotWithLongY',
-    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLong',
-    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongX',
-    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongY',
-    'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
-    'TypingTest.testGenerateKeyPressEventEvenWhenElementPreventsDefault',
-    'TypingTest.testNonPrintableCharactersShouldWorkWithContentEditableOrDesignModeSet',
-    'TypingTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
-    'TypingTest.testShouldNotTypeIntoElementsThatPreventKeyDownEvents',
-    'TypingTest.testTypingIntoAnIFrameWithContentEditableOrDesignModeSet',
-    'UnexpectedAlertBehaviorTest.requiredUnhandledAlertCapabilityHasPriorityOverDesired',
-    'UnexpectedAlertBehaviorTest.dismissUnhandledAlertsByDefault',
-    'VisibilityTest.testElementHiddenByOverflowXIsNotVisible',
-    'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
-    'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.testCanMaximizeTheWindowFromFrame',
     'WindowTest.testCanMaximizeTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
@@ -61,16 +19,16 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
-    #'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
+    # 'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1151
-    'DragAndDropTest.testDragAndDrop',
-    'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
-    'DragAndDropTest.testElementInDiv',
+    # 'DragAndDropTest.testDragAndDrop',
+    # 'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
+    # 'DragAndDropTest.testElementInDiv',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
+    # 'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
+    # 'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
-    'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
+    # 'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
@@ -80,7 +38,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ProxySettingTest.canConfigureManualHttpProxy',
     'ProxySettingTest.canConfigureNoProxy',
 
-    'BasicMouseInterfaceTest.testHoverPersists',
+    # 'BasicMouseInterfaceTest.testHoverPersists',
 
     'ElementAttributeTest.testShouldReturnInnerHtml',
     'ExecutingAsyncJavascriptTest.shouldBeAbleToMakeXMLHttpRequestsAndWaitForTheResponse',
