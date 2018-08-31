@@ -43,6 +43,11 @@
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #endif
 
+#if defined(OS_MACOSX)
+#include "sandbox/mac/system_services.h"
+#include "services/service_manager/sandbox/features.h"
+#endif
+
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox.h"
 
@@ -203,6 +208,15 @@ UtilityServiceFactory::CreateNetworkService() {
 
 std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateAudioService() {
+#if defined(OS_MACOSX)
+  // Don't connect to launch services when running sandboxed
+  // (https://crbug.com/874785).
+  if (base::FeatureList::IsEnabled(
+          service_manager::features::kAudioServiceSandbox)) {
+    sandbox::DisableLaunchServices();
+  }
+#endif
+
   return audio::CreateStandaloneService(std::move(audio_registry_));
 }
 
