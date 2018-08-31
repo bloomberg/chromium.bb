@@ -4283,16 +4283,9 @@ crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.html [ Pass
 crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure ]
 
 # Failing cookies tests with random numbers in error message
-crbug.com/843945 external/wpt/cookies/samesite/fetch.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-get-blank.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-post-blank.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/iframe-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/iframe.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/img.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/window-open.html [ Failure ]
 
 # Client hint tests that fail in content_shell but pass when run manually using
 # full browser.
