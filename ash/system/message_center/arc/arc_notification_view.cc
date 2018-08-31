@@ -55,6 +55,9 @@ ArcNotificationView::ArcNotificationView(
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
+
+  UpdateCornerRadius(message_center::kNotificationCornerRadius,
+                     message_center::kNotificationCornerRadius);
 }
 
 ArcNotificationView::~ArcNotificationView() {

@@ -28,6 +28,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/bounded_label.h"
+#include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -549,8 +550,6 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   action_buttons_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kActionsRowPadding,
       kActionsRowHorizontalSpacing));
-  action_buttons_row_->SetBackground(
-      views::CreateSolidBackground(kActionsRowBackgroundColor));
   action_buttons_row_->SetVisible(false);
   actions_row_->AddChildView(action_buttons_row_);
 
@@ -570,6 +569,8 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   //   textfield click in native notification.
   // - To make it look similar to ArcNotificationContentView::EventForwarder.
   AddPreTargetHandler(click_activator_.get());
+
+  UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
 }
 
 NotificationViewMD::~NotificationViewMD() {
@@ -1229,6 +1230,13 @@ void NotificationViewMD::UpdateControlButtonsVisibility() {
       (GetMode() != Mode::SETTING);
 
   control_buttons_view_->SetVisible(target_visibility);
+}
+
+void NotificationViewMD::UpdateCornerRadius(int top_radius, int bottom_radius) {
+  MessageView::UpdateCornerRadius(top_radius, bottom_radius);
+  action_buttons_row_->SetBackground(views::CreateBackgroundFromPainter(
+      std::make_unique<NotificationBackgroundPainter>(
+          0, bottom_radius, kActionsRowBackgroundColor)));
 }
 
 NotificationControlButtonsView* NotificationViewMD::GetControlButtonsView()

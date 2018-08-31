@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_BACKGROUND_PAINTER_H_
 
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/painter.h"
 
 namespace message_center {
@@ -16,17 +17,19 @@ namespace message_center {
 class MESSAGE_CENTER_EXPORT NotificationBackgroundPainter
     : public views::Painter {
  public:
-  NotificationBackgroundPainter(int top_radius, int bottom_radius);
+  NotificationBackgroundPainter(int top_radius,
+                                int bottom_radius,
+                                SkColor color = kNotificationBackgroundColor);
   ~NotificationBackgroundPainter() override;
 
   // views::Painter
   gfx::Size GetMinimumSize() const override;
-
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   const SkScalar top_radius_;
   const SkScalar bottom_radius_;
+  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationBackgroundPainter);
 };

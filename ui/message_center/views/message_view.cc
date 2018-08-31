@@ -53,10 +53,6 @@ base::string16 CreateAccessibleName(const Notification& notification) {
   return base::JoinString(accessible_lines, base::ASCIIToUTF16("\n"));
 }
 
-bool ShouldRoundMessageViewCorners() {
-  return base::FeatureList::IsEnabled(message_center::kNewStyleNotifications);
-}
-
 }  // namespace
 
 // static
@@ -72,20 +68,14 @@ MessageView::MessageView(const Notification& notification)
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
-
-  // ChromeOS rounds the corners of the message view. TODO(estade): should we do
-  // this for all platforms?
-  if (ShouldRoundMessageViewCorners())
-    UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
-  else
-    UpdateCornerRadius(0, 0);
-
   AddChildView(background_view_);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
 
   UpdateWithNotification(notification);
+
+  UpdateCornerRadius(0, 0);
 }
 
 MessageView::~MessageView() {}
