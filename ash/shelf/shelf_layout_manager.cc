@@ -1177,7 +1177,8 @@ void ShelfLayoutManager::StartGestureDrag(
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
     if (home_launcher_handler && visibility_state() == SHELF_VISIBLE &&
-        home_launcher_handler->OnPressEvent()) {
+        home_launcher_handler->OnPressEvent(
+            HomeLauncherGestureHandler::Mode::kSwipeUpToShow)) {
       gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
       return;
     }

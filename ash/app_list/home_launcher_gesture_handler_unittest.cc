@@ -17,6 +17,8 @@
 
 namespace ash {
 
+using Mode = HomeLauncherGestureHandler::Mode;
+
 class HomeLauncherGestureHandlerTest : public AshTestBase {
  public:
   HomeLauncherGestureHandlerTest() = default;
@@ -31,7 +33,7 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
 
   // Create a test window and set the base transform to identity and
   // the base opacity to opaque for easier testing.
-  std::unique_ptr<aura::Window> CreateWindowForTesting() {
+  virtual std::unique_ptr<aura::Window> CreateWindowForTesting() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
 
     window->SetTransform(gfx::Transform());
@@ -49,12 +51,27 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
 
 // Tests that the gesture handler will not have a window to act on if there are
 // none in the mru list.
-TEST_F(HomeLauncherGestureHandlerTest, NeedsOneWindow) {
-  GetGestureHandler()->OnPressEvent();
+TEST_F(HomeLauncherGestureHandlerTest, NeedsOneWindowToShow) {
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
   EXPECT_FALSE(GetGestureHandler()->window());
 
   auto window = CreateWindowForTesting();
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  EXPECT_TRUE(GetGestureHandler()->window());
+}
+
+// Tests that the gesture handler will not have a window to act on if there are
+// none in the mru list, or if they are not minimized.
+TEST_F(HomeLauncherGestureHandlerTest, NeedsOneMinimizedWindowToHide) {
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeDownToHide);
+  EXPECT_FALSE(GetGestureHandler()->window());
+
+  auto window = CreateWindowForTesting();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeDownToHide);
+  EXPECT_FALSE(GetGestureHandler()->window());
+
+  wm::GetWindowState(window.get())->Minimize();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeDownToHide);
   EXPECT_TRUE(GetGestureHandler()->window());
 }
 
@@ -71,17 +88,45 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
   // Test that the most recently activated window is visible, but the others are
   // not.
   ::wm::ActivateWindow(window1.get());
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
 }
 
+class HomeLauncherModeGestureHandlerTest
+    : public HomeLauncherGestureHandlerTest,
+      public testing::WithParamInterface<Mode> {
+ public:
+  HomeLauncherModeGestureHandlerTest() : mode_(GetParam()) {}
+  virtual ~HomeLauncherModeGestureHandlerTest() = default;
+
+  // HomeLauncherGestureHandlerTest:
+  std::unique_ptr<aura::Window> CreateWindowForTesting() override {
+    std::unique_ptr<aura::Window> window =
+        HomeLauncherGestureHandlerTest::CreateWindowForTesting();
+    if (mode_ == Mode::kSwipeDownToHide)
+      wm::GetWindowState(window.get())->Minimize();
+    return window;
+  }
+
+ protected:
+  Mode mode_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HomeLauncherModeGestureHandlerTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        HomeLauncherModeGestureHandlerTest,
+                        testing::Values(Mode::kSwipeDownToHide,
+                                        Mode::kSwipeUpToShow));
+
 // Tests that the window transform and opacity changes as we scroll.
-TEST_F(HomeLauncherGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
+TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
   auto window = CreateWindowForTesting();
 
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(mode_);
   ASSERT_TRUE(GetGestureHandler()->window());
 
   // Test that on scrolling to a point on the top half of the work area, the
@@ -101,16 +146,15 @@ TEST_F(HomeLauncherGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
   EXPECT_LT(window->layer()->opacity(), 1.f);
 }
 
-// Tests that releasing a drag at the bottom of the work area will return the
-// window to its original transform and opacity.
-TEST_F(HomeLauncherGestureHandlerTest, BelowHalfReleaseReturnsToOriginalState) {
+// Tests that releasing a drag at the bottom of the work area will show the
+// window.
+TEST_P(HomeLauncherModeGestureHandlerTest, BelowHalfShowsWindow) {
   UpdateDisplay("400x400");
-  auto window1 = CreateWindowForTesting();
-  auto window2 = CreateWindowForTesting();
   auto window3 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window1 = CreateWindowForTesting();
 
-  ::wm::ActivateWindow(window1.get());
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(mode_);
   ASSERT_TRUE(GetGestureHandler()->window());
   ASSERT_FALSE(window2->IsVisible());
   ASSERT_FALSE(window3->IsVisible());
@@ -125,21 +169,24 @@ TEST_F(HomeLauncherGestureHandlerTest, BelowHalfReleaseReturnsToOriginalState) {
   EXPECT_EQ(gfx::Transform(), window1->transform());
   EXPECT_EQ(1.f, window1->layer()->opacity());
 
-  // The other windows return to their original visibility.
+  if (mode_ == Mode::kSwipeDownToHide)
+    return;
+
+  // The other windows return to their original visibility if mode is swiping
+  // up.
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
 }
 
 // Tests that a drag released at the top half of the work area will minimize the
 // window under action.
-TEST_F(HomeLauncherGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
+TEST_P(HomeLauncherModeGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
   UpdateDisplay("400x400");
-  auto window1 = CreateWindowForTesting();
-  auto window2 = CreateWindowForTesting();
   auto window3 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window1 = CreateWindowForTesting();
 
-  ::wm::ActivateWindow(window1.get());
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(mode_);
   ASSERT_TRUE(GetGestureHandler()->window());
   ASSERT_FALSE(window2->IsVisible());
   ASSERT_FALSE(window3->IsVisible());
@@ -155,7 +202,7 @@ TEST_F(HomeLauncherGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
 
 // Tests on swipe up, the transient child of a window which is getting hidden
 // will have its opacity and transform altered as well.
-TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
+TEST_P(HomeLauncherModeGestureHandlerTest, WindowWithTransientChild) {
   UpdateDisplay("400x448");
 
   // Create a window with a transient child.
@@ -167,8 +214,7 @@ TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
   ::wm::AddTransientChild(parent.get(), child.get());
 
   // |parent| should be the window that is getting hidden.
-  ::wm::ActivateWindow(parent.get());
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(mode_);
   ASSERT_EQ(parent.get(), GetGestureHandler()->window());
 
   // Tests that after scrolling to the halfway point, the transient child's
@@ -187,10 +233,10 @@ TEST_F(HomeLauncherGestureHandlerTest, WindowWithTransientChild) {
 
 // Tests that when tablet mode is ended while in the middle of a scroll session,
 // the window is advanced to its end state.
-TEST_F(HomeLauncherGestureHandlerTest, EndScrollOnTabletModeEnd) {
+TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   auto window = CreateWindowForTesting();
 
-  GetGestureHandler()->OnPressEvent();
+  GetGestureHandler()->OnPressEvent(mode_);
   ASSERT_TRUE(GetGestureHandler()->window());
 
   // Scroll to a point above the halfway mark of the work area.

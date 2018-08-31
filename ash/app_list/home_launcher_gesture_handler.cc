@@ -34,6 +34,44 @@ constexpr base::TimeDelta kAnimationDurationMs =
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
 
+// Checks if |window| can be hidden or shown with a gesture.
+bool CanProcessWindow(aura::Window* window,
+                      HomeLauncherGestureHandler::Mode mode) {
+  DCHECK(window);
+
+  // Window should not be fullscreen as we do not allow swiping up when auto
+  // hide for shelf.
+  DCHECK(!wm::GetWindowState(window)->IsFullscreen());
+
+  if (!window->IsVisible() &&
+      mode == HomeLauncherGestureHandler::Mode::kSwipeUpToShow) {
+    return false;
+  }
+
+  if (window->IsVisible() &&
+      mode == HomeLauncherGestureHandler::Mode::kSwipeDownToHide) {
+    return false;
+  }
+
+  if (!Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+    return false;
+
+  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+    return false;
+
+  if (Shell::Get()->window_selector_controller()->IsSelecting())
+    return false;
+
+  if (window->type() == aura::client::WINDOW_TYPE_POPUP)
+    return false;
+
+  if (::wm::GetTransientParent(window))
+    return false;
+
+  wm::WindowState* state = wm::GetWindowState(window);
+  return state->CanMaximize() && state->CanResize();
+}
+
 // Find the transform that will convert |src| to |dst|.
 gfx::Transform CalculateTransform(const gfx::RectF& src,
                                   const gfx::RectF& dst) {
@@ -125,31 +163,29 @@ HomeLauncherGestureHandler::HomeLauncherGestureHandler(
 
 HomeLauncherGestureHandler::~HomeLauncherGestureHandler() = default;
 
-bool HomeLauncherGestureHandler::OnPressEvent() {
+bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
   // Do not start a new session if a window is currently being processed.
   if (last_event_location_)
     return false;
 
   // We want the first window in the mru list, if it exists and is usable.
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-  if (windows.empty() || !CanHideWindow(windows[0])) {
+  if (windows.empty() || !CanProcessWindow(windows[0], mode)) {
     window_ = nullptr;
     return false;
   }
 
+  DCHECK_NE(Mode::kNone, mode);
+  mode_ = mode;
   window_ = windows[0];
   window_->AddObserver(this);
   windows.erase(windows.begin());
-  // Hide all visible windows which are behind our window so that when we
-  // scroll, the home launcher will be visible.
-  hidden_windows_.clear();
-  for (auto* window : windows) {
-    if (window->IsVisible()) {
-      hidden_windows_.push_back(window);
-      window->AddObserver(this);
-      ScopedAnimationDisabler disable(window);
-      window->Hide();
-    }
+
+  // Show |window_| if we are swiping down to hide.
+  if (mode == Mode::kSwipeDownToHide) {
+    ScopedAnimationDisabler disable(window_);
+    window_->Show();
+    window_->layer()->SetOpacity(1.f);
   }
 
   const gfx::RectF& current_bounds = gfx::RectF(window_->GetTargetBounds());
@@ -178,6 +214,22 @@ bool HomeLauncherGestureHandler::OnPressEvent() {
     transient_descendants_values_[window] = values;
   }
 
+  // Hide all visible windows which are behind our window so that when we
+  // scroll, the home launcher will be visible. This is only needed when swiping
+  // up.
+  hidden_windows_.clear();
+  if (mode_ == Mode::kSwipeUpToShow) {
+    for (auto* window : windows) {
+      if (window->IsVisible()) {
+        hidden_windows_.push_back(window);
+        window->AddObserver(this);
+        ScopedAnimationDisabler disable(window);
+        window->Hide();
+      }
+    }
+  }
+
+  UpdateWindows(0.0, /*animate=*/false);
   return true;
 }
 
@@ -259,6 +311,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     // rename hidden so we can see the home launcher.
     ScopedAnimationDisabler disable(window_);
     wm::GetWindowState(window_)->Minimize();
+    window_->SetTransform(window_values_.initial_transform);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
@@ -272,37 +325,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
       screen_util::GetDisplayWorkAreaBoundsInParent(window_).y(), 1.f,
       base::NullCallback());
-  last_event_location_ = base::nullopt;
   RemoveObserversAndStopTracking();
-}
-
-bool HomeLauncherGestureHandler::CanHideWindow(aura::Window* window) {
-  DCHECK(window);
-
-  // Window should not be fullscreen as we do not allow swiping up when auto
-  // hide for shelf.
-  DCHECK(!wm::GetWindowState(window)->IsFullscreen());
-
-  if (!window->IsVisible())
-    return false;
-
-  if (!app_list_controller_->IsHomeLauncherEnabledInTabletMode())
-    return false;
-
-  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
-    return false;
-
-  if (Shell::Get()->window_selector_controller()->IsSelecting())
-    return false;
-
-  if (window->type() == aura::client::WINDOW_TYPE_POPUP)
-    return false;
-
-  if (::wm::GetTransientParent(window))
-    return false;
-
-  wm::WindowState* state = wm::GetWindowState(window);
-  return state->CanMaximize() && state->CanResize();
 }
 
 void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
@@ -352,6 +375,9 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
+  last_event_location_ = base::nullopt;
+  mode_ = Mode::kNone;
+
   for (auto* window : hidden_windows_)
     window->RemoveObserver(this);
   hidden_windows_.clear();

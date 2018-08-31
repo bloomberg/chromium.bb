@@ -88,6 +88,12 @@ void AppListTestViewDelegate::ShowWallpaperContextMenu(
   ++show_wallpaper_context_menu_count_;
 }
 
+bool AppListTestViewDelegate::ProcessHomeLauncherGesture(
+    ui::EventType type,
+    const gfx::Point& screen_location) {
+  return false;
+}
+
 ws::WindowService* AppListTestViewDelegate::GetWindowService() {
   return nullptr;
 }

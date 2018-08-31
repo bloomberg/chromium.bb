@@ -76,6 +76,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                int event_flags) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
+  bool ProcessHomeLauncherGesture(ui::EventType type,
+                                  const gfx::Point& screen_location) override;
   ws::WindowService* GetWindowService() override;
 
   // Do a bulk replacement of the items in the model.

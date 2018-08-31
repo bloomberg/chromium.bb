@@ -707,6 +707,29 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
   Shell::Get()->ShowContextMenu(onscreen_location, source_type);
 }
 
+bool AppListControllerImpl::ProcessHomeLauncherGesture(
+    ui::EventType type,
+    const gfx::Point& screen_location) {
+  if (!home_launcher_gesture_handler_)
+    return false;
+
+  switch (type) {
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      return home_launcher_gesture_handler_->OnPressEvent(
+          HomeLauncherGestureHandler::Mode::kSwipeDownToHide);
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      return home_launcher_gesture_handler_->OnScrollEvent(screen_location);
+    case ui::ET_GESTURE_END:
+      return home_launcher_gesture_handler_->OnReleaseEvent(screen_location);
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 ws::WindowService* AppListControllerImpl::GetWindowService() {
   return window_service_;
 }
