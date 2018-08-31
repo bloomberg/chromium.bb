@@ -265,6 +265,21 @@ void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::OnSuccess(
   callback_->InvokeAndReportException(nullptr, file_system);
 }
 
+FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::
+    OnDidOpenFileSystemPromiseImpl(ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::Trace(
+    Visitor* visitor) {
+  OnDidOpenFileSystemCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::OnSuccess(
+    DOMFileSystem* file_system) {
+  resolver_->Resolve(file_system->root()->asFileSystemHandle());
+}
+
 std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::Create(
     OnDidOpenFileSystemCallback* success_callback,
     ErrorCallbackBase* error_callback,

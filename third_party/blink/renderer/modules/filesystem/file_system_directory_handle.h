@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_DIRECTORY_HANDLE_H_
 
 #include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
+#include "third_party/blink/renderer/modules/filesystem/get_system_directory_options.h"
 
 namespace blink {
 
@@ -18,6 +19,10 @@ class FileSystemDirectoryHandle : public FileSystemBaseHandle {
   bool isDirectory() const override { return true; }
   ScriptPromise getFile(ScriptState*, const String& name);
   ScriptPromise getDirectory(ScriptState*, const String& name);
+
+  static ScriptPromise getSystemDirectory(
+      ScriptState*,
+      const GetSystemDirectoryOptions& options);
 };
 
 }  // namespace blink

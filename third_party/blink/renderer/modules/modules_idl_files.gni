@@ -518,6 +518,7 @@ modules_dictionary_idl_files =
           "encryptedmedia/media_key_system_media_capability.idl",
           "eventsource/event_source_init.idl",
           "filesystem/file_system_flags.idl",
+          "filesystem/get_system_directory_options.idl",
           "gamepad/gamepad_effect_parameters.idl",
           "gamepad/gamepad_event_init.idl",
           "geolocation/position_options.idl",
