@@ -1725,15 +1725,21 @@ const char kSingleTabModeDescription[] =
 
 const char kStrictSiteIsolationName[] = "Strict site isolation";
 const char kStrictSiteIsolationDescription[] =
-    "Security mode that enables site isolation for all sites. When enabled, "
-    "each renderer process will contain pages from at most one site, using "
-    "out-of-process iframes when needed. When enabled, this flag forces the "
-    "strictest site isolation mode (SitePerProcess). When disabled, the site "
-    "isolation mode will be determined by enterprise policy or field trial.";
+    "Security mode that enables site isolation for all sites (SitePerProcess). "
+    "In this mode, each renderer process will contain pages from at most one "
+    "site, using out-of-process iframes when needed. NOTE: Site isolation is "
+    "enabled by default on desktop platforms regardless of how this flag is "
+    "set; see chrome://process-internals for whether it is currently enabled. "
+    "Setting this flag to 'Enabled' turns on site isolation regardless of the "
+    "default. Here, 'Disabled' is a legacy value that actually means "
+    "'Default,' in which case site isolation may be already enabled based on "
+    "platform, enterprise policy, or field trial. See also "
+    "#site-isolation-trial-opt-outfor how to disable site isolation for "
+    "testing.";
 
 const char kSiteIsolationTrialOptOutName[] = "Site isolation trial opt-out";
 const char kSiteIsolationTrialOptOutDescription[] =
-    "Opts out of field trials that enable site isolation modes "
+    "Opts out of field trials and defaults that enable site isolation modes "
     "(SitePerProcess, IsolateOrigins, etc). Intended for diagnosing bugs that "
     "may be due to out-of-process iframes. Opt-out has no effect if site "
     "isolation is force-enabled via #enable-site-per-process or enterprise "
