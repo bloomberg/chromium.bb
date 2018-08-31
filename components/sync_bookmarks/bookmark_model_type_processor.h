@@ -79,6 +79,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // before OnSyncStarting() is called. |favicon_service| must not be null.
   void SetFaviconService(favicon::FaviconService* favicon_service);
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
   const SyncedBookmarkTracker* GetTrackerForTest() const;
 
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetWeakPtr();

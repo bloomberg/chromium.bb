@@ -11,6 +11,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -248,6 +249,14 @@ void BookmarkModelTypeProcessor::SetFaviconService(
   favicon_service_ = favicon_service;
 }
 
+size_t BookmarkModelTypeProcessor::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += bookmark_tracker_->EstimateMemoryUsage();
+  memory_usage += EstimateMemoryUsage(cache_guid_);
+  return memory_usage;
+}
+
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 BookmarkModelTypeProcessor::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -362,7 +371,10 @@ void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
 
 void BookmarkModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  SyncRecordModelTypeMemoryHistogram(syncer::BOOKMARKS, EstimateMemoryUsage());
+  SyncRecordModelTypeCountHistogram(
+      syncer::BOOKMARKS,
+      bookmark_tracker_->TrackedBookmarksCountForDebugging());
 }
 
 }  // namespace sync_bookmarks

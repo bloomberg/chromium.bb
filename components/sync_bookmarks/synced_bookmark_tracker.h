@@ -65,6 +65,9 @@ class SyncedBookmarkTracker {
     const sync_pb::EntityMetadata* metadata() const { return metadata_.get(); }
     sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
 
+    // Returns the estimate of dynamically allocated memory in bytes.
+    size_t EstimateMemoryUsage() const;
+
    private:
     // Null for tombstones.
     const bookmarks::BookmarkNode* bookmark_node_;
@@ -156,6 +159,9 @@ class SyncedBookmarkTracker {
 
   // Whether the tracker is empty or not.
   bool IsEmpty() const;
+
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
 
   // Returns number of tracked entities. Used only in test.
   size_t TrackedEntitiesCountForTest() const;
