@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/media_gpu_export.h"
@@ -30,15 +31,16 @@
 
 namespace media {
 
+class V4L2DecodeSurface;
+
 // An implementation of VideoDecodeAccelerator that utilizes the V4L2 slice
 // level codec API for decoding. The slice level API provides only a low-level
 // decoding functionality and requires userspace to provide support for parsing
 // the input stream and managing decoder state across frames.
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
-    : public VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator,
+      public DecodeSurfaceHandler<V4L2DecodeSurface> {
  public:
-  class V4L2DecodeSurface;
-
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
       EGLDisplay egl_display,
@@ -129,6 +131,15 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   //
   // Below methods are used by accelerator implementations.
   //
+  // DecodeSurfaceHandler implementation.
+  scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
+  // SurfaceReady() uses |decoder_display_queue_| to guarantee that decoding
+  // of |dec_surface| happens in order.
+  void SurfaceReady(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+                    int32_t bitstream_id,
+                    const gfx::Rect& visible_rect,
+                    const VideoColorSpace& /* color_space */) override;
+
   // Append slice data in |data| of size |size| to pending hardware
   // input buffer with |index|. This buffer will be submitted for decode
   // on the next DecodeSurface(). Return true on success.
@@ -143,15 +154,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Return true if the driver exposes V4L2 control |ctrl_id|, false otherwise.
   bool IsCtrlExposed(uint32_t ctrl_id);
-
-  // |dec_surface| is ready to be outputted once decode is finished.
-  // This can be called before decode is actually done in hardware, and this
-  // method is responsible for maintaining the ordering, i.e. the surfaces will
-  // be outputted in the same order as SurfaceReady calls. To do so, the
-  // surfaces are put on decoder_display_queue_ and sent to output in that
-  // order once all preceding surfaces are sent.
-  void SurfaceReady(int32_t bitstream_id,
-                    const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   //
   // Internal methods of this class.
@@ -349,9 +351,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Goes over the |decoder_display_queue_| and sends all buffers from the
   // front of the queue that are already decoded to the client, in order.
   void TryOutputSurfaces();
-
-  // Creates a new decode surface or returns nullptr if one is not available.
-  scoped_refptr<V4L2DecodeSurface> CreateSurface();
 
   // Send decoded pictures to PictureReady.
   void SendPictureReady();
