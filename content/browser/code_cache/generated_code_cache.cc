@@ -4,6 +4,7 @@
 
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/http/http_util.h"
@@ -51,6 +52,10 @@ std::string GetCacheKey(const GURL& resource_url,
   key.append(" \n");
   key.append(requesting_origin.Serialize());
   return key;
+}
+
+void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.Behaviour", status);
 }
 }  // namespace
 
@@ -156,13 +161,17 @@ void GeneratedCodeCache::WriteData(const GURL& url,
                                    const base::Time& response_time,
                                    const std::vector<uint8_t>& data) {
   // Silently ignore the requests.
-  if (backend_state_ == kFailed)
+  if (backend_state_ == kFailed) {
+    CollectStatistics(CacheEntryStatus::kError);
     return;
+  }
 
   // If the url is invalid or if it is from a unique origin, we should not
   // cache the code.
-  if (!IsAllowedToCache(url, origin))
+  if (!IsAllowedToCache(url, origin)) {
+    CollectStatistics(CacheEntryStatus::kError);
     return;
+  }
 
   // Append the response time to the metadata. Code caches store
   // response_time + generated code as a single entry.
@@ -192,6 +201,7 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
                                     const url::Origin& origin,
                                     ReadDataCallback read_data_callback) {
   if (backend_state_ == kFailed) {
+    CollectStatistics(CacheEntryStatus::kError);
     // Silently ignore the requests.
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
@@ -200,6 +210,7 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   // If the url is invalid or if it is from a unique origin, we should not
   // cache the code.
   if (!IsAllowedToCache(url, origin)) {
+    CollectStatistics(CacheEntryStatus::kError);
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
@@ -220,13 +231,17 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
 void GeneratedCodeCache::DeleteEntry(const GURL& url,
                                      const url::Origin& origin) {
   // Silently ignore the requests.
-  if (backend_state_ == kFailed)
+  if (backend_state_ == kFailed) {
+    CollectStatistics(CacheEntryStatus::kError);
     return;
+  }
 
   // If the url is invalid or if it is from a unique origin, we should not
   // cache the code.
-  if (!IsAllowedToCache(url, origin))
+  if (!IsAllowedToCache(url, origin)) {
+    CollectStatistics(CacheEntryStatus::kError);
     return;
+  }
 
   std::string key = GetCacheKey(url, origin);
   if (backend_state_ != kInitialized) {
@@ -355,6 +370,7 @@ void GeneratedCodeCache::OpenCompleteForWriteData(
   DCHECK(entry->data);
   disk_cache::ScopedEntryPtr disk_entry(entry->data);
 
+  CollectStatistics(CacheEntryStatus::kUpdate);
   // This call will truncate the data. This is safe to do since we read the
   // entire data at the same time currently. If we want to read in parts we have
   // to doom the entry first.
@@ -366,11 +382,14 @@ void GeneratedCodeCache::CreateCompleteForWriteData(
     scoped_refptr<net::IOBufferWithSize> buffer,
     scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     int rv) {
-  if (rv != net::OK)
+  if (rv != net::OK) {
+    CollectStatistics(CacheEntryStatus::kError);
     return;
+  }
 
   DCHECK(entry->data);
   disk_cache::ScopedEntryPtr disk_entry(entry->data);
+  CollectStatistics(CacheEntryStatus::kCreate);
   disk_entry->WriteData(kDataIndex, 0, buffer.get(), buffer->size(),
                         net::CompletionOnceCallback(), true);
 }
@@ -402,6 +421,7 @@ void GeneratedCodeCache::OpenCompleteForReadData(
     scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     int rv) {
   if (rv != net::OK) {
+    CollectStatistics(CacheEntryStatus::kMiss);
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
@@ -427,8 +447,10 @@ void GeneratedCodeCache::ReadDataComplete(
     scoped_refptr<net::IOBufferWithSize> buffer,
     int rv) {
   if (rv != buffer->size()) {
+    CollectStatistics(CacheEntryStatus::kMiss);
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
   } else {
+    CollectStatistics(CacheEntryStatus::kHit);
     int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
     base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(raw_response_time));
@@ -442,6 +464,7 @@ void GeneratedCodeCache::DeleteEntryImpl(const std::string& key) {
   if (backend_state_ != kInitialized)
     return;
 
+  CollectStatistics(CacheEntryStatus::kClear);
   backend_->DoomEntry(key, net::LOWEST, net::CompletionOnceCallback());
 }
 

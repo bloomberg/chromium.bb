@@ -36,6 +36,17 @@ class CONTENT_EXPORT GeneratedCodeCache {
                                    const std::vector<uint8_t>&)>;
   static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
+  // Used for collecting statistics about cache behaviour.
+  enum CacheEntryStatus {
+    kHit,
+    kMiss,
+    kClear,
+    kUpdate,
+    kCreate,
+    kError,
+    kMaxValue = kError
+  };
+
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
   // If |max_size_bytes| is 0, then disk_cache picks a default size based on
   // some heuristics.
