@@ -49,7 +49,7 @@ bool TestTCPSocket::Init() {
   if (!GetLocalHostPort(instance_->pp_instance(), &host, &port))
     return false;
 
-  if (!ResolveHost(instance_->pp_instance(), host, port, &addr_))
+  if (!ResolveHost(instance_->pp_instance(), host, port, &test_server_addr_))
     return false;
 
   return true;
@@ -62,6 +62,7 @@ void TestTCPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocket, Listen, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, Backlog, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, Interface_1_0, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, UnexpectedCalls, filter);
 }
 
 std::string TestTCPSocket::TestConnect() {
@@ -70,7 +71,7 @@ std::string TestTCPSocket::TestConnect() {
     pp::TCPSocket socket(instance_);
     TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-    cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
+    cb.WaitForResult(socket.Connect(test_server_addr_, cb.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(cb);
     ASSERT_EQ(PP_OK, cb.result());
 
@@ -80,7 +81,7 @@ std::string TestTCPSocket::TestConnect() {
 
     ASSERT_NE(0, local_addr.pp_resource());
     ASSERT_NE(0, remote_addr.pp_resource());
-    ASSERT_TRUE(EqualNetAddress(addr_, remote_addr));
+    ASSERT_TRUE(EqualNetAddress(test_server_addr_, remote_addr));
 
     socket.Close();
   }
@@ -97,7 +98,7 @@ std::string TestTCPSocket::TestConnect() {
     CHECK_CALLBACK_BEHAVIOR(cb);
     ASSERT_EQ(PP_OK, cb.result());
 
-    cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
+    cb.WaitForResult(socket.Connect(test_server_addr_, cb.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(cb);
     ASSERT_EQ(PP_OK, cb.result());
 
@@ -107,10 +108,44 @@ std::string TestTCPSocket::TestConnect() {
 
     ASSERT_NE(0, local_addr.pp_resource());
     ASSERT_NE(0, remote_addr.pp_resource());
-    ASSERT_TRUE(EqualNetAddress(addr_, remote_addr));
+    ASSERT_TRUE(EqualNetAddress(test_server_addr_, remote_addr));
     ASSERT_NE(0u, GetPort(local_addr));
 
     socket.Close();
+  }
+
+  {
+    // Check the case connect fails.
+
+    // To ensure a connect failure, bind a socket, but don't listen on it. Then
+    // try and connect to the bound address.
+    pp::TCPSocket not_a_listening_socket(instance_);
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+
+    pp::NetAddress any_port_address;
+    ASSERT_SUBTEST_SUCCESS(GetAddressToBind(&any_port_address));
+
+    cb.WaitForResult(
+        not_a_listening_socket.Bind(any_port_address, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_OK, cb.result());
+
+    // Try to connect to the bound address, which should fail.
+    pp::TCPSocket socket(instance_);
+    cb.WaitForResult(socket.Connect(not_a_listening_socket.GetLocalAddress(),
+                                    cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_CONNECTION_REFUSED, cb.result());
+
+    // Try to connect to the test server using |socket|. Normally this would
+    // work, but the socket state machine should block a second connect attempt.
+    cb.WaitForResult(socket.Connect(test_server_addr_, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+
+    socket.Close();
+
+    not_a_listening_socket.Close();
   }
 
   PASS();
@@ -120,7 +155,7 @@ std::string TestTCPSocket::TestReadWrite() {
   pp::TCPSocket socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
+  cb.WaitForResult(socket.Connect(test_server_addr_, cb.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_OK, cb.result());
 
@@ -130,6 +165,47 @@ std::string TestTCPSocket::TestReadWrite() {
   std::string s;
   ASSERT_SUBTEST_SUCCESS(ReadFirstLineFromSocket(&socket, &s));
   ASSERT_TRUE(ValidateHttpResponse(s));
+
+  // Read until the server closes the socket.
+  std::string read_data;
+  int read_error;
+  ASSERT_SUBTEST_SUCCESS(
+      ReadFromSocketUntilError(&socket, &read_data, &read_error));
+  ASSERT_EQ(PP_OK, read_error);
+
+  // Reading again from the socket after getting an EOF should result in an
+  // error.
+  read_data = "";
+  ASSERT_SUBTEST_SUCCESS(
+      ReadFromSocketUntilError(&socket, &read_data, &read_error));
+  ASSERT_EQ(PP_ERROR_FAILED, read_error);
+  ASSERT_EQ("", read_data);
+
+  char write_data[32 * 1024] = {0};
+  // Write to the socket until there's an error, just to make sure the error
+  // handling code works. As with the read case, go through two failures
+  // (which may or may not fail with the same error code).
+  int failures = 0;
+  while (true) {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket.Write(write_data,
+                                  static_cast<int32_t>(sizeof(write_data)),
+                                  cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    if (cb.result() > 0) {
+      ASSERT_EQ(0, failures);
+      continue;
+    }
+    // While this will most likely be PP_ERROR_CONNECTION_ABORTED, it seems best
+    // not to rely on that, as write errors can be a bit finicky.
+    ASSERT_LT(cb.result(), 0);
+    ASSERT_NE(PP_ERROR_FAILED, cb.result());
+    ASSERT_NE(PP_OK_COMPLETIONPENDING, cb.result());
+    ++failures;
+
+    if (failures == 2)
+      break;
+  }
 
   PASS();
 }
@@ -160,7 +236,7 @@ std::string TestTCPSocket::TestSetOption() {
   CHECK_CALLBACK_BEHAVIOR(cb_3);
   ASSERT_EQ(PP_OK, cb_3.result());
 
-  cb_1.WaitForResult(socket.Connect(addr_, cb_1.GetCallback()));
+  cb_1.WaitForResult(socket.Connect(test_server_addr_, cb_1.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb_1);
   ASSERT_EQ(PP_OK, cb_1.result());
 
@@ -187,6 +263,9 @@ std::string TestTCPSocket::TestSetOption() {
 }
 
 std::string TestTCPSocket::TestListen() {
+  // TODO(mmenke): Whenever this test is run, the PPAPI process DCHECKs on
+  // shutdown when a ref count is decremented on the wrong thread. Someone
+  // should probably look into that.
   static const int kBacklog = 2;
 
   pp::TCPSocket server_socket(instance_);
@@ -231,18 +310,20 @@ std::string TestTCPSocket::TestListen() {
 
   ASSERT_TRUE(EqualNetAddress(client_local_addr, accepted_remote_addr));
 
-  const char kSentByte = 'a';
-  ASSERT_SUBTEST_SUCCESS(WriteToSocket(&client_socket,
-                                       std::string(1, kSentByte)));
+  const std::string kSentData = "a";
+  ASSERT_SUBTEST_SUCCESS(WriteToSocket(&client_socket, kSentData));
 
-  char received_byte;
-  ASSERT_SUBTEST_SUCCESS(ReadFromSocket(&accepted_socket,
-                                        &received_byte,
-                                        sizeof(received_byte)));
-  ASSERT_EQ(kSentByte, received_byte);
+  // Close the client socket to be able to read until EOF.
+  client_socket.Close();
+
+  std::string read_data;
+  int read_error;
+  ASSERT_SUBTEST_SUCCESS(
+      ReadFromSocketUntilError(&accepted_socket, &read_data, &read_error));
+  ASSERT_EQ(kSentData, read_data);
+  ASSERT_EQ(PP_OK, read_error);
 
   accepted_socket.Close();
-  client_socket.Close();
   server_socket.Close();
 
   PASS();
@@ -319,7 +400,8 @@ std::string TestTCPSocket::TestInterface_1_0() {
 
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
   cb.WaitForResult(socket_interface_1_0_->Connect(
-      socket, addr_.pp_resource(), cb.GetCallback().pp_completion_callback()));
+      socket, test_server_addr_.pp_resource(),
+      cb.GetCallback().pp_completion_callback()));
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_OK, cb.result());
 
@@ -331,6 +413,88 @@ std::string TestTCPSocket::TestInterface_1_0() {
   ASSERT_TRUE(ValidateHttpResponse(s));
 
   pp::Module::Get()->core()->ReleaseResource(socket);
+  PASS();
+}
+
+std::string TestTCPSocket::TestUnexpectedCalls() {
+  // Tests that calls that are not expected given a sockets current state fail
+  // with PP_ERROR_FAILED without breaking future operations on the socket.
+
+  // Test a listen socket.
+  {
+    pp::TCPSocket socket(instance_);
+    ASSERT_SUBTEST_SUCCESS(
+        RunCommandsExpendingFailures(&socket, kListen | kAccept | kReadWrite));
+
+    // Connect
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket.Connect(test_server_addr_, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_OK, cb.result());
+    ASSERT_SUBTEST_SUCCESS(
+        RunCommandsExpendingFailures(&socket, kListen | kAccept | kConnect));
+
+    // Write
+    ASSERT_SUBTEST_SUCCESS(WriteToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
+    ASSERT_SUBTEST_SUCCESS(
+        RunCommandsExpendingFailures(&socket, kListen | kAccept | kConnect));
+
+    // Read
+    std::string s;
+    ASSERT_SUBTEST_SUCCESS(ReadFirstLineFromSocket(&socket, &s));
+    ASSERT_TRUE(ValidateHttpResponse(s));
+    ASSERT_SUBTEST_SUCCESS(
+        RunCommandsExpendingFailures(&socket, kListen | kAccept | kConnect));
+
+    socket.Close();
+    ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(
+        &socket, kListen | kAccept | kConnect | kReadWrite));
+  }
+
+  // Test a server socket.
+  {
+    pp::TCPSocket server_socket(instance_);
+
+    // Bind
+    pp::NetAddress any_port_address;
+    ASSERT_SUBTEST_SUCCESS(GetAddressToBind(&any_port_address));
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        server_socket.Bind(any_port_address, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
+    ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(
+        &server_socket, kBind | kAccept | kReadWrite));
+
+    // Listen
+    callback.WaitForResult(
+        server_socket.Listen(1 /* backlog */, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
+    ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(
+        &server_socket, kBind | kListen | kConnect | kReadWrite));
+
+    // Accept
+    pp::TCPSocket client_socket(instance_);
+    TestCompletionCallback connect_callback(instance_->pp_instance(),
+                                            callback_type());
+    client_socket.Connect(server_socket.GetLocalAddress(),
+                          connect_callback.GetCallback());
+    TestCompletionCallbackWithOutput<pp::TCPSocket> accept_callback(
+        instance_->pp_instance(), callback_type());
+    accept_callback.WaitForResult(
+        server_socket.Accept(accept_callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(accept_callback);
+    ASSERT_EQ(PP_OK, accept_callback.result());
+    pp::TCPSocket accepted_socket(accept_callback.output());
+    ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(
+        &server_socket, kBind | kListen | kConnect | kReadWrite));
+
+    client_socket.Close();
+    accepted_socket.Close();
+    server_socket.Close();
+  }
+
   PASS();
 }
 
@@ -395,6 +559,30 @@ std::string TestTCPSocket::ReadFromSocket(pp::TCPSocket* socket,
   PASS();
 }
 
+// Reads from the socket until an error (Or 0-byte read) occurs. Populates
+// |read_data| and |error| with that information. Doesn't return a std::string
+// to distinguish it from a subtest.
+std::string TestTCPSocket::ReadFromSocketUntilError(pp::TCPSocket* socket,
+                                                    std::string* read_data,
+                                                    int* read_error) {
+  // Set |read_error| to a value that a read should never complete with.
+  *read_error = PP_OK_COMPLETIONPENDING;
+  while (true) {
+    char buffer[1024];
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        socket->Read(buffer, sizeof(buffer), callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_LE(callback.result(), static_cast<int32_t>(sizeof(buffer)));
+    ASSERT_NE(PP_OK_COMPLETIONPENDING, callback.result());
+    if (callback.result() <= 0) {
+      *read_error = callback.result();
+      PASS();
+    }
+    read_data->append(buffer, callback.result());
+  }
+}
+
 std::string TestTCPSocket::WriteToSocket(pp::TCPSocket* socket,
                                          const std::string& s) {
   const char* buffer = s.data();
@@ -433,9 +621,12 @@ std::string TestTCPSocket::WriteToSocket_1_0(
 }
 
 std::string TestTCPSocket::GetAddressToBind(pp::NetAddress* address) {
+  // Connect to |test_server_addr_| and then sets |address| to the local address
+  // used by that connection, replacing the port with 0 to use a random port.
   pp::TCPSocket socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(socket.Connect(addr_, callback.GetCallback()));
+  callback.WaitForResult(
+      socket.Connect(test_server_addr_, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -459,6 +650,60 @@ std::string TestTCPSocket::StartListen(pp::TCPSocket* socket, int32_t backlog) {
       socket->Listen(backlog, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
+
+  PASS();
+}
+
+std::string TestTCPSocket::RunCommandsExpendingFailures(pp::TCPSocket* socket,
+                                                        int commands) {
+  ASSERT_NE(0, commands);
+
+  if (commands & kBind) {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    pp::NetAddress any_port_address;
+    ASSERT_SUBTEST_SUCCESS(GetAddressToBind(&any_port_address));
+    cb.WaitForResult(socket->Bind(any_port_address, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+  }
+
+  if (commands & kListen) {
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        socket->Listen(1 /* backlog */, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  }
+
+  if (commands & kAccept) {
+    TestCompletionCallbackWithOutput<pp::TCPSocket> accept_callback(
+        instance_->pp_instance(), callback_type());
+    accept_callback.WaitForResult(
+        socket->Accept(accept_callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(accept_callback);
+    ASSERT_EQ(PP_ERROR_FAILED, accept_callback.result());
+  }
+
+  if (commands & kConnect) {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket->Connect(test_server_addr_, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+  }
+
+  if (commands & kReadWrite) {
+    // Check that a read on a new socket fails.
+    char buffer[1] = {'1'};
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket->Read(buffer, sizeof(buffer), cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+
+    // Check that a write on a new socket fails.
+    cb.WaitForResult(socket->Write(buffer, sizeof(buffer), cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+  }
 
   PASS();
 }
