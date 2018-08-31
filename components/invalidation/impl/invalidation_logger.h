@@ -49,6 +49,7 @@ class InvalidationLogger {
   void OnUnregistration(const std::string& details);
   void OnStateChange(const syncer::InvalidatorState& new_state);
   void OnUpdateIds(std::map<std::string, syncer::ObjectIdSet> updated_ids);
+  void OnUpdateTopics(std::map<std::string, syncer::TopicSet> updated_topics);
   void OnDebugMessage(const base::DictionaryValue& details);
   void OnInvalidation(const syncer::ObjectIdInvalidationMap& details);
 

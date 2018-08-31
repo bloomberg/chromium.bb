@@ -42,6 +42,11 @@ class DeprecatedRegistrarInvalidator : public Invalidator {
     registrar_.UnregisterHandler(handler);
   }
 
+  bool UpdateRegisteredIds(InvalidationHandler*, const TopicSet&) override {
+    NOTREACHED();
+    return false;
+  }
+
   InvalidatorState GetInvalidatorState() const override {
     return registrar_.GetInvalidatorState();
   }

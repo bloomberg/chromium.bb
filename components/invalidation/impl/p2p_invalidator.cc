@@ -180,6 +180,12 @@ bool P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
   return true;
 }
 
+bool P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+                                         const TopicSet& ids) {
+  NOTREACHED();
+  return false;
+}
+
 void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   registrar_.UnregisterHandler(handler);

@@ -11,6 +11,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace invalidation {
@@ -71,13 +72,14 @@ bool FCMInvalidationService::UpdateRegisteredInvalidationIds(
     const syncer::ObjectIdSet& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Registering ids: " << ids.size();
-  if (!invalidator_registrar_.UpdateRegisteredIds(handler, ids))
+  syncer::TopicSet topics = ConvertIdsToTopics(ids);
+  if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
   if (invalidator_) {
     CHECK(invalidator_->UpdateRegisteredIds(
         this, invalidator_registrar_.GetAllRegisteredIds()));
   }
-  logger_.OnUpdateIds(invalidator_registrar_.GetSanitizedHandlersIdsMap());
+  logger_.OnUpdateTopics(invalidator_registrar_.GetSanitizedHandlersIdsMap());
   return true;
 }
 
@@ -144,7 +146,8 @@ void FCMInvalidationService::OnInvalidatorStateChange(
 
 void FCMInvalidationService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map);
+  invalidator_registrar_.DispatchInvalidationsToHandlers(
+      ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
 
   logger_.OnInvalidation(invalidation_map);
 }

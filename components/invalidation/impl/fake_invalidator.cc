@@ -47,6 +47,12 @@ bool FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
   return registrar_.UpdateRegisteredIds(handler, ids);
 }
 
+bool FakeInvalidator::UpdateRegisteredIds(InvalidationHandler*,
+                                          const TopicSet&) {
+  NOTREACHED();
+  return false;
+}
+
 void FakeInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
 }

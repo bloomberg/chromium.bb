@@ -24,7 +24,7 @@
 
 namespace syncer {
 
-class ObjectIdInvalidationMap;
+class TopicInvalidationMap;
 
 // A simple wrapper around PerUserTopicInvalidationClient that
 // handles all the startup/shutdown details and hookups.
@@ -44,7 +44,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
    public:
     virtual ~Delegate();
 
-    virtual void OnInvalidate(const ObjectIdInvalidationMap& invalidations) = 0;
+    virtual void OnInvalidate(const TopicInvalidationMap& invalidations) = 0;
 
     virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
   };
@@ -62,7 +62,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
 
   // Update the set of object IDs that we're interested in getting
   // notifications for. May be called at any time.
-  void UpdateRegisteredIds(const ObjectIdSet& ids);
+  void UpdateRegisteredTopics(const TopicSet& topics);
 
   // InvalidationListener implementation.
   void Ready(InvalidationClient* client) override;
@@ -91,7 +91,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
 
   void StopForTest();
 
-  ObjectIdSet GetRegisteredIdsForTest() const;
+  TopicSet GetRegisteredIdsForTest() const;
 
   base::WeakPtr<FCMSyncInvalidationListener> AsWeakPtr();
 
@@ -109,16 +109,16 @@ class FCMSyncInvalidationListener : public InvalidationListener,
   //
   // If there are observers registered, they will be saved (to make sure we
   // don't drop them until they've been acted on) and emitted to the observers.
-  void DispatchInvalidations(const ObjectIdInvalidationMap& invalidations);
+  void DispatchInvalidations(const TopicInvalidationMap& invalidations);
 
   // Saves invalidations.
   //
   // This call isn't synchronous so we can't guarantee these invalidations will
   // be safely on disk by the end of the call, but it should ensure that the
   // data makes it to disk eventually.
-  void SaveInvalidations(const ObjectIdInvalidationMap& to_save);
+  void SaveInvalidations(const TopicInvalidationMap& to_save);
   // Emits previously saved invalidations to their registered observers.
-  void EmitSavedInvalidations(const ObjectIdInvalidationMap& to_emit);
+  void EmitSavedInvalidations(const TopicInvalidationMap& to_emit);
 
   // Generate a Dictionary with all the debugging information.
   std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
@@ -130,7 +130,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
   std::unique_ptr<InvalidationClient> invalidation_client_;
 
   // Stored to pass to |per_user_topic_registration_manager_| on start.
-  InvalidationObjectIdSet registered_ids_;
+  TopicSet registered_topics_;
 
   // The states of the ticl and FCN channel.
   InvalidatorState ticl_state_;
