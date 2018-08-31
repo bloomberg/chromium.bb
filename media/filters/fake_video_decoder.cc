@@ -48,10 +48,6 @@ void FakeVideoDecoder::EnableEncryptedConfigSupport() {
   supports_encrypted_config_ = true;
 }
 
-base::WeakPtr<FakeVideoDecoder> FakeVideoDecoder::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 std::string FakeVideoDecoder::GetDisplayName() const {
   return decoder_name_;
 }

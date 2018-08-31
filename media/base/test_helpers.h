@@ -110,7 +110,6 @@ class TestVideoConfig {
 class TestAudioConfig {
  public:
   static AudioDecoderConfig Normal();
-  static AudioDecoderConfig NormalEncrypted();
 };
 
 // Provides pre-canned AudioParameters objects.
