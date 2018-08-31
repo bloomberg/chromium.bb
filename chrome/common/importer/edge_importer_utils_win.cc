@@ -71,9 +71,13 @@ bool IsEdgeFavoritesLegacyMode() {
   DWORD ese_enabled = 0;
   // Check whether Edge is using the new Extensible Store Engine (ESE) format
   // for its favorites.
+
   if (key.ReadValueDW(L"FavoritesESEEnabled", &ese_enabled) == ERROR_SUCCESS)
     return !ese_enabled;
-  return true;
+  // If the registry key is missing, check the Windows version.
+  // Edge switched to ESE in Windows 10 Build 10565 (somewhere between
+  // Windows 10 RTM and Windows 10 November 1511 Update).
+  return base::win::GetVersion() < base::win::VERSION_WIN10_TH2;
 }
 
 bool EdgeImporterCanImport() {
