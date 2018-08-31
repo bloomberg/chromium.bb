@@ -1631,6 +1631,31 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
   return true;
 }
 
+// Modifies a ShortcutProperties object by adding default values to
+// uninitialized members. Tries to assign:
+// - target: |target_exe|.
+// - icon: from |target_exe|.
+// - icon_index: the browser's icon index
+// - app_id: the browser model id for the current install.
+// - description: the browser's app description.
+// static
+void ShellUtil::AddDefaultShortcutProperties(const base::FilePath& target_exe,
+                                             ShortcutProperties* properties) {
+  if (!properties->has_target())
+    properties->set_target(target_exe);
+
+  if (!properties->has_icon())
+    properties->set_icon(target_exe, install_static::GetIconResourceIndex());
+
+  if (!properties->has_app_id()) {
+    properties->set_app_id(
+        GetBrowserModelId(!install_static::IsSystemInstall()));
+  }
+
+  if (!properties->has_description())
+    properties->set_description(InstallUtil::GetAppDescription());
+}
+
 bool ShellUtil::MoveExistingShortcut(ShortcutLocation old_location,
                                      ShortcutLocation new_location,
                                      BrowserDistribution* dist,

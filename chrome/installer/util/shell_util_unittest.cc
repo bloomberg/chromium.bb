@@ -31,7 +31,6 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +52,7 @@ const wchar_t* kTestFileExtensions[] = {
 
 // TODO(huangs): Separate this into generic shortcut tests and Chrome-specific
 // tests. Specifically, we should not overly rely on getting shortcut properties
-// from product_->AddDefaultShortcutProperties().
+// from ShellUtil::AddDefaultShortcutProperties().
 class ShellUtilShortcutTest : public testing::Test {
  protected:
   ShellUtilShortcutTest() : test_properties_(ShellUtil::CURRENT_USER) {}
@@ -61,7 +60,6 @@ class ShellUtilShortcutTest : public testing::Test {
   void SetUp() override {
     dist_ = BrowserDistribution::GetDistribution();
     ASSERT_TRUE(dist_ != NULL);
-    product_.reset(new installer::Product(dist_));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     chrome_exe_ = temp_dir_.GetPath().Append(installer::kChromeExe);
@@ -206,7 +204,6 @@ class ShellUtilShortcutTest : public testing::Test {
   }
 
   BrowserDistribution* dist_;
-  std::unique_ptr<installer::Product> product_;
 
   // A ShellUtil::ShortcutProperties object with common properties set already.
   ShellUtil::ShortcutProperties test_properties_;
@@ -295,7 +292,7 @@ TEST_F(ShellUtilShortcutTest, MoveExistingShortcut) {
 
 TEST_F(ShellUtilShortcutTest, CreateChromeExeShortcutWithDefaultProperties) {
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-  product_->AddDefaultShortcutProperties(chrome_exe_, &properties);
+  ShellUtil::AddDefaultShortcutProperties(chrome_exe_, &properties);
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, properties,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
@@ -324,7 +321,7 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelDesktopShortcut) {
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
   ShellUtil::ShortcutProperties new_properties(ShellUtil::SYSTEM_LEVEL);
-  product_->AddDefaultShortcutProperties(chrome_exe_, &new_properties);
+  ShellUtil::AddDefaultShortcutProperties(chrome_exe_, &new_properties);
   new_properties.set_description(L"New description");
   new_properties.set_arguments(L"--new-arguments");
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(

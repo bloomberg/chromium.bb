@@ -8,9 +8,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "chrome/installer/util/shell_util.h"
-
-class BrowserDistribution;
 
 namespace installer {
 
@@ -29,14 +26,6 @@ class ProductOperations {
   // function does not return a full path to the key file(s), only (a) file
   // name(s).
   virtual void AddKeyFiles(std::vector<base::FilePath>* key_files) const = 0;
-
-  // Modifies a ShellUtil::ShortcutProperties object by assigning default values
-  // to unintialized members.
-  virtual void AddDefaultShortcutProperties(
-      BrowserDistribution* dist,
-      const base::FilePath& target_exe,
-      ShellUtil::ShortcutProperties* properties) const = 0;
-
 };
 
 }  // namespace installer

@@ -219,7 +219,7 @@ class InstallShortcutTest : public testing::Test {
     EXPECT_EQ(0, base::WriteFile(chrome_exe_, "", 0));
 
     ShellUtil::ShortcutProperties chrome_properties(ShellUtil::CURRENT_USER);
-    product_->AddDefaultShortcutProperties(chrome_exe_, &chrome_properties);
+    ShellUtil::AddDefaultShortcutProperties(chrome_exe_, &chrome_properties);
 
     expected_properties_.set_target(chrome_exe_);
     expected_properties_.set_icon(chrome_properties.icon,

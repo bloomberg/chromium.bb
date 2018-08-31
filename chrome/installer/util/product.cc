@@ -11,7 +11,6 @@
 #include "base/process/launch.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/product_operations.h"
 
 namespace installer {
@@ -75,13 +74,6 @@ bool Product::LaunchChromeAndWait(const base::FilePath& application_path,
 
 void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {
   operations_->AddKeyFiles(key_files);
-}
-
-void Product::AddDefaultShortcutProperties(
-    const base::FilePath& target_exe,
-    ShellUtil::ShortcutProperties* properties) const {
-  return operations_->AddDefaultShortcutProperties(
-      distribution_, target_exe, properties);
 }
 
 }  // namespace installer

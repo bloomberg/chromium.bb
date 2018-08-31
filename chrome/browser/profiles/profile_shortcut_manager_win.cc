@@ -41,7 +41,6 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -530,8 +529,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
 
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  installer::Product product(distribution);
-  product.AddDefaultShortcutProperties(chrome_exe, &properties);
+  ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
 
   // Only set the profile-specific properties when |profile_name| is non empty.
   // If it is empty, it means the shortcut being created should be a regular,
@@ -622,10 +620,9 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   if (ensure_shortcuts_remain && had_shortcuts &&
       !ChromeDesktopShortcutsExist(chrome_exe)) {
     BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-    installer::Product product(distribution);
 
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-    product.AddDefaultShortcutProperties(chrome_exe, &properties);
+    ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
         profiles::internal::GetShortcutFilenameForProfile(base::string16(),
                                                           distribution));
