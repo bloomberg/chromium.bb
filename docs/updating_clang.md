@@ -25,6 +25,10 @@
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvm-code-coverage-$rev.tgz \
             gs://chromium-browser-clang/$x/llvm-code-coverage-$rev.tgz ; \
         done
+    $ for x in Linux_x64 Mac ; do \
+        gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmstrip-$rev.tgz \
+            gs://chromium-browser-clang/$x/llvmstrip-$rev.tgz ; \
+        done
     $ gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/Mac/lld-$rev.tgz \
           gs://chromium-browser-clang/Mac/lld-$rev.tgz
     ```
