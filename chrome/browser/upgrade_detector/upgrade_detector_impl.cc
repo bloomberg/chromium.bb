@@ -37,7 +37,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
@@ -114,14 +113,10 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
   // Get the version of the currently *installed* instance of Chrome,
   // which might be newer than the *running* instance if we have been
   // upgraded in the background.
-  bool system_install = !InstallUtil::IsPerUserInstall();
-
-  installed_version = InstallUtil::GetChromeVersion(system_install);
-  if (critical_update && installed_version.IsValid()) {
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    InstallUtil::GetCriticalUpdateVersion(dist, system_install,
-                                          critical_update);
-  }
+  installed_version =
+      InstallUtil::GetChromeVersion(!InstallUtil::IsPerUserInstall());
+  if (critical_update && installed_version.IsValid())
+    *critical_update = InstallUtil::GetCriticalUpdateVersion();
 #elif defined(OS_MACOSX)
   installed_version = base::Version(
       base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));

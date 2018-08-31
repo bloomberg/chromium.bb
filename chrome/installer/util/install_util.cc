@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
@@ -216,38 +215,33 @@ base::Version InstallUtil::GetChromeVersion(bool system_install) {
   }
 
   if (version.IsValid())
-    VLOG(1) << "Existing Chrome version found " << version.GetString();
+    VLOG(1) << "Existing Chrome version found: " << version.GetString();
   else
     VLOG(1) << "No existing Chrome install found.";
 
   return version;
 }
 
-void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
-                                           bool system_install,
-                                           base::Version* version) {
-  DCHECK(dist);
+base::Version InstallUtil::GetCriticalUpdateVersion() {
+  base::Version version;
   RegKey key;
-  HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  LONG result = key.Open(reg_root,
-                         dist->GetVersionKey().c_str(),
-                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
-
   base::string16 version_str;
-  if (result == ERROR_SUCCESS)
-    result = key.ReadValue(google_update::kRegCriticalVersionField,
-                           &version_str);
-
-  *version = base::Version();
-  if (result == ERROR_SUCCESS && !version_str.empty()) {
-    VLOG(1) << "Critical Update version for " << dist->GetDisplayName()
-            << " found " << version_str;
-    *version = base::Version(base::UTF16ToASCII(version_str));
-  } else {
-    DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
-    VLOG(1) << "No existing " << dist->GetDisplayName()
-            << " install found.";
+  if (key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
+                                                 : HKEY_CURRENT_USER,
+               install_static::GetClientsKeyPath().c_str(),
+               KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
+      key.ReadValue(google_update::kRegCriticalVersionField, &version_str) ==
+          ERROR_SUCCESS &&
+      !version_str.empty()) {
+    version = base::Version(base::UTF16ToASCII(version_str));
   }
+
+  if (version.IsValid())
+    VLOG(1) << "Critical Update version found: " << version.GetString();
+  else
+    VLOG(1) << "No existing Chrome install found.";
+
+  return version;
 }
 
 bool InstallUtil::IsOSSupported() {
