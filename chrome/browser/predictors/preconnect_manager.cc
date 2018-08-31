@@ -146,6 +146,9 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
                                       bool allow_credentials) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
+  if (observer_)
+    observer_->OnPreconnectUrl(url, num_sockets, allow_credentials);
+
   auto* network_context = GetNetworkContext();
   if (!network_context)
     return;
@@ -168,6 +171,9 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
     ResolveHostCallback callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
+  if (observer_)
+    observer_->OnPreresolveUrl(url);
+
   auto* network_context = GetNetworkContext();
   if (!network_context) {
     // Cannot invoke the callback right away because it would cause the
@@ -216,6 +222,9 @@ void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
   PreresolveInfo* info = job->info;
+
+  if (observer_)
+    observer_->OnPreresolveFinished(job->url, success);
 
   FinishPreresolve(job_id, success, false);
   --inflight_preresolves_count_;

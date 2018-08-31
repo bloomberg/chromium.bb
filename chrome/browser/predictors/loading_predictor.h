@@ -79,6 +79,11 @@ class LoadingPredictor : public KeyedService,
   // PreconnectManager::Delegate:
   void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) override;
 
+  size_t GetActiveHintsSizeForTesting() { return active_hints_.size(); }
+  size_t GetActiveNavigationsSizeForTesting() {
+    return active_navigations_.size();
+  }
+
  private:
   // Cancels an active hint, from its iterator inside |active_hints_|. If the
   // iterator is .end(), does nothing. Returns the iterator after deletion of
