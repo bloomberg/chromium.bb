@@ -1,5 +1,4 @@
 *.bak
-*.gypcmd
 *.mk
 *.ncb
 *.opensdf
@@ -261,7 +260,6 @@ vs-chromium-project.txt
 /tools/gn/bin/linux
 /tools/gn/bin/mac
 /tools/gn/bin/win
-/tools/gyp
 /tools/histograms
 /tools/json_schema_compiler/test/json_schema_compiler_tests.xml
 /tools/metrics/actions/actions.old.xml
