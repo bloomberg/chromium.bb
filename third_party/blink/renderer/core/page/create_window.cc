@@ -208,9 +208,9 @@ static void MaybeLogWindowOpenUKM(LocalFrame& opener_frame) {
   bool is_ad_subframe = opener_frame.IsAdSubframe();
   bool is_ad_script_in_stack = ad_tracker->IsAdScriptInStack();
   if (source_id != ukm::kInvalidSourceId) {
-    ukm::builders::AbusiveExperienceHeuristic(source_id)
-        .SetDidWindowOpenFromAdSubframe(is_ad_subframe)
-        .SetDidWindowOpenFromAdScript(is_ad_script_in_stack)
+    ukm::builders::AbusiveExperienceHeuristic_WindowOpen(source_id)
+        .SetFromAdSubframe(is_ad_subframe)
+        .SetFromAdScript(is_ad_script_in_stack)
         .Record(ukm_recorder);
   }
 }
