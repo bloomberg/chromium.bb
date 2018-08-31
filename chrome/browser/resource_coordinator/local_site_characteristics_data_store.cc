@@ -108,6 +108,11 @@ bool LocalSiteCharacteristicsDataStore::GetaDataForOrigin(
   return true;
 }
 
+LocalSiteCharacteristicsDataStore*
+LocalSiteCharacteristicsDataStore::GetDataStore() {
+  return this;
+}
+
 internal::LocalSiteCharacteristicsDataImpl*
 LocalSiteCharacteristicsDataStore::GetOrCreateFeatureImpl(
     const url::Origin& origin) {

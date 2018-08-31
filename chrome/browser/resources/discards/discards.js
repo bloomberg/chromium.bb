@@ -10,8 +10,13 @@ cr.define('discards', function() {
   let uiHandler;
   // After initialization this points to the discard info table body.
   let tabDiscardsInfoTableBody;
-  // This holds the sorted tab discard infos as retrieved from the uiHandler.
-  let infos;
+  // After initialization this points to the database info table body.
+  let dbInfoTableBody;
+
+  // This holds the sorted db infos as retrieved from the uiHandler.
+  let dbInfos;
+  // This holds the sorted tab discard tabInfos as retrieved from the uiHandler.
+  let tabInfos;
   // Holds information about the current sorting of the table.
   let sortKey;
   let sortReverse;
@@ -22,21 +27,21 @@ cr.define('discards', function() {
   const UPDATE_INTERVAL_MS = 1000;
 
   /**
-   * Ensures the discards info table has the appropriate length. Decorates
+   * Ensures the info table table body has the appropriate length. Decorates
    * newly created rows with a 'row-index' attribute to enable event listeners
    * to quickly determine the index of the row.
    */
-  function ensureTabDiscardsInfoTableLength() {
-    let rows = tabDiscardsInfoTableBody.querySelectorAll('tr');
+  function ensureInfoTableLength(infoTableBody, infos, rowCreator) {
+    let rows = infoTableBody.querySelectorAll('tr');
     if (rows.length < infos.length) {
       for (let i = rows.length; i < infos.length; ++i) {
-        let row = createEmptyTabDiscardsInfoTableRow();
+        let row = rowCreator();
         row.setAttribute('data-row-index', i.toString());
-        tabDiscardsInfoTableBody.appendChild(row);
+        infoTableBody.appendChild(row);
       }
     } else if (rows.length > infos.length) {
       for (let i = infos.length; i < rows.length; ++i) {
-        tabDiscardsInfoTableBody.removeChild(rows[i]);
+        infoTableBody.removeChild(rows[i]);
       }
     }
   }
@@ -112,11 +117,11 @@ cr.define('discards', function() {
   }
 
   /**
-   * Sorts the tab discards info data in |infos| according to the current
+   * Sorts the tab discards info data in |tabInfos| according to the current
    * |sortKey|.
    */
   function sortTabDiscardsInfoTable() {
-    infos = infos.sort((a, b) => {
+    tabInfos = tabInfos.sort((a, b) => {
       return (sortReverse ? -1 : 1) * compareTabDiscardsInfos(sortKey, a, b);
     });
   }
@@ -133,11 +138,11 @@ cr.define('discards', function() {
   }
 
   /**
-   * Converts a |secondsAgo| last-active time to a user friendly string.
-   * @param {number} secondsAgo The amount of time since the tab was active.
-   * @return {string} An English string representing the last active time.
+   * Converts a |seconds| interval to a user friendly string.
+   * @param {number} seconds The interval to render.
+   * @return {string} An English string representing the interval.
    */
-  function lastActiveToString(secondsAgo) {
+  function secondsToString(seconds) {
     // These constants aren't perfect, but close enough.
     const SECONDS_PER_MINUTE = 60;
     const MINUTES_PER_HOUR = 60;
@@ -149,55 +154,63 @@ cr.define('discards', function() {
     const SECONDS_PER_MONTH = SECONDS_PER_DAY * 30.5;
     const SECONDS_PER_YEAR = SECONDS_PER_DAY * 365;
 
-    // Seconds ago.
-    if (secondsAgo < SECONDS_PER_MINUTE)
-      return 'just now';
+    // Seconds.
+    if (seconds < SECONDS_PER_MINUTE)
+      return seconds.toString() + maybeMakePlural(' second', seconds);
 
-    // Minutes ago.
-    let minutesAgo = Math.floor(secondsAgo / SECONDS_PER_MINUTE);
-    if (minutesAgo < MINUTES_PER_HOUR) {
-      return minutesAgo.toString() + maybeMakePlural(' minute', minutesAgo) +
-          ' ago';
+    // Minutes.
+    let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+    if (minutes < MINUTES_PER_HOUR) {
+      return minutes.toString() + maybeMakePlural(' minute', minutes);
     }
 
-    // Hours and minutes and ago.
-    let hoursAgo = Math.floor(secondsAgo / SECONDS_PER_HOUR);
-    minutesAgo = minutesAgo % MINUTES_PER_HOUR;
-    if (hoursAgo < HOURS_PER_DAY) {
-      let s = hoursAgo.toString() + maybeMakePlural(' hour', hoursAgo);
-      if (minutesAgo > 0) {
-        s += ' and ' + minutesAgo.toString() +
-            maybeMakePlural(' minute', minutesAgo);
+    // Hours and minutes.
+    let hours = Math.floor(seconds / SECONDS_PER_HOUR);
+    minutes = minutes % MINUTES_PER_HOUR;
+    if (hours < HOURS_PER_DAY) {
+      let s = hours.toString() + maybeMakePlural(' hour', hours);
+      if (minutes > 0) {
+        s += ' and ' + minutes.toString() + maybeMakePlural(' minute', minutes);
       }
-      s += ' ago';
       return s;
     }
 
-    // Days ago.
-    let daysAgo = Math.floor(secondsAgo / SECONDS_PER_DAY);
-    if (daysAgo < DAYS_PER_WEEK) {
-      return daysAgo.toString() + maybeMakePlural(' day', daysAgo) + ' ago';
+    // Days.
+    let days = Math.floor(seconds / SECONDS_PER_DAY);
+    if (days < DAYS_PER_WEEK) {
+      return days.toString() + maybeMakePlural(' day', days);
     }
 
-    // Weeks ago. There's an awkward gap to bridge where 4 weeks can have
+    // Weeks. There's an awkward gap to bridge where 4 weeks can have
     // elapsed but not quite 1 month. Be sure to use weeks to report that.
-    let weeksAgo = Math.floor(secondsAgo / SECONDS_PER_WEEK);
-    let monthsAgo = Math.floor(secondsAgo / SECONDS_PER_MONTH);
-    if (monthsAgo < 1) {
-      return 'over ' + weeksAgo.toString() +
-          maybeMakePlural(' week', weeksAgo) + ' ago';
+    let weeks = Math.floor(seconds / SECONDS_PER_WEEK);
+    let months = Math.floor(seconds / SECONDS_PER_MONTH);
+    if (months < 1) {
+      return 'over ' + weeks.toString() + maybeMakePlural(' week', weeks);
     }
 
-    // Months ago.
-    let yearsAgo = Math.floor(secondsAgo / SECONDS_PER_YEAR);
-    if (yearsAgo < 1) {
-      return 'over ' + monthsAgo.toString() +
-          maybeMakePlural(' month', monthsAgo) + ' ago';
+    // Months.
+    let years = Math.floor(seconds / SECONDS_PER_YEAR);
+    if (years < 1) {
+      return 'over ' + months.toString() + maybeMakePlural(' month', months);
     }
 
-    // Years ago.
-    return 'over ' + yearsAgo.toString() + maybeMakePlural(' year', yearsAgo) +
-        ' ago';
+    // Years.
+    return 'over ' + years.toString() + maybeMakePlural(' year', years);
+  }
+
+  /**
+   * Converts a |secondsAgo| duration to a user friendly string.
+   * @param {number} secondsAgo The duration to render.
+   * @return {string} An English string representing the duration.
+   */
+  function durationToString(secondsAgo) {
+    let ret = secondsToString(secondsAgo);
+
+    if (ret.endsWith(' seconds') || ret.endsWith(' second'))
+      return 'just now';
+
+    return ret + ' ago';
   }
 
   /**
@@ -328,18 +341,18 @@ cr.define('discards', function() {
     isAutoDiscardable.setAttribute('disabled', '');
     isAutoDiscardable.addEventListener('click', (e) => {
       // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
+      let info = tabInfos[getRowIndex(e.target)];
       // Disable the action. The update function is responsible for
       // re-enabling actions if necessary.
       e.target.setAttribute('disabled', '');
       // Perform the action.
       uiHandler.setAutoDiscardable(info.id, !info.isAutoDiscardable)
-          .then(stableUpdateTabDiscardsInfoTable());
+          .then(updateTables());
     });
 
     let loadListener = function(e) {
       // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
+      let info = tabInfos[getRowIndex(e.target)];
       // Perform the action.
       uiHandler.loadById(info.id);
     };
@@ -349,7 +362,7 @@ cr.define('discards', function() {
     // Set up the listeners for freeze links.
     let freezeListener = function(e) {
       // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
+      let info = tabInfos[getRowIndex(e.target)];
       // Perform the action.
       uiHandler.freezeById(info.id);
     };
@@ -359,7 +372,7 @@ cr.define('discards', function() {
     // Set up the listeners for discard links.
     let discardListener = function(e) {
       // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
+      let info = tabInfos[getRowIndex(e.target)];
       // Determine whether this is urgent or not.
       let urgent = e.target.classList.contains('discard-urgent-link');
       // Disable the action. The update function is responsible for
@@ -367,7 +380,7 @@ cr.define('discards', function() {
       e.target.setAttribute('disabled', '');
       // Perform the action.
       uiHandler.discardById(info.id, urgent).then((response) => {
-        stableUpdateTabDiscardsInfoTable();
+        updateTables();
       });
     };
     let discardLink = row.querySelector('.discard-link');
@@ -424,7 +437,7 @@ cr.define('discards', function() {
     row.querySelector('.is-auto-discardable-div').textContent =
         boolToString(info.isAutoDiscardable);
     row.querySelector('.last-active-cell').textContent =
-        lastActiveToString(info.lastActiveSeconds);
+        durationToString(info.lastActiveSeconds);
 
     // Update the tooltips with 'Can Freeze/Discard?' reasons.
     row.querySelector('.can-freeze-tooltip').innerHTML =
@@ -489,10 +502,147 @@ cr.define('discards', function() {
    * in place to minimize disruption to the page.
    */
   function renderTabDiscardsInfoTable() {
-    ensureTabDiscardsInfoTableLength();
+    ensureInfoTableLength(
+        tabDiscardsInfoTableBody, tabInfos, createEmptyTabDiscardsInfoTableRow);
     let rows = tabDiscardsInfoTableBody.querySelectorAll('tr');
-    for (let i = 0; i < infos.length; ++i)
-      updateTabDiscardsInfoTableRow(rows[i], infos[i]);
+    for (let i = 0; i < tabInfos.length; ++i)
+      updateTabDiscardsInfoTableRow(rows[i], tabInfos[i]);
+  }
+
+  function createEmptyDbInfoTableRow() {
+    let template = $('database-info-row');
+    let content = document.importNode(template.content, true);
+    let row = content.querySelector('tr');
+
+    return row;
+  }
+
+  /**
+   * Returns a string representing the state of a feature.
+   */
+  function featureToString(now, feature) {
+    if (feature.useTimestamp) {
+      return 'Last Used: ' + durationToString(now - feature.useTimestamp);
+    } else {
+      // TODO(siggi): This should note that the feature has been deemed to
+      //     be unused after a finch-controlled duration.
+      return 'Total Observation: ' +
+          secondsToString(feature.observationDuration);
+    }
+  }
+  /**
+   * Updates a db info table row in place.
+   */
+  function updateDbInfoTableRow(row, info) {
+    row.querySelector('.origin-cell').textContent = info.origin;
+    row.querySelector('.dirty-cell').textContent = boolToString(info.isDirty);
+    let value = info.value;
+    let lastLoaded = 'N/A';
+    let updatesFaviconInBackground = 'N/A';
+    let updatesTitleInBackground = 'N/A';
+    let usesAudioInBackground = 'N/A';
+    let usesNotificationsInBackground = 'N/A';
+    let avgCpuUsage = 'N/A';
+    let avgMemoryFootprint = 'N/A';
+    if (value) {
+      let nowSecondsFromEpoch = Math.round((new Date()).getTime() / 1000);
+      lastLoaded = durationToString(nowSecondsFromEpoch - value.lastLoaded);
+
+      updatesFaviconInBackground = featureToString(
+          nowSecondsFromEpoch, value.updatesFaviconInBackground);
+      updatesTitleInBackground =
+          featureToString(nowSecondsFromEpoch, value.updatesTitleInBackground);
+      usesAudioInBackground =
+          featureToString(nowSecondsFromEpoch, value.usesAudioInBackground);
+      usesNotificationsInBackground = featureToString(
+          nowSecondsFromEpoch, value.usesNotificationsInBackground);
+
+      let loadTimeEstimates = value.loadTimeEstimates;
+      if (loadTimeEstimates) {
+        avgCpuUsage = loadTimeEstimates.avgCpuUsageUs.toString();
+        avgMemoryFootprint = loadTimeEstimates.avgFootprintKb.toString();
+      }
+    }
+    row.querySelector('.last-loaded-cell').textContent = lastLoaded;
+
+    row.querySelector('.updates-favicon-in-background-cell').textContent =
+        updatesFaviconInBackground;
+    row.querySelector('.updates-title-in-background-cell').textContent =
+        updatesTitleInBackground;
+    row.querySelector('.uses-audio-in-background-cell').textContent =
+        usesAudioInBackground;
+    row.querySelector('.uses-notifications-in-background-cell').textContent =
+        usesNotificationsInBackground;
+    row.querySelector('.avg-cpu-cell').textContent = avgCpuUsage;
+    row.querySelector('.avg-memory-cell').textContent = avgMemoryFootprint;
+  }
+
+  function renderDbInfoTable() {
+    ensureInfoTableLength(dbInfoTableBody, dbInfos, createEmptyDbInfoTableRow);
+    let rows = dbInfoTableBody.querySelectorAll('tr');
+    for (let i = 0; i < dbInfos.length; ++i)
+      updateDbInfoTableRow(rows[i], dbInfos[i]);
+  }
+
+  function stableUpdateDatabaseInfoTableImpl() {
+    // Add all the origins we've seen so far to requestedOrigins, which means
+    // the table will grow monotonically until the page is reloaded.
+    let requestedOrigins = [];
+    for (let i = 0; i < dbInfos.length; ++i)
+      requestedOrigins.push(dbInfos[i].origin);
+
+    uiHandler.getSiteCharacteristicsDatabase(requestedOrigins)
+        .then((response) => {
+          // Bail if the SiteCharacteristicsDatabase is turned off.
+          if (!response.result)
+            return;
+
+          let newInfos = response.result.dbRows;
+          let stableInfos = [];
+
+          // Update existing dbInfos in place, remove old ones, and append new
+          // ones. This tries to keep the existing ordering stable so that
+          // clicking links is minimally disruptive.
+          for (let i = 0; i < dbInfos.length; ++i) {
+            let oldInfo = dbInfos[i];
+            let newInfo = null;
+            for (let j = 0; j < newInfos.length; ++j) {
+              if (newInfos[j].origin == oldInfo.origin) {
+                newInfo = newInfos[j];
+                break;
+              }
+            }
+
+            // Old dbInfos that have corresponding new dbInfos are pushed first,
+            // in the current order of the old dbInfos.
+            if (newInfo != null)
+              stableInfos.push(newInfo);
+          }
+
+          // Make sure info about new tabs is appended to the end, in the order
+          // they were originally returned.
+          for (let i = 0; i < newInfos.length; ++i) {
+            let newInfo = newInfos[i];
+            let oldInfo = null;
+            for (let j = 0; j < dbInfos.length; ++j) {
+              if (dbInfos[j].origin == newInfo.origin) {
+                oldInfo = dbInfos[j];
+                break;
+              }
+            }
+
+            // Entirely new information (has no corresponding old info) is
+            // appended to the end.
+            if (oldInfo == null)
+              stableInfos.push(newInfo);
+          }
+
+          // Swap out the current info with the new stably sorted information.
+          dbInfos = stableInfos;
+
+          // Render the content in place.
+          renderDbInfoTable();
+        });
   }
 
   /**
@@ -506,11 +656,11 @@ cr.define('discards', function() {
       let newInfos = response.infos;
       let stableInfos = [];
 
-      // Update existing infos in place, remove old ones, and append new ones.
-      // This tries to keep the existing ordering stable so that clicking links
-      // is minimally disruptive.
-      for (let i = 0; i < infos.length; ++i) {
-        let oldInfo = infos[i];
+      // Update existing tabInfos in place, remove old ones, and append new
+      // ones. This tries to keep the existing ordering stable so that clicking
+      // links is minimally disruptive.
+      for (let i = 0; i < tabInfos.length; ++i) {
+        let oldInfo = tabInfos[i];
         let newInfo = null;
         for (let j = 0; j < newInfos.length; ++j) {
           if (newInfos[j].id == oldInfo.id) {
@@ -519,8 +669,8 @@ cr.define('discards', function() {
           }
         }
 
-        // Old infos that have corresponding new infos are pushed first, in the
-        // current order of the old infos.
+        // Old tabInfos that have corresponding new tabInfos are pushed first,
+        // in the current order of the old tabInfos.
         if (newInfo != null)
           stableInfos.push(newInfo);
       }
@@ -530,9 +680,9 @@ cr.define('discards', function() {
       for (let i = 0; i < newInfos.length; ++i) {
         let newInfo = newInfos[i];
         let oldInfo = null;
-        for (let j = 0; j < infos.length; ++j) {
-          if (infos[j].id == newInfo.id) {
-            oldInfo = infos[j];
+        for (let j = 0; j < tabInfos.length; ++j) {
+          if (tabInfos[j].id == newInfo.id) {
+            oldInfo = tabInfos[j];
             break;
           }
         }
@@ -544,7 +694,7 @@ cr.define('discards', function() {
       }
 
       // Swap out the current info with the new stably sorted information.
-      infos = stableInfos;
+      tabInfos = stableInfos;
 
       // Render the content in place.
       renderTabDiscardsInfoTable();
@@ -552,28 +702,111 @@ cr.define('discards', function() {
   }
 
   /**
-   * A wrapper to stableUpdateTabDiscardsInfoTableImpl that is called due to
-   * user action and not due to the automatic timer. Cancels the existing timer
-   * and reschedules it after rendering instantaneously.
+   * Initiates table updates, called on a timer as well as explicitly on
+   * user action.
    */
-  function stableUpdateTabDiscardsInfoTable() {
+  function updateTablesImpl() {
+    stableUpdateTabDiscardsInfoTableImpl();
+    stableUpdateDatabaseInfoTableImpl();
+  }
+
+  /**
+   * A wrapper to updateTablesImpl that is called due to user action and not
+   * due to the automatic timer. Cancels the existing timer  and reschedules it
+   * after rendering instantaneously.
+   */
+  function updateTables() {
     if (updateTimer)
       clearInterval(updateTimer);
-    stableUpdateTabDiscardsInfoTableImpl();
-    updateTimer =
-        setInterval(stableUpdateTabDiscardsInfoTableImpl, UPDATE_INTERVAL_MS);
+    updateTablesImpl();
+    updateTimer = setInterval(updateTablesImpl, UPDATE_INTERVAL_MS);
+  }
+
+  /**
+   * Initializes the navigation bar with buttons for each content header
+   * in the content element.
+   */
+  function initNavBar() {
+    const tabContents = document.querySelectorAll('#content > div');
+    for (let i = 0; i != tabContents.length; i++) {
+      const tabContent = tabContents[i];
+      const tabName = tabContent.querySelector('.content-header').textContent;
+
+      const tabHeader = document.createElement('div');
+      tabHeader.className = 'tab-header';
+      const button = document.createElement('button');
+      button.textContent = tabName;
+      tabHeader.appendChild(button);
+      tabHeader.addEventListener('click', selectTab.bind(null, tabContent.id));
+      $('navigation').appendChild(tabHeader);
+    }
+  }
+
+  /**
+   * Event handler that selects the tab indicated by the window location hash.
+   * Invoked on hashchange events and initialization.
+   */
+  function onHashChange() {
+    const hash = window.location.hash.slice(1).toLowerCase();
+    if (!selectTab(hash))
+      selectTab('discards');
+  }
+
+  /**
+   * @param {string} id Tab id.
+   * @return {boolean} True if successful.
+   */
+  function selectTab(id) {
+    const tabContents = document.querySelectorAll('#content > div');
+    const tabHeaders = $('navigation').querySelectorAll('.tab-header');
+    let found = false;
+    for (let i = 0; i != tabContents.length; i++) {
+      const tabContent = tabContents[i];
+      const tabHeader = tabHeaders[i];
+      if (tabContent.id == id) {
+        tabContent.classList.add('selected');
+        tabHeader.classList.add('selected');
+        found = true;
+      } else {
+        tabContent.classList.remove('selected');
+        tabHeader.classList.remove('selected');
+      }
+    }
+    if (!found)
+      return false;
+    window.location.hash = id;
+    return true;
   }
 
   /**
    * Initializes this page. Invoked by the DOMContentLoaded event.
    */
   function initialize() {
+    let importLinks = document.querySelectorAll('link[rel=import]');
+    let contentNode = $('content');
+    for (let i = 0; i < importLinks.length; ++i) {
+      let importLink = /** @type {!HTMLLinkElement} */ (importLinks[i]);
+      if (!importLink.import) {
+        // Happens when a <link rel=import> is inside a <template>.
+        continue;
+      }
+      let tabContentsNode = importLink.import.querySelector('#tab_contents');
+      contentNode.appendChild(
+          document.importNode(tabContentsNode.firstElementChild, true));
+    }
+
+    initNavBar();
+    onHashChange();
+
     uiHandler = new mojom.DiscardsDetailsProviderPtr;
     Mojo.bindInterface(
         mojom.DiscardsDetailsProvider.name, mojo.makeRequest(uiHandler).handle);
 
+    dbInfoTableBody = $('database-info-table-body');
+    dbInfos = [];
+
     tabDiscardsInfoTableBody = $('tab-discards-info-table-body');
-    infos = [];
+    tabInfos = [];
     sortKey = 'utilityRank';
     sortReverse = false;
     updateTimer = null;
@@ -619,23 +852,24 @@ cr.define('discards', function() {
       e.target.setAttribute('disabled', '');
       let urgent = e.target.id.includes('urgent');
       uiHandler.discard(urgent).then(() => {
-        stableUpdateTabDiscardsInfoTable();
+        updateTables();
         e.target.removeAttribute('disabled');
       });
     };
     discardNow.addEventListener('click', discardListener);
     discardNowUrgent.addEventListener('click', discardListener);
 
-    stableUpdateTabDiscardsInfoTable();
+    updateTables();
   }
 
   document.addEventListener('DOMContentLoaded', initialize);
+  window.addEventListener('hashchange', onHashChange);
 
   // These functions are exposed on the 'discards' object created by
   // cr.define. This allows unittesting of these functions.
   return {
     compareTabDiscardsInfos: compareTabDiscardsInfos,
-    lastActiveToString: lastActiveToString,
+    durationToString: durationToString,
     maybeMakePlural: maybeMakePlural
   };
 });

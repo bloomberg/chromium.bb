@@ -1,0 +1,98 @@
+<!--
+Copyright 2018 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+
+This is an internal only page meant for debugging. It is not intended for
+general use and is not localized.
+-->
+<!doctype html>
+<div id="tab_contents">
+  <div id="database">
+    <div class="content-header">Database</div>
+    <table id="tab-database-info-table">
+      <thead>
+        <tr id="tab-database-info-table-header">
+          <th>
+            <div class="header-cell-container">
+              <div>Origin</div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>Dirty</div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>Last Loaded</div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Updates Favicon</div>
+                <div>In Background</div>
+              </div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Updates Title</div>
+                <div>In Background</div>
+              </div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Used Audio</div>
+                <div>In Background</div>
+              </div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Uses Notifications</div>
+                <div>In Background</div>
+              </div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Average CPU usage</div>
+                <div>(microseconds)</div>
+              </div>
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Average Memory</div>
+                <div>Footprint (kb)</div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="database-info-table-body">
+      </tbody>
+    </table>
+    <template id="database-info-row">
+      <tr>
+        <td class="origin-cell"></td>
+        <td class="dirty-cell"></td>
+        <td class="last-loaded-cell"></td>
+        <td class="updates-favicon-in-background-cell"></td>
+        <td class="updates-title-in-background-cell"></td>
+        <td class="uses-audio-in-background-cell"></td>
+        <td class="uses-notifications-in-background-cell"></td>
+        <td class="avg-cpu-cell"></td>
+        <td class="avg-memory-cell"></td>
+      </tr>
+    </template>
+  </div>
+</div>

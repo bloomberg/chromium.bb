@@ -66,6 +66,7 @@ class LocalSiteCharacteristicsDataStore
   bool GetaDataForOrigin(
       const url::Origin& origin,
       std::unique_ptr<SiteCharacteristicsProto>* data) override;
+  LocalSiteCharacteristicsDataStore* GetDataStore() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest, EndToEnd);

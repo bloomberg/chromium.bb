@@ -19,6 +19,8 @@ class Profile;
 
 namespace resource_coordinator {
 
+class SiteCharacteristicsDataStore;
+
 // An interface that allows LocalSite data stores to expose diagnostic
 // information for the associated web UI.
 class LocalSiteCharacteristicsDataStoreInspector {
@@ -54,6 +56,9 @@ class LocalSiteCharacteristicsDataStoreInspector {
       const url::Origin& origin,
       /* TODO(siggi): more properties, like "dirty bit" */
       std::unique_ptr<SiteCharacteristicsProto>* data) = 0;
+
+  // Retrieves the data store this inspector is associated with.
+  virtual SiteCharacteristicsDataStore* GetDataStore() = 0;
 
  protected:
   // Sets the inspector instance associated with a given profile.

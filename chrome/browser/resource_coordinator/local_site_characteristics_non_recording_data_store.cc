@@ -77,4 +77,9 @@ bool LocalSiteCharacteristicsNonRecordingDataStore::GetaDataForOrigin(
   return data_store_inspector_->GetaDataForOrigin(origin, data);
 }
 
+SiteCharacteristicsDataStore*
+LocalSiteCharacteristicsNonRecordingDataStore::GetDataStore() {
+  return this;
+}
+
 }  // namespace resource_coordinator
