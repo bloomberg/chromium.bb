@@ -74,6 +74,7 @@
 #include "content/renderer/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_output_device.h"
@@ -1050,12 +1051,19 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
 
+  uint32_t stream_id = kGpuStreamIdDefault;
+  gpu::SchedulingPriority priority = kGpuStreamPriorityDefault;
+  if (gpu_channel_host->gpu_feature_info().IsWorkaroundEnabled(
+          gpu::USE_HIGH_PRIORITY_FOR_WEBGL)) {
+    stream_id = kGpuStreamIdHighPriorityWebGL;
+    priority = kGpuStreamPriorityHighPriorityWebGL;
+  }
+
   scoped_refptr<ws::ContextProviderCommandBuffer> provider(
       new ws::ContextProviderCommandBuffer(
           std::move(gpu_channel_host),
-          RenderThreadImpl::current()->GetGpuMemoryBufferManager(),
-          kGpuStreamIdDefault, kGpuStreamPriorityDefault,
-          gpu::kNullSurfaceHandle, GURL(top_document_web_url),
+          RenderThreadImpl::current()->GetGpuMemoryBufferManager(), stream_id,
+          priority, gpu::kNullSurfaceHandle, GURL(top_document_web_url),
           automatic_flushes, support_locking, web_attributes.support_grcontext,
           gpu::SharedMemoryLimits(), attributes,
           ws::command_buffer_metrics::ContextType::WEBGL));
