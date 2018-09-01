@@ -109,12 +109,12 @@ void LayeredNetworkDelegate::OnBeforeRedirectInternal(
 
 void LayeredNetworkDelegate::OnResponseStarted(URLRequest* request,
                                                int net_error) {
-  OnResponseStartedInternal(request);
+  OnResponseStartedInternal(request, net_error);
   nested_network_delegate_->NotifyResponseStarted(request, net_error);
 }
 
-void LayeredNetworkDelegate::OnResponseStartedInternal(URLRequest* request) {
-}
+void LayeredNetworkDelegate::OnResponseStartedInternal(URLRequest* request,
+                                                       int net_error) {}
 
 void LayeredNetworkDelegate::OnNetworkBytesReceived(URLRequest* request,
                                                     int64_t bytes_received) {

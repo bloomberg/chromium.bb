@@ -35,10 +35,6 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
     profile_ = profile;
   }
 
-  // If the |request| failed due to problems with a proxy, forward the error to
-  // the proxy extension API.
-  virtual void ForwardProxyErrors(net::URLRequest* request, int net_error);
-
   // Notifies the extensions::ProcessManager for the associated RenderFrame, if
   // any, that a request has started or stopped.
   virtual void ForwardStartRequestStatus(net::URLRequest* request);
