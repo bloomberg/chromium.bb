@@ -4337,6 +4337,9 @@ def BranchScheduleConfig():
   #     https://github.com/luci/luci-go/blob/master/scheduler/
   #                        appengine/messages/config.proto
   #
+  # When updating this be sure to run
+  # `config/chromeos_config_unittest --update`
+  # or the change will fail chromite unittests.
 
   branch_builds = (
       ('release-R70-11021.B', 'master-release',
