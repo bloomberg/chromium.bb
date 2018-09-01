@@ -262,7 +262,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   }
 
   container_names::MediaContainerName container() const {
-    return glue_->container();
+    return glue_ ? glue_->container() : container_names::CONTAINER_UNKNOWN;
   }
 
  private:
