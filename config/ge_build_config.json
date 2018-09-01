@@ -782,6 +782,18 @@
       ]
     },
     {
+      "name": "kevin64",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "gru",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "kip",
       "configs": [
         {
