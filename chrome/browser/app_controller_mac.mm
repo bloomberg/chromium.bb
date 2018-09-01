@@ -1324,7 +1324,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app {
   // Note that RenderWidgetHostViewCocoa implements NSServicesRequests which
   // handles requests from services.
-  NSArray* types = [NSArray arrayWithObjects:NSStringPboardType, nil];
+  NSArray* types = @[ base::mac::CFToNSCast(kUTTypeUTF8PlainText) ];
   [app registerServicesMenuSendTypes:types returnTypes:types];
 }
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1926,29 +1927,36 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 //
 // Supporting application services
 //
+
+@interface RenderWidgetHostViewCocoa (
+    NSServicesRequests)<NSServicesMenuRequestor>
+@end
+
 @implementation RenderWidgetHostViewCocoa (NSServicesRequests)
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard types:(NSArray*)types {
-  if (textSelectionRange_.is_empty() ||
-      ![types containsObject:NSStringPboardType]) {
+  // NB: The NSServicesMenuRequestor protocol has not (as of 10.14) been
+  // upgraded to request UTIs rather than obsolete PboardType constants. Handle
+  // either for when it is upgraded.
+  DCHECK([types containsObject:NSStringPboardType] ||
+         [types containsObject:base::mac::CFToNSCast(kUTTypeUTF8PlainText)]);
+  if (textSelectionRange_.is_empty())
     return NO;
-  }
 
   NSString* text = base::SysUTF16ToNSString([self selectedText]);
-  NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
-  [pboard declareTypes:toDeclare owner:nil];
-  return [pboard setString:text forType:NSStringPboardType];
+  return [pboard writeObjects:@[ text ]];
 }
 
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {
-  NSString* string = [pboard stringForType:NSStringPboardType];
-  if (!string)
+  NSArray* objects =
+      [pboard readObjectsForClasses:@[ [NSString class] ] options:0];
+  if (![objects count])
     return NO;
 
   // If the user is currently using an IME, confirm the IME input,
   // and then insert the text from the service, the same as TextEdit and Safari.
   [self finishComposingText];
-  [self insertText:string];
+  [self insertText:[objects lastObject]];
   return YES;
 }
 
