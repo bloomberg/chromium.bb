@@ -390,6 +390,11 @@ class DCLayerTree::SwapChainPresenter {
                                 const gfx::Size& out_size);
   bool ReallocateSwapChain(bool yuv, bool protected_video);
   bool ShouldUseYUVSwapChain();
+  bool VideoProcessorBlt(Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture,
+                         UINT input_level,
+                         Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
+                         const gfx::Size& input_size,
+                         const gfx::ColorSpace& src_color_space);
 
   DCLayerTree* surface_;
 
@@ -635,9 +640,6 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     return false;
   }
 
-  if (!InitializeVideoProcessor(video_input_size, swap_chain_size))
-    return false;
-
   bool use_yuv_swapchain = ShouldUseYUVSwapChain();
   bool first_present = false;
   if (!swap_chain_ || swap_chain_size_ != swap_chain_size ||
@@ -679,151 +681,14 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     input_level = 0;
   }
 
-  if (!out_view_) {
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.GetAddressOf()));
-    D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
-    out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
-    out_desc.Texture2D.MipSlice = 0;
-    HRESULT hr = video_device_->CreateVideoProcessorOutputView(
-        texture.Get(), video_processor_enumerator_.Get(), &out_desc,
-        out_view_.GetAddressOf());
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error "
-                  << std::hex << hr;
-      return false;
-    }
-  }
-
-  // TODO(jbauman): Use correct colorspace.
+  // TODO(sunnyps): Use correct color space for uploaded video frames.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
-  if (image_dxgi && image_dxgi->color_space().IsValid()) {
+  if (image_dxgi && image_dxgi->color_space().IsValid())
     src_color_space = image_dxgi->color_space();
-  }
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
-  if (SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {
-    DCHECK(context1);
-    context1->VideoProcessorSetStreamColorSpace1(
-        video_processor_.Get(), 0,
-        gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
-  } else {
-    // This can't handle as many different types of color spaces, so use it
-    // only if ID3D11VideoContext1 isn't available.
-    D3D11_VIDEO_PROCESSOR_COLOR_SPACE color_space =
-        gfx::ColorSpaceWin::GetD3D11ColorSpace(src_color_space);
-    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.Get(), 0,
-                                                      &color_space);
-  }
 
-  gfx::ColorSpace output_color_space =
-      is_yuv_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
-  if (base::FeatureList::IsEnabled(kFallbackBT709VideoToBT601) &&
-      (output_color_space == gfx::ColorSpace::CreateREC709())) {
-    output_color_space = gfx::ColorSpace::CreateREC601();
-  }
-
-  Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain3;
-  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf()))) {
-    DCHECK(swap_chain3);
-    DXGI_COLOR_SPACE_TYPE color_space =
-        gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space);
-    if (is_yuv_swapchain_) {
-      // Swapchains with YUV textures can't have RGB color spaces.
-      switch (color_space) {
-        case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
-        case DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709:
-          color_space = DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709;
-          break;
-
-        case DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709:
-          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709;
-          break;
-
-        case DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020:
-          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020;
-          break;
-
-        case DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020:
-        case DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020:
-          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020;
-          break;
-
-        case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020:
-          color_space = DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020;
-          break;
-
-        default:
-          break;
-      }
-    }
-    HRESULT hr = swap_chain3->SetColorSpace1(color_space);
-
-    if (SUCCEEDED(hr)) {
-      if (context1) {
-        context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
-                                                     color_space);
-      } else {
-        D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
-            gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
-        video_context_->VideoProcessorSetOutputColorSpace(
-            video_processor_.Get(), &d3d11_color_space);
-      }
-    }
-  }
-
-  {
-    base::Optional<ScopedReleaseKeyedMutex> release_keyed_mutex;
-    if (keyed_mutex) {
-      // The producer may still be using this texture for a short period of
-      // time, so wait long enough to hopefully avoid glitches. For example,
-      // all levels of the texture share the same keyed mutex, so if the
-      // hardware decoder acquired the mutex to decode into a different array
-      // level then it still may block here temporarily.
-      const int kMaxSyncTimeMs = 1000;
-      HRESULT hr = keyed_mutex->AcquireSync(0, kMaxSyncTimeMs);
-      if (FAILED(hr)) {
-        DLOG(ERROR) << "Error acquiring keyed mutex: " << std::hex << hr;
-        return false;
-      }
-      release_keyed_mutex.emplace(keyed_mutex, 0);
-    }
-
-    D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
-    in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
-    in_desc.Texture2D.ArraySlice = input_level;
-    Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> in_view;
-    HRESULT hr = video_device_->CreateVideoProcessorInputView(
-        input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
-        in_view.GetAddressOf());
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateVideoProcessorInputView failed with error "
-                  << std::hex << hr;
-      return false;
-    }
-
-    D3D11_VIDEO_PROCESSOR_STREAM stream = {};
-    stream.Enable = true;
-    stream.OutputIndex = 0;
-    stream.InputFrameOrField = 0;
-    stream.PastFrames = 0;
-    stream.FutureFrames = 0;
-    stream.pInputSurface = in_view.Get();
-    RECT dest_rect = gfx::Rect(swap_chain_size).ToRECT();
-    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.Get(),
-                                                      TRUE, &dest_rect);
-    video_context_->VideoProcessorSetStreamDestRect(video_processor_.Get(), 0,
-                                                    TRUE, &dest_rect);
-    RECT source_rect = gfx::Rect(video_input_size).ToRECT();
-    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.Get(), 0,
-                                                      TRUE, &source_rect);
-
-    hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
-                                           out_view_.Get(), 0, 1, &stream);
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "VideoProcessorBlt failed with error " << std::hex << hr;
-      return false;
-    }
-  }
+  if (!VideoProcessorBlt(input_texture, input_level, keyed_mutex,
+                         video_input_size, src_color_space))
+    return false;
 
   if (first_present) {
     HRESULT hr = swap_chain_->Present(0, 0);
@@ -902,6 +767,127 @@ bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
   // out_view_ depends on video_processor_enumerator_, so ensure it's
   // recreated if the enumerator is.
   out_view_.Reset();
+  return true;
+}
+
+bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture,
+    UINT input_level,
+    Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
+    const gfx::Size& input_size,
+    const gfx::ColorSpace& src_color_space) {
+  if (!InitializeVideoProcessor(input_size, swap_chain_size_))
+    return false;
+
+  if (!out_view_) {
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.GetAddressOf()));
+    D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
+    out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
+    out_desc.Texture2D.MipSlice = 0;
+    HRESULT hr = video_device_->CreateVideoProcessorOutputView(
+        texture.Get(), video_processor_enumerator_.Get(), &out_desc,
+        out_view_.GetAddressOf());
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error "
+                  << std::hex << hr;
+      return false;
+    }
+  }
+
+  gfx::ColorSpace output_color_space =
+      is_yuv_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
+
+  if (base::FeatureList::IsEnabled(kFallbackBT709VideoToBT601) &&
+      (output_color_space == gfx::ColorSpace::CreateREC709())) {
+    output_color_space = gfx::ColorSpace::CreateREC601();
+  }
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain3;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
+  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf())) &&
+      SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {
+    DCHECK(swap_chain3);
+    DCHECK(context1);
+    // Set input color space.
+    context1->VideoProcessorSetStreamColorSpace1(
+        video_processor_.Get(), 0,
+        gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
+    // Set output color space.
+    DXGI_COLOR_SPACE_TYPE output_dxgi_color_space =
+        gfx::ColorSpaceWin::GetDXGIColorSpace(
+            output_color_space, is_yuv_swapchain_ /* force_yuv */);
+    if (SUCCEEDED(swap_chain3->SetColorSpace1(output_dxgi_color_space))) {
+      context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
+                                                   output_dxgi_color_space);
+    }
+  } else {
+    // This can't handle as many different types of color spaces, so use it
+    // only if ID3D11VideoContext1 isn't available.
+    D3D11_VIDEO_PROCESSOR_COLOR_SPACE src_d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(src_color_space);
+    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.Get(), 0,
+                                                      &src_d3d11_color_space);
+    D3D11_VIDEO_PROCESSOR_COLOR_SPACE output_d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
+    video_context_->VideoProcessorSetOutputColorSpace(
+        video_processor_.Get(), &output_d3d11_color_space);
+  }
+
+  {
+    base::Optional<ScopedReleaseKeyedMutex> release_keyed_mutex;
+    if (keyed_mutex) {
+      // The producer may still be using this texture for a short period of
+      // time, so wait long enough to hopefully avoid glitches. For example,
+      // all levels of the texture share the same keyed mutex, so if the
+      // hardware decoder acquired the mutex to decode into a different array
+      // level then it still may block here temporarily.
+      const int kMaxSyncTimeMs = 1000;
+      HRESULT hr = keyed_mutex->AcquireSync(0, kMaxSyncTimeMs);
+      if (FAILED(hr)) {
+        DLOG(ERROR) << "Error acquiring keyed mutex: " << std::hex << hr;
+        return false;
+      }
+      release_keyed_mutex.emplace(keyed_mutex, 0);
+    }
+
+    D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
+    in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
+    in_desc.Texture2D.ArraySlice = input_level;
+    Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> in_view;
+    HRESULT hr = video_device_->CreateVideoProcessorInputView(
+        input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
+        in_view.GetAddressOf());
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "CreateVideoProcessorInputView failed with error "
+                  << std::hex << hr;
+      return false;
+    }
+
+    D3D11_VIDEO_PROCESSOR_STREAM stream = {};
+    stream.Enable = true;
+    stream.OutputIndex = 0;
+    stream.InputFrameOrField = 0;
+    stream.PastFrames = 0;
+    stream.FutureFrames = 0;
+    stream.pInputSurface = in_view.Get();
+    RECT dest_rect = gfx::Rect(swap_chain_size_).ToRECT();
+    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.Get(),
+                                                      TRUE, &dest_rect);
+    video_context_->VideoProcessorSetStreamDestRect(video_processor_.Get(), 0,
+                                                    TRUE, &dest_rect);
+    RECT source_rect = gfx::Rect(input_size).ToRECT();
+    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.Get(), 0,
+                                                      TRUE, &source_rect);
+
+    hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
+                                           out_view_.Get(), 0, 1, &stream);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "VideoProcessorBlt failed with error " << std::hex << hr;
+      return false;
+    }
+  }
+
   return true;
 }
 
