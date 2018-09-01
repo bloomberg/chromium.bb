@@ -925,16 +925,15 @@ cr.define('settings_sections_tests', function() {
       assertFalse(optionsElement.hidden);
 
       // Default value is on, so turn it off
-      page.setSetting('duplex', print_preview_new.DuplexMode.SIMPLEX);
+      page.setSetting('duplex', false);
       const checkbox = optionsElement.$$('#duplex');
       assertFalse(checkbox.checked);
-      assertEquals(
-          print_preview_new.DuplexMode.SIMPLEX, page.settings.duplex.value);
+      assertFalse(page.settings.duplex.value);
 
       // Send a preset value of LONG_EDGE
       const duplex = print_preview_new.DuplexMode.LONG_EDGE;
       cr.webUIListenerCallback('print-preset-options', false, 1, duplex);
-      assertEquals(duplex, page.settings.duplex.value);
+      assertTrue(page.settings.duplex.value);
       assertTrue(checkbox.checked);
     });
   });
