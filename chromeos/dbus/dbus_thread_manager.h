@@ -52,6 +52,7 @@ class ModemMessagingClient;
 class OobeConfigurationClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
+class SeneschalClient;
 class SessionManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
@@ -158,6 +159,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   OobeConfigurationClient* GetOobeConfigurationClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
+  SeneschalClient* GetSeneschalClient();
   SessionManagerClient* GetSessionManagerClient();
   ShillDeviceClient* GetShillDeviceClient();
   ShillIPConfigClient* GetShillIPConfigClient();
@@ -213,6 +215,14 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
   void SetHammerdClient(std::unique_ptr<HammerdClient> client);
+  void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
+  void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
+  void SetMediaAnalyticsClient(std::unique_ptr<MediaAnalyticsClient> client);
+  void SetPermissionBrokerClient(
+      std::unique_ptr<PermissionBrokerClient> client);
+  void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
+  void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);
+  void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);
   void SetShillDeviceClient(std::unique_ptr<ShillDeviceClient> client);
   void SetShillIPConfigClient(std::unique_ptr<ShillIPConfigClient> client);
   void SetShillManagerClient(std::unique_ptr<ShillManagerClient> client);
@@ -220,13 +230,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetShillProfileClient(std::unique_ptr<ShillProfileClient> client);
   void SetShillThirdPartyVpnDriverClient(
       std::unique_ptr<ShillThirdPartyVpnDriverClient> client);
-  void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
-  void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
-  void SetMediaAnalyticsClient(std::unique_ptr<MediaAnalyticsClient> client);
-  void SetPermissionBrokerClient(
-      std::unique_ptr<PermissionBrokerClient> client);
-  void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
-  void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);
   void SetSmbProviderClient(std::unique_ptr<SmbProviderClient> client);
   void SetSystemClockClient(std::unique_ptr<SystemClockClient> client);
   void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);

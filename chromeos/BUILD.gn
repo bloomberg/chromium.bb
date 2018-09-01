@@ -31,6 +31,7 @@ component("chromeos") {
     ":login_manager_proto",
     ":media_perception_proto",
     ":power_manager_proto",
+    ":seneschal_proto",
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
     "//base",
@@ -230,6 +231,8 @@ component("chromeos") {
     "dbus/fake_permission_broker_client.h",
     "dbus/fake_power_manager_client.cc",
     "dbus/fake_power_manager_client.h",
+    "dbus/fake_seneschal_client.cc",
+    "dbus/fake_seneschal_client.h",
     "dbus/fake_session_manager_client.cc",
     "dbus/fake_session_manager_client.h",
     "dbus/fake_shill_device_client.cc",
@@ -280,6 +283,8 @@ component("chromeos") {
     "dbus/power_manager_client.h",
     "dbus/power_policy_controller.cc",
     "dbus/power_policy_controller.h",
+    "dbus/seneschal_client.cc",
+    "dbus/seneschal_client.h",
     "dbus/services/cros_dbus_service.cc",
     "dbus/services/cros_dbus_service.h",
     "dbus/session_manager_client.cc",
@@ -947,6 +952,14 @@ proto_library("media_perception_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/media_perception"
+}
+
+proto_library("seneschal_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/seneschal/seneschal_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/seneschal"
 }
 
 proto_library("smbprovider_proto") {
