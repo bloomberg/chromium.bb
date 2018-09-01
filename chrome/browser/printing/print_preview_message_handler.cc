@@ -51,6 +51,10 @@ void StopWorker(int document_cookie) {
   }
 }
 
+bool ShouldUseCompositor(PrintPreviewUI* print_preview_ui) {
+  return IsOopifEnabled() && print_preview_ui->source_is_modifiable();
+}
+
 }  // namespace
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
@@ -121,7 +125,11 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   if (!print_preview_ui)
     return;
 
-  if (IsOopifEnabled() && print_preview_ui->source_is_modifiable()) {
+  if (ShouldUseCompositor(print_preview_ui)) {
+    // Don't bother compositing if this request has been cancelled already.
+    if (PrintPreviewUI::ShouldCancelRequest(ids))
+      return;
+
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
     DCHECK(client);
 
@@ -132,7 +140,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
                        weak_ptr_factory_.GetWeakPtr(), page_number, ids));
   } else {
     NotifyUIPreviewPageReady(
-        page_number, ids,
+        print_preview_ui, page_number, ids,
         base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
             content.metafile_data_region));
   }
@@ -158,7 +166,11 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   if (!print_preview_ui)
     return;
 
-  if (IsOopifEnabled() && print_preview_ui->source_is_modifiable()) {
+  if (ShouldUseCompositor(print_preview_ui)) {
+    // Don't bother compositing if this request has been cancelled already.
+    if (PrintPreviewUI::ShouldCancelRequest(ids))
+      return;
+
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
     DCHECK(client);
 
@@ -169,7 +181,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
                        params.expected_pages_count, ids));
   } else {
     NotifyUIPreviewDocumentReady(
-        params.expected_pages_count, ids,
+        print_preview_ui, params.expected_pages_count, ids,
         base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
             content.metafile_data_region));
   }
@@ -233,13 +245,11 @@ void PrintPreviewMessageHandler::OnSetOptionsFromDocument(
 }
 
 void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
+    PrintPreviewUI* print_preview_ui,
     int page_number,
     const PrintHostMsg_PreviewIds& ids,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
-  DCHECK(data_bytes);
-
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
+  if (!data_bytes || !data_bytes->size())
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
@@ -252,14 +262,15 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
 }
 
 void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
+    PrintPreviewUI* print_preview_ui,
     int page_count,
     const PrintHostMsg_PreviewIds& ids,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
   if (!data_bytes || !data_bytes->size())
     return;
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
+  // Don't bother notifying the UI if this request has been cancelled already.
+  if (PrintPreviewUI::ShouldCancelRequest(ids))
     return;
 
   print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
@@ -277,8 +288,13 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
+
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
   NotifyUIPreviewPageReady(
-      page_number, ids,
+      print_preview_ui, page_number, ids,
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
@@ -292,8 +308,13 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
+
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
   NotifyUIPreviewDocumentReady(
-      page_count, ids,
+      print_preview_ui, page_count, ids,
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
