@@ -77,7 +77,8 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
     return nullptr;
   disk_cache::ScopedEntryPtr entry(temp_entry);
 
-  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  scoped_refptr<net::StringIOBuffer> iobuffer =
+      base::MakeRefCounted<net::StringIOBuffer>(data);
   rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
                         iobuffer->size(), callback.callback(), false);
   EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));

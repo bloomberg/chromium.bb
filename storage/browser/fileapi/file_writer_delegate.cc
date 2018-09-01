@@ -35,7 +35,7 @@ FileWriterDelegate::FileWriterDelegate(
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
-      io_buffer_(new net::IOBufferWithSize(kReadBufSize)),
+      io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(kReadBufSize)),
       weak_factory_(this) {}
 
 FileWriterDelegate::~FileWriterDelegate() = default;

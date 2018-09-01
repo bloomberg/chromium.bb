@@ -45,7 +45,7 @@ void ReadFromReader(LocalFileStreamReader* reader,
   size_t total_bytes_read = 0;
   while (total_bytes_read < size) {
     scoped_refptr<net::IOBufferWithSize> buf(
-        new net::IOBufferWithSize(size - total_bytes_read));
+        base::MakeRefCounted<net::IOBufferWithSize>(size - total_bytes_read));
     int rv = reader->Read(buf.get(), buf->size(), callback.callback());
     if (rv == net::ERR_IO_PENDING)
       rv = callback.WaitForResult();
@@ -269,8 +269,8 @@ TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
       CreateFileReader(test_path(), 0, base::Time()));
 
   net::TestCompletionCallback callback;
-  scoped_refptr<net::IOBufferWithSize> buf(
-      new net::IOBufferWithSize(kTestDataSize));
+  scoped_refptr<net::IOBufferWithSize> buf =
+      base::MakeRefCounted<net::IOBufferWithSize>(kTestDataSize);
   int rv = reader->Read(buf.get(), buf->size(), base::Bind(&NeverCalled));
   ASSERT_TRUE(rv == net::ERR_IO_PENDING || rv >= 0);
 
