@@ -7,7 +7,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -69,7 +71,10 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                                  authpolicy::kJoinADDomainMethod);
     dbus::MessageWriter writer(&method_call);
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE, std::string());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback), authpolicy::ERROR_DBUS_FAILURE,
+                         std::string()));
       return;
     }
     writer.AppendFileDescriptor(password_fd);
@@ -86,8 +91,10 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                                  authpolicy::kAuthenticateUserMethod);
     dbus::MessageWriter writer(&method_call);
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE,
-                              authpolicy::ActiveDirectoryAccountInfo());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback), authpolicy::ERROR_DBUS_FAILURE,
+                         authpolicy::ActiveDirectoryAccountInfo()));
       return;
     }
     writer.AppendFileDescriptor(password_fd);
@@ -104,8 +111,10 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                                  authpolicy::kGetUserStatusMethod);
     dbus::MessageWriter writer(&method_call);
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE,
-                              authpolicy::ActiveDirectoryUserStatus());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback), authpolicy::ERROR_DBUS_FAILURE,
+                         authpolicy::ActiveDirectoryUserStatus()));
       return;
     }
     proxy_->CallMethod(

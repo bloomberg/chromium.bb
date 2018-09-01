@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
@@ -47,7 +48,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode CreateDiskImageRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -68,7 +70,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode DestroyDiskImageRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -88,7 +91,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode ListVmDisksRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -108,7 +112,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StartVmRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -131,7 +136,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StopVmRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -159,7 +165,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode ContainerSshKeysRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
