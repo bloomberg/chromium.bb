@@ -108,7 +108,6 @@ void PrintPreviewMessageHandler::OnDidStartPreview(
   if (!print_preview_ui)
     return;
 
-  print_preview_ui->ClearAllPreviewData();
   print_preview_ui->OnDidStartPreview(params, ids.request_id);
 }
 
@@ -256,9 +255,8 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
   if (PrintPreviewUI::ShouldCancelRequest(ids))
     return;
 
-  print_preview_ui->SetPrintPreviewDataForIndex(page_number,
-                                                std::move(data_bytes));
-  print_preview_ui->OnDidPreviewPage(page_number, ids.request_id);
+  print_preview_ui->OnDidPreviewPage(page_number, std::move(data_bytes),
+                                     ids.request_id);
 }
 
 void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
@@ -273,9 +271,8 @@ void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
   if (PrintPreviewUI::ShouldCancelRequest(ids))
     return;
 
-  print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
-                                                std::move(data_bytes));
-  print_preview_ui->OnPreviewDataIsAvailable(page_count, ids.request_id);
+  print_preview_ui->OnPreviewDataIsAvailable(page_count, std::move(data_bytes),
+                                             ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnCompositePdfPageDone(

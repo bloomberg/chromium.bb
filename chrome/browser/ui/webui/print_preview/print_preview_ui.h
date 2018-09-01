@@ -49,15 +49,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
       int index,
       scoped_refptr<base::RefCountedMemory>* data) const;
 
-  // Sets the print preview |data|. |index| is zero-based, and can be
-  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
-  // document.
-  void SetPrintPreviewDataForIndex(int index,
-                                   scoped_refptr<base::RefCountedMemory> data);
-
-  // Clear the existing print preview data.
-  void ClearAllPreviewData();
-
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
 
@@ -97,13 +88,16 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
                                  int request_id);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
-  // |preview_request_id| indicates wich request resulted in this response.
-  void OnDidPreviewPage(int page_number, int preview_request_id);
+  // |preview_request_id| indicates which request resulted in this response.
+  void OnDidPreviewPage(int page_number,
+                        scoped_refptr<base::RefCountedMemory> data,
+                        int preview_request_id);
 
   // Notifies the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages.
   // |preview_request_id| indicates which request resulted in this response.
   void OnPreviewDataIsAvailable(int expected_pages_count,
+                                scoped_refptr<base::RefCountedMemory> data,
                                 int preview_request_id);
 
   // Notifies the Web UI that the print preview failed to render for the request
@@ -164,6 +158,14 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // to set the print preview settings contained in |settings|.
   void SendManipulateSettingsForTest(const base::DictionaryValue& settings);
 
+  // See SetPrintPreviewDataForIndex().
+  void SetPrintPreviewDataForIndexForTest(
+      int index,
+      scoped_refptr<base::RefCountedMemory> data);
+
+  // See ClearAllPreviewData().
+  void ClearAllPreviewDataForTest();
+
  protected:
   // Alternate constructor for tests
   PrintPreviewUI(content::WebUI* web_ui,
@@ -173,6 +175,15 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
   friend class FakePrintPreviewUI;
+
+  // Sets the print preview |data|. |index| is zero-based, and can be
+  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
+  // document.
+  void SetPrintPreviewDataForIndex(int index,
+                                   scoped_refptr<base::RefCountedMemory> data);
+
+  // Clear the existing print preview data.
+  void ClearAllPreviewData();
 
   base::TimeTicks initial_preview_start_time_;
 
