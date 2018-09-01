@@ -153,7 +153,8 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
     return ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED);
 
   FlatRulesetIndexer indexer;
-  bool all_rules_parsed = true;
+  base::Optional<InstallWarning> install_warning;
+  const size_t rule_count_limit = dnr_api::MAX_NUMBER_OF_RULES;
   base::ElapsedTimer timer;
   {
     std::set<int> id_set;  // Ensure all ids are distinct.
@@ -165,8 +166,8 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
 
       // Ignore rules which can't be successfully parsed and show an install
       // warning for them.
-      if (!parsed_rule) {
-        all_rules_parsed = false;
+      if (!parsed_rule && !install_warning) {
+        install_warning = InstallWarning(kRulesNotParsedWarning);
         continue;
       }
 
@@ -180,6 +181,11 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
       if (parse_result != ParseResult::SUCCESS)
         return ParseInfo(parse_result, i);
 
+      if (indexer.indexed_rules_count() >= rule_count_limit) {
+        install_warning = InstallWarning(kRuleCountExceeded);
+        break;
+      }
+
       indexer.AddUrlRule(indexed_rule);
     }
   }
@@ -189,10 +195,10 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   if (!PersistRuleset(extension, indexer.GetData(), ruleset_checksum))
     return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
 
-  if (!all_rules_parsed) {
-    warnings->push_back(InstallWarning(
-        kRulesNotParsedWarning, manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey));
+  if (install_warning) {
+    install_warning->key = manifest_keys::kDeclarativeNetRequestKey;
+    install_warning->specific = manifest_keys::kDeclarativeRuleResourcesKey;
+    warnings->push_back(*install_warning);
   }
 
   UMA_HISTOGRAM_TIMES(kIndexAndPersistRulesTimeHistogram, timer.Elapsed());
