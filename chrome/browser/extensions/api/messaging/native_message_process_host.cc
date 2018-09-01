@@ -164,7 +164,8 @@ void NativeMessageProcessHost::OnMessage(const std::string& json) {
 
   // Allocate new buffer for the message.
   scoped_refptr<net::IOBufferWithSize> buffer =
-      new net::IOBufferWithSize(json.size() + kMessageHeaderSize);
+      base::MakeRefCounted<net::IOBufferWithSize>(json.size() +
+                                                  kMessageHeaderSize);
 
   // Copy size and content of the message to the buffer.
   static_assert(sizeof(uint32_t) == kMessageHeaderSize,
@@ -223,7 +224,7 @@ void NativeMessageProcessHost::DoRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   while (!closed_ && !read_pending_) {
-    read_buffer_ = new net::IOBuffer(kReadBufferSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufferSize);
     int result =
         read_stream_->Read(read_buffer_.get(), kReadBufferSize,
                            base::BindOnce(&NativeMessageProcessHost::OnRead,

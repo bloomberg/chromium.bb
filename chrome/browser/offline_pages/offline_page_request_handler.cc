@@ -872,7 +872,7 @@ void OfflinePageRequestHandler::DidOpenForValidation(int result) {
   }
 
   if (!buffer_)
-    buffer_ = new net::IOBuffer(kMaxBufferSizeForValidation);
+    buffer_ = base::MakeRefCounted<net::IOBuffer>(kMaxBufferSizeForValidation);
 
   ReadForValidation();
 }

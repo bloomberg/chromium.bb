@@ -155,7 +155,7 @@ class HttpOverAdbSocket {
     socket_.reset(socket);
 
     scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(request_);
+        base::MakeRefCounted<net::StringIOBuffer>(request_);
 
     result = socket_->Write(
         request_buffer.get(), request_buffer->size(),
@@ -170,7 +170,7 @@ class HttpOverAdbSocket {
       return;
 
     scoped_refptr<net::IOBuffer> response_buffer =
-        new net::IOBuffer(kBufferSize);
+        base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     result = socket_->Read(response_buffer.get(),
                            kBufferSize,
@@ -416,7 +416,7 @@ class AdbSendFileSocket : AdbClientSocket {
       buffer.append(payload, payloadLength);
 
     scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(buffer);
+        base::MakeRefCounted<net::StringIOBuffer>(buffer);
     int result = socket_->Write(request_buffer.get(), request_buffer->size(),
                                 callback, TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != net::ERR_IO_PENDING)
@@ -535,7 +535,7 @@ void AdbClientSocket::SendCommand(const std::string& command,
                                   bool has_length,
                                   const CommandCallback& response_callback) {
   scoped_refptr<net::StringIOBuffer> request_buffer =
-      new net::StringIOBuffer(EncodeMessage(command));
+      base::MakeRefCounted<net::StringIOBuffer>(EncodeMessage(command));
   int result = socket_->Write(
       request_buffer.get(), request_buffer->size(),
       base::Bind(&AdbClientSocket::ReadResponse, base::Unretained(this),
@@ -554,7 +554,7 @@ void AdbClientSocket::ReadResponse(const CommandCallback& response_callback,
     return;
   }
   scoped_refptr<net::GrowableIOBuffer> socket_buffer =
-      new net::GrowableIOBuffer;
+      base::MakeRefCounted<net::GrowableIOBuffer>();
   socket_buffer->SetCapacity(kBufferSize);
   if (has_output) {
     const ParserCallback& parse_output_callback = base::Bind(

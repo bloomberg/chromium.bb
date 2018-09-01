@@ -119,7 +119,8 @@ TEST_F(NetworkReaderProxyTest, EmptyFile) {
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
 
   // For empty file, Read() should return 0 immediately.
@@ -134,7 +135,8 @@ TEST_F(NetworkReaderProxyTest, Read) {
 
     net::TestCompletionCallback callback;
     const int kBufferSize = 3;
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     // If no data is available yet, ERR_IO_PENDING should be returned.
     int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
@@ -184,7 +186,8 @@ TEST_F(NetworkReaderProxyTest, ReadWithLimit) {
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
   // If no data is available yet, ERR_IO_PENDING should be returned.
   int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
@@ -233,7 +236,8 @@ TEST_F(NetworkReaderProxyTest, ErrorWithPendingCallback) {
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
   // Set pending callback.
   int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
@@ -254,7 +258,8 @@ TEST_F(NetworkReaderProxyTest, ErrorWithPendingData) {
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
   // Supply the data before an error.
   std::unique_ptr<std::string> data(new std::string("abcde"));

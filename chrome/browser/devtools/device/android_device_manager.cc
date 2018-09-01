@@ -203,7 +203,7 @@ class HttpRequest {
     if (!CheckNetResultOrDie(result))
       return;
 
-    response_buffer_ = new net::IOBuffer(kBufferSize);
+    response_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     result = socket_->Read(
         response_buffer_.get(),

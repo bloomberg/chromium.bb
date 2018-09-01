@@ -18,7 +18,8 @@ BufferingFileStreamWriter::BufferingFileStreamWriter(
     int intermediate_buffer_length)
     : file_stream_writer_(std::move(file_stream_writer)),
       intermediate_buffer_length_(intermediate_buffer_length),
-      intermediate_buffer_(new net::IOBuffer(intermediate_buffer_length_)),
+      intermediate_buffer_(
+          base::MakeRefCounted<net::IOBuffer>(intermediate_buffer_length_)),
       buffered_bytes_(0),
       weak_ptr_factory_(this) {}
 
