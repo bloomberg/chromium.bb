@@ -188,6 +188,7 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Chrome-OS-specific strings -->
       <if expr="chromeos">
         <part file="chromeos_strings.grdp" />
+        <part file="file_manager_strings.grdp" />
       </if>
 
       <!-- Settings specific strings -->
