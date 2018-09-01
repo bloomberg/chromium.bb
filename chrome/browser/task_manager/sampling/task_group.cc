@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
@@ -149,7 +150,7 @@ void TaskGroup::AddTask(Task* task) {
 
 void TaskGroup::RemoveTask(Task* task) {
   DCHECK(task);
-  tasks_.erase(std::remove(tasks_.begin(), tasks_.end(), task), tasks_.end());
+  base::Erase(tasks_, task);
 }
 
 void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,

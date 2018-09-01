@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,8 +47,7 @@ ExtensionFunction::ResponseAction I18nGetAcceptLanguagesFunction::Run() {
 
   std::vector<std::string> languages = base::SplitString(
       accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  languages.erase(std::remove(languages.begin(), languages.end(), ""),
-                  languages.end());
+  base::Erase(languages, "");
 
   if (languages.empty())
     return RespondNow(Error(kEmptyAcceptLanguagesError));

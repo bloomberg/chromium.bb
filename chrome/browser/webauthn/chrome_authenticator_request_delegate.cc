@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -311,13 +312,10 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
     return;
 
   auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
-  saved_authenticators.erase(
-      std::remove_if(saved_authenticators.begin(), saved_authenticators.end(),
-                     [authenticator_id](const auto& authenticator_reference) {
-                       return authenticator_reference.authenticator_id ==
-                              authenticator_id;
-                     }),
-      saved_authenticators.end());
+  base::EraseIf(saved_authenticators, [authenticator_id](
+                                          const auto& authenticator_reference) {
+    return authenticator_reference.authenticator_id == authenticator_id;
+  });
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(

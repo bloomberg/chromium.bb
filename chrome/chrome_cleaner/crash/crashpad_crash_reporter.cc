@@ -12,6 +12,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,8 +100,7 @@ void RemoveSwitchIfExisting(const char* const switch_to_remove,
   auto matches_switch = [&pattern](const base::string16& argument) -> bool {
     return base::StartsWith(argument, pattern, base::CompareCase::SENSITIVE);
   };
-  argv->erase(std::remove_if(argv->begin(), argv->end(), matches_switch),
-              argv->end());
+  base::EraseIf(*argv, matches_switch);
 }
 
 int CrashReporterMain() {

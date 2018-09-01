@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -366,18 +367,12 @@ void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
   if (delegate_->ShouldShowCaptionButtons()) {
     for (const auto& button : leading_buttons_) {
       ConfigureButton(host, button, ALIGN_LEADING);
-      buttons_not_shown.erase(
-          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(),
-                      button),
-          buttons_not_shown.end());
+      base::Erase(buttons_not_shown, button);
     }
 
     for (const auto& button : base::Reversed(trailing_buttons_)) {
       ConfigureButton(host, button, ALIGN_TRAILING);
-      buttons_not_shown.erase(
-          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(),
-                      button),
-          buttons_not_shown.end());
+      base::Erase(buttons_not_shown, button);
     }
   }
 

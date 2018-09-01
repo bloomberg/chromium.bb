@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
@@ -32,7 +33,7 @@ void AddLocalizedString(content::WebUIDataSource* source,
                         const std::string& message,
                         int id) {
   base::string16 str = l10n_util::GetStringUTF16(id);
-  str.erase(std::remove(str.begin(), str.end(), '&'), str.end());
+  base::Erase(str, '&');
   source->AddString(message, str);
 }
 

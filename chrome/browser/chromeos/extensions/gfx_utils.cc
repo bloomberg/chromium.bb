@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -182,12 +183,9 @@ const std::vector<std::string> GetEquivalentInstalledExtensions(
   if (extension_ids.empty())
     return std::vector<std::string>();
 
-  extension_ids.erase(
-      std::remove_if(extension_ids.begin(), extension_ids.end(),
-                     [registry](std::string extension_id) {
-                       return !registry->GetInstalledExtension(extension_id);
-                     }),
-      extension_ids.end());
+  base::EraseIf(extension_ids, [registry](std::string extension_id) {
+    return !registry->GetInstalledExtension(extension_id);
+  });
   return extension_ids;
 }
 
