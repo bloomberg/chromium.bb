@@ -36,6 +36,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_state.h"
+#include "chrome/installer/setup/launch_chrome.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/user_hive_visitor.h"
@@ -391,8 +392,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
 // cancelled the uninstall operation by clicking Cancel on the confirmation
 // box that Chrome pops up.
 InstallStatus IsChromeActiveOrUserCancelled(
-    const InstallerState& installer_state,
-    const Product& product) {
+    const InstallerState& installer_state) {
   int32_t exit_code = service_manager::RESULT_CODE_NORMAL_EXIT;
   base::CommandLine options(base::CommandLine::NO_PROGRAM);
   options.AppendSwitch(installer::switches::kUninstall);
@@ -406,8 +406,7 @@ InstallStatus IsChromeActiveOrUserCancelled(
   //          give this method some brains and not kill chrome.exe launched
   //          by us, we will not uninstall if we get this return code).
   VLOG(1) << "Launching Chrome to do uninstall tasks.";
-  if (product.LaunchChromeAndWait(installer_state.target_path(), options,
-                                  &exit_code)) {
+  if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
     VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
             << exit_code;
     if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
@@ -820,7 +819,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     CloseAllChromeProcesses();
   } else {
     // no --force-uninstall so lets show some UI dialog boxes.
-    status = IsChromeActiveOrUserCancelled(installer_state, product);
+    status = IsChromeActiveOrUserCancelled(installer_state);
     if (status != installer::UNINSTALL_CONFIRMED &&
         status != installer::UNINSTALL_DELETE_PROFILE)
       return status;

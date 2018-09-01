@@ -54,6 +54,7 @@
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/setup/installer_state.h"
+#include "chrome/installer/setup/launch_chrome.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_install_details.h"
 #include "chrome/installer/setup/setup_singleton.h"
@@ -1203,8 +1204,6 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
 
       installer_state.SetStage(FINISHING);
 
-      const Product& chrome_install = installer_state.product();
-
       bool do_not_register_for_update_launch = false;
       prefs.GetBool(master_preferences::kDoNotRegisterForUpdateLaunch,
                     &do_not_register_for_update_launch);
@@ -1223,7 +1222,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
         prefs.GetBool(master_preferences::kDoNotLaunchChrome,
                       &do_not_launch_chrome);
         if (!system_install && !do_not_launch_chrome)
-          chrome_install.LaunchChrome(installer_state.target_path());
+          LaunchChromeBrowser(installer_state.target_path());
       } else if ((install_status == NEW_VERSION_UPDATED) ||
                  (install_status == IN_USE_UPDATED)) {
         const Product& chrome = installer_state.product();

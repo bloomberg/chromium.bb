@@ -5,16 +5,9 @@
 #ifndef CHROME_INSTALLER_UTIL_PRODUCT_H_
 #define CHROME_INSTALLER_UTIL_PRODUCT_H_
 
-#include <stdint.h>
-
 #include "base/macros.h"
 
 class BrowserDistribution;
-
-namespace base {
-class CommandLine;
-class FilePath;
-}
 
 namespace installer {
 
@@ -36,19 +29,6 @@ class Product {
   BrowserDistribution* distribution() const {
     return distribution_;
   }
-
-  // Launches Chrome without waiting for it to exit.
-  bool LaunchChrome(const base::FilePath& application_path) const;
-
-  // Launches Chrome with given command line, waits for Chrome indefinitely
-  // (until it terminates), and gets the process exit code if available.
-  // The function returns true as long as Chrome is successfully launched.
-  // The status of Chrome at the return of the function is given by exit_code.
-  // NOTE: The 'options' CommandLine object should only contain parameters.
-  // The program part will be ignored.
-  bool LaunchChromeAndWait(const base::FilePath& application_path,
-                           const base::CommandLine& options,
-                           int32_t* exit_code) const;
 
  protected:
   BrowserDistribution* const distribution_;
