@@ -134,8 +134,9 @@ class CiceroneClientImpl : public CiceroneClient {
       return;
     }
 
+    constexpr int kCreateLxdContainerTimeoutMs = 15 * 1000;
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kCreateLxdContainerTimeoutMs,
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::CreateLxdContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -155,8 +156,9 @@ class CiceroneClientImpl : public CiceroneClient {
       return;
     }
 
+    constexpr int kStartLxdContainerTimeoutMs = 25 * 1000;
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kStartLxdContainerTimeoutMs,
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::StartLxdContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

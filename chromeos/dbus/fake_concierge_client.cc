@@ -74,16 +74,6 @@ void FakeConciergeClient::StopVm(
       FROM_HERE, base::BindOnce(std::move(callback), stop_vm_response_));
 }
 
-void FakeConciergeClient::StartContainer(
-    const vm_tools::concierge::StartContainerRequest& request,
-    DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback) {
-  start_container_called_ = true;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), start_container_response_));
-}
-
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -119,10 +109,6 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   stop_vm_response_.Clear();
   stop_vm_response_.set_success(true);
-
-  start_container_response_.Clear();
-  start_container_response_.set_status(
-      vm_tools::concierge::CONTAINER_STATUS_RUNNING);
 
   container_ssh_keys_response_.Clear();
   container_ssh_keys_response_.set_container_public_key("pubkey");
