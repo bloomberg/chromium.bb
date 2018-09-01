@@ -134,7 +134,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnBeforeRedirectInternal(URLRequest* request,
                                         const GURL& new_location);
 
-  virtual void OnResponseStartedInternal(URLRequest* request);
+  virtual void OnResponseStartedInternal(URLRequest* request, int net_error);
 
   virtual void OnNetworkBytesReceivedInternal(URLRequest* request,
                                               int64_t bytes_received);
