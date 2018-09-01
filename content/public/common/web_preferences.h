@@ -300,7 +300,7 @@ struct CONTENT_EXPORT WebPreferences {
   AutoplayPolicy autoplay_policy;
 
   // Network quality threshold below which resources from iframes are assigned
-  // lowest priority.
+  // either kVeryLow or kVeryLow Blink priority.
   net::EffectiveConnectionType low_priority_iframes_threshold;
 
   // Whether Picture-in-Picture is enabled.
