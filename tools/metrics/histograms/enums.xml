@@ -29128,6 +29128,7 @@ from previous Chrome versions.
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
+  <int value="17689762" label="crostini-files"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
