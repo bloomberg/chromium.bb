@@ -6,14 +6,24 @@ import urllib
 
 from core import benchmark_finders
 
+
+UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
+  'experimental.startup.android.coldish',
+  'experimental.startup.mobile',
+])
+
+
 _SHARD_MAP_DIR = os.path.join(os.path.dirname(__file__), 'shard_maps')
+
 
 _ALL_TELEMETRY_BENCHMARKS_BY_NAMES= dict(
     (b.Name(), b) for b in benchmark_finders.GetAllBenchmarks())
 
 
 _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS = frozenset(
-    s for s in benchmark_finders.GetAllPerfBenchmarks())
+    s for s in benchmark_finders.GetAllPerfBenchmarks() if s.Name() not in
+    UNSCHEDULED_TELEMETRY_BENCHMARKS)
+
 
 _ANDROID_GO_BENCHMARK_NAMES = {
     'memory.top_10_mobile',

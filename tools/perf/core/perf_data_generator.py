@@ -34,12 +34,6 @@ from telemetry import decorators
 from py_utils import discover
 
 
-_UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
-  'experimental.startup.android.coldish',
-  'experimental.startup.mobile',
-  'blink_perf.accessibility',
-  ])
-
 # Additional compile targets to add to builders.
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
@@ -604,7 +598,7 @@ def current_benchmarks():
   for b in discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values():
-    if not b.Name() in _UNSCHEDULED_TELEMETRY_BENCHMARKS:
+    if not b.Name() in bot_platforms.UNSCHEDULED_TELEMETRY_BENCHMARKS:
       all_benchmarks.append(b)
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
