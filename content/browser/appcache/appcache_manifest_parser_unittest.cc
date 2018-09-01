@@ -447,7 +447,8 @@ TEST(AppCacheManifestParserTest, UnusualUtf8) {
                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
                             manifest));
   base::hash_set<std::string> urls = manifest.explicit_urls;
-  EXPECT_TRUE(urls.find("http://bad.com/%EF%BF%BDinvalidutf8") != urls.end());
+  EXPECT_TRUE(urls.find("http://bad.com/%EF%BF%BDinvalidutf8") != urls.end())
+      << "manifest byte stream was passed through, not UTF-8-decoded";
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
 }
 
