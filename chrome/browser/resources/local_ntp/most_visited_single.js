@@ -8,6 +8,24 @@
 
 
 /**
+ * Enum for key codes.
+ * @enum {int}
+ * @const
+ */
+const KEYCODES = {
+  BACKSPACE: 8,
+  DELETE: 46,
+  DOWN: 40,
+  ENTER: 13,
+  ESC: 27,
+  LEFT: 37,
+  RIGHT: 39,
+  SPACE: 32,
+  TAB: 9,
+  UP: 38,
+};
+
+/**
  * Enum for ids.
  * @enum {string}
  * @const
@@ -529,30 +547,30 @@ var renderMostVisitedTile = function(data) {
   });
 
   tile.addEventListener('keydown', function(event) {
-    if (event.keyCode == 46 /* DELETE */ ||
-        event.keyCode == 8 /* BACKSPACE */) {
+    if (event.keyCode === KEYCODES.DELETE ||
+        event.keyCode === KEYCODES.BACKSPACE) {
       event.preventDefault();
       event.stopPropagation();
       blacklistTile(this);
     } else if (
-        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
+        event.keyCode === KEYCODES.ENTER|| event.keyCode === KEYCODES.SPACE) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
       // specify the direction of movement
       var inArrowDirection = function(origin, target) {
-        return (event.keyCode == 37 /* LEFT */ &&
-                origin.offsetTop == target.offsetTop &&
+        return (event.keyCode === KEYCODES.LEFT &&
+                origin.offsetTop === target.offsetTop &&
                 origin.offsetLeft > target.offsetLeft) ||
-            (event.keyCode == 38 /* UP */ &&
+            (event.keyCode === KEYCODES.UP &&
              origin.offsetTop > target.offsetTop &&
-             origin.offsetLeft == target.offsetLeft) ||
-            (event.keyCode == 39 /* RIGHT */ &&
-             origin.offsetTop == target.offsetTop &&
+             origin.offsetLeft === target.offsetLeft) ||
+            (event.keyCode === KEYCODES.RIGHT &&
+             origin.offsetTop === target.offsetTop &&
              origin.offsetLeft < target.offsetLeft) ||
-            (event.keyCode == 40 /* DOWN */ &&
+            (event.keyCode === KEYCODES.DOWN &&
              origin.offsetTop < target.offsetTop &&
-             origin.offsetLeft == target.offsetLeft);
+             origin.offsetLeft === target.offsetLeft);
       };
 
       var nonEmptyTiles = document.querySelectorAll('#mv-tiles .mv-tile');
@@ -689,21 +707,21 @@ function renderMaterialDesignTile(data) {
           data.dataGenerationTime);
     }
   });
-  mdTile.addEventListener('keydown', function(event) {
-    if ((event.keyCode == 46 /* DELETE */ ||
-         event.keyCode == 8 /* BACKSPACE */) &&
+  mdTile.addEventListener('keyup', function(event) {
+    if ((event.keyCode === KEYCODES.DELETE ||
+         event.keyCode === KEYCODES.BACKSPACE) &&
         !data.isAddButton) {
       event.preventDefault();
       event.stopPropagation();
       blacklistTile(mdTileContainer);
     } else if (
-        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
+        event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
       event.preventDefault();
       this.click();
-    } else if (event.keyCode == 37 /* LEFT */) {
+    } else if (event.keyCode === KEYCODES.LEFT) {
       const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.max(Number(this.getAttribute('data-pos')) - 1, 0)].focus();
-    } else if (event.keyCode == 39 /* RIGHT */) {
+    } else if (event.keyCode === KEYCODES.RIGHT) {
       const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.min(
                 Number(this.getAttribute('data-pos')) + 1, tiles.length - 1)]
