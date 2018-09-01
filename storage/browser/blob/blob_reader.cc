@@ -139,7 +139,7 @@ BlobReader::Status BlobReader::ReadSideData(const StatusCallback& done) {
   const int disk_cache_side_stream_index = item->disk_cache_side_stream_index();
   const int side_data_size =
       item->disk_cache_entry()->GetDataSize(disk_cache_side_stream_index);
-  side_data_ = new net::IOBufferWithSize(side_data_size);
+  side_data_ = base::MakeRefCounted<net::IOBufferWithSize>(side_data_size);
   net_error_ = net::OK;
   const int result = item->disk_cache_entry()->ReadData(
       disk_cache_side_stream_index, 0, side_data_.get(), side_data_size,
@@ -247,7 +247,7 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
 
   // Keep track of the buffer.
   DCHECK(!read_buf_.get());
-  read_buf_ = new net::DrainableIOBuffer(buffer, dest_size);
+  read_buf_ = base::MakeRefCounted<net::DrainableIOBuffer>(buffer, dest_size);
 
   Status status = ReadLoop(bytes_read);
   if (status == Status::IO_PENDING)

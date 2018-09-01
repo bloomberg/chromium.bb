@@ -170,7 +170,8 @@ TEST_F(LocalFileStreamWriterTest, CancelWrite) {
   base::FilePath path = CreateFileWithContent("file_a", "foobar");
   std::unique_ptr<LocalFileStreamWriter> writer(CreateWriter(path, 0));
 
-  scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer("xxx"));
+  scoped_refptr<net::StringIOBuffer> buffer(
+      base::MakeRefCounted<net::StringIOBuffer>("xxx"));
   int result =
       writer->Write(buffer.get(), buffer->size(), base::Bind(&NeverCalled));
   ASSERT_EQ(net::ERR_IO_PENDING, result);

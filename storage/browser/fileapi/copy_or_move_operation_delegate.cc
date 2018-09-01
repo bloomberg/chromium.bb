@@ -609,7 +609,7 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
       writer_(std::move(writer)),
       flush_policy_(flush_policy),
       file_progress_callback_(file_progress_callback),
-      io_buffer_(new net::IOBufferWithSize(buffer_size)),
+      io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(buffer_size)),
       num_copied_bytes_(0),
       previous_flush_offset_(0),
       min_progress_callback_invocation_span_(
