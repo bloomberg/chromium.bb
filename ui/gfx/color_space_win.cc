@@ -132,8 +132,9 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
 }
 
 DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
-    const ColorSpace& color_space) {
-  if (color_space.matrix_ == gfx::ColorSpace::MatrixID::RGB) {
+    const ColorSpace& color_space,
+    bool force_yuv) {
+  if (color_space.matrix_ == gfx::ColorSpace::MatrixID::RGB && !force_yuv) {
     // For RGB, we default to FULL
     if (color_space.range_ == gfx::ColorSpace::RangeID::LIMITED) {
       if (color_space.primaries_ == gfx::ColorSpace::PrimaryID::BT2020) {

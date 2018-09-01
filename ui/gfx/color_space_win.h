@@ -27,7 +27,14 @@ namespace gfx {
 class COLOR_SPACE_EXPORT ColorSpaceWin {
  public:
   static DXVA2_ExtendedFormat GetExtendedFormat(const ColorSpace& color_space);
-  static DXGI_COLOR_SPACE_TYPE GetDXGIColorSpace(const ColorSpace& color_space);
+
+  // Returns a DXGI_COLOR_SPACE value based on the primaries and transfer
+  // function of |color_space|. If the color space's MatrixID is RGB, then the
+  // returned color space is also RGB unless |force_yuv| is true in which case
+  // it is a YUV color space.
+  static DXGI_COLOR_SPACE_TYPE GetDXGIColorSpace(const ColorSpace& color_space,
+                                                 bool force_yuv = false);
+
   static D3D11_VIDEO_PROCESSOR_COLOR_SPACE GetD3D11ColorSpace(
       const ColorSpace& color_space);
 };
