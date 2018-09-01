@@ -12,10 +12,6 @@
 
 class BrowserView;
 
-namespace base {
-class TimeDelta;
-}
-
 // The 'app menu' button for the hosted app.
 class HostedAppMenuButton : public AppMenuButton,
                             public views::MenuButtonListener {
@@ -27,7 +23,7 @@ class HostedAppMenuButton : public AppMenuButton,
   void SetIconColor(SkColor color);
 
   // Fades the menu button highlight on and off.
-  void StartHighlightAnimation(base::TimeDelta duration);
+  void StartHighlightAnimation();
 
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::MenuButton* source,

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/hit_test.h"
@@ -20,8 +21,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/window/hit_test_utils.h"
-
-constexpr int kMenuHighlightFadeDurationMs = 800;
 
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
     : AppMenuButton(this), browser_view_(browser_view) {
@@ -54,14 +53,15 @@ void HostedAppMenuButton::SetIconColor(SkColor color) {
            gfx::CreateVectorIcon(kBrowserToolsIcon, color));
 }
 
-void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
-  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+void HostedAppMenuButton::StartHighlightAnimation() {
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(
+      HostedAppButtonContainer::kOriginFadeInDuration.InMilliseconds());
   GetInkDrop()->SetHovered(true);
   GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
 
   highlight_off_timer_.Start(FROM_HERE,
-                             duration - base::TimeDelta::FromMilliseconds(
-                                            kMenuHighlightFadeDurationMs),
+                             HostedAppButtonContainer::kOriginFadeInDuration +
+                                 HostedAppButtonContainer::kOriginPauseDuration,
                              this, &HostedAppMenuButton::FadeHighlightOff);
 }
 
@@ -77,7 +77,8 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
 
 void HostedAppMenuButton::FadeHighlightOff() {
   if (!ShouldEnterHoveredState()) {
-    GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+    GetInkDrop()->SetHoverHighlightFadeDurationMs(
+        HostedAppButtonContainer::kOriginFadeOutDuration.InMilliseconds());
     GetInkDrop()->SetHovered(false);
     GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
   }

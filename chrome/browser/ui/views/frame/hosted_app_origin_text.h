@@ -17,7 +17,7 @@ namespace views {
 class Label;
 }
 
-// A URL's origin text with a slide in/out animation.
+// A URL's origin text with a fade in/out animation.
 class HostedAppOriginText : public views::View {
  public:
   explicit HostedAppOriginText(Browser* browser);
@@ -25,11 +25,8 @@ class HostedAppOriginText : public views::View {
 
   void SetTextColor(SkColor color);
 
-  // Slides the text in and out.
-  void StartSlideAnimation();
-
-  // How long the slide in+out animation takes.
-  static base::TimeDelta AnimationDuration();
+  // Fades the text in and out.
+  void StartFadeAnimation();
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
