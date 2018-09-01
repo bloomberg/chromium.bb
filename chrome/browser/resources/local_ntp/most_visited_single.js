@@ -790,6 +790,10 @@ function renderMaterialDesignTile(data) {
       navigator.userAgent.indexOf('CrOS') > -1) {
     mdTitle.style.fontWeight = 400;
   }
+  // Windows font family fallback to Segoe
+  if (navigator.userAgent.indexOf('Windows') > -1) {
+    mdTitle.style.fontFamily = 'Segoe UI';
+  }
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
   mdTile.appendChild(mdTileInner);

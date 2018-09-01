@@ -485,7 +485,7 @@ body.dark-theme .md-tile-container:active + .md-menu::after {
 
 .md-title {
   color: rgba(33, 32, 36, 0.86);
-  font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
+  font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
   height: var(--md-title-height);
