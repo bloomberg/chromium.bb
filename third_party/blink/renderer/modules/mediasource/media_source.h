@@ -147,7 +147,7 @@ class MediaSource final : public EventTargetWithInlineData,
   std::unique_ptr<WebMediaSource> web_media_source_;
   AtomicString ready_state_;
   Member<EventQueue> async_event_queue_;
-  WeakMember<HTMLMediaElement> attached_element_;
+  Member<HTMLMediaElement> attached_element_;
 
   Member<SourceBufferList> source_buffers_;
   Member<SourceBufferList> active_source_buffers_;
