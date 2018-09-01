@@ -1331,6 +1331,7 @@ enum HistogramValue {
   AUTOFILLPRIVATE_MIGRATECREDITCARDS = 1268,
   AUTOTESTPRIVATE_ISAPPSHOWN = 1269,
   ENTERPRISEREPORTINGPRIVATE_GETDEVICEID = 1270,
+  ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO = 1271,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

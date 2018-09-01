@@ -16582,6 +16582,8 @@ Called by update_net_error_codes.py.-->
   <int value="1268" label="AUTOFILLPRIVATE_MIGRATECREDITCARDS"/>
   <int value="1269" label="AUTOTESTPRIVATE_ISAPPSHOWN"/>
   <int value="1270" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEID"/>
+  <int value="1271"
+      label="ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -17028,6 +17030,7 @@ Called by update_net_error_codes.py.-->
   <int value="213" label="kFileSystemRequestDownloads"/>
   <int value="214" label="kSystemPowerSource"/>
   <int value="215" label="kArcAppsPrivate"/>
+  <int value="216" label="kEnterpriseHardwarePlatform"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
