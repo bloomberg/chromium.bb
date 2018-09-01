@@ -103,7 +103,10 @@ source_set("gles2_cmd_helper_sources") {
     "gles2_cmd_helper_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_gles2_implementation" ]
+  configs += [
+    "//build/config/compiler:no_shorten_64_warnings",
+    "//gpu:gpu_gles2_implementation",
+  ]
 
   deps = [
     ":client",
