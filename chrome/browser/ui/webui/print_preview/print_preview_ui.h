@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
@@ -86,6 +87,11 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
                                  const gfx::Rect& printable_area,
                                  bool has_custom_page_size_style,
                                  int request_id);
+
+  // Notifies the Web UI that the 0-based page |page_number| rendering is being
+  // processed and an OnPendingPreviewPage() call is imminent. Returns whether
+  // |page_number| is the expected page.
+  bool OnPendingPreviewPage(int page_number);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
   // |preview_request_id| indicates which request resulted in this response.
@@ -209,6 +215,12 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Store the initiator title, used for populating the print preview dialog
   // title.
   base::string16 initiator_title_;
+
+  // The list of 0-based page numbers that will be rendered.
+  std::vector<int> pages_to_render_;
+
+  // Index into |pages_to_render_| for the page number to expect.
+  size_t pages_to_render_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

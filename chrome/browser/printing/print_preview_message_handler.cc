@@ -55,6 +55,10 @@ bool ShouldUseCompositor(PrintPreviewUI* print_preview_ui) {
   return IsOopifEnabled() && print_preview_ui->source_is_modifiable();
 }
 
+bool IsValidPageNumber(int page_number, int page_count) {
+  return page_number >= 0 && page_number < page_count;
+}
+
 }  // namespace
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
@@ -99,9 +103,16 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
 void PrintPreviewMessageHandler::OnDidStartPreview(
     const PrintHostMsg_DidStartPreview_Params& params,
     const PrintHostMsg_PreviewIds& ids) {
-  if (params.page_count <= 0) {
+  if (params.page_count <= 0 || params.pages_to_render.empty()) {
     NOTREACHED();
     return;
+  }
+
+  for (int page_number : params.pages_to_render) {
+    if (!IsValidPageNumber(page_number, params.page_count)) {
+      NOTREACHED();
+      return;
+    }
   }
 
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
@@ -123,6 +134,11 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
+
+  if (!print_preview_ui->OnPendingPreviewPage(page_number)) {
+    NOTREACHED();
+    return;
+  }
 
   if (ShouldUseCompositor(print_preview_ui)) {
     // Don't bother compositing if this request has been cancelled already.

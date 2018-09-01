@@ -285,6 +285,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidStartPreview_Params)
   // user selected to print.)
   IPC_STRUCT_MEMBER(int, page_count)
 
+  // The list of 0-based page numbers that will be rendered.
+  IPC_STRUCT_MEMBER(std::vector<int>, pages_to_render)
+
   // Scaling % to fit to page
   IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
 IPC_STRUCT_END()

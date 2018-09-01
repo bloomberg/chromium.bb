@@ -453,6 +453,7 @@ class PrintRenderFrameHelper
     const blink::WebNode& prepared_node() const;
 
     int total_page_count() const;
+    const std::vector<int>& pages_to_render() const;
     MetafileSkia* metafile();
     int last_error() const;
 
