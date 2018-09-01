@@ -70,7 +70,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
-  const int shelf_size = ShelfConstants::shelf_size();
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
@@ -79,7 +78,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  SetSize(gfx::Size(shelf_size, shelf_size));
+  SetSize(gfx::Size(kShelfControlSizeNewUi, kShelfControlSizeNewUi));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(Button::NOTIFY_ON_PRESS);
 

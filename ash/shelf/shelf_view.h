@@ -383,7 +383,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void OnPaint(gfx::Canvas* canvas) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
@@ -585,7 +584,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // A reference to the view used as a separator between pinned and unpinned
   // items.
-  views::Separator* separator_;
+  views::Separator* separator_ = nullptr;
+
+  // A view to draw a background behind the app list and back buttons.
+  // Owned by the view hierarchy.
+  views::View* back_and_app_list_background_ = nullptr;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 
