@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 77 tests; 26 PASS, 51 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 73 tests; 26 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL new RTCPeerConnection() should have default configuration.iceServers of undefined assert_equals: expected (undefined) undefined but got (object) []
 PASS new RTCPeerConnection(config) - { iceServers: null } should throw TypeError
 PASS setConfiguration(config) - { iceServers: null } should throw TypeError
@@ -13,8 +13,6 @@ PASS new RTCPeerConnection(config) - { iceServers: [undefined] } should throw Ty
 PASS setConfiguration(config) - { iceServers: [undefined] } should throw TypeError
 PASS new RTCPeerConnection(config) - { iceServers: [{}] } should throw TypeError
 PASS setConfiguration(config) - { iceServers: [{}] } should throw TypeError
-FAIL new RTCPeerConnection(config) - with empty list urls should succeed assert_equals: expected 1 but got 0
-FAIL setConfiguration(config) - with empty list urls should succeed assert_equals: expected 1 but got 0
 FAIL new RTCPeerConnection(config) - with stun server should succeed assert_equals: expected (string) "password" but got (undefined) undefined
 FAIL setConfiguration(config) - with stun server should succeed assert_equals: expected (string) "password" but got (undefined) undefined
 FAIL new RTCPeerConnection(config) - with stun server array should succeed assert_equals: expected (string) "password" but got (undefined) undefined
@@ -63,10 +61,14 @@ FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError a
       makePc({ iceServers: [{
         urls: 'stun://example.org/foo?x=y'
       }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." that is not a DOMException SyntaxError: property "code" is equal to 0, expected 12
-FAIL new RTCPeerConnection(config) - with empty urls and credentialType password should succeed assert_equals: expected 1 but got 0
-FAIL setConfiguration(config) - with empty urls and credentialType password should succeed assert_equals: expected 1 but got 0
-FAIL new RTCPeerConnection(config) - with empty urls and credentialType oauth should succeed assert_equals: expected 1 but got 0
-FAIL setConfiguration(config) - with empty urls and credentialType oauth should succeed assert_equals: expected 1 but got 0
+FAIL new RTCPeerConnection(config) - with empty urls should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: []
+      }] })" did not throw
+FAIL setConfiguration(config) - with empty urls should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: []
+      }] })" did not throw
 FAIL new RTCPeerConnection(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>
       makePc({ iceServers: [{
         urls: [],
