@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_host.h"
 
+#include <type_traits>
 #include <utility>
 
 #include "base/logging.h"
@@ -839,6 +840,21 @@ TEST_F(DriveFsHostTest, OnError_ForwardToObservers) {
   testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(error, observed_error);
+}
+
+TEST_F(DriveFsHostTest, OnError_IgnoreUnknownErrorTypes) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  EXPECT_CALL(observer, OnError(_)).Times(0);
+  delegate_ptr_->OnError(mojom::DriveError::New(
+      static_cast<mojom::DriveError::Type>(
+          static_cast<std::underlying_type_t<mojom::DriveError::Type>>(
+              mojom::DriveError::Type::kMaxValue) +
+          1),
+      base::FilePath("/foo")));
+  delegate_ptr_.FlushForTesting();
 }
 
 }  // namespace

@@ -165,6 +165,25 @@ void DriveFsEventRouter::OnFilesChanged(
   }
 }
 
+void DriveFsEventRouter::OnError(const drivefs::mojom::DriveError& error) {
+  file_manager_private::DriveSyncErrorEvent event;
+  switch (error.type) {
+    case drivefs::mojom::DriveError::Type::kCantUploadStorageFull:
+      event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE;
+      break;
+  }
+  for (const auto& extension_id : GetEventListenerExtensionIds(
+           file_manager_private::OnDriveSyncError::kEventName)) {
+    event.file_url =
+        ConvertDrivePathToFileSystemUrl(error.path, extension_id).spec();
+    DispatchEventToExtension(
+        extension_id,
+        extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_SYNC_ERROR,
+        file_manager_private::OnDriveSyncError::kEventName,
+        file_manager_private::OnDriveSyncError::Create(event));
+  }
+}
+
 void DriveFsEventRouter::DispatchOnFileTransfersUpdatedEvent(
     const extensions::api::file_manager_private::FileTransferStatus& status) {
   for (const auto& extension_id : GetEventListenerExtensionIds(
