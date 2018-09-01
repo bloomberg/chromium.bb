@@ -58,6 +58,8 @@ if (is_win) {
       "installer_crash_reporting.h",
       "installer_state.cc",
       "installer_state.h",
+      "launch_chrome.cc",
+      "launch_chrome.h",
       "progress_calculator.cc",
       "progress_calculator.h",
       "setup_constants.cc",
