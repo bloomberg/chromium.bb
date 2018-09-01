@@ -1984,6 +1984,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       A list of HWTest result dictionaries, where each dictionary contains keys
         id, build_id, test_name and status.
     """
+    if not build_ids:
+      raise AssertionError("Build ID's are empty.")
+
     q = ('SELECT * from hwTestResultTable WHERE build_id IN (%s)' %
          ','.join(str(int(x)) for x in build_ids))
     results = self._Execute(q).fetchall()

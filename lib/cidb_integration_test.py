@@ -1119,6 +1119,8 @@ class HWTestResultTableTest(CIDBIntegrationTest):
 
     self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
 
+    self.assertRaises(AssertionError, bot_db.GetHWTestResultsForBuilds([]))
+
 
 class BuildRequestTableTest(CIDBIntegrationTest):
   """Tests for BuildRequestTable."""
