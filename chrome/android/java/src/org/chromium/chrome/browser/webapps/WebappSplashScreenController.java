@@ -243,17 +243,21 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
         DisplayMetrics metrics =
                 ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
+        int displayIconSmallestEdge = 0;
+        if (displayIcon != null) {
+            displayIconSmallestEdge = Math.min(
+                    displayIcon.getScaledWidth(metrics), displayIcon.getScaledHeight(metrics));
+        }
 
         // Inflate the correct layout for the image.
         int layoutId;
-        if (displayIcon == null || displayIcon.getScaledWidth(metrics) < minimiumSizeThreshold
+        if (displayIconSmallestEdge < minimiumSizeThreshold
                 || (displayIcon == webappInfo.icon() && webappInfo.isIconGenerated())) {
             mWebappUma.recordSplashscreenIconType(WebappUma.SplashScreenIconType.NONE);
             layoutId = R.layout.webapp_splash_screen_no_icon;
         } else {
             // The size of the splash screen image determines which layout to use.
-            boolean isUsingSmallSplashImage = displayIcon.getScaledWidth(metrics) <= bigThreshold
-                    || displayIcon.getScaledHeight(metrics) <= bigThreshold;
+            boolean isUsingSmallSplashImage = displayIconSmallestEdge <= bigThreshold;
             if (isUsingSmallSplashImage) {
                 layoutId = R.layout.webapp_splash_screen_small;
             } else {
@@ -272,7 +276,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
             }
             mWebappUma.recordSplashscreenIconType(splashScreenIconType);
             mWebappUma.recordSplashscreenIconSize(
-                    Math.round(displayIcon.getWidth() / resources.getDisplayMetrics().density));
+                    Math.round(displayIconSmallestEdge / resources.getDisplayMetrics().density));
         }
 
         ViewGroup subLayout =
