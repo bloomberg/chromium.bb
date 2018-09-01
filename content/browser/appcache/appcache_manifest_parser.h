@@ -61,12 +61,11 @@ enum ParseMode {
   PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
 };
 
-CONTENT_EXPORT bool ParseManifest(
-    const GURL& manifest_url,
-    const char* data,
-    int length,
-    ParseMode parse_mode,
-    AppCacheManifest& manifest);
+CONTENT_EXPORT bool ParseManifest(const GURL& manifest_url,
+                                  const char* manifest_bytes,
+                                  int manifest_size,
+                                  ParseMode parse_mode,
+                                  AppCacheManifest& manifest);
 
 }  // namespace content
 
