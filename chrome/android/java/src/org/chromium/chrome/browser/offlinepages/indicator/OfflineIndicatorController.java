@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
@@ -19,11 +20,16 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 /**
  * Class that controls when to show the offline indicator.
@@ -52,6 +58,7 @@ public class OfflineIndicatorController
     // Set to true if the offline indicator has been shown once.
     private boolean mHasOfflineIndicatorShown = false;
     private ConnectivityDetector mConnectivityDetector;
+    private ChromeActivity mObservedActivity = null;
 
     private boolean mIsOnline = false;
     // Last time when the online state is detected. It is recorded as milliseconds since boot.
@@ -140,13 +147,70 @@ public class OfflineIndicatorController
             Tab tab = chromeActivity.getActivityTab();
             if (tab == null) return false;
             if (tab.isShowingErrorPage()) return false;
+            if (OfflinePageUtils.isOfflinePage(tab)) return false;
+            if (TextUtils.equals(tab.getUrl(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+                return false;
+            }
         }
 
         return true;
     }
 
+    /**
+     * Delay showing the offline indicator UI under some circumstances, i.e. current tab is still
+     * being loaded.
+     * Returns true if the offline indicator UI is delayed to be shown.
+     */
+    private boolean delayShowingOfflineIndicatorIfNeeded(Activity activity) {
+        if (!(activity instanceof ChromeActivity)) return false;
+
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        Tab tab = chromeActivity.getActivityTab();
+        if (tab == null) return false;
+
+        WebContents webContents = tab.getWebContents();
+        if (webContents != null && !webContents.isLoading()) return false;
+
+        // If the tab is still being loaded, we should wait until it finishes.
+        if (mObservedActivity == chromeActivity) return true;
+        mObservedActivity = chromeActivity;
+        TabObserver tabObserver = new EmptyTabObserver() {
+            @Override
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+                mObservedActivity = null;
+                tab.removeObserver(this);
+                doUpdate();
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                mObservedActivity = null;
+                tab.removeObserver(this);
+                doUpdate();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mObservedActivity = null;
+                tab.removeObserver(this);
+                doUpdate();
+            }
+
+            private void doUpdate() {
+                updateOfflineIndicator(mConnectivityDetector.getConnectionState()
+                        == ConnectivityDetector.ConnectionState.VALIDATED);
+            }
+        };
+        tab.addObserver(tabObserver);
+        return true;
+    }
+
     private void showOfflineIndicator(Activity activity, SnackbarManager snackbarManager) {
-        if (mIsShowingOfflineIndicator || !canShowOfflineIndicator(activity)) return;
+        if (mIsShowingOfflineIndicator) return;
+
+        if (delayShowingOfflineIndicatorIfNeeded(activity)) return;
+
+        if (!canShowOfflineIndicator(activity)) return;
 
         // If this is the first time to show offline indicator, show it. Otherwise, it will only
         // be shown if the user has been continuously online for the required duration, then goes
