@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
-#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
@@ -93,7 +92,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -511,9 +509,6 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     return std::make_unique<UpdateRequiredScreen>(
         this, oobe_ui->GetUpdateRequiredScreenView());
-  } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
-    return std::make_unique<AssistantOptInFlowScreen>(
-        this, oobe_ui->GetAssistantOptInFlowScreenView());
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     return std::make_unique<DiscoverScreen>(this,
                                             oobe_ui->GetDiscoverScreenView());
@@ -716,7 +711,7 @@ void WizardController::ShowArcTermsOfServiceScreen() {
           arc::prefs::kArcTermsShownInOobe, true);
     }
   } else {
-    ShowAssistantOptInFlowScreen();
+    ShowUserImageScreen();
   }
 }
 
@@ -826,20 +821,6 @@ void WizardController::ShowWaitForContainerReadyScreen() {
 
 void WizardController::ShowUpdateRequiredScreen() {
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_UPDATE_REQUIRED));
-}
-
-void WizardController::ShowAssistantOptInFlowScreen() {
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  if (arc::IsAssistantAllowedForProfile(
-          ProfileManager::GetActiveUserProfile()) ==
-      ash::mojom::AssistantAllowedState::ALLOWED) {
-    UpdateStatusAreaVisibilityForScreen(
-        OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
-    SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW));
-  }
-#else
-  ShowUserImageScreen();
-#endif
 }
 
 void WizardController::ShowDiscoverScreen() {
@@ -1111,8 +1092,8 @@ void WizardController::OnArcTermsOfServiceSkipped() {
     return;
   }
   // If the user finished with the PlayStore Terms of Service, advance to the
-  // assistant opt-in flow screen.
-  ShowAssistantOptInFlowScreen();
+  // user image screen.
+  ShowUserImageScreen();
 }
 
 void WizardController::OnArcTermsOfServiceAccepted() {
@@ -1128,11 +1109,11 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 
   // If the feature flag for recommend app screen is on, show it after the user
   // finished with the PlayStore Terms of Service. Otherwise, advance to the
-  // assistant opt-in flow screen.
+  // user image screen.
   if (ShouldShowRecommendAppsScreen()) {
     ShowRecommendAppsScreen();
   } else {
-    ShowAssistantOptInFlowScreen();
+    ShowUserImageScreen();
   }
 }
 
@@ -1143,7 +1124,7 @@ void WizardController::OnArcTermsOfServiceBack() {
 }
 
 void WizardController::OnRecommendAppsSkipped() {
-  ShowAssistantOptInFlowScreen();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnRecommendAppsSelected() {
@@ -1151,7 +1132,7 @@ void WizardController::OnRecommendAppsSelected() {
 }
 
 void WizardController::OnAppDownloadingFinished() {
-  ShowAssistantOptInFlowScreen();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnVoiceInteractionValuePropSkipped() {
@@ -1169,10 +1150,6 @@ void WizardController::OnVoiceInteractionValuePropAccepted() {
 void WizardController::OnWaitForContainerReadyFinished() {
   OnOobeFlowFinished();
   StartVoiceInteractionSetupWizard();
-}
-
-void WizardController::OnAssistantOptInFlowFinished() {
-  ShowUserImageScreen();
 }
 
 void WizardController::OnControllerPairingFinished() {
@@ -1515,8 +1492,6 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowWaitForContainerReadyScreen();
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     ShowUpdateRequiredScreen();
-  } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
-    ShowAssistantOptInFlowScreen();
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     ShowDiscoverScreen();
   } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
@@ -1698,9 +1673,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::MARKETING_OPT_IN_FINISHED:
       OnMarketingOptInFinished();
-      break;
-    case ScreenExitCode::ASSISTANT_OPTIN_FLOW_FINISHED:
-      OnAssistantOptInFlowFinished();
       break;
     default:
       NOTREACHED();

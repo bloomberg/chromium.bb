@@ -1955,8 +1955,6 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/login/arc_kiosk_splash_screen_handler.h",
       "webui/chromeos/login/arc_terms_of_service_screen_handler.cc",
       "webui/chromeos/login/arc_terms_of_service_screen_handler.h",
-      "webui/chromeos/login/assistant_optin_flow_screen_handler.cc",
-      "webui/chromeos/login/assistant_optin_flow_screen_handler.h",
       "webui/chromeos/login/auto_enrollment_check_screen_handler.cc",
       "webui/chromeos/login/auto_enrollment_check_screen_handler.h",
       "webui/chromeos/login/base_screen_handler.cc",
