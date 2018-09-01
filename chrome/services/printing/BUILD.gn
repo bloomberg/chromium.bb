@@ -19,7 +19,6 @@ source_set("lib") {
     "//base",
     "//components/crash/core/common:crash_key",
     "//components/pwg_encoder",
-    "//components/services/pdf_compositor/public/cpp:utils",
     "//mojo/public/cpp/bindings",
   ]
 

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
@@ -267,16 +267,12 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintFrame_Params)
 IPC_STRUCT_TRAITS_END()
 
 // Holds the printed content information.
-// The printed content is in shared memory, and passed by its handle
-// and data size.
+// The printed content is in shared memory, and passed as a region.
 // A map on out-of-process subframe contents is also included so the printed
 // content can be composited as needed.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintContent_Params)
-  // A shared memory handle to metafile data.
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
-
-  // Size of metafile data.
-  IPC_STRUCT_MEMBER(uint32_t, data_size)
+  // A shared memory region for the metafile data.
+  IPC_STRUCT_MEMBER(base::ReadOnlySharedMemoryRegion, metafile_data_region)
 
   // Content id to render frame proxy id mapping for out-of-process subframes.
   IPC_STRUCT_MEMBER(printing::ContentToProxyIdMap, subframe_content_info)
