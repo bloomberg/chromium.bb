@@ -46,6 +46,19 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
  public:
   static const char kViewClassName[];
 
+  // Timing parameters for the origin fade animation.
+  // These control how long it takes for the origin text and menu button
+  // highlight to fade in, pause then fade out.
+  static constexpr base::TimeDelta kOriginFadeInDuration =
+      base::TimeDelta::FromMilliseconds(800);
+  static constexpr base::TimeDelta kOriginPauseDuration =
+      base::TimeDelta::FromMilliseconds(2500);
+  static constexpr base::TimeDelta kOriginFadeOutDuration =
+      base::TimeDelta::FromMilliseconds(800);
+
+  // The total duration of the origin fade animation.
+  static const base::TimeDelta kOriginTotalDuration;
+
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
   HostedAppButtonContainer(views::Widget* widget,
@@ -70,7 +83,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
   // Duration to wait before starting the opening animation.
-  static const base::TimeDelta kTitlebarAnimationDelay;
+  static constexpr base::TimeDelta kTitlebarAnimationDelay =
+      base::TimeDelta::FromMilliseconds(750);
 
   // Methods for coordinate the titlebar animation (origin text slide, menu
   // highlight and icon fade in).

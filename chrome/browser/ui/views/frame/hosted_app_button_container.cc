@@ -73,8 +73,12 @@ int HorizontalPaddingBetweenItems() {
 const char HostedAppButtonContainer::kViewClassName[] =
     "HostedAppButtonContainer";
 
-const base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay =
-    base::TimeDelta::FromMilliseconds(750);
+constexpr base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeInDuration;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginPauseDuration;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
+const base::TimeDelta HostedAppButtonContainer::kOriginTotalDuration =
+    kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
 
 class HostedAppButtonContainer::ContentSettingsContainer
     : public views::View,
@@ -295,11 +299,10 @@ void HostedAppButtonContainer::StartTitlebarAnimation() {
   if (!ShouldAnimate())
     return;
 
-  hosted_app_origin_text_->StartSlideAnimation();
-  app_menu_button_->StartHighlightAnimation(
-      HostedAppOriginText::AnimationDuration());
+  hosted_app_origin_text_->StartFadeAnimation();
+  app_menu_button_->StartHighlightAnimation();
   icon_fade_in_delay_.Start(
-      FROM_HERE, HostedAppOriginText::AnimationDuration(), this,
+      FROM_HERE, kOriginTotalDuration, this,
       &HostedAppButtonContainer::FadeInContentSettingIcons);
 }
 
