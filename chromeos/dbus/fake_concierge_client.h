@@ -23,7 +23,7 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   void RemoveObserver(Observer* observer) override;
 
   // IsContainerStartupFailedSignalConnected must return true before
-  // StartContainer is called.
+  // StartLxdContainer is called.
   bool IsContainerStartupFailedSignalConnected() override;
 
   // Fake version of the method that creates a disk image for the Termina VM.
@@ -63,14 +63,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
               DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
       override;
 
-  // Fake version of the method that starts a Container inside an existing
-  // Termina VM. Sets start_container_called_. |callback| is called after the
-  // method call finishes.
-  void StartContainer(
-      const vm_tools::concierge::StartContainerRequest& request,
-      DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback)
-      override;
-
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -93,8 +85,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called() const { return start_termina_vm_called_; }
   // Indicates whether StopVm has been called
   bool stop_vm_called() const { return stop_vm_called_; }
-  // Indicates whether StartContainer has been called
-  bool start_container_called() const { return start_container_called_; }
   // Indicates whether GetContainerSshKeys has been called
   bool get_container_ssh_keys_called() const {
     return get_container_ssh_keys_called_;
@@ -126,11 +116,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
       const vm_tools::concierge::StopVmResponse& stop_vm_response) {
     stop_vm_response_ = stop_vm_response;
   }
-  void set_start_container_response(
-      const vm_tools::concierge::StartContainerResponse&
-          start_container_response) {
-    start_container_response_ = start_container_response;
-  }
   void set_container_ssh_keys_response(
       const vm_tools::concierge::ContainerSshKeysResponse&
           container_ssh_keys_response) {
@@ -148,7 +133,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool list_vm_disks_called_ = false;
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
-  bool start_container_called_ = false;
   bool get_container_ssh_keys_called_ = false;
   bool is_container_startup_failed_signal_connected_ = true;
 
@@ -157,7 +141,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   vm_tools::concierge::ListVmDisksResponse list_vm_disks_response_;
   vm_tools::concierge::StartVmResponse start_vm_response_;
   vm_tools::concierge::StopVmResponse stop_vm_response_;
-  vm_tools::concierge::StartContainerResponse start_container_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;

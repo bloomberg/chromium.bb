@@ -142,11 +142,11 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter>,
       return;
 
     CrostiniManager* crostini_manager = CrostiniManager::GetInstance();
-    // Go to StartContainerFinished immediately if testing.
+    // Skip to the end immediately if testing.
     if (crostini_manager->skip_restart_for_testing()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&CrostiniRestarter::StartContainerFinished,
+          base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
                          base::WrapRefCounted(this),
                          ConciergeClientResult::SUCCESS));
       return;
@@ -258,12 +258,43 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter>,
       FinishRestart(result);
       return;
     }
-    CrostiniManager::GetInstance()->StartContainer(
-        vm_name_, container_name_, container_username_, cryptohome_id_,
-        base::BindOnce(&CrostiniRestarter::StartContainerFinished, this));
+    CrostiniManager::GetInstance()->CreateLxdContainer(
+        vm_name_, container_name_, cryptohome_id_,
+        base::BindOnce(&CrostiniRestarter::CreateLxdContainerFinished, this));
   }
 
-  void StartContainerFinished(ConciergeClientResult result) {
+  void CreateLxdContainerFinished(ConciergeClientResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // TODO(timloh): Does this need an observer callback?
+    if (is_aborted_)
+      return;
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to Start Termina VM.";
+      FinishRestart(result);
+      return;
+    }
+    CrostiniManager::GetInstance()->StartLxdContainer(
+        vm_name_, container_name_, cryptohome_id_,
+        base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished, this));
+  }
+
+  void StartLxdContainerFinished(ConciergeClientResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // TODO(timloh): Does this need an observer callback?
+    if (is_aborted_)
+      return;
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to Start Termina VM.";
+      FinishRestart(result);
+      return;
+    }
+    CrostiniManager::GetInstance()->SetUpLxdContainerUser(
+        vm_name_, container_name_, cryptohome_id_, container_username_,
+        base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
+                       this));
+  }
+
+  void SetUpLxdContainerUserFinished(ConciergeClientResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Tell observers.
     for (auto& observer : observer_list_) {
@@ -487,14 +518,26 @@ bool CrostiniManager::IsVmRunning(Profile* profile, std::string vm_name) {
 bool CrostiniManager::IsContainerRunning(Profile* profile,
                                          std::string vm_name,
                                          std::string container_name) {
+  return IsContainerRunning(CryptohomeIdForProfile(profile), std::move(vm_name),
+                            std::move(container_name));
+}
+
+bool CrostiniManager::IsContainerRunning(std::string owner_id,
+                                         std::string vm_name,
+                                         std::string container_name) {
   auto range = running_containers_.equal_range(
-      std::make_pair(CryptohomeIdForProfile(profile), std::move(vm_name)));
+      std::make_pair(std::move(owner_id), std::move(vm_name)));
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second == container_name) {
       return true;
     }
   }
   return false;
+}
+
+void CrostiniManager::ResetForTesting() {
+  running_vms_.clear();
+  running_containers_.clear();
 }
 
 CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
@@ -851,11 +894,10 @@ void CrostiniManager::StopVm(Profile* profile,
                      std::move(callback)));
 }
 
-void CrostiniManager::StartContainer(std::string vm_name,
-                                     std::string container_name,
-                                     std::string container_username,
-                                     std::string cryptohome_id,
-                                     StartContainerCallback callback) {
+void CrostiniManager::CreateLxdContainer(std::string vm_name,
+                                         std::string container_name,
+                                         std::string owner_id,
+                                         CrostiniResultCallback callback) {
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -866,34 +908,105 @@ void CrostiniManager::StartContainer(std::string vm_name,
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
+  if (owner_id.empty()) {
+    LOG(ERROR) << "cryptohome_id is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (!GetCiceroneClient()->IsLxdContainerCreatedSignalConnected() ||
+      !GetCiceroneClient()->IsLxdContainerDownloadingSignalConnected()) {
+    LOG(ERROR)
+        << "Async call to CreateLxdContainer can't complete when signals "
+           "are not connected.";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  vm_tools::cicerone::CreateLxdContainerRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_owner_id(std::move(owner_id));
+  request.set_image_server(kCrostiniDefaultImageServerUrl);
+  request.set_image_alias(kCrostiniDefaultImageAlias);
+  GetCiceroneClient()->CreateLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnCreateLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), request.owner_id(),
+                     request.vm_name(), request.container_name(),
+                     std::move(callback)));
+}
+
+void CrostiniManager::StartLxdContainer(std::string vm_name,
+                                        std::string container_name,
+                                        std::string owner_id,
+                                        CrostiniResultCallback callback) {
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (owner_id.empty()) {
+    LOG(ERROR) << "cryptohome_id is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (!GetCiceroneClient()->IsContainerStartedSignalConnected() ||
+      !GetCiceroneClient()->IsContainerShutdownSignalConnected()) {
+    LOG(ERROR) << "Async call to StartLxdContainer can't complete when signals "
+                  "are not connected.";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  vm_tools::cicerone::StartLxdContainerRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_owner_id(std::move(owner_id));
+  GetCiceroneClient()->StartLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnStartLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), request.owner_id(),
+                     request.vm_name(), request.container_name(),
+                     std::move(callback)));
+}
+
+void CrostiniManager::SetUpLxdContainerUser(std::string vm_name,
+                                            std::string container_name,
+                                            std::string owner_id,
+                                            std::string container_username,
+                                            CrostiniResultCallback callback) {
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (owner_id.empty()) {
+    LOG(ERROR) << "cryptohome_id is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
   if (container_username.empty()) {
     LOG(ERROR) << "container_username is required";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
-  if (cryptohome_id.empty()) {
-    LOG(ERROR) << "cryptohome_id is required";
-    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
-    return;
-  }
-  if (!GetConciergeClient()->IsContainerStartupFailedSignalConnected() ||
-      !GetCiceroneClient()->IsContainerStartedSignalConnected() ||
-      !GetCiceroneClient()->IsContainerShutdownSignalConnected()) {
-    LOG(ERROR) << "Async call to StartContainer can't complete when signal "
-                  "is not connected.";
-    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
-    return;
-  }
-  vm_tools::concierge::StartContainerRequest request;
+  vm_tools::cicerone::SetUpLxdContainerUserRequest request;
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
+  request.set_owner_id(std::move(owner_id));
   request.set_container_username(std::move(container_username));
-  request.set_cryptohome_id(std::move(cryptohome_id));
-
-  GetConciergeClient()->StartContainer(
+  GetCiceroneClient()->SetUpLxdContainerUser(
       std::move(request),
-      base::BindOnce(&CrostiniManager::OnStartContainer,
-                     weak_ptr_factory_.GetWeakPtr(), request.cryptohome_id(),
+      base::BindOnce(&CrostiniManager::OnSetUpLxdContainerUser,
+                     weak_ptr_factory_.GetWeakPtr(), request.owner_id(),
                      request.vm_name(), request.container_name(),
                      std::move(callback)));
 }
@@ -1193,7 +1306,16 @@ void CrostiniManager::OnStartTerminaVm(
     std::move(callback).Run(ConciergeClientResult::VM_START_FAILED);
     return;
   }
-  running_vms_.emplace(std::move(owner_id), std::move(vm_name));
+  // Wait for the Tremplin signal if the vm isn't already marked "running".
+  if (running_vms_.find(std::make_pair(owner_id, vm_name)) ==
+      running_vms_.end()) {
+    VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id << ", "
+            << vm_name;
+    tremplin_started_callbacks_.emplace(
+        std::make_pair(std::move(owner_id), std::move(vm_name)),
+        base::BindOnce(std::move(callback), ConciergeClientResult::SUCCESS));
+    return;
+  }
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
@@ -1227,33 +1349,6 @@ void CrostiniManager::OnStopVm(
   running_vms_.erase(key);
   // Remove containers from running_containers_
   running_containers_.erase(key);
-  std::move(callback).Run(ConciergeClientResult::SUCCESS);
-}
-
-void CrostiniManager::OnStartContainer(
-    std::string owner_id,
-    std::string vm_name,
-    std::string container_name,
-    StartContainerCallback callback,
-    base::Optional<vm_tools::concierge::StartContainerResponse> reply) {
-  if (!reply.has_value()) {
-    LOG(ERROR) << "Failed to start container in vm. Empty response.";
-    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
-    return;
-  }
-  vm_tools::concierge::StartContainerResponse response = reply.value();
-  if (response.status() == vm_tools::concierge::CONTAINER_STATUS_STARTING) {
-    // The callback will be called when we receive the ContainerStated signal.
-    start_container_callbacks_.emplace(
-        std::make_tuple(owner_id, vm_name, container_name),
-        std::move(callback));
-    return;
-  }
-  if (response.status() != vm_tools::concierge::CONTAINER_STATUS_RUNNING) {
-    LOG(ERROR) << "Failed to start container: " << response.failure_reason();
-    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
-    return;
-  }
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
@@ -1328,12 +1423,120 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
   }
 }
 
+void CrostiniManager::OnCreateLxdContainer(
+    std::string owner_id,
+    std::string vm_name,
+    std::string container_name,
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to create lxd container in vm. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+  vm_tools::cicerone::CreateLxdContainerResponse response = reply.value();
+  if (response.status() ==
+      vm_tools::cicerone::CreateLxdContainerResponse::CREATING) {
+    VLOG(1) << "Awaiting LxdContainerCreatedSignal for " << owner_id << ", "
+            << vm_name << ", " << container_name;
+    // The callback will be called when we receive the LxdContainerCreated
+    // signal.
+    create_lxd_container_callbacks_.emplace(
+        std::make_tuple(owner_id, vm_name, container_name),
+        std::move(callback));
+    return;
+  }
+  if (response.status() !=
+      vm_tools::cicerone::CreateLxdContainerResponse::EXISTS) {
+    LOG(ERROR) << "Failed to start container: " << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+  std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnStartLxdContainer(
+    std::string owner_id,
+    std::string vm_name,
+    std::string container_name,
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::StartLxdContainerResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to start lxd container in vm. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+  vm_tools::cicerone::StartLxdContainerResponse response = reply.value();
+
+  if (!(response.status() ==
+            vm_tools::cicerone::StartLxdContainerResponse::STARTED ||
+        response.status() ==
+            vm_tools::cicerone::StartLxdContainerResponse::RUNNING)) {
+    LOG(ERROR) << "Failed to start container: " << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+  std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnSetUpLxdContainerUser(
+    std::string owner_id,
+    std::string vm_name,
+    std::string container_name,
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::SetUpLxdContainerUserResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to set up lxd container user. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+  vm_tools::cicerone::SetUpLxdContainerUserResponse response = reply.value();
+
+  if (!(response.status() ==
+            vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS ||
+        response.status() ==
+            vm_tools::cicerone::SetUpLxdContainerUserResponse::EXISTS)) {
+    LOG(ERROR) << "Failed to set up container user: "
+               << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+    return;
+  }
+
+  if (!IsContainerRunning(owner_id, vm_name, container_name)) {
+    start_container_callbacks_.emplace(
+        std::make_tuple(owner_id, vm_name, container_name),
+        std::move(callback));
+    return;
+  }
+  std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
 void CrostiniManager::OnLxdContainerCreated(
-    const vm_tools::cicerone::LxdContainerCreatedSignal& signal) {}
+    const vm_tools::cicerone::LxdContainerCreatedSignal& signal) {
+  // Find the callbacks to call, then erase them from the map.
+  auto range = create_lxd_container_callbacks_.equal_range(std::make_tuple(
+      signal.owner_id(), signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(ConciergeClientResult::SUCCESS);
+  }
+  create_lxd_container_callbacks_.erase(range.first, range.second);
+}
+
 void CrostiniManager::OnLxdContainerDownloading(
     const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {}
+
 void CrostiniManager::OnTremplinStarted(
-    const vm_tools::cicerone::TremplinStartedSignal& signal) {}
+    const vm_tools::cicerone::TremplinStartedSignal& signal) {
+  // Find the callbacks to call, then erase them from the map.
+  auto range = tremplin_started_callbacks_.equal_range(
+      std::make_pair(signal.owner_id(), signal.vm_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run();
+  }
+  tremplin_started_callbacks_.erase(range.first, range.second);
+  // Record the running vm.
+  running_vms_.emplace(signal.owner_id(), signal.vm_name());
+}
 
 void CrostiniManager::OnLaunchContainerApplication(
     LaunchContainerApplicationCallback callback,

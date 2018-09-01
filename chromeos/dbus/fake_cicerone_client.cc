@@ -17,7 +17,20 @@ FakeCiceroneClient::FakeCiceroneClient() {
   install_linux_package_response_.Clear();
   install_linux_package_response_.set_status(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+
+  create_lxd_container_response_.Clear();
+  create_lxd_container_response_.set_status(
+      vm_tools::cicerone::CreateLxdContainerResponse::CREATING);
+
+  start_lxd_container_response_.Clear();
+  start_lxd_container_response_.set_status(
+      vm_tools::cicerone::StartLxdContainerResponse::STARTED);
+
+  setup_lxd_container_user_response_.Clear();
+  setup_lxd_container_user_response_.set_status(
+      vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS);
 }
+
 FakeCiceroneClient::~FakeCiceroneClient() = default;
 
 void FakeCiceroneClient::AddObserver(Observer* observer) {

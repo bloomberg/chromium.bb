@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -37,8 +38,16 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
         const vm_tools::concierge::StartVmRequest& request,
         chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
             callback) override {
+      signal_.set_owner_id(request.owner_id());
+      signal_.set_vm_name(request.name());
+
       chromeos::FakeConciergeClient::StartTerminaVm(request,
                                                     std::move(callback));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&WaitingFakeConciergeClient::OnTremplinStarted,
+                         base::Unretained(this)));
       if (closure_) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                       std::move(closure_));
@@ -53,7 +62,85 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
     }
 
    private:
+    void OnTremplinStarted() {
+      crostini::CrostiniManager::GetInstance()->OnTremplinStarted(signal_);
+    }
+
+    vm_tools::cicerone::TremplinStartedSignal signal_;
     base::OnceClosure closure_;
+  };
+
+  // TODO(timloh): Consider moving this logic into the fake itself.
+  class SignalingFakeCiceroneClient : public chromeos::FakeCiceroneClient {
+   public:
+    void CreateLxdContainer(
+        const vm_tools::cicerone::CreateLxdContainerRequest& request,
+        chromeos::DBusMethodCallback<
+            vm_tools::cicerone::CreateLxdContainerResponse> callback) override {
+      lxd_container_created_signal_.set_owner_id(request.owner_id());
+      lxd_container_created_signal_.set_vm_name(request.vm_name());
+      lxd_container_created_signal_.set_container_name(
+          request.container_name());
+
+      chromeos::FakeCiceroneClient::CreateLxdContainer(
+          request,
+          base::BindOnce(&SignalingFakeCiceroneClient::OnLxdContainerCreated,
+                         base::Unretained(this), std::move(callback)));
+    }
+
+    void SetUpLxdContainerUser(
+        const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
+        chromeos::DBusMethodCallback<
+            vm_tools::cicerone::SetUpLxdContainerUserResponse> callback)
+        override {
+      container_started_signal_.set_owner_id(request.owner_id());
+      container_started_signal_.set_vm_name(request.vm_name());
+      container_started_signal_.set_container_name(request.container_name());
+
+      chromeos::FakeCiceroneClient::SetUpLxdContainerUser(
+          request,
+          base::BindOnce(&SignalingFakeCiceroneClient::OnSetUpLxdContainerUser,
+                         base::Unretained(this), std::move(callback)));
+    }
+
+   private:
+    void OnLxdContainerCreated(
+        chromeos::DBusMethodCallback<
+            vm_tools::cicerone::CreateLxdContainerResponse> callback,
+        base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> reply) {
+      std::move(callback).Run(reply);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &SignalingFakeCiceroneClient::SendLxdContainerCreatedSignal,
+              base::Unretained(this)));
+    }
+
+    void OnSetUpLxdContainerUser(
+        chromeos::DBusMethodCallback<
+            vm_tools::cicerone::SetUpLxdContainerUserResponse> callback,
+        base::Optional<vm_tools::cicerone::SetUpLxdContainerUserResponse>
+            reply) {
+      std::move(callback).Run(reply);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &SignalingFakeCiceroneClient::SendContainerStartedSignal,
+              base::Unretained(this)));
+    }
+
+    void SendLxdContainerCreatedSignal() {
+      crostini::CrostiniManager::GetInstance()->OnLxdContainerCreated(
+          lxd_container_created_signal_);
+    }
+
+    void SendContainerStartedSignal() {
+      crostini::CrostiniManager::GetInstance()->OnContainerStarted(
+          container_started_signal_);
+    }
+
+    vm_tools::cicerone::LxdContainerCreatedSignal lxd_container_created_signal_;
+    vm_tools::cicerone::ContainerStartedSignal container_started_signal_;
   };
 
   class WaitingDiskMountManagerObserver
@@ -78,10 +165,13 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
 
   CrostiniInstallerViewBrowserTest()
       : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()),
+        signaling_fake_cicerone_client_(new SignalingFakeCiceroneClient()),
         waiting_disk_mount_manager_observer_(
             new WaitingDiskMountManagerObserver) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(waiting_fake_concierge_client_));
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCiceroneClient(
+        base::WrapUnique(signaling_fake_cicerone_client_));
     static_cast<chromeos::FakeCrosDisksClient*>(
         chromeos::DBusThreadManager::Get()->GetCrosDisksClient())
         ->AddCustomMountPointCallback(base::BindRepeating(
@@ -110,6 +200,7 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  protected:
   // Owned by chromeos::DBusThreadManager
   WaitingFakeConciergeClient* waiting_fake_concierge_client_ = nullptr;
+  SignalingFakeCiceroneClient* signaling_fake_cicerone_client_ = nullptr;
   WaitingDiskMountManagerObserver* waiting_disk_mount_manager_observer_ =
       nullptr;
 

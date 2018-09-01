@@ -104,5 +104,8 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 // In order to be compatible with sync folder id must match standard.
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
+constexpr char kCrostiniDefaultImageServerUrl[] =
+    "https://storage.googleapis.com/cros-containers";
+constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
