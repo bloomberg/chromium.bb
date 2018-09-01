@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -1106,10 +1107,8 @@ bool PrerenderManager::HasRecentlyPrefetchedUrlForTesting(const GURL& url) {
 void PrerenderManager::OnPrefetchUsed(const GURL& url) {
   // Loading a prefetched URL resets the revalidation bypass. Remove all
   // matching urls from the prefetch list for more accurate metrics.
-  prefetches_.erase(
-      std::remove_if(prefetches_.begin(), prefetches_.end(),
-                     [url](const NavigationRecord& r) { return r.url == url; }),
-      prefetches_.end());
+  base::EraseIf(prefetches_,
+                [url](const NavigationRecord& r) { return r.url == url; });
 }
 
 void PrerenderManager::CleanUpOldNavigations(

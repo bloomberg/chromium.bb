@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -366,13 +367,9 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
   PluginService::GetInstance()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
 #if defined(GOOGLE_CHROME_BUILD)
-  matching_plugins.erase(
-      std::remove_if(matching_plugins.begin(), matching_plugins.end(),
-                     [&](const WebPluginInfo& info) {
-                       return info.path.value() ==
-                              ChromeContentClient::kNotPresent;
-                     }),
-      matching_plugins.end());
+  base::EraseIf(matching_plugins, [&](const WebPluginInfo& info) {
+    return info.path.value() == ChromeContentClient::kNotPresent;
+  });
 #endif  // defined(GOOGLE_CHROME_BUILD)
   if (matching_plugins.empty()) {
     *status = chrome::mojom::PluginStatus::kNotFound;

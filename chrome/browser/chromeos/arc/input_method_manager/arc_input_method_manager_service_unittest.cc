@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -71,9 +72,8 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     }
 
     void RemoveActiveInputMethodId(const std::string& ime_id) {
-      active_input_method_ids_.erase(std::remove_if(
-          active_input_method_ids_.begin(), active_input_method_ids_.end(),
-          [&ime_id](const std::string& id) { return id == ime_id; }));
+      base::EraseIf(active_input_method_ids_,
+                    [&ime_id](const std::string& id) { return id == ime_id; });
     }
 
     void SetActiveInputMethod(const std::string& ime_id) {

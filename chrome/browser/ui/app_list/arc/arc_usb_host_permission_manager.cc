@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
@@ -311,14 +312,12 @@ ArcUsbHostPermissionManager::GetEventPackageList(
 
 void ArcUsbHostPermissionManager::DeviceRemoved(const std::string& guid) {
   // Remove pending requests.
-  pending_requests_.erase(
-      std::remove_if(
-          pending_requests_.begin(), pending_requests_.end(),
-          [guid](const UsbPermissionRequest& usb_permission_request) {
-            return !usb_permission_request.is_scan_request() &&
-                   usb_permission_request.usb_device_entry()->guid == guid;
-          }),
-      pending_requests_.end());
+  base::EraseIf(pending_requests_,
+                [guid](const UsbPermissionRequest& usb_permission_request) {
+                  return !usb_permission_request.is_scan_request() &&
+                         usb_permission_request.usb_device_entry()->guid ==
+                             guid;
+                });
   // Remove runtime permissions.
   for (auto iter = usb_access_permission_dict_.begin();
        iter != usb_access_permission_dict_.end();) {
@@ -336,13 +335,11 @@ void ArcUsbHostPermissionManager::OnPackageRemoved(
     const std::string& package_name,
     bool uninstalled) {
   // Remove pending requests.
-  pending_requests_.erase(
-      std::remove_if(
-          pending_requests_.begin(), pending_requests_.end(),
-          [package_name](const UsbPermissionRequest& usb_permission_request) {
-            return usb_permission_request.package_name() == package_name;
-          }),
-      pending_requests_.end());
+  base::EraseIf(
+      pending_requests_,
+      [package_name](const UsbPermissionRequest& usb_permission_request) {
+        return usb_permission_request.package_name() == package_name;
+      });
   // Remove runtime permissions.
   usb_scan_devicelist_permission_packages_.erase(package_name);
   usb_access_permission_dict_.erase(package_name);

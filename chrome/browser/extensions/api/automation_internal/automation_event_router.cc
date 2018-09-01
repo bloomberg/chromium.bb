@@ -195,14 +195,9 @@ void AutomationEventRouter::Observe(
   content::RenderProcessHost* rph =
       content::Source<content::RenderProcessHost>(source).ptr();
   int process_id = rph->GetID();
-  listeners_.erase(
-      std::remove_if(
-          listeners_.begin(),
-          listeners_.end(),
-          [process_id](const AutomationListener& item) {
-            return item.process_id == process_id;
-          }),
-      listeners_.end());
+  base::EraseIf(listeners_, [process_id](const AutomationListener& item) {
+    return item.process_id == process_id;
+  });
   UpdateActiveProfile();
 }
 

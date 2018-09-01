@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/mime_util.h"
@@ -89,11 +90,7 @@ std::vector<base::FilePath::StringType> GetMediaExtensionList(
     const std::string& mime_type) {
   std::vector<base::FilePath::StringType> extensions;
   net::GetExtensionsForMimeType(mime_type, &extensions);
-  std::vector<base::FilePath::StringType>::iterator new_end =
-      std::remove_if(extensions.begin(),
-                     extensions.end(),
-                     &IsUnsupportedExtension);
-  extensions.erase(new_end, extensions.end());
+  base::EraseIf(extensions, &IsUnsupportedExtension);
   return extensions;
 }
 

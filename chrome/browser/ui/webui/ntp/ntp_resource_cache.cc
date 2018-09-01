@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -357,7 +358,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
 // keys. This functionality is not implemented for NTP.
 static base::string16 GetLocalizedString(int message_id) {
   base::string16 result = l10n_util::GetStringUTF16(message_id);
-  result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
+  base::Erase(result, '&');
   return result;
 }
 

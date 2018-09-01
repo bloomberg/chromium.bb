@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -549,13 +550,10 @@ void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
   std::size_t remove_count = 0;
   for (auto it = host_to_ip_map_.begin(); it != host_to_ip_map_.end();) {
     std::size_t size_before_removal = it->second.size();
-    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-                                    [](const ResolvedIPAddress& resolved_ip) {
-                                      return IsEventExpired(
-                                          resolved_ip.timestamp,
-                                          kNavigationFootprintTTLInSecond);
-                                    }),
-                     it->second.end());
+    base::EraseIf(it->second, [](const ResolvedIPAddress& resolved_ip) {
+      return IsEventExpired(resolved_ip.timestamp,
+                            kNavigationFootprintTTLInSecond);
+    });
     std::size_t size_after_removal = it->second.size();
     remove_count += (size_before_removal - size_after_removal);
     if (size_after_removal == 0)

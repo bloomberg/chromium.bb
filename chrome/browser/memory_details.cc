@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -349,8 +350,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     return process.process_type == content::PROCESS_TYPE_UNKNOWN;
   };
   auto& vector = chrome_browser->processes;
-  vector.erase(std::remove_if(vector.begin(), vector.end(), is_unknown),
-               vector.end());
+  base::EraseIf(vector, is_unknown);
 
   // Grab a memory dump for all processes.
   // Using AdaptCallbackForRepeating allows for an easier transition to
