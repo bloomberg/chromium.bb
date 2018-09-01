@@ -1412,3 +1412,7 @@ Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-svg-image.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects-svg-image.html [ Failure ]
+Bug(none) fast/events/touch/compositor-touch-hit-rects-img-element.html [ Failure ]
+Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-svg-root.html [ Failure ]
+Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-img-element.html [ Failure ]
+Bug(none) fast/events/touch/compositor-touch-hit-rects-svg-root.html [ Failure ]

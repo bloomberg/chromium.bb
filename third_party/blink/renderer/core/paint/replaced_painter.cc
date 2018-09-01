@@ -130,6 +130,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       }
     }
 
+    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+      RecordHitTestData(paint_info, paint_offset);
     layout_replaced_.PaintReplaced(transformed_paint_info, paint_offset);
   }
 
@@ -161,6 +163,26 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     local_paint_info.context.FillRect(selection_painting_int_rect,
                                       selection_bg);
   }
+}
+
+void ReplacedPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                        const LayoutPoint& paint_offset) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  if (paint_info.phase != PaintPhase::kForeground)
+    return;
+
+  auto touch_action = layout_replaced_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = layout_replaced_.VisualOverflowRect();
+  rect.MoveBy(paint_offset);
+  HitTestData::RecordTouchActionRect(paint_info.context, layout_replaced_,
+                                     TouchActionRect(rect, touch_action));
 }
 
 bool ReplacedPainter::ShouldPaint(
