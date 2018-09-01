@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -207,13 +206,9 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
   if (!IsShowingReportingCheckboxOrReportingAllowed())
     return false;
   Profile* profile = GetProfile(web_contents_);
-  bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
   unified_consent::UnifiedConsentService* consent_service =
       UnifiedConsentServiceFactory::GetForProfile(profile);
-  bool is_unified_consent_given =
-      consent_service && consent_service->IsUnifiedConsentGiven();
-
-  return !(is_unified_consent_enabled && is_unified_consent_given);
+  return !(consent_service && consent_service->IsUnifiedConsentGiven());
 }
 
 bool CertReportHelper::ShouldReportCertificateError() {
