@@ -89,10 +89,12 @@ class PrintPreviewMessageHandler
       const PrintHostMsg_PreviewIds& ids);
 
   void NotifyUIPreviewPageReady(
+      PrintPreviewUI* print_preview_ui,
       int page_number,
       const PrintHostMsg_PreviewIds& ids,
       scoped_refptr<base::RefCountedMemory> data_bytes);
   void NotifyUIPreviewDocumentReady(
+      PrintPreviewUI* print_preview_ui,
       int page_count,
       const PrintHostMsg_PreviewIds& ids,
       scoped_refptr<base::RefCountedMemory> data_bytes);
