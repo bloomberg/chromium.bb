@@ -391,7 +391,8 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   net::Error WriteData(const std::string& data) {
-    scoped_refptr<net::IOBuffer> buf = new net::StringIOBuffer(data);
+    scoped_refptr<net::IOBuffer> buf =
+        base::MakeRefCounted<net::StringIOBuffer>(data);
     return cache_writer_->MaybeWriteData(buf.get(), data.size(),
                                          CreateWriteCallback());
   }

@@ -118,7 +118,8 @@ void Stream::AddData(const char* data, size_t size) {
   if (!writer_.get())
     return;
 
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(size));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::IOBuffer>(size);
   memcpy(io_buffer->data(), data, size);
   AddData(io_buffer, size);
 }

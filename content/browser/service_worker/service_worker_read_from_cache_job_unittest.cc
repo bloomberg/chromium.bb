@@ -113,7 +113,8 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     const char kHttpBody[] = "Hello";
     const int length = arraysize(kHttpBody);
     std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
-    scoped_refptr<net::IOBuffer> body(new net::WrappedIOBuffer(kHttpBody));
+    scoped_refptr<net::IOBuffer> body =
+        base::MakeRefCounted<net::WrappedIOBuffer>(kHttpBody);
 
     std::unique_ptr<ServiceWorkerResponseWriter> writer =
         context()->storage()->CreateResponseWriter(resource_id);

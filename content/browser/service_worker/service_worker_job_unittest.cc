@@ -884,7 +884,8 @@ void WriteResponse(ServiceWorkerStorage* storage,
 void WriteStringResponse(ServiceWorkerStorage* storage,
                          int64_t id,
                          const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(body.data());
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
   WriteResponse(storage, id, headers, body_buffer.get(), body.length());

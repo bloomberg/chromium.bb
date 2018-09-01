@@ -1158,8 +1158,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     // Seed storage with expected manifest data.
     const std::string seed_data(kManifest1Contents);
-    scoped_refptr<net::StringIOBuffer> io_buffer(
-        new net::StringIOBuffer(seed_data));
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
     response_writer_->WriteData(
         io_buffer.get(), seed_data.length(),
         base::BindOnce(
@@ -1330,8 +1330,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     // Seed storage with expected manifest data different from manifest1.
     const std::string seed_data("different");
-    scoped_refptr<net::StringIOBuffer> io_buffer(
-        new net::StringIOBuffer(seed_data));
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
     response_writer_->WriteData(
         io_buffer.get(), seed_data.length(),
         base::BindOnce(

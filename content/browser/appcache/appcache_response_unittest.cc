@@ -169,7 +169,8 @@ class AppCacheResponseTest : public testing::Test {
     static const char kHttpHeaders[] =
         "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
     static const char kHttpBody[] = "Hello";
-    scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBody));
+    scoped_refptr<IOBuffer> body =
+        base::MakeRefCounted<WrappedIOBuffer>(kHttpBody);
     std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
     WriteResponse(
         MakeHttpResponseInfo(raw_headers), body.get(), strlen(kHttpBody));
@@ -349,7 +350,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void ReadNonExistentData() {
     EXPECT_FALSE(reader_->IsReadPending());
-    read_buffer_ = new IOBuffer(kBlockSize);
+    read_buffer_ = base::MakeRefCounted<IOBuffer>(kBlockSize);
     reader_->ReadData(read_buffer_.get(), kBlockSize,
                       base::BindOnce(&AppCacheResponseTest::OnReadComplete,
                                      base::Unretained(this)));
@@ -457,7 +458,8 @@ class AppCacheResponseTest : public testing::Test {
   void Metadata_WriteMetadata(const char* metadata) {
     metadata_writer_.reset(service_->storage()->CreateResponseMetadataWriter(
         written_response_id_));
-    scoped_refptr<IOBuffer> buffer(new WrappedIOBuffer(metadata));
+    scoped_refptr<IOBuffer> buffer =
+        base::MakeRefCounted<WrappedIOBuffer>(metadata);
     WriteResponseMetadata(buffer.get(), strlen(metadata));
   }
 
@@ -567,8 +569,8 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void WriteOneBlock(int block_number) {
-    scoped_refptr<IOBuffer> io_buffer(
-        new IOBuffer(kBlockSize));
+    scoped_refptr<IOBuffer> io_buffer =
+        base::MakeRefCounted<IOBuffer>(kBlockSize);
     FillData(block_number, io_buffer->data(), kBlockSize);
     WriteResponseBody(io_buffer, kBlockSize);
   }
@@ -587,7 +589,7 @@ class AppCacheResponseTest : public testing::Test {
   void ReadOneBlock(int block_number) {
     PushNextTask(base::BindOnce(&AppCacheResponseTest::VerifyOneBlock,
                                 base::Unretained(this), block_number));
-    ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kBlockSize), kBlockSize);
   }
 
   void VerifyOneBlock(int block_number) {
@@ -601,7 +603,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     int big_size = kNumBlocks * kBlockSize;
-    ReadResponseBody(new IOBuffer(big_size), big_size);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(big_size), big_size);
   }
 
   void VerifyAllAtOnce() {
@@ -613,7 +615,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void ReadPastEOF() {
     EXPECT_FALSE(reader_->IsReadPending());
-    read_buffer_ = new IOBuffer(kBlockSize);
+    read_buffer_ = base::MakeRefCounted<IOBuffer>(kBlockSize);
     expected_read_result_ = 0;
     reader_->ReadData(read_buffer_.get(), kBlockSize,
                       base::BindOnce(&AppCacheResponseTest::OnReadComplete,
@@ -626,7 +628,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     reader_->SetReadRange(kBlockSize, kBlockSize);
-    ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kBlockSize), kBlockSize);
   }
 
   void VerifyRange() {
@@ -640,7 +642,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     reader_->SetReadRange(kBlockSize, kNumBlocks * kBlockSize);
-    ReadResponseBody(new IOBuffer(kNumBlocks * kBlockSize),
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kNumBlocks * kBlockSize),
                      kNumBlocks * kBlockSize);
     expected_read_result_ = (kNumBlocks - 1) * kBlockSize;
   }
@@ -654,7 +656,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     reader_->SetReadRange((kNumBlocks * kBlockSize) + 1, kBlockSize);
-    ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kBlockSize), kBlockSize);
     expected_read_result_ = 0;
   }
 
@@ -703,7 +705,7 @@ class AppCacheResponseTest : public testing::Test {
     PushNextTaskAsImmediate(
         base::BindOnce(&AppCacheResponseTest::VerifyOneBlock,
                        base::Unretained(this), block_number));
-    ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kBlockSize), kBlockSize);
   }
 
   // DeleteWithinCallbacks -------------------------------------------
@@ -751,7 +753,7 @@ class AppCacheResponseTest : public testing::Test {
     read_callback_was_called_ = false;
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
-    ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
+    ReadResponseBody(base::MakeRefCounted<IOBuffer>(kBlockSize), kBlockSize);
     EXPECT_TRUE(reader_->IsReadPending());
     reader_.reset();
 

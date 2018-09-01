@@ -721,8 +721,8 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
 
 void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
   if (result > 0) {
-    scoped_refptr<net::StringIOBuffer> io_buffer(
-        new net::StringIOBuffer(manifest_data_));
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(manifest_data_);
     manifest_response_writer_->WriteData(
         io_buffer.get(), manifest_data_.length(),
         base::BindOnce(&AppCacheUpdateJob::OnManifestDataWriteComplete,
@@ -904,7 +904,8 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   manifest_response_reader_.reset(
       storage_->CreateResponseReader(manifest_url_,
                                      entry->response_id()));
-  read_manifest_buffer_ = new net::IOBuffer(kAppCacheFetchBufferSize);
+  read_manifest_buffer_ =
+      base::MakeRefCounted<net::IOBuffer>(kAppCacheFetchBufferSize);
   manifest_response_reader_->ReadData(
       read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
       base::BindOnce(&AppCacheUpdateJob::OnManifestDataReadComplete,

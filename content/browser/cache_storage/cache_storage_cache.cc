@@ -258,8 +258,9 @@ GURL RemoveQueryParam(const GURL& url) {
 void ReadMetadata(disk_cache::Entry* entry, MetadataCallback callback) {
   DCHECK(entry);
 
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(
-      entry->GetDataSize(CacheStorageCache::INDEX_HEADERS)));
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(
+          entry->GetDataSize(CacheStorageCache::INDEX_HEADERS));
 
   net::CompletionCallback read_header_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
@@ -1534,8 +1535,8 @@ void CacheStorageCache::PutDidCreateEntry(
     return;
   }
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(std::move(serialized)));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(std::move(serialized));
 
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
   disk_cache::Entry* temp_entry_ptr = put_context->cache_entry.get();

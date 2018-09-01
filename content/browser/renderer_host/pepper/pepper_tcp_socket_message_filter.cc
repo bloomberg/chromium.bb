@@ -395,7 +395,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgRead(
 
   ppapi::host::ReplyMessageContext reply_context(
       context->MakeReplyMessageContext());
-  read_buffer_ = new net::IOBuffer(bytes_to_read);
+  read_buffer_ = base::MakeRefCounted<net::IOBuffer>(bytes_to_read);
 
   int net_result = net::ERR_FAILED;
   if (socket_) {

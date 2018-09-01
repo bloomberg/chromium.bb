@@ -166,7 +166,7 @@ void DevToolsStreamBlob::BeginRead() {
   DCHECK_GE(pending_reads_.size(), 1UL);
   ReadRequest& request = *pending_reads_.front();
   if (!io_buf_ || static_cast<size_t>(io_buf_->size()) < request.max_size)
-    io_buf_ = new net::IOBufferWithSize(request.max_size);
+    io_buf_ = base::MakeRefCounted<net::IOBufferWithSize>(request.max_size);
   int bytes_read;
   BlobReader::Status status = blob_reader_->Read(
       io_buf_.get(), request.max_size, &bytes_read,

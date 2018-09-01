@@ -497,7 +497,7 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
   std::unique_ptr<net::GzipSourceStream> filter = net::GzipSourceStream::Create(
       std::move(source_stream), net::SourceStream::TYPE_GZIP);
   scoped_refptr<net::IOBufferWithSize> dest_buffer =
-      new net::IOBufferWithSize(4096);
+      base::MakeRefCounted<net::IOBufferWithSize>(4096);
   net::CompletionCallback callback;
   while (true) {
     int rv = filter->Read(dest_buffer.get(), dest_buffer->size(), callback);

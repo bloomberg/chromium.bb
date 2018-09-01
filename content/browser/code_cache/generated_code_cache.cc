@@ -175,8 +175,9 @@ void GeneratedCodeCache::WriteData(const GURL& url,
 
   // Append the response time to the metadata. Code caches store
   // response_time + generated code as a single entry.
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(data.size() + kResponseTimeSizeInBytes));
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(data.size() +
+                                                  kResponseTimeSizeInBytes);
   int64_t serialized_time =
       response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
   memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
@@ -431,7 +432,8 @@ void GeneratedCodeCache::OpenCompleteForReadData(
 
   disk_cache::ScopedEntryPtr disk_entry(entry->data);
   int size = disk_entry->GetDataSize(kDataIndex);
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(size);
   net::CompletionOnceCallback callback = base::BindOnce(
       &GeneratedCodeCache::ReadDataComplete, weak_ptr_factory_.GetWeakPtr(),
       read_data_callback, buffer);

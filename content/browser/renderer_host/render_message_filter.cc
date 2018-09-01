@@ -308,7 +308,8 @@ void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(
     const std::vector<uint8_t>& data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
+  scoped_refptr<net::IOBuffer> buf =
+      base::MakeRefCounted<net::IOBuffer>(data.size());
   if (!data.empty())
     memcpy(buf->data(), &data.front(), data.size());
 

@@ -341,7 +341,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadInfoComplete(int result) {
   amount_headers_read_ = result;
 
   // Start reading the data.
-  data_buffer_ = new net::IOBuffer(kIOBufferSize);
+  data_buffer_ = base::MakeRefCounted<net::IOBuffer>(kIOBufferSize);
   response_reader_->ReadData(
       data_buffer_.get(), kIOBufferSize,
       base::BindOnce(&CheckResponseHelper::OnReadDataComplete,

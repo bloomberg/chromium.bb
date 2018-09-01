@@ -119,7 +119,7 @@ AppCacheUpdateJob::UpdateURLRequest::UpdateURLRequest(
                                               this,
                                               GetTrafficAnnotation())),
       fetcher_(fetcher),
-      buffer_(new net::IOBuffer(buffer_size)),
+      buffer_(base::MakeRefCounted<net::IOBuffer>(buffer_size)),
       buffer_size_(buffer_size),
       weak_factory_(this) {}
 

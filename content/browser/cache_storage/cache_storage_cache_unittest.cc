@@ -1601,8 +1601,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
   EXPECT_TRUE(Put(body_request_, std::move(response)));
 
   const std::string expected_side_data1 = "SideDataSample";
-  scoped_refptr<net::IOBuffer> buffer1(
-      new net::StringIOBuffer(expected_side_data1));
+  scoped_refptr<net::IOBuffer> buffer1 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data1);
   EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer1,
                             expected_side_data1.length()));
 
@@ -1613,8 +1613,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
   EXPECT_TRUE(ResponseSideDataEqual(expected_side_data1, blob1.get()));
 
   const std::string expected_side_data2 = "New data";
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(expected_side_data2));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data2);
   EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer2,
                             expected_side_data2.length()));
   EXPECT_TRUE(Match(body_request_));
@@ -1635,7 +1635,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExceeded) {
   EXPECT_TRUE(Put(no_body_request_, std::move(response)));
 
   const size_t kSize = 1024 * 1024;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
@@ -1655,7 +1656,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaManagerModified) {
   EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
 
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_TRUE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
@@ -1671,7 +1673,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
   EXPECT_TRUE(Put(no_body_request_, std::move(response)));
 
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(no_body_request_.url,
                              response_time + base::TimeDelta::FromSeconds(1),
@@ -1682,7 +1685,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_NotFound) {
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(GURL("http://www.example.com/not_exist"),
                              base::Time::Now(), buffer, kSize));
@@ -1769,8 +1773,8 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
 
   // Now write some side data to that cache.
   const std::string expected_side_data(2048, 'X');
-  scoped_refptr<net::IOBuffer> side_data_buffer(
-      new net::StringIOBuffer(expected_side_data));
+  scoped_refptr<net::IOBuffer> side_data_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data);
   EXPECT_TRUE(WriteSideData(non_opaque_request.url, response_time,
                             side_data_buffer, expected_side_data.length()));
   int64_t unpadded_total_resource_size = Size();
@@ -1813,8 +1817,8 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
 
   // Now reset opaque side data back to zero.
   const std::string expected_side_data2 = "";
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(expected_side_data2));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data2);
   EXPECT_TRUE(WriteSideData(opaque_request.url, response_time, buffer2,
                             expected_side_data2.length()));
   EXPECT_EQ(size_after_opaque_put, Size());
@@ -1835,8 +1839,8 @@ TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {
   int64_t opaque_cache_size_no_side_data = Size();
 
   const std::string small_side_data(1024, 'X');
-  scoped_refptr<net::IOBuffer> buffer1(
-      new net::StringIOBuffer(small_side_data));
+  scoped_refptr<net::IOBuffer> buffer1 =
+      base::MakeRefCounted<net::StringIOBuffer>(small_side_data);
   EXPECT_TRUE(WriteSideData(request.url, response_time, buffer1,
                             small_side_data.length()));
   int64_t opaque_cache_size_with_side_data = Size();
@@ -1846,8 +1850,8 @@ TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {
   // at all.
   const std::string large_side_data(2048, 'X');
   EXPECT_NE(large_side_data.length(), small_side_data.length());
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(large_side_data));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(large_side_data);
   EXPECT_TRUE(WriteSideData(request.url, response_time, buffer2,
                             large_side_data.length()));
   int side_data_delta = large_side_data.length() - small_side_data.length();

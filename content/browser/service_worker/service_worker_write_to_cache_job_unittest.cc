@@ -221,7 +221,7 @@ class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
 
   void Start() {
     info_buffer_ = new HttpResponseInfoIOBuffer();
-    io_buffer_ = new net::IOBuffer(kBlockSize);
+    io_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBlockSize);
     reader_->ReadInfo(
         info_buffer_.get(),
         base::BindOnce(&ResponseVerifier::OnReadInfoComplete, this));

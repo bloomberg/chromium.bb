@@ -107,7 +107,8 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
     return nullptr;
   disk_cache::ScopedEntryPtr entry(temp_entry);
 
-  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  scoped_refptr<net::StringIOBuffer> iobuffer =
+      base::MakeRefCounted<net::StringIOBuffer>(data);
   rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
                         iobuffer->size(), callback.callback(), false);
   EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
@@ -121,7 +122,7 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
     const std::string& side_data) {
   disk_cache::ScopedEntryPtr entry = CreateDiskCacheEntry(cache, key, data);
   scoped_refptr<net::StringIOBuffer> iobuffer =
-      new net::StringIOBuffer(side_data);
+      base::MakeRefCounted<net::StringIOBuffer>(side_data);
   net::TestCompletionCallback callback;
   int rv = entry->WriteData(kTestDiskCacheSideStreamIndex, 0, iobuffer.get(),
                             iobuffer->size(), callback.callback(), false);

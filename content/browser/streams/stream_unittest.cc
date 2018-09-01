@@ -26,7 +26,8 @@ class StreamTest : public testing::Test {
   // Create a new IO buffer of the given |buffer_size| and fill it with random
   // data.
   scoped_refptr<net::IOBuffer> NewIOBuffer(size_t buffer_size) {
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(buffer_size));
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(buffer_size);
     char *bufferp = buffer->data();
     for (size_t i = 0; i < buffer_size; i++)
       bufferp[i] = (i + producing_seed_key_) % (1 << sizeof(char));
@@ -44,12 +45,13 @@ class StreamTest : public testing::Test {
 
 class TestStreamReader : public StreamReadObserver {
  public:
-  TestStreamReader() : buffer_(new net::GrowableIOBuffer()) {}
+  TestStreamReader() : buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()) {}
   ~TestStreamReader() override {}
 
   void Read(Stream* stream) {
     const size_t kBufferSize = 32768;
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     int bytes_read = 0;
     while (true) {
