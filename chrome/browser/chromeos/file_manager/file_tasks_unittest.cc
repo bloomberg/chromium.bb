@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -1277,9 +1279,25 @@ class FileManagerFileTasksCrostiniTest
     *gif_app.add_mime_types() = "image/gif";
     crostini_test_helper_.AddApp(gif_app);
 
+    vm_tools::apps::App alt_mime_app =
+        crostini::CrostiniTestHelper::BasicApp("alt_mime_app");
+    *alt_mime_app.add_mime_types() = "foo/x-bar";
+    crostini_test_helper_.AddApp(alt_mime_app);
+
     text_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("text_app");
     image_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("image_app");
     gif_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("gif_app");
+    alt_mime_app_id_ =
+        crostini::CrostiniTestHelper::GenerateAppId("alt_mime_app");
+
+    // Setup the custom MIME type mapping.
+    vm_tools::apps::MimeTypes mime_types_list;
+    mime_types_list.set_vm_name(kCrostiniDefaultVmName);
+    mime_types_list.set_container_name(kCrostiniDefaultContainerName);
+    (*mime_types_list.mutable_mime_type_mappings())["foo"] = "foo/x-bar";
+
+    crostini::CrostiniMimeTypesServiceFactory::GetForProfile(&test_profile_)
+        ->UpdateMimeTypes(mime_types_list);
   }
 
   crostini::CrostiniTestHelper crostini_test_helper_;
@@ -1287,6 +1305,7 @@ class FileManagerFileTasksCrostiniTest
   std::string text_app_id_;
   std::string image_app_id_;
   std::string gif_app_id_;
+  std::string alt_mime_app_id_;
 };
 
 TEST_F(FileManagerFileTasksCrostiniTest, BasicFiles) {
@@ -1364,6 +1383,21 @@ TEST_F(FileManagerFileTasksCrostiniTest, MultipleTypes) {
   FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
                                                file_urls, &tasks);
   EXPECT_EQ(0U, tasks.size());
+}
+
+TEST_F(FileManagerFileTasksCrostiniTest, AlternateMimeTypes) {
+  std::vector<extensions::EntryInfo> entries{
+      {crostini_folder_.Append("bar1.foo"), "text/plain", false},
+      {crostini_folder_.Append("bar2.foo"), "application/octet-stream", false}};
+  std::vector<GURL> file_urls{
+      GURL("filesystem:chrome-extension://id/dir/bar1.foo"),
+      GURL("filesystem:chrome-extension://id/dir/bar2.foo")};
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  EXPECT_EQ(alt_mime_app_id_, tasks[0].task_descriptor().app_id);
 }
 
 }  // namespace file_tasks
