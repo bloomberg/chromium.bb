@@ -222,6 +222,9 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   }
 
   void OnError(mojom::DriveErrorPtr error) override {
+    if (!IsKnownEnumValue(error->type)) {
+      return;
+    }
     for (auto& observer : host_->observers_) {
       observer.OnError(*error);
     }
