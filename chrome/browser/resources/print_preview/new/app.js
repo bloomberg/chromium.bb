@@ -596,7 +596,8 @@ Polymer({
    * Updates printing options according to source document presets.
    * @param {boolean} disableScaling Whether the document disables scaling.
    * @param {number} copies The default number of copies from the document.
-   * @param {number} duplex The default duplex setting from the document.
+   * @param {!print_preview_new.DuplexMode} duplex The default duplex setting
+   *     from the document.
    * @private
    */
   onPrintPresetOptions_: function(disableScaling, copies, duplex) {
@@ -606,8 +607,11 @@ Polymer({
     if (copies > 0 && this.getSetting('copies').available)
       this.setSetting('copies', copies);
 
-    if (duplex >= 0 && this.getSetting('duplex').available)
-      this.setSetting('duplex', duplex);
+    if (duplex !== print_preview_new.DuplexMode.UNKNOWN_DUPLEX_MODE &&
+        this.getSetting('duplex').available) {
+      this.setSetting(
+          'duplex', duplex === print_preview_new.DuplexMode.LONG_EDGE);
+    }
   },
 
   /**
