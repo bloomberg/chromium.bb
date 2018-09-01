@@ -155,5 +155,9 @@ namespace declarativeNetRequest {
   interface Properties {
     // The maximum number of allowed pages that an extension can add.
     [value=100] static long MAX_NUMBER_OF_ALLOWED_PAGES();
+
+    // The maximum number of rules that an extension can specify in the rule
+    // resources file. Any excess rules will be ignored.
+    [value=30000] static long MAX_NUMBER_OF_RULES();
   };
 };
