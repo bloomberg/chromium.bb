@@ -65,8 +65,9 @@ void AutofillHandlerProxy::OnSelectControlDidChangeImpl(
 bool AutofillHandlerProxy::ShouldParseForms(const std::vector<FormData>& forms,
                                             const base::TimeTicks timestamp) {
   provider_->OnFormsSeen(this, forms, timestamp);
-  // Don't use form_structure.
-  return false;
+  // Need to parse the |forms| to FormStructure, so heuristic_type can be
+  // retrieved later.
+  return true;
 }
 
 void AutofillHandlerProxy::OnFormsParsed(
