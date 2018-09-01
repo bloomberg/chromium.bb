@@ -124,7 +124,10 @@ source_set("gles2_sources") {
     "gles2_cmd_ids_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_gles2_implementation" ]
+  configs += [
+    "//gpu:gpu_gles2_implementation",
+    "//build/config/compiler:no_shorten_64_warnings",
+  ]
 
   deps = [
     ":gles2_utils",
