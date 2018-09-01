@@ -194,7 +194,7 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
     return false;
   }
 
-  recv_buffer_ = new IOBufferWithSize(kDialRecvBufferSize);
+  recv_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDialRecvBufferSize);
   return ReadSocket();
 }
 
@@ -396,7 +396,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
   bool success = address.AssignFromIPLiteral(kDialRequestAddress);
   DCHECK(success);
   send_address_ = net::IPEndPoint(address, kDialRequestPort);
-  send_buffer_ = new StringIOBuffer(BuildRequest());
+  send_buffer_ = base::MakeRefCounted<StringIOBuffer>(BuildRequest());
 }
 
 DialServiceImpl::~DialServiceImpl() {

@@ -22,7 +22,8 @@ BufferingFileStreamReader::BufferingFileStreamReader(
       preloading_buffer_length_(preloading_buffer_length),
       max_bytes_to_read_(max_bytes_to_read),
       bytes_read_(0),
-      preloading_buffer_(new net::IOBuffer(preloading_buffer_length)),
+      preloading_buffer_(
+          base::MakeRefCounted<net::IOBuffer>(preloading_buffer_length)),
       preloading_buffer_offset_(0),
       preloaded_bytes_(0),
       weak_ptr_factory_(this) {}

@@ -109,7 +109,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
 
   const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   {
     const int result = writer.Write(io_buffer.get(),
@@ -160,7 +161,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel) {
 
   const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   const int write_result = writer.Write(io_buffer.get(),
                                         sizeof(kTextToWrite) - 1,
@@ -182,7 +184,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel_NotRunning) {
 
   const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   std::vector<int> cancel_log;
   const int cancel_result = writer.Cancel(base::Bind(&LogValue, &cancel_log));
@@ -198,7 +201,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_WrongFile) {
 
   const int64_t initial_offset = 0;
   FileStreamWriter writer(wrong_file_url_, initial_offset);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   const int result = writer.Write(io_buffer.get(),
                                   sizeof(kTextToWrite) - 1,
@@ -222,7 +226,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   ASSERT_LT(0, initial_offset);
 
   FileStreamWriter writer(file_url_, initial_offset);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   const int result = writer.Write(io_buffer.get(),
                                   sizeof(kTextToWrite) - 1,

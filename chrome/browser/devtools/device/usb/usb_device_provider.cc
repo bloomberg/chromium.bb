@@ -57,7 +57,8 @@ void OpenedForCommand(const UsbDeviceProvider::CommandCallback& callback,
     callback.Run(result, std::string());
     return;
   }
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   result = socket->Read(
       buffer.get(),
       kBufferSize,

@@ -124,7 +124,7 @@ class TestURLRequestDelegate : public net::URLRequest::Delegate {
 
   explicit TestURLRequestDelegate(const ReadCompletedCallback& callback)
       : read_completed_callback_(callback),
-        buffer_(new net::IOBuffer(kBufSize)),
+        buffer_(base::MakeRefCounted<net::IOBuffer>(kBufSize)),
         request_status_(net::ERR_IO_PENDING) {}
 
   void OnResponseStarted(net::URLRequest* request, int net_error) override {

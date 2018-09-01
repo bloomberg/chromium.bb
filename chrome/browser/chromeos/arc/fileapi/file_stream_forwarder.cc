@@ -42,7 +42,7 @@ FileStreamForwarder::FileStreamForwarder(
                            // completion of tasks running with this task runner.
                            {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
                             base::MayBlock()})),
-      buf_(new net::IOBufferWithSize(kBufSize)),
+      buf_(base::MakeRefCounted<net::IOBufferWithSize>(kBufSize)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(

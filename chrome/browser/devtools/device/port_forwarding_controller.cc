@@ -213,7 +213,8 @@ class SocketTunnel : public network::mojom::ResolveHostClient {
   }
 
   void Pump(net::StreamSocket* from, net::StreamSocket* to) {
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(kBufferSize);
     int result = from->Read(
         buffer.get(),
         kBufferSize,

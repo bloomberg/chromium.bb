@@ -143,7 +143,8 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadError) {
           base::Time()));  // expected modification time
 
   const int kBufferSize = 10;
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   net::TestCompletionCallback callback;
   int result = reader->Read(io_buffer.get(), kBufferSize, callback.callback());
   result = callback.GetResult(result);

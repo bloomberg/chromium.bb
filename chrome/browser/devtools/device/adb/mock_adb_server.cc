@@ -253,10 +253,10 @@ SimpleHttpServer::~SimpleHttpServer() {
 SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
                                          const ParserFactory& factory)
     : socket_(socket),
-      parser_(factory.Run(base::Bind(&Connection::Send,
-                                     base::Unretained(this)))),
-      input_buffer_(new net::GrowableIOBuffer()),
-      output_buffer_(new net::GrowableIOBuffer()),
+      parser_(
+          factory.Run(base::Bind(&Connection::Send, base::Unretained(this)))),
+      input_buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()),
+      output_buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       bytes_to_write_(0),
       read_closed_(false),
       weak_factory_(this) {
