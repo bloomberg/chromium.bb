@@ -121,6 +121,10 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         onConnectionTypeChanged(NetworkChangeNotifier.getInstance().getCurrentConnectionType());
     }
 
+    public @ConnectionType int getConnectionState() {
+        return mConnectionState;
+    }
+
     @Override
     public void onConnectionTypeChanged(@ConnectionType int connectionType) {
         // This method may be called multiple times with same |connectionType|.
