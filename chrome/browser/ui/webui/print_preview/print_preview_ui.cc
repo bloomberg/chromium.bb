@@ -697,7 +697,10 @@ void PrintPreviewUI::OnDidStartPreview(
     const PrintHostMsg_DidStartPreview_Params& params,
     int request_id) {
   DCHECK_GT(params.page_count, 0);
+  DCHECK(!params.pages_to_render.empty());
 
+  pages_to_render_ = params.pages_to_render;
+  pages_to_render_index_ = 0;
   ClearAllPreviewData();
 
   if (g_testing_delegate)
@@ -733,6 +736,15 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   layout.SetInteger(printing::kSettingPrintableAreaHeight,
                     printable_area.height());
   handler_->SendPageLayoutReady(layout, has_custom_page_size_style, request_id);
+}
+
+bool PrintPreviewUI::OnPendingPreviewPage(int page_number) {
+  if (pages_to_render_index_ >= pages_to_render_.size())
+    return false;
+
+  bool matched = page_number == pages_to_render_[pages_to_render_index_];
+  ++pages_to_render_index_;
+  return matched;
 }
 
 void PrintPreviewUI::OnDidPreviewPage(

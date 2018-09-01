@@ -1260,6 +1260,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
 
   PrintHostMsg_DidStartPreview_Params params;
   params.page_count = print_preview_context_.total_page_count();
+  params.pages_to_render = print_preview_context_.pages_to_render();
   params.fit_to_page_scaling =
       GetFitToPageScaleFactor(printable_area_in_points);
   Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));
@@ -2366,6 +2367,12 @@ PrintRenderFrameHelper::PrintPreviewContext::prepared_node() const {
 int PrintRenderFrameHelper::PrintPreviewContext::total_page_count() const {
   DCHECK(state_ != UNINITIALIZED);
   return total_page_count_;
+}
+
+const std::vector<int>&
+PrintRenderFrameHelper::PrintPreviewContext::pages_to_render() const {
+  DCHECK_EQ(RENDERING, state_);
+  return pages_to_render_;
 }
 
 MetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {
