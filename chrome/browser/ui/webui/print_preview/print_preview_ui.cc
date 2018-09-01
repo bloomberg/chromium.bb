@@ -697,6 +697,9 @@ void PrintPreviewUI::OnDidStartPreview(
     const PrintHostMsg_DidStartPreview_Params& params,
     int request_id) {
   DCHECK_GT(params.page_count, 0);
+
+  ClearAllPreviewData();
+
   if (g_testing_delegate)
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
   handler_->SendPageCountReady(params.page_count, params.fit_to_page_scaling,
@@ -732,16 +735,23 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   handler_->SendPageLayoutReady(layout, has_custom_page_size_style, request_id);
 }
 
-void PrintPreviewUI::OnDidPreviewPage(int page_number,
-                                      int preview_request_id) {
+void PrintPreviewUI::OnDidPreviewPage(
+    int page_number,
+    scoped_refptr<base::RefCountedMemory> data,
+    int preview_request_id) {
   DCHECK_GE(page_number, 0);
+
+  SetPrintPreviewDataForIndex(page_number, std::move(data));
+
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   handler_->SendPagePreviewReady(page_number, id_, preview_request_id);
 }
 
-void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
-                                              int preview_request_id) {
+void PrintPreviewUI::OnPreviewDataIsAvailable(
+    int expected_pages_count,
+    scoped_refptr<base::RefCountedMemory> data,
+    int preview_request_id) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
 
@@ -755,6 +765,10 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
         handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();
   }
+
+  SetPrintPreviewDataForIndex(printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
+                              std::move(data));
+
   handler_->OnPrintPreviewReady(id_, preview_request_id);
 }
 
@@ -827,4 +841,14 @@ void PrintPreviewUI::SendEnableManipulateSettingsForTest() {
 void PrintPreviewUI::SendManipulateSettingsForTest(
     const base::DictionaryValue& settings) {
   handler_->SendManipulateSettingsForTest(settings);
+}
+
+void PrintPreviewUI::SetPrintPreviewDataForIndexForTest(
+    int index,
+    scoped_refptr<base::RefCountedMemory> data) {
+  SetPrintPreviewDataForIndex(index, data);
+}
+
+void PrintPreviewUI::ClearAllPreviewDataForTest() {
+  ClearAllPreviewData();
 }
