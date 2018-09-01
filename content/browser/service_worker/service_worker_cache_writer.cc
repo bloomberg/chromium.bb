@@ -233,7 +233,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCompare(int result) {
   DCHECK_GE(result, 0);
   DCHECK(data_to_write_);
 
-  data_to_read_ = new net::IOBuffer(len_to_write_);
+  data_to_read_ = base::MakeRefCounted<net::IOBuffer>(len_to_write_);
   len_to_read_ = len_to_write_;
   state_ = STATE_READ_DATA_FOR_COMPARE_DONE;
   compare_offset_ = 0;
@@ -308,7 +308,7 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCopy(int result) {
   DCHECK(copy_reader_);
   bytes_copied_ = 0;
   headers_to_read_ = new HttpResponseInfoIOBuffer;
-  data_to_copy_ = new net::IOBuffer(kCopyBufferSize);
+  data_to_copy_ = base::MakeRefCounted<net::IOBuffer>(kCopyBufferSize);
   state_ = STATE_READ_HEADERS_FOR_COPY_DONE;
   return ReadInfoHelper(copy_reader_, headers_to_read_.get());
 }

@@ -298,7 +298,7 @@ void MojoAsyncResourceHandler::OnWillRead(
     }
     DCHECK(!is_using_io_buffer_not_from_writer_);
     is_using_io_buffer_not_from_writer_ = true;
-    buffer_ = new net::IOBufferWithSize(kMinAllocationSize);
+    buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(kMinAllocationSize);
   }
 
   *buf = buffer_;

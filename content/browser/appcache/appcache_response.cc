@@ -225,7 +225,7 @@ void AppCacheResponseReader::ContinueReadInfo() {
     return;
   }
 
-  buffer_ = new net::IOBuffer(size);
+  buffer_ = base::MakeRefCounted<net::IOBuffer>(size);
   ReadRaw(kResponseInfoIndex, 0, buffer_.get(), size);
 }
 
@@ -290,8 +290,9 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       int64_t metadata_size = entry_->GetSize(kResponseMetadataIndex);
       if (metadata_size > 0) {
         reading_metadata_size_ = metadata_size;
-        info_buffer_->http_info->metadata = new net::IOBufferWithSize(
-            base::checked_cast<size_t>(metadata_size));
+        info_buffer_->http_info->metadata =
+            base::MakeRefCounted<net::IOBufferWithSize>(
+                base::checked_cast<size_t>(metadata_size));
         ReadRaw(kResponseMetadataIndex, 0,
                 info_buffer_->http_info->metadata.get(), metadata_size);
         return;

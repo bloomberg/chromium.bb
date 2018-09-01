@@ -71,7 +71,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // redirect to be followed if the return value is true.
   bool OnRequestRedirected();
 
-  // Starts a read cycle. Creates a new IOBuffer which can be passed into
+  // Starts a read cycle. Creates an IOBuffer which can be passed into
   // URLRequest::Read(). Call OnReadCompleted() when the Read operation
   // completes.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,

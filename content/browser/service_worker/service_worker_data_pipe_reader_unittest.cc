@@ -182,7 +182,8 @@ TEST_P(ServiceWorkerDataPipeReaderTestP, SyncRead) {
   data_pipe_reader->Start();
   EXPECT_TRUE(mock_url_request_job()->is_response_started());
   const int buffer_size = sizeof(kTestData);
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(buffer_size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(buffer_size);
   buffer->data()[buffer_size - 1] = '\0';
 
   // Read successfully.
@@ -238,7 +239,8 @@ TEST_P(ServiceWorkerDataPipeReaderTestP, SyncAbort) {
   data_pipe_reader->Start();
   EXPECT_TRUE(mock_url_request_job()->is_response_started());
   const int buffer_size = sizeof(kTestData);
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(buffer_size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(buffer_size);
   buffer->data()[buffer_size - 1] = '\0';
 
   // Read successfully.
@@ -276,7 +278,8 @@ TEST_P(ServiceWorkerDataPipeReaderTestP, AsyncRead) {
   // Start to read.
   data_pipe_reader->Start();
   EXPECT_TRUE(mock_url_request_job()->is_response_started());
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(sizeof(kTestData));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(sizeof(kTestData));
   buffer->data()[sizeof(kTestData) - 1] = '\0';
   std::string expected_response;
   std::string retrieved_response;
@@ -349,7 +352,8 @@ TEST_P(ServiceWorkerDataPipeReaderTestP, AsyncAbort) {
   // Start to read.
   data_pipe_reader->Start();
   EXPECT_TRUE(mock_url_request_job()->is_response_started());
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(sizeof(kTestData));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(sizeof(kTestData));
   buffer->data()[sizeof(kTestData) - 1] = '\0';
   std::string expected_response;
   std::string retrieved_response;

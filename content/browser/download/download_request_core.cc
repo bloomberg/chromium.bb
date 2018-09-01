@@ -340,7 +340,7 @@ bool DownloadRequestCore::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   DCHECK(!read_buffer_.get());
 
   *buf_size = kReadBufSize;
-  read_buffer_ = new net::IOBuffer(*buf_size);
+  read_buffer_ = base::MakeRefCounted<net::IOBuffer>(*buf_size);
   *buf = read_buffer_.get();
   return true;
 }

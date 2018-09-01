@@ -54,7 +54,7 @@ void StreamWriter::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   DCHECK(buf_size);
   DCHECK_LE(min_size, kReadBufSize);
   if (!read_buffer_.get())
-    read_buffer_ = new net::IOBuffer(kReadBufSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufSize);
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
 }

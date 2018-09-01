@@ -210,7 +210,7 @@ void DetachableResourceHandler::OnWillRead(
     std::unique_ptr<ResourceController> controller) {
   if (!next_handler_) {
     if (!read_buffer_.get())
-      read_buffer_ = new net::IOBuffer(kReadBufSize);
+      read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufSize);
     *buf = read_buffer_;
     *buf_size = kReadBufSize;
     controller->Resume();

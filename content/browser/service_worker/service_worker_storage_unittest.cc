@@ -200,7 +200,8 @@ int WriteStringResponse(ServiceWorkerStorage* storage,
                         int64_t id,
                         const std::string& headers,
                         const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(body.data());
   return WriteResponse(storage, id, headers, body_buffer.get(), body.length());
 }
 
@@ -237,7 +238,8 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
 
   std::string received_body;
   const int kBigEnough = 512;
-  scoped_refptr<net::IOBuffer> buffer = new IOBuffer(kBigEnough);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<IOBuffer>(kBigEnough);
   TestCompletionCallback cb;
   reader->ReadData(buffer.get(), kBigEnough, cb.callback());
   rv = cb.WaitForResult();
@@ -259,7 +261,8 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
 int WriteResponseMetadata(ServiceWorkerStorage* storage,
                           int64_t id,
                           const std::string& metadata) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(metadata.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(metadata.data());
   std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
       storage->CreateResponseMetadataWriter(id);
   TestCompletionCallback cb;

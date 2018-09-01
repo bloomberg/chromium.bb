@@ -104,7 +104,8 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(data.size());
   if (data.size())
     memmove(buffer->data(), &data[0], data.size());
   std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer;

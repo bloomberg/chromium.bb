@@ -120,8 +120,8 @@ TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData1));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData1);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -139,8 +139,8 @@ TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
   for (int i = 0; i < kBufferSize * 5; ++i)
     large_data.append(1, static_cast<char>(i % 256));
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(large_data));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(large_data);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -166,8 +166,8 @@ TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData2));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData2);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -183,8 +183,8 @@ TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
   scoped_refptr<Stream> stream(
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData2));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData2);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);

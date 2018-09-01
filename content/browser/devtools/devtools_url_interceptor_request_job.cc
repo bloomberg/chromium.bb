@@ -273,7 +273,7 @@ DevToolsURLInterceptorRequestJob::InterceptedRequest::InterceptedRequest(
     : SubRequest(request_details,
                  devtools_interceptor_request_job,
                  interceptor),
-      response_buffer_(new net::GrowableIOBuffer()),
+      response_buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       read_response_result_(0),
       read_started_(false) {}
 

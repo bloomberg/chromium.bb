@@ -272,7 +272,7 @@ void TestResourceHandler::CancelWithError(net::Error net_error) {
 }
 
 void TestResourceHandler::SetBufferSize(int buffer_size) {
-  buffer_ = new net::IOBuffer(buffer_size);
+  buffer_ = base::MakeRefCounted<net::IOBuffer>(buffer_size);
   buffer_size_ = buffer_size;
   memset(buffer_->data(), '\0', buffer_size);
 }

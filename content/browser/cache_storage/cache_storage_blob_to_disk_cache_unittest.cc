@@ -152,8 +152,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
   std::string ReadCacheContent() {
     int bytes_to_read = disk_cache_entry_->GetDataSize(kCacheEntryIndex);
-    scoped_refptr<net::IOBufferWithSize> buffer(
-        new net::IOBufferWithSize(bytes_to_read));
+    scoped_refptr<net::IOBufferWithSize> buffer =
+        base::MakeRefCounted<net::IOBufferWithSize>(bytes_to_read);
 
     int rv = disk_cache_entry_->ReadData(kCacheEntryIndex, 0 /* offset */,
                                          buffer.get(), buffer->size(),

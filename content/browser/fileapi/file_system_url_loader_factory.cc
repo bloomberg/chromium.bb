@@ -481,7 +481,8 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
     data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
         std::move(pipe.producer_handle));
 
-    file_data_ = new net::IOBuffer(kDefaultFileSystemUrlPipeSize);
+    file_data_ =
+        base::MakeRefCounted<net::IOBuffer>(kDefaultFileSystemUrlPipeSize);
     ReadMoreFileData();
   }
 
