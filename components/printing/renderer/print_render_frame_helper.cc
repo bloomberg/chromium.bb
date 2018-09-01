@@ -30,8 +30,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/public/cpp/system/buffer.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
@@ -2033,23 +2032,15 @@ bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
   if (buf_size == 0)
     return false;
 
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(buf_size);
-  if (!buffer.is_valid())
+  base::MappedReadOnlyRegion region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(buf_size);
+  if (!region_mapping.IsValid())
     return false;
 
-  mojo::ScopedSharedBufferMapping mapping = buffer->Map(buf_size);
-  if (!mapping)
+  if (!metafile.GetData(region_mapping.mapping.memory(), buf_size))
     return false;
 
-  if (!metafile.GetData(mapping.get(), buf_size))
-    return false;
-
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      buffer->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-      &params->metafile_data_handle, nullptr, nullptr);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-  params->data_size = metafile.GetDataSize();
+  params->metafile_data_region = std::move(region_mapping.region);
   params->subframe_content_info = metafile.GetSubframeContentInfo();
   return true;
 }

@@ -109,8 +109,8 @@ void PrintMockRenderThread::OnDidPreviewPage(
     const PrintHostMsg_PreviewIds& ids) {
   DCHECK_GE(params.page_number, printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
-  print_preview_pages_.emplace_back(params.page_number,
-                                    params.content.data_size);
+  print_preview_pages_.emplace_back(
+      params.page_number, params.content.metafile_data_region.GetSize());
 }
 
 void PrintMockRenderThread::OnCheckForCancel(const PrintHostMsg_PreviewIds& ids,

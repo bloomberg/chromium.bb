@@ -49,10 +49,6 @@ class PrintCompositeClient
                                  int document_cookie,
                                  content::RenderFrameHost* subframe_host);
 
-  // NOTE: |content.metafile_data_handle| must be a READ-ONLY
-  // base::SharedMemoryHandle, i.e. one acquired by
-  // base::SharedMemory::GetReadOnlyHandle().
-
   // Printing single pages is only used by print preview for early return of
   // rendered results. In this case, the pages share the content with printed
   // document. The entire document will always be printed and sent at the end.

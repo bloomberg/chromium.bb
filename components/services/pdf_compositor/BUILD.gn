@@ -30,7 +30,6 @@ static_library("pdf_compositor") {
   ]
 
   public_deps = [
-    "//components/services/pdf_compositor/public/cpp:utils",
     "//components/services/pdf_compositor/public/interfaces",
     "//services/service_manager/public/cpp",
   ]

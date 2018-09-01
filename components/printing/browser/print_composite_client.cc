@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
@@ -16,7 +16,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/printing_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -116,13 +115,10 @@ void PrintCompositeClient::OnDidPrintFrameContent(
   // is done here. Most of it will be directly forwarded to pdf compositor
   // service.
   auto& compositor = GetCompositeRequest(document_cookie);
-
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      params.metafile_data_handle, params.data_size,
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  auto region = params.metafile_data_region.Duplicate();
   uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
   compositor->AddSubframeContent(
-      frame_guid, std::move(buffer_handle),
+      frame_guid, std::move(region),
       ConvertContentInfoMap(render_frame_host, params.subframe_content_info));
 
   // Update our internal states about this frame.
@@ -175,14 +171,11 @@ void PrintCompositeClient::DoCompositePageToPdf(
     const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto& compositor = GetCompositeRequest(document_cookie);
 
-  DCHECK(content.data_size);
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      content.metafile_data_handle, content.data_size,
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  auto& compositor = GetCompositeRequest(document_cookie);
+  auto region = content.metafile_data_region.Duplicate();
   compositor->CompositePageToPdf(
-      GenerateFrameGuid(render_frame_host), page_num, std::move(buffer_handle),
+      GenerateFrameGuid(render_frame_host), page_num, std::move(region),
       ConvertContentInfoMap(render_frame_host, content.subframe_content_info),
       base::BindOnce(&PrintCompositeClient::OnDidCompositePageToPdf,
                      std::move(callback)));
@@ -194,18 +187,15 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
     const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto& compositor = GetCompositeRequest(document_cookie);
 
-  DCHECK(content.data_size);
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      content.metafile_data_handle, content.data_size,
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  auto& compositor = GetCompositeRequest(document_cookie);
+  auto region = content.metafile_data_region.Duplicate();
 
   // Since this class owns compositor, compositor will be gone when this class
   // is destructed. Mojo won't call its callback in that case so it is safe to
   // use unretained |this| pointer here.
   compositor->CompositeDocumentToPdf(
-      GenerateFrameGuid(render_frame_host), std::move(buffer_handle),
+      GenerateFrameGuid(render_frame_host), std::move(region),
       ConvertContentInfoMap(render_frame_host, content.subframe_content_info),
       base::BindOnce(&PrintCompositeClient::OnDidCompositeDocumentToPdf,
                      base::Unretained(this), document_cookie,

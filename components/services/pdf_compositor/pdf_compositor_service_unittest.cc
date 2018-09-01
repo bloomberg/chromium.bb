@@ -15,7 +15,6 @@
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
@@ -124,7 +123,7 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
     return std::make_unique<PdfServiceTestClient>(this);
   }
 
-  mojo::ScopedSharedBufferHandle CreateMSKP() {
+  base::ReadOnlySharedMemoryRegion CreateMSKP() {
     SkDynamicMemoryWStream stream;
     sk_sp<SkDocument> doc = SkMakeMultiPictureDocument(&stream);
     cc::SkiaPaintCanvas canvas(doc->beginPage(800, 600));
@@ -142,13 +141,13 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
         base::ReadOnlySharedMemoryRegion::Create(len);
     CHECK(memory.IsValid());
     stream.copyTo(memory.mapping.memory());
-    return mojo::WrapReadOnlySharedMemoryRegion(std::move(memory.region));
+    return std::move(memory.region);
   }
 
   void CallCompositorWithSuccess(mojom::PdfCompositorPtr ptr) {
     static constexpr uint64_t kFrameGuid = 1234;
     auto handle = CreateMSKP();
-    ASSERT_TRUE(handle->is_valid());
+    ASSERT_TRUE(handle.IsValid());
     EXPECT_CALL(*this, CallbackOnCompositeSuccess(testing::_)).Times(1);
     ptr->CompositeDocumentToPdf(
         kFrameGuid, std::move(handle), ContentToFrameMap(),
@@ -167,11 +166,13 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
 
 // Test callback function is called on error conditions in service.
 TEST_F(PdfCompositorServiceTest, InvokeCallbackOnContentError) {
+  auto serialized_content = base::ReadOnlySharedMemoryRegion::Create(10);
+
   EXPECT_CALL(*this, CallbackOnCompositeStatus(
                          mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR))
       .Times(1);
   compositor_->CompositeDocumentToPdf(
-      5u, mojo::SharedBufferHandle::Create(10), ContentToFrameMap(),
+      5u, std::move(serialized_content.region), ContentToFrameMap(),
       base::BindOnce(&PdfCompositorServiceTest::OnCompositeToPdfCallback,
                      base::Unretained(this)));
   run_loop_->Run();

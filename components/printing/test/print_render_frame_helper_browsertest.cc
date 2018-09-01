@@ -617,9 +617,10 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
     if (got_preview_msg) {
       PrintHostMsg_MetafileReadyForPrinting::Param preview_param;
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
-      EXPECT_NE(0, std::get<0>(preview_param).document_cookie);
-      EXPECT_NE(0, std::get<0>(preview_param).expected_pages_count);
-      EXPECT_NE(0U, std::get<0>(preview_param).content.data_size);
+      const auto& param = std::get<0>(preview_param);
+      EXPECT_NE(0, param.document_cookie);
+      EXPECT_NE(0, param.expected_pages_count);
+      EXPECT_NE(0U, param.content.metafile_data_region.GetSize());
     }
   }
 

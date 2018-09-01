@@ -10,10 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -50,19 +49,6 @@ void StopWorker(int document_cookie) {
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PrinterQuery::StopWorker, printer_query));
   }
-}
-
-scoped_refptr<base::RefCountedMemory> GetDataFromHandle(
-    base::SharedMemoryHandle handle,
-    uint32_t data_size) {
-  auto shared_buf = std::make_unique<base::SharedMemory>(handle, true);
-  if (!shared_buf->Map(data_size)) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  return base::MakeRefCounted<base::RefCountedSharedMemory>(
-      std::move(shared_buf), data_size);
 }
 
 }  // namespace
@@ -128,7 +114,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_PreviewIds& ids) {
   int page_number = params.page_number;
   const PrintHostMsg_DidPrintContent_Params& content = params.content;
-  if (page_number < FIRST_PAGE_INDEX || !content.data_size)
+  if (page_number < FIRST_PAGE_INDEX || !content.metafile_data_region.IsValid())
     return;
 
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
@@ -147,7 +133,8 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   } else {
     NotifyUIPreviewPageReady(
         page_number, ids,
-        GetDataFromHandle(content.metafile_data_handle, content.data_size));
+        base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
+            content.metafile_data_region));
   }
 }
 
@@ -158,6 +145,10 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   // Always try to stop the worker.
   StopWorker(params.document_cookie);
 
+  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  if (!content.metafile_data_region.IsValid())
+    return;
+
   if (params.expected_pages_count <= 0) {
     NOTREACHED();
     return;
@@ -167,7 +158,6 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   if (!print_preview_ui)
     return;
 
-  const PrintHostMsg_DidPrintContent_Params& content = params.content;
   if (IsOopifEnabled() && print_preview_ui->source_is_modifiable()) {
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
     DCHECK(client);
@@ -180,7 +170,8 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   } else {
     NotifyUIPreviewDocumentReady(
         params.expected_pages_count, ids,
-        GetDataFromHandle(content.metafile_data_handle, content.data_size));
+        base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
+            content.metafile_data_region));
   }
 }
 
