@@ -351,24 +351,28 @@ class BBJSONGenerator(object):
         a[key] = b[key]
     return a
 
-  def initialize_args_for_test(self, generated_test, tester_config):
-    if 'args' in tester_config or 'args' in generated_test:
-      generated_test['args'] = self.maybe_fixup_args_array(
-        generated_test.get('args', []) + tester_config.get('args', []))
+  def initialize_args_for_test(
+      self, generated_test, tester_config, additional_arg_keys=None):
+
+    args = []
+    args.extend(generated_test.get('args', []))
+    args.extend(tester_config.get('args', []))
 
     def add_conditional_args(key, fn):
-      if key in generated_test:
-        if fn(tester_config):
-          if not 'args' in generated_test:
-            generated_test['args'] = []
-          generated_test['args'] += generated_test[key]
-        # Don't put the conditional args in the JSON.
-        generated_test.pop(key)
+      val = generated_test.pop(key, [])
+      if fn(tester_config):
+        args.extend(val)
 
     add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
     add_conditional_args('linux_args', self.is_linux)
     add_conditional_args('android_args', self.is_android)
 
+    for key in additional_arg_keys or []:
+      args.extend(generated_test.pop(key, []))
+      args.extend(tester_config.get(key, []))
+
+    if args:
+      generated_test['args'] = self.maybe_fixup_args_array(args)
 
   def initialize_swarming_dictionary_for_test(self, generated_test,
                                               tester_config):
@@ -444,7 +448,9 @@ class BBJSONGenerator(object):
     else:
       result['test'] = test_name
     self.initialize_swarming_dictionary_for_test(result, tester_config)
-    self.initialize_args_for_test(result, tester_config)
+
+    self.initialize_args_for_test(
+        result, tester_config, additional_arg_keys=['gtest_args'])
     if self.is_android(tester_config) and tester_config.get('use_swarming',
                                                             True):
       args = result.get('args', [])

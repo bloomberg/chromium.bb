@@ -2431,12 +2431,6 @@
           'gtest_tests': 'linux_arm_gtests',
         },
       },
-      'linux-blink-heap-incremental-marking': {
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'Linux Builder Goma Canary': {
         'additional_compile_targets': [
           'all',
@@ -2474,6 +2468,11 @@
           'gtest_tests': 'linux_viz_gtests',
         },
       },
+      'linux-annotator-rel': {
+        'test_suites': {
+          'scripts': 'test_traffic_annotation_auditor_script',
+        }
+      },
       'linux-blink-animation-use-time-delta': {
         'additional_compile_targets': [
           'all',
@@ -2483,15 +2482,25 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-annotator-rel': {
-        'test_suites': {
-          'scripts': 'test_traffic_annotation_auditor_script',
-        }
-      },
       'linux-blink-gen-property-trees': {
         'test_suites': {
           'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
         },
+      },
+      'linux-blink-heap-incremental-marking': {
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'linux-blink-heap-unified-gc': {
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+        'gtest_args': [
+          '--enable-blink-features=HeapUnifiedGarbageCollection',
+        ],
       },
       'linux-blink-heap-verification': {
         'test_suites': {
