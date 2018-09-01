@@ -2710,6 +2710,13 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-list-item.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/no-media-call.html [ Timeout ]
