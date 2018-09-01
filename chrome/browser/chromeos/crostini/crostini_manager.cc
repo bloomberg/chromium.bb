@@ -515,6 +515,24 @@ bool CrostiniManager::IsVmRunning(Profile* profile, std::string vm_name) {
          running_vms_.end();
 }
 
+base::Optional<vm_tools::concierge::VmInfo> CrostiniManager::GetVmInfo(
+    Profile* profile,
+    std::string vm_name) {
+  auto it = running_vms_.find(
+      std::make_pair(CryptohomeIdForProfile(profile), std::move(vm_name)));
+  if (it != running_vms_.end())
+    return it->second;
+  return base::nullopt;
+}
+
+void CrostiniManager::AddRunningVmForTesting(
+    std::string owner_id,
+    std::string vm_name,
+    vm_tools::concierge::VmInfo vm_info) {
+  auto key = std::make_pair(std::move(owner_id), std::move(vm_name));
+  running_vms_[key] = std::move(vm_info);
+}
+
 bool CrostiniManager::IsContainerRunning(Profile* profile,
                                          std::string vm_name,
                                          std::string container_name) {
@@ -1314,6 +1332,9 @@ void CrostiniManager::OnStartTerminaVm(
     tremplin_started_callbacks_.emplace(
         std::make_pair(std::move(owner_id), std::move(vm_name)),
         base::BindOnce(std::move(callback), ConciergeClientResult::SUCCESS));
+    // Record the running vm.
+    auto key = std::make_pair(std::move(owner_id), std::move(vm_name));
+    running_vms_[key] = std::move(response.vm_info());
     return;
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
@@ -1534,8 +1555,6 @@ void CrostiniManager::OnTremplinStarted(
     std::move(it->second).Run();
   }
   tremplin_started_callbacks_.erase(range.first, range.second);
-  // Record the running vm.
-  running_vms_.emplace(signal.owner_id(), signal.vm_name());
 }
 
 void CrostiniManager::OnLaunchContainerApplication(
