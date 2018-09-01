@@ -13,9 +13,11 @@ enum {
   kGpuStreamIdDefault,
   kGpuStreamIdWorker,
   kGpuStreamIdMedia,
+  kGpuStreamIdHighPriorityWebGL,
 };
 
-// Used for renderer compositor thread context, WebGL, canvas, etc.
+// Used for renderer compositor thread context, WebGL (when high priority is
+// not requested by workaround), canvas, etc.
 const gpu::SchedulingPriority kGpuStreamPriorityDefault =
     gpu::SchedulingPriority::kNormal;
 
@@ -30,6 +32,11 @@ const gpu::SchedulingPriority kGpuStreamPriorityMedia =
 // Used for renderer raster worker context.
 const gpu::SchedulingPriority kGpuStreamPriorityWorker =
     gpu::SchedulingPriority::kLow;
+
+// Used for WebGL on devices where a hgih priority context is requested by the
+// |use_high_priority_for_webgl| workaround.
+const gpu::SchedulingPriority kGpuStreamPriorityHighPriorityWebGL =
+    gpu::SchedulingPriority::kHigh;
 
 }  // namespace content
 
