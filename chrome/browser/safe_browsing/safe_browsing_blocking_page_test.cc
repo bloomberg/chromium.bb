@@ -28,7 +28,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -325,7 +324,6 @@ class TestSafeBrowsingBlockingPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile);
     bool is_unified_consent_given =
@@ -335,9 +333,9 @@ class TestSafeBrowsingBlockingPageFactory
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        is_unified_consent_enabled && is_unified_consent_given,
-        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        IsScout(*prefs), IsExtendedReportingPolicyManaged(*prefs),
+        is_proceed_anyway_disabled,
         true,   // should_open_links_in_new_tab
         false,  // check_can_go_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);

@@ -11,7 +11,6 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -116,7 +115,6 @@ class TestSafeBrowsingBlockingPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile);
     bool is_unified_consent_given =
@@ -125,9 +123,9 @@ class TestSafeBrowsingBlockingPageFactory
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        is_unified_consent_enabled && is_unified_consent_given,
-        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        IsScout(*prefs), IsExtendedReportingPolicyManaged(*prefs),
+        is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
@@ -205,7 +203,6 @@ class TestSafeBrowsingBlockingQuietPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile);
     bool is_unified_consent_given =
@@ -214,9 +211,9 @@ class TestSafeBrowsingBlockingQuietPageFactory
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        is_unified_consent_enabled && is_unified_consent_given,
-        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        IsScout(*prefs), IsExtendedReportingPolicyManaged(*prefs),
+        is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
