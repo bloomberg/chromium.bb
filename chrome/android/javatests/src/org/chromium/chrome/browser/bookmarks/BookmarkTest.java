@@ -28,6 +28,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -208,6 +209,7 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/879803")
     public void testOpenBookmarkManager() throws InterruptedException {
         openBookmarkManager();
         BookmarkDelegate delegate =
