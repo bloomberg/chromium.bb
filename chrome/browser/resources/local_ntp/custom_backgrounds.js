@@ -278,8 +278,7 @@ customBackgrounds.clearAttribution = function() {
 };
 
 customBackgrounds.unselectTile = function() {
-  $(customBackgrounds.IDS.DONE)
-      .classList.remove(customBackgrounds.CLASSES.DONE_AVAILABLE);
+  $(customBackgrounds.IDS.DONE).disabled = true;
   customBackgrounds.selectedTile = null;
   $(customBackgrounds.IDS.DONE).tabIndex = -1;
 };
@@ -683,8 +682,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 
       // Turn toggle off when an image is selected.
       $(customBackgrounds.IDS.REFRESH_TOGGLE).children[0].checked = false;
-      $(customBackgrounds.IDS.DONE)
-          .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
+      $(customBackgrounds.IDS.DONE).disabled = false;
       ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
                                 .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE);
     };
@@ -1011,6 +1009,8 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   $(customBackgrounds.IDS.DONE)
       .setAttribute('aria-label', configData.translatedStrings.selectionDone);
 
+  $(customBackgrounds.IDS.DONE).disabled = true;
+
   // Interactions with the "Upload an image" option.
   var uploadImageInteraction = function(event) {
     window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
@@ -1176,8 +1176,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
 
   // Interactions with the done button on the background picker dialog.
   var doneInteraction = function(event) {
-    if (!$(customBackgrounds.IDS.DONE)
-             .classList.contains(customBackgrounds.CLASSES.DONE_AVAILABLE)) {
+    if ($(customBackgrounds.IDS.DONE).disabled) {
       return;
     }
     customBackgrounds.setBackground(
@@ -1199,8 +1198,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
       customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
       customBackgrounds.selectedTile = null;
     }
-    $(customBackgrounds.IDS.DONE)
-        .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
+    $(customBackgrounds.IDS.DONE).disabled = false;
   };
 
   // On any arrow key event in the tiles area, focus the first tile.
