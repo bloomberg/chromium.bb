@@ -361,6 +361,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static CrostiniManager* GetInstance();
 
   bool IsVmRunning(Profile* profile, std::string vm_name);
+  // Returns null if VM is not running.
+  base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(Profile* profile,
+                                                        std::string vm_name);
+  void AddRunningVmForTesting(std::string owner_id,
+                              std::string vm_name,
+                              vm_tools::concierge::VmInfo vm_info);
   bool IsContainerRunning(Profile* profile,
                           std::string vm_name,
                           std::string container_name);
@@ -522,7 +528,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       tremplin_started_callbacks_;
 
   // Running vms as <owner_id, vm_name> pairs.
-  std::set<std::pair<std::string, std::string>> running_vms_;
+  std::map<std::pair<std::string, std::string>, vm_tools::concierge::VmInfo>
+      running_vms_;
 
   // Running containers as keyed by <owner_id, vm_name> string pairs.
   std::multimap<std::pair<std::string, std::string>, std::string>
