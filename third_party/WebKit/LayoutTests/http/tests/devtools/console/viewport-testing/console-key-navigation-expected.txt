@@ -1,0 +1,100 @@
+Tests that console messages are navigable with the keyboard.
+
+Message count: 100
+
+Running: testBetweenViewportAndExternal
+Setting focus in prompt:
+TEXTAREA:Code editor
+
+Shift+Tab:
+DIV:console-key-navigation.js:20 Message #99
+
+Shift+Tab:
+BUTTON:Console settings
+
+Tab:
+DIV:console-key-navigation.js:20 Message #99
+
+Tab:
+TEXTAREA:Code editor
+
+Running: testBetweenViewportAndExternalWithSelectedItemNotInDOM
+Setting focus in prompt:
+TEXTAREA:Code editor
+
+Shift+Tab:
+DIV:console-key-navigation.js:20 Message #99
+
+Scrolling to top of viewport
+DIV#console-messages.monospace
+
+Shift+Tab:
+BUTTON:Console settings
+
+Tab:
+DIV#console-messages.monospace
+
+Setting focus in prompt:
+TEXTAREA:Code editor
+
+Shift+Tab:
+DIV#console-messages.monospace
+
+Scrolling to top of viewport
+DIV#console-messages.monospace
+
+Tab:
+TEXTAREA:Code editor
+
+Running: testMoveAcrossLogsWithinViewport
+
+Force selecting index 99
+DIV#console-messages.monospace
+
+Home:
+DIV:console-key-navigation.js:20 Message #0
+
+ArrowDown:
+DIV:console-key-navigation.js:20 Message #1
+
+End:
+DIV:console-key-navigation.js:20 Message #99
+
+ArrowUp:
+DIV:console-key-navigation.js:20 Message #98
+
+Running: testViewportDoesNotChangeFocusOnScroll
+
+Force selecting index 98
+DIV:console-key-navigation.js:20 Message #98
+
+Scrolling to top of viewport
+DIV#console-messages.monospace
+
+Scrolling to bottom of viewport
+DIV:console-key-navigation.js:20 Message #98
+
+Running: testViewportDoesNotStealFocusOnScroll
+
+Force selecting index 99
+DIV:console-key-navigation.js:20 Message #99
+Setting focus in prompt:
+TEXTAREA:Code editor
+
+Scrolling to top of viewport
+TEXTAREA:Code editor
+
+Scrolling to bottom of viewport
+TEXTAREA:Code editor
+
+Running: testNewLogsShouldNotMoveFocus
+Setting focus in prompt:
+TEXTAREA:Code editor
+Message count: 101
+TEXTAREA:Code editor
+
+Running: testClearingConsoleFocusesPrompt
+
+Console cleared:
+TEXTAREA:Code editor
+
