@@ -87,6 +87,7 @@ public class AwAutofillProvider extends AutofillProvider {
                                 .addAttribute("name", field.mName)
                                 .addAttribute("type", field.mType)
                                 .addAttribute("label", field.mLabel)
+                                .addAttribute("ua-autofill-hints", field.mHeuristicType)
                                 .addAttribute("id", field.mId);
 
                 switch (field.getControlType()) {

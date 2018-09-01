@@ -836,8 +836,8 @@ public class AwAutofillTest {
         TestWebServer webServer = TestWebServer.start();
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<label>User Name:</label>"
-                + "<input type='text' id='text1' name='username' maxlength='30'"
-                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='text' id='text1' name='name' maxlength='30'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='name given-name'>"
                 + "<input type='checkbox' id='checkbox1' name='showpassword'>"
                 + "<select id='select1' name='month'>"
                 + "<option value='1'>Jan</option>"
@@ -881,14 +881,15 @@ public class AwAutofillTest {
             TestViewStructure child0 = viewStructure.getChild(0);
             assertEquals(View.AUTOFILL_TYPE_TEXT, child0.getAutofillType());
             assertEquals("placeholder@placeholder.com", child0.getHint());
-            assertEquals("username", child0.getAutofillHints()[0]);
-            assertEquals("name", child0.getAutofillHints()[1]);
+            assertEquals("name", child0.getAutofillHints()[0]);
+            assertEquals("given-name", child0.getAutofillHints()[1]);
             TestViewStructure.AwHtmlInfo htmlInfo0 = child0.getHtmlInfo();
             assertEquals("text", htmlInfo0.getAttribute("type"));
             assertEquals("text1", htmlInfo0.getAttribute("id"));
-            assertEquals("username", htmlInfo0.getAttribute("name"));
+            assertEquals("name", htmlInfo0.getAttribute("name"));
             assertEquals("User Name:", htmlInfo0.getAttribute("label"));
             assertEquals("30", htmlInfo0.getAttribute("maxlength"));
+            assertEquals("NAME_FIRST", htmlInfo0.getAttribute("ua-autofill-hints"));
 
             // Verify checkbox control filled correctly in ViewStructure.
             TestViewStructure child1 = viewStructure.getChild(1);
@@ -901,6 +902,7 @@ public class AwAutofillTest {
             assertEquals("showpassword", htmlInfo1.getAttribute("name"));
             assertEquals("", htmlInfo1.getAttribute("label"));
             assertNull(htmlInfo1.getAttribute("maxlength"));
+            assertNull(htmlInfo1.getAttribute("ua-autofill-hints"));
 
             // Verify select control filled correctly in ViewStructure.
             TestViewStructure child2 = viewStructure.getChild(2);
@@ -1474,6 +1476,69 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             waitForCallbackAndVerifyTypes(cnt, new Integer[] {});
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testUaAutofillHints() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<label for=\"frmAddressB\">Address</label>"
+                + "<input name=\"bill-address\" id=\"frmAddressB\">"
+                + "<label for=\"frmCityB\">City</label>"
+                + "<input name=\"bill-city\" id=\"frmCityB\">"
+                + "<label for=\"frmStateB\">State</label>"
+                + "<input name=\"bill-state\" id=\"frmStateB\">"
+                + "<label for=\"frmZipB\">Zip</label>"
+                + "<input name=\"bill-zip\" id=\"frmZipB\">"
+                + "<input type='checkbox' id='checkbox1' name='showpassword'>"
+                + "<label for=\"frmCountryB\">Country</label>"
+                + "<input name=\"bill-country\" id=\"frmCountryB\">"
+                + "<input type='submit'>"
+                + "</form></body></html>";
+        final int totalControls = 6;
+        try {
+            int cnt = 0;
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            executeJavaScriptAndWaitForResult("document.getElementById('frmAddressB').select();");
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            // Note that we currently call ENTER/EXIT one more time.
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            invokeOnProvideAutoFillVirtualStructure();
+            TestViewStructure viewStructure = mTestValues.testViewStructure;
+            assertNotNull(viewStructure);
+            assertEquals(totalControls, viewStructure.getChildCount());
+
+            TestViewStructure child0 = viewStructure.getChild(0);
+            TestViewStructure.AwHtmlInfo htmlInfo0 = child0.getHtmlInfo();
+            assertEquals("ADDRESS_HOME_LINE1", htmlInfo0.getAttribute("ua-autofill-hints"));
+
+            TestViewStructure child1 = viewStructure.getChild(1);
+            TestViewStructure.AwHtmlInfo htmlInfo1 = child1.getHtmlInfo();
+            assertEquals("ADDRESS_HOME_CITY", htmlInfo1.getAttribute("ua-autofill-hints"));
+
+            TestViewStructure child2 = viewStructure.getChild(2);
+            TestViewStructure.AwHtmlInfo htmlInfo2 = child2.getHtmlInfo();
+            assertEquals("ADDRESS_HOME_STATE", htmlInfo2.getAttribute("ua-autofill-hints"));
+
+            TestViewStructure child3 = viewStructure.getChild(3);
+            TestViewStructure.AwHtmlInfo htmlInfo3 = child3.getHtmlInfo();
+            assertEquals("ADDRESS_HOME_ZIP", htmlInfo3.getAttribute("ua-autofill-hints"));
+
+            TestViewStructure child4 = viewStructure.getChild(4);
+            TestViewStructure.AwHtmlInfo htmlInfo4 = child4.getHtmlInfo();
+            assertNull(htmlInfo4.getAttribute("ua-autofill-hints"));
+
+            TestViewStructure child5 = viewStructure.getChild(5);
+            TestViewStructure.AwHtmlInfo htmlInfo5 = child5.getHtmlInfo();
+            assertEquals("ADDRESS_HOME_COUNTRY", htmlInfo5.getAttribute("ua-autofill-hints"));
         } finally {
             webServer.shutdown();
         }

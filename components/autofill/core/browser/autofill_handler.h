@@ -115,6 +115,15 @@ class AutofillHandler {
                               AutofillDriver::RendererFormDataAction action,
                               const FormData& data);
 
+  // Fills |form_structure| and |autofill_field| with the cached elements
+  // corresponding to |form| and |field|.  This might have the side-effect of
+  // updating the cache.  Returns false if the |form| is not autofillable, or if
+  // it is not already present in the cache and the cache is full.
+  bool GetCachedFormAndField(const FormData& form,
+                             const FormFieldData& field,
+                             FormStructure** form_structure,
+                             AutofillField** autofill_field) WARN_UNUSED_RESULT;
+
   // Returns the number of forms this Autofill handler is aware of.
   size_t NumFormsDetected() const { return form_structures_.size(); }
 
@@ -161,15 +170,6 @@ class AutofillHandler {
   // Invoked when forms from OnFormsSeen() has been parsed to |form_structures|.
   virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
                              const base::TimeTicks timestamp) = 0;
-
-  // Fills |form_structure| and |autofill_field| with the cached elements
-  // corresponding to |form| and |field|.  This might have the side-effect of
-  // updating the cache.  Returns false if the |form| is not autofillable, or if
-  // it is not already present in the cache and the cache is full.
-  bool GetCachedFormAndField(const FormData& form,
-                             const FormFieldData& field,
-                             FormStructure** form_structure,
-                             AutofillField** autofill_field) WARN_UNUSED_RESULT;
 
   // Fills |form_structure| with a pointer to the cached form structure
   // corresponding to |form_signature|. Returns false if no cached form
