@@ -5,6 +5,7 @@
 #import "ui/views/cocoa/bridged_content_view.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -1319,9 +1320,10 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // Currently we only support reading and writing plain strings.
 - (id)validRequestorForSendType:(NSString*)sendType
                      returnType:(NSString*)returnType {
-  BOOL canWrite = [sendType isEqualToString:NSStringPboardType] &&
-                  [self selectedRange].length > 0;
-  BOOL canRead = [returnType isEqualToString:NSStringPboardType];
+  NSString* const utf8Type = base::mac::CFToNSCast(kUTTypeUTF8PlainText);
+  BOOL canWrite =
+      [sendType isEqualToString:utf8Type] && [self selectedRange].length > 0;
+  BOOL canRead = [returnType isEqualToString:utf8Type];
   // Valid if (sendType, returnType) is either (string, nil), (nil, string),
   // or (string, string).
   BOOL valid = textInputClient_ && ((canWrite && (canRead || !returnType)) ||
@@ -1330,10 +1332,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
                                               returnType:returnType];
 }
 
-// NSServicesRequests informal protocol.
+// NSServicesMenuRequestor protocol
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard types:(NSArray*)types {
-  DCHECK([types containsObject:NSStringPboardType]);
+  // NB: The NSServicesMenuRequestor protocol has not (as of 10.14) been
+  // upgraded to request UTIs rather than obsolete PboardType constants. Handle
+  // either for when it is upgraded.
+  DCHECK([types containsObject:NSStringPboardType] ||
+         [types containsObject:base::mac::CFToNSCast(kUTTypeUTF8PlainText)]);
   if (!textInputClient_)
     return NO;
 

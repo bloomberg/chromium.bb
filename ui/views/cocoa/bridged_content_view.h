@@ -24,7 +24,8 @@ class BridgedNativeWidget;
 // views::View.
 @interface BridgedContentView : ToolTipBaseView<NSTextInputClient,
                                                 NSUserInterfaceValidations,
-                                                NSDraggingSource> {
+                                                NSDraggingSource,
+                                                NSServicesMenuRequestor> {
  @private
   // Weak, reset by clearView.
   views::BridgedNativeWidget* bridge_;
