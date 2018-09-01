@@ -3155,6 +3155,10 @@ const char kCrosRegionsModeDefault[] = "Default";
 const char kCrosRegionsModeOverride[] = "Override VPD values.";
 const char kCrosRegionsModeHide[] = "Hide VPD values.";
 
+const char kCrostiniFilesName[] = "Crostini Files";
+const char kCrostiniFilesDescription[] =
+    "Enable Crostini file sharing in Files app.";
+
 const char kDisableLockScreenAppsName[] = "Disable lock screen note taking";
 const char kDisableLockScreenAppsDescription[] =
     "Disable new-note action handler apps on the lock screen. The user will "
