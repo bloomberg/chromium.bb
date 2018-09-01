@@ -8,11 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-#include "components/prefs/pref_service.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -49,36 +44,6 @@ using OnAssistantOptInScreenExitCallback =
     base::OnceCallback<void(AssistantOptInScreenExitCode exit_code)>;
 
 void RecordAssistantOptInStatus(AssistantOptInFlowStatus);
-
-// Construct SettingsUiSelector for the ConsentFlow UI.
-assistant::SettingsUiSelector GetSettingsUiSelector();
-
-// Construct SettingsUiUpdate for user opt-in.
-assistant::SettingsUiUpdate GetSettingsUiUpdate(
-    const std::string& consent_token);
-
-// Construct SettingsUiUpdate for email opt-in.
-assistant::SettingsUiUpdate GetEmailOptInUpdate(bool opted_in);
-
-using SettingZippyList = google::protobuf::RepeatedPtrField<
-    assistant::ClassicActivityControlUiTexts::SettingZippy>;
-// Helper method to create zippy data.
-base::Value CreateZippyData(const SettingZippyList& zippy_list);
-
-// Helper method to create disclosure data.
-base::Value CreateDisclosureData(const SettingZippyList& disclosure_list);
-
-// Helper method to create get more screen data.
-base::Value CreateGetMoreData(bool email_optin_needed,
-                              const assistant::EmailOptInUi& email_optin_ui);
-
-// Get string constants for settings ui.
-base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
-                                 bool activity_control_needed);
-
-void RecordActivityControlConsent(Profile* profile,
-                                  std::string ui_audit_key,
-                                  bool opted_in);
 
 }  // namespace chromeos
 

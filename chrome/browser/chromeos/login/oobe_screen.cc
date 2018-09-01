@@ -53,7 +53,6 @@ const char* kScreenNames[] = {
     "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
     "wait-for-container-ready",      // SCREEN_WAIT_FOR_CONTAINTER_READY
     "update-required",               // SCREEN_UPDATE_REQUIRED
-    "assistant-optin-flow",          // SCREEN_ASSISTANT_OPTIN_FLOW
     "login",                         // SCREEN_SPECIAL_LOGIN
     "oobe",                          // SCREEN_SPECIAL_OOBE
     "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
