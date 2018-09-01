@@ -292,6 +292,11 @@
     "extension_types": ["extension", "platform_app"],
     "location": "policy"
   },
+  "enterprise.hardwarePlatform": {
+    "channel": "canary",
+    "extension_types": ["extension"],
+    "location": "policy"
+  },
   "enterprise.platformKeys": [{
     "channel": "stable",
     "platforms": ["chromeos"],

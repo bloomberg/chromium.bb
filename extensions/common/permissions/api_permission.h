@@ -197,7 +197,7 @@ class APIPermission {
     kWallpaper = 153,
     kWallpaperPrivate = 154,
     kWebcamPrivate = 155,
-    kWebConnectable = 156,    // for externally_connectable manifest key
+    kWebConnectable = 156,  // for externally_connectable manifest key
     kWebNavigation = 157,
     kWebRequest = 158,
     kWebRequestBlocking = 159,
@@ -257,6 +257,7 @@ class APIPermission {
     kFileSystemRequestDownloads = 213,
     kSystemPowerSource = 214,
     kArcAppsPrivate = 215,
+    kEnterpriseHardwarePlatform = 216,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/histograms.xml
     // (by running update_extension_permission.py).
