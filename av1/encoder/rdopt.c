@@ -7633,12 +7633,40 @@ static int interinter_compound_motion_search(const AV1_COMP *const cpi,
   return tmp_rate_mv;
 }
 
+static void get_inter_predictors_masked_compound(
+    const AV1_COMP *const cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
+    int mi_row, int mi_col, uint8_t **preds0, uint8_t **preds1,
+    int16_t *residual1, int16_t *diff10, int *strides) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
+  int can_use_previous = cm->allow_warped_motion;
+  // get inter predictors to use for masked compound modes
+  av1_build_inter_predictors_for_planes_single_buf(
+      xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides, can_use_previous);
+  av1_build_inter_predictors_for_planes_single_buf(
+      xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides, can_use_previous);
+  const struct buf_2d *const src = &x->plane[0].src;
+  if (get_bitdepth_data_path_index(xd)) {
+    aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
+                              CONVERT_TO_BYTEPTR(*preds1), bw, xd->bd);
+    aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(*preds1),
+                              bw, CONVERT_TO_BYTEPTR(*preds0), bw, xd->bd);
+  } else {
+    aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, *preds1,
+                       bw);
+    aom_subtract_block(bh, bw, diff10, bw, *preds1, bw, *preds0, bw);
+  }
+}
+
 static int64_t build_and_cost_compound_type(
     const AV1_COMP *const cpi, MACROBLOCK *x, const int_mv *const cur_mv,
     const BLOCK_SIZE bsize, const PREDICTION_MODE this_mode, int *rs2,
     int rate_mv, BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
     uint8_t **preds1, int16_t *residual1, int16_t *diff10, int *strides,
-    int mi_row, int mi_col, int mode_rate, int64_t ref_best_rd) {
+    int mi_row, int mi_col, int mode_rate, int64_t ref_best_rd,
+    int *calc_pred_masked_compound) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -7649,6 +7677,12 @@ static int64_t build_and_cost_compound_type(
   int tmp_skip_txfm_sb;
   int64_t tmp_skip_sse_sb;
   const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
+
+  if (*calc_pred_masked_compound) {
+    get_inter_predictors_masked_compound(cpi, x, bsize, mi_row, mi_col, preds0,
+                                         preds1, residual1, diff10, strides);
+    *calc_pred_masked_compound = 0;
+  }
 
   best_rd_cur =
       pick_interinter_mask(cpi, x, bsize, *preds0, *preds1, residual1, diff10);
@@ -9003,7 +9037,6 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *mbmi = xd->mi[0];
   const PREDICTION_MODE this_mode = mbmi->mode;
   const int bw = block_size_wide[bsize];
-  const int bh = block_size_high[bsize];
   int rate_sum, rs2;
   int64_t dist_sum;
 
@@ -9026,29 +9059,11 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int mask_len = 2 * num_pix * sizeof(uint8_t);
   COMPOUND_TYPE cur_type;
   int best_compmode_interinter_cost = 0;
-  int can_use_previous = cm->allow_warped_motion;
+  int calc_pred_masked_compound = 1;
 
   best_mv[0].as_int = cur_mv[0].as_int;
   best_mv[1].as_int = cur_mv[1].as_int;
   *rd = INT64_MAX;
-  if (masked_compound_used) {
-    // get inter predictors to use for masked compound modes
-    av1_build_inter_predictors_for_planes_single_buf(
-        xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides, can_use_previous);
-    av1_build_inter_predictors_for_planes_single_buf(
-        xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides, can_use_previous);
-    const struct buf_2d *const src = &x->plane[0].src;
-    if (get_bitdepth_data_path_index(xd)) {
-      aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
-                                CONVERT_TO_BYTEPTR(pred1), bw, xd->bd);
-      aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(pred1),
-                                bw, CONVERT_TO_BYTEPTR(pred0), bw, xd->bd);
-    } else {
-      aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, pred1,
-                         bw);
-      aom_subtract_block(bh, bw, diff10, bw, pred1, bw, pred0, bw);
-    }
-  }
   for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
     if (cur_type != COMPOUND_AVERAGE && !masked_compound_used) break;
     if (!is_interinter_compound_used(cur_type, bsize)) continue;
@@ -9088,7 +9103,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
         best_rd_cur = build_and_cost_compound_type(
             cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
             &tmp_rate_mv, preds0, preds1, residual1, diff10, strides, mi_row,
-            mi_col, rd_stats->rate, ref_best_rd);
+            mi_col, rd_stats->rate, ref_best_rd, &calc_pred_masked_compound);
       }
     }
     if (best_rd_cur < *rd) {
