@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -21,7 +22,7 @@ constexpr base::TimeDelta kOriginSlideInDuration =
 constexpr base::TimeDelta kOriginPauseDuration =
     base::TimeDelta::FromMilliseconds(2500);
 constexpr base::TimeDelta kOriginSlideOutDuration =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromMilliseconds(800);
 
 constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
@@ -35,7 +36,9 @@ HostedAppOriginText::HostedAppOriginText(Browser* browser) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   label_ = std::make_unique<views::Label>(
-               browser->hosted_app_controller()->GetFormattedUrlOrigin())
+               browser->hosted_app_controller()->GetFormattedUrlOrigin(),
+               ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+               ChromeTextStyle::STYLE_EMPHASIZED)
                .release();
   label_->SetElideBehavior(gfx::ELIDE_HEAD);
   label_->SetSubpixelRenderingEnabled(false);
@@ -64,13 +67,8 @@ void HostedAppOriginText::StartSlideAnimation() {
 
   // Current state will become the first animation keyframe.
   DCHECK_EQ(label_layer->opacity(), 0);
-  gfx::Transform out_of_frame;
-  out_of_frame.Translate(
-      label_->bounds().width() * (base::i18n::IsRTL() ? -1 : 1), 0);
-  label_layer->SetTransform(out_of_frame);
 
   auto opacity_sequence = std::make_unique<ui::LayerAnimationSequence>();
-  auto transform_sequence = std::make_unique<ui::LayerAnimationSequence>();
 
   // Slide in.
   auto opacity_keyframe = ui::LayerAnimationElement::CreateOpacityElement(
@@ -78,15 +76,8 @@ void HostedAppOriginText::StartSlideAnimation() {
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
-  auto transform_keyframe = ui::LayerAnimationElement::CreateTransformElement(
-      gfx::Transform(), kOriginSlideInDuration);
-  transform_keyframe->set_tween_type(kTweenType);
-  transform_sequence->AddElement(std::move(transform_keyframe));
-
   // Pause.
   opacity_sequence->AddElement(
-      ui::LayerAnimationElement::CreatePauseElement(0, kOriginPauseDuration));
-  transform_sequence->AddElement(
       ui::LayerAnimationElement::CreatePauseElement(0, kOriginPauseDuration));
 
   // Slide out.
@@ -95,13 +86,7 @@ void HostedAppOriginText::StartSlideAnimation() {
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
-  transform_keyframe = ui::LayerAnimationElement::CreateTransformElement(
-      out_of_frame, kOriginSlideOutDuration);
-  transform_keyframe->set_tween_type(kTweenType);
-  transform_sequence->AddElement(std::move(transform_keyframe));
-
-  label_layer->GetAnimator()->StartTogether(
-      {opacity_sequence.release(), transform_sequence.release()});
+  label_layer->GetAnimator()->StartAnimation(opacity_sequence.release());
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
