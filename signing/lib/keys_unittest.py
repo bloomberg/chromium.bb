@@ -21,6 +21,7 @@ class KeysetMock(keys.Keyset):
           'firmware_data_key',
           'installer_kernel_data_key',
           'kernel_data_key',
+          'kernel_subkey'
           'recovery_kernel_data_key',
           'root_key')
 
@@ -193,7 +194,7 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
   def testEqSame(self):
     kc1 = self._get_keyset()
     kc2 = self._get_keyset()
-    self.assertTrue(kc1 == kc2)
+    self.assertEqual(kc1, kc2)
 
   def testEqDiffrent(self):
     kc1 = self._get_keyset()
@@ -231,10 +232,9 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
 
   def testGetSubKeysetMissmatch(self):
     ks0 = self._get_keyset()
-    ks1 = ks0.GetSubKeyset('foo')
 
-    self.assertIsInstance(ks1, keys.Keyset)
-    self.assertDictEqual(ks0.keys, ks1.keys)
+    with self.assertRaises(keys.SignerSubkeyMissingError):
+      ks0.GetSubKeyset('foo')
 
   def testGetSubKeyset(self):
     ks0 = self._get_keyset()
@@ -341,7 +341,7 @@ def CreateDummyPublic(key):
     for subkey in key.subkeys.values():
       CreateDummyPublic(subkey)
   else:
-    osutils.Touch(key.public)
+    osutils.Touch(key.public, makedirs=True)
 
 
 def CreateDummyPrivateKey(key):
@@ -350,7 +350,7 @@ def CreateDummyPrivateKey(key):
     for subkey in key.subkeys.values():
       CreateDummyPrivateKey(subkey)
   else:
-    osutils.Touch(key.private)
+    osutils.Touch(key.private, makedirs=True)
 
 
 def CreateDummyKeyblock(key):
@@ -359,7 +359,7 @@ def CreateDummyKeyblock(key):
     for subkey in key.subkeys.values():
       CreateDummyKeyblock(subkey)
   else:
-    osutils.Touch(key.keyblock)
+    osutils.Touch(key.keyblock, makedirs=True)
 
 
 def CreateDummyKeys(key):

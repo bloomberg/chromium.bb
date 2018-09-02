@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import ConfigParser
 import io
+import os
 
 from chromite.lib import cros_test_lib
 from chromite.signing.lib import keys
@@ -194,9 +195,11 @@ class TestSigner(cros_test_lib.TempDirTestCase):
     self.assertTrue(s0.CheckKeyset(ks0))
 
 
-def KeysetFromSigner(s, keydir):
+def KeysetFromSigner(s, keydir, subdir='keyset'):
   """Returns a valid keyset containing required keys and keyblocks."""
   ks = keys.Keyset()
+
+  keydir = os.path.join(keydir, subdir)
 
   # pylint: disable=protected-access
   for key_name in s._required_keys:
@@ -236,8 +239,7 @@ class MockFutilitySigner(signer.FutilitySigner):
     return [input_name, output_name]
 
 
-class TestFutilitySigner(cros_test_lib.RunCommandTestCase,
-                         cros_test_lib.TempDirTestCase):
+class TestFutilitySigner(cros_test_lib.RunCommandTempDirTestCase):
   """Test Futility Signer."""
 
   def testSign(self):

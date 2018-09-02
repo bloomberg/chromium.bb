@@ -14,6 +14,18 @@ import re
 from chromite.lib import cros_logging as logging
 
 
+class SignerKeyError(Exception):
+  """Raise when there in an error related to keys"""
+
+
+class SignerKeyMissingError(SignerKeyError):
+  """Raise if key is missing from subset"""
+
+
+class SignerSubkeyMissingError(SignerKeyMissingError):
+  """Raise if a subkey is missing"""
+
+
 class KeyPair(object):
   """Container for a key's files.
 
@@ -157,19 +169,28 @@ class Keyset(object):
     * Keys does not have a subkey of the given name
     * Subkey exists for the given name, or alias. Key will be indexed under
         it's parent key's name. ex: 'firmware.loem1' -> 'firmware'
+
+    Raises SubkeyMissingError if subkey not found
     """
     ks = Keyset()
+
+    found = False
 
     # Use alias if exists
     subkey_alias = self.subkey_aliases.get(subkey_name, '')
 
     for key_name, key in self.keys.items():
       if subkey_alias in key.subkeys:
+        found = True
         ks.AddKey(key.subkeys[subkey_alias], key_name=key_name)
       elif subkey_name in key.subkeys:
+        found = True
         ks.AddKey(key.subkeys[subkey_name], key_name=key_name)
       else:
-        ks.AddKey(key)
+        ks.AddKey(key, key_name=key_name)
+
+    if not found:
+      raise SignerSubkeyMissingError("Unable to find %s", subkey_name)
 
     return ks
 
@@ -215,5 +236,9 @@ def KeysetFromDir(key_dir):
       if subkey:
         logging.debug('Found subkey %s.%s', key_name, subkey)
         ks.AddSubkey(key_name, subkey)
+
+    elif f_name == 'key_ec_efs.vbprik2':
+      ks.AddKey(KeyPair('key_ec_efs', key_dir,
+                        pub_ext='.vbpubk2', priv_ext='.vbprivk2'))
 
   return ks

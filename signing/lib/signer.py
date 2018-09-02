@@ -34,6 +34,9 @@ import re
 from chromite.lib import cros_build_lib
 
 
+class SigningFailedError(Exception):
+  """Raise when a signing failed"""
+
 class SignerOutputTemplateError(Exception):
   """Raise when there is an issue with filling a signer output template"""
 

@@ -17,90 +17,136 @@ from chromite.signing.lib import keys_unittest
 from chromite.signing.lib import signer_unittest
 
 
-class TestBiosSigner(cros_test_lib.RunCommandTestCase,
-                     cros_test_lib.TempDirTestCase):
+class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
   """Test BiosSigner."""
 
   def testGetCmdArgs(self):
     bs = firmware.BiosSigner()
     ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
 
-    fw_key = ks.keys['firmware_data_key']
+    bios_bin = os.path.join(self.tempdir, 'bios.bin')
+    bios_out = os.path.join(self.tempdir, 'bios.out')
 
-    self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
+    fw_key = ks.keys['firmware_data_key']
+    kernel_key = ks.keys['kernel_subkey']
+    self.assertListEqual(bs.GetFutilityArgs(ks, bios_bin, bios_out),
                          ['sign',
                           '--type', 'bios',
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
-                          '--kernelkey', ks.keys['kernel'].public,
-                          '--version', str(bs.version),
+                          '--kernelkey', kernel_key.public,
+                          '--version', fw_key.version,
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
-                          'foo', 'bar'])
+                          bios_bin, bios_out])
 
   def testGetCmdArgsWithDevKeys(self):
     bs = firmware.BiosSigner()
     ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
 
+    bios_bin = os.path.join(self.tempdir, 'bios.bin')
+    bios_out = os.path.join(self.tempdir, 'bios.out')
+
     # Add 'dev_firmware' keys and keyblock
     dev_fw_key = keys.KeyPair('dev_firmware_data_key', keydir=self.tempdir)
     ks.AddKey(dev_fw_key)
     keys_unittest.CreateDummyPrivateKey(dev_fw_key)
-
     keys_unittest.CreateDummyKeyblock(dev_fw_key)
 
     fw_key = ks.keys['firmware_data_key']
+    kernel_key = ks.keys['kernel_subkey']
 
-    self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
+    self.assertListEqual(bs.GetFutilityArgs(ks, bios_bin, bios_out),
                          ['sign',
                           '--type', 'bios',
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
-                          '--kernelkey', ks.keys['kernel'].public,
-                          '--version', str(bs.version),
+                          '--kernelkey', kernel_key.public,
+                          '--version', fw_key.version,
                           '--devsign', dev_fw_key.private,
                           '--devkeyblock', dev_fw_key.keyblock,
-                          'foo', 'bar'])
+                          bios_bin, bios_out])
 
   def testGetCmdArgsWithSig(self):
-    loem_dir = os.path.join(self.tempdir, 'loem')
+    loem_dir = os.path.join(self.tempdir, 'loem1', 'keyset')
     loem_id = 'loem1'
-    bs = firmware.BiosSigner(sig_dir=loem_dir, sig_id=loem_id)
-    ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
+
+    bs = firmware.BiosSigner(sig_id=loem_id, sig_dir=loem_dir)
+    ks = signer_unittest.KeysetFromSigner(bs, keydir=self.tempdir)
+
+    bios_bin = os.path.join(self.tempdir, loem_id, 'bios.bin')
 
     fw_key = ks.keys['firmware_data_key']
+    kernel_key = ks.keys['kernel_subkey']
 
-    self.assertListEqual(bs.GetFutilityArgs(ks, 'foo', 'bar'),
+    self.assertListEqual(bs.GetFutilityArgs(ks, bios_bin, loem_dir),
                          ['sign',
                           '--type', 'bios',
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
-                          '--kernelkey', ks.keys['kernel'].public,
-                          '--version', str(bs.version),
+                          '--kernelkey', kernel_key.public,
+                          '--version', fw_key.version,
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
                           '--loemdir', loem_dir,
                           '--loemid', loem_id,
-                          'foo', 'bar'])
+                          bios_bin, loem_dir])
 
 
-class TestECSigner(cros_test_lib.RunCommandTestCase,
-                   cros_test_lib.TempDirTestCase):
+class TestECSigner(cros_test_lib.RunCommandTempDirTestCase):
   """Test ECSigner."""
 
-  def testGetCmdArgs(self):
-    ecs = firmware.ECSigner()
-    ks = signer_unittest.KeysetFromSigner(ecs, self.tempdir)
+  def testIsROSignedRW(self):
+    ec_signer = firmware.ECSigner()
+    bios_bin = os.path.join(self.tempdir, 'bin.bin')
 
-    self.assertListEqual(ecs.GetFutilityArgs(ks, 'foo', 'bar'),
-                         ['sign',
-                          '--type', 'rwsig',
-                          '--prikey', ks.keys['ec'].private,
-                          'foo', 'bar'])
+    self.assertFalse(ec_signer.IsROSigned(bios_bin))
+
+    self.assertCommandContains(['futility', 'dump_fmap', bios_bin])
+
+  def testIsROSignedRO(self):
+    ec_signer = firmware.ECSigner()
+    bios_bin = os.path.join(self.tempdir, 'bin.bin')
+
+    self.rc.SetDefaultCmdResult(output='KEY_RO')
+
+    self.assertTrue(ec_signer.IsROSigned(bios_bin))
+
+  def testSign(self):
+    ec_signer = firmware.ECSigner()
+    ks = signer_unittest.KeysetFromSigner(ec_signer, self.tempdir)
+    ec_bin = os.path.join(self.tempdir, 'ec.bin')
+    bios_bin = os.path.join(self.tempdir, 'bios.bin')
+
+    self.assertTrue(ec_signer.Sign(ks, ec_bin, bios_bin))
+
+    self.assertCommandContains(['futility', 'sign', '--type', 'rwsig',
+                                '--prikey', ks.keys['key_ec_efs'].private,
+                                ec_bin])
+    self.assertCommandContains(['openssl', 'dgst', '-sha256', '-binary'])
+    self.assertCommandContains(['store_file_in_cbfs', bios_bin, 'ecrw'])
+    self.assertCommandContains(['store_file_in_cbfs', bios_bin, 'ecrw.hash'])
 
 
-class ShellballTest(cros_test_lib.RunCommandTestCase,
-                    cros_test_lib.TempDirTestCase):
+class TestGBBSigner(cros_test_lib.TempDirTestCase):
+  """Test GBBSigner."""
+
+  def testGetFutilityArgs(self):
+    gb_signer = firmware.GBBSigner()
+    ks = signer_unittest.KeysetFromSigner(gb_signer, self.tempdir)
+
+    bios_in = os.path.join(self.tempdir, 'bin.orig')
+    bios_out = os.path.join(self.tempdir, 'bios.bin')
+
+    self.assertListEqual(gb_signer.GetFutilityArgs(ks, bios_in, bios_out),
+                         ['gbb',
+                          '--set',
+                          '--recoverykey=' + ks.keys['recovery_key'].public,
+                          bios_in,
+                          bios_out])
+
+
+class ShellballTest(cros_test_lib.RunCommandTempDirTestCase):
   """Verify that shellball is being called with correct arguments."""
 
   def setUp(self):
