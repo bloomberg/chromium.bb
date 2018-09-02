@@ -186,21 +186,6 @@ camera.views.camera.Options.Sound = Object.freeze({
   RECORDEND: 3
 });
 
-camera.views.camera.Options.prototype = {
-  get recordMode() {
-    return document.body.classList.contains('record-mode');
-  },
-  set disabled(value) {
-    this.switchRecordVideo_.disabled = value;
-    this.switchTakePhoto_.disabled = value;
-    this.toggleDevice_.disabled = value;
-    this.toggleMirror_.disabled = value;
-    this.toggleGrid_.disabled = value;
-    this.toggleTimer_.disabled = value;
-    this.toggleMic_.disabled = value;
-  }
-};
-
 /**
  * Prepares the options.
  */
@@ -233,6 +218,24 @@ camera.views.camera.Options.prototype.prepare = function() {
   setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
 };
 
+/**
+ * Updates UI controls' disabled status for capturing/taking state changes.
+ * @param {boolean} capturing Whether camera is capturing.
+ * @param {boolean} capturing Whether camera is taking.
+ */
+camera.views.camera.Options.prototype.updateControls = function(
+    capturing, taking) {
+  var disabled = !capturing;
+  this.toggleMirror_.disabled = disabled;
+  this.toggleGrid_.disabled = disabled;
+  this.toggleTimer_.disabled = disabled;
+  this.toggleMic_.disabled = disabled;
+
+  disabled = disabled || taking;
+  this.toggleDevice_.disabled = disabled;
+  this.switchRecordVideo_.disabled = disabled;
+  this.switchTakePhoto_.disabled = disabled;
+};
 
 /**
  * Handles clicking on the video-recording switch.
@@ -301,11 +304,8 @@ camera.views.camera.Options.prototype.updateClass_ = function(toggle, name) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleMicClicked_ = function(event) {
-  var enabled = this.toggleMic_.checked;
-  chrome.storage.local.set({toggleMic: enabled});
-  if (this.toggleMic_.track) {
-    this.toggleMic_.track.enabled = enabled;
-  }
+  chrome.storage.local.set({toggleMic: this.toggleMic_.checked});
+  this.updateMicAudio();
 };
 
 /**
@@ -340,11 +340,11 @@ camera.views.camera.Options.prototype.onToggleMirrorClicked_ = function(event) {
 };
 
 /**
- * Handles playing the given sound by the speaker option.
+ * Handles playing the sound by the speaker option.
  * @param {camera.views.camera.Options.Sound} sound Sound to be played.
  * @return {boolean} Whether the sound being played.
  */
-camera.views.camera.Options.prototype.onSound = function(sound) {
+camera.views.camera.Options.prototype.playSound = function(sound) {
   // TODO(yuli): Don't play sounds if the speaker settings is muted.
   var play = (element) => {
     element.currentTime = 0;
@@ -364,10 +364,21 @@ camera.views.camera.Options.prototype.onSound = function(sound) {
 };
 
 /**
+ * Handles enabling microphone audio by the microphone option.
+ * @param {boolean} forceEnable Whether force to enable microphone.
+ */
+camera.views.camera.Options.prototype.updateMicAudio = function(forceEnable) {
+  var enabled = forceEnable || this.toggleMic_.checked;
+  if (this.toggleMic_.track) {
+    this.toggleMic_.track.enabled = enabled;
+  }
+};
+
+/**
  * Schedules ticks by the timer option if any.
  * @return {?Promise<>} Promise for the operation.
  */
-camera.views.camera.Options.prototype.onTimerTicks = function() {
+camera.views.camera.Options.prototype.timerTicks = function() {
   if (!this.toggleTimer_.checked) {
     return null;
   }
@@ -381,7 +392,7 @@ camera.views.camera.Options.prototype.onTimerTicks = function() {
       } else {
         tickCounter--;
         this.tickTimeout_ = setTimeout(onTimerTick, 1000);
-        this.onSound(camera.views.camera.Options.Sound.TICK);
+        this.playSound(camera.views.camera.Options.Sound.TICK);
         // Blink the toggle timer button.
         this.toggleTimer_.classList.add('animate');
         setTimeout(() => {
@@ -412,23 +423,22 @@ camera.views.camera.Options.prototype.onTimerTicks = function() {
  */
 camera.views.camera.Options.prototype.updateStreamOptions = function(
     constraints, stream) {
-  this.updateVideoDeviceId_(constraints, stream);
-  this.updateMirroring_(stream);
-  this.toggleMic_.track = this.recordMode ?
-      stream && stream.getAudioTracks()[0] : null;
-  if (this.toggleMic_.track) {
-    this.toggleMic_.track.enabled = this.toggleMic_.checked;
-  }
+  var track = stream.getVideoTracks()[0];
+  var trackSettings = track.getSettings && track.getSettings();
+  this.updateVideoDeviceId_(constraints, trackSettings);
+  this.updateMirroring_(trackSettings);
+  this.toggleMic_.track = stream.getAudioTracks()[0];
+  this.updateMicAudio();
 };
 
 /**
- * Updates the video device id by the stream constraints or the stream.
- * @param {Object} constraints Current stream constraints in use.
- * @param {MediaStream} stream Current Stream in use.
+ * Updates the video device id by the new stream.
+ * @param {Object} constraints Stream constraints in use.
+ * @param {MediaTrackSettings} trackSettings Video track settings in use.
  * @private
  */
 camera.views.camera.Options.prototype.updateVideoDeviceId_ = function(
-    constraints, stream) {
+    constraints, trackSettings) {
   if (constraints.video.deviceId) {
     // For non-default cameras fetch the deviceId from constraints.
     // Works on all supported Chrome versions.
@@ -440,22 +450,19 @@ camera.views.camera.Options.prototype.updateVideoDeviceId_ = function(
     // default camera was changed to rear in chrome://settings, then
     // toggling the camera may not work when pressed for the first time
     // (the same camera would be opened).
-    var track = stream.getVideoTracks()[0];
-    var trackSettings = track.getSettings && track.getSettings();
     this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
   }
 };
 
 /**
  * Updates mirroring for a new stream.
- * @param {MediaStream} stream Current Stream in use.
+ * @param {MediaTrackSettings} trackSettings Video track settings in use.
  * @private
  */
-camera.views.camera.Options.prototype.updateMirroring_ = function(stream) {
+camera.views.camera.Options.prototype.updateMirroring_ = function(
+    trackSettings) {
   // Update mirroring by detected facing-mode. Enable mirroring by default if
   // facing-mode isn't available.
-  var track = stream && stream.getVideoTracks()[0];
-  var trackSettings = track.getSettings && track.getSettings();
   var facingMode = trackSettings && trackSettings.facingMode;
   var enabled = facingMode ? facingMode == 'user' : true;
 

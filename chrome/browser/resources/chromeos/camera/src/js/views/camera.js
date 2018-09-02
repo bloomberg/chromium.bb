@@ -177,6 +177,9 @@ camera.views.Camera.prototype = {
   get taking() {
     return document.body.classList.contains('taking');
   },
+  get recordMode() {
+    return document.body.classList.contains('record-mode');
+  },
   get galleryButton() {
     return this.galleryButton_;
   }
@@ -217,32 +220,23 @@ camera.views.Camera.prototype.onActivate = function() {
  * @private
  */
 camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
-  if (this.options_.recordMode) {
-    if (this.mediaRecorder_ == null) {
-      // Create a media-recorder before proceeding to record video.
-      this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
-      if (this.mediaRecorder_ == null) {
-        this.showToastMessage_('errorMsgRecordStartFailed', true);
-        return;
-      }
-    }
-  } else {
-    if (this.imageCapture_ == null) {
-      // Create a image-capture before proceeding to take photo.
-      var track = this.stream_ && this.stream_.getVideoTracks()[0];
-      this.imageCapture_ = track && new ImageCapture(track);
-      if (this.imageCapture_ == null) {
-        this.showToastMessage_('errorMsgTakePhotoFailed', true);
-        return;
-      }
-    }
-  }
   if (this.taking) {
     // End the prior ongoing take (recording); a new take shouldn't be started
     // until the prior one is ended.
     this.endTake_();
-  } else {
+    return;
+  }
+  try {
+    if (this.recordMode) {
+      this.prepareMediaRecorder_();
+    } else {
+      this.prepareImageCapture_();
+    }
     this.beginTake_();
+  } catch (e) {
+    console.error(e);
+    this.showToastMessage_(this.recordMode ?
+        'errorMsgRecordStartFailed' : 'errorMsgTakePhotoFailed', true);
   }
 };
 
@@ -252,11 +246,11 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
  */
 camera.views.Camera.prototype.updateControls_ = function() {
   // Update the shutter's label before enabling or disabling it.
+  var [capturing, taking] = [this.capturing, this.taking];
   this.updateShutterLabel_();
-  this.shutterButton_.disabled = !this.capturing;
-  var disabled = !this.capturing || this.taking;
-  this.options_.disabled = disabled;
-  this.galleryButton_.disabled = disabled;
+  this.shutterButton_.disabled = !capturing;
+  this.options_.updateControls(capturing, taking);
+  this.galleryButton_.disabled = !capturing || taking;
 };
 
 /**
@@ -265,7 +259,7 @@ camera.views.Camera.prototype.updateControls_ = function() {
  */
 camera.views.Camera.prototype.updateShutterLabel_ = function() {
   var label;
-  if (this.options_.recordMode) {
+  if (this.recordMode) {
     label = this.taking ? 'recordVideoStopButton' : 'recordVideoStartButton';
   } else {
     label = this.taking ? 'takePhotoCancelButton' : 'takePhotoButton';
@@ -319,18 +313,17 @@ camera.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
   this.updateControls_();
 
-  this.ticks_ = this.options_.onTimerTicks();
+  this.ticks_ = this.options_.timerTicks();
   Promise.resolve(this.ticks_).finally(() => {
     // The take once begun cannot be canceled after the timer ticks.
     this.shutterButton_.disabled = true;
   }).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
-    var recordMode = this.options_.recordMode;
-    var delay = (recordMode && this.options_.onSound(
+    var delay = (this.recordMode && this.options_.playSound(
         camera.views.camera.Options.Sound.RECORDSTART)) ? 250 : 0;
     this.takeTimeout_ = setTimeout(() => {
-      if (recordMode) {
+      if (this.recordMode) {
         // Take of recording will be ended by another shutter click.
         this.take_ = this.createRecordingBlob_().catch(error => {
           throw [error, 'errorMsgEmptyRecording'];
@@ -367,8 +360,8 @@ camera.views.Camera.prototype.endTake_ = function() {
       return;
     }
     // Play a sound and save the result after a successful take.
-    var recordMode = this.options_.recordMode;
-    this.options_.onSound(recordMode ?
+    var recordMode = this.recordMode;
+    this.options_.playSound(recordMode ?
         camera.views.camera.Options.Sound.RECORDEND :
         camera.views.camera.Options.Sound.SHUTTER);
     return this.model_.savePicture(blob, recordMode).catch(error => {
@@ -416,8 +409,11 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
     this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
     this.mediaRecorder_.addEventListener('stop', onstop);
 
-    // Start recording and update the UI for the ongoing recording.
+    // Start recording and update the UI for the ongoing recording. Force to
+    // re-enable audio track before starting recording (crbug.com/878255).
+    this.options_.updateMicAudio(true);
     this.mediaRecorder_.start();
+    this.options_.updateMicAudio();
     this.recordTime_.start();
     // Re-enable the shutter button to stop recording.
     this.shutterButton_.disabled = false;
@@ -454,21 +450,26 @@ camera.views.Camera.prototype.createPhotoBlob_ = function() {
 };
 
 /**
- * Creates the media recorder for the video stream.
- * @param {MediaStream} stream Stream to be recorded.
- * @return {MediaRecorder} Media recorder created.
+ * Prepares the media-recorder for the current stream.
  * @private
  */
-camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
-  try {
+camera.views.Camera.prototype.prepareMediaRecorder_ = function() {
+  if (this.mediaRecorder_ == null) {
     if (!MediaRecorder.isTypeSupported(camera.views.Camera.RECORD_MIMETYPE)) {
       throw 'The preferred mimeType is not supported.';
     }
-    var options = {mimeType: camera.views.Camera.RECORD_MIMETYPE};
-    return new MediaRecorder(stream, options);
-  } catch (e) {
-    console.error('Unable to create MediaRecorder: ' + e);
-    return null;
+    this.mediaRecorder_ =  new MediaRecorder(
+        this.stream_, {mimeType: camera.views.Camera.RECORD_MIMETYPE});
+  }
+};
+
+/**
+ * Prepares the image-capture for the current stream.
+ * @private
+ */
+camera.views.Camera.prototype.prepareImageCapture_ = function() {
+  if (this.imageCapture_ == null) {
+    this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
   }
 };
 
@@ -550,36 +551,20 @@ camera.views.Camera.prototype.stop_ = function() {
  * @private
  */
 camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
-  var recordMode = this.options_.recordMode;
-  var videoConstraints = () => {
-    if (recordMode) {
-      // Video constraints for video recording are ordered by priority.
-      return [
-          {
-            aspectRatio: { ideal: 1.7777777778 },
-            width: { min: 1280 },
-            frameRate: { min: 24 }
-          },
-          {
-            width: { min: 640 },
-            frameRate: { min: 24 }
-          }];
-    } else {
-      // Video constraints for photo taking are ordered by priority.
-      return [
-          {
-            aspectRatio: { ideal: 1.3333333333 },
-            width: { min: 1280 },
-            frameRate: { min: 24 }
-          },
-          {
-            width: { min: 640 },
-            frameRate: { min: 24 }
-          }];
-    }
-  };
+  var recordMode = this.recordMode;
+  var videoConstraints =
+      [{
+        aspectRatio: { ideal: recordMode ? 1.7777777778 : 1.3333333333 },
+        width: { min: 1280 },
+        frameRate: { min: 24 }
+      },
+      {
+        width: { min: 640 },
+        frameRate: { min: 24 }
+      }];
 
-  return videoConstraints().map(videoConstraint => {
+  // Constraints are ordered by priority.
+  return videoConstraints.map(videoConstraint => {
     // Each passed-in video-constraint will be modified here.
     if (deviceId) {
       videoConstraint.deviceId = { exact: deviceId };
