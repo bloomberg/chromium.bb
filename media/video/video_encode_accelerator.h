@@ -95,6 +95,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
   // Parameters required for VEA initialization.
   struct MEDIA_EXPORT Config {
+    // Indicates if video content should be treated as a "normal" camera feed
+    // or as generated (e.g. screen capture).
+    enum class ContentType { kCamera, kDisplay };
+
     Config();
     Config(const Config& config);
 
@@ -103,7 +107,8 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
            VideoCodecProfile output_profile,
            uint32_t initial_bitrate,
            base::Optional<uint32_t> initial_framerate = base::nullopt,
-           base::Optional<uint8_t> h264_output_level = base::nullopt);
+           base::Optional<uint8_t> h264_output_level = base::nullopt,
+           ContentType content_type = ContentType::kCamera);
 
     ~Config();
 
@@ -133,6 +138,13 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // |h264_output_level|=9 for Level 1b, which should set level_idc to 11 and
     // constraint_set3_flag to 1. (Spec A.3.1 and A.3.2)
     base::Optional<uint8_t> h264_output_level;
+
+    // Indicates captured video (from a camera) or generated (screen grabber).
+    // Screen content has a number of special properties such as lack of noise,
+    // burstiness of motion and requirements for readability of small text in
+    // bright colors. With this content hint the encoder may choose to optimize
+    // for the given use case.
+    ContentType content_type;
   };
 
   // Interface for clients that use VideoEncodeAccelerator. These callbacks will
