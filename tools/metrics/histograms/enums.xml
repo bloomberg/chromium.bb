@@ -19929,6 +19929,8 @@ Called by update_net_error_codes.py.-->
   <int value="2534" label="CacheStorageAddAllSuccessWithDuplicate"/>
   <int value="2535" label="LegendDelegateFocusOrAccessKey"/>
   <int value="2536" label="FeaturePolicyReport"/>
+  <int value="2537" label="V8Window_WebkitRTCPeerConnection_ConstructorGetter"/>
+  <int value="2538" label="V8Window_WebkitMediaStream_ConstructorGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
