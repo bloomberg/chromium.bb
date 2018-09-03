@@ -443,6 +443,8 @@
     "AudioService": [
         {
             "platforms": [
+                "linux",
+                "mac",
                 "windows"
             ],
             "experiments": [
@@ -455,23 +457,6 @@
                         "AudioServiceAudioStreams",
                         "AudioServiceLaunchOnStartup",
                         "AudioServiceOutOfProcess"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "linux",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioServiceStreams_v6",
-                    "params": {
-                        "teardown_timeout_s": "0"
-                    },
-                    "enable_features": [
-                        "AudioServiceAudioStreams"
                     ]
                 }
             ]
