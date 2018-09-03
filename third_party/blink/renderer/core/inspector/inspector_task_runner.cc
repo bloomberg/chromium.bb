@@ -25,7 +25,7 @@ InspectorTaskRunner::IgnoreInterruptsScope::~IgnoreInterruptsScope() {
 
 InspectorTaskRunner::InspectorTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> isolate_task_runner)
-    : isolate_task_runner_(isolate_task_runner) {}
+    : isolate_task_runner_(isolate_task_runner), condition_(mutex_) {}
 
 InspectorTaskRunner::~InspectorTaskRunner() = default;
 
@@ -88,7 +88,7 @@ InspectorTaskRunner::Task InspectorTaskRunner::TakeNextTask(
 
   if (wait_mode == kWaitForTask) {
     while (!disposed_ && queue_.IsEmpty())
-      condition_.Wait(mutex_);
+      condition_.Wait();
   }
 
   if (disposed_ || queue_.IsEmpty())

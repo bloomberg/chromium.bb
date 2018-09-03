@@ -35,8 +35,7 @@ class SourceStreamDataQueue {
   WTF_MAKE_NONCOPYABLE(SourceStreamDataQueue);
 
  public:
-  SourceStreamDataQueue() : finished_(false) {}
-
+  SourceStreamDataQueue() : finished_(false), have_data_(mutex_) {}
   ~SourceStreamDataQueue() { DiscardQueuedData(); }
 
   void Clear() {
@@ -61,7 +60,7 @@ class SourceStreamDataQueue {
   void Consume(const uint8_t** data, size_t* length) {
     MutexLocker locker(mutex_);
     while (!TryGetData(data, length))
-      have_data_.Wait(mutex_);
+      have_data_.Wait();
   }
 
  private:
