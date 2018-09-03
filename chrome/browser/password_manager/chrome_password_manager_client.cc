@@ -719,12 +719,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
     return;
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
-    if (available) {
-      ShowPasswordGenerationPopup(ui_data.value(),
-                                  false /* is_manually_triggered */);
-    }
-  } else {
+  if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     PasswordAccessoryController::CreateForWebContents(web_contents());
     if (available) {
       password_manager::PasswordManagerDriver* driver =
