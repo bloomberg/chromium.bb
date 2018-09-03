@@ -798,7 +798,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
   format.fmt.pix_mp.width = pic_size.width();
   format.fmt.pix_mp.height = pic_size.height();
-  format.fmt.pix_mp.num_planes = input_planes_count_;
+  format.fmt.pix_mp.num_planes = output_planes_count_;
 
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
     VPLOGF(1) << "Failed setting format to: " << output_format_fourcc_;
