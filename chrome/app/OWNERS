@@ -12,6 +12,7 @@ rockot@chromium.org
 per-file bookmarks_strings.grdp=*
 per-file chromeos_strings.grdp=*
 per-file chromium_strings.grd=*
+per-file file_manager_strings.grdp=*
 per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
 per-file md_extensions_strings.grdp=*
