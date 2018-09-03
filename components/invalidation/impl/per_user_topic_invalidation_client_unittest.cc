@@ -16,24 +16,12 @@ namespace syncer {
 class MockInvalidationListener : public InvalidationListener {
  public:
   MOCK_METHOD1(Ready, void(InvalidationClient*));
-  MOCK_METHOD2(Invalidate,
-               void(InvalidationClient*, const invalidation::Invalidation&));
-  MOCK_METHOD2(InvalidateUnknownVersion,
-               void(InvalidationClient*, const invalidation::ObjectId&));
-  MOCK_METHOD1(InvalidateAll, void(InvalidationClient*));
-  MOCK_METHOD3(InformRegistrationStatus,
+  MOCK_METHOD5(Invalidate,
                void(InvalidationClient*,
-                    const invalidation::ObjectId&,
-                    InvalidationListener::RegistrationState));
-  MOCK_METHOD4(InformRegistrationFailure,
-               void(InvalidationClient*,
-                    const invalidation::ObjectId&,
-                    bool,
-                    const std::string&));
-  MOCK_METHOD3(ReissueRegistrations,
-               void(InvalidationClient*, const std::string&, int));
-  MOCK_METHOD2(InformError,
-               void(InvalidationClient*, const invalidation::ErrorInfo&));
+                    const std::string&,
+                    const std::string&,
+                    const std::string&,
+                    int64_t));
   MOCK_METHOD2(InformTokenRecieved,
                void(InvalidationClient*, const std::string&));
 };

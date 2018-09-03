@@ -42,6 +42,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -238,8 +239,14 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
         base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
     init_params.gaia_cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
-    auto* invalidation_provider = invalidation::
-        DeprecatedProfileInvalidationProviderFactory::GetForProfile(profile);
+    bool use_fcm_invalidations =
+        base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
+    auto* invalidation_provider =
+        use_fcm_invalidations
+            ? invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+                  profile)
+            : invalidation::DeprecatedProfileInvalidationProviderFactory::
+                  GetForProfile(profile);
     if (invalidation_provider) {
       init_params.invalidations_identity_provider =
           invalidation_provider->GetIdentityProvider();

@@ -55,7 +55,6 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
                                       const std::string& token);
 
   virtual void Init();
-
   TopicSet GetRegisteredIds() const;
 
  private:
@@ -66,10 +65,10 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Tries to register |id|. No retry in case of failure.
   void StartRegistrationRequest(const Topic& id);
 
-  void RegistrationFinishedForId(
-      Topic id,
-      const Status& code,
-      const std::string& private_topic_name,
+  void RegistrationFinishedForTopic(
+      Topic topic,
+      Status code,
+      std::string private_topic_name,
       PerUserTopicRegistrationRequest::RequestType type);
 
   void RequestAccessToken();

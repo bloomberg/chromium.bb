@@ -67,13 +67,10 @@ class FCMSyncInvalidationListener : public InvalidationListener,
   // InvalidationListener implementation.
   void Ready(InvalidationClient* client) override;
   void Invalidate(InvalidationClient* client,
-                  const invalidation::Invalidation& invalidation) override;
-  void InvalidateUnknownVersion(
-      InvalidationClient* client,
-      const invalidation::ObjectId& object_id) override;
-  void InvalidateAll(InvalidationClient* client) override;
-  void InformError(InvalidationClient* client,
-                   const invalidation::ErrorInfo& error_info) override;
+                  const std::string& payload,
+                  const std::string& private_topic,
+                  const std::string& public_topic,
+                  int64_t version) override;
   void InformTokenRecieved(InvalidationClient* client,
                            const std::string& token) override;
 

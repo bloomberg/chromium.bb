@@ -45,7 +45,10 @@ class PerUserTopicInvalidationClient : public InvalidationClient {
   void RegisterWithNetwork();
 
   /* Handles inbound messages from the network. */
-  void MessageReceiver(const std::string& message);
+  void MessageReceiver(const std::string& payload,
+                       const std::string& private_topic,
+                       const std::string& public_topic,
+                       const std::string& version);
   /* Handles registartion tokens from the network. */
   void TokenReceiver(const std::string& token);
 

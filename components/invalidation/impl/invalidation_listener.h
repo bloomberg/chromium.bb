@@ -7,12 +7,6 @@
 
 #include <string>
 
-namespace invalidation {
-class ObjectId;
-class Invalidation;
-class ErrorInfo;
-}  // namespace invalidation
-
 namespace syncer {
 
 class InvalidationClient;
@@ -20,9 +14,6 @@ class InvalidationClient;
 // Handlers registration and message recieving events.
 class InvalidationListener {
  public:
-  /* Possible registration states for an object. */
-  enum RegistrationState { REGISTERED, UNREGISTERED };
-
   virtual ~InvalidationListener() {}
 
   /* Called in response to the InvalidationClient::Start call. Indicates that
@@ -43,39 +34,15 @@ class InvalidationListener {
    *
    * Arguments:
    *     client - the InvalidationClient invoking the listener
+   *     payload - additional info specific to the invalidations
+   *     version - version of the invalidation
+   *     private_topic_name - the topic, which was invalidated
    */
   virtual void Invalidate(InvalidationClient* client,
-                          const invalidation::Invalidation& invalidation) = 0;
-
-  /* As Invalidate, but for an unknown application store version. The object may
-   * or may not have been updated - to ensure that the application does not miss
-   * an update from its backend, the application must check and/or fetch the
-   * latest version from its store.
-   */
-  virtual void InvalidateUnknownVersion(
-      InvalidationClient* client,
-      const invalidation::ObjectId& object_id) = 0;
-
-  /* Indicates that the application should consider all objects to have changed.
-   * This event is generally sent when the client has been disconnected from the
-   * network for too long a period and has been unable to resynchronize with the
-   * update stream, but it may be invoked arbitrarily (although the service
-   * tries hard not to invoke it under normal circumstances).
-   *
-   * Arguments:
-   *     client - the InvalidationClient invoking the listener
-   */
-  virtual void InvalidateAll(InvalidationClient* client) = 0;
-
-  /* Informs the listener about errors that have occurred in the backend, e.g.,
-   * authentication, authorization problems.
-   *
-   * Arguments:
-   *     client - the InvalidationClient invoking the listener
-   *     error_info - information about the error
-   */
-  virtual void InformError(InvalidationClient* client,
-                           const invalidation::ErrorInfo& error_info) = 0;
+                          const std::string& payload,
+                          const std::string& private_topic,
+                          const std::string& public_topic,
+                          int64_t version) = 0;
 
   /* Informs the listener token
    *
