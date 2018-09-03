@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -101,13 +102,24 @@ class PrintPreviewMessageHandler
 
   // Callbacks for pdf compositor client.
   void OnCompositePdfPageDone(int page_number,
+                              int document_cookie,
                               const PrintHostMsg_PreviewIds& ids,
                               mojom::PdfCompositor::Status status,
                               base::ReadOnlySharedMemoryRegion region);
   void OnCompositePdfDocumentDone(int page_count,
+                                  int document_cookie,
                                   const PrintHostMsg_PreviewIds& ids,
                                   mojom::PdfCompositor::Status status,
                                   base::ReadOnlySharedMemoryRegion region);
+
+  void OnNupPdfConvertDone(int page_number,
+                           const PrintHostMsg_PreviewIds& ids,
+                           mojom::PdfNupConverter::Status status,
+                           base::ReadOnlySharedMemoryRegion region);
+  void OnNupPdfDocumentConvertDone(int page_count,
+                                   const PrintHostMsg_PreviewIds& ids,
+                                   mojom::PdfNupConverter::Status status,
+                                   base::ReadOnlySharedMemoryRegion region);
 
   base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_;
 

@@ -630,6 +630,31 @@ void PrintPreviewUI::SetInitiatorTitle(
   initiator_title_ = job_title;
 }
 
+bool PrintPreviewUI::LastPageComposited(int page_number) const {
+  if (pages_to_render_.empty())
+    return false;
+
+  return page_number == pages_to_render_.back();
+}
+
+int PrintPreviewUI::GetPageToNupConvertIndex(int page_number) const {
+  for (size_t index = 0; index < pages_to_render_.size(); ++index) {
+    if (page_number == pages_to_render_[index])
+      return index;
+  }
+  return -1;
+}
+
+std::vector<base::ReadOnlySharedMemoryRegion>
+PrintPreviewUI::TakePagesForNupConvert() {
+  return std::move(pages_for_nup_convert_);
+}
+
+void PrintPreviewUI::AddPdfPageForNupConversion(
+    base::ReadOnlySharedMemoryRegion pdf_page) {
+  pages_for_nup_convert_.push_back(std::move(pdf_page));
+}
+
 // static
 void PrintPreviewUI::SetInitialParams(
     content::WebContents* print_preview_dialog,
@@ -701,6 +726,8 @@ void PrintPreviewUI::OnDidStartPreview(
 
   pages_to_render_ = params.pages_to_render;
   pages_to_render_index_ = 0;
+  pages_per_sheet_ = params.pages_per_sheet;
+  page_size_ = params.page_size;
   ClearAllPreviewData();
 
   if (g_testing_delegate)
