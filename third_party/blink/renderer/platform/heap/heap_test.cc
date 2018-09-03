@@ -5484,12 +5484,13 @@ static Mutex& MainThreadMutex() {
 }
 
 static ThreadCondition& MainThreadCondition() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, main_condition, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, main_condition,
+                                  (MainThreadMutex()));
   return main_condition;
 }
 
 static void ParkMainThread() {
-  MainThreadCondition().Wait(MainThreadMutex());
+  MainThreadCondition().Wait();
 }
 
 static void WakeMainThread() {
@@ -5503,12 +5504,13 @@ static Mutex& WorkerThreadMutex() {
 }
 
 static ThreadCondition& WorkerThreadCondition() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, worker_condition, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, worker_condition,
+                                  (WorkerThreadMutex()));
   return worker_condition;
 }
 
 static void ParkWorkerThread() {
-  WorkerThreadCondition().Wait(WorkerThreadMutex());
+  WorkerThreadCondition().Wait();
 }
 
 static void WakeWorkerThread() {
