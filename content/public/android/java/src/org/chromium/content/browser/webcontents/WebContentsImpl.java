@@ -609,7 +609,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
-    @Override
     @VisibleForTesting
     public void simulateRendererKilledForTesting(boolean wasOomProtected) {
         if (mObserverProxy != null) {
