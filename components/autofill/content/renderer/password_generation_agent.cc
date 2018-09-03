@@ -285,8 +285,11 @@ void PasswordGenerationAgent::OnDynamicFormsSeen() {
 
 void PasswordGenerationAgent::OnFieldAutofilled(
     const WebInputElement& password_element) {
-  if (password_is_generated_ && generation_element_ == password_element)
+  if (password_is_generated_ && generation_element_ == password_element) {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::PASSWORD_DELETED_BY_AUTOFILLING);
     PasswordNoLongerGenerated();
+  }
 }
 
 void PasswordGenerationAgent::FindPossibleGenerationForm() {

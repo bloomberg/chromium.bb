@@ -37194,6 +37194,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Generation triggered by autocomplete attributes"/>
   <int value="13" label="Generation item in the context menu accepted"/>
   <int value="14" label="Generation item in the context menu shown"/>
+  <int value="15" label="Generated password deleted by autofilling"/>
 </enum>
 
 <enum name="PasswordGenerationUserEvent">
