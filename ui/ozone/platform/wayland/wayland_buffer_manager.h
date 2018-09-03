@@ -53,7 +53,7 @@ class WaylandBufferManager {
 
   // Assigns a wl_buffer with |buffer_id| to a window with the same |widget|. On
   // error, false is returned and |error_message_| is set.
-  bool SwapBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  bool ScheduleBufferSwap(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   // Destroys a buffer with |buffer_id| in |buffers_|. On error, false is
   // returned and |error_message_| is set.
@@ -63,6 +63,35 @@ class WaylandBufferManager {
   void ClearState();
 
  private:
+  // This is an internal helper representation of a wayland buffer object, which
+  // the GPU process creates when CreateBuffer is called. It's used for
+  // asynchronous buffer creation and stores |params| parameter to find out,
+  // which Buffer the wl_buffer corresponds to when CreateSucceeded is called.
+  // What is more, the Buffer stores such information as a widget it is attached
+  // to, its buffer id for simplier buffer management and other members specific
+  // to this Buffer object on run-time.
+  struct Buffer {
+    Buffer();
+    Buffer(uint32_t id, zwp_linux_buffer_params_v1* zwp_params);
+    ~Buffer();
+
+    // GPU GbmPixmapWayland corresponding buffer id.
+    uint32_t buffer_id = 0;
+
+    // Widget to attached/being attach WaylandWindow.
+    gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
+
+    // Params that are used to create a wl_buffer.
+    zwp_linux_buffer_params_v1* params = nullptr;
+
+    // A wl_buffer backed by a dmabuf created on the GPU side.
+    wl::Object<wl_buffer> wl_buffer;
+
+    DISALLOW_COPY_AND_ASSIGN(Buffer);
+  };
+
+  bool SwapBuffer(Buffer* buffer);
+
   // Validates data sent from GPU. If invalid, returns false and sets an error
   // message to |error_message_|.
   bool ValidateDataFromGpu(const base::File& file,
@@ -97,24 +126,11 @@ class WaylandBufferManager {
   static void CreateFailed(void* data,
                            struct zwp_linux_buffer_params_v1* params);
 
-  // Stores a wl_buffer and it's id provided by the GbmBuffer object on the
-  // GPU process side.
-  base::flat_map<uint32_t, wl::Object<wl_buffer>> buffers_;
-
-  // A temporary params-to-buffer id map, which is used to identify which
-  // id wl_buffer should be assigned when storing it in the |buffers_| map
-  // during CreateSucceeded call.
-  base::flat_map<struct zwp_linux_buffer_params_v1*, uint32_t>
-      params_to_id_map_;
-
-  // It might happen that GPU asks to swap buffers, when a wl_buffer hasn't
-  // been created yet. Thus, store the request in a pending map. Once a buffer
-  // is created, it will be attached to the requested WaylandWindow based on the
-  // gfx::AcceleratedWidget.
-  base::flat_map<uint32_t, gfx::AcceleratedWidget> pending_buffer_map_;
-
   // Stores announced buffer formats supported by the compositor.
   std::vector<gfx::BufferFormat> supported_buffer_formats_;
+
+  // A container of created buffers.
+  base::flat_map<uint32_t, std::unique_ptr<Buffer>> buffers_;
 
   // Set when invalid data is received from the GPU process.
   std::string error_message_;

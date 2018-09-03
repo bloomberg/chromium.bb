@@ -15,6 +15,12 @@
 
 namespace ui {
 
+WaylandBufferManager::Buffer::Buffer() = default;
+WaylandBufferManager::Buffer::Buffer(uint32_t id,
+                                     zwp_linux_buffer_params_v1* zwp_params)
+    : buffer_id(id), params(zwp_params) {}
+WaylandBufferManager::Buffer::~Buffer() = default;
+
 WaylandBufferManager::WaylandBufferManager(
     zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
     WaylandConnection* connection)
@@ -31,8 +37,7 @@ WaylandBufferManager::WaylandBufferManager(
 }
 
 WaylandBufferManager::~WaylandBufferManager() {
-  DCHECK(pending_buffer_map_.empty() && params_to_id_map_.empty() &&
-         buffers_.empty());
+  DCHECK(buffers_.empty());
 }
 
 bool WaylandBufferManager::CreateBuffer(base::File file,
@@ -64,9 +69,11 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   DCHECK(zwp_linux_dmabuf_);
   struct zwp_linux_buffer_params_v1* params =
       zwp_linux_dmabuf_v1_create_params(zwp_linux_dmabuf_.get());
-  params_to_id_map_.insert(
-      std::pair<struct zwp_linux_buffer_params_v1*, uint32_t>(params,
-                                                              buffer_id));
+
+  std::unique_ptr<Buffer> buffer = std::make_unique<Buffer>(buffer_id, params);
+  buffers_.insert(std::pair<uint32_t, std::unique_ptr<Buffer>>(
+      buffer_id, std::move(buffer)));
+
   uint32_t fd = file.TakePlatformFile();
   for (size_t i = 0; i < planes_count; i++) {
     zwp_linux_buffer_params_v1_add(params, fd, i /* plane id */, offsets[i],
@@ -81,8 +88,8 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
 }
 
 // TODO(msisov): handle buffer swap failure or success.
-bool WaylandBufferManager::SwapBuffer(gfx::AcceleratedWidget widget,
-                                      uint32_t buffer_id) {
+bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                                              uint32_t buffer_id) {
   TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
                buffer_id);
 
@@ -90,39 +97,24 @@ bool WaylandBufferManager::SwapBuffer(gfx::AcceleratedWidget widget,
     return false;
 
   auto it = buffers_.find(buffer_id);
-  // A buffer might not exist by this time. So, store the request and process
-  // it once it is created.
   if (it == buffers_.end()) {
-    auto pending_buffers_it = pending_buffer_map_.find(buffer_id);
-    if (pending_buffers_it != pending_buffer_map_.end()) {
-      // If a buffer didn't exist and second call for a swap comes, buffer must
-      // be associated with the same widget.
-      DCHECK_EQ(pending_buffers_it->second, widget);
-    } else {
-      pending_buffer_map_.insert(
-          std::pair<uint32_t, gfx::AcceleratedWidget>(buffer_id, widget));
-    }
-    return true;
-  }
-  struct wl_buffer* buffer = it->second.get();
-
-  WaylandWindow* window = connection_->GetWindow(widget);
-  if (!window) {
-    error_message_ = "A WaylandWindow with current widget does not exist";
+    error_message_ =
+        "Buffer with " + std::to_string(buffer_id) + " id does not exist";
     return false;
   }
 
-  // TODO(msisov): it would be beneficial to use real damage regions to improve
-  // performance.
-  //
-  // TODO(msisov): also start using wl_surface_frame callbacks for better
-  // performance.
-  wl_surface_damage(window->surface(), 0, 0, window->GetBounds().width(),
-                    window->GetBounds().height());
-  wl_surface_attach(window->surface(), buffer, 0, 0);
-  wl_surface_commit(window->surface());
+  Buffer* buffer = it->second.get();
+  DCHECK(buffer);
 
-  connection_->ScheduleFlush();
+  // Assign a widget to this buffer, which is used to find a corresponding
+  // WaylandWindow.
+  buffer->widget = widget;
+
+  if (buffer->wl_buffer) {
+    // A wl_buffer might not exist by this time. Silently return.
+    // TODO: check this.
+    return SwapBuffer(buffer);
+  }
   return true;
 }
 
@@ -143,8 +135,28 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
 
 void WaylandBufferManager::ClearState() {
   buffers_.clear();
-  params_to_id_map_.clear();
-  pending_buffer_map_.clear();
+}
+
+// TODO(msisov): handle buffer swap failure or success.
+bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
+  WaylandWindow* window = connection_->GetWindow(buffer->widget);
+  if (!window) {
+    error_message_ = "A WaylandWindow with current widget does not exist";
+    return false;
+  }
+
+  // TODO(msisov): it would be beneficial to use real damage regions to improve
+  // performance.
+  //
+  // TODO(msisov): also start using wl_surface_frame callbacks for better
+  // performance.
+  wl_surface_damage(window->surface(), 0, 0, window->GetBounds().width(),
+                    window->GetBounds().height());
+  wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
+  wl_surface_commit(window->surface());
+
+  connection_->ScheduleFlush();
+  return true;
 }
 
 bool WaylandBufferManager::ValidateDataFromGpu(
@@ -187,6 +199,12 @@ bool WaylandBufferManager::ValidateDataFromGpu(
   if (buffer_id < 1)
     reason = "Invalid buffer id: " + std::to_string(buffer_id);
 
+  auto it = buffers_.find(buffer_id);
+  if (it != buffers_.end()) {
+    reason = "A buffer with " + std::to_string(buffer_id) +
+             " id has already existed";
+  }
+
   if (!reason.empty()) {
     error_message_ = std::move(reason);
     return false;
@@ -218,24 +236,21 @@ void WaylandBufferManager::CreateSucceededInternal(
     struct wl_buffer* new_buffer) {
   // Find which buffer id |params| belong to and store wl_buffer
   // with that id.
-  auto it = params_to_id_map_.find(params);
-  CHECK(it != params_to_id_map_.end());
-  uint32_t buffer_id = it->second;
-  params_to_id_map_.erase(params);
+  Buffer* buffer = nullptr;
+  for (auto& item : buffers_) {
+    if (item.second.get()->params == params) {
+      buffer = item.second.get();
+      break;
+    }
+  }
+
+  DCHECK(buffer);
+  buffer->wl_buffer.reset(new_buffer);
+  buffer->params = nullptr;
   zwp_linux_buffer_params_v1_destroy(params);
 
-  buffers_.insert(std::pair<uint32_t, wl::Object<wl_buffer>>(
-      buffer_id, wl::Object<wl_buffer>(new_buffer)));
-
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::CreateSucceeded", "Buffer id",
-               buffer_id);
-
-  auto pending_buffers_it = pending_buffer_map_.find(buffer_id);
-  if (pending_buffers_it != pending_buffer_map_.end()) {
-    gfx::AcceleratedWidget widget = pending_buffers_it->second;
-    pending_buffer_map_.erase(pending_buffers_it);
-    SwapBuffer(widget, buffer_id);
-  }
+  if (buffer->widget != gfx::kNullAcceleratedWidget)
+    ScheduleBufferSwap(buffer->widget, buffer->buffer_id);
 }
 
 // static
