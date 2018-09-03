@@ -217,12 +217,16 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   _sliderPosition = sliderPosition;
 
   // |_selectedPage| should be kept in sync with the slider position.
+  TabGridPage previousSelectedPage = _selectedPage;
   if (sliderPosition < 0.25)
     _selectedPage = TabGridPageIncognitoTabs;
   else if (sliderPosition < 0.75)
     _selectedPage = TabGridPageRegularTabs;
   else
     _selectedPage = TabGridPageRemoteTabs;
+
+  if (_selectedPage != previousSelectedPage)
+    [self updateSelectedPageAccessibility];
 }
 
 // Setters for the control's text values. These need to update three things:
@@ -256,6 +260,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   }
 
   _selectedPage = selectedPage;
+  [self updateSelectedPageAccessibility];
   if (animated) {
     // Scale duration to the distance the slider travels, but cap it at
     // the slider move duration. This means that for motion induced by
@@ -405,6 +410,29 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
         @[ incognitoElement, regularElement, remoteElement ];
   }
   return _accessibilityElements;
+}
+
+#pragma mark - UIAccessibilityContainer Helpers
+
+- (NSString*)accessibilityIdentifierForPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      return kTabGridIncognitoTabsPageButtonIdentifier;
+    case TabGridPageRegularTabs:
+      return kTabGridRegularTabsPageButtonIdentifier;
+    case TabGridPageRemoteTabs:
+      return kTabGridRemoteTabsPageButtonIdentifier;
+  }
+}
+
+- (void)updateSelectedPageAccessibility {
+  NSString* selectedPageID =
+      [self accessibilityIdentifierForPage:self.selectedPage];
+  for (UIAccessibilityElement* element in self.accessibilityElements) {
+    element.accessibilityTraits = UIAccessibilityTraitButton;
+    if ([element.accessibilityIdentifier isEqualToString:selectedPageID])
+      element.accessibilityTraits |= UIAccessibilityTraitSelected;
+  }
 }
 
 #pragma mark - UIGestureRecognizerDelegate
