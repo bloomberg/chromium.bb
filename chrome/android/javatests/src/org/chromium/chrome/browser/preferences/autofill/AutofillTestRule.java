@@ -50,16 +50,16 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
     protected void clickInEditorAndWait(final int resourceId)
             throws InterruptedException, TimeoutException {
         int callCount = mClickUpdate.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mEditorDialog.findViewById(resourceId).performClick());
+        ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mEditorDialog.findViewById(resourceId).performClick());
         mClickUpdate.waitForCallback(callCount);
     }
 
     protected void clickInEditorAndWaitForValidationError(final int resourceId)
             throws InterruptedException, TimeoutException {
         int callCount = mValidationUpdate.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mEditorDialog.findViewById(resourceId).performClick());
+        ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mEditorDialog.findViewById(resourceId).performClick());
         mValidationUpdate.waitForCallback(callCount);
     }
 
@@ -80,8 +80,11 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
         mPreferenceUpdate.waitForCallback(callCount);
     }
 
-    protected void setEditorDialog(EditorDialog editorDialog) {
+    protected void setEditorDialogAndWait(EditorDialog editorDialog)
+            throws TimeoutException, InterruptedException {
+        int callCount = mClickUpdate.getCallCount();
         mEditorDialog = editorDialog;
+        mClickUpdate.waitForCallback(callCount);
     }
 
     @Override
