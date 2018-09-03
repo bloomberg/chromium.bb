@@ -131,9 +131,13 @@ class PasswordFetcherTest : public PlatformTest {
 
 // Tests PasswordFetcher initialization.
 TEST_F(PasswordFetcherTest, Initialization) {
+  TestPasswordFetcherDelegate* passwordFetcherDelegate =
+      [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
-      [[PasswordFetcher alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           delegate:nil];
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
   EXPECT_TRUE(passwordFetcher);
 }
 
@@ -142,9 +146,11 @@ TEST_F(PasswordFetcherTest, ReturnsPassword) {
   AddSavedForm1();
   TestPasswordFetcherDelegate* passwordFetcherDelegate =
       [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
-      [[PasswordFetcher alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           delegate:passwordFetcherDelegate];
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -161,9 +167,11 @@ TEST_F(PasswordFetcherTest, ReturnsTwoPasswords) {
   AddSavedForm2();
   TestPasswordFetcherDelegate* passwordFetcherDelegate =
       [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
-      [[PasswordFetcher alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           delegate:passwordFetcherDelegate];
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -180,9 +188,11 @@ TEST_F(PasswordFetcherTest, IgnoresBlacklisted) {
   AddBlacklistedForm();
   TestPasswordFetcherDelegate* passwordFetcherDelegate =
       [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
-      [[PasswordFetcher alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           delegate:passwordFetcherDelegate];
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -201,9 +211,11 @@ TEST_F(PasswordFetcherTest, IgnoresDuplicated) {
   AddSavedForm1();
   TestPasswordFetcherDelegate* passwordFetcherDelegate =
       [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
-      [[PasswordFetcher alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           delegate:passwordFetcherDelegate];
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;

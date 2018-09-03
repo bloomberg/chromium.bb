@@ -9,15 +9,17 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+
 namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
-
 @class PasswordFetcher;
+
+namespace password_manager {
+class PasswordStore;
+}  // namespace password_manager
 
 // Protocol to receive the passwords fetched asynchronously.
 @protocol PasswordFetcherDelegate
@@ -32,8 +34,10 @@ class ChromeBrowserState;
 @interface PasswordFetcher : NSObject
 
 // The designated initializer. |browserState| must not be nil.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<PasswordFetcherDelegate>)delegate
+- (instancetype)initWithPasswordStore:
+                    (scoped_refptr<password_manager::PasswordStore>)
+                        passwordStore
+                             delegate:(id<PasswordFetcherDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
