@@ -18,6 +18,7 @@ cr.define('preview_generation_test', function() {
     Scaling: 'scaling',
     SelectionOnly: 'selection only',
     Destination: 'destination',
+    ChangeMarginsByPagesPerSheet: 'change margins by pages per sheet',
   };
 
   const suiteName = 'PreviewGenerationTest';
@@ -148,6 +149,47 @@ cr.define('preview_generation_test', function() {
           print_preview.ticket_items.MarginsTypeValue.MINIMUM, 'marginsType',
           print_preview.ticket_items.MarginsTypeValue.DEFAULT,
           print_preview.ticket_items.MarginsTypeValue.MINIMUM);
+    });
+
+    /**
+     * Validate changing the pages per sheet updates the preview, and resets
+     * margins to print_preview.ticket_items.MarginsTypeValue.DEFAULT.
+     */
+    test(assert(TestNames.ChangeMarginsByPagesPerSheet), function() {
+      const marginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
+      return initialize()
+          .then(function(args) {
+            const originalTicket = JSON.parse(args.printTicket);
+            assertEquals(0, originalTicket.requestID);
+            assertEquals(
+                marginsTypeEnum.DEFAULT, originalTicket['marginsType']);
+            assertEquals(
+                marginsTypeEnum.DEFAULT, page.getSettingValue('margins'));
+            assertEquals(1, page.getSettingValue('pagesPerSheet'));
+            assertEquals(1, originalTicket['pagesPerSheet']);
+            nativeLayer.resetResolver('getPreview');
+            page.setSetting('margins', marginsTypeEnum.MINIMUM);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            assertEquals(
+                marginsTypeEnum.MINIMUM, page.getSettingValue('margins'));
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(marginsTypeEnum.MINIMUM, ticket['marginsType']);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals(1, ticket.requestID);
+            page.setSetting('pagesPerSheet', 4);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            assertEquals(
+                marginsTypeEnum.DEFAULT, page.getSettingValue('margins'));
+            assertEquals(4, page.getSettingValue('pagesPerSheet'));
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(marginsTypeEnum.DEFAULT, ticket['marginsType']);
+            assertEquals(4, ticket['pagesPerSheet']);
+            assertEquals(2, ticket.requestID);
+          });
     });
 
     /** Validate changing the paper size updates the preview. */

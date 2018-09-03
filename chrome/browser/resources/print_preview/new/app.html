@@ -119,6 +119,12 @@
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.mediaSize.available]]">
           </print-preview-media-size-settings>
+          <template is="dom-if" if="[[showPagesPerSheet_]]">
+            <print-preview-pages-per-sheet-settings settings="{{settings}}"
+                disabled="[[controlsDisabled_]]"
+                hidden$="[[!settings.pagesPerSheet.available]]">
+            </print-preview-pages-per-sheet-settings>
+          </template>
           <print-preview-margins-settings settings="{{settings}}"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.margins.available]]">
@@ -128,12 +134,6 @@
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.dpi.available]]">
           </print-preview-dpi-settings>
-          <template is="dom-if" if="[[showPagesPerSheet_]]">
-            <print-preview-pages-per-sheet-settings settings="{{settings}}"
-                disabled="[[controlsDisabled_]]"
-                hidden$="[[!settings.pagesPerSheet.available]]">
-            </print-preview-pages-per-sheet-settings>
-          </template>
           <print-preview-scaling-settings settings="{{settings}}"
               document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.scaling.available]]">

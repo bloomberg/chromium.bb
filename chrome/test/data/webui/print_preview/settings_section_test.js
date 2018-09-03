@@ -27,6 +27,7 @@ cr.define('settings_sections_tests', function() {
     SetOther: 'set other',
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
+    DisableMarginsByPagesPerSheet: 'disable margins by pages per sheet',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -765,6 +766,62 @@ cr.define('settings_sections_tests', function() {
           .eventToPromise('process-select-change', pagesPerSheetElement)
           .then(function() {
             assertEquals(2, page.settings.pagesPerSheet.value);
+          });
+    });
+
+    // This test verifies that changing pages per sheet to N > 1 resets the
+    // margins dropdown value to DEFAULT and disables it, and resetting
+    // pages per sheet back to 1 re-enables the dropdown.
+    test(assert(TestNames.DisableMarginsByPagesPerSheet), function() {
+      toggleMoreSettings();
+      const pagesPerSheetElement =
+          page.$$('print-preview-pages-per-sheet-settings');
+      assertFalse(pagesPerSheetElement.hidden);
+
+      const pagesPerSheetInput = pagesPerSheetElement.$$('select');
+      assertEquals(1, page.settings.pagesPerSheet.value);
+
+      const marginsElement = page.$$('print-preview-margins-settings');
+      assertFalse(marginsElement.hidden);
+
+      const marginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
+
+      // Default is DEFAULT_MARGINS
+      const marginsInput = marginsElement.$$('select');
+      assertEquals(marginsTypeEnum.DEFAULT, page.settings.margins.value);
+
+      // Change margins to minimum.
+      marginsInput.value = marginsTypeEnum.MINIMUM.toString();
+      marginsInput.dispatchEvent(new CustomEvent('change'));
+      return test_util.eventToPromise('process-select-change', marginsElement)
+          .then(function() {
+            assertEquals(marginsTypeEnum.MINIMUM, page.settings.margins.value);
+            assertFalse(marginsInput.disabled);
+            // Change pages per sheet to a different value.
+            pagesPerSheetInput.value = 2;
+            pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'process-select-change', pagesPerSheetElement);
+          })
+          .then(function() {
+            assertEquals(2, page.settings.pagesPerSheet.value);
+            assertEquals(marginsTypeEnum.DEFAULT, page.settings.margins.value);
+            assertEquals(
+                marginsTypeEnum.DEFAULT.toString(), marginsInput.value);
+            assertTrue(marginsInput.disabled);
+
+            // Set pages per sheet back to 1.
+            pagesPerSheetInput.value = 1;
+            pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'process-select-change', pagesPerSheetElement);
+          })
+          .then(function() {
+            assertEquals(1, page.settings.pagesPerSheet.value);
+            assertEquals(marginsTypeEnum.DEFAULT, page.settings.margins.value);
+            assertEquals(
+                marginsTypeEnum.DEFAULT.toString(), marginsInput.value);
+            assertFalse(marginsInput.disabled);
           });
     });
 

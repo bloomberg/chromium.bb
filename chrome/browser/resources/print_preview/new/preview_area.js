@@ -82,10 +82,11 @@ Polymer({
         'settings.fitToPage.value, settings.headerFooter.value, ' +
         'settings.layout.value, settings.ranges.value, ' +
         'settings.selectionOnly.value, settings.scaling.value, ' +
-        'settings.pagesPerSheet.value, settings.rasterize.value, destination)',
+        'settings.rasterize.value, destination)',
     'onMarginsChanged_(settings.margins.value)',
     'onCustomMarginsChanged_(settings.customMargins.value)',
     'onMediaSizeChanged_(settings.mediaSize.value)',
+    'onPagesPerSheetChanged_(settings.pagesPerSheet.value)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
   ],
 
@@ -614,6 +615,21 @@ Polymer({
       this.onSettingsChanged_();
     }
     this.lastMediaSize_ = newValue;
+  },
+
+  /** @private */
+  onPagesPerSheetChanged_: function() {
+    const pagesPerSheet =
+        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
+
+    if (pagesPerSheet == 1 ||
+        this.getSettingValue('margins') ==
+            print_preview.ticket_items.MarginsTypeValue.DEFAULT) {
+      this.onSettingsChanged_();
+    } else {
+      this.setSetting(
+          'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+    }
   },
 
   /**
