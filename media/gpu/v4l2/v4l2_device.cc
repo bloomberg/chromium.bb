@@ -117,6 +117,24 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
 }
 
 // static
+VideoCodecProfile V4L2Device::V4L2VP9ProfileToVideoCodecProfile(
+    uint32_t profile) {
+  switch (profile) {
+    case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
+      return VP9PROFILE_PROFILE0;
+    case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
+      return VP9PROFILE_PROFILE1;
+    case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
+      return VP9PROFILE_PROFILE2;
+    case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
+      return VP9PROFILE_PROFILE3;
+    default:
+      VLOGF(2) << "Not a VP9 profile: " << profile;
+      return VIDEO_CODEC_PROFILE_UNKNOWN;
+  }
+}
+
+// static
 std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     uint32_t pix_fmt,
     bool is_encoder) {
@@ -144,12 +162,31 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
       break;
 
     case V4L2_PIX_FMT_VP9:
-    case V4L2_PIX_FMT_VP9_FRAME:
-      // TODO(posciak): https://crbug.com/819930 Query supported profiles.
-      // Currently no devices support Profiles > 0 https://crbug.com/796297.
-      min_profile = VP9PROFILE_PROFILE0;
-      max_profile = VP9PROFILE_PROFILE0;
+    case V4L2_PIX_FMT_VP9_FRAME: {
+      v4l2_queryctrl query_ctrl = {};
+      query_ctrl.id = V4L2_CID_MPEG_VIDEO_VP9_PROFILE;
+      if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0) {
+        v4l2_querymenu query_menu = {};
+        query_menu.id = query_ctrl.id;
+        for (query_menu.index = query_ctrl.minimum;
+             static_cast<int>(query_menu.index) <= query_ctrl.maximum;
+             query_menu.index++) {
+          if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
+            const VideoCodecProfile profile =
+                V4L2VP9ProfileToVideoCodecProfile(query_menu.index);
+            if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
+              profiles.push_back(profile);
+          }
+        }
+        return profiles;
+      } else {
+        // TODO(keiichiw): need a fallback here?
+        VLOGF(2) << "V4L2_CID_MPEG_VIDEO_VP9_PROFILE is not supported.";
+        min_profile = VP9PROFILE_PROFILE0;
+        max_profile = VP9PROFILE_PROFILE0;
+      }
       break;
+    }
 
     default:
       VLOGF(1) << "Unhandled pixelformat " << std::hex << "0x" << pix_fmt;
