@@ -68,12 +68,14 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
-    const std::string& provider_namespace)
+    const std::string& provider_namespace,
+    bool is_off_the_record)
     : cancelled(false),
       offline_item(offline_items_collection::ContentId(
           provider_namespace,
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
+  offline_item.is_off_the_record = is_off_the_record;
   UpdateOfflineItem();
 }
 
@@ -211,7 +213,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   DCHECK(!job_details_map_.count(job_unique_id));
   auto emplace_result = job_details_map_.emplace(
       job_unique_id,
-      JobDetails(std::move(fetch_description), provider_namespace_));
+      JobDetails(std::move(fetch_description), provider_namespace_,
+                 profile_->IsOffTheRecord()));
 
   const JobDetails& details = emplace_result.first->second;
   for (const auto& download_guid : details.fetch_description->current_guids) {
