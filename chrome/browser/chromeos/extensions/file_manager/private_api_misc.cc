@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -673,6 +674,47 @@ void FileManagerPrivateMountCrostiniContainerFunction::RestartCallback(
     return;
   }
   Respond(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::Run() {
+  using extensions::api::file_manager_private_internal::
+      SharePathWithCrostiniContainer::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile, render_frame_host());
+  storage::FileSystemURL cracked =
+      file_system_context->CrackURL(GURL(params->url));
+
+  // TODO(joelhockey): Seneschal currently only supports sharing
+  // directories under Downloads.
+  std::string downloads_mount_name =
+      file_manager::util::GetDownloadsMountPointName(profile);
+  if (cracked.filesystem_id() != downloads_mount_name) {
+    return RespondNow(Error(
+        "Share with Linux only allowed for directories within Downloads."));
+  }
+
+  // Path must be relative under Downloads/
+  std::string share_path =
+      cracked.virtual_path().value().substr(downloads_mount_name.size() + 1);
+  crostini::CrostiniSharePath::GetInstance()->SharePath(
+      profile, kCrostiniDefaultVmName, share_path,
+      base::BindOnce(
+          &FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::
+              SharePathCallback,
+          this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::
+    SharePathCallback(bool success, std::string failure_reason) {
+  Respond(success ? NoArguments() : Error(failure_reason));
 }
 
 ExtensionFunction::ResponseAction

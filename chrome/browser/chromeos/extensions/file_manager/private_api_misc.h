@@ -299,6 +299,24 @@ class FileManagerPrivateMountCrostiniContainerFunction
   std::string mount_label_;
 };
 
+// Implements the chrome.fileManagerPrivate.sharePathWithCrostiniContainer
+// method.  Shares specified path.
+class FileManagerPrivateInternalSharePathWithCrostiniContainerFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileManagerPrivateInternal.sharePathWithCrostiniContainer",
+      FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER)
+
+ protected:
+  ~FileManagerPrivateInternalSharePathWithCrostiniContainerFunction() override =
+      default;
+
+ private:
+  ResponseAction Run() override;
+  void SharePathCallback(bool success, std::string failure_reason);
+};
+
 // Implements the chrome.fileManagerPrivate.installLinuxPackage method.
 // Starts installation of a Linux package.
 class FileManagerPrivateInternalInstallLinuxPackageFunction

@@ -1111,6 +1111,13 @@ interface Functions {
   // |callback|
   static void mountCrostiniContainer(SimpleCallback callback);
 
+  // Shares directory with crostini container.
+  // |entry| Entry of the directory to share.
+  // |callback|
+  [nocompile]
+  static void sharePathWithCrostiniContainer(
+      [instanceof=DirectoryEntry] object entry, SimpleCallback callback);
+
   // Starts installation of a Linux package.
   [nocompile]
   static void installLinuxPackage([instanceof=Entry] object entry,

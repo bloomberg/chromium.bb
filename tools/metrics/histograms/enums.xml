@@ -16584,6 +16584,8 @@ Called by update_net_error_codes.py.-->
   <int value="1270" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEID"/>
   <int value="1271"
       label="ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO"/>
+  <int value="1272"
+      label="FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER"/>
 </enum>
 
 <enum name="ExtensionIconState">
