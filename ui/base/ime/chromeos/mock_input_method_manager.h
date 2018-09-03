@@ -119,6 +119,10 @@ class UI_BASE_IME_EXPORT MockInputMethodManager
   void NotifyObserversImeExtraInputStateChange() override;
   ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
       override;
+  void NotifyInputMethodExtensionAdded(
+      const std::string& extension_id) override;
+  void NotifyInputMethodExtensionRemoved(
+      const std::string& extension_id) override;
 
   // ui::InputMethodKeyboardController overrides.
   bool DisplayVirtualKeyboard() override;

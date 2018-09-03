@@ -221,6 +221,12 @@ MockInputMethodManager::GetInputMethodKeyboardController() {
   return this;
 }
 
+void MockInputMethodManager::NotifyInputMethodExtensionAdded(
+    const std::string& extension_id) {}
+
+void MockInputMethodManager::NotifyInputMethodExtensionRemoved(
+    const std::string& extension_id) {}
+
 bool MockInputMethodManager::DisplayVirtualKeyboard() {
   return false;
 }
