@@ -1192,11 +1192,21 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, GiantWebView) {
 // Test that extended reporting option is not shown if Unified Consent is
 // enabled.
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-TEST_F(SafeBrowsingBlockingPageTestDiceEnabled,
-       ExtendedReportingNotShownUnifiedConsent) {
+#define TEST_CLASS_ExtendedReportingNotShownUnifiedConsent \
+  SafeBrowsingBlockingPageTestDiceEnabled
 #else
-TEST_F(SafeBrowsingBlockingPageTest, ExtendedReportingNotShownUnifiedConsent) {
+#define TEST_CLASS_ExtendedReportingNotShownUnifiedConsent \
+  SafeBrowsingBlockingPageTest
 #endif
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ExtendedReportingNotShownUnifiedConsent \
+  DISABLED_ExtendedReportingNotShownUnifiedConsent
+#else
+#define MAYBE_ExtendedReportingNotShownUnifiedConsent \
+  ExtendedReportingNotShownUnifiedConsent
+#endif
+TEST_F(TEST_CLASS_ExtendedReportingNotShownUnifiedConsent,
+       MAYBE_ExtendedReportingNotShownUnifiedConsent) {
   // Enable unified consent.
   unified_consent::ScopedUnifiedConsent scoped_unified_consent(
       unified_consent::UnifiedConsentFeatureState::kEnabledWithBump);
