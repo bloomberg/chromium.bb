@@ -22,26 +22,9 @@ from devil.android.sdk import intent # pylint: disable=import-error
 
 # Chrome Startup Benchmarks for mobile devices (running Android).
 #
-# This set of benchmarks (experimental.startup.mobile) aims to replace
-# the benchmark experimental.startup.android.coldish. It brings two
-# improvements:
-# 1. a name that is more aligned with the end state :)
-# 2. uses the new shared state pattern as recommended by:
-#    third_party/catapult/telemetry/examples/benchmarks/android_go_benchmark.py
-# The shared state allows starting the browser multiple times during a
-# benchmark, properly evicting caches, populating caches, running as many
-# iterations as needed without being affected by pageset-repeat being set by
-# bisect/Pinpoint.
-#
-# Note: this benchmark is not yet ready for FYI bots. When we ensure that
-# evicting OS pagecache happens at proper times, we will replace
-# 'experimental.startup.android.coldish' with 'experimental.startup.mobile'.
-# After adding warm starts the resulting benchmark can replace the
-# 'start_with_url.*' family that has aged quite a bit.
-#
 # The recommended way to run this benchmark is:
 # shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/run_benchmark \
-#   -v experimental.startup.mobile --browser=android-chrome \
+#   -v startup.mobile --browser=android-chrome \
 #   --output-dir=/tmp/avoid-polluting-chrome-tree
 
 class _MobileStartupSharedState(story_module.SharedState):
@@ -191,4 +174,4 @@ class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'experimental.startup.mobile'
+    return 'startup.mobile'
