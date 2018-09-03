@@ -167,6 +167,7 @@
                shortcut="." hide-shortcut-text>
       <command id="manage-in-drive"
                i18n-values="label:MANAGE_IN_DRIVE_BUTTON_LABEL" disabled hidden>
+      <command id="share-with-linux" i18n-values="label:SHARE_WITH_LINUX_BUTTON_LABEL" disabled hidden>
 
       <command id="zoom-in" shortcut="=|Ctrl">
       <command id="zoom-out" shortcut="-|Ctrl">
@@ -210,6 +211,7 @@
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"
                 class="hide-on-toolbar"></cr-menu-item>
       <cr-menu-item command="#zip-selection"></cr-menu-item>
+      <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#set-wallpaper"></cr-menu-item>
       <hr visibleif="saveas-file full-page" class="hide-on-toolbar">
       <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"
@@ -294,6 +296,7 @@
     <cr-menu id="share-menu" class="chrome-menu files-menu"
              menu-item-selector="cr-menu-item, hr">
       <cr-menu-item command="#share"></cr-menu-item>
+      <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <hr id="drive-share-separator">
     </cr-menu>
 

@@ -19,7 +19,7 @@ crostini.testCrostiniNotEnabled = (done) => {
       });
 };
 
-crostini.testCrostiniSuccess = (done) => {
+crostini.testMountCrostiniSuccess = (done) => {
   const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
   let mountCallback = null;
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
@@ -75,7 +75,7 @@ crostini.testCrostiniSuccess = (done) => {
       });
 };
 
-crostini.testCrostiniError = (done) => {
+crostini.testMountCrostiniError = (done) => {
   const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
   // Override fileManagerPrivate.mountCrostiniContainer to return error.
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
@@ -191,6 +191,38 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
       .then(() => {
         // Restore fmp.getFileTasks.
         chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
+        done();
+      });
+};
+
+crostini.testSharePathCrostiniSuccess = (done) => {
+  let sharePathCalled = false;
+  chrome.fileManagerPrivate.sharePathWithCrostiniContainer = (callback) => {
+    sharePathCalled = true;
+  };
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        // Right-click 'photos' directory.
+        // Check 'Share with Linux' is shown in menu.
+        test.selectFile('photos');
+        assertTrue(
+            test.fakeMouseRightClick('#file-list li[selected]'),
+            'right-click photos');
+        return test.waitForElement(
+            '#file-context-menu:not([hidden]) ' +
+            '[command="#share-with-linux"]:not([hidden]):not([disabled])');
+      })
+      .then(() => {
+        // Click on 'Start with Linux'.
+        assertTrue(
+            test.fakeMouseClick(
+                '#file-context-menu [command="#share-with-linux"]'),
+            'Share with Linux');
+        return test.waitForElement('#file-context-menu[hidden]');
+      })
+      .then(() => {
+        // Check sharePathWithCrostiniContainer is called.
+        assertTrue(sharePathCalled);
         done();
       });
 };
