@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/oobe_configuration_client.h"
 
@@ -73,8 +74,13 @@ void OobeConfiguration::OnConfigurationCheck(bool has_configuration,
   auto value = base::JSONReader::ReadAndReturnError(
       configuration, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
       &error_code, &error_message, &row, &col);
-  if (!value || !value->is_dict()) {
+  if (!value) {
     LOG(ERROR) << "Error parsing OOBE configuration: " << error_message;
+    return;
+  }
+
+  if (!chromeos::configuration::ValidateConfiguration(*value)) {
+    LOG(ERROR) << "Invalid OOBE configuration";
     return;
   }
 

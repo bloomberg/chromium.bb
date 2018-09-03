@@ -1423,7 +1423,11 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
 }
 
 void WizardController::OnOobeConfigurationChanged() {
-  oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
+  oobe_configuration_ = base::Value(base::Value::Type::DICTIONARY);
+  chromeos::configuration::FilterConfiguration(
+      OobeConfiguration::Get()->GetConfiguration(),
+      chromeos::configuration::ConfigurationHandlerSide::HANDLER_CPP,
+      oobe_configuration_);
   if (current_screen_) {
     current_screen_->SetConfiguration(&oobe_configuration_, true /*notify */);
   }

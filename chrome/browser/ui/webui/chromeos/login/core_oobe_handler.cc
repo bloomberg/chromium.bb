@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -607,8 +608,12 @@ void CoreOobeHandler::OnOobeConfigurationChanged() {
 
 void CoreOobeHandler::UpdateOobeConfiguration() {
   if (OobeConfiguration::Get()) {
-    CallJSOrDefer("updateOobeConfiguration",
-                  OobeConfiguration::Get()->GetConfiguration());
+    base::Value configuration(base::Value::Type::DICTIONARY);
+    chromeos::configuration::FilterConfiguration(
+        OobeConfiguration::Get()->GetConfiguration(),
+        chromeos::configuration::ConfigurationHandlerSide::HANDLER_JS,
+        configuration);
+    CallJSOrDefer("updateOobeConfiguration", configuration);
   }
 }
 
