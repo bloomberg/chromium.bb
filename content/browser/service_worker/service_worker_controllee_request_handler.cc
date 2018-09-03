@@ -317,9 +317,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
                          tentative_resource_request.site_for_cookies);
 
   if (url_job_->ShouldFallbackToNetwork()) {
-    // We're falling back to the next NavigationLoaderInterceptor, forward
-    // the request and clear job now.
-    url_job_->FallbackToNetwork();
+    // The job already fell back to network. Clear the job now.
     ClearJob();
     return;
   }
