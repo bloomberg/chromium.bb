@@ -3781,7 +3781,7 @@ _lou_defaultTableResolver(const char *tableList, const char *base) {
 	return tableFiles;
 }
 
-static char **(*tableResolver)(
+static char **(EXPORT_CALL *tableResolver)(
 		const char *tableList, const char *base) = &_lou_defaultTableResolver;
 
 static char **
@@ -3815,7 +3815,8 @@ _lou_resolveTable(const char *tableList, const char *base) {
  *
  */
 void EXPORT_CALL
-lou_registerTableResolver(char **(*resolver)(const char *tableList, const char *base)) {
+lou_registerTableResolver(
+		char **(EXPORT_CALL *resolver)(const char *tableList, const char *base)) {
 	tableResolver = resolver;
 }
 
