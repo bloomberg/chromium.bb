@@ -70,8 +70,9 @@ class GIN_EXPORT IsolateHolder {
     kUtility
   };
 
-  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                IsolateType isolate_type);
+  explicit IsolateHolder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      IsolateType isolate_type);
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 AccessMode access_mode,
                 IsolateType isolate_type);
