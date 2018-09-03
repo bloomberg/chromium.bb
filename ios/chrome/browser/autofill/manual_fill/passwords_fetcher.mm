@@ -5,12 +5,10 @@
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 
 #include "components/autofill/core/common/password_form.h"
-#include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,8 +23,6 @@
   std::unique_ptr<ios::SavePasswordsConsumer> _savedPasswordsConsumer;
   // The list of the user's saved passwords.
   std::vector<std::unique_ptr<autofill::PasswordForm>> _savedForms;
-  // The current Chrome browser state.
-  ios::ChromeBrowserState* _browserState;
 }
 
 // Delegate to send the fetchted passwords.
@@ -40,16 +36,16 @@
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<PasswordFetcherDelegate>)delegate {
-  DCHECK(browserState);
+- (instancetype)initWithPasswordStore:
+                    (scoped_refptr<password_manager::PasswordStore>)
+                        passwordStore
+                             delegate:(id<PasswordFetcherDelegate>)delegate {
+  DCHECK(passwordStore);
+  DCHECK(delegate);
   self = [super init];
   if (self) {
-    _browserState = browserState;
     _delegate = delegate;
-    _passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-        _browserState, ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(_passwordStore);
+    _passwordStore = passwordStore;
     _savedPasswordsConsumer.reset(new ios::SavePasswordsConsumer(self));
     _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
   }
