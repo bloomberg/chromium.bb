@@ -675,14 +675,12 @@ class SingleEntryPropertiesGetterForDriveFs {
     }
 
     properties_->size = std::make_unique<double>(metadata->size);
-    properties_->available_offline =
-        std::make_unique<bool>(metadata->available_offline);
     properties_->present = std::make_unique<bool>(metadata->available_offline);
     properties_->dirty = std::make_unique<bool>(metadata->dirty);
     properties_->hosted = std::make_unique<bool>(
         metadata->type == drivefs::mojom::FileMetadata::Type::kHosted);
-    properties_->present = std::make_unique<bool>(metadata->available_offline ||
-                                                  *properties_->hosted);
+    properties_->available_offline = std::make_unique<bool>(
+        metadata->available_offline || *properties_->hosted);
     properties_->available_when_metered = std::make_unique<bool>(
         metadata->available_offline || *properties_->hosted);
     properties_->pinned = std::make_unique<bool>(metadata->pinned);
