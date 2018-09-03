@@ -21,6 +21,7 @@ var kRTCRTPStreamStats = new RTCStats_(null, {
   associateStatsId: 'string',
   isRemote: 'boolean',
   mediaType: 'string',
+  kind: 'string',
   trackId: 'string',
   transportId: 'string',
   codecId: 'string',
