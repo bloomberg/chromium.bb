@@ -124,17 +124,6 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // This could be called multiple times in some cases, because
-  // ServiceWorkerControlleeRequestHandler
-  // calls FallbackToNetwork() then later calls ShouldFallbackToNetwork() then
-  // calls FallbackToNetwork() again, maybe because that flow makes more sense
-  // for the non-S13nServiceWorker path.
-  // TODO(falken): Clean that up maybe after non-S13nServiceWorker is removed.
-  if (status_ == Status::kCompleted) {
-    DCHECK_EQ(response_type_, ResponseType::FALLBACK_TO_NETWORK);
-    return;
-  }
-
   // The URLJobWrapper only calls this if this loader never intercepted the
   // request. Fallback to network after interception uses |fallback_callback_|
   // instead.
@@ -150,6 +139,7 @@ void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::ForwardToServiceWorker",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  DCHECK_EQ(status_, Status::kNotStarted);
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
 
