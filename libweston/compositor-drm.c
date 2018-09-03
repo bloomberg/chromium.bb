@@ -1557,32 +1557,13 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 	return true;
 }
 
-static bool
-drm_view_is_opaque(struct weston_view *ev)
-{
-	pixman_region32_t r;
-	bool ret = false;
-
-	pixman_region32_init_rect(&r, 0, 0,
-				  ev->surface->width,
-				  ev->surface->height);
-	pixman_region32_subtract(&r, &r, &ev->surface->opaque);
-
-	if (!pixman_region32_not_empty(&r))
-		ret = true;
-
-	pixman_region32_fini(&r);
-
-	return ret;
-}
-
 static struct drm_fb *
 drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev)
 {
 	struct drm_output *output = state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
-	bool is_opaque = drm_view_is_opaque(ev);
+	bool is_opaque = weston_view_is_opaque(ev, &ev->transform.boundingbox);
 	struct linux_dmabuf_buffer *dmabuf;
 	struct drm_fb *fb;
 
@@ -3641,7 +3622,7 @@ drm_output_propose_state(struct weston_output *output_base,
 			             "(precluded by mode)\n", ev);
 			force_renderer = true;
 		}
-		if (!ps && !drm_view_is_opaque(ev)) {
+		if (!ps && !weston_view_is_opaque(ev, &clipped_view)) {
 			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
 			             "(view not fully opaque)\n", ev);
 			force_renderer = true;
