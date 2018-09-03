@@ -49,6 +49,11 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TypingTest.testChordControlCutAndPaste',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2572
+    'ChromeOptionsFunctionalTest.canAddExtensionFromFile',
+    'ChromeOptionsFunctionalTest.canAddExtensionFromStringEncodedInBase64',
+    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
+    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
 ]
 
 _OS_NEGATIVE_FILTER = {}
