@@ -1681,6 +1681,43 @@ weston_view_is_mapped(struct weston_view *view)
 	return view->is_mapped;
 }
 
+/* Check if view is opaque in specified region
+ *
+ * \param view The view to check for opacity.
+ * \param region The region to check for opacity, in view coordinates.
+ *
+ * Returns true if the view is opaque in the specified region, because view
+ * alpha is 1.0 and either the opaque region set by the client contains the
+ * specified region, or the buffer pixel format or solid color is opaque.
+ */
+WL_EXPORT bool
+weston_view_is_opaque(struct weston_view *ev, pixman_region32_t *region)
+{
+	pixman_region32_t r;
+	bool ret = false;
+
+	if (ev->alpha < 1.0)
+		return false;
+
+	if (ev->surface->is_opaque)
+		return true;
+
+	if (ev->transform.dirty) {
+		weston_log("%s: transform dirty", __func__);
+		return false;
+	}
+
+	pixman_region32_init(&r);
+	pixman_region32_subtract(&r, region, &ev->transform.opaque);
+
+	if (!pixman_region32_not_empty(&r))
+		ret = true;
+
+	pixman_region32_fini(&r);
+
+	return ret;
+}
+
 /* Check if a surface has a view assigned to it
  *
  * The indicator is set manually when mapping

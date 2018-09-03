@@ -1868,6 +1868,9 @@ weston_view_set_mask_infinite(struct weston_view *view);
 bool
 weston_view_is_mapped(struct weston_view *view);
 
+bool
+weston_view_is_opaque(struct weston_view *ev, pixman_region32_t *region);
+
 void
 weston_view_schedule_repaint(struct weston_view *view);
 
