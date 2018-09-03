@@ -109,7 +109,7 @@ class ManualFillingMediator
         @Override
         public void onSceneStartShowing(Layout layout) {
             // Includes events like side-swiping between tabs and triggering contextual search.
-            mKeyboardAccessory.dismiss();
+            pause();
         }
 
         @Override
@@ -119,7 +119,7 @@ class ManualFillingMediator
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onHidden(Tab tab) {
-            mKeyboardAccessory.dismiss();
+            pause();
         }
 
         @Override
@@ -130,7 +130,7 @@ class ManualFillingMediator
 
         @Override
         public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
-            mKeyboardAccessory.dismiss();
+            pause();
         }
     };
 
@@ -188,11 +188,13 @@ class ManualFillingMediator
             mKeyboardAccessory.requestShowing();
             mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
             mKeyboardAccessory.closeActiveTab();
+            updateInfobarState(true);
             mKeyboardAccessory.setBottomOffset(0);
             mAccessorySheet.hide();
         } else {
             mKeyboardAccessory.close();
             onBottomControlSpaceChanged();
+            updateInfobarState(/* shouldBeHidden= */ mKeyboardAccessory.hasActiveTab());
             if (mKeyboardAccessory.hasActiveTab()) {
                 mAccessorySheet.show();
             }
@@ -223,7 +225,7 @@ class ManualFillingMediator
 
     boolean handleBackPress() {
         if (isInitialized() && mAccessorySheet.isShown()) {
-            mKeyboardAccessory.dismiss();
+            pause();
             return true;
         }
         return false;
@@ -231,7 +233,7 @@ class ManualFillingMediator
 
     void dismiss() {
         if (!isInitialized()) return;
-        mKeyboardAccessory.dismiss();
+        pause();
         if (getContentView() != null) UiUtils.hideKeyboard(getContentView());
     }
 
@@ -242,6 +244,7 @@ class ManualFillingMediator
     public void pause() {
         if (!isInitialized()) return;
         mKeyboardAccessory.dismiss();
+        updateInfobarState(false);
     }
 
     void resume() {
@@ -269,6 +272,7 @@ class ManualFillingMediator
         }
         mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
         mKeyboardAccessory.closeActiveTab();
+        updateInfobarState(false);
         mKeyboardAccessory.setBottomOffset(0);
         mAccessorySheet.hide();
     }
@@ -325,7 +329,7 @@ class ManualFillingMediator
     }
 
     private void restoreCachedState(Tab browserTab) {
-        mKeyboardAccessory.dismiss();
+        pause();
         clearTabs();
         if (browserTab == null) return; // If there is no tab, exit after cleaning everything.
         AccessoryState state = getOrCreateAccessoryState(browserTab);
@@ -352,6 +356,18 @@ class ManualFillingMediator
         if (!mKeyboardAccessory.isShown()) return 0;
         return mActivity.getResources().getDimensionPixelSize(
                 org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
+    }
+
+    // TODO(fhorschig): Remove when accessory sheet acts as keyboard.
+    /**
+     * Sets the infobar state to the given value. Does nothing if there is no active tab with an
+     * {@link org.chromium.chrome.browser.infobar.InfoBarContainer}.
+     * @param shouldBeHidden If true, info bars can be shown. They are suppressed on false.
+     */
+    private void updateInfobarState(boolean shouldBeHidden) {
+        if (mActiveBrowserTab == null) return;
+        if (mActiveBrowserTab.getInfoBarContainer() == null) return;
+        mActiveBrowserTab.getInfoBarContainer().setHidden(shouldBeHidden);
     }
 
     @VisibleForTesting

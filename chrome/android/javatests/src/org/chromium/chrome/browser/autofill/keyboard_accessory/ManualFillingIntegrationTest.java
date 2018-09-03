@@ -10,8 +10,10 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
@@ -33,8 +35,12 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
+import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.DropdownPopupWindowInterface;
@@ -299,5 +305,62 @@ public class ManualFillingIntegrationTest {
 
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+    }
+
+    @Test
+    @SmallTest
+    public void testInfobarStaysHiddenWhenOpeningSheet()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+
+        // TODO Create an infobar
+        InfoBarContainer container =
+                mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
+        InfoBarTestAnimationListener mListener = new InfoBarTestAnimationListener();
+        container.addAnimationListener(mListener);
+        final SimpleConfirmInfoBarBuilder.Listener testListener =
+                new SimpleConfirmInfoBarBuilder.Listener() {
+                    @Override
+                    public void onInfoBarDismissed() {}
+                    @Override
+                    public boolean onInfoBarButtonClicked(boolean isPrimary) {
+                        return false;
+                    }
+                };
+        final String kInfoBarText = "SomeInfoBar";
+        ThreadUtils.runOnUiThread(() -> {
+            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+                    testListener, InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, 0,
+                    kInfoBarText, null, null, false);
+        });
+        mListener.addInfoBarAnimationFinished("InfoBar not added.");
+
+        mHelper.createTestTab();
+        whenDisplayed(withText(kInfoBarText));
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        assertThat(mActivityTestRule.getActivity()
+                           .getActivityTab()
+                           .getInfoBarContainer()
+                           .getVisibility(),
+                is(not(View.VISIBLE)));
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        assertThat(mActivityTestRule.getActivity()
+                           .getActivityTab()
+                           .getInfoBarContainer()
+                           .getVisibility(),
+                is(not(View.VISIBLE)));
+        Espresso.pressBack();
+
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+
+        whenDisplayed(withText(kInfoBarText));
     }
 }
