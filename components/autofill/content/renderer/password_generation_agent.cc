@@ -164,6 +164,7 @@ void CopyElementValueToOtherInputElements(
     if (*element != it) {
       it.SetAutofillValue(element->Value());
     }
+    it.SetAutofillState(WebAutofillState::kAutofilled);
   }
 }
 

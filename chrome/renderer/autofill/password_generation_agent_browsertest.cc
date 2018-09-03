@@ -456,6 +456,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
                                     edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
   EXPECT_EQ(edited_password, second_password_element.Value().Utf16());
+  EXPECT_TRUE(first_password_element.IsAutofilled());
+  EXPECT_TRUE(second_password_element.IsAutofilled());
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
@@ -463,6 +465,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   SimulateUserInputChangeForElement(&first_password_element, std::string());
   EXPECT_EQ(base::string16(), first_password_element.Value().Utf16());
   EXPECT_EQ(base::string16(), second_password_element.Value().Utf16());
+  EXPECT_FALSE(first_password_element.IsAutofilled());
+  EXPECT_FALSE(second_password_element.IsAutofilled());
 
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.
