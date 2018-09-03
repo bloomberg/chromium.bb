@@ -244,9 +244,6 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public void simulateRendererKilledForTesting(boolean wasOomProtected) {}
-
-    @Override
     public void setHasPersistentVideo(boolean value) {}
 
     @Override

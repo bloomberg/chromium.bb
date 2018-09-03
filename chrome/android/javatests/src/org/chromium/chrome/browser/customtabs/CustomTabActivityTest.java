@@ -1529,10 +1529,9 @@ public class CustomTabActivityTest {
             }
         };
         ThreadUtils.postOnUiThread(() -> {
-            mCustomTabActivityTestRule.getActivity()
-                    .getActivityTab()
-                    .getWebContents()
-                    .simulateRendererKilledForTesting(false);
+            WebContentsUtils.simulateRendererKilled(
+                    mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                    false);
         });
         renderProcessCallback.waitForCallback(0);
         Assert.assertTrue(connection.postMessage(token, "Message", null)

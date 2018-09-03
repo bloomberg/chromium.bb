@@ -7,6 +7,7 @@ package org.chromium.content_public.browser.test.util;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.input.SelectPopup;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 
@@ -40,6 +41,18 @@ public class WebContentsUtils {
      */
     public static RenderFrameHost getFocusedFrame(final WebContents webContents) {
         return nativeGetFocusedFrame(webContents);
+    }
+
+    /**
+     * Issues a fake notification about the renderer being killed.
+     *
+     * @param webContents The WebContents in use.
+     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
+     *                        (e.g. renderer for the currently selected tab)
+     */
+    public static void simulateRendererKilled(WebContents webContents, boolean wasOomProtected) {
+        ThreadUtils.runOnUiThreadBlocking(() ->
+            ((WebContentsImpl) webContents).simulateRendererKilledForTesting(wasOomProtected));
     }
 
     private static native void nativeReportAllFrameSubmissions(

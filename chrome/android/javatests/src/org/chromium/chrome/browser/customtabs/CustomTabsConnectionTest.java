@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -311,7 +312,7 @@ public class CustomTabsConnectionTest {
                     tabDestroyedHelper.notifyCalled();
                 }
             });
-            speculationTab.getWebContents().simulateRendererKilledForTesting(false);
+            WebContentsUtils.simulateRendererKilled(speculationTab.getWebContents(), false);
         });
         tabDestroyedHelper.waitForCallback("The speculated tab was not destroyed", 0);
     }
