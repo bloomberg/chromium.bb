@@ -93,9 +93,10 @@ void UserTriggeredManualGenerationFromContextMenu(
 
 // Two blacklisted forms are considered equal if they have the same
 // signon_realm.
-void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
-                                 PrefService* prefs,
-                                 int delay_in_seconds);
+void DeleteBlacklistedDuplicates(
+    scoped_refptr<password_manager::PasswordStore> store,
+    PrefService* prefs,
+    int delay_in_seconds);
 
 // Report metrics about HTTP to HTTPS migration process. This function cannot be
 // used on iOS platform because the HSTS query is not supported.

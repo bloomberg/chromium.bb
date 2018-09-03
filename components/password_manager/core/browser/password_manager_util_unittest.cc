@@ -20,8 +20,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,7 +32,6 @@ namespace {
 
 constexpr char kTestAndroidRealm[] = "android://hash@com.example.beta.android";
 constexpr char kTestFederationURL[] = "https://google.com/";
-constexpr char kTestURL[] = "https://example.com/";
 constexpr char kTestUsername[] = "Username";
 constexpr char kTestUsername2[] = "Username2";
 constexpr char kTestPassword[] = "12345";
@@ -86,42 +83,6 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   TrimUsernameOnlyCredentials(&forms);
 
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
-}
-
-TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.signon_realm = kTestURL;
-  blacklisted.origin = GURL(kTestURL);
-
-  autofill::PasswordForm blacklisted_first_example = blacklisted;
-  blacklisted_first_example.signon_realm += "first_example";
-
-  autofill::PasswordForm blacklisted_second_example = blacklisted;
-  blacklisted_second_example.signon_realm += "second_example";
-
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-  TestingPrefServiceSimple prefs;
-
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
-
-  auto password_store = base::MakeRefCounted<
-      testing::StrictMock<password_manager::MockPasswordStore>>();
-  ASSERT_TRUE(
-      password_store->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
-
-  EXPECT_CALL(*password_store, FillBlacklistLogins(_))
-      .WillOnce(DoAll(AppendForm(blacklisted),
-                      AppendForm(blacklisted_first_example),
-                      AppendForm(blacklisted_second_example),
-                      AppendForm(blacklisted_first_example), Return(true)));
-
-  // Duplicated credentials are to be deleted.
-  EXPECT_CALL(*password_store, RemoveLogin(blacklisted_first_example));
-  DeleteBlacklistedDuplicates(password_store.get(), &prefs, 0);
-  scoped_task_environment.RunUntilIdle();
-  password_store->ShutdownOnUIThread();
 }
 
 #if !defined(OS_IOS)
