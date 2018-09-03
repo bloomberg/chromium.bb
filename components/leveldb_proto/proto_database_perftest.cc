@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
@@ -529,7 +530,16 @@ class ProtoDBPerfTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual) {
+// Timed out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_InsertMultipleDBsAlternating_Individual \
+  DISABLED_InsertMultipleDBsAlternating_Individual
+#else
+#define MAYBE_InsertMultipleDBsAlternating_Individual \
+  InsertMultipleDBsAlternating_Individual
+#endif
+
+TEST_F(ProtoDBPerfTest, MAYBE_InsertMultipleDBsAlternating_Individual) {
   // num_entries, data_size, batch_size, single_db.
   std::vector<TestParams> params = {
       {500, 100, 1, false}, {500, 1000, 1, false},
@@ -538,7 +548,16 @@ TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual) {
                             10);
 }
 
-TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_Individual) {
+// Timed out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_InsertSingleDBAlternating_Individual \
+  DISABLED_InsertSingleDBAlternating_Individual
+#else
+#define MAYBE_InsertSingleDBAlternating_Individual \
+  InsertSingleDBAlternating_Individual
+#endif
+
+TEST_F(ProtoDBPerfTest, MAYBE_InsertSingleDBAlternating_Individual) {
   // num_entries, data_size, batch_size, single_db.
   std::vector<TestParams> params = {
       {500, 100, 1, true}, {500, 1000, 1, true},
@@ -575,7 +594,16 @@ TEST_F(ProtoDBPerfTest, DistributionTestSmall_FewEntries) {
                                 params, true);
 }
 
-TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries) {
+// Timed out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_DistributionTestSmall_ManyEntries \
+  DISABLED_DistributionTestSmall_ManyEntries
+#else
+#define MAYBE_DistributionTestSmall_ManyEntries \
+  DistributionTestSmall_ManyEntries
+#endif
+
+TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries) {
   std::vector<TestParams> params = {
       {200, 10, 1, false}, {100, 10, 1, false},  {100, 10, 1, false},
       {250, 10, 1, false}, {400, 10, 1, false},  {500, 10, 1, false},
