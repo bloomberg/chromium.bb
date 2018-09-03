@@ -47,7 +47,7 @@ bool DevToolsProtocolTest::DidAddMessageToConsole(
 
 base::DictionaryValue* DevToolsProtocolTest::SendCommand(
     const std::string& method,
-    std::unique_ptr<base::DictionaryValue> params,
+    std::unique_ptr<base::Value> params,
     bool wait) {
   in_dispatch_ = true;
   base::DictionaryValue command;

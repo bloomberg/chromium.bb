@@ -61,6 +61,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   void SetRequestHeadersCallback(net::RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(
       net::ResponseHeadersCallback callback) override;
+  void ContinueDespiteLastError() override;
 
   // Must be called on IO thread.
   void StopIntercepting();

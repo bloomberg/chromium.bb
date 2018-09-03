@@ -1248,6 +1248,11 @@ void DevToolsURLInterceptorRequestJob::SetResponseHeadersCallback(
   response_headers_callback_ = std::move(callback);
 }
 
+void DevToolsURLInterceptorRequestJob::ContinueDespiteLastError() {
+  if (sub_request_)
+    sub_request_->request()->ContinueDespiteLastError();
+}
+
 DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
     const GURL& url,
     const std::string& method,
