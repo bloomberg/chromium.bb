@@ -187,7 +187,13 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   }
 }
 
-TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
+// Flaky on CrOS (https://crbug.com/879984).
+#if defined(OS_CHROMEOS)
+#define MAYBE_RegisterExecutorTwice DISABLED_RegisterExecutorTwice
+#else
+#define MAYBE_RegisterExecutorTwice RegisterExecutorTwice
+#endif
+TEST_F(PostTaskTestWithExecutor, MAYBE_RegisterExecutorTwice) {
   EXPECT_DCHECK_DEATH(
       RegisterTaskExecutor(TestTaskTraitsExtension::kExtensionId, &executor_));
 }
