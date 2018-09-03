@@ -107,7 +107,9 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   // Using zero-copy for optimal performance.
   bool use_zero_copy = true;
 
-  bool is_overlay_candidate = true;
+  // TODO(dcastagna): Re-enable NV12 format as HW overlay once b/113362843
+  // is addressed.
+  bool is_overlay_candidate = format != gfx::BufferFormat::YUV_420_BIPLANAR;
 
   return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
