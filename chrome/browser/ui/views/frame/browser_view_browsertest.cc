@@ -28,8 +28,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
-#include "ui/accessibility/platform/ax_platform_node_test_helper.h"
 #include "ui/base/l10n/l10n_util.h"
 
 class BrowserViewTest : public InProcessBrowserTest {
@@ -383,38 +381,4 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest,
   delegate->Close();
   EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
                                window_title, base::CompareCase::SENSITIVE));
-}
-
-// Open a tab-modal dialog and check that the accessibility tree only contains
-// the dialog.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
-  ui::AXPlatformNode* ax_node = ui::AXPlatformNode::FromNativeViewAccessible(
-      browser_view()->GetWidget()->GetRootView()->GetNativeViewAccessible());
-// We expect this conversion to be safe on Windows, but can't guarantee that it
-// is safe on other platforms.
-#if defined(OS_WIN)
-  ASSERT_TRUE(ax_node);
-#else
-  if (!ax_node)
-    return;
-#endif
-
-  // There is no dialog, but the browser UI should be visible. So we expect the
-  // browser's reload button and no "OK" button from a dialog.
-  EXPECT_NE(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "Reload"),
-            nullptr);
-  EXPECT_EQ(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "OK"),
-            nullptr);
-
-  content::WebContents* contents = browser_view()->GetActiveWebContents();
-  TestTabModalConfirmDialogDelegate* delegate =
-      new TestTabModalConfirmDialogDelegate(contents);
-  TabModalConfirmDialog::Create(delegate, contents);
-
-  // The tab modal dialog should be in the accessibility tree; everything else
-  // should be hidden. So we expect an "OK" button and no reload button.
-  EXPECT_EQ(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "Reload"),
-            nullptr);
-  EXPECT_NE(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "OK"),
-            nullptr);
 }
