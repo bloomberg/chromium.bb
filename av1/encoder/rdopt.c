@@ -7514,50 +7514,44 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  const int N = bw * bh;
+  const int N = 1 << num_pels_log2_lookup[bsize];
   int rate;
-  uint64_t sse;
   int64_t dist;
-  int64_t rd0;
   DIFFWTD_MASK_TYPE cur_mask_type;
   int64_t best_rd = INT64_MAX;
   DIFFWTD_MASK_TYPE best_mask_type = 0;
   const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
+  DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
+  uint8_t *tmp_mask[2] = { xd->seg_mask, seg_mask };
   // try each mask type and its inverse
   for (cur_mask_type = 0; cur_mask_type < DIFFWTD_MASK_TYPES; cur_mask_type++) {
     // build mask and inverse
     if (hbd)
       av1_build_compound_diffwtd_mask_highbd(
-          xd->seg_mask, cur_mask_type, CONVERT_TO_BYTEPTR(p0), bw,
+          tmp_mask[cur_mask_type], cur_mask_type, CONVERT_TO_BYTEPTR(p0), bw,
           CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
     else
-      av1_build_compound_diffwtd_mask(xd->seg_mask, cur_mask_type, p0, bw, p1,
-                                      bw, bh, bw);
+      av1_build_compound_diffwtd_mask(tmp_mask[cur_mask_type], cur_mask_type,
+                                      p0, bw, p1, bw, bh, bw);
 
     // compute rd for mask
-    sse = av1_wedge_sse_from_residuals(residual1, diff10, xd->seg_mask, N);
+    uint64_t sse = av1_wedge_sse_from_residuals(residual1, diff10,
+                                                tmp_mask[cur_mask_type], N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
     model_rd_from_sse(cpi, x, bsize, 0, sse, &rate, &dist);
-    rd0 = RDCOST(x->rdmult, rate, dist);
+    const int64_t rd0 = RDCOST(x->rdmult, rate, dist);
 
     if (rd0 < best_rd) {
       best_mask_type = cur_mask_type;
       best_rd = rd0;
     }
   }
-
-  // make final mask
   mbmi->interinter_comp.mask_type = best_mask_type;
-  if (hbd)
-    av1_build_compound_diffwtd_mask_highbd(
-        xd->seg_mask, mbmi->interinter_comp.mask_type, CONVERT_TO_BYTEPTR(p0),
-        bw, CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
-  else
-    av1_build_compound_diffwtd_mask(
-        xd->seg_mask, mbmi->interinter_comp.mask_type, p0, bw, p1, bw, bh, bw);
-
+  if (best_mask_type == DIFFWTD_38_INV) {
+    memcpy(xd->seg_mask, seg_mask, N * 2);
+  }
   return best_rd;
 }
 
