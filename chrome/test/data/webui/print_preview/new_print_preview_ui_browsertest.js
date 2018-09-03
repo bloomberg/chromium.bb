@@ -194,6 +194,14 @@ TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPolicy);
 });
 
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
+    function() {
+      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+      this.runMochaTest(
+          settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
+    });
+
 PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -449,6 +457,14 @@ GEN('#endif');
 TEST_F('PrintPreviewPreviewGenerationTest', 'Destination', function() {
   this.runMochaTest(preview_generation_test.TestNames.Destination);
 });
+
+TEST_F(
+    'PrintPreviewPreviewGenerationTest', 'ChangeMarginsByPagesPerSheet',
+    function() {
+      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+      this.runMochaTest(
+          preview_generation_test.TestNames.ChangeMarginsByPagesPerSheet);
+    });
 
 GEN('#if !defined(OS_CHROMEOS)');
 PrintPreviewLinkContainerTest = class extends NewPrintPreviewTest {
