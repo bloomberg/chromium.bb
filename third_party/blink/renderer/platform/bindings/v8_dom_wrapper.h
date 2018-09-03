@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -119,6 +120,8 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   // allocated.
   ScriptWrappableMarkingVisitor::WriteBarrier(isolate, wrapper_type_info,
                                               wrappable);
+  UnifiedHeapMarkingVisitor::WriteBarrier(isolate, wrapper_type_info,
+                                          wrappable);
 }
 
 inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,

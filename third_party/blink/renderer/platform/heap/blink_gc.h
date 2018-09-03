@@ -104,7 +104,8 @@ class PLATFORM_EXPORT BlinkGC final {
     kTesting = 7,
     kIncrementalIdleGC = 8,
     kIncrementalV8FollowupGC = 9,
-    kMaxValue = kIncrementalV8FollowupGC,
+    kUnifiedHeapGC = 10,
+    kMaxValue = kUnifiedHeapGC,
   };
 
   enum ArenaIndices {

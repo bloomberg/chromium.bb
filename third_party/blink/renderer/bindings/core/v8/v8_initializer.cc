@@ -633,7 +633,12 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
 
   isolate->SetEmbedderHeapTracer(
-      V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor());
+      RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
+          ? static_cast<v8::EmbedderHeapTracer*>(
+                V8PerIsolateData::From(isolate)->GetUnifiedHeapController())
+          : static_cast<v8::EmbedderHeapTracer*>(
+                V8PerIsolateData::From(isolate)
+                    ->GetScriptWrappableMarkingVisitor()));
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 
@@ -732,6 +737,20 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
                 : Platform::Current()->CurrentThread()->GetTaskRunner(),
       v8_context_snapshot_mode);
 
+  // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer
+  // as setting the tracer indicates that a V8 garbage collection should trace
+  // over to Blink.
+  DCHECK(ThreadState::MainThreadState());
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()) {
+    ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
+        isolate, V8GCController::TraceDOMWrappers, nullptr, nullptr);
+  } else {
+    ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
+        isolate, V8GCController::TraceDOMWrappers,
+        ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
+        ScriptWrappableMarkingVisitor::PerformCleanup);
+  }
+
   InitializeV8Common(isolate);
 
   isolate->SetOOMErrorHandler(ReportOOMErrorInMainThread);
@@ -764,12 +783,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
     profiler->AddBuildEmbedderGraphCallback(
         &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
   }
-
-  DCHECK(ThreadState::MainThreadState());
-  ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
-      isolate, V8GCController::TraceDOMWrappers,
-      ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
-      ScriptWrappableMarkingVisitor::PerformCleanup);
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));

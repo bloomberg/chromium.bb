@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -116,6 +118,8 @@ const char* GcReasonString(BlinkGC::GCReason reason) {
       return "IncrementalIdleGC";
     case BlinkGC::GCReason::kIncrementalV8FollowupGC:
       return "IncrementalV8FollowupGC";
+    case BlinkGC::GCReason::kUnifiedHeapGC:
+      return "UnifiedHeapGC";
   }
   return "<Unknown>";
 }
@@ -1199,6 +1203,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalIdleGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
+    COUNT_BY_GC_REASON(UnifiedHeapGC)
 
 #undef COUNT_BY_GC_REASON
   }
@@ -1430,16 +1435,18 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
 }
 
 void ThreadState::IncrementalMarkingStep() {
+  DCHECK(IsMarkingInProgress());
+
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kIncrementalMarkingStep);
   VLOG(2) << "[state:" << this << "] "
-          << "IncrementalMarking: Step";
+          << "IncrementalMarking: Step "
+          << "Reason: " << GcReasonString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
-  DCHECK(IsMarkingInProgress());
   bool complete = MarkPhaseAdvanceMarking(
       CurrentTimeTicks() + next_incremental_marking_step_duration_);
-  if (complete)
+  if (complete && !IsUnifiedGCMarkingInProgress())
     ScheduleIncrementalMarkingFinalize();
   else
     ScheduleIncrementalMarkingStep();
@@ -1447,15 +1454,40 @@ void ThreadState::IncrementalMarkingStep() {
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
+  DCHECK(IsMarkingInProgress());
+  DCHECK(!IsUnifiedGCMarkingInProgress());
+
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kIncrementalMarkingFinalize);
   VLOG(2) << "[state:" << this << "] "
-          << "IncrementalMarking: Finalize";
+          << "IncrementalMarking: Finalize "
+          << "Reason: " << GcReasonString(current_gc_data_.reason);
   // Call into the regular bottleneck instead of the internal version to get
   // UMA accounting and allow follow up GCs if necessary.
   CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kIncrementalMarking,
                  BlinkGC::kLazySweeping, current_gc_data_.reason);
+}
+
+bool ThreadState::FinishIncrementalMarkingIfRunning(
+    BlinkGC::StackState stack_state,
+    BlinkGC::MarkingType marking_type,
+    BlinkGC::SweepingType sweeping_type,
+    BlinkGC::GCReason reason) {
+  if (IsMarkingInProgress()) {
+    // TODO(mlippautz): Consider improving this mechanism as it will pull in
+    // finalization of V8 upon Oilpan GCs during a unified GC. Alternative
+    // include either breaking up the GCs or avoiding the call in first place.
+    if (IsUnifiedGCMarkingInProgress()) {
+      V8PerIsolateData::From(isolate_)
+          ->GetUnifiedHeapController()
+          ->FinalizeTracing();
+    } else {
+      RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
+    }
+    return true;
+  }
+  return false;
 }
 
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
@@ -1473,14 +1505,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
-  const bool was_incremental_marking = IsMarkingInProgress();
-
-  if (was_incremental_marking) {
-    SetGCState(kNoGCScheduled);
-    DisableIncrementalMarkingBarrier();
-    DCHECK(IsMarkingInProgress());
-    RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
-  }
+  const bool was_incremental_marking = FinishIncrementalMarkingIfRunning(
+      stack_state, marking_type, sweeping_type, reason);
 
   // We don't want floating garbage for the specific garbage collection types
   // mentioned below. In this case we will follow up with a regular full
@@ -1519,6 +1545,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalIdleGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
+    COUNT_BY_GC_REASON(UnifiedHeapGC)
   }
 #undef COUNT_BY_GC_REASON
 
@@ -1620,11 +1647,16 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
       !take_snapshot && Heap().Compaction()->ShouldCompact(
                             &Heap(), stack_state, marking_type, reason);
 
-  current_gc_data_.visitor = MarkingVisitor::Create(
-      this, GetMarkingMode(should_compact, take_snapshot));
+  current_gc_data_.reason = reason;
+  current_gc_data_.visitor =
+      IsUnifiedGCMarkingInProgress()
+          ? UnifiedHeapMarkingVisitor::Create(
+                this, GetMarkingMode(should_compact, take_snapshot),
+                GetIsolate())
+          : MarkingVisitor::Create(
+                this, GetMarkingMode(should_compact, take_snapshot));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
-  current_gc_data_.reason = reason;
 
   if (should_compact)
     Heap().Compaction()->Initialize(this);
@@ -1639,6 +1671,8 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
     current_gc_data_.reason = reason;
     current_gc_data_.stack_state = stack_state;
     Heap().stats_collector()->UpdateReason(reason);
+    SetGCState(kNoGCScheduled);
+    DisableIncrementalMarkingBarrier();
   } else {
     MarkPhasePrologue(stack_state, marking_type, reason);
   }
@@ -1663,7 +1697,12 @@ void ThreadState::MarkPhaseVisitRoots() {
 
   VisitPersistents(visitor);
 
-  VisitDOMWrappers(visitor);
+  // Unified garbage collections do not consider DOM wrapper references as
+  // roots. The cross-component references between V8<->Blink are found using
+  // collaborative tracing where both GCs report live references to each other.
+  if (!IsUnifiedGCMarkingInProgress()) {
+    VisitDOMWrappers(visitor);
+  }
 
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
     ThreadHeapStatsCollector::Scope stats_scope(

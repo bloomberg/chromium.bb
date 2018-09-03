@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "v8/include/v8.h"
 
@@ -83,6 +84,8 @@ V8PerIsolateData::V8PerIsolateData(
       is_reporting_exception_(false),
       script_wrappable_visitor_(
           new ScriptWrappableMarkingVisitor(ThreadState::Current())),
+      unified_heap_controller_(
+          new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()),
       handled_near_v8_heap_limit_(false) {
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
