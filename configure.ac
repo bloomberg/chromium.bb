@@ -53,11 +53,11 @@ AH_BOTTOM([
 ])
 
 # increment if the interface has additions, changes, removals.
-LIBLOUIS_CURRENT=17
+LIBLOUIS_CURRENT=16
 
 # increment any time the source changes; set to 0 if you increment
 # CURRENT
-LIBLOUIS_REVISION=0
+LIBLOUIS_REVISION=1
 
 # increment if any interfaces have been added; set to 0 if any
 # interfaces have been changed or removed. removal has precedence over
