@@ -64,6 +64,12 @@ class TestInputMethodManager : public im::MockInputMethodManager {
       removed_input_method_extensions_.push_back(extension_id);
     }
 
+    bool EnableInputMethod(
+        const std::string& new_active_input_method_id) override {
+      enabled_input_methods_.push_back(new_active_input_method_id);
+      return true;
+    }
+
     void AddActiveInputMethodId(const std::string& ime_id) {
       if (!std::count(active_input_method_ids_.begin(),
                       active_input_method_ids_.end(), ime_id)) {
@@ -109,6 +115,7 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     std::vector<std::tuple<std::string, im::InputMethodDescriptors>>
         added_input_method_extensions_;
     std::vector<std::string> removed_input_method_extensions_;
+    std::vector<std::string> enabled_input_methods_;
 
    protected:
     friend base::RefCounted<InputMethodManager::State>;
@@ -476,6 +483,14 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   imm()->state()->AddActiveInputMethodId(component_extension_ime_id);
   imm()->state()->AddActiveInputMethodId(arc_ime_id);
 
+  // Update the prefs because the testee checks them. Note that toggling the
+  // mode never changes the prefs.
+  profile()->GetPrefs()->SetString(
+      prefs::kLanguageEnabledImes,
+      base::StringPrintf("%s,%s,%s", extension_ime_id.c_str(),
+                         component_extension_ime_id.c_str(),
+                         arc_ime_id.c_str()));
+
   // All IMEs are allowed to use.
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
@@ -490,12 +505,17 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 
   // Back to tablet mode.
+  EXPECT_TRUE(imm()->state()->enabled_input_methods_.empty());
   ToggleTabletMode(true);
 
   // All IMEs are allowed to use.
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Verify they appear in the CrOS IME menu.
+  ASSERT_EQ(1u, imm()->state()->enabled_input_methods_.size());
+  EXPECT_EQ(arc_ime_id, imm()->state()->enabled_input_methods_[0]);
 
   // Do the same tests again, but with |extension_ime_id| disabled.
   imm()->state()->SetAllowedInputMethods(

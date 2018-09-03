@@ -426,6 +426,7 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
                           installed_extensions.end());
   }
 
+  std::vector<std::string> ime_ids_to_enable;
   if (allowed) {
     if (!allowed_method_ids_set.empty()) {
       // Some IMEs are not allowed now. Add ARC IMEs to
@@ -436,7 +437,15 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       }
     }
 
-    // TODO(yhanada): Re-enable ARC IMEs that was enabled before disallowed.
+    // Re-enable ARC IMEs that were auto-disabled when toggling to laptop mode.
+    const std::string active_ime_ids =
+        profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+    std::vector<base::StringPiece> active_ime_list = base::SplitStringPiece(
+        active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& id : active_ime_list) {
+      if (chromeos::extension_ime_util::IsArcIME(id.as_string()))
+        ime_ids_to_enable.push_back(id.as_string());
+    }
   } else {
     // Disallow Arc IMEs.
     if (allowed_method_ids_set.empty()) {
@@ -459,6 +468,11 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       std::vector<std::string>(allowed_method_ids_set.begin(),
                                allowed_method_ids_set.end()),
       false /* enable_allowed_input_methods */);
+
+  // This has to be called after SetAllowedInputMethods() because enabling an
+  // IME that is disallowed always fails.
+  for (const auto& id : ime_ids_to_enable)
+    manager->GetActiveIMEState()->EnableInputMethod(id);
 }
 
 void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
