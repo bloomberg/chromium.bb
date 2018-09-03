@@ -9,7 +9,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,7 +32,8 @@ public class TabSwitcherButtonCoordinator {
      *  should acces the mediator which then updates the model. Since this component is very simple
      *  the mediator is omitted.
      */
-    private final PropertyModel mTabSwitcherButtonModel;
+    private final PropertyModel mTabSwitcherButtonModel =
+            new PropertyModel(TabSwitcherButtonProperties.ALL_KEYS);
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
@@ -44,14 +44,9 @@ public class TabSwitcherButtonCoordinator {
      * @param root The root {@link ViewGroup} for locating the view to inflate.
      */
     public TabSwitcherButtonCoordinator(ViewGroup root) {
-        mTabSwitcherButtonModel = new PropertyModel(TabSwitcherButtonProperties.ALL_KEYS);
-
-        final TabSwitcherButtonView view =
-                (TabSwitcherButtonView) root.findViewById(R.id.tab_switcher_button);
-        PropertyModelChangeProcessor<PropertyModel, TabSwitcherButtonView, PropertyKey> processor =
-                new PropertyModelChangeProcessor<>(
-                        mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
-        mTabSwitcherButtonModel.addObserver(processor);
+        final TabSwitcherButtonView view = root.findViewById(R.id.tab_switcher_button);
+        PropertyModelChangeProcessor.create(
+                mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
 
         CharSequence description = root.getResources().getString(R.string.open_tabs);
         mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
@@ -123,7 +118,7 @@ public class TabSwitcherButtonCoordinator {
     }
 
     /**
-     * @param tint The {@ColorStateList} used to tint the button.
+     * @param tint The {@link ColorStateList} used to tint the button.
      */
     public void setTint(ColorStateList tint) {
         mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.TINT, tint);

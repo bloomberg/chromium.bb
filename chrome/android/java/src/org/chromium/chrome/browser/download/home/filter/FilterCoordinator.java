@@ -33,10 +33,8 @@ public class FilterCoordinator {
         void onFilterChanged(@FilterType int selectedTab);
     }
 
-    private final PrefetchStatusProvider mPrefetchStatusProvider;
     private final ObserverList<Observer> mObserverList = new ObserverList<>();
-    private final PropertyModel mModel;
-    private final FilterViewBinder mViewBinder;
+    private final PropertyModel mModel = new PropertyModel(FilterProperties.ALL_KEYS);
     private final FilterView mView;
 
     private final ChipsCoordinator mChipsCoordinator;
@@ -48,20 +46,16 @@ public class FilterCoordinator {
      */
     public FilterCoordinator(Context context, PrefetchStatusProvider prefetchStatusProvider,
             OfflineItemFilterSource chipFilterSource) {
-        mPrefetchStatusProvider = prefetchStatusProvider;
         mChipsProvider = new FilterChipsProvider(type -> handleChipSelected(), chipFilterSource);
         mChipsCoordinator = new ChipsCoordinator(context, mChipsProvider);
 
-        mModel = new PropertyModel(FilterProperties.ALL_KEYS);
-        mViewBinder = new FilterViewBinder();
         mView = new FilterView(context);
-        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mView, mViewBinder));
+        PropertyModelChangeProcessor.create(mModel, mView, new FilterViewBinder());
 
-        mModel.setValue(
-                FilterProperties.CHANGE_LISTENER, selectedTab -> handleTabSelected(selectedTab));
+        mModel.setValue(FilterProperties.CHANGE_LISTENER, this::handleTabSelected);
         selectTab(TabType.FILES);
 
-        mModel.setValue(FilterProperties.SHOW_TABS, mPrefetchStatusProvider.enabled());
+        mModel.setValue(FilterProperties.SHOW_TABS, prefetchStatusProvider.enabled());
     }
 
     /** @return The {@link View} representing this widget. */

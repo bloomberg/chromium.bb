@@ -27,10 +27,10 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
     private final PrefetchStatusProvider mPrefetchStatusProvider;
     private final OfflineItemFilterSource mSource;
 
-    private final PropertyModel mModel;
+    private final PropertyModel mModel = new PropertyModel(EmptyProperties.ALL_KEYS);
     private final EmptyView mView;
 
-    private boolean mShowingPrefetch = false;
+    private boolean mShowingPrefetch;
 
     /** Creates a {@link EmptyCoordinator} instance that monitors {@code source}. */
     public EmptyCoordinator(Context context, PrefetchStatusProvider prefetchStatusProvider,
@@ -40,10 +40,8 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
 
         mSource.addObserver(this);
 
-        mModel = new PropertyModel(EmptyProperties.ALL_KEYS);
         mView = new EmptyView(context);
-        mModel.addObserver(
-                new PropertyModelChangeProcessor<>(mModel, mView, new EmptyViewBinder()));
+        PropertyModelChangeProcessor.create(mModel, mView, new EmptyViewBinder());
 
         calculateState();
     }
