@@ -40,6 +40,9 @@ LogPage.init = function() {
     location.reload();
   };
 
+  var saveLogButton = document.getElementById('saveLog');
+  saveLogButton.onclick = LogPage.saveLogEvent;
+
   var checkboxes = document.getElementsByClassName('log-filter');
   var filterEventListener = function(event) {
     var target = event.target;
@@ -50,6 +53,34 @@ LogPage.init = function() {
     checkboxes[i].onclick = filterEventListener;
 
   LogPage.update();
+};
+
+/**
+ * When saveLog button is clicked this function runs.
+ * Save the current log appeared in the page as a plain text.
+ * @param {Event} event
+ */
+LogPage.saveLogEvent = function(event) {
+  var outputText = '';
+  var logs = document.querySelectorAll('#logList p');
+  for (var i = 0; i < logs.length; i++) {
+    var logText = [];
+    logText.push(logs[i].querySelector('.log-type-tag').textContent);
+    logText.push(logs[i].querySelector('.log-time-tag').textContent);
+    logText.push(logs[i].querySelector('.log-text').textContent);
+    outputText += logText.join(' ') + '\n';
+  }
+
+  var a = document.createElement('a');
+  var date = new Date();
+  a.download =
+      [
+        'chromevox_logpage', date.getMonth() + 1, date.getDate(),
+        date.getHours(), date.getMinutes(), date.getSeconds()
+      ].join('_') +
+      '.txt';
+  a.href = 'data:text/plain; charset=utf-8,' + encodeURI(outputText);
+  a.click();
 };
 
 /**
@@ -89,6 +120,7 @@ LogPage.updateLog = function(log, div) {
     timeStamp.className = 'log-time-tag';
     var textWrapper = document.createElement('span');
     textWrapper.textContent = log[i].logStr;
+    textWrapper.className = 'log-text';
 
     p.appendChild(typeName);
     p.appendChild(timeStamp);
