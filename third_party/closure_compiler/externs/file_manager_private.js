@@ -943,6 +943,15 @@ chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
 chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
 
 /**
+ * Shares directory with crostini container.
+ * @param {!DirectoryEntry} entry Entry of the directory to share.
+ * @param {function()} callback Callback called after the folder is shared.
+ *     chrome.runtime.lastError will be set if there was an error.
+ */
+chrome.fileManagerPrivate.sharePathWithCrostiniContainer = function(
+    entry, callback) {};
+
+/**
  * Begin installation of a Linux package.
  * @param {!Entry} entry
  * @param {function(!chrome.fileManagerPrivate.InstallLinuxPackageResponse,

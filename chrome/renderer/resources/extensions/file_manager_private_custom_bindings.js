@@ -222,6 +222,13 @@ binding.registerCustomHook(function(bindingsAPI) {
     });
   });
 
+  apiFunctions.setHandleRequest(
+      'sharePathWithCrostiniContainer', function(entry, callback) {
+        const url = fileManagerPrivateNatives.GetEntryURL(entry);
+        fileManagerPrivateInternal.sharePathWithCrostiniContainer(
+            url, callback);
+      });
+
   apiFunctions.setHandleRequest('installLinuxPackage', function(
         entry, callback) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);
