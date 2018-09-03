@@ -571,7 +571,11 @@ void AccountTrackerService::LoadFromPrefs() {
       }
     }
   } else {
-    DCHECK_EQ(GetMigrationState(), MIGRATION_NOT_STARTED);
+    // ChromeOS running on Linux and Linux share the preferences, so the
+    // migration may have been performed on Linux. Reset the migration
+    // state to ensure that the same code path is used whether ChromeOS
+    // is running on Linux on a dev build or on real ChromeOS device.
+    SetMigrationState(MIGRATION_NOT_STARTED);
   }
 
   DCHECK(GetMigrationState() != MIGRATION_DONE || IsMigrationDone());
