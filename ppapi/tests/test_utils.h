@@ -24,9 +24,6 @@ extern const int kActionTimeoutMs;
 const PPB_Testing_Private* GetTestingInterface();
 std::string ReportError(const char* method, int32_t error);
 void PlatformSleep(int duration_ms);
-
-// Returns the host and port of the current document's URL (Which is generally
-// served by an EmbeddedTestServer). Returns false on failure.
 bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port);
 
 uint16_t ConvertFromNetEndian16(uint16_t x);
