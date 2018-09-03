@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -287,7 +288,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
-        mTab.getDisplayCutoutController().setViewportFit(value);
+        DisplayCutoutController.from(mTab).setViewportFit(value);
     }
 
     @Override
