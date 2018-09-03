@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.action;
 
 import android.support.annotation.NonNull;
 
+import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.host.action.ActionApi;
 
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
@@ -77,8 +78,10 @@ public class FeedActionHandler implements ActionApi {
     }
 
     @Override
-    public void downloadUrl(String url) {
-        mDelegate.openUrl(WindowOpenDisposition.SAVE_TO_DISK, createLoadUrlParams(url));
+    public void downloadUrl(ContentMetadata contentMetadata) {
+        // TODO(twellington): https://bugs.chromium.org/p/chromium/issues/detail?id=879824
+        mDelegate.openUrl(
+                WindowOpenDisposition.SAVE_TO_DISK, createLoadUrlParams(contentMetadata.getUrl()));
         mSuggestionConsumedObserver.run();
     }
 
