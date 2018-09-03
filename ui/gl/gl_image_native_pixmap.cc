@@ -316,7 +316,7 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     // scoped_fd.release() transfers ownership to the caller so it will not
     // call close when going out of scope. base::FileDescriptor never closes
     // the fd when going out of scope. The auto_close flag is just a hint for
-    // the user. When true it means the user has ownership of it so he is
+    // the user. When true it means the user has ownership of it so they are
     // responsible for closing the fd.
     handle.fds.emplace_back(
         base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
