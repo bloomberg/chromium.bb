@@ -28,107 +28,6 @@ const char kContainerName[] = "container_name";
 
 class CrostiniManagerTest : public testing::Test {
  public:
-  class SignalingFakeConciergeClient : public chromeos::FakeConciergeClient {
-   public:
-    void StartTerminaVm(
-        const vm_tools::concierge::StartVmRequest& request,
-        chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
-            callback) override {
-      signal_.set_owner_id(request.owner_id());
-      signal_.set_vm_name(request.name());
-
-      chromeos::FakeConciergeClient::StartTerminaVm(
-          request,
-          base::BindOnce(&SignalingFakeConciergeClient::OnStartTerminaVm,
-                         base::Unretained(this), std::move(callback)));
-    }
-
-   private:
-    void OnStartTerminaVm(
-        chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
-            callback,
-        base::Optional<vm_tools::concierge::StartVmResponse> reply) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&SignalingFakeConciergeClient::OnTremplinStarted,
-                         base::Unretained(this)));
-      std::move(callback).Run(reply);
-    }
-
-    void OnTremplinStarted() {
-      if (signal_sent_) {
-        return;
-      }
-      crostini::CrostiniManager::GetInstance()->OnTremplinStarted(signal_);
-      signal_sent_ = true;
-    }
-
-    vm_tools::cicerone::TremplinStartedSignal signal_;
-    bool signal_sent_ = false;
-  };
-
-  // TODO(timloh): Consider moving this logic into the fake itself.
-  class SignalingFakeCiceroneClient : public chromeos::FakeCiceroneClient {
-   public:
-    void CreateLxdContainer(
-        const vm_tools::cicerone::CreateLxdContainerRequest& request,
-        chromeos::DBusMethodCallback<
-            vm_tools::cicerone::CreateLxdContainerResponse> callback) override {
-      lxd_container_created_signal_.set_owner_id(request.owner_id());
-      lxd_container_created_signal_.set_vm_name(request.vm_name());
-      lxd_container_created_signal_.set_container_name(
-          request.container_name());
-
-      chromeos::FakeCiceroneClient::CreateLxdContainer(request,
-                                                       std::move(callback));
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&SignalingFakeCiceroneClient::OnLxdContainerCreated,
-                         base::Unretained(this)));
-    }
-
-    void SetUpLxdContainerUser(
-        const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
-        chromeos::DBusMethodCallback<
-            vm_tools::cicerone::SetUpLxdContainerUserResponse> callback)
-        override {
-      container_started_signal_.set_owner_id(request.owner_id());
-      container_started_signal_.set_vm_name(request.vm_name());
-      container_started_signal_.set_container_name(request.container_name());
-
-      chromeos::FakeCiceroneClient::SetUpLxdContainerUser(request,
-                                                          std::move(callback));
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&SignalingFakeCiceroneClient::OnContainerStarted,
-                         base::Unretained(this)));
-    }
-
-   private:
-    void OnLxdContainerCreated() {
-      if (lxd_container_created_signal_sent_) {
-        return;
-      }
-      crostini::CrostiniManager::GetInstance()->OnLxdContainerCreated(
-          lxd_container_created_signal_);
-      lxd_container_created_signal_sent_ = true;
-    }
-
-    void OnContainerStarted() {
-      if (container_started_signal_sent_) {
-        return;
-      }
-      crostini::CrostiniManager::GetInstance()->OnContainerStarted(
-          container_started_signal_);
-      container_started_signal_sent_ = true;
-    }
-    vm_tools::cicerone::LxdContainerCreatedSignal lxd_container_created_signal_;
-    vm_tools::cicerone::ContainerStartedSignal container_started_signal_;
-
-    bool lxd_container_created_signal_sent_ = false;
-    bool container_started_signal_sent_ = false;
-  };
-
   void CreateDiskImageClientErrorCallback(base::OnceClosure closure,
                                           ConciergeClientResult result,
                                           const base::FilePath& file_path) {
@@ -209,18 +108,25 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : fake_cicerone_client_(new SignalingFakeCiceroneClient()),
-        fake_concierge_client_(new SignalingFakeConciergeClient()),
+      : fake_cicerone_client_(new chromeos::FakeCiceroneClient()),
+        fake_concierge_client_(new chromeos::FakeConciergeClient()),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCiceroneClient(
-        base::WrapUnique(fake_cicerone_client_));
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
-        base::WrapUnique(fake_concierge_client_));
+    // Initialization between D-Bus, fake clients, and the singleton
+    // CrostiniManager is tricky since CrostiniManager is a global singleton and
+    // doesn't add itself as an observer for the new Concierge/Cicerone clients
+    // created for each test.  We must first get a handle on the D-Bus setter
+    // and initialize it, then reset CrostiniManager and add it as an observer
+    // for the clients in this test, then set the fake clients into D-Bus.
+    auto dbus_setter = chromeos::DBusThreadManager::GetSetterForTesting();
     chromeos::DBusThreadManager::Initialize();
     CrostiniManager::GetInstance()->ResetForTesting();
+    fake_concierge_client_->AddObserver(CrostiniManager::GetInstance());
+    fake_cicerone_client_->AddObserver(CrostiniManager::GetInstance());
+    dbus_setter->SetConciergeClient(base::WrapUnique(fake_concierge_client_));
+    dbus_setter->SetCiceroneClient(base::WrapUnique(fake_cicerone_client_));
   }
 
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }

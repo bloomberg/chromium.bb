@@ -104,6 +104,15 @@ void FakeCiceroneClient::CreateLxdContainer(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), create_lxd_container_response_));
+
+  // Trigger CiceroneClient::Observer::NotifyLxdContainerCreatedSignal.
+  vm_tools::cicerone::LxdContainerCreatedSignal signal;
+  signal.set_owner_id(request.owner_id());
+  signal.set_vm_name(request.vm_name());
+  signal.set_container_name(request.container_name());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerCreated,
+                                base::Unretained(this), std::move(signal)));
 }
 
 void FakeCiceroneClient::StartLxdContainer(
@@ -131,6 +140,36 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), setup_lxd_container_user_response_));
+
+  // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
+  vm_tools::cicerone::ContainerStartedSignal signal;
+  signal.set_owner_id(request.owner_id());
+  signal.set_vm_name(request.vm_name());
+  signal.set_container_name(request.container_name());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
+                                base::Unretained(this), std::move(signal)));
+}
+
+void FakeCiceroneClient::NotifyLxdContainerCreated(
+    const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnLxdContainerCreated(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyContainerStarted(
+    const vm_tools::cicerone::ContainerStartedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnContainerStarted(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyTremplinStarted(
+    const vm_tools::cicerone::TremplinStartedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnTremplinStarted(proto);
+  }
 }
 
 }  // namespace chromeos
