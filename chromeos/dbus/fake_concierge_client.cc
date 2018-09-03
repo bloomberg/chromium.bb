@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cicerone_client.h"
 
 namespace chromeos {
 
-FakeConciergeClient::FakeConciergeClient() {
+FakeConciergeClient::FakeConciergeClient() : weak_ptr_factory_(this) {
   InitializeProtoResponses();
 }
 FakeConciergeClient::~FakeConciergeClient() = default;
@@ -64,6 +66,22 @@ void FakeConciergeClient::StartTerminaVm(
   start_termina_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
+
+  // Trigger CiceroneClient::Observer::NotifyTremplinStartedSignal.
+  vm_tools::cicerone::TremplinStartedSignal tremplin_started_signal;
+  tremplin_started_signal.set_vm_name(request.name());
+  tremplin_started_signal.set_owner_id(request.owner_id());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeConciergeClient::NotifyTremplinStarted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(tremplin_started_signal)));
+}
+
+void FakeConciergeClient::NotifyTremplinStarted(
+    const vm_tools::cicerone::TremplinStartedSignal& signal) {
+  static_cast<FakeCiceroneClient*>(
+      chromeos::DBusThreadManager::Get()->GetCiceroneClient())
+      ->NotifyTremplinStarted(signal);
 }
 
 void FakeConciergeClient::StopVm(

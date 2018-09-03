@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
 
 namespace chromeos {
@@ -128,6 +130,9 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
  private:
   void InitializeProtoResponses();
 
+  void NotifyTremplinStarted(
+      const vm_tools::cicerone::TremplinStartedSignal& signal);
+
   bool create_disk_image_called_ = false;
   bool destroy_disk_image_called_ = false;
   bool list_vm_disks_called_ = false;
@@ -144,6 +149,10 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakeConciergeClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConciergeClient);
 };

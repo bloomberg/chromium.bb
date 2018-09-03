@@ -170,6 +170,14 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     setup_lxd_container_user_response_ = setup_lxd_container_user_response;
   }
 
+  // Additional functions to allow tests to trigger Signals.
+  void NotifyLxdContainerCreated(
+      const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
+  void NotifyContainerStarted(
+      const vm_tools::cicerone::ContainerStartedSignal& signal);
+  void NotifyTremplinStarted(
+      const vm_tools::cicerone::TremplinStartedSignal& signal);
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
