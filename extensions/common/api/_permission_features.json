@@ -314,7 +314,7 @@
     ]
   }],
   "fileSystem.requestDownloads": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "whitelist": [
