@@ -609,10 +609,6 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
 
   VideoDeviceCaptureCapabilities capabilities;
   capabilities.device_capabilities = std::move(video_input_capabilities);
-  capabilities.power_line_capabilities = {
-      media::PowerLineFrequency::FREQUENCY_DEFAULT,
-      media::PowerLineFrequency::FREQUENCY_50HZ,
-      media::PowerLineFrequency::FREQUENCY_60HZ};
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
                                                base::Optional<bool>(true),
                                                base::Optional<bool>(false)};

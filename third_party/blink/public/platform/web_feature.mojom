@@ -1443,7 +1443,6 @@ enum WebFeature {
   kMediaStreamConstraintsGoogAudioMirroring = 1957,
   kMediaStreamConstraintsGoogDAEchoCancellation = 1958,
   kMediaStreamConstraintsGoogNoiseReduction = 1959,
-  kMediaStreamConstraintsGoogPowerLineFrequency = 1960,
   // The above items are available in M59 branch.
 
   kViewportFixedPositionUnderFilter = 1961,

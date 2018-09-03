@@ -36,8 +36,8 @@ class NumericRangeSet;
 // The following fields are used to control MediaStreamVideoSource objects:
 //   * device_id: used for device selection and obtained from the deviceId
 //   * capture_params: used to initialize video capture. Its values are obtained
-//     from the width, height, aspectRatio, frame_rate, googPowerLineFrequency,
-//     and googNoiseReduction constraints.
+//     from the width, height, aspectRatio, frame_rate, and googNoiseReduction
+//     constraints.
 // The following fields are used to control MediaStreamVideoTrack objects:
 //   * track_adapter_settings: All track objects use a VideoTrackAdapter object
 //     that may perform cropping and frame-rate adjustment. This field contains
@@ -103,10 +103,6 @@ class CONTENT_EXPORT VideoCaptureSettings {
   media::ResolutionChangePolicy ResolutionChangePolicy() const {
     DCHECK(HasValue());
     return capture_params_.resolution_change_policy;
-  }
-  media::PowerLineFrequency PowerLineFrequency() const {
-    DCHECK(HasValue());
-    return capture_params_.power_line_frequency;
   }
 
   // Other accessors.

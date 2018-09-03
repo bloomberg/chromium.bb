@@ -884,8 +884,6 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
             MediaStreamVideoSource::kDefaultFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
 
@@ -945,8 +943,6 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
@@ -1006,8 +1002,6 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::ANY_WITHIN_LIMIT);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
