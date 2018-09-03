@@ -129,10 +129,25 @@ void BookmarkModelObserverImpl::BookmarkNodeRemoved(
   DCHECK(bookmark_tracker_->GetEntityForBookmarkNode(node) == nullptr);
 }
 
+void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(
+    bookmarks::BookmarkModel* model) {
+  const bookmarks::BookmarkNode* root_node = model->root_node();
+  for (int i = 0; i < root_node->child_count(); ++i) {
+    const bookmarks::BookmarkNode* permanent_node = root_node->GetChild(i);
+    for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
+      if (!model->client()->CanSyncNode(permanent_node->GetChild(j))) {
+        continue;
+      }
+      ProcessDelete(permanent_node, permanent_node->GetChild(j));
+    }
+  }
+  nudge_for_commit_closure_.Run();
+}
+
 void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
     bookmarks::BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  NOTIMPLEMENTED();
+  // All the work should have already been done in OnWillRemoveAllUserBookmarks.
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeChanged(
