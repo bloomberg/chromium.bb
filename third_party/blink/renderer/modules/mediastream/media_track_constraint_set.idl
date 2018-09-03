@@ -53,6 +53,7 @@ dictionary MediaTrackConstraintSet {
     ConstrainDouble    contrast;
     ConstrainDouble    saturation;
     ConstrainDouble    sharpness;
+    ConstrainDouble    focusDistance;
     ConstrainDouble    zoom;
     ConstrainBoolean   torch;
     // The "mandatory" and "_optional" members are retained for conformance

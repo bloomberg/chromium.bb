@@ -52,6 +52,7 @@ dictionary MediaTrackSupportedConstraints {
     boolean contrast = true;
     boolean saturation = true;
     boolean sharpness = true;
+    boolean focusDistance = true;
     boolean zoom = true;
     boolean torch = true;
 };

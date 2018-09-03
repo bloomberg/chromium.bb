@@ -45,6 +45,7 @@ struct PhotoState {
   Range saturation;
   Range sharpness;
 
+  Range focus_distance;
   Range zoom;
 
   bool supports_torch;
@@ -95,6 +96,8 @@ struct PhotoSettings {
   bool has_sharpness;
   double sharpness;
 
+  bool has_focus_distance;
+  double focus_distance;
   bool has_zoom;
   double zoom;
 

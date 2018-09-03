@@ -418,6 +418,12 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
   photo_capabilities->current_focus_mode =
       ToMojomMeteringMode(caps.getFocusMode());
 
+  photo_capabilities->focus_distance = mojom::Range::New();
+  photo_capabilities->focus_distance->current = caps.getCurrentFocusDistance();
+  photo_capabilities->focus_distance->max = caps.getMaxFocusDistance();
+  photo_capabilities->focus_distance->min = caps.getMinFocusDistance();
+  photo_capabilities->focus_distance->step = caps.getStepFocusDistance();
+
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->exposure_compensation->current =
       caps.getCurrentExposureCompensation();
@@ -652,6 +658,9 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
 
   const double zoom = settings->has_zoom ? settings->zoom : 0.0;
 
+  const double focusDistance =
+      settings->has_focus_distance ? settings->focus_distance : 0.0;
+
   const PhotoCapabilities::AndroidMeteringMode focus_mode =
       settings->has_focus_mode
           ? ToAndroidMeteringMode(settings->focus_mode)
@@ -693,7 +702,7 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
       settings->has_color_temperature ? settings->color_temperature : 0.0;
 
   Java_VideoCapture_setPhotoOptions(
-      env, j_capture_, zoom, static_cast<int>(focus_mode),
+      env, j_capture_, zoom, static_cast<int>(focus_mode), focusDistance,
       static_cast<int>(exposure_mode), width, height, points_of_interest,
       settings->has_exposure_compensation, exposure_compensation,
       static_cast<int>(white_balance_mode), iso,

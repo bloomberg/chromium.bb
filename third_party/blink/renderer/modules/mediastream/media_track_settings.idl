@@ -46,6 +46,7 @@ dictionary MediaTrackSettings {
     double            contrast;
     double            saturation;
     double            sharpness;
+    double            focusDistance;
     double            zoom;
     boolean           torch;
 

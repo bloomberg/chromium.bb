@@ -74,7 +74,8 @@ bool ConstraintSetHasImageCapture(
          constraint_set.hasColorTemperature() || constraint_set.hasIso() ||
          constraint_set.hasBrightness() || constraint_set.hasContrast() ||
          constraint_set.hasSaturation() || constraint_set.hasSharpness() ||
-         constraint_set.hasZoom() || constraint_set.hasTorch();
+         constraint_set.hasFocusDistance() || constraint_set.hasZoom() ||
+         constraint_set.hasTorch();
 }
 
 bool ConstraintSetHasNonImageCapture(
@@ -320,8 +321,8 @@ void MediaStreamTrack::SetConstraints(const WebMediaConstraints& constraints) {
 void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
   if (image_capture_)
     capabilities = image_capture_->GetMediaTrackCapabilities();
-
   auto platform_capabilities = component_->Source()->GetCapabilities();
+
   capabilities.setDeviceId(platform_capabilities.device_id);
   if (!platform_capabilities.group_id.IsNull())
     capabilities.setGroupId(platform_capabilities.group_id);
@@ -411,6 +412,7 @@ void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
       image_capture_constraints.hasContrast() ||
       image_capture_constraints.hasSaturation() ||
       image_capture_constraints.hasSharpness() ||
+      image_capture_constraints.hasFocusDistance() ||
       image_capture_constraints.hasZoom()) {
     // Add image capture constraints, if any, as another entry to advanced().
     vector.emplace_back(image_capture_constraints);

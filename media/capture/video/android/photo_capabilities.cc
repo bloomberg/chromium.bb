@@ -121,6 +121,27 @@ double PhotoCapabilities::getStepZoom() const {
   return Java_PhotoCapabilities_getStepZoom(AttachCurrentThread(), object_);
 }
 
+double PhotoCapabilities::getCurrentFocusDistance() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentFocusDistance(AttachCurrentThread(),
+                                                        object_);
+}
+double PhotoCapabilities::getMaxFocusDistance() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxFocusDistance(AttachCurrentThread(),
+                                                    object_);
+}
+double PhotoCapabilities::getMinFocusDistance() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinFocusDistance(AttachCurrentThread(),
+                                                    object_);
+}
+double PhotoCapabilities::getStepFocusDistance() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepFocusDistance(AttachCurrentThread(),
+                                                     object_);
+}
+
 PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getFocusMode() const {
   DCHECK(!object_.is_null());
   return static_cast<AndroidMeteringMode>(

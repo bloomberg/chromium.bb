@@ -82,6 +82,7 @@ public abstract class VideoCapture {
     /**
      * @param zoom Zoom level, should be ignored if 0.
      * @param focusMode Focus mode following AndroidMeteringMode enum.
+     * @param focusDistance Desired distance to plane of sharpest focus.
      * @param exposureMode Exposure mode following AndroidMeteringMode enum.
      * @param pointsOfInterest2D 2D normalized points of interest, marshalled with
      * x coordinate first followed by the y coordinate.
@@ -97,10 +98,10 @@ public abstract class VideoCapture {
      * @param torch Torch setting, true meaning on.
      */
     @CalledByNative
-    public abstract void setPhotoOptions(double zoom, int focusMode, int exposureMode, double width,
-            double height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
-            double exposureCompensation, int whiteBalanceMode, double iso,
-            boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
+    public abstract void setPhotoOptions(double zoom, int focusMode, double focusDistance,
+            int exposureMode, double width, double height, float[] pointsOfInterest2D,
+            boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
+            double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature);
 
     // Replies by calling nativeOnPhotoTaken().

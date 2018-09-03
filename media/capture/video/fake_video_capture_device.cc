@@ -472,6 +472,12 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->saturation = media::mojom::Range::New();
   photo_state->sharpness = media::mojom::Range::New();
 
+  photo_state->focus_distance = mojom::Range::New();
+  photo_state->focus_distance->current = 3.0;
+  photo_state->focus_distance->max = 5.0;
+  photo_state->focus_distance->min = 1.0;
+  photo_state->focus_distance->step = 1.0;
+
   photo_state->zoom = mojom::Range::New();
   photo_state->zoom->current = fake_device_state_->zoom;
   photo_state->zoom->max = kMaxZoom;

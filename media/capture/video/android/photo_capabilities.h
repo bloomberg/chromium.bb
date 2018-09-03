@@ -57,6 +57,10 @@ class PhotoCapabilities {
   double getMaxZoom() const;
   double getCurrentZoom() const;
   double getStepZoom() const;
+  double getCurrentFocusDistance() const;
+  double getMaxFocusDistance() const;
+  double getMinFocusDistance() const;
+  double getStepFocusDistance() const;
   AndroidMeteringMode getFocusMode() const;
   std::vector<AndroidMeteringMode> getFocusModes() const;
   AndroidMeteringMode getExposureMode() const;
