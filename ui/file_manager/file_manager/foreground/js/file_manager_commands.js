@@ -355,7 +355,14 @@ var CommandHandler = function(fileManager, selectionHandler) {
   chrome.commandLinePrivate.hasSwitch(
       'disable-zip-archiver-packer', function(disabled) {
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
-      }.bind(this));
+      });
+  chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+    if (enabled) {
+      chrome.commandLinePrivate.hasSwitch('crostini-files', (enabled) => {
+        CommandHandler.IS_CROSTINI_FILES_ENABLED_ = enabled;
+      });
+    }
+  });
 };
 
 /**
@@ -364,6 +371,13 @@ var CommandHandler = function(fileManager, selectionHandler) {
  * @private
  */
 CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
+
+/**
+ * A flag that determines whether crostini file sharing is enabled.
+ * @type {boolean}
+ * @private
+ */
+CommandHandler.IS_CROSTINI_FILES_ENABLED_ = false;
 
 /**
  * Supported disk file system types for renaming.
@@ -1628,6 +1642,39 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
   }
 });
 
+
+/**
+ * Shares the selected (single only) folder with crostini container.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    const entry = CommandUtil.getCommandEntry(event.target);
+    if (entry && entry.isDirectory) {
+      chrome.fileManagerPrivate.sharePathWithCrostiniContainer(
+          /** @type {!DirectoryEntry} */ (entry), () => {
+            if (chrome.runtime.lastError)
+              console.error(
+                  'Error sharing with linux: ' +
+                  chrome.runtime.lastError.message);
+          });
+    }
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    const entries = CommandUtil.getCommandEntries(event.target);
+    event.canExecute = CommandHandler.IS_CROSTINI_FILES_ENABLED_ &&
+        entries.length === 1 && entries[0].isDirectory;
+    event.command.setHidden(!event.canExecute);
+  }
+});
 
 /**
  * Creates a shortcut of the selected folder (single only).

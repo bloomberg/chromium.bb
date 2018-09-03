@@ -61,6 +61,7 @@ loadTimeData.data = new Proxy(
       INSTALL_LINUX_PACKAGE_INSTALL_BUTTON: 'Install',
       INSTALL_NEW_EXTENSION_LABEL: 'Install new service',
       LINUX_FILES_ROOT_LABEL: 'Linux files',
+      MANY_DIRECTORIES_SELECTED: '$1 folders selected',
       MANY_ENTRIES_SELECTED: '$1 items selected',
       MANY_FILES_SELECTED: '$1 files selected',
       METADATA_BOX_ALBUM_TITLE: 'Album',
@@ -81,6 +82,7 @@ loadTimeData.data = new Proxy(
       PREPARING_LABEL: 'Preparing',
       SEE_MENU_FOR_ACTIONS: 'More options available on the action bar. ' +
           'Press Alt + A to focus the action bar.',
+      SHARE_WITH_LINUX_BUTTON_LABEL: 'Share with Linux',
       SIZE_COLUMN_LABEL: 'Size',
       SPACE_AVAILABLE: '$1 available',
       STATUS_COLUMN_LABEL: 'Status',
