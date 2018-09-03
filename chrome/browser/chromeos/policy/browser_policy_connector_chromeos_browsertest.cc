@@ -64,4 +64,16 @@ IN_PROC_BROWSER_TEST_F(BrowserPolicyConnectorChromeOSTest, EnterpriseDomains) {
             connector->GetEnterpriseEnrollmentDomain());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPolicyConnectorChromeOSTest, MarketSegment) {
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  EXPECT_EQ(MarketSegment::UNKNOWN, connector->GetEnterpriseMarketSegment());
+
+  device_policy()->policy_data().set_market_segment(
+      enterprise_management::PolicyData::ENROLLED_EDUCATION);
+  RefreshDevicePolicy();
+  WaitUntilPolicyLoaded();
+  EXPECT_EQ(MarketSegment::EDUCATION, connector->GetEnterpriseMarketSegment());
+}
+
 }  // namespace policy

@@ -75,6 +75,20 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
+MarketSegment TranslateMarketSegment(
+    em::PolicyData::MarketSegment market_segment) {
+  switch (market_segment) {
+    case em::PolicyData::MARKET_SEGMENT_UNSPECIFIED:
+      return MarketSegment::UNKNOWN;
+    case em::PolicyData::ENROLLED_EDUCATION:
+      return MarketSegment::EDUCATION;
+    case em::PolicyData::ENROLLED_ENTERPRISE:
+      return MarketSegment::ENTERPRISE;
+  }
+  NOTREACHED();
+  return MarketSegment::UNKNOWN;
+}
+
 }  // namespace
 
 BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
@@ -281,6 +295,14 @@ EnrollmentConfig BrowserPolicyConnectorChromeOS::GetPrescribedEnrollmentConfig()
     return device_cloud_policy_initializer_->GetPrescribedEnrollmentConfig();
 
   return EnrollmentConfig();
+}
+
+MarketSegment BrowserPolicyConnectorChromeOS::GetEnterpriseMarketSegment()
+    const {
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_market_segment())
+    return TranslateMarketSegment(policy->market_segment());
+  return MarketSegment::UNKNOWN;
 }
 
 void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(

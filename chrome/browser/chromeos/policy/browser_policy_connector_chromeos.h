@@ -151,6 +151,9 @@ class BrowserPolicyConnectorChromeOS
     return device_network_configuration_updater_.get();
   }
 
+  // Returns device's market segment.
+  MarketSegment GetEnterpriseMarketSegment() const;
+
   // The browser-global PolicyService is created before Profiles are ready, to
   // provide managed values for the local state PrefService. It includes a
   // policy provider that forwards policies from a delegate policy provider.

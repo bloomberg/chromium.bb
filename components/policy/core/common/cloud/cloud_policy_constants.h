@@ -158,6 +158,13 @@ enum class LicenseType {
   KIOSK       // Single App Kiosk license
 };
 
+// Indicate this device's market segment. go/cros-rlz-segments
+enum class MarketSegment {
+  UNKNOWN,  // If device is not enrolled or market segment is not specified.
+  EDUCATION,
+  ENTERPRISE,
+};
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CONSTANTS_H_
