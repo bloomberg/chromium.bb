@@ -126,7 +126,8 @@ class InMemoryDownloadTest : public testing::Test {
     DCHECK(blob);
     int bytes_read = 0;
     int async_bytes_read = 0;
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(expected.size()));
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(expected.size());
 
     auto blob_reader = blob->CreateReader();
 

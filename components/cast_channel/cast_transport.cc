@@ -44,7 +44,7 @@ CastTransportImpl::CastTransportImpl(Channel* channel,
 
   // Buffer is reused across messages to minimize unnecessary buffer
   // [re]allocations.
-  read_buffer_ = new net::GrowableIOBuffer();
+  read_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
   read_buffer_->SetCapacity(MessageFramer::MessageHeader::max_message_size());
   framer_.reset(new MessageFramer(read_buffer_));
 }

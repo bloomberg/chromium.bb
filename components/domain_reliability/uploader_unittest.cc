@@ -71,7 +71,7 @@ class UploadMockURLRequestJob : public net::URLRequestJob {
     EXPECT_EQ(net::OK, rv);
 
     size_t upload_size = upload_stream_->size();
-    upload_buffer_ = new net::IOBufferWithSize(upload_size);
+    upload_buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(upload_size);
     rv = upload_stream_->Read(
         upload_buffer_.get(), upload_size,
         base::BindOnce(&UploadMockURLRequestJob::OnStreamRead,
