@@ -32,6 +32,8 @@ issues]].
 - Fixed a problem in the back-translation of numbers in conjunction
   with punctuation and letters. Thanks to Rimas Kudelis and Bue
   Vester-Andersen
+- Fix a buffer overflow in ~matchCurrentInput~. Thanks to Hongxu Chen
+  for reporting and to Christian Egli for fixing it.
 
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
