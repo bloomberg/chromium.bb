@@ -137,11 +137,10 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
 
   // Now allocate the frame and initialize it.
   scoped_refptr<MojoSharedBufferVideoFrame> frame(
-      new MojoSharedBufferVideoFrame(format, coded_size, visible_rect,
-                                     natural_size, std::move(handle), data_size,
-                                     timestamp));
-  if (!frame->Init(y_stride, u_stride, v_stride, y_offset, u_offset,
-                   v_offset)) {
+      new MojoSharedBufferVideoFrame(
+          VideoFrameLayout(format, coded_size, {y_stride, u_stride, v_stride}),
+          visible_rect, natural_size, std::move(handle), data_size, timestamp));
+  if (!frame->Init(y_offset, u_offset, v_offset)) {
     DLOG(ERROR) << __func__ << " MojoSharedBufferVideoFrame::Init failed.";
     return nullptr;
   }
@@ -150,16 +149,14 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
 }
 
 MojoSharedBufferVideoFrame::MojoSharedBufferVideoFrame(
-    VideoPixelFormat format,
-    const gfx::Size& coded_size,
+    const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     mojo::ScopedSharedBufferHandle handle,
     size_t mapped_size,
     base::TimeDelta timestamp)
-    : VideoFrame(format,
+    : VideoFrame(layout,
                  STORAGE_MOJO_SHARED_BUFFER,
-                 coded_size,
                  visible_rect,
                  natural_size,
                  timestamp),
@@ -168,10 +165,7 @@ MojoSharedBufferVideoFrame::MojoSharedBufferVideoFrame(
   DCHECK(shared_buffer_handle_.is_valid());
 }
 
-bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
-                                      int32_t u_stride,
-                                      int32_t v_stride,
-                                      size_t y_offset,
+bool MojoSharedBufferVideoFrame::Init(size_t y_offset,
                                       size_t u_offset,
                                       size_t v_offset) {
   DCHECK(!shared_buffer_mapping_);
@@ -179,7 +173,6 @@ bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
   if (!shared_buffer_mapping_)
     return false;
 
-  set_strides({y_stride, u_stride, v_stride});
   offsets_[kYPlane] = y_offset;
   offsets_[kUPlane] = u_offset;
   offsets_[kVPlane] = v_offset;

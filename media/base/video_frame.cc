@@ -970,8 +970,36 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
     return nullptr;
   }
 
-  scoped_refptr<VideoFrame> frame = new VideoFrame(
-      format, storage_type, coded_size, visible_rect, natural_size, timestamp);
+  scoped_refptr<VideoFrame> frame;
+  switch (NumPlanes(format)) {
+    case 1:
+      frame = new VideoFrame(
+          VideoFrameLayout(format, coded_size,
+                           {RowBytes(kYPlane, format, coded_size.width())}),
+          storage_type, visible_rect, natural_size, timestamp);
+      frame->data_[kYPlane] = data;
+      break;
+    case 3:
+      DCHECK_EQ(format, PIXEL_FORMAT_I420);
+      // TODO(miu): This always rounds widths down, whereas
+      // VideoFrame::RowBytes() always rounds up.  This inconsistency must be
+      // resolved.  Perhaps a CommonAlignment() check should be made in
+      // IsValidConfig()?
+      // http://crbug.com/555909
+      frame = new VideoFrame(
+          VideoFrameLayout(format, coded_size,
+                           {RowBytes(kYPlane, format, coded_size.width()),
+                            coded_size.width() / 2, coded_size.width() / 2}),
+          storage_type, visible_rect, natural_size, timestamp);
+      frame->data_[kYPlane] = data;
+      frame->data_[kVPlane] = data + (coded_size.GetArea() * 5 / 4);
+      frame->data_[kUPlane] = data + coded_size.GetArea();
+      break;
+    default:
+      DLOG(ERROR) << "Invalid number of planes: " << NumPlanes(format)
+                  << " in format: " << VideoPixelFormatToString(format);
+      return nullptr;
+  }
 
   if (storage_type == STORAGE_SHMEM) {
     if (read_only_region || unsafe_region) {
@@ -992,32 +1020,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
       frame->shared_memory_offset_ = data_offset;
     }
   }
-
-  switch (NumPlanes(format)) {
-    case 1:
-      frame->data_[kYPlane] = data;
-      frame->layout_.set_strides(
-          {RowBytes(kYPlane, format, coded_size.width())});
-      return frame;
-    case 3:
-      DCHECK_EQ(format, PIXEL_FORMAT_I420);
-      // TODO(miu): This always rounds widths down, whereas
-      // VideoFrame::RowBytes() always rounds up.  This inconsistency must be
-      // resolved.  Perhaps a CommonAlignment() check should be made in
-      // IsValidConfig()?
-      // http://crbug.com/555909
-      frame->data_[kYPlane] = data;
-      frame->data_[kVPlane] = data + (coded_size.GetArea() * 5 / 4);
-      frame->data_[kUPlane] = data + coded_size.GetArea();
-      frame->layout_.set_strides({RowBytes(kYPlane, format, coded_size.width()),
-                                  coded_size.width() / 2,
-                                  coded_size.width() / 2});
-      return frame;
-    default:
-      DLOG(ERROR) << "Invalid number of planes: " << NumPlanes(format)
-                  << " in format: " << VideoPixelFormatToString(format);
-      return nullptr;
-  }
+  return frame;
 }
 
 VideoFrame::VideoFrame(const VideoFrameLayout& layout,
@@ -1112,9 +1115,10 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameInternal(
   // we can pad the requested |coded_size| if necessary if the request does not
   // line up on sample boundaries. See discussion at http://crrev.com/1240833003
   const gfx::Size new_coded_size = DetermineAlignedSize(format, coded_size);
-  return CreateFrameWithLayout(VideoFrameLayout(format, new_coded_size),
-                               visible_rect, natural_size, timestamp,
-                               zero_initialize_memory);
+  return CreateFrameWithLayout(
+      VideoFrameLayout(format, new_coded_size,
+                       ComputeStrides(format, coded_size)),
+      visible_rect, natural_size, timestamp, zero_initialize_memory);
 }
 
 scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
@@ -1132,8 +1136,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
     return nullptr;
   }
 
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(layout, storage, visible_rect, natural_size, timestamp));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(
+      std::move(layout), storage, visible_rect, natural_size, timestamp));
   frame->AllocateMemory(zero_initialize_memory);
   return frame;
 }
@@ -1210,7 +1214,6 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
   static_assert(0 == kYPlane, "y plane data must be index 0");
 
-  CalculateUnassignedStrides();
   std::vector<size_t> plane_size = CalculatePlaneSize();
   size_t total_buffer_size = layout_.GetTotalBufferSize();
   // If caller does not provide buffer layout, it uses sum of calculated color
@@ -1235,21 +1238,20 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   }
 }
 
-void VideoFrame::CalculateUnassignedStrides() {
-  // Note: strides() could be {0,0,0,0}, which is uninitialized.
-  if (!layout_.strides().empty() && stride(0) != 0)
-    return;
-
+// static
+std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
+                                                const gfx::Size& coded_size) {
   std::vector<int32_t> strides;
-  const size_t num_planes = NumPlanes(format());
+  const size_t num_planes = NumPlanes(format);
   if (num_planes == 1) {
-    strides.push_back(row_bytes(0));
+    strides.push_back(RowBytes(0, format, coded_size.width()));
   } else {
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      strides.push_back(RoundUp(row_bytes(plane), kFrameAddressAlignment));
+      strides.push_back(RoundUp(RowBytes(plane, format, coded_size.width()),
+                                kFrameAddressAlignment));
     }
   }
-  layout_.set_strides(std::move(strides));
+  return strides;
 }
 
 std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
