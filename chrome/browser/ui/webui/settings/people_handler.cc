@@ -70,6 +70,7 @@
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -486,6 +487,12 @@ void PeopleHandler::OnAccountRemoved(const AccountInfo& info) {
 }
 
 std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
+    // During the DICE migration, the settings code should not have access to
+    // the list of accounts as they should not be visible to the user.
+    return std::make_unique<base::ListValue>();
+  }
+
   std::vector<AccountInfo> accounts =
       signin_ui_util::GetAccountsForDicePromos(profile_);
 
@@ -514,6 +521,7 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
 }
 
 void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
+  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_));
   const base::Value* email;
   const base::Value* is_default_promo_account;
   CHECK(args->Get(0, &email));
