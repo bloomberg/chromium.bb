@@ -11827,16 +11827,15 @@
       'name': 'DeviceHostnameTemplate',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:64-'],
+      'supported_on': ['chrome_os:65-'],
       'device_only': True,
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
       'example_value': 'chromebook-${ASSET_ID}',
       'id': 403,
-      'caption': '''Device network hostname''',
+      'caption': '''Device network hostname template''',
       'tags': [],
       'desc': '''Determine the hostname of the device used in DHCP requests.
 
