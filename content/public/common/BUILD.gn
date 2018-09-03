@@ -373,6 +373,7 @@ mojom("interfaces") {
     ":resource_type_bindings",
     "//services/network/public/mojom",
     "//third_party/blink/public:mojo_bindings",
+    "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
