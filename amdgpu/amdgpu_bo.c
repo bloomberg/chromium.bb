@@ -438,10 +438,9 @@ int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 	return 0;
 }
 
-int amdgpu_bo_inc_ref(amdgpu_bo_handle bo)
+void amdgpu_bo_inc_ref(amdgpu_bo_handle bo)
 {
 	atomic_inc(&bo->refcount);
-	return 0;
 }
 
 int amdgpu_bo_cpu_map(amdgpu_bo_handle bo, void **cpu)
