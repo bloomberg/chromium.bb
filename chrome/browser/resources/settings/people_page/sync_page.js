@@ -663,7 +663,7 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    return !!this.diceEnabled && !!this.unifiedConsentEnabled &&
+    return !!this.unifiedConsentEnabled &&
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
   // </if>
