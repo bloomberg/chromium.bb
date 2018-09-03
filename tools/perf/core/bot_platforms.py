@@ -9,7 +9,7 @@ from core import benchmark_finders
 
 UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.android.coldish',
-  'experimental.startup.mobile',
+  'startup.mobile',
 ])
 
 
@@ -30,8 +30,7 @@ _ANDROID_GO_BENCHMARK_NAMES = {
     'system_health.memory_mobile',
     'system_health.common_mobile',
     'power.typical_10_mobile',
-    'start_with_url.cold.startup_pages',
-    'start_with_url.warm.startup_pages',
+    'startup.mobile',
     'system_health.webview_startup',
     'v8.browsing_mobile',
     'speedometer',
