@@ -82,17 +82,14 @@ public class AutofillProfileEditorPreference extends Preference {
         if (mGUID != null) {
             mAutofillAddress = new AutofillAddress(
                     mActivity, PersonalDataManager.getInstance().getProfile(mGUID));
-            runnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (mGUID != null) {
-                        PersonalDataManager.getInstance().deleteProfile(mGUID);
-                        SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressDeleted(
-                                mGUID);
-                    }
-                    if (mObserverForTest != null) {
-                        mObserverForTest.onEditorReadyToEdit();
-                    }
+            runnable = () -> {
+                if (mGUID != null) {
+                    PersonalDataManager.getInstance().deleteProfile(mGUID);
+                    SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressDeleted(
+                            mGUID);
+                }
+                if (mObserverForTest != null) {
+                    mObserverForTest.onEditorReadyToEdit();
                 }
             };
         }

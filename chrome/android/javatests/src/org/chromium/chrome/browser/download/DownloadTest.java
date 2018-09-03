@@ -322,7 +322,7 @@ public class DownloadTest implements CustomMainActivityStart {
         final int count = model.getCount();
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                (Runnable) () -> TabModelUtils.setIndex(model, count - 1));
+                () -> TabModelUtils.setIndex(model, count - 1));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -353,7 +353,7 @@ public class DownloadTest implements CustomMainActivityStart {
             @Override
             public boolean isSatisfied() {
                 CompositorViewHolder compositorViewHolder =
-                        (CompositorViewHolder) mDownloadTestRule.getActivity().findViewById(
+                        mDownloadTestRule.getActivity().findViewById(
                                 R.id.compositor_view_holder);
                 LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
 
