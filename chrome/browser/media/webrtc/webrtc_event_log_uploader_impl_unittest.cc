@@ -65,13 +65,6 @@ void RemoveReadPermissions(const base::FilePath& path) {
                                    base::FILE_PERMISSION_READ_BY_OTHERS;
   RemovePermissions(path, read_permissions);
 }
-
-void RemoveWritePermissions(const base::FilePath& path) {
-  constexpr int write_permissions = base::FILE_PERMISSION_WRITE_BY_USER |
-                                    base::FILE_PERMISSION_WRITE_BY_GROUP |
-                                    base::FILE_PERMISSION_WRITE_BY_OTHERS;
-  RemovePermissions(path, write_permissions);
-}
 #endif  // defined(OS_POSIX)
 }  // namespace
 
@@ -85,6 +78,8 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
         observer_(observer_run_loop_.QuitWhenIdleClosure()) {
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
         test_shared_url_loader_factory_);
+
+    EXPECT_TRUE(base::Time::FromString("30 Dec 1983", &kReasonableTime));
 
     uploader_factory_ = std::make_unique<WebRtcEventLogUploaderImpl::Factory>();
   }
@@ -121,12 +116,6 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
         static_cast<int>(file_contents.size()));
   }
 
-  void TearDown() override {
-    if (uploader_) {
-      uploader_->Cancel();
-    }
-  }
-
   // For tests which imitate a response (or several).
   void SetURLLoaderResponse(net::HttpStatusCode http_code, int net_error) {
     DCHECK(test_shared_url_loader_factory_);
@@ -142,6 +131,10 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
       base::Time last_modified_time = base::Time()) {
     DCHECK(test_shared_url_loader_factory_);
 
+    if (last_modified_time.is_null()) {
+      last_modified_time = kReasonableTime;
+    }
+
     const WebRtcLogFileInfo log_file_info(browser_context_id, log_file_,
                                           last_modified_time);
 
@@ -155,6 +148,10 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
       BrowserContextId browser_context_id = BrowserContextId(),
       base::Time last_modified_time = base::Time()) {
     DCHECK(test_shared_url_loader_factory_);
+
+    if (last_modified_time.is_null()) {
+      last_modified_time = kReasonableTime;
+    }
 
     const WebRtcLogFileInfo log_file_info(browser_context_id, log_file_,
                                           last_modified_time);
@@ -170,6 +167,10 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
       base::Time last_modified_time = base::Time()) {
     DCHECK(test_shared_url_loader_factory_);
 
+    if (last_modified_time.is_null()) {
+      last_modified_time = kReasonableTime;
+    }
+
     const WebRtcLogFileInfo log_file_info(browser_context_id, log_file_,
                                           last_modified_time);
 
@@ -182,6 +183,8 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  base::Time kReasonableTime;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -249,28 +252,6 @@ TEST_F(WebRtcEventLogUploaderImplTest, NonExistentFileReportedToObserver) {
   log_file_ = log_file_.Append(FILE_PATH_LITERAL("garbage"));
   EXPECT_CALL(observer_, CompletionCallback(log_file_, false)).Times(1);
   StartAndWaitForUpload();
-}
-
-TEST_F(WebRtcEventLogUploaderImplTest, FailureToDeleteFileHandledGracefully) {
-  const base::FilePath logs_dir =
-      GetRemoteBoundWebRtcEventLogsDir(testing_profile_->GetPath());
-
-  // Prepare for end of test cleanup.
-  int permissions;
-  ASSERT_TRUE(base::GetPosixFilePermissions(logs_dir, &permissions));
-
-  // The uploader won't be able to delete the file, but it would be able to
-  // read and upload it.
-  RemoveWritePermissions(logs_dir);
-  SetURLLoaderResponse(net::HTTP_OK, net::OK);
-  EXPECT_CALL(observer_, CompletionCallback(log_file_, true)).Times(1);
-  StartAndWaitForUpload();
-
-  // Sanity over the test itself - the file really could not be deleted.
-  ASSERT_TRUE(base::PathExists(log_file_));
-
-  // Cleaup
-  ASSERT_TRUE(base::SetPosixFilePermissions(logs_dir, permissions));
 }
 #endif  // defined(OS_POSIX)
 
@@ -348,6 +329,9 @@ TEST_F(WebRtcEventLogUploaderImplTest,
   EXPECT_EQ(info.browser_context_id, browser_context_id_);
   EXPECT_EQ(info.path, log_file_);
   EXPECT_EQ(info.last_modified, last_modified);
+
+  // Test tear-down.
+  ASSERT_TRUE(uploader_->Cancel());
 }
 
 TEST_F(WebRtcEventLogUploaderImplTest,

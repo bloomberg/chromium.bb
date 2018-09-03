@@ -32,6 +32,9 @@ extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
 
 extern const size_t kMaxRemoteLogFileSizeBytes;
 
+// Maximum size for a response from Crash, which is the upload ID.
+extern const size_t kWebRtcEventLogMaxUploadIdBytes;
+
 // Limit over the number of concurrently active (currently being written to
 // disk) remote-bound log files. This limits IO operations, and so it is
 // applied globally (all browser contexts are limited together).
@@ -44,6 +47,10 @@ extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
 // the increased storage consumption that comes with it. Therefore, this
 // limit is applied per browser context.
 extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
+
+// Max number of history files that may be kept; after this number is exceeded,
+// the oldest logs should be pruned.
+extern const size_t kMaxWebRtcEventLogHistoryFiles;
 
 // Overhead incurred by GZIP due to its header and footer.
 extern const size_t kGzipOverheadBytes;
@@ -58,6 +65,12 @@ extern const base::FilePath::CharType
     kRemoteBoundWebRtcEventLogFileNamePrefix[];
 extern const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[];
 extern const base::FilePath::CharType kWebRtcEventLogGzippedExtension[];
+
+// Logs themselves are kept on disk for kRemoteBoundWebRtcEventLogsMaxRetention,
+// or until uploaded. Smaller history files are kept for a longer time, allowing
+// Chrome to display on chrome://webrtc-logs/ that these files were captured
+// and later uploaded.
+extern const base::FilePath::CharType kWebRtcEventLogHistoryExtension[];
 
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
@@ -424,6 +437,15 @@ WebRtcEventLogPeerConnectionKey::BrowserContextId GetBrowserContextId(
 // This function may be called on any task queue.
 base::FilePath GetRemoteBoundWebRtcEventLogsDir(
     const base::FilePath& browser_context_dir);
+
+// Given WebRTC event log's path, return the path to the history file that
+// is, or would be, associated with it.
+base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& log);
+
+// Attempts to extract the local ID from the file's path. Returns the empty
+// string in case of an error.
+std::string ExtractRemoteBoundWebRtcEventLogLocalIdFromPath(
+    const base::FilePath& path);
 
 }  // namespace webrtc_event_logging
 
