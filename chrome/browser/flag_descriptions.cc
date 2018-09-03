@@ -2957,13 +2957,6 @@ const char kWindows10CustomTitlebarDescription[] =
 
 #if defined(OS_MACOSX)
 
-const char kAppWindowCyclingName[] = "Custom Window Cycling for Chrome Apps.";
-const char kAppWindowCyclingDescription[] =
-    "Changes the behavior of Cmd+` when a Chrome App becomes active. When "
-    "enabled, Chrome Apps will not be cycled when Cmd+` is pressed from a "
-    "browser window, and browser windows will not be cycled when a Chrome App "
-    "is active.";
-
 const char kFullscreenToolbarRevealName[] =
     "Enables the toolbar in fullscreen to reveal itself.";
 const char kFullscreenToolbarRevealDescription[] =

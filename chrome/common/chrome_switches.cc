@@ -864,9 +864,6 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 // Disable the toolkit-views App Info dialog for Mac.
 const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 
-// Disables custom Cmd+` window cycling for platform apps and hosted apps.
-const char kDisableAppWindowCycling[] = "disable-app-window-cycling";
-
 // Disables tab detaching in fullscreen mode on Mac.
 const char kDisableFullscreenTabDetaching[] =
     "disable-fullscreen-tab-detaching";
@@ -887,9 +884,6 @@ const char kEnableUserMetrics[] = "enable-user-metrics";
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
-
-// Enables custom Cmd+` window cycling for platform apps and hosted apps.
-const char kEnableAppWindowCycling[] = "enable-app-window-cycling";
 
 // Enables tab detaching in fullscreen mode on Mac.
 const char kEnableFullscreenTabDetaching[] = "enable-fullscreen-tab-detaching";
