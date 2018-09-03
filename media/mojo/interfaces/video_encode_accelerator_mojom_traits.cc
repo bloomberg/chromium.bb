@@ -117,6 +117,37 @@ bool StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata>::Read(
 }
 
 // static
+media::mojom::VideoEncodeAcceleratorConfig::ContentType
+EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+           media::VideoEncodeAccelerator::Config::ContentType>::
+    ToMojom(media::VideoEncodeAccelerator::Config::ContentType input) {
+  switch (input) {
+    case media::VideoEncodeAccelerator::Config::ContentType::kDisplay:
+      return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kDisplay;
+    case media::VideoEncodeAccelerator::Config::ContentType::kCamera:
+      return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera;
+  }
+  NOTREACHED();
+  return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera;
+}
+// static
+bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+                media::VideoEncodeAccelerator::Config::ContentType>::
+    FromMojom(media::mojom::VideoEncodeAcceleratorConfig::ContentType input,
+              media::VideoEncodeAccelerator::Config::ContentType* output) {
+  switch (input) {
+    case media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera:
+      *output = media::VideoEncodeAccelerator::Config::ContentType::kCamera;
+      return true;
+    case media::mojom::VideoEncodeAcceleratorConfig::ContentType::kDisplay:
+      *output = media::VideoEncodeAccelerator::Config::ContentType::kDisplay;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
                   media::VideoEncodeAccelerator::Config>::
     Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,
@@ -134,18 +165,20 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
     return false;
 
   base::Optional<uint32_t> initial_framerate;
-  if (input.has_initial_framerate()) {
+  if (input.has_initial_framerate())
     initial_framerate = input.initial_framerate();
-  }
 
   base::Optional<uint8_t> h264_output_level;
-  if (input.has_h264_output_level()) {
+  if (input.has_h264_output_level())
     h264_output_level = input.h264_output_level();
-  }
+
+  media::VideoEncodeAccelerator::Config::ContentType content_type;
+  if (!input.ReadContentType(&content_type))
+    return false;
 
   *output = media::VideoEncodeAccelerator::Config(
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
-      initial_framerate, h264_output_level);
+      initial_framerate, h264_output_level, content_type);
   return true;
 }
 

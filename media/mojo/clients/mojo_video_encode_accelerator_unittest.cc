@@ -46,15 +46,17 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
                                        allocation_size);
 
       DoInitialize(config.input_format, config.input_visible_size,
-                   config.output_profile, config.initial_bitrate, &client);
+                   config.output_profile, config.initial_bitrate,
+                   config.content_type, &client);
     }
     std::move(success_callback).Run(initialization_success_);
   }
-  MOCK_METHOD5(DoInitialize,
+  MOCK_METHOD6(DoInitialize,
                void(media::VideoPixelFormat,
                     const gfx::Size&,
                     media::VideoCodecProfile,
                     uint32_t,
+                    media::VideoEncodeAccelerator::Config::ContentType,
                     mojom::VideoEncodeAcceleratorClientPtr*));
 
   void Encode(const scoped_refptr<VideoFrame>& frame,
@@ -149,10 +151,12 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
   void Initialize(MockVideoEncodeAcceleratorClient* mock_vea_client) {
     const VideoCodecProfile kOutputProfile = VIDEO_CODEC_PROFILE_UNKNOWN;
     const uint32_t kInitialBitrate = 100000u;
+    const VideoEncodeAccelerator::Config::ContentType kContentType =
+        VideoEncodeAccelerator::Config::ContentType::kDisplay;
 
     EXPECT_CALL(*mock_mojo_vea(),
                 DoInitialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                             kOutputProfile, kInitialBitrate, _));
+                             kOutputProfile, kInitialBitrate, kContentType, _));
     EXPECT_CALL(
         *mock_vea_client,
         RequireBitstreamBuffers(
@@ -160,7 +164,8 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
             VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize)));
 
     const VideoEncodeAccelerator::Config config(
-        PIXEL_FORMAT_I420, kInputVisibleSize, kOutputProfile, kInitialBitrate);
+        PIXEL_FORMAT_I420, kInputVisibleSize, kOutputProfile, kInitialBitrate,
+        base::nullopt, base::nullopt, kContentType);
     EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client));
     base::RunLoop().RunUntilIdle();
   }
