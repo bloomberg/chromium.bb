@@ -944,7 +944,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 
     // Wait for mailbox creation on canvas context before consuming it and
     // copying from it on the consumer context.
-    canvas_gl->GenSyncTokenCHROMIUM(mailbox_holder.sync_token.GetData());
+    canvas_gl->GenUnverifiedSyncTokenCHROMIUM(
+        mailbox_holder.sync_token.GetData());
 
     destination_gl->WaitSyncTokenCHROMIUM(
         mailbox_holder.sync_token.GetConstData());
@@ -961,7 +962,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     // Wait for destination context to consume mailbox before deleting it in
     // canvas context.
     gpu::SyncToken dest_sync_token;
-    destination_gl->GenSyncTokenCHROMIUM(dest_sync_token.GetData());
+    destination_gl->GenUnverifiedSyncTokenCHROMIUM(dest_sync_token.GetData());
     canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
 
     SyncTokenClientImpl client(canvas_gl);
