@@ -13,11 +13,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
@@ -31,6 +32,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -43,11 +45,15 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.DeferredViewStubInflationProvider;
+import org.chromium.ui.ViewProvider;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -58,7 +64,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class KeyboardAccessoryViewTest {
     private KeyboardAccessoryModel mModel;
-    private LazyViewBinderAdapter.StubHolder<KeyboardAccessoryView> mViewHolder;
+    private BlockingQueue<KeyboardAccessoryView> mKeyboardAccessoryView;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -88,29 +94,36 @@ public class KeyboardAccessoryViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mModel = new KeyboardAccessoryModel();
-        mViewHolder = new LazyViewBinderAdapter.StubHolder<>(
-                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel = new KeyboardAccessoryModel();
+            ViewStub viewStub =
+                    mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
 
-        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mViewHolder,
-                new LazyViewBinderAdapter<>(new KeyboardAccessoryViewBinder())));
+            mKeyboardAccessoryView = new ArrayBlockingQueue<>(1);
+            ViewProvider<KeyboardAccessoryView> provider =
+                    new DeferredViewStubInflationProvider<>(viewStub);
+            new LazyConstructionPropertyMcp<>(mModel,
+                    KeyboardAccessoryModel.PropertyKey.VISIBLE, KeyboardAccessoryModel::isVisible,
+                    provider, KeyboardAccessoryViewBinder::bind);
+            provider.whenLoaded(mKeyboardAccessoryView::add);
+        });
     }
 
     @Test
     @MediumTest
-    public void testAccessoryVisibilityChangedByModel() {
+    public void testAccessoryVisibilityChangedByModel()
+            throws ExecutionException, InterruptedException {
         // Initially, there shouldn't be a view yet.
-        assertNull(mViewHolder.getView());
+        assertNull(mKeyboardAccessoryView.poll());
 
         // After setting the visibility to true, the view should exist and be visible.
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true));
-        assertNotNull(mViewHolder.getView());
-        assertTrue(mViewHolder.getView().getVisibility() == View.VISIBLE);
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(true); });
+        KeyboardAccessoryView view = mKeyboardAccessoryView.take();
+        assertEquals(view.getVisibility(), View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(false));
-        assertNotNull(mViewHolder.getView());
-        assertTrue(mViewHolder.getView().getVisibility() != View.VISIBLE);
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(false); });
+        assertNotEquals(view.getVisibility(), View.VISIBLE);
     }
 
     @Test

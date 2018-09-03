@@ -245,6 +245,7 @@ android_library("ui_full_java") {
   java_files = [
     "java/src/org/chromium/ui/AsyncViewStub.java",
     "java/src/org/chromium/ui/AsyncViewProvider.java",
+    "java/src/org/chromium/ui/DeferredViewStubInflationProvider.java",
     "java/src/org/chromium/ui/DropdownAdapter.java",
     "java/src/org/chromium/ui/DropdownDividerDrawable.java",
     "java/src/org/chromium/ui/DropdownItem.java",
@@ -255,6 +256,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/DropdownPopupWindowInterface.java",
     "java/src/org/chromium/ui/HorizontalListDividerDrawable.java",
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
+    "java/src/org/chromium/ui/ViewProvider.java",
     "java/src/org/chromium/ui/VSyncMonitor.java",
     "java/src/org/chromium/ui/base/ActivityAndroidPermissionDelegate.java",
     "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",

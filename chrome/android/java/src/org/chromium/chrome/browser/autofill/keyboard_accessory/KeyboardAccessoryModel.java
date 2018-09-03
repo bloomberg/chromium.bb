@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -29,6 +30,8 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         // iterate over all properties when it's created to ensure it is in sync with this model.
         static final List<PropertyKey> ALL_PROPERTIES = new ArrayList<>();
 
+        static final PropertyKey ACTIONS = new PropertyKey();
+        static final PropertyKey TABS = new PropertyKey();
         static final PropertyKey VISIBLE = new PropertyKey();
         static final PropertyKey BOTTOM_OFFSET = new PropertyKey();
         static final PropertyKey ACTIVE_TAB = new PropertyKey();
@@ -49,6 +52,11 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
     KeyboardAccessoryModel() {
         mActionListObservable = new ListModel<>();
         mTabListObservable = new ListModel<>();
+    }
+
+    @Override
+    public Collection<PropertyKey> getAllSetProperties() {
+        return PropertyKey.ALL_PROPERTIES;
     }
 
     void addActionListObserver(ListObservable.ListObserver<Void> observer) {

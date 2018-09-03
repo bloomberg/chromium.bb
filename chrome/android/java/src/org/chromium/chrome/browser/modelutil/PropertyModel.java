@@ -8,7 +8,10 @@ import android.support.v4.util.ObjectsCompat;
 
 import org.chromium.base.annotations.RemovableInRelease;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,6 +155,15 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         }
         container.value = value;
         notifyPropertyChanged(key);
+    }
+
+    @Override
+    public Collection<PropertyKey> getAllSetProperties() {
+        List<PropertyKey> properties = new ArrayList<>();
+        for (Map.Entry<PropertyKey, ValueContainer> entry : mData.entrySet()) {
+            if (entry.getValue() != null) properties.add(entry.getKey());
+        }
+        return properties;
     }
 
     private interface ValueContainer {}

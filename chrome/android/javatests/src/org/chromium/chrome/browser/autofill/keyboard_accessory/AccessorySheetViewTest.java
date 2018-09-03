@@ -11,9 +11,11 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
@@ -22,6 +24,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -36,10 +39,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
-import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.DeferredViewStubInflationProvider;
+import org.chromium.ui.ViewProvider;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 
 /**
  * View tests for the keyboard accessory sheet component.
@@ -48,7 +56,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccessorySheetViewTest {
     private AccessorySheetModel mModel;
-    private LazyViewBinderAdapter.StubHolder<ViewPager> mStubHolder;
+    private BlockingQueue<ViewPager> mViewPager;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -57,45 +65,40 @@ public class AccessorySheetViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mStubHolder = new LazyViewBinderAdapter.StubHolder<>(
-                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub));
-        mModel = new AccessorySheetModel();
-        mModel.setHeight(mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                org.chromium.chrome.R.dimen.keyboard_accessory_sheet_height));
-        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mStubHolder,
-                new LazyViewBinderAdapter<>(new AccessorySheetViewBinder(),
-                        view -> view.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                            @Override
-                            public void onPageScrolled(int i, float v, int i1) {}
-
-                            @Override
-                            public void onPageSelected(int i) {}
-
-                            @Override
-                            public void onPageScrollStateChanged(int i) {}
-                        }))));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewStub viewStub = mActivityTestRule.getActivity().findViewById(
+                    R.id.keyboard_accessory_sheet_stub);
+            mModel = new AccessorySheetModel();
+            mModel.setHeight(mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                    org.chromium.chrome.R.dimen.keyboard_accessory_sheet_height));
+            ViewProvider<ViewPager> provider = new DeferredViewStubInflationProvider<>(viewStub);
+            mViewPager = new ArrayBlockingQueue<>(1);
+            new LazyConstructionPropertyMcp<>(mModel, AccessorySheetModel.PropertyKey.VISIBLE,
+                    AccessorySheetModel::isVisible, provider, AccessorySheetViewBinder::bind);
+            provider.whenLoaded(mViewPager::add);
+        });
     }
 
     @Test
     @MediumTest
-    public void testAccessoryVisibilityChangedByModel() {
+    public void testAccessoryVisibilityChangedByModel()
+            throws ExecutionException, InterruptedException {
         // Initially, there shouldn't be a view yet.
-        assertNull(mStubHolder.getView());
+        assertNull(mViewPager.poll());
 
         // After setting the visibility to true, the view should exist and be visible.
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true));
-        assertNotNull(mStubHolder.getView());
-        assertTrue(mStubHolder.getView().getVisibility() == View.VISIBLE);
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(true); });
+        ViewPager viewPager = mViewPager.take();
+        assertEquals(viewPager.getVisibility(), View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(false));
-        assertNotNull(mStubHolder.getView());
-        assertTrue(mStubHolder.getView().getVisibility() != View.VISIBLE);
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(false); });
+        assertNotEquals(viewPager.getVisibility(), View.VISIBLE);
     }
 
     @Test
     @MediumTest
-    public void testAddingTabToModelRendersTabsView() {
+    public void testAddingTabToModelRendersTabsView() throws InterruptedException {
         final String kSampleAction = "Some Action";
         mModel.getTabList().add(new Tab(null, null, R.layout.empty_accessory_sheet,
                 AccessoryTabType.PASSWORDS, new Tab.Listener() {
@@ -114,11 +117,11 @@ public class AccessorySheetViewTest {
                 }));
         mModel.setActiveTabIndex(0);
         // Shouldn't cause the view to be inflated.
-        assertNull(mStubHolder.getView());
+        assertNull(mViewPager.poll());
 
         // Setting visibility should cause the Tab to be rendered.
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true));
-        assertNotNull(mStubHolder.getView());
+        assertNotNull(mViewPager.take());
 
         onView(withText(kSampleAction)).check(matches(isDisplayed()));
     }

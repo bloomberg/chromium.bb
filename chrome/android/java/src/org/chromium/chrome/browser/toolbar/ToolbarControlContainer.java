@@ -95,11 +95,10 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
             if (viewStub instanceof AsyncViewStub) {
                 AsyncViewStub toolbarStub = (AsyncViewStub) viewStub;
                 toolbarStub.setLayoutResource(toolbarLayoutId);
-                if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
-                    toolbarStub.inflate(false);
-                } else {
-                    toolbarStub.inflate(FeatureUtilities.shouldInflateToolbarOnBackgroundThread());
-                }
+                toolbarStub.setShouldInflateOnBackgroundThread(
+                        !DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
+                        && FeatureUtilities.shouldInflateToolbarOnBackgroundThread());
+                toolbarStub.inflate();
                 AsyncViewProvider<ToolbarLayout> toolbarProvider =
                         AsyncViewProvider.of(toolbarStub, R.id.toolbar);
                 toolbarProvider.whenLoaded(this ::onToolbarInflationComplete);
