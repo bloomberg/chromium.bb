@@ -50,9 +50,8 @@ namespace {
 
 // Dump statistics related to code/bytecode when memory-infra.v8.code_stats is
 // enabled.
-void DumpCodeStatistics(
-    base::trace_event::MemoryAllocatorDump* heap_spaces_dump,
-    IsolateHolder* isolate_holder) {
+void DumpCodeStatistics(base::trace_event::MemoryAllocatorDump* dump,
+                        IsolateHolder* isolate_holder) {
   // Collecting code statistics is an expensive operation (~10 ms) when
   // compared to other v8 metrics (< 1 ms). So, dump them only when
   // memory-infra.v8.code_stats is enabled.
@@ -71,37 +70,37 @@ void DumpCodeStatistics(
     return;
   }
 
-  heap_spaces_dump->AddScalar(
-      "code_and_metadata_size",
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      code_statistics.code_and_metadata_size());
-  heap_spaces_dump->AddScalar(
-      "bytecode_and_metadata_size",
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      code_statistics.bytecode_and_metadata_size());
-  heap_spaces_dump->AddScalar(
-      "external_script_source_size",
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      code_statistics.external_script_source_size());
+  dump->AddScalar("code_and_metadata_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  code_statistics.code_and_metadata_size());
+  dump->AddScalar("bytecode_and_metadata_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  code_statistics.bytecode_and_metadata_size());
+  dump->AddScalar("external_script_source_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  code_statistics.external_script_source_size());
 }
 
 // Dump the number of native and detached contexts.
 // The result looks as follows in the Chrome trace viewer:
-// ======================================
-// Component                 object_count
+// ========================================
+// Component                   object_count
 // - v8
-//   - isolate
+//   - main
 //     - contexts
 //       - detached_context  10
 //       - native_context    20
-// ======================================
+// ========================================
 void DumpContextStatistics(
     base::trace_event::ProcessMemoryDump* process_memory_dump,
     std::string dump_base_name,
+    std::string dump_name_suffix,
     size_t number_of_detached_contexts,
     size_t number_of_native_contexts) {
-  std::string dump_name_prefix = dump_base_name + "/contexts";
-  std::string native_context_name = dump_name_prefix + "/native_context";
+  std::string dump_name_prefix =
+      dump_base_name + "/contexts" + dump_name_suffix;
+  std::string native_context_name =
+      dump_name_prefix + "/native_context" + dump_name_suffix;
   auto* native_context_dump =
       process_memory_dump->CreateAllocatorDump(native_context_name);
   native_context_dump->AddScalar(
@@ -115,19 +114,56 @@ void DumpContextStatistics(
       number_of_detached_contexts);
 }
 
+std::string IsolateTypeString(IsolateHolder::IsolateType isolate_type) {
+  switch (isolate_type) {
+    case IsolateHolder::IsolateType::kBlinkMainThread:
+      return "main";
+    case IsolateHolder::IsolateType::kBlinkWorkerThread:
+      return "workers";
+    case IsolateHolder::IsolateType::kTest:
+      LOG(FATAL) << "Unreachable code";
+      return "test";
+    case IsolateHolder::IsolateType::kUtility:
+      return "utility";
+  }
+  LOG(FATAL) << "Unreachable code";
+}
+
+bool CanHaveMultipleIsolates(IsolateHolder::IsolateType isolate_type) {
+  switch (isolate_type) {
+    case IsolateHolder::IsolateType::kBlinkMainThread:
+      return false;
+    case IsolateHolder::IsolateType::kBlinkWorkerThread:
+      return true;
+    case IsolateHolder::IsolateType::kTest:
+      LOG(FATAL) << "Unreachable code";
+      return false;
+    case IsolateHolder::IsolateType::kUtility:
+      // PDFium and ProxyResolver create one isolate per process.
+      return false;
+  }
+  LOG(FATAL) << "Unreachable code";
+}
+
 }  // namespace anonymous
 
 void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
-  std::string dump_base_name = base::StringPrintf(
-      "v8/isolate_0x%" PRIXPTR,
+  std::string isolate_name = base::StringPrintf(
+      "isolate_0x%" PRIXPTR,
       reinterpret_cast<uintptr_t>(isolate_holder_->isolate()));
 
   // Dump statistics of the heap's spaces.
-  std::string space_name_prefix = dump_base_name + "/heap_spaces";
   v8::HeapStatistics heap_statistics;
   isolate_holder_->isolate()->GetHeapStatistics(&heap_statistics);
+
+  IsolateHolder::IsolateType isolate_type = isolate_holder_->isolate_type();
+  std::string dump_base_name = "v8/" + IsolateTypeString(isolate_type);
+  std::string dump_name_suffix =
+      CanHaveMultipleIsolates(isolate_type) ? "/" + isolate_name : "";
+
+  std::string space_name_prefix = dump_base_name + "/heap";
 
   size_t known_spaces_used_size = 0;
   size_t known_spaces_size = 0;
@@ -145,14 +181,15 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     known_spaces_used_size += space_used_size;
     known_spaces_physical_size += space_physical_size;
 
-    std::string space_dump_name =
-        space_name_prefix + "/" + space_statistics.space_name();
+    std::string space_dump_name = dump_base_name + "/heap/" +
+                                  space_statistics.space_name() +
+                                  dump_name_suffix;
+
     auto* space_dump =
         process_memory_dump->CreateAllocatorDump(space_dump_name);
     space_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           space_physical_size);
-
     space_dump->AddScalar("virtual_size",
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           space_size);
@@ -172,7 +209,7 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   // resident values.
   if (heap_statistics.does_zap_garbage()) {
     auto* zap_dump = process_memory_dump->CreateAllocatorDump(
-        dump_base_name + "/zapped_for_debug");
+        dump_base_name + "/zapped_for_debug" + dump_name_suffix);
     zap_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         heap_statistics.total_heap_size() -
@@ -180,7 +217,7 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   }
 
   // Dump statistics about malloced memory.
-  std::string malloc_name = dump_base_name + "/malloc";
+  std::string malloc_name = dump_base_name + "/malloc" + dump_name_suffix;
   auto* malloc_dump = process_memory_dump->CreateAllocatorDump(malloc_name);
   malloc_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
@@ -196,17 +233,15 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                                           system_allocator_name);
   }
 
-  DumpContextStatistics(process_memory_dump, dump_base_name,
+  DumpContextStatistics(process_memory_dump, dump_base_name, dump_name_suffix,
                         heap_statistics.number_of_detached_contexts(),
                         heap_statistics.number_of_native_contexts());
 
-  // Add an empty row for the heap_spaces. This is to keep the shape of the
-  // dump stable, whether code stats are enabled or not.
-  auto* heap_spaces_dump =
-      process_memory_dump->CreateAllocatorDump(space_name_prefix);
+  auto* code_stats_dump = process_memory_dump->CreateAllocatorDump(
+      dump_base_name + "/code_stats" + dump_name_suffix);
 
   // Dump statistics related to code and bytecode if requested.
-  DumpCodeStatistics(heap_spaces_dump, isolate_holder_);
+  DumpCodeStatistics(code_stats_dump, isolate_holder_);
 
   // Dump object statistics only for detailed dumps.
   if (args.level_of_detail !=
@@ -217,7 +252,8 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   // Dump statistics of the heap's live objects from last GC.
   // TODO(primiano): these should not be tracked in the same trace event as they
   // report stats for the last GC (not the current state). See crbug.com/498779.
-  std::string object_name_prefix = dump_base_name + "/heap_objects_at_last_gc";
+  std::string object_name_prefix =
+      dump_base_name + "/heap_objects_at_last_gc" + dump_name_suffix;
   bool did_dump_object_stats = false;
   const size_t object_types =
       isolate_holder_->isolate()->NumberOfTrackedHeapObjectTypes();
@@ -256,7 +292,8 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   if (did_dump_object_stats) {
     process_memory_dump->AddOwnershipEdge(
         process_memory_dump->CreateAllocatorDump(object_name_prefix)->guid(),
-        heap_spaces_dump->guid());
+        process_memory_dump->GetOrCreateAllocatorDump(space_name_prefix)
+            ->guid());
   }
 }
 

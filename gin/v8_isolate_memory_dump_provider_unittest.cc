@@ -38,12 +38,13 @@ TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
   bool did_dump_objects_stats = false;
   for (const auto& name_dump : allocator_dumps) {
     const std::string& name = name_dump.first;
-    if (name.find("v8/isolate") != std::string::npos) {
+    if (name.find("v8/main") != std::string::npos) {
       did_dump_isolate_stats = true;
     }
-    if (name.find("heap_spaces") != std::string::npos) {
+    if (name.find("v8/main/heap") != std::string::npos) {
       did_dump_space_stats = true;
-    } else if (name.find("heap_objects") != std::string::npos) {
+    }
+    if (name.find("v8/main/heap_objects") != std::string::npos) {
       did_dump_objects_stats = true;
     }
   }
@@ -101,7 +102,7 @@ TEST_F(V8MemoryDumpProviderTest, DumpCodeStatistics) {
 
   for (const auto& name_dump : allocator_dumps) {
     const std::string& name = name_dump.first;
-    if (name.find("heap_spaces") != std::string::npos) {
+    if (name.find("code_stats") != std::string::npos) {
       for (const base::trace_event::MemoryAllocatorDump::Entry& entry :
            name_dump.second->entries()) {
         if (entry.name == "bytecode_and_metadata_size") {
