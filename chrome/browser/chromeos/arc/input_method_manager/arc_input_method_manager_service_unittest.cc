@@ -273,10 +273,47 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
             std::get<std::string>(bridge()->enable_ime_calls_[1]));
   EXPECT_FALSE(std::get<bool>(bridge()->enable_ime_calls_[1]));
 
-  // EnableIme is not called when non ARC IME is disable.
+  // EnableIme is not called when non ARC IME is disabled.
   imm()->state()->RemoveActiveInputMethodId(extension_ime_id);
   service()->ImeMenuListChanged();
   EXPECT_EQ(2u, bridge()->enable_ime_calls_.size());
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, EnableIme_WithPrefs) {
+  namespace ceiu = chromeos::extension_ime_util;
+  using crx_file::id_util::GenerateId;
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+  ToggleTabletMode(true);
+
+  ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
+
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id =
+      ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
+
+  imm()->state()->AddActiveInputMethodId(component_extension_ime_id);
+  service()->ImeMenuListChanged();
+  EXPECT_EQ(0u, bridge()->enable_ime_calls_.size());
+
+  imm()->state()->AddActiveInputMethodId(arc_ime_id);
+  service()->ImeMenuListChanged();
+  ASSERT_EQ(1u, bridge()->enable_ime_calls_.size());
+
+  // Test the case where |arc_ime_id| is temporarily disallowed because of the
+  // toggling to the laptop mode. In that case, the prefs still have the IME's
+  // ID.
+  profile()->GetPrefs()->SetString(
+      prefs::kLanguageEnabledImes,
+      base::StringPrintf("%s,%s", component_extension_ime_id.c_str(),
+                         arc_ime_id.c_str()));
+  imm()->state()->RemoveActiveInputMethodId(arc_ime_id);
+  service()->ImeMenuListChanged();
+  // Verify that EnableIme(id, false) is NOT called.
+  EXPECT_EQ(1u, bridge()->enable_ime_calls_.size());  // still 1u, not 2u.
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
