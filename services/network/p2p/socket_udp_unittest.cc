@@ -212,22 +212,23 @@ class P2PSocketUdpTest : public testing::Test {
     mojom::P2PSocketPtr socket;
     auto socket_request = mojo::MakeRequest(&socket);
 
-    fake_client_.reset(new FakeSocketClient(std::move(socket),
-                                            std::move(socket_client_request)));
+    fake_client_ = std::make_unique<FakeSocketClient>(
+        std::move(socket), std::move(socket_client_request));
 
     EXPECT_CALL(*fake_client_.get(), SocketCreated(_, _)).Times(1);
 
-    socket_host_.reset(new P2PSocketUdp(
-        nullptr, std::move(socket_client), std::move(socket_request),
+    socket_impl_ = std::make_unique<P2PSocketUdp>(
+        &socket_delegate_, std::move(socket_client), std::move(socket_request),
         &throttler_, /*net_log=*/nullptr,
-        base::Bind(&CreateFakeDatagramServerSocket, &sent_packets_, nullptr)));
+        base::BindRepeating(&CreateFakeDatagramServerSocket, &sent_packets_,
+                            nullptr));
 
     local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
-    socket_host_->Init(
+    socket_impl_->Init(
         local_address_, 0, 0,
         P2PHostAndIPEndPoint(std::string(),
                              ParseAddress(kTestIpAddress1, kTestPort1)));
-    socket_ = GetSocketFromHost(socket_host_.get());
+    socket_ = GetSocketFromHost(socket_impl_.get());
 
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
@@ -242,8 +243,9 @@ class P2PSocketUdpTest : public testing::Test {
   P2PMessageThrottler throttler_;
   ScopedFakeClock fake_clock_;
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
-  FakeDatagramServerSocket* socket_;  // Owned by |socket_host_|.
-  std::unique_ptr<P2PSocketUdp> socket_host_;
+  FakeDatagramServerSocket* socket_;  // Owned by |socket_impl_|.
+  FakeP2PSocketDelegate socket_delegate_;
+  std::unique_ptr<P2PSocketUdp> socket_impl_;
   std::unique_ptr<FakeSocketClient> fake_client_;
 
   net::IPEndPoint local_address_;
@@ -260,19 +262,19 @@ TEST_F(P2PSocketUdpTest, SendStunNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet2, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet3, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -290,26 +292,13 @@ TEST_F(P2PSocketUdpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(
+
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
+  socket_delegate_.ExpectDestroyed(socket_impl_.get());
   ASSERT_EQ(sent_packets_.size(), 0U);
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(fake_client_->connection_error());
-}
-
-// Verify that SetOption() doesn't crash after an error.
-TEST_F(P2PSocketUdpTest, SetOptionAfterError) {
-  // Get the sender into the error state.
-  socket_host_->Send(
-      {1, 2, 3, 4}, P2PPacketInfo(dest1_, rtc::PacketOptions(), 0),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  // Verify that SetOptions() fails, but doesn't crash.
-  socket_host_->SetOption(P2P_SOCKET_OPT_RCVBUF, 2048);
 
   base::RunLoop().RunUntilIdle();
 
@@ -332,7 +321,7 @@ TEST_F(P2PSocketUdpTest, SendAfterStunRequest) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -358,7 +347,7 @@ TEST_F(P2PSocketUdpTest, SendAfterStunResponse) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -382,9 +371,12 @@ TEST_F(P2PSocketUdpTest, SendAfterStunResponseDifferentHost) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(
+
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  socket_delegate_.ExpectDestroyed(socket_impl_.get());
 
   base::RunLoop().RunUntilIdle();
 
@@ -400,16 +392,16 @@ TEST_F(P2PSocketUdpTest, ThrottleAfterLimit) {
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size() * 2);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2222);
   // This packet must be dropped by the throttler.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest3, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_EQ(sent_packets_.size(), 2U);
@@ -434,31 +426,31 @@ TEST_F(P2PSocketUdpTest, ThrottleAfterLimitAfterReceive) {
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size());
   // |dest1_| is known address, throttling will not be applied.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   // Trying to send the packet to dest1_ in the same window. It should go.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Throttler should allow this packet to go through.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2223);
   // This packet will be dropped, as limit only for a single packet.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest3, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   net::IPEndPoint dest4 = ParseAddress(kTestIpAddress1, 2224);
   // This packet should also be dropped.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest4, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   // |dest1| is known, we can send as many packets to it.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet1, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_EQ(sent_packets_.size(), 4U);
@@ -484,20 +476,20 @@ TEST_F(P2PSocketUdpTest, MAYBE_ThrottlingStopsAtExpectedTimes) {
   CreateStunRequest(&packet);
   // Limit of 2 packets per second.
   throttler_.SetSendIceBandwidth(packet.size() * 2);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(2U, sent_packets_.size());
 
   // These packets must be dropped by the throttler since the limit was hit and
   // the time hasn't advanced.
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(2U, sent_packets_.size());
@@ -505,10 +497,10 @@ TEST_F(P2PSocketUdpTest, MAYBE_ThrottlingStopsAtExpectedTimes) {
   // Advance the time to 0.999 seconds; throttling should still just barely be
   // active.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 999);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(2U, sent_packets_.size());
@@ -516,32 +508,32 @@ TEST_F(P2PSocketUdpTest, MAYBE_ThrottlingStopsAtExpectedTimes) {
   // After hitting the second mark, we should be able to send again.
   // Add an extra millisecond to account for rounding errors.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1001);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(3U, sent_packets_.size());
 
   // This time, hit the limit in the middle of the period.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1500);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(4U, sent_packets_.size());
 
   // Again, throttling should be active until the next second mark.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1999);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(4U, sent_packets_.size());
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 2002);
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  socket_host_->Send(
+  socket_impl_->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(6U, sent_packets_.size());
@@ -557,7 +549,8 @@ TEST_F(P2PSocketUdpTest, PortRangeImplicitPort) {
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketUdp::DatagramServerSocketFactory fake_socket_factory =
-      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+      base::BindRepeating(&CreateFakeDatagramServerSocket, &sent_packets,
+                          &used_ports);
   P2PMessageThrottler throttler;
 
   mojom::P2PSocketClientPtr socket_client;
@@ -570,36 +563,38 @@ TEST_F(P2PSocketUdpTest, PortRangeImplicitPort) {
   EXPECT_CALL(fake_client2, SocketCreated(_, _)).Times(max_port - min_port + 1);
 
   for (unsigned port = min_port; port <= max_port; ++port) {
-    std::unique_ptr<P2PSocketUdp> socket_host(new P2PSocketUdp(
-        nullptr, std::move(socket_client), std::move(socket_request),
+    std::unique_ptr<P2PSocketUdp> socket_impl(new P2PSocketUdp(
+        &socket_delegate_, std::move(socket_client), std::move(socket_request),
         &throttler, /*net_log=*/nullptr, fake_socket_factory));
     net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
-    bool rv = socket_host->Init(
+    socket_impl->Init(
         local_address, min_port, max_port,
         P2PHostAndIPEndPoint(std::string(),
                              ParseAddress(kTestIpAddress1, kTestPort1)));
-    EXPECT_TRUE(rv);
 
-    FakeDatagramServerSocket* socket = GetSocketFromHost(socket_host.get());
+    FakeDatagramServerSocket* socket = GetSocketFromHost(socket_impl.get());
     net::IPEndPoint bound_address;
     socket->GetLocalAddress(&bound_address);
     EXPECT_EQ(port, bound_address.port());
 
     base::RunLoop().RunUntilIdle();
 
-    socket_client = socket_host->ReleaseClientForTesting();
-    socket_request = socket_host->ReleaseBindingForTesting();
+    socket_client = socket_impl->ReleaseClientForTesting();
+    socket_request = socket_impl->ReleaseBindingForTesting();
   }
 
-  std::unique_ptr<P2PSocketUdp> socket_host(new P2PSocketUdp(
-      nullptr, std::move(socket_client), std::move(socket_request), &throttler,
-      /*net_log=*/nullptr, std::move(fake_socket_factory)));
+  std::unique_ptr<P2PSocketUdp> socket_impl(
+      new P2PSocketUdp(&socket_delegate_, std::move(socket_client),
+                       std::move(socket_request), &throttler,
+                       /*net_log=*/nullptr, std::move(fake_socket_factory)));
   net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
-  bool rv = socket_host->Init(
+
+  socket_impl->Init(
       local_address, min_port, max_port,
       P2PHostAndIPEndPoint(std::string(),
                            ParseAddress(kTestIpAddress1, kTestPort1)));
-  EXPECT_FALSE(rv);
+
+  socket_delegate_.ExpectDestroyed(socket_impl.get());
 
   base::RunLoop().RunUntilIdle();
 
@@ -615,7 +610,8 @@ TEST_F(P2PSocketUdpTest, PortRangeExplictValidPort) {
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketUdp::DatagramServerSocketFactory fake_socket_factory =
-      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+      base::BindRepeating(&CreateFakeDatagramServerSocket, &sent_packets,
+                          &used_ports);
   P2PMessageThrottler throttler;
 
   mojom::P2PSocketClientPtr socket_client;
@@ -628,15 +624,15 @@ TEST_F(P2PSocketUdpTest, PortRangeExplictValidPort) {
 
   EXPECT_CALL(fake_client2, SocketCreated(_, _)).Times(1);
 
-  std::unique_ptr<P2PSocketUdp> socket_host(new P2PSocketUdp(
-      nullptr, std::move(socket_client), std::move(socket_request), &throttler,
-      /*net_log=*/nullptr, std::move(fake_socket_factory)));
+  std::unique_ptr<P2PSocketUdp> socket_host(
+      new P2PSocketUdp(&socket_delegate_, std::move(socket_client),
+                       std::move(socket_request), &throttler,
+                       /*net_log=*/nullptr, std::move(fake_socket_factory)));
   net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, valid_port);
-  bool rv = socket_host->Init(
+  socket_host->Init(
       local_address, min_port, max_port,
       P2PHostAndIPEndPoint(std::string(),
                            ParseAddress(kTestIpAddress1, kTestPort1)));
-  EXPECT_TRUE(rv);
 
   FakeDatagramServerSocket* fake_socket = GetSocketFromHost(socket_host.get());
   net::IPEndPoint bound_address;
@@ -655,27 +651,30 @@ TEST_F(P2PSocketUdpTest, PortRangeExplictInvalidPort) {
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketUdp::DatagramServerSocketFactory fake_socket_factory =
-      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+      base::BindRepeating(&CreateFakeDatagramServerSocket, &sent_packets,
+                          &used_ports);
   P2PMessageThrottler throttler;
 
   mojom::P2PSocketClientPtr socket_client;
   auto socket_client_request = mojo::MakeRequest(&socket_client);
-  mojom::P2PSocketPtr socket;
-  auto socket_request = mojo::MakeRequest(&socket);
+  mojom::P2PSocketPtr socket_ptr;
+  auto socket_request = mojo::MakeRequest(&socket_ptr);
 
-  FakeSocketClient fake_client2(std::move(socket),
+  FakeSocketClient fake_client2(std::move(socket_ptr),
                                 std::move(socket_client_request));
 
-  std::unique_ptr<P2PSocketUdp> socket_host(new P2PSocketUdp(
-      nullptr, std::move(socket_client), std::move(socket_request), &throttler,
-      /*net_log=*/nullptr, std::move(fake_socket_factory)));
+  auto p2p_socket = std::make_unique<P2PSocketUdp>(
+      &socket_delegate_, std::move(socket_client), std::move(socket_request),
+      &throttler, /*net_log=*/nullptr, std::move(fake_socket_factory));
   net::IPEndPoint local_address =
       ParseAddress(kTestLocalIpAddress, invalid_port);
-  bool rv = socket_host->Init(
+
+  p2p_socket->Init(
       local_address, min_port, max_port,
       P2PHostAndIPEndPoint(std::string(),
                            ParseAddress(kTestIpAddress1, kTestPort1)));
-  EXPECT_FALSE(rv);
+
+  socket_delegate_.ExpectDestroyed(p2p_socket.get());
 
   base::RunLoop().RunUntilIdle();
 

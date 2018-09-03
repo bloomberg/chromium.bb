@@ -52,9 +52,6 @@ interface P2PSocketManager {
 };
 
 interface P2PSocket {
-  AcceptIncomingTcpConnection(net.interfaces.IPEndPoint remote_address,
-                              P2PSocketClient client,
-                              P2PSocket& socket);
   // TODO(sergeyu): Use shared memory to pass the data.
   Send(array<int8> data,
        P2PPacketInfo packet_info,
@@ -66,7 +63,9 @@ interface P2PSocketClient {
   SocketCreated(net.interfaces.IPEndPoint local_address,
                 net.interfaces.IPEndPoint remote_address);
   SendComplete(P2PSendPacketMetrics send_metrics);
-  IncomingTcpConnection(net.interfaces.IPEndPoint socket_address);
+  IncomingTcpConnection(net.interfaces.IPEndPoint socket_address,
+                        P2PSocket socket,
+                        P2PSocketClient& client);
   DataReceived(net.interfaces.IPEndPoint socket_address,
                array<int8> data,
                mojo_base.mojom.TimeTicks timestamp);

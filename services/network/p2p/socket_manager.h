@@ -22,6 +22,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/p2p/socket.h"
 #include "services/network/p2p/socket_throttler.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom.h"
@@ -37,14 +38,14 @@ class ProxyResolvingClientSocketFactory;
 
 namespace network {
 
-class P2PSocket;
 
 // Owns all the P2P socket instances and dispatches Mojo calls from the
 // (untrusted) child and (trusted) browser process.
 class P2PSocketManager
     : public net::NetworkChangeNotifier::NetworkChangeObserver,
       public mojom::P2PSocketManager,
-      public mojom::P2PTrustedSocketManager {
+      public mojom::P2PTrustedSocketManager,
+      public P2PSocket::Delegate {
  public:
   using DeleteCallback =
       base::OnceCallback<void(P2PSocketManager* socket_manager)>;
@@ -64,20 +65,6 @@ class P2PSocketManager
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  // The following methods are called by the socket implementations.
-
-  // Called when a new socket is created due to an incoming connection.
-  void AddAcceptedConnection(std::unique_ptr<P2PSocket> accepted_connection);
-
-  // Tells the SocketManager to destroy the given socket.
-  void DestroySocket(P2PSocket* socket);
-
-  // Called when packet logging is enabled.
-  void DumpPacket(const int8_t* packet_header,
-                  size_t header_length,
-                  size_t packet_length,
-                  bool incoming);
-
  private:
   class DnsRequest;
 
@@ -87,6 +74,12 @@ class P2PSocketManager
   void SendNetworkList(const net::NetworkInterfaceList& list,
                        const net::IPAddress& default_ipv4_local_address,
                        const net::IPAddress& default_ipv6_local_address);
+
+  // P2PSocket::Delegate.
+  void AddAcceptedConnection(
+      std::unique_ptr<P2PSocket> accepted_connection) override;
+  void DestroySocket(P2PSocket* socket) override;
+  void DumpPacket(base::span<const uint8_t> data, bool incoming) override;
 
   // mojom::P2PSocketManager overrides:
   void StartNetworkNotifications(
