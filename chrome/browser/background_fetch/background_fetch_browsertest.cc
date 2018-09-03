@@ -188,8 +188,13 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         ->GetForBrowserContext(profile)
         ->AddObserver(offline_content_provider_observer_.get());
 
+    SetUpBrowser(browser());
+  }
+
+  void SetUpBrowser(Browser* browser) {
+    active_browser_ = browser;
     // Load the helper page that helps drive these tests.
-    ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(kHelperPage));
+    ui_test_utils::NavigateToURL(browser, https_server_->GetURL(kHelperPage));
 
     // Register the Service Worker that's required for Background Fetch. The
     // behaviour without an activated worker is covered by layout tests.
@@ -202,7 +207,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     OfflineContentAggregatorFactory::GetInstance()
-        ->GetForBrowserContext(browser()->profile())
+        ->GetForBrowserContext(active_browser_->profile())
         ->RemoveObserver(offline_content_provider_observer_.get());
 
     download_service_->GetLogger()->RemoveObserver(download_observer_.get());
@@ -245,7 +250,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     BackgroundFetchDelegateImpl* delegate =
         static_cast<BackgroundFetchDelegateImpl*>(
-            browser()->profile()->GetBackgroundFetchDelegate());
+            active_browser_->profile()->GetBackgroundFetchDelegate());
     DCHECK(delegate);
     delegate->GetVisualsForItem(
         offline_item_id, base::Bind(&BackgroundFetchBrowserTest::DidGetVisuals,
@@ -268,7 +273,9 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   // Runs the |script| in the current tab and writes the output to |*result|.
   bool RunScript(const std::string& script, std::string* result) {
     return content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        active_browser_->tab_strip_model()
+            ->GetActiveWebContents()
+            ->GetMainFrame(),
         script, result);
   }
 
@@ -350,6 +357,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
+  Browser* active_browser_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
 
@@ -400,6 +409,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(offline_item.description.empty());
   EXPECT_TRUE(offline_item.page_url.is_empty());
   EXPECT_FALSE(offline_item.is_resumable);
+  EXPECT_FALSE(offline_item.is_off_the_record);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
@@ -519,6 +529,19 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(offline_item.progress.value, 0);
   EXPECT_EQ(offline_item.progress.max.value(), kDownloadedResourceSizeInBytes);
   EXPECT_EQ(offline_item.progress.unit, OfflineItemProgressUnit::PERCENTAGE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       OfflineItemCollection_IncognitoPropagated) {
+  // Starts a fetch from an incognito profile, and makes sure that the
+  // OfflineItem has the appropriate fields set.
+  SetUpBrowser(CreateIncognitoBrowser());
+
+  std::vector<OfflineItem> items;
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartSingleFileDownload()", &items));
+  ASSERT_EQ(items.size(), 1u);
+  ASSERT_TRUE(items[0].is_off_the_record);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,

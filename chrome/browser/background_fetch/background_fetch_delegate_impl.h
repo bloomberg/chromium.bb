@@ -116,7 +116,8 @@ class BackgroundFetchDelegateImpl
     JobDetails(JobDetails&&);
     JobDetails(
         std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
-        const std::string& provider_namespace);
+        const std::string& provider_namespace,
+        bool is_off_the_record);
     ~JobDetails();
 
     void UpdateOfflineItem();
