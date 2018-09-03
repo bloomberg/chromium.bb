@@ -31,6 +31,7 @@
 
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -77,6 +78,185 @@ bool IsThrottlableRequestContext(WebURLRequest::RequestContext context) {
 
 }  // namespace
 
+// CodeCacheRequest handles the requests to fetch data from code cache.
+// This owns CodeCacheLoader that actually loads the data from the
+// code cache. This class performs the necessary checks of matching the
+// resource response time and the code cache response time before sending
+// the data to the resource. It caches the data returned from the code cache
+// if the response wasn't received.  One CodeCacheRequest handles only one
+// request. On a restart new CodeCacheRequest is created.
+class ResourceLoader::CodeCacheRequest {
+ public:
+  CodeCacheRequest(std::unique_ptr<CodeCacheLoader> code_cache_loader,
+                   const KURL& url,
+                   bool defers_loading)
+      : status_(kNoRequestSent),
+        code_cache_loader_(std::move(code_cache_loader)),
+        gurl_(url),
+        defers_loading_(defers_loading),
+        weak_ptr_factory_(this) {
+    DCHECK(RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
+  }
+
+  ~CodeCacheRequest() = default;
+
+  // Request data from code cache.
+  bool FetchFromCodeCache(WebURLLoader* url_loader,
+                          ResourceLoader* resource_loader);
+  bool FetchFromCodeCacheSynchronously(ResourceLoader* resource_loader);
+
+  // Notifies about the response from webURLLoader. Stores the
+  // resource_response_time that is used to validate responses from
+  // code cache. Might send cached code if available.
+  void DidReceiveResponse(const base::Time& resource_response_time,
+                          ResourceLoader* resource_loader);
+
+  // Stores the value of defers that is needed to restore the state
+  // once fetching from code cache is finished. Returns true if the
+  // request is handled here and hence need not be handled by the loader.
+  // Returns false otherwise.
+  bool SetDefersLoading(bool defers);
+
+ private:
+  enum CodeCacheRequestStatus {
+    kNoRequestSent,
+    kPendingResponse,
+    kReceivedResponse
+  };
+
+  // Callback to receive data from CodeCacheLoader.
+  void DidReceiveCachedCode(ResourceLoader* loader,
+                            const base::Time& response_time,
+                            const std::vector<uint8_t>& data);
+
+  // Process the response from code cache.
+  void ProcessCodeCacheResponse(const base::Time& response_time,
+                                const std::vector<uint8_t>& data,
+                                ResourceLoader* resource_loader);
+
+  // Send |cache_code| if we got a response from code_cache_loader and the
+  // web_url_loader.
+  void MaybeSendCachedCode(const std::vector<uint8_t>& cached_code,
+                           ResourceLoader* resource_loader);
+
+  CodeCacheRequestStatus status_;
+  std::unique_ptr<CodeCacheLoader> code_cache_loader_;
+  const GURL gurl_;
+  bool defers_loading_ = false;
+  std::vector<uint8_t> cached_code_;
+  base::Time cached_code_response_time_;
+  base::Time resource_response_time_;
+  base::WeakPtrFactory<CodeCacheRequest> weak_ptr_factory_;
+};
+
+bool ResourceLoader::CodeCacheRequest::FetchFromCodeCache(
+    WebURLLoader* url_loader,
+    ResourceLoader* resource_loader) {
+  if (!code_cache_loader_)
+    return false;
+  DCHECK_EQ(status_, kNoRequestSent);
+  status_ = kPendingResponse;
+
+  // Set defers loading before fetching data from code cache. This is to
+  // ensure that the resource receives cached code before the response data.
+  // This directly calls the WebURLLoader's SetDefersLoading without going
+  // through ResourceLoader.
+  url_loader->SetDefersLoading(true);
+
+  CodeCacheLoader::FetchCodeCacheCallback callback =
+      base::BindOnce(&ResourceLoader::CodeCacheRequest::DidReceiveCachedCode,
+                     weak_ptr_factory_.GetWeakPtr(), resource_loader);
+  code_cache_loader_->FetchFromCodeCache(gurl_, std::move(callback));
+  return true;
+}
+
+bool ResourceLoader::CodeCacheRequest::FetchFromCodeCacheSynchronously(
+    ResourceLoader* resource_loader) {
+  if (!code_cache_loader_)
+    return false;
+  DCHECK_EQ(status_, kNoRequestSent);
+  status_ = kPendingResponse;
+
+  base::Time response_time;
+  std::vector<uint8_t> data;
+  code_cache_loader_->FetchFromCodeCacheSynchronously(gurl_, &response_time,
+                                                      &data);
+  ProcessCodeCacheResponse(response_time, data, resource_loader);
+  return true;
+}
+
+// This is called when a response is received from the WebURLLoader. We buffer
+// the response_time if the response from code cache is not available yet.
+void ResourceLoader::CodeCacheRequest::DidReceiveResponse(
+    const base::Time& resource_response_time,
+    ResourceLoader* resource_loader) {
+  resource_response_time_ = resource_response_time;
+  MaybeSendCachedCode(cached_code_, resource_loader);
+}
+
+// Returns true if |this| handles |defers| and therefore the callsite, i.e. the
+// loader, doesn't need to take care of it). Returns false otherwise.
+bool ResourceLoader::CodeCacheRequest::SetDefersLoading(bool defers) {
+  defers_loading_ = defers;
+  if (status_ == kPendingResponse) {
+    // The flag doesn't need to be handled by the loader. The value is stored
+    // in |defers_loading_| and set once the response from the code cache is
+    // received.
+    return true;
+  }
+  return false;
+}
+
+void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
+    ResourceLoader* resource_loader,
+    const base::Time& response_time,
+    const std::vector<uint8_t>& data) {
+  ProcessCodeCacheResponse(response_time, data, resource_loader);
+  // Reset the deferred value to its original state.
+  DCHECK(resource_loader);
+  resource_loader->SetDefersLoading(defers_loading_);
+}
+
+// This is called when a response is received from code cache. If the
+// resource response time is not available the response is buffered and
+// will be processed when the response is received from the URLLoader.
+void ResourceLoader::CodeCacheRequest::ProcessCodeCacheResponse(
+    const base::Time& response_time,
+    const std::vector<uint8_t>& data,
+    ResourceLoader* resource_loader) {
+  status_ = kReceivedResponse;
+  cached_code_response_time_ = response_time;
+
+  if (resource_response_time_.is_null()) {
+    // Wait for the response before we can send the cached code.
+    // TODO(crbug.com/866889): Pass this as a handle to avoid the overhead of
+    // copying this data.
+    cached_code_ = data;
+    return;
+  }
+
+  MaybeSendCachedCode(data, resource_loader);
+}
+
+void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
+    const std::vector<uint8_t>& cached_code,
+    ResourceLoader* resource_loader) {
+  if (status_ != kReceivedResponse || cached_code_response_time_.is_null() ||
+      resource_response_time_.is_null()) {
+    return;
+  }
+
+  if (resource_response_time_ != cached_code_response_time_) {
+    Platform::Current()->ClearCodeCacheEntry(gurl_);
+    return;
+  }
+
+  if (cached_code.size() != 0) {
+    resource_loader->SendCachedCodeToResource(
+        reinterpret_cast<const char*>(cached_code.data()), cached_code.size());
+  }
+}
+
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
                                        Resource* resource,
@@ -112,6 +292,23 @@ void ResourceLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(scheduler_);
   visitor->Trace(resource_);
   ResourceLoadSchedulerClient::Trace(visitor);
+}
+
+bool ResourceLoader::ShouldFetchCodeCache() {
+  if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
+    return false;
+
+  const ResourceRequest& request = resource_->GetResourceRequest();
+  if (!request.Url().ProtocolIsInHTTPFamily())
+    return false;
+  if (request.GetRequestContext() ==
+      WebURLRequest::kRequestContextServiceWorker)
+    return false;
+  if (request.DownloadToBlob())
+    return false;
+  if (resource_->GetType() != Resource::Type::kScript)
+    return false;
+  return true;
 }
 
 void ResourceLoader::Start() {
@@ -165,7 +362,13 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
 
   is_downloading_to_blob_ = request.DownloadToBlob();
 
-  loader_->SetDefersLoading(Context().DefersLoading());
+  SetDefersLoading(Context().DefersLoading());
+
+  if (ShouldFetchCodeCache()) {
+    code_cache_request_ = std::make_unique<CodeCacheRequest>(
+        Context().CreateCodeCacheLoader(), request.Url(),
+        Context().DefersLoading());
+  }
 
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
@@ -175,13 +378,23 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
         mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict);
     loader_->LoadAsynchronously(WrappedResourceRequest(cache_aware_request),
                                 this);
+    if (code_cache_request_) {
+      // Sets defers loading and initiates a fetch from code cache.
+      code_cache_request_->FetchFromCodeCache(loader_.get(), this);
+    }
     return;
   }
 
-  if (resource_->Options().synchronous_policy == kRequestSynchronously)
+  if (resource_->Options().synchronous_policy == kRequestSynchronously) {
     RequestSynchronously(request);
-  else
+  } else {
     loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
+
+    if (code_cache_request_) {
+      // Sets defers loading and initiates a fetch from code cache.
+      code_cache_request_->FetchFromCodeCache(loader_.get(), this);
+    }
+  }
 }
 
 void ResourceLoader::Release(
@@ -195,13 +408,16 @@ void ResourceLoader::Release(
 
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
-
   loader_ = Context().CreateURLLoader(request, resource_->Options());
   StartWith(request);
 }
 
 void ResourceLoader::SetDefersLoading(bool defers) {
   DCHECK(loader_);
+  // If CodeCacheRequest handles this, then no need to handle here.
+  if (code_cache_request_ && code_cache_request_->SetDefersLoading(defers))
+    return;
+
   loader_->SetDefersLoading(defers);
   if (defers) {
     resource_->VirtualTimePauser().UnpauseVirtualTime();
@@ -459,6 +675,15 @@ bool ResourceLoader::WillFollowRedirect(
 }
 
 void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
+  // TODO(mythria): HttpCache still sends the metadata when available. Just
+  // ignore it here. We have to modify HttpCache to not fetch metadata when
+  // this feature is enabled.
+  if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled()) {
+    resource_->SetSerializedCachedMetadata(data, length);
+  }
+}
+
+void ResourceLoader::SendCachedCodeToResource(const char* data, int length) {
   resource_->SetSerializedCachedMetadata(data, length);
 }
 
@@ -594,6 +819,13 @@ void ResourceLoader::DidReceiveResponse(
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
   resource_->ResponseReceived(response_to_pass, std::move(handle));
+
+  // Send the cached code after we notify that the response is received.
+  // Resource expects that we receive the response first before the
+  // corresponding cached code.
+  if (code_cache_request_)
+    code_cache_request_->DidReceiveResponse(response.ResponseTime(), this);
+
   if (!resource_->Loader())
     return;
 
@@ -671,6 +903,7 @@ void ResourceLoader::DidFinishLoading(TimeTicks finish_time,
           ResourceLoadScheduler::TrafficReportHints(encoded_data_length,
                                                     decoded_body_length));
   loader_.reset();
+  code_cache_request_.reset();
 
   network_instrumentation::EndResourceLoad(
       resource_->Identifier(),
@@ -711,6 +944,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
           ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
   loader_.reset();
+  code_cache_request_.reset();
 
   network_instrumentation::EndResourceLoad(
       resource_->Identifier(), network_instrumentation::RequestOutcome::kFail);
@@ -749,6 +983,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     return;
   DCHECK_GE(response_out.ToResourceResponse().EncodedBodyLength(), 0);
 
+  if (code_cache_request_) {
+    code_cache_request_->FetchFromCodeCacheSynchronously(this);
+  }
+
   // Follow the async case convention of not calling DidReceiveData or
   // appending data to m_resource if the response body is empty. Copying the
   // empty buffer is a noop in most cases, but is destructive in the case of
@@ -774,6 +1012,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
 void ResourceLoader::Dispose() {
   loader_ = nullptr;
   progress_binding_.Close();
+  code_cache_request_.reset();
 
   // Release() should be called to release |scheduler_client_id_| beforehand in
   // DidFinishLoading() or DidFail(), but when a timer to call Cancel() is

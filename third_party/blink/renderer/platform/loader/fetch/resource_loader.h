@@ -130,6 +130,8 @@ class PLATFORM_EXPORT ResourceLoader final
                int64_t encoded_body_length,
                int64_t decoded_body_length) override;
 
+  void SendCachedCodeToResource(const char* data, int size);
+
   void HandleError(const ResourceError&);
 
   void DidFinishLoadingFirstPartInMultipart();
@@ -141,6 +143,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
  private:
   friend class SubresourceIntegrityTest;
+  class CodeCacheRequest;
 
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*,
@@ -148,6 +151,7 @@ class PLATFORM_EXPORT ResourceLoader final
                  Resource*,
                  uint32_t inflight_keepalive_bytes);
 
+  bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);
 
   void Release(ResourceLoadScheduler::ReleaseOption,
@@ -184,6 +188,9 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
+  // code_cache_request_ is created only if required. It is required to check
+  // if it is valid before using it.
+  std::unique_ptr<CodeCacheRequest> code_cache_request_;
 
   // https://fetch.spec.whatwg.org/#concept-request-response-tainting
   network::mojom::FetchResponseType response_tainting_ =
