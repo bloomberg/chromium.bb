@@ -329,7 +329,14 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                                       .query(url)
                                       .build());
         }
-        IntentUtils.safeRemoveExtra(intent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
+
+        // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME for malicious
+        // purpose, remove it. The new intent will be sent by Chrome, but was not sent by Chrome
+        // initially.
+        if (!IntentHandler.wasIntentSenderChrome(intent)) {
+            IntentUtils.safeRemoveExtra(
+                    newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
+        }
 
         return newIntent;
     }
