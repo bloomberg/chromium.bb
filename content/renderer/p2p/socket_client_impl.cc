@@ -135,7 +135,9 @@ void P2PSocketClientImpl::SendComplete(
 }
 
 void P2PSocketClientImpl::IncomingTcpConnection(
-    const net::IPEndPoint& socket_address) {
+    const net::IPEndPoint& socket_address,
+    network::mojom::P2PSocketPtr socket,
+    network::mojom::P2PSocketClientRequest client_request) {
   DCHECK_EQ(state_, STATE_OPEN);
 
   auto new_client =
@@ -143,12 +145,10 @@ void P2PSocketClientImpl::IncomingTcpConnection(
   new_client->state_ = STATE_OPEN;
 
   network::mojom::P2PSocketClientPtr socket_client;
-  new_client->binding_.Bind(mojo::MakeRequest(&socket_client));
+  new_client->socket_ = std::move(socket);
+  new_client->binding_.Bind(std::move(client_request));
   new_client->binding_.set_connection_error_handler(base::Bind(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
-
-  socket_->AcceptIncomingTcpConnection(socket_address, std::move(socket_client),
-                                       mojo::MakeRequest(&new_client->socket_));
 
   DCHECK(thread_checker_.CalledOnValidThread());
   if (delegate_) {
@@ -157,7 +157,6 @@ void P2PSocketClientImpl::IncomingTcpConnection(
     // Just close the socket if there is no delegate to accept it.
     new_client->Close();
   }
-
 }
 
 void P2PSocketClientImpl::DataReceived(const net::IPEndPoint& socket_address,
