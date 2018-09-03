@@ -41,6 +41,7 @@ class MEDIA_GPU_EXPORT V4L2Device
   static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format);
   static uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                 bool slice_based);
+  static VideoCodecProfile V4L2VP9ProfileToVideoCodecProfile(uint32_t profile);
   std::vector<VideoCodecProfile> V4L2PixFmtToVideoCodecProfiles(
       uint32_t pix_fmt,
       bool is_encoder);
