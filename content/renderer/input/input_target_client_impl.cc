@@ -19,7 +19,8 @@ InputTargetClientImpl::~InputTargetClientImpl() {}
 void InputTargetClientImpl::BindToRequest(
     viz::mojom::InputTargetClientRequest request) {
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request), render_frame_->GetTaskRunner(
+                                        blink::TaskType::kInternalDefault));
 }
 
 void InputTargetClientImpl::FrameSinkIdAt(const gfx::Point& point,
