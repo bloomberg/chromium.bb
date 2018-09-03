@@ -109,8 +109,8 @@ int BidirectionalStream::Start(const char* url,
 bool BidirectionalStream::ReadData(char* buffer, int capacity) {
   if (!buffer)
     return false;
-  scoped_refptr<net::WrappedIOBuffer> read_buffer(
-      new net::WrappedIOBuffer(buffer));
+  scoped_refptr<net::WrappedIOBuffer> read_buffer =
+      base::MakeRefCounted<net::WrappedIOBuffer>(buffer);
 
   PostToNetworkThread(
       FROM_HERE, base::BindOnce(&BidirectionalStream::ReadDataOnNetworkThread,
@@ -124,8 +124,8 @@ bool BidirectionalStream::WriteData(const char* buffer,
   if (!buffer)
     return false;
 
-  scoped_refptr<net::WrappedIOBuffer> write_buffer(
-      new net::WrappedIOBuffer(buffer));
+  scoped_refptr<net::WrappedIOBuffer> write_buffer =
+      base::MakeRefCounted<net::WrappedIOBuffer>(buffer);
 
   PostToNetworkThread(
       FROM_HERE,

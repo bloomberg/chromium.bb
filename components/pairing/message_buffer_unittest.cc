@@ -13,7 +13,8 @@ typedef testing::Test MessageBufferTest;
 
 TEST_F(MessageBufferTest, BasicReadWrite) {
   MessageBuffer message_buffer;
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(3));
+  scoped_refptr<net::IOBuffer> io_buffer =
+      base::MakeRefCounted<net::IOBuffer>(3);
   io_buffer->data()[0] = 3;
   io_buffer->data()[1] = 1;
   io_buffer->data()[2] = 4;
@@ -35,10 +36,12 @@ TEST_F(MessageBufferTest, BasicReadWrite) {
 
 TEST_F(MessageBufferTest, SplitBuffer) {
   MessageBuffer message_buffer;
-  scoped_refptr<net::IOBuffer> io_buffer0(new net::IOBuffer(1));
+  scoped_refptr<net::IOBuffer> io_buffer0 =
+      base::MakeRefCounted<net::IOBuffer>(1);
   io_buffer0->data()[0] = 3;
 
-  scoped_refptr<net::IOBuffer> io_buffer1(new net::IOBuffer(2));
+  scoped_refptr<net::IOBuffer> io_buffer1 =
+      base::MakeRefCounted<net::IOBuffer>(2);
   io_buffer1->data()[0] = 1;
   io_buffer1->data()[1] = 4;
 
@@ -56,11 +59,14 @@ TEST_F(MessageBufferTest, SplitBuffer) {
 
 TEST_F(MessageBufferTest, EmptyBuffer) {
   MessageBuffer message_buffer;
-  scoped_refptr<net::IOBuffer> io_buffer0(new net::IOBuffer(1));
+  scoped_refptr<net::IOBuffer> io_buffer0 =
+      base::MakeRefCounted<net::IOBuffer>(1);
   io_buffer0->data()[0] = 3;
 
-  scoped_refptr<net::IOBuffer> io_buffer1(new net::IOBuffer(0));
-  scoped_refptr<net::IOBuffer> io_buffer2(new net::IOBuffer(2));
+  scoped_refptr<net::IOBuffer> io_buffer1 =
+      base::MakeRefCounted<net::IOBuffer>(0);
+  scoped_refptr<net::IOBuffer> io_buffer2 =
+      base::MakeRefCounted<net::IOBuffer>(2);
   io_buffer2->data()[0] = 1;
   io_buffer2->data()[1] = 4;
 

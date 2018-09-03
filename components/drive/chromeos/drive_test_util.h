@@ -48,7 +48,8 @@ struct DestroyHelperForTests {
 template<typename Reader>
 int ReadAllData(Reader* reader, std::string* content) {
   const int kBufferSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   while (true) {
     net::TestCompletionCallback callback;
     int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
