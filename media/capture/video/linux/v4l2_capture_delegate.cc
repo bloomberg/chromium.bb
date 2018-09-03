@@ -457,6 +457,9 @@ void V4L2CaptureDelegate::GetPhotoState(
                                                  : MeteringMode::MANUAL;
   }
 
+  photo_capabilities->focus_distance =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_FOCUS_ABSOLUTE);
+
   v4l2_queryctrl auto_exposure_ctrl = {};
   auto_exposure_ctrl.id = V4L2_CID_EXPOSURE_AUTO;
   if (RunIoctl(device_fd_.get(), VIDIOC_QUERYCTRL, &auto_exposure_ctrl)) {
@@ -540,6 +543,16 @@ void V4L2CaptureDelegate::SetPhotoOptions(
     if (HANDLE_EINTR(
             v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &zoom_current)) < 0)
       DPLOG(ERROR) << "setting zoom to " << settings->zoom;
+  }
+
+  if (settings->has_focus_distance &&
+      settings->focus_mode == mojom::MeteringMode::MANUAL) {
+    v4l2_control set_focus_distance_ctrl = {};
+    set_focus_distance_ctrl.id = V4L2_CID_FOCUS_ABSOLUTE;
+    set_focus_distance_ctrl.value = settings->focus_distance;
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL,
+                                  &set_focus_distance_ctrl)) < 0)
+      DPLOG(ERROR) << "setting focus distance to " << settings->focus_distance;
   }
 
   if (settings->has_white_balance_mode &&
