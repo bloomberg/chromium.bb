@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -33,49 +34,11 @@ using autofill::PasswordForm;
 namespace password_manager_util {
 namespace {
 
-// This class is responsible for deleting blacklisted duplicates.
-class BlacklistedDuplicatesCleaner
-    : public password_manager::PasswordStoreConsumer {
- public:
-  BlacklistedDuplicatesCleaner(password_manager::PasswordStore* store,
-                               PrefService* prefs)
-      : store_(store), prefs_(prefs) {
-    store_->GetBlacklistLogins(this);
-  }
-  ~BlacklistedDuplicatesCleaner() override = default;
-
-  // PasswordStoreConsumer:
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
-    std::set<std::string> signon_realms;
-    for (const auto& form : results) {
-      DCHECK(form->blacklisted_by_user);
-      if (!signon_realms.insert(form->signon_realm).second) {
-        // |results| already contain a form with the same signon_realm.
-        store_->RemoveLogin(*form);
-      }
-    }
-    const size_t duplicates = results.size() - signon_realms.size();
-    if (duplicates == 0) {
-      prefs_->SetBoolean(
-          password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
-          true);
-    }
-    delete this;
-  }
-
- private:
-  password_manager::PasswordStore* store_;
-  PrefService* prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleaner);
-};
-
 void StartDeletingBlacklistedDuplicates(
-    const scoped_refptr<password_manager::PasswordStore>& store,
+    scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs) {
   // The object will delete itself once the credentials are retrieved.
-  new BlacklistedDuplicatesCleaner(store.get(), prefs);
+  new password_manager::BlacklistedDuplicatesCleaner(std::move(store), prefs);
 }
 
 // Return true if
@@ -370,9 +333,10 @@ void UserTriggeredManualGenerationFromContextMenu(
       autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
 }
 
-void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
-                                 PrefService* prefs,
-                                 int delay_in_seconds) {
+void DeleteBlacklistedDuplicates(
+    scoped_refptr<password_manager::PasswordStore> store,
+    PrefService* prefs,
+    int delay_in_seconds) {
   const bool need_to_remove_blacklisted_duplicates = !prefs->GetBoolean(
       password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved);
   base::UmaHistogramBoolean(
@@ -381,8 +345,8 @@ void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
   if (need_to_remove_blacklisted_duplicates)
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&StartDeletingBlacklistedDuplicates,
-                       base::WrapRefCounted(store), prefs),
+        base::BindOnce(&StartDeletingBlacklistedDuplicates, std::move(store),
+                       prefs),
         base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
