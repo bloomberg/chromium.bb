@@ -55,8 +55,9 @@ void FCMSyncInvalidationListener::UpdateRegisteredTopics(
     const TopicSet& topics) {
   registered_topics_ = topics;
   if (ticl_state_ == INVALIDATIONS_ENABLED &&
-      per_user_topic_registration_manager_ && !token_.empty())
+      per_user_topic_registration_manager_ && !token_.empty()) {
     DoRegistrationUpdate();
+  }
 }
 
 void FCMSyncInvalidationListener::Ready(InvalidationClient* client) {
@@ -68,56 +69,20 @@ void FCMSyncInvalidationListener::Ready(InvalidationClient* client) {
 
 void FCMSyncInvalidationListener::Invalidate(
     InvalidationClient* client,
-    const invalidation::Invalidation& invalidation) {
+    const std::string& payload,
+    const std::string& private_topic_name,
+    const std::string& public_topic_name,
+    int64_t version) {
   DCHECK_EQ(client, invalidation_client_.get());
 
-  const invalidation::ObjectId& id = invalidation.object_id();
-
-  std::string payload;
-  // payload() CHECK()'s has_payload(), so we must check it ourselves first.
-  if (invalidation.has_payload())
-    payload = invalidation.payload();
-
-  DVLOG(2) << "Received invalidation with version " << invalidation.version()
-           << " for " << ObjectIdToString(id);
-
   TopicInvalidationMap invalidations;
-  Invalidation inv = Invalidation::Init(id, invalidation.version(), payload);
+  Invalidation inv =
+      Invalidation::Init(ConvertTopicToId(public_topic_name), version, payload);
   inv.SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+  DVLOG(1) << "Received invalidation with version " << inv.version() << " for "
+           << public_topic_name;
+
   invalidations.Insert(inv);
-
-  DispatchInvalidations(invalidations);
-}
-
-void FCMSyncInvalidationListener::InvalidateUnknownVersion(
-    InvalidationClient* client,
-    const invalidation::ObjectId& object_id) {
-  DCHECK_EQ(client, invalidation_client_.get());
-  DVLOG(1) << "InvalidateUnknownVersion";
-
-  TopicInvalidationMap invalidations;
-  Invalidation unknown_version = Invalidation::InitUnknownVersion(object_id);
-  unknown_version.SetAckHandler(AsWeakPtr(),
-                                base::ThreadTaskRunnerHandle::Get());
-  invalidations.Insert(unknown_version);
-
-  DispatchInvalidations(invalidations);
-}
-
-// This should behave as if we got an invalidation with version
-// UNKNOWN_OBJECT_VERSION for all known data types.
-void FCMSyncInvalidationListener::InvalidateAll(InvalidationClient* client) {
-  DCHECK_EQ(client, invalidation_client_.get());
-  DVLOG(1) << "InvalidateAll";
-
-  TopicInvalidationMap invalidations;
-  for (const auto& registered_topic : registered_topics_) {
-    invalidation::ObjectId id(ConvertTopicToId(registered_topic));
-    Invalidation unknown_version = Invalidation::InitUnknownVersion(id);
-    unknown_version.SetAckHandler(AsWeakPtr(),
-                                  base::ThreadTaskRunnerHandle::Get());
-    invalidations.Insert(unknown_version);
-  }
   DispatchInvalidations(invalidations);
 }
 
@@ -149,13 +114,8 @@ void FCMSyncInvalidationListener::SaveInvalidations(
 
 void FCMSyncInvalidationListener::EmitSavedInvalidations(
     const TopicInvalidationMap& to_emit) {
-  DVLOG(2) << "Emitting invalidations: " << to_emit.ToString();
   delegate_->OnInvalidate(to_emit);
 }
-
-void FCMSyncInvalidationListener::InformError(
-    InvalidationClient* client,
-    const invalidation::ErrorInfo& error_info) {}
 
 void FCMSyncInvalidationListener::InformTokenRecieved(
     InvalidationClient* client,

@@ -223,6 +223,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
     fake_invalidation_client_ = nullptr;
     std::unique_ptr<MockRegistrationManager> mock_registration_manager =
         std::make_unique<MockRegistrationManager>();
+    registration_manager_ = mock_registration_manager.get();
     listener_.Start(base::BindOnce(&CreateFakeInvalidationClient,
                                    &fake_invalidation_client_),
                     &fake_delegate_, std::move(mock_registration_manager));
@@ -284,28 +285,17 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
     return listener_.GetRegisteredIdsForTest();
   }
 
-  // |payload| can be NULL.
+  void RegisterAndFireInvalidate(const Topic& topic,
+                                 int64_t version,
+                                 const std::string& payload) {
+    FireInvalidate(topic, version, payload);
+  }
+
   void FireInvalidate(const Topic& topic,
                       int64_t version,
-                      const char* payload) {
-    invalidation::Invalidation inv;
-    if (payload) {
-      inv =
-          invalidation::Invalidation(ConvertTopicToId(topic), version, payload);
-    } else {
-      inv = invalidation::Invalidation(ConvertTopicToId(topic), version);
-    }
-    listener_.Invalidate(fake_invalidation_client_, inv);
-  }
-
-  // |payload| can be NULL, but not |type_name|.
-  void FireInvalidateUnknownVersion(const Topic& topic) {
-    listener_.InvalidateUnknownVersion(fake_invalidation_client_,
-                                       ConvertTopicToId(topic));
-  }
-
-  void FireInvalidateAll() {
-    listener_.InvalidateAll(fake_invalidation_client_);
+                      const std::string& payload) {
+    listener_.Invalidate(fake_invalidation_client_, payload, topic, topic,
+                         version);
   }
 
   void EnableNotifications() {
@@ -327,6 +317,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   FCMSyncNetworkChannel* fcm_sync_network_channel_;
+  MockRegistrationManager* registration_manager_;
 
  protected:
   // A derrived test needs direct access to this.
@@ -347,7 +338,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  FireInvalidate(topic, kVersion1, nullptr);
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -361,7 +352,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateNoPayload) {
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  FireInvalidate(topic, kVersion1, "");
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -374,7 +365,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateEmptyPayload) {
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
-  FireInvalidate(topic, kVersion1, kPayload1);
+  RegisterAndFireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -388,7 +379,7 @@ TEST_F(FCMSyncInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(topic, i, kPayload1);
+    RegisterAndFireInvalidate(topic, i, kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -444,10 +435,6 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   ASSERT_EQ(UnackedInvalidationSet::kMaxBufferedInvalidations,
             GetInvalidationCount(topic));
-  ASSERT_FALSE(IsUnknownVersion(topic));
-  EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(topic));
-  EXPECT_EQ(kPayload1, GetPayload(topic));
-  EXPECT_TRUE(StartsWithUnknownVersion(topic));
 }
 
 // Fire an invalidation, then fire another one with a lower version.  Both
@@ -455,7 +442,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
-  FireInvalidate(topic, kVersion2, kPayload2);
+  RegisterAndFireInvalidate(topic, kVersion2, kPayload2);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -471,37 +458,16 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateVersion) {
   EXPECT_EQ(kPayload1, GetPayload(topic));
 }
 
-// Fire an invalidation with an unknown version.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateUnknownVersion) {
-  const Topic& topic = kBookmarksTopic_;
-
-  FireInvalidateUnknownVersion(topic);
-
-  ASSERT_EQ(1U, GetInvalidationCount(topic));
-  EXPECT_TRUE(IsUnknownVersion(topic));
-}
-
-// Fire an invalidation for all enabled topics.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateAll) {
-  FireInvalidateAll();
-
-  for (const auto& topic : registred_topics_) {
-    ASSERT_EQ(1U, GetInvalidationCount(topic));
-    EXPECT_TRUE(IsUnknownVersion(topic));
-  }
-}
-
-// Test a simple scenario for multiple topics.
+// Test a simple scenario for multiple IDs.
 TEST_F(FCMSyncInvalidationListenerTest, InvalidateMultipleIds) {
-  FireInvalidate(kBookmarksTopic_, 3, nullptr);
-
+  RegisterAndFireInvalidate(kBookmarksTopic_, 3, std::string());
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
   EXPECT_EQ(3, GetVersion(kBookmarksTopic_));
   EXPECT_EQ("", GetPayload(kBookmarksTopic_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsTopic_, 2, nullptr);
+  FireInvalidate(kExtensionsTopic_, 2, std::string());
   ASSERT_EQ(0U, GetInvalidationCount(kExtensionsTopic_));
 }
 
