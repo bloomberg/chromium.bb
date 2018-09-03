@@ -282,11 +282,6 @@ void CountVideoConstraintUses(ExecutionContext* context,
           constraints, &WebMediaTrackConstraintSet::goog_noise_reduction)) {
     counter.Count(WebFeature::kMediaStreamConstraintsGoogNoiseReduction);
   }
-  if (RequestUsesNumericConstraint(
-          constraints,
-          &WebMediaTrackConstraintSet::goog_power_line_frequency)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsGoogPowerLineFrequency);
-  }
 
   UseCounter::Count(context, WebFeature::kMediaStreamConstraintsVideo);
   if (counter.IsUnconstrained()) {

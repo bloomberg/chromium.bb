@@ -428,12 +428,10 @@ static void ParseOldStyleNames(
       result.goog_payload_padding.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kAudioLatency)) {
       result.goog_latency_ms.SetExact(atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kPowerLineFrequency)) {
-      result.goog_power_line_frequency.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
     } else if (constraint.name_.Equals(kGoogLeakyBucket) ||
                constraint.name_.Equals(kGoogBeamforming) ||
-               constraint.name_.Equals(kGoogArrayGeometry)) {
+               constraint.name_.Equals(kGoogArrayGeometry) ||
+               constraint.name_.Equals(kPowerLineFrequency)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(
@@ -793,7 +791,7 @@ bool UseNakedNumeric(T input, NakedValueDisposition which) {
   }
   NOTREACHED();
   return false;
-};
+}
 
 template <class T>
 bool UseNakedNonNumeric(T input, NakedValueDisposition which) {
@@ -807,7 +805,7 @@ bool UseNakedNonNumeric(T input, NakedValueDisposition which) {
   }
   NOTREACHED();
   return false;
-};
+}
 
 template <typename U, class T>
 U GetNakedValue(T input, NakedValueDisposition which) {
@@ -821,7 +819,7 @@ U GetNakedValue(T input, NakedValueDisposition which) {
   }
   NOTREACHED();
   return input.Exact();
-};
+}
 
 LongOrConstrainLongRange ConvertLong(const LongConstraint& input,
                                      NakedValueDisposition naked_treatment) {

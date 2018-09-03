@@ -45,7 +45,6 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   // Each field is independent of each other.
   std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
       device_capabilities;
-  std::vector<media::PowerLineFrequency> power_line_capabilities;
   std::vector<base::Optional<bool>> noise_reduction_capabilities;
 };
 
@@ -106,9 +105,9 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
 //    ideal value and thus has worse fitness according to step 2, even if C3's
 //    native fitness is better than C1's and C2's.
 // 5. C1 is better than C2 if its settings are closer to certain default
-//    settings that include the device ID, power-line frequency, noise
-//    reduction, resolution, and frame rate, in that order. Note that there is
-//    no default facing mode or aspect ratio.
+//    settings that include the device ID, noise reduction, resolution,
+//    and frame rate, in that order. Note that there is no default facing mode
+//    or aspect ratio.
 // This function uses the SelectVideoTrackAdapterSettings function to compute
 // some track-specific settings. These are available in the returned value via
 // the track_adapter_settings() accessor. For more details about the algorithm
