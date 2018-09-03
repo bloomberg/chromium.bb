@@ -132,7 +132,7 @@ class CORE_EXPORT FlatTreeTraversal {
   static TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
   ChildrenOf(const Node&);
 
-  static TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
+  static TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
   InclusiveAncestorsOf(const Node&);
 
  private:
@@ -320,7 +320,8 @@ inline Node* FlatTreeTraversal::TraverseLastChild(const Node& node) {
 // TraverseRange<T> implementations
 inline TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
 FlatTreeTraversal::AncestorsOf(const Node& node) {
-  return TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>(&node);
+  return TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>(
+      Parent(node));
 }
 
 inline TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
@@ -328,10 +329,9 @@ FlatTreeTraversal::ChildrenOf(const Node& parent) {
   return TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>(&parent);
 }
 
-inline TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
+inline TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
 FlatTreeTraversal::InclusiveAncestorsOf(const Node& node) {
-  return TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>(
-      &node);
+  return TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>(&node);
 }
 
 }  // namespace blink
