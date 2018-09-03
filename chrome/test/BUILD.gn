@@ -4761,7 +4761,6 @@ if (!is_android) {
       "../browser/ui/blocked_content/popup_blocker_browsertest.cc",
       "../browser/ui/browser_command_controller_interactive_browsertest.cc",
       "../browser/ui/browser_focus_uitest.cc",
-      "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm",
       "../browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.mm",
       "../browser/ui/cocoa/status_bubble_mac_interactive_uitest.mm",
       "../browser/ui/cocoa/tab_contents/web_contents_view_mac_interactive_uitest.mm",
