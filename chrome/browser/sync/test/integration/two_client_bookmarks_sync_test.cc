@@ -1610,7 +1610,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
