@@ -47,12 +47,14 @@ void SlidableMessageView::OnSlideChanged(const std::string& notification_id) {
   if (gesture_amount == 0) {
     control_view_->HideButtons();
   } else {
-    bool on_right = gesture_amount < 0;
+    NotificationSwipeControlView::ButtonPosition button_position =
+        gesture_amount < 0 ? NotificationSwipeControlView::ButtonPosition::RIGHT
+                           : NotificationSwipeControlView::ButtonPosition::LEFT;
     NotificationControlButtonsView* buttons =
         message_view_->GetControlButtonsView();
     bool has_settings_button = buttons->settings_button();
     bool has_snooze_button = buttons->snooze_button();
-    control_view_->ShowButtons(on_right, has_settings_button,
+    control_view_->ShowButtons(button_position, has_settings_button,
                                has_snooze_button);
   }
 }

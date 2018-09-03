@@ -28,6 +28,11 @@ class MESSAGE_CENTER_EXPORT NotificationSwipeControlView
     virtual void OnSnoozeButtonPressed(const ui::Event& event) = 0;
   };
 
+  // Physical positions to show buttons in the swipe control. This is invariant
+  // across RTL/LTR languages because buttons should be shown on one side which
+  // is made uncovered by the overlapping view after user's swipe action.
+  enum class ButtonPosition { RIGHT, LEFT };
+
   // String to be returned by GetClassName() method.
   static const char kViewClassName[];
 
@@ -41,7 +46,9 @@ class MESSAGE_CENTER_EXPORT NotificationSwipeControlView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Change the visibility of the settings button.
-  void ShowButtons(bool is_right, bool has_settings, bool has_snooze);
+  void ShowButtons(ButtonPosition button_position,
+                   bool has_settings,
+                   bool has_snooze);
   void HideButtons();
   void AddObserver(Observer* observer);
 
