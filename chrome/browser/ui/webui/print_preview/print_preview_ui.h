@@ -13,9 +13,11 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "ui/gfx/geometry/size.h"
 
 class PrintPreviewHandler;
 struct PrintHostMsg_DidStartPreview_Params;
@@ -60,6 +62,23 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   bool source_has_selection() const { return source_has_selection_; }
 
   bool print_selection_only() const { return print_selection_only_; }
+
+  int pages_per_sheet() const { return pages_per_sheet_; }
+
+  const gfx::Size& page_size() const { return page_size_; }
+
+  // Returns true if |page_number| is the last page in |pages_to_render_|.
+  // |page_number| is a 0-based number.
+  bool LastPageComposited(int page_number) const;
+
+  // Get the 0-based index of the |page_number| in |pages_to_render_|.
+  // Same as above, |page_number| is a 0-based number.
+  int GetPageToNupConvertIndex(int page_number) const;
+
+  std::vector<base::ReadOnlySharedMemoryRegion> TakePagesForNupConvert();
+
+  // Save pdf pages temporarily before ready to do N-up conversion.
+  void AddPdfPageForNupConversion(base::ReadOnlySharedMemoryRegion pdf_page);
 
   // Set initial settings for PrintPreviewUI.
   static void SetInitialParams(
@@ -219,8 +238,17 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // The list of 0-based page numbers that will be rendered.
   std::vector<int> pages_to_render_;
 
+  // The list of pages to be converted.
+  std::vector<base::ReadOnlySharedMemoryRegion> pages_for_nup_convert_;
+
   // Index into |pages_to_render_| for the page number to expect.
   size_t pages_to_render_index_ = 0;
+
+  // number of pages per sheet and should be greater or equal to 1.
+  int pages_per_sheet_ = 1;
+
+  // Physical size of the page, including non-printable margins.
+  gfx::Size page_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

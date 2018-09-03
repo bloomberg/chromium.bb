@@ -288,6 +288,12 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidStartPreview_Params)
   // The list of 0-based page numbers that will be rendered.
   IPC_STRUCT_MEMBER(std::vector<int>, pages_to_render)
 
+  // number of pages per sheet and should be greater or equal to 1.
+  IPC_STRUCT_MEMBER(int, pages_per_sheet)
+
+  // Physical size of the page, including non-printable margins.
+  IPC_STRUCT_MEMBER(gfx::Size, page_size)
+
   // Scaling % to fit to page
   IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
 IPC_STRUCT_END()

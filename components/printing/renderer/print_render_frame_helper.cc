@@ -417,6 +417,11 @@ MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+gfx::Size GetPdfPageSize(const gfx::Size& page_size, int dpi) {
+  return gfx::Size(ConvertUnit(page_size.width(), dpi, kPointsPerInch),
+                   ConvertUnit(page_size.height(), dpi, kPointsPerInch));
+}
+
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
   bool fit_to_paper_size = false;
   if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_paper_size)) {
@@ -1261,6 +1266,8 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   PrintHostMsg_DidStartPreview_Params params;
   params.page_count = print_preview_context_.total_page_count();
   params.pages_to_render = print_preview_context_.pages_to_render();
+  params.pages_per_sheet = print_params.pages_per_sheet;
+  params.page_size = GetPdfPageSize(print_params.page_size, dpi);
   params.fit_to_page_scaling =
       GetFitToPageScaleFactor(printable_area_in_points);
   Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));

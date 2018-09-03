@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/printing/pdf_nup_converter_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "printing/nup_parameters.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 
@@ -67,8 +69,7 @@ PrintPreviewMessageHandler::PrintPreviewMessageHandler(
   DCHECK(web_contents);
 }
 
-PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
-}
+PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {}
 
 WebContents* PrintPreviewMessageHandler::GetPrintPreviewDialog() {
   PrintPreviewDialogController* dialog_controller =
@@ -115,6 +116,16 @@ void PrintPreviewMessageHandler::OnDidStartPreview(
     }
   }
 
+  if (!printing::NupParameters::IsSupported(params.pages_per_sheet)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (params.page_size.IsEmpty()) {
+    NOTREACHED();
+    return;
+  }
+
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
@@ -152,7 +163,8 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     client->DoCompositePageToPdf(
         params.document_cookie, render_frame_host, page_number, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
-                       weak_ptr_factory_.GetWeakPtr(), page_number, ids));
+                       weak_ptr_factory_.GetWeakPtr(), page_number,
+                       params.document_cookie, ids));
   } else {
     NotifyUIPreviewPageReady(
         print_preview_ui, page_number, ids,
@@ -193,7 +205,8 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
         params.document_cookie, render_frame_host, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
                        weak_ptr_factory_.GetWeakPtr(),
-                       params.expected_pages_count, ids));
+                       params.expected_pages_count, params.document_cookie,
+                       ids));
   } else {
     NotifyUIPreviewDocumentReady(
         print_preview_ui, params.expected_pages_count, ids,
@@ -293,12 +306,58 @@ void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
 
 void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     int page_number,
+    int document_cookie,
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    return;
+  }
+
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
+  int pages_per_sheet = print_preview_ui->pages_per_sheet();
+  if (pages_per_sheet == 1) {
+    NotifyUIPreviewPageReady(
+        print_preview_ui, page_number, ids,
+        base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
+  } else {
+    print_preview_ui->AddPdfPageForNupConversion(std::move(region));
+    int current_page_index =
+        print_preview_ui->GetPageToNupConvertIndex(page_number);
+    if (current_page_index == -1) {
+      return;
+    }
+
+    if (((current_page_index + 1) % pages_per_sheet) == 0 ||
+        print_preview_ui->LastPageComposited(page_number)) {
+      int new_page_number = current_page_index / pages_per_sheet;
+      std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions =
+          print_preview_ui->TakePagesForNupConvert();
+
+      auto* client = PdfNupConverterClient::FromWebContents(web_contents());
+      DCHECK(client);
+      client->DoNupPdfConvert(
+          document_cookie, pages_per_sheet, print_preview_ui->page_size(),
+          std::move(pdf_page_regions),
+          base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfConvertDone,
+                         weak_ptr_factory_.GetWeakPtr(), new_page_number, ids));
+    }
+  }
+}
+
+void PrintPreviewMessageHandler::OnNupPdfConvertDone(
+    int page_number,
+    const PrintHostMsg_PreviewIds& ids,
+    mojom::PdfNupConverter::Status status,
+    base::ReadOnlySharedMemoryRegion region) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (status != mojom::PdfNupConverter::Status::SUCCESS) {
+    DLOG(ERROR) << "Nup pdf page conversion failed with error " << status;
     return;
   }
 
@@ -313,12 +372,47 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
 
 void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     int page_count,
+    int document_cookie,
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    return;
+  }
+
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
+  int pages_per_sheet = print_preview_ui->pages_per_sheet();
+  if (pages_per_sheet == 1) {
+    NotifyUIPreviewDocumentReady(
+        print_preview_ui, page_count, ids,
+        base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
+  } else {
+    auto* client = PdfNupConverterClient::FromWebContents(web_contents());
+    DCHECK(client);
+
+    client->DoNupPdfDocumentConvert(
+        document_cookie, pages_per_sheet, print_preview_ui->page_size(),
+        std::move(region),
+        base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       (page_count + pages_per_sheet - 1) / pages_per_sheet,
+                       ids));
+  }
+}
+
+void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
+    int page_count,
+    const PrintHostMsg_PreviewIds& ids,
+    mojom::PdfNupConverter::Status status,
+    base::ReadOnlySharedMemoryRegion region) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (status != mojom::PdfNupConverter::Status::SUCCESS) {
+    DLOG(ERROR) << "Nup pdf document convert failed with error " << status;
     return;
   }
 

@@ -9,8 +9,10 @@
 #include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/printing/pdf_nup_converter_client.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/common/chrome_features.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -21,6 +23,9 @@ void InitializePrinting(content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(web_contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(features::kNupPrinting)) {
+    printing::PdfNupConverterClient::CreateForWebContents(web_contents);
+  }
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
