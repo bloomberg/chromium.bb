@@ -44,5 +44,67 @@ const char kUpdateSkipUpdate[] = "updateSkip";
 // enrollment at appropriate moment.
 const char kWizardAutoEnroll[] = "wizardAutoEnroll";
 
+using ValueType = base::Value::Type;
+
+constexpr struct {
+  const char* key;
+  ValueType type;
+  ConfigurationHandlerSide side;
+} kAllConfigurationKeys[] = {
+    {kWelcomeNext, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
+    {kNetworkSelectGUID, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kEULASendUsageStatistics, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kEULAAutoAccept, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
+    {kUpdateSkipUpdate, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kWizardAutoEnroll, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {"desc", ValueType::STRING, ConfigurationHandlerSide::HANDLER_DOC},
+    {"testValue", ValueType::STRING, ConfigurationHandlerSide::HANDLER_BOTH},
+};
+
+bool ValidateConfiguration(const base::Value& configuration) {
+  if (configuration.type() != ValueType::DICTIONARY) {
+    LOG(ERROR) << "Configuration should be a dictionary";
+    return false;
+  }
+  base::Value clone = configuration.Clone();
+  bool valid = true;
+  for (const auto& key : kAllConfigurationKeys) {
+    auto* value = clone.FindKey(key.key);
+    if (value) {
+      if (value->type() != key.type) {
+        valid = false;
+        LOG(ERROR) << "Invalid configuration: key " << key.key
+                   << " type is invalid";
+      }
+      clone.RemoveKey(key.key);
+    }
+  }
+  valid = valid && clone.DictEmpty();
+  for (const auto& item : clone.DictItems()) {
+    LOG(ERROR) << "Unknown configuration key " << item.first;
+  }
+  return valid;
+}
+
+void FilterConfiguration(const base::Value& configuration,
+                         ConfigurationHandlerSide side,
+                         base::Value& filtered_result) {
+  DCHECK(side == ConfigurationHandlerSide::HANDLER_CPP ||
+         side == ConfigurationHandlerSide::HANDLER_JS);
+  for (const auto& key : kAllConfigurationKeys) {
+    if (key.side == side ||
+        key.side == ConfigurationHandlerSide::HANDLER_BOTH) {
+      auto* value = configuration.FindKey(key.key);
+      if (value) {
+        filtered_result.SetKey(key.key, value->Clone());
+      }
+    }
+  }
+}
+
 }  // namespace configuration
 }  // namespace chromeos
