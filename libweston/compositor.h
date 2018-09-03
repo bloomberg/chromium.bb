@@ -1481,6 +1481,7 @@ struct weston_surface {
 	struct weston_timeline_object timeline;
 
 	bool is_mapped;
+	bool is_opaque;
 
 	/* An list of per seat pointer constraints. */
 	struct wl_list pointer_constraints;

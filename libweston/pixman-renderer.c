@@ -650,12 +650,15 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 	switch (wl_shm_buffer_get_format(shm_buffer)) {
 	case WL_SHM_FORMAT_XRGB8888:
 		pixman_format = PIXMAN_x8r8g8b8;
+		es->is_opaque = true;
 		break;
 	case WL_SHM_FORMAT_ARGB8888:
 		pixman_format = PIXMAN_a8r8g8b8;
+		es->is_opaque = false;
 		break;
 	case WL_SHM_FORMAT_RGB565:
 		pixman_format = PIXMAN_r5g6b5;
+		es->is_opaque = true;
 		break;
 	default:
 		weston_log("Unsupported SHM buffer format\n");

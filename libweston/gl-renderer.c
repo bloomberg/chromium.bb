@@ -54,6 +54,7 @@
 #include "vertex-clipping.h"
 #include "linux-dmabuf.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
+#include "pixel-formats.h"
 
 #include "shared/helpers.h"
 #include "shared/platform.h"
@@ -1570,18 +1571,21 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
 		gl_format[0] = GL_BGRA_EXT;
 		gl_pixel_type = GL_UNSIGNED_BYTE;
+		es->is_opaque = true;
 		break;
 	case WL_SHM_FORMAT_ARGB8888:
 		gs->shader = &gr->texture_shader_rgba;
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
 		gl_format[0] = GL_BGRA_EXT;
 		gl_pixel_type = GL_UNSIGNED_BYTE;
+		es->is_opaque = false;
 		break;
 	case WL_SHM_FORMAT_RGB565:
 		gs->shader = &gr->texture_shader_rgbx;
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
 		gl_format[0] = GL_RGB;
 		gl_pixel_type = GL_UNSIGNED_SHORT_5_6_5;
+		es->is_opaque = true;
 		break;
 	case WL_SHM_FORMAT_YUV420:
 		gs->shader = &gr->texture_shader_y_u_v;
@@ -1605,6 +1609,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 			gl_format[1] = GL_LUMINANCE;
 			gl_format[2] = GL_LUMINANCE;
 		}
+		es->is_opaque = true;
 		break;
 	case WL_SHM_FORMAT_NV12:
 		pitch = wl_shm_buffer_get_stride(shm_buffer);
@@ -1623,6 +1628,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 			gl_format[0] = GL_LUMINANCE;
 			gl_format[1] = GL_LUMINANCE_ALPHA;
 		}
+		es->is_opaque = true;
 		break;
 	case WL_SHM_FORMAT_YUYV:
 		gs->shader = &gr->texture_shader_y_xuxv;
@@ -1637,6 +1643,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		else
 			gl_format[0] = GL_LUMINANCE_ALPHA;
 		gl_format[1] = GL_BGRA_EXT;
+		es->is_opaque = true;
 		break;
 	default:
 		weston_log("warning: unknown shm buffer format: %08x\n",
@@ -1695,8 +1702,11 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 	}
 	gs->num_images = 0;
 	gs->target = GL_TEXTURE_2D;
+	es->is_opaque = false;
 	switch (format) {
 	case EGL_TEXTURE_RGB:
+		es->is_opaque = true;
+		/* fallthrough */
 	case EGL_TEXTURE_RGBA:
 	default:
 		num_planes = 1;
@@ -1710,14 +1720,17 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 	case EGL_TEXTURE_Y_UV_WL:
 		num_planes = 2;
 		gs->shader = &gr->texture_shader_y_uv;
+		es->is_opaque = true;
 		break;
 	case EGL_TEXTURE_Y_U_V_WL:
 		num_planes = 3;
 		gs->shader = &gr->texture_shader_y_u_v;
+		es->is_opaque = true;
 		break;
 	case EGL_TEXTURE_Y_XUXV_WL:
 		num_planes = 2;
 		gs->shader = &gr->texture_shader_y_xuxv;
+		es->is_opaque = true;
 		break;
 	}
 
@@ -2233,6 +2246,19 @@ import_known_dmabuf(struct gl_renderer *gr,
 	return true;
 }
 
+static bool
+dmabuf_is_opaque(struct linux_dmabuf_buffer *dmabuf)
+{
+	const struct pixel_format_info *info;
+
+	info = pixel_format_get_info(dmabuf->attributes.format &
+				     ~DRM_FORMAT_BIG_ENDIAN);
+	if (!info)
+		return false;
+
+	return pixel_format_is_opaque(info);
+}
+
 static void
 gl_renderer_attach_dmabuf(struct weston_surface *surface,
 			  struct weston_buffer *buffer,
@@ -2305,6 +2331,7 @@ gl_renderer_attach_dmabuf(struct weston_surface *surface,
 	gs->height = buffer->height;
 	gs->buffer_type = BUFFER_TYPE_EGL;
 	gs->y_inverted = buffer->y_inverted;
+	surface->is_opaque = dmabuf_is_opaque(dmabuf);
 }
 
 static void
@@ -2330,6 +2357,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		gs->num_textures = 0;
 		gs->buffer_type = BUFFER_TYPE_NULL;
 		gs->y_inverted = 1;
+		es->is_opaque = false;
 		return;
 	}
 
@@ -2348,6 +2376,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		weston_buffer_reference(&gs->buffer_ref, NULL);
 		gs->buffer_type = BUFFER_TYPE_NULL;
 		gs->y_inverted = 1;
+		es->is_opaque = false;
 	}
 }
 

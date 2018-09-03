@@ -532,6 +532,7 @@ weston_surface_set_color(struct weston_surface *surface,
 		 float red, float green, float blue, float alpha)
 {
 	surface->compositor->renderer->surface_set_color(surface, red, green, blue, alpha);
+	surface->is_opaque = !(alpha < 1.0);
 }
 
 WL_EXPORT void
