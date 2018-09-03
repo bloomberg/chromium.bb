@@ -40,16 +40,14 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
 
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params) {
+  base::DictionaryValue* SendCommand(const std::string& method,
+                                     std::unique_ptr<base::Value> params) {
     return SendCommand(method, std::move(params), true);
   }
 
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params,
-      bool wait);
+  base::DictionaryValue* SendCommand(const std::string& method,
+                                     std::unique_ptr<base::Value> params,
+                                     bool wait);
 
   void WaitForResponse();
 
