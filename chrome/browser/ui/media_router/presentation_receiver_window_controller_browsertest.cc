@@ -239,8 +239,9 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
   destroyer.AwaitTerminate(std::move(receiver_window));
 }
 
+// Flaky. See https://crbug.com/880045.
 IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
-                       NavigationClosesWindow) {
+                       DISABLED_NavigationClosesWindow) {
   // Start receiver window.
   auto file_path =
       GetResourceFile(FILE_PATH_LITERAL("presentation_receiver.html"));
