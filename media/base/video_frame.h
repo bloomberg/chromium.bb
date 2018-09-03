@@ -130,7 +130,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Creates a new frame in system memory with given parameters. Buffers for the
   // frame are allocated but not initialized. The caller should specify the
-  // physical buffer size in |layout| parameter.
+  // physical buffer size and strides if needed in |layout| parameter.
   static scoped_refptr<VideoFrame> CreateFrameWithLayout(
       const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
@@ -537,10 +537,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     data_[plane] = ptr;
   }
 
-  void set_strides(std::vector<int32_t> strides) {
-    layout_.set_strides(std::move(strides));
-  }
-
  private:
   static scoped_refptr<VideoFrame> WrapExternalStorage(
       VideoPixelFormat format,
@@ -574,13 +570,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // alignment for each individual plane.
   static gfx::Size CommonAlignment(VideoPixelFormat format);
 
-  void AllocateMemory(bool zero_initialize_memory);
-
   // Calculates strides if unassigned.
   // For the case that plane stride is not assigned, i.e. 0, in the layout_
   // object, it calculates strides for each plane based on frame format and
   // coded size then writes them back.
-  void CalculateUnassignedStrides();
+  static std::vector<int32_t> ComputeStrides(VideoPixelFormat format,
+                                             const gfx::Size& coded_size);
+
+  void AllocateMemory(bool zero_initialize_memory);
 
   // Calculates plane size.
   // It first considers buffer size layout_ object provides. If layout's
@@ -592,7 +589,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   std::vector<size_t> CalculatePlaneSize() const;
 
   // VideFrameLayout (includes format, coded_size, and strides).
-  VideoFrameLayout layout_;
+  const VideoFrameLayout layout_;
 
   // Storage type for the different planes.
   StorageType storage_type_;  // TODO(mcasas): make const

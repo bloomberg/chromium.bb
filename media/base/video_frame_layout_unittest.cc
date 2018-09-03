@@ -145,17 +145,4 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
             "strides:[0, 0, 0, 0]");
 }
 
-TEST(VideoFrameLayout, SetStrideSize) {
-  gfx::Size coded_size = gfx::Size(320, 180);
-  VideoFrameLayout layout(PIXEL_FORMAT_NV12, coded_size);
-
-  std::vector<int32_t> strides = {384, 192, 192};
-  layout.set_strides(std::move(strides));
-
-  EXPECT_EQ(layout.ToString(),
-            "VideoFrameLayout format:PIXEL_FORMAT_NV12 coded_size:320x180 "
-            "num_buffers:4 buffer_sizes:[0, 0, 0, 0] num_strides:3 "
-            "strides:[384, 192, 192]");
-}
-
 }  // namespace media

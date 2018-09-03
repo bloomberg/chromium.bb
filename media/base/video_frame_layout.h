@@ -52,11 +52,6 @@ class MEDIA_EXPORT VideoFrameLayout {
   const std::vector<int32_t>& strides() const { return strides_; }
   const std::vector<size_t>& buffer_sizes() const { return buffer_sizes_; }
 
-  // Sets strides.
-  void set_strides(std::vector<int32_t> strides) {
-    strides_ = std::move(strides);
-  }
-
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 

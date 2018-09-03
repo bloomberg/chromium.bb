@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -76,8 +77,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
  private:
   friend class MojoDecryptorService;
 
-  MojoSharedBufferVideoFrame(VideoPixelFormat format,
-                             const gfx::Size& coded_size,
+  MojoSharedBufferVideoFrame(const VideoFrameLayout& layout,
                              const gfx::Rect& visible_rect,
                              const gfx::Size& natural_size,
                              mojo::ScopedSharedBufferHandle handle,
@@ -86,13 +86,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   ~MojoSharedBufferVideoFrame() override;
 
   // Initializes the MojoSharedBufferVideoFrame by creating a mapping onto
-  // the shared memory, and then setting the strides and offsets as specified.
-  bool Init(int32_t y_stride,
-            int32_t u_stride,
-            int32_t v_stride,
-            size_t y_offset,
-            size_t u_offset,
-            size_t v_offset);
+  // the shared memory, and then setting offsets as specified.
+  bool Init(size_t y_offset, size_t u_offset, size_t v_offset);
 
   uint8_t* shared_buffer_data() {
     return reinterpret_cast<uint8_t*>(shared_buffer_mapping_.get());
