@@ -340,8 +340,34 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
 void BookmarkModelTypeProcessor::OnSyncStopping(
     syncer::SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Disabling sync for a type shouldn't happen before the model is ready to
+  // sync and metadata are tracked.
+  DCHECK(bookmark_tracker_);
+  DCHECK(bookmark_model_);
+  DCHECK(bookmark_model_observer_);
+  DCHECK(!start_callback_);
+
   cache_guid_.clear();
-  NOTIMPLEMENTED();
+  worker_.reset();
+
+  switch (metadata_fate) {
+    case syncer::KEEP_METADATA: {
+      break;
+    }
+
+    case syncer::CLEAR_METADATA: {
+      // Stop observing local changes. We'll start observing local changes again
+      // when Sync is (re)started in StartTrackingMetadata().
+      bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
+      bookmark_model_observer_.reset();
+      bookmark_tracker_.reset();
+      schedule_save_closure_.Run();
+      break;
+    }
+  }
+
+  // Do not let any delayed callbacks to be called.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
