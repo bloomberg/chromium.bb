@@ -721,7 +721,20 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 int amdgpu_bo_free(amdgpu_bo_handle buf_handle);
 
 /**
- * Request CPU access to GPU accessible memory
+ * Increase the reference count of a buffer object
+ *
+ * \param   bo - \c [in]  Buffer object handle to increase the reference count
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ * \sa amdgpu_bo_alloc(), amdgpu_bo_free()
+ *
+*/
+int amdgpu_bo_inc_ref(amdgpu_bo_handle bo);
+
+/**
+ * Request CPU access to GPU accessable memory
  *
  * \param   buf_handle - \c [in] Buffer handle
  * \param   cpu        - \c [out] CPU address to be used for access

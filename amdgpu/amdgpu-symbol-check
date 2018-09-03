@@ -15,6 +15,7 @@ amdgpu_bo_cpu_map
 amdgpu_bo_cpu_unmap
 amdgpu_bo_export
 amdgpu_bo_free
+amdgpu_bo_inc_ref
 amdgpu_bo_import
 amdgpu_bo_list_create
 amdgpu_bo_list_destroy
