@@ -366,7 +366,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url,
     const GURL& site_for_cookies) {
-  DCHECK(!JobWasCanceled());
+  DCHECK(IsJobAlive());
   DCHECK(context_);
   DCHECK(provider_host_);
   tracker_ = std::make_unique<MainResourceRequestTracker>();
@@ -401,8 +401,8 @@ void ServiceWorkerControlleeRequestHandler::
             disallow_controller,
         blink::ServiceWorkerStatusCode status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
@@ -534,15 +534,15 @@ void ServiceWorkerControlleeRequestHandler::
         scoped_refptr<ServiceWorkerVersion> active_version,
         std::unique_ptr<ScopedDisallowSetControllerRegistration>
             disallow_controller) {
-  // The job may have been canceled before this was invoked. In that
+  // The job may have been destroyed before this was invoked. In that
   // case, |url_job_| can't be used, so return.
-  if (JobWasCanceled()) {
+  if (!IsJobAlive()) {
     tracker_->RecordDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasCancelled);
+        ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasDestroyed);
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "The job was canceled");
+        url_job_.get(), "Info", "The job was destroyed");
     return;
   }
 
@@ -633,8 +633,8 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     int64_t registration_id) {
   DCHECK(force_update_started_);
 
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (!context_) {
@@ -668,8 +668,8 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     scoped_refptr<ServiceWorkerVersion> version,
     std::unique_ptr<ScopedDisallowSetControllerRegistration>
         disallow_controller) {
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (!context_) {
@@ -695,7 +695,7 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
-  DCHECK(!JobWasCanceled());
+  DCHECK(IsJobAlive());
   DCHECK(context_);
 
   // When this request handler was created, the provider host had a controller
@@ -766,8 +766,8 @@ void ServiceWorkerControlleeRequestHandler::ClearJob() {
   url_job_.reset();
 }
 
-bool ServiceWorkerControlleeRequestHandler::JobWasCanceled() const {
-  return !url_job_ || url_job_->WasCanceled();
+bool ServiceWorkerControlleeRequestHandler::IsJobAlive() const {
+  return url_job_ && url_job_->IsAlive();
 }
 
 }  // namespace content

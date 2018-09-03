@@ -79,14 +79,8 @@ void ServiceWorkerURLJobWrapper::FailDueToLostController() {
   url_request_job_->FailDueToLostController();
 }
 
-bool ServiceWorkerURLJobWrapper::WasCanceled() const {
-  if (url_loader_job_) {
-    // The |url_loader_job_| is valid as long as this wrapper owns
-    // it, which is true for the lifetime of this wrapper.
-    return false;
-  } else {
-    return !url_request_job_;
-  }
+bool ServiceWorkerURLJobWrapper::IsAlive() const {
+  return url_loader_job_ || url_request_job_;
 }
 
 }  // namespace content

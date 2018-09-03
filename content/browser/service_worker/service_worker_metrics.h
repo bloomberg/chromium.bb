@@ -62,8 +62,8 @@ class ServiceWorkerMetrics {
     // worker.
     kAbortedWithoutDispatchingFetchEvent = 13,
 
-    // The request was not routed because it was cancelled.
-    kJobWasCancelled = 14,
+    // The request was not routed because the job was destroyed.
+    kJobWasDestroyed = 14,
 
     kMaxValue = 14,
   };

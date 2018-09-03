@@ -43540,7 +43540,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="kErrorRequestBodyFailed"/>
   <int value="12" label="kAbortedWhileDispatchingFetchEvent"/>
   <int value="13" label="kAbortedWithoutDispatchingFetchEvent"/>
-  <int value="14" label="kJobWasCancelled"/>
+  <int value="14" label="kJobWasDestroyed"/>
 </enum>
 
 <enum name="ServiceWorkerMetrics.EventType">
