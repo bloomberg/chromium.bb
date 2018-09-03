@@ -15,7 +15,7 @@ namespace blink {
 class BasePage;
 
 // Visitor used to mark Oilpan objects.
-class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
+class PLATFORM_EXPORT MarkingVisitor : public Visitor {
  public:
   enum MarkingMode {
     // This is a default visitor. This is used for MarkingType=kAtomicMarking
@@ -156,9 +156,9 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   void RegisterWeakCallback(void* closure, WeakCallback) final;
 
   // Unused cross-component visit methods.
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
   void Visit(DOMWrapperMap<ScriptWrappable>*,
-             const ScriptWrappable* key) final {}
+             const ScriptWrappable* key) override {}
 
  private:
   // Exact version of the marking write barriers.

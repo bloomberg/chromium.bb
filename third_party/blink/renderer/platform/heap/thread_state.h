@@ -286,6 +286,10 @@ class PLATFORM_EXPORT ThreadState final
   void SetGCPhase(GCPhase);
   bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
   bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
+  bool IsUnifiedGCMarkingInProgress() const {
+    return IsMarkingInProgress() &&
+           current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC;
+  }
 
   void EnableWrapperTracingBarrier();
   void DisableWrapperTracingBarrier();
@@ -297,6 +301,10 @@ class PLATFORM_EXPORT ThreadState final
   void IncrementalMarkingStart(BlinkGC::GCReason);
   void IncrementalMarkingStep();
   void IncrementalMarkingFinalize();
+  bool FinishIncrementalMarkingIfRunning(BlinkGC::StackState,
+                                         BlinkGC::MarkingType,
+                                         BlinkGC::SweepingType,
+                                         BlinkGC::GCReason);
 
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
@@ -466,8 +474,6 @@ class PLATFORM_EXPORT ThreadState final
       void (*perform_cleanup)(v8::Isolate*)) {
     isolate_ = isolate;
     DCHECK(!isolate_ || trace_dom_wrappers);
-    DCHECK(!isolate_ || invalidate_dead_objects_in_wrappers_marking_deque);
-    DCHECK(!isolate_ || perform_cleanup);
     trace_dom_wrappers_ = trace_dom_wrappers;
     invalidate_dead_objects_in_wrappers_marking_deque_ =
         invalidate_dead_objects_in_wrappers_marking_deque;
@@ -554,7 +560,14 @@ class PLATFORM_EXPORT ThreadState final
   // Implementation for WebRAILModeObserver
   void OnRAILModeChanged(v8::RAILMode new_mode) override {
     should_optimize_for_load_time_ = new_mode == v8::RAILMode::PERFORMANCE_LOAD;
+    // When switching RAIL mode to load we try to avoid incremental marking as
+    // the write barrier cost is noticeable on throughput and garbage
+    // accumulated during loading is likely to be alive during that phase. The
+    // same argument holds for unified heap garbage collections with the
+    // difference that these collections are triggered by V8 and should thus be
+    // avoided on that end.
     if (should_optimize_for_load_time_ && IsIncrementalMarking() &&
+        !IsUnifiedGCMarkingInProgress() &&
         GetGCState() == GCState::kIncrementalMarkingStepScheduled)
       ScheduleIncrementalMarkingFinalize();
   }
@@ -760,6 +773,7 @@ class PLATFORM_EXPORT ThreadState final
   friend class PrefinalizerRegistration;
   friend class TestGCScope;
   friend class ThreadStateSchedulingTest;
+  friend class UnifiedHeapController;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadState);
 };

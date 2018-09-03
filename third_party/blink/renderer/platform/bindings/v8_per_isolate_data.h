@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -209,6 +210,10 @@ class PLATFORM_EXPORT V8PerIsolateData {
     script_wrappable_visitor_.swap(other);
   }
 
+  UnifiedHeapController* GetUnifiedHeapController() const {
+    return unified_heap_controller_.get();
+  }
+
   int IsNearV8HeapLimitHandled() { return handled_near_v8_heap_limit_; }
 
   void HandledNearV8HeapLimit() { handled_near_v8_heap_limit_ = true; }
@@ -281,6 +286,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
   std::unique_ptr<ScriptWrappableMarkingVisitor> script_wrappable_visitor_;
+  std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;
   bool handled_near_v8_heap_limit_;
