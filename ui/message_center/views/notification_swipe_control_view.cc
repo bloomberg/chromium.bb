@@ -37,12 +37,11 @@ NotificationSwipeControlView::NotificationSwipeControlView() {
 
 NotificationSwipeControlView::~NotificationSwipeControlView() = default;
 
-void NotificationSwipeControlView::ShowButtons(bool is_right,
+void NotificationSwipeControlView::ShowButtons(ButtonPosition button_position,
                                                bool show_settings,
                                                bool show_snooze) {
   views::BoxLayout* layout = static_cast<views::BoxLayout*>(GetLayoutManager());
-  if (is_right) {
-    // TODO: Flip the arrangement if current UI language is RTL.
+  if ((button_position == ButtonPosition::RIGHT) != base::i18n::IsRTL()) {
     layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   } else {
     layout->set_main_axis_alignment(
