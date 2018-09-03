@@ -118,7 +118,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (auth_token != kValidAuthToken) {
     // Simulate server-side auth failure.
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-    InvalidateAndClearAuthToken();
+    ClearAuthToken();
   }
 
   if (--countdown_to_postbuffer_fail_ == 0) {
