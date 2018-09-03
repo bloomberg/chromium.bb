@@ -90,26 +90,16 @@ AnimationTimeDelta operator*(T a, AnimationTimeDelta td) {
 }
 
 // Comparison operators on AnimationTimeDelta.
-constexpr bool CORE_EXPORT operator==(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs) {
-  return lhs.InSecondsF() == rhs.InSecondsF();
-}
-constexpr bool CORE_EXPORT operator!=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs) {
-  return lhs.InSecondsF() != rhs.InSecondsF();
-}
-constexpr bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
-                                     const AnimationTimeDelta& rhs) {
-  return lhs.InSecondsF() > rhs.InSecondsF();
-}
-constexpr bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs) {
-  return lhs.InSecondsF() >= rhs.InSecondsF();
-}
-constexpr bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs) {
-  return lhs.InSecondsF() <= rhs.InSecondsF();
-}
+bool CORE_EXPORT operator==(const AnimationTimeDelta& lhs,
+                                      const AnimationTimeDelta& rhs);
+bool CORE_EXPORT operator!=(const AnimationTimeDelta& lhs,
+                                      const AnimationTimeDelta& rhs);
+bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
+                                     const AnimationTimeDelta& rhs);
+bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
+                                      const AnimationTimeDelta& rhs);
+bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,
+                                      const AnimationTimeDelta& rhs);
 
 // Defined to allow DCHECK_EQ/etc to work with the class.
 CORE_EXPORT std::ostream& operator<<(std::ostream& os, AnimationTimeDelta time);
