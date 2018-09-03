@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.JsonWriter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,8 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -275,15 +278,24 @@ public class PickerCategoryView extends RelativeLayout
      * Notifies any listeners that one or more contacts have been selected.
      */
     private void notifyContactsSelected() {
-        List<ContactDetails> selectedFiles = mSelectionDelegate.getSelectedItemsAsList();
-        Collections.sort(selectedFiles);
-        String[] contacts = new String[selectedFiles.size()];
-        int i = 0;
-        for (ContactDetails contactDetails : selectedFiles) {
-            contacts[i++] = contactDetails.getDisplayName();
-        }
+        List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
+        Collections.sort(selectedContacts);
 
-        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
+        StringWriter out = new StringWriter();
+        final JsonWriter writer = new JsonWriter(out);
+
+        try {
+            writer.beginArray();
+            for (ContactDetails contactDetails : selectedContacts) {
+                contactDetails.appendJson(writer);
+            }
+            writer.endArray();
+            executeAction(
+                    ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, out.toString());
+        } catch (IOException e) {
+            assert false;
+            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
+        }
     }
 
     /**
@@ -292,7 +304,7 @@ public class PickerCategoryView extends RelativeLayout
      * @param contacts The contacts that were selected (if any).
      */
     private void executeAction(
-            ContactsPickerListener.ContactsPickerAction action, String[] contacts) {
+            ContactsPickerListener.ContactsPickerAction action, String contacts) {
         mListener.onContactsPickerUserAction(action, contacts);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();

@@ -431,7 +431,7 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onContactsPickerUserAction(ContactsPickerAction action, String[] contacts) {
+    public void onContactsPickerUserAction(ContactsPickerAction action, String contacts) {
         switch (action) {
             case CANCEL:
                 onFileNotSelected();
