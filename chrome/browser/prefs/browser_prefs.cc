@@ -323,15 +323,6 @@
 namespace {
 
 #if defined(OS_ANDROID)
-// Deprecated 8/2017.
-const char kStabilityForegroundActivityType[] =
-    "user_experience_metrics.stability.current_foreground_activity_type";
-const char kStabilityLaunchedActivityFlags[] =
-    "user_experience_metrics.stability.launched_activity_flags";
-const char kStabilityLaunchedActivityCounts[] =
-    "user_experience_metrics.stability.launched_activity_counts";
-const char kStabilityCrashedActivityCounts[] =
-    "user_experience_metrics.stability.crashed_activity_counts";
 // Deprecated 4/2018.
 const char kDismissedPhysicalWebPageSuggestions[] =
     "ntp_suggestions.physical_web.dismissed_ids";
@@ -424,11 +415,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
-  // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
-  registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);
-  registry->RegisterListPref(kStabilityCrashedActivityCounts);
-  registry->RegisterListPref(kStabilityLaunchedActivityCounts);
 #else
   media_router::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
@@ -769,16 +755,10 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-#if defined(OS_ANDROID)
-  // Added 8/2017.
-  local_state->ClearPref(kStabilityForegroundActivityType);
-  local_state->ClearPref(kStabilityLaunchedActivityFlags);
-  local_state->ClearPref(kStabilityLaunchedActivityCounts);
-  local_state->ClearPref(kStabilityCrashedActivityCounts);
-#else
+#if !defined(OS_ANDROID)
   // Added 1/2018.
   local_state->ClearPref(kShowFirstRunBubbleOption);
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Added 5/2018.
