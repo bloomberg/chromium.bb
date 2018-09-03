@@ -733,7 +733,7 @@ class CORE_EXPORT Element : public ContainerNode {
   PseudoElement* GetPseudoElement(PseudoId) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
-  ComputedStyle* CachedStyleForPseudoElement(
+  const ComputedStyle* CachedStyleForPseudoElement(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
   scoped_refptr<ComputedStyle> StyleForPseudoElement(

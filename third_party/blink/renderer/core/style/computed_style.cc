@@ -410,7 +410,7 @@ bool ComputedStyle::IsStyleAvailable() const {
   return this != StyleResolver::StyleNotYetAvailable();
 }
 
-ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
+const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
     return nullptr;
 
@@ -418,7 +418,7 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
     return nullptr;
 
   for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
+    const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid)
       return pseudo_style;
   }
@@ -426,12 +426,12 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   return nullptr;
 }
 
-ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
+const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
     scoped_refptr<ComputedStyle> pseudo) {
   DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
-  ComputedStyle* result = pseudo.get();
+  const ComputedStyle* result = pseudo.get();
 
   if (!cached_pseudo_styles_)
     cached_pseudo_styles_ = std::make_unique<PseudoStyleCache>();
@@ -445,7 +445,7 @@ void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
   if (!cached_pseudo_styles_)
     return;
   for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
+    const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid) {
       cached_pseudo_styles_->EraseAt(i);
       return;

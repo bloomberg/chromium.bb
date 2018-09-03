@@ -2302,10 +2302,11 @@ void LayoutObject::ApplyPseudoStyleChanges(const ComputedStyle& old_style) {
 
 void LayoutObject::ApplyFirstLineChanges(const ComputedStyle& old_style) {
   if (old_style.HasPseudoStyle(kPseudoIdFirstLine)) {
-    scoped_refptr<ComputedStyle> old_pseudo_style =
+    scoped_refptr<const ComputedStyle> old_pseudo_style =
         old_style.GetCachedPseudoStyle(kPseudoIdFirstLine);
     if (StyleRef().HasPseudoStyle(kPseudoIdFirstLine) && old_pseudo_style) {
-      scoped_refptr<ComputedStyle> new_pseudo_style = UncachedFirstLineStyle();
+      scoped_refptr<const ComputedStyle> new_pseudo_style =
+          UncachedFirstLineStyle();
       if (new_pseudo_style) {
         FirstLineStyleDidChange(*old_pseudo_style, *new_pseudo_style);
         return;
@@ -3417,10 +3418,10 @@ void LayoutObject::ForceChildLayout() {
 
 enum StyleCacheState { kCached, kUncached };
 
-static scoped_refptr<ComputedStyle> FirstLineStyleForCachedUncachedType(
+static scoped_refptr<const ComputedStyle> FirstLineStyleForCachedUncachedType(
     StyleCacheState type,
     const LayoutObject* layout_object,
-    ComputedStyle* style) {
+    const ComputedStyle* style) {
   DCHECK(layout_object);
   const LayoutObject* layout_object_for_first_line_style = layout_object;
   if (layout_object->IsBeforeOrAfterContent())
@@ -3471,7 +3472,8 @@ static scoped_refptr<ComputedStyle> FirstLineStyleForCachedUncachedType(
   return nullptr;
 }
 
-scoped_refptr<ComputedStyle> LayoutObject::UncachedFirstLineStyle() const {
+scoped_refptr<const ComputedStyle> LayoutObject::UncachedFirstLineStyle()
+    const {
   if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
     return nullptr;
 
@@ -3480,17 +3482,18 @@ scoped_refptr<ComputedStyle> LayoutObject::UncachedFirstLineStyle() const {
   return FirstLineStyleForCachedUncachedType(kUncached, this, style_.get());
 }
 
-ComputedStyle* LayoutObject::CachedFirstLineStyle() const {
+const ComputedStyle* LayoutObject::CachedFirstLineStyle() const {
   DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
 
-  if (scoped_refptr<ComputedStyle> style = FirstLineStyleForCachedUncachedType(
-          kCached, IsText() ? Parent() : this, style_.get()))
+  if (scoped_refptr<const ComputedStyle> style =
+          FirstLineStyleForCachedUncachedType(
+              kCached, IsText() ? Parent() : this, style_.get()))
     return style.get();
 
   return style_.get();
 }
 
-ComputedStyle* LayoutObject::GetCachedPseudoStyle(
+const ComputedStyle* LayoutObject::GetCachedPseudoStyle(
     PseudoId pseudo,
     const ComputedStyle* parent_style) const {
   DCHECK_NE(pseudo, kPseudoIdBefore);
