@@ -642,6 +642,11 @@ typedef struct SPEED_FEATURES {
   // Reuse the inter_intra_mode search result from NEARESTMV mode to other
   // single ref modes
   int reuse_inter_intra_mode;
+
+  // Set the full pixel search level of obmc
+  // 0: obmc_full_pixel_diamond
+  // 1: obmc_refining_search_sad (faster)
+  int obmc_full_pixel_search_level;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

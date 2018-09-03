@@ -2702,11 +2702,12 @@ int obmc_diamond_search_sad(const MACROBLOCK *x, const search_site_config *cfg,
   return best_sad;
 }
 
-int av1_obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
-                                MV *mvp_full, int step_param, int sadpb,
-                                int further_steps, int do_refine,
-                                const aom_variance_fn_ptr_t *fn_ptr,
-                                const MV *ref_mv, MV *dst_mv, int is_second) {
+static int obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
+                                   MV *mvp_full, int step_param, int sadpb,
+                                   int further_steps, int do_refine,
+                                   const aom_variance_fn_ptr_t *fn_ptr,
+                                   const MV *ref_mv, MV *dst_mv,
+                                   int is_second) {
   const int32_t *wsrc = x->wsrc_buf;
   const int32_t *mask = x->mask_buf;
   MV temp_mv;
@@ -2761,6 +2762,29 @@ int av1_obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
     }
   }
   return bestsme;
+}
+
+int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, MV *mvp_full,
+                               int step_param, int sadpb, int further_steps,
+                               int do_refine,
+                               const aom_variance_fn_ptr_t *fn_ptr,
+                               const MV *ref_mv, MV *dst_mv, int is_second) {
+  if (cpi->sf.obmc_full_pixel_search_level == 0) {
+    return obmc_full_pixel_diamond(cpi, x, mvp_full, step_param, sadpb,
+                                   further_steps, do_refine, fn_ptr, ref_mv,
+                                   dst_mv, is_second);
+  } else {
+    const int32_t *wsrc = x->wsrc_buf;
+    const int32_t *mask = x->mask_buf;
+    const int search_range = 8;
+    *dst_mv = *mvp_full;
+    int thissme = obmc_refining_search_sad(
+        x, wsrc, mask, dst_mv, sadpb, search_range, fn_ptr, ref_mv, is_second);
+    if (thissme < INT_MAX)
+      thissme = get_obmc_mvpred_var(x, wsrc, mask, dst_mv, ref_mv, fn_ptr, 1,
+                                    is_second);
+    return thissme;
+  }
 }
 
 // Note(yunqingwang): The following 2 functions are only used in the motion

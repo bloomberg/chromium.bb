@@ -222,6 +222,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->dual_sgr_penalty_level = 1;
     sf->use_accurate_subpel_search = 1;
     sf->reuse_inter_intra_mode = 1;
+    sf->obmc_full_pixel_search_level = 1;
   }
 
   if (speed >= 2) {
@@ -514,6 +515,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->dual_sgr_penalty_level = 0;
 
   sf->inter_mode_rd_model_estimation = 0;
+  sf->obmc_full_pixel_search_level = 0;
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, oxcf->speed);
