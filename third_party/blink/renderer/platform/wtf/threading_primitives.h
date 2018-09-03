@@ -71,14 +71,11 @@ class WTF_EXPORT MutexBase {
 
   void lock();
   void unlock();
+  void AssertAcquired() const {
 #if DCHECK_IS_ON()
-  // Deprecated in favour of AssertAcquired.
-  bool Locked() const { return mutex_.recursion_count_ > 0; }
-
-  void AssertAcquired() const { DCHECK(Locked()); }
-#else
-  void AssertAcquired() const {}
+    DCHECK(mutex_.recursion_count_);
 #endif
+  }
 
  public:
   PlatformMutex& Impl() { return mutex_; }
