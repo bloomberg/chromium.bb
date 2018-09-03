@@ -1325,10 +1325,9 @@ void CrostiniManager::OnStartTerminaVm(
     return;
   }
   // Wait for the Tremplin signal if the vm isn't already marked "running".
-  if (running_vms_.find(std::make_pair(owner_id, vm_name)) ==
-      running_vms_.end()) {
+  auto key = std::make_pair(owner_id, vm_name);
+  if (running_vms_.find(key) == running_vms_.end()) {
     // Record the running vm.
-    auto key = std::make_pair(std::move(owner_id), std::move(vm_name));
     running_vms_[key] = std::move(response.vm_info());
 
     VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id << ", "
