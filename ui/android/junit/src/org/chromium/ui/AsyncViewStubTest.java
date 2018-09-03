@@ -43,6 +43,7 @@ public class AsyncViewStubTest {
                                         .inflate(MAIN_LAYOUT_RESOURCE_ID, null);
         mAsyncViewStub = mainView.findViewById(STUB_ID);
         mAsyncViewStub.setLayoutResource(INFLATE_LAYOUT_RESOURCE_ID);
+        mAsyncViewStub.setShouldInflateOnBackgroundThread(true);
         mEventCount.set(0);
     }
 
@@ -52,7 +53,7 @@ public class AsyncViewStubTest {
             assertTrue(ThreadUtils.runningOnUiThread());
             mEventCount.incrementAndGet();
         });
-        mAsyncViewStub.inflate(true);
+        mAsyncViewStub.inflate();
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         // ensure callback gets called.
         assertEquals(mEventCount.get(), 1);
@@ -67,7 +68,7 @@ public class AsyncViewStubTest {
         mAsyncViewStub.addOnInflateListener(
                 (View v) -> { assertEquals(mEventCount.decrementAndGet(), 1); });
         assertEquals(mEventCount.get(), 0);
-        mAsyncViewStub.inflate(true);
+        mAsyncViewStub.inflate();
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(mEventCount.get(), 1);
     }

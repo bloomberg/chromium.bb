@@ -9,15 +9,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
-
-import android.view.ViewStub;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +32,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
+import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 
 /**
  * Controller tests for the keyboard accessory component.
@@ -51,8 +50,6 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
     @Mock
-    private ViewStub mMockViewStub;
-    @Mock
     private KeyboardAccessoryView mMockView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
@@ -66,8 +63,9 @@ public class KeyboardAccessoryControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        when(mMockViewStub.inflate()).thenReturn(mMockView);
-        mCoordinator = new KeyboardAccessoryCoordinator(mMockViewStub, mMockVisibilityDelegate);
+
+        mCoordinator = new KeyboardAccessoryCoordinator(
+                mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }
@@ -144,7 +142,7 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    public void testModelDoesntNotifyUnchangedData() {
+    public void testModelDoesntNotifyUnchangedVisibility() {
         mModel.addObserver(mMockPropertyObserver);
 
         // Setting the visibility on the model should make it propagate that it's visible.
@@ -158,6 +156,27 @@ public class KeyboardAccessoryControllerTest {
         verify(mMockPropertyObserver) // Unchanged number of invocations.
                 .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
         assertThat(mModel.isVisible(), is(true));
+    }
+
+    @Test
+    public void testModelDoesntNotifyUnchangedActiveTab() {
+        mModel.addObserver(mMockPropertyObserver);
+
+        assertThat(mModel.activeTab(), is(nullValue()));
+        mModel.setActiveTab(null);
+        assertThat(mModel.activeTab(), is(nullValue()));
+        verify(mMockPropertyObserver, never())
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB);
+
+        mModel.setActiveTab(0);
+        assertThat(mModel.activeTab(), is(0));
+        verify(mMockPropertyObserver)
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB);
+
+        mModel.setActiveTab(0);
+        assertThat(mModel.activeTab(), is(0));
+        verify(mMockPropertyObserver)
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB);
     }
 
     @Test

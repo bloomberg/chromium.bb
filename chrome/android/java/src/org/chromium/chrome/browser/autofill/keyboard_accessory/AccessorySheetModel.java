@@ -8,6 +8,10 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * This model holds all view state of the accessory sheet.
  * It is updated by the {@link AccessorySheetMediator} and emits notification on which observers
@@ -15,6 +19,13 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
  */
 class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.PropertyKey> {
     public static class PropertyKey {
+        public static final List<PropertyKey> ALL_PROPERTIES = new ArrayList<>();
+
+        private PropertyKey() {
+            ALL_PROPERTIES.add(this);
+        }
+
+        public static final PropertyKey TAB_LIST = new PropertyKey();
         public static final PropertyKey ACTIVE_TAB_INDEX = new PropertyKey();
         public static final PropertyKey VISIBLE = new PropertyKey();
         public static final PropertyKey HEIGHT = new PropertyKey();
@@ -25,6 +36,11 @@ class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.Propert
     private boolean mVisible;
     private int mHeight;
     private final ListModel<Tab> mTabList = new ListModel<>();
+
+    @Override
+    public Collection<PropertyKey> getAllSetProperties() {
+        return PropertyKey.ALL_PROPERTIES;
+    }
 
     ListModel<Tab> getTabList() {
         return mTabList;

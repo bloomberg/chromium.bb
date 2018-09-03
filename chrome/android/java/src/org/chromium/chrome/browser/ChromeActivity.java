@@ -153,6 +153,7 @@ import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -1375,8 +1376,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }, coordinator);
 
         mManualFillingController.initialize(getWindowAndroid(),
-                findViewById(R.id.keyboard_accessory_stub),
-                findViewById(R.id.keyboard_accessory_sheet_stub));
+                new DeferredViewStubInflationProvider<>(findViewById(R.id.keyboard_accessory_stub)),
+                new DeferredViewStubInflationProvider<>(
+                        findViewById(R.id.keyboard_accessory_sheet_stub)));
 
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.

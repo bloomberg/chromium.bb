@@ -9,6 +9,8 @@ import android.view.View.OnClickListener;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /** A model for the contextual suggestions UI component. */
@@ -42,6 +44,17 @@ class ContextualSuggestionsModel
     private boolean mIsSlimPeekEnabled;
     private float mToolbarTranslationPercent;
     private int mToolbarArrowTintResourceId;
+
+    @Override
+    public Collection<PropertyKey> getAllSetProperties() {
+        // This is only the list of initially set properties and doesn't reflect changes after the
+        // object has been created. but currently this method is only called initially.
+        // Once this model is migrated to PropertyModel, the implementation will be correct.
+        return Arrays.asList(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER,
+                PropertyKey.MENU_BUTTON_VISIBILITY, PropertyKey.MENU_BUTTON_DELEGATE,
+                PropertyKey.TITLE, PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER,
+                PropertyKey.SLIM_PEEK_ENABLED);
+    }
 
     /** @param clusters The current list of clusters. */
     void setClusterList(List<ContextualSuggestionsCluster> clusters) {

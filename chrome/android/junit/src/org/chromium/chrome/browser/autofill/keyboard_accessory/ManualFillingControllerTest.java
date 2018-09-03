@@ -24,7 +24,7 @@ import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FRO
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.view.ViewStub;
+import android.support.v4.view.ViewPager;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
@@ -68,9 +69,9 @@ public class ManualFillingControllerTest {
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
-    private ViewStub mMockViewStub;
+    private KeyboardAccessoryView mMockKeyboardAccessoryView;
     @Mock
-    private KeyboardAccessoryView mMockView;
+    private ViewPager mMockViewPager;
     @Mock
     private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
@@ -92,7 +93,6 @@ public class ManualFillingControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        when(mMockViewStub.inflate()).thenReturn(mMockView);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         mFullScreenManager = new ChromeFullscreenManager(mMockActivity, 0);
@@ -100,7 +100,9 @@ public class ManualFillingControllerTest {
         when(mMockActivity.getResources()).thenReturn(mMockResources);
         when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
-        mController.initialize(mMockWindow, mMockViewStub, mMockViewStub);
+        mController.initialize(mMockWindow,
+                new FakeViewProvider<>(mMockKeyboardAccessoryView),
+                new FakeViewProvider<>(mMockViewPager));
     }
 
     @Test

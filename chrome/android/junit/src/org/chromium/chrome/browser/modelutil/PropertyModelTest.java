@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.modelutil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.verify;
 
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModel.ObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -59,6 +61,17 @@ public class PropertyModelTest {
         assertThat(model.getValue(FLOAT_PROPERTY_A), equalTo(0f));
         assertThat(model.getValue(INT_PROPERTY_A), equalTo(0));
         assertThat(model.getValue(OBJECT_PROPERTY_A), equalTo(null));
+    }
+
+    @Test
+    public void getAllSetProperties() {
+        PropertyModel model = new PropertyModel(
+                BOOLEAN_PROPERTY_A, FLOAT_PROPERTY_A, INT_PROPERTY_A, OBJECT_PROPERTY_A);
+        model.setValue(BOOLEAN_PROPERTY_A, true);
+        model.setValue(INT_PROPERTY_A, 42);
+        Collection<PropertyKey> setProperties = model.getAllSetProperties();
+        assertThat(setProperties, containsInAnyOrder(BOOLEAN_PROPERTY_A, INT_PROPERTY_A));
+        assertThat(setProperties.size(), equalTo(2));
     }
 
     @Test

@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.support.v4.view.ViewPager;
-import android.view.ViewStub;
+import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetMod
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 
 /**
  * Controller tests for the keyboard accessory bottom sheet component.
@@ -42,8 +43,6 @@ public class AccessorySheetControllerTest {
     private PropertyObservable.PropertyObserver<PropertyKey> mMockPropertyObserver;
     @Mock
     private ListObservable.ListObserver<Void> mTabListObserver;
-    @Mock
-    private ViewStub mMockViewStub;
     @Mock
     private ViewPager mMockView;
 
@@ -59,8 +58,9 @@ public class AccessorySheetControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        when(mMockViewStub.inflate()).thenReturn(mMockView);
-        mCoordinator = new AccessorySheetCoordinator(mMockViewStub, /*unused*/ () -> null);
+        when(mMockView.getLayoutParams()).thenReturn(new ViewGroup.LayoutParams(0, 0));
+        mCoordinator =
+                new AccessorySheetCoordinator(new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }
