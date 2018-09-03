@@ -294,8 +294,8 @@ class ComputedStyle : public ComputedStyleBase,
   PseudoId StyleType() const { return static_cast<PseudoId>(StyleTypeInternal()); }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
-  ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
+  const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
+  const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
   void RemoveCachedPseudoStyle(PseudoId);
 
   /**

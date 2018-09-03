@@ -949,7 +949,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
   // has no concept of changing state).
-  ComputedStyle* GetCachedPseudoStyle(
+  const ComputedStyle* GetCachedPseudoStyle(
       PseudoId,
       const ComputedStyle* parent_style = nullptr) const;
   scoped_refptr<ComputedStyle> GetUncachedPseudoStyle(
@@ -2278,7 +2278,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
-  scoped_refptr<ComputedStyle> UncachedFirstLineStyle() const;
+  scoped_refptr<const ComputedStyle> UncachedFirstLineStyle() const;
 
   // Adjusts a visual rect in the space of |visual_rect| to be in the space of
   // the |paint_invalidation_container|, if needed. They can be different only
@@ -2326,7 +2326,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutFlowThread* LocateFlowThreadContainingBlock() const;
   void RemoveFromLayoutFlowThreadRecursive(LayoutFlowThread*);
 
-  ComputedStyle* CachedFirstLineStyle() const;
+  const ComputedStyle* CachedFirstLineStyle() const;
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
   void RemoveShapeImageClient(ShapeValue*);
