@@ -80,15 +80,14 @@ class DateOrderedListView {
         mView.setLayoutManager(new GridLayoutManagerImpl(context));
         mView.addItemDecoration(new ItemDecorationImpl());
 
-        ListPropertyViewBinder propertyViewBinder = new ListPropertyViewBinder();
-        mModel.getProperties().addObserver(new PropertyModelChangeProcessor<>(
-                mModel.getProperties(), mView, propertyViewBinder));
+        PropertyModelChangeProcessor.create(
+                mModel.getProperties(), mView, new ListPropertyViewBinder());
 
         // Do the final hook up to the underlying data adapter.
         DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(
                 mModel, new ModelChangeProcessor(mModel), ListItemViewHolder::create);
         mView.setAdapter(adapter);
-        mView.post(() -> adapter.notifyDataSetChanged());
+        mView.post(adapter::notifyDataSetChanged);
     }
 
     /** @return The Android {@link View} representing this widget. */

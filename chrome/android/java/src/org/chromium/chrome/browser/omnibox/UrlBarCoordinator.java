@@ -43,8 +43,7 @@ public class UrlBarCoordinator {
         mUrlBar = urlBar;
 
         PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
-        model.addObserver(
-                new PropertyModelChangeProcessor<>(model, urlBar, UrlBarViewBinder::bind));
+        PropertyModelChangeProcessor.create(model, urlBar, UrlBarViewBinder::bind);
 
         mMediator = new UrlBarMediator(model);
     }

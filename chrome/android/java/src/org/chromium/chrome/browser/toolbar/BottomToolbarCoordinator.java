@@ -8,7 +8,6 @@ import android.content.res.ColorStateList;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
@@ -19,7 +18,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
@@ -76,10 +74,8 @@ public class BottomToolbarCoordinator {
                 (ScrollingBottomViewResourceFrameLayout) inflatedView;
         toolbarRoot.setTopShadowHeight(shadowHeight);
 
-        PropertyModelChangeProcessor<BottomToolbarModel, ViewHolder, PropertyKey> processor =
-                new PropertyModelChangeProcessor<>(
-                        model, new ViewHolder(toolbarRoot), new BottomToolbarViewBinder());
-        model.addObserver(processor);
+        PropertyModelChangeProcessor.create(
+                model, new ViewHolder(toolbarRoot), new BottomToolbarViewBinder());
 
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
@@ -107,7 +103,7 @@ public class BottomToolbarCoordinator {
      * @param layoutManager A {@link LayoutManager} to attach overlays to.
      * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
      *                                  tab switcher button is clicked.
-     * @param menuButtonListener An {@link OnTouchListener} that is triggered when the
+     * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                           menu button is clicked.
      * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
      *                         keep its tab count updated.

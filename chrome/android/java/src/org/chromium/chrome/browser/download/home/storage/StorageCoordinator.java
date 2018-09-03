@@ -20,16 +20,14 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
  * The coordinator responsible for creating the storage summary view in download home.
  */
 public class StorageCoordinator {
-    private final PropertyModel mModel;
+    private final PropertyModel mModel = new PropertyModel(StorageProperties.ALL_KEYS);
     private final TextView mView;
-    private final StorageSummaryProvider mProvider;
 
     public StorageCoordinator(Context context, OfflineItemFilterSource filterSource) {
-        mModel = new PropertyModel(StorageProperties.ALL_KEYS);
         mView = (TextView) LayoutInflater.from(context).inflate(
                 R.layout.download_storage_summary, null);
-        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mView, this ::bind));
-        mProvider = new StorageSummaryProvider(context, this ::onStorageInfoUpdated, filterSource);
+        PropertyModelChangeProcessor.create(mModel, mView, this::bind);
+        new StorageSummaryProvider(context, this::onStorageInfoUpdated, filterSource);
     }
 
     /** @return The {@link View} to be shown that contains the storage information. */
