@@ -1371,11 +1371,11 @@
     },
     {
       name: "WorkerNosniffBlock",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "WorkerNosniffWarn",
-      status: "test",
+      status: "stable",
       implied_by: ["WorkerNosniffBlock"],
     },
     {
