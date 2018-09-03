@@ -397,6 +397,11 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_FALSE(state->supports_torch);
   EXPECT_FALSE(state->torch);
 
+  EXPECT_EQ(1.0, state->focus_distance->min);
+  EXPECT_EQ(5.0, state->focus_distance->max);
+  EXPECT_EQ(3.0, state->focus_distance->current);
+  EXPECT_EQ(1.0, state->focus_distance->step);
+
   EXPECT_EQ(mojom::RedEyeReduction::NEVER, state->red_eye_reduction);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),
             state->height->current);

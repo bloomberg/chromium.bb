@@ -396,9 +396,64 @@ public class VideoCaptureCamera2 extends VideoCapture {
             final int[] jniFocusModes =
                     cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
             ArrayList<Integer> focusModes = new ArrayList<Integer>(3);
+
+            // Android reports the focus metadata in units of diopters (1/meter), so
+            // 0.0f represents focusing at infinity, and increasing positive numbers represent
+            // focusing closer and closer to the camera device.
+            float minFocusDistance = 0; // >= 0
+            float maxFocusDistance = 0; // (0.0f, android.lens.info.minimumFocusDistance]
+            if (cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+                    != null) {
+                minFocusDistance = cameraCharacteristics.get(
+                        CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+                if (minFocusDistance == 0) {
+                    Log.d(TAG, "lens is fixed-focus");
+                } else if (minFocusDistance > 0) {
+                    // Android provides focusDistance in diopters, but specs is in SI units
+                    // (meters).
+                    minFocusDistance = 1 / minFocusDistance;
+                }
+            } else { //  null value
+                Log.d(TAG, "LENS_INFO_MINIMUM_FOCUS_DISTANCE is null");
+            }
+            if (cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE)
+                    != null) {
+                maxFocusDistance = cameraCharacteristics.get(
+                        CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
+                if (maxFocusDistance == 0) {
+                    maxFocusDistance = (long) Double.POSITIVE_INFINITY;
+                } else if (maxFocusDistance > 0) {
+                    // Android provides focusDistance in diopters, but specs is in SI units
+                    // (meters).
+                    maxFocusDistance = 1 / maxFocusDistance;
+                }
+            } else { //  null value
+                Log.d(TAG, "LENS_INFO_HYPERFOCAL_DISTANCE is null");
+            }
+            if (mPreviewRequest.get(CaptureRequest.LENS_FOCUS_DISTANCE) != null) {
+                mCurrentFocusDistance = mPreviewRequest.get(CaptureRequest.LENS_FOCUS_DISTANCE);
+
+                // LENS_FOCUS_DISTANCE is in the range [0.0f,
+                // android.lens.info.minimumFocusDistance] Android provides focusDistance in
+                // diopters, but specs is in SI units (meters).
+                if (mCurrentFocusDistance == 0) {
+                    Log.d(TAG, "infinity focus.");
+                    mCurrentFocusDistance = (long) Double.POSITIVE_INFINITY;
+                } else if (mCurrentFocusDistance > 0)
+                    builder.setCurrentFocusDistance(1 / mCurrentFocusDistance);
+            } else { //  null value
+                Log.d(TAG, "LENS_FOCUS_DISTANCE is null");
+            }
+
             for (int mode : jniFocusModes) {
                 if (mode == CameraMetadata.CONTROL_AF_MODE_OFF) {
                     focusModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+                    builder.setMinFocusDistance(minFocusDistance);
+                    builder.setMaxFocusDistance(maxFocusDistance);
+                    // Smallest step by which focus distance can be changed. This value is not
+                    // exposed by Android.
+                    float mStepFocusDistance = 0.01f;
+                    builder.setStepFocusDistance(mStepFocusDistance);
                 } else if (mode == CameraMetadata.CONTROL_AF_MODE_AUTO
                         || mode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
                     // CONTROL_AF_MODE_{AUTO,MACRO} do not imply continuously focusing.
@@ -425,6 +480,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 jniFocusMode = AndroidMeteringMode.SINGLE_SHOT;
             } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF) {
                 jniFocusMode = AndroidMeteringMode.FIXED;
+                // Set focus distance here.
+                if (mCurrentFocusDistance > 0)
+                    builder.setCurrentFocusDistance(1 / mCurrentFocusDistance);
             } else {
                 assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
             }
@@ -545,6 +603,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private class PhotoOptions {
         public final double zoom;
         public final int focusMode;
+        public final double currentFocusDistance;
         public final int exposureMode;
         public final double width;
         public final double height;
@@ -560,13 +619,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public final boolean torch;
         public final double colorTemperature;
 
-        public PhotoOptions(double zoom, int focusMode, int exposureMode, double width,
-                double height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
-                double exposureCompensation, int whiteBalanceMode, double iso,
-                boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
+        public PhotoOptions(double zoom, int focusMode, double currentFocusDistance,
+                int exposureMode, double width, double height, float[] pointsOfInterest2D,
+                boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
+                double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
                 boolean hasTorch, boolean torch, double colorTemperature) {
             this.zoom = zoom;
             this.focusMode = focusMode;
+            this.currentFocusDistance = currentFocusDistance;
             this.exposureMode = exposureMode;
             this.width = width;
             this.height = height;
@@ -612,6 +672,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             }
 
             if (mOptions.focusMode != AndroidMeteringMode.NOT_SET) mFocusMode = mOptions.focusMode;
+            if (mOptions.currentFocusDistance != 0)
+                mCurrentFocusDistance = (float) mOptions.currentFocusDistance;
             if (mOptions.exposureMode != AndroidMeteringMode.NOT_SET)
                 mExposureMode = mOptions.exposureMode;
             if (mOptions.whiteBalanceMode != AndroidMeteringMode.NOT_SET)
@@ -812,6 +874,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private int mPhotoWidth;
     private int mPhotoHeight;
     private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
+    private float mCurrentFocusDistance = 1.0f;
     private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
     private long mLastExposureTimeNs;
     private MeteringRectangle mAreaOfInterest;
@@ -931,7 +994,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF);
             requestBuilder.set(
                     CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
-            // TODO(mcasas): Support manual focus (LENS_FOCUS_DISTANCE), https://crbug.com/732807.
+            requestBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, 1 / mCurrentFocusDistance);
         }
 
         // |mExposureMode|, |mFillLightMode| and |mTorch| interact to configure the AE and Flash
@@ -1326,16 +1389,17 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public void setPhotoOptions(double zoom, int focusMode, int exposureMode, double width,
-            double height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
-            double exposureCompensation, int whiteBalanceMode, double iso,
-            boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
+    public void setPhotoOptions(double zoom, int focusMode, double currentFocusDistance,
+            int exposureMode, double width, double height, float[] pointsOfInterest2D,
+            boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
+            double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature) {
         nativeDCheckCurrentlyOnIncomingTaskRunner(mNativeVideoCaptureDeviceAndroid);
-        mCameraThreadHandler.post(new SetPhotoOptionsTask(new PhotoOptions(zoom, focusMode,
-                exposureMode, width, height, pointsOfInterest2D, hasExposureCompensation,
-                exposureCompensation, whiteBalanceMode, iso, hasRedEyeReduction, redEyeReduction,
-                fillLightMode, hasTorch, torch, colorTemperature)));
+        mCameraThreadHandler.post(
+                new SetPhotoOptionsTask(new PhotoOptions(zoom, focusMode, currentFocusDistance,
+                        exposureMode, width, height, pointsOfInterest2D, hasExposureCompensation,
+                        exposureCompensation, whiteBalanceMode, iso, hasRedEyeReduction,
+                        redEyeReduction, fillLightMode, hasTorch, torch, colorTemperature)));
     }
 
     @Override

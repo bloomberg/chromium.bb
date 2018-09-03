@@ -352,6 +352,7 @@ void ImageCapture::SetMediaTrackConstraints(
       (constraints.hasContrast() && !capabilities_.hasContrast()) ||
       (constraints.hasSaturation() && !capabilities_.hasSaturation()) ||
       (constraints.hasSharpness() && !capabilities_.hasSharpness()) ||
+      (constraints.hasFocusDistance() && !capabilities_.hasFocusDistance()) ||
       (constraints.hasZoom() && !capabilities_.hasZoom()) ||
       (constraints.hasTorch() && !capabilities_.hasTorch())) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
@@ -519,6 +520,21 @@ void ImageCapture::SetMediaTrackConstraints(
     settings->sharpness = sharpness;
   }
 
+  settings->has_focus_distance =
+      constraints.hasFocusDistance() && constraints.focusDistance().IsDouble();
+  if (settings->has_focus_distance) {
+    const auto focus_distance = constraints.focusDistance().GetAsDouble();
+    if (focus_distance < capabilities_.focusDistance()->min() ||
+        focus_distance > capabilities_.focusDistance()->max()) {
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               "focusDistance setting out of range"));
+      return;
+    }
+    temp_constraints.setFocusDistance(constraints.focusDistance());
+    settings->focus_distance = focus_distance;
+  }
+
   settings->has_zoom = constraints.hasZoom() && constraints.zoom().IsDouble();
   if (settings->has_zoom) {
     const auto zoom = constraints.zoom().GetAsDouble();
@@ -599,6 +615,8 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings& settings) const {
   if (settings_.hasSharpness())
     settings.setSharpness(settings_.sharpness());
 
+  if (settings_.hasFocusDistance())
+    settings.setFocusDistance(settings_.focusDistance());
   if (settings_.hasZoom())
     settings.setZoom(settings_.zoom());
   if (settings_.hasTorch())
@@ -804,6 +822,11 @@ void ImageCapture::UpdateMediaTrackCapabilities(
     settings_.setSharpness(photo_state->sharpness->current);
   }
 
+  if (photo_state->focus_distance->max != photo_state->focus_distance->min) {
+    capabilities_.setFocusDistance(
+        MediaSettingsRange::Create(*photo_state->focus_distance));
+    settings_.setFocusDistance(photo_state->focus_distance->current);
+  }
   if (photo_state->zoom->max != photo_state->zoom->min) {
     capabilities_.setZoom(MediaSettingsRange::Create(*photo_state->zoom));
     settings_.setZoom(photo_state->zoom->current);

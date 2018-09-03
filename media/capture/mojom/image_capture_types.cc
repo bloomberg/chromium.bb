@@ -19,6 +19,7 @@ media::mojom::PhotoStatePtr CreateEmptyPhotoState() {
   photo_capabilities->saturation = media::mojom::Range::New();
   photo_capabilities->sharpness = media::mojom::Range::New();
   photo_capabilities->zoom = media::mojom::Range::New();
+  photo_capabilities->focus_distance = media::mojom::Range::New();
   photo_capabilities->torch = false;
   photo_capabilities->red_eye_reduction = media::mojom::RedEyeReduction::NEVER;
   return photo_capabilities;
