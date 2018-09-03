@@ -466,7 +466,7 @@ AtomicString Element::LowercaseIfNecessary(const AtomicString& name) const {
 }
 
 const AtomicString& Element::nonce() const {
-  return HasRareData() ? GetElementRareData()->GetNonce() : g_empty_atom;
+  return HasRareData() ? GetElementRareData()->GetNonce() : g_null_atom;
 }
 
 void Element::setNonce(const AtomicString& nonce) {
