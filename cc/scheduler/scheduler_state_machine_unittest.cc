@@ -2649,5 +2649,27 @@ TEST(SchedulerStateMachineTest, AllowSkippingActiveTreeFirstDraws) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
 }
 
+TEST(SchedulerStateMachineTest, EarlyDeadlineAfterAbortedMainFrame) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+
+  SET_UP_STATE(state);
+  state.SetNeedsRedraw(false);
+  state.SetNeedsBeginMainFrame();
+  state.IssueNextBeginImplFrame();
+
+  // Use a late deadline after sending main frame and no impl side draw.
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  EXPECT_EQ(state.CurrentBeginImplFrameDeadlineMode(),
+            SchedulerStateMachine::BeginImplFrameDeadlineMode::LATE);
+
+  // Use an immediate deadline after aborting main frame and no impl side draw.
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  EXPECT_EQ(state.CurrentBeginImplFrameDeadlineMode(),
+            SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE);
+}
+
 }  // namespace
 }  // namespace cc
