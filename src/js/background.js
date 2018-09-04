@@ -67,7 +67,7 @@ camera.bg.create = function() {
         left: Math.round((window.screen.availWidth - camera.bg.MIN_WIDTH) / 2),
         top: Math.round((window.screen.availHeight - initialHeight) / 2),
       },
-    }, function(inAppWindow) {
+    }, inAppWindow => {
       // Temporary workaround for crbug.com/452737.
       // 'state' option in CreateWindowOptions is ignored when a window is
       // launched with 'hidden' option, so we maintain window state manually here.
@@ -75,7 +75,7 @@ camera.bg.create = function() {
       if (maximized)
         inAppWindow.maximize();
 
-      inAppWindow.onClosed.addListener(function() {
+      inAppWindow.onClosed.addListener(() => {
         chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
       });

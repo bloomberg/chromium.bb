@@ -226,7 +226,6 @@ body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
   -webkit-transform: translateX(-50%);
 }
 
-
 body.shift-left-stripe .left-stripe {
   left: 0;  /* Calculate at runtime. */
 }
@@ -533,7 +532,6 @@ body.capturing.grid #preview-grid-horizontal {
   width: 100%;
   -webkit-transform: translateX(-50%);
 }
-
 
 body.capturing.grid #preview-grid-vertical {
   border-left-width: 3px;
