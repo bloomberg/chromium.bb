@@ -52,7 +52,7 @@ using views_bridge_mac::mojom::BridgedNativeWidgetHost;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidget
+class VIEWS_EXPORT BridgedNativeWidgetImpl
     : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
@@ -68,15 +68,15 @@ class VIEWS_EXPORT BridgedNativeWidget
                                               const gfx::Size& size);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidget(BridgedNativeWidgetHost* host,
-                      BridgedNativeWidgetHostHelper* host_helper,
-                      NativeWidgetMac* parent);
-  ~BridgedNativeWidget() override;
+  BridgedNativeWidgetImpl(BridgedNativeWidgetHost* host,
+                          BridgedNativeWidgetHostHelper* host_helper,
+                          NativeWidgetMac* parent);
+  ~BridgedNativeWidgetImpl() override;
 
   // Initialize the NSWindow by taking ownership of the specified object.
-  // TODO(ccameron): When a BridgedNativeWidget is allocated across a process
-  // boundary, it will not be possible to explicitly set an NSWindow in this
-  // way.
+  // TODO(ccameron): When a BridgedNativeWidgetImpl is allocated across a
+  // process boundary, it will not be possible to explicitly set an NSWindow in
+  // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
   // Create the drag drop client for this widget.
@@ -173,7 +173,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
   BridgedNativeWidgetOwner* parent() { return parent_; }
-  const std::vector<BridgedNativeWidget*>& child_windows() {
+  const std::vector<BridgedNativeWidgetImpl*>& child_windows() {
     return child_windows_;
   }
 
@@ -253,7 +253,8 @@ class VIEWS_EXPORT BridgedNativeWidget
  private:
   friend class test::BridgedNativeWidgetTestApi;
 
-  // Closes all child windows. BridgedNativeWidget children will be destroyed.
+  // Closes all child windows. BridgedNativeWidgetImpl children will be
+  // destroyed.
   void RemoveOrDestroyChildren();
 
   // Notify descendants of a visibility change.
@@ -289,7 +290,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   NSWindow* GetNSWindow() override;
   gfx::Vector2d GetChildWindowOffset() const override;
   bool IsVisibleParent() const override;
-  void RemoveChildWindow(BridgedNativeWidget* child) override;
+  void RemoveChildWindow(BridgedNativeWidgetImpl* child) override;
 
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
@@ -306,7 +307,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool is_translucent_window_ = false;
 
   BridgedNativeWidgetOwner* parent_ = nullptr;  // Weak. If non-null, owns this.
-  std::vector<BridgedNativeWidget*> child_windows_;
+  std::vector<BridgedNativeWidgetImpl*> child_windows_;
 
   // The size of the content area of the window most recently sent to |host_|
   // (and its compositor).
@@ -355,7 +356,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   AssociatedViews associated_views_;
 
-  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
+  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
 };
 
 }  // namespace views

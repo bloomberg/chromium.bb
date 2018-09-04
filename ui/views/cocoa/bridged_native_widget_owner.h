@@ -13,7 +13,7 @@ class Vector2d;
 
 namespace views {
 
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 
 // An abstract interface wrapping an NSWindow that ties the lifetime of one or
 // more child BridgedNativeWidgets to the lifetime of that NSWindow. This is not
@@ -32,7 +32,7 @@ class BridgedNativeWidgetOwner {
 
   // Removes a child window. Note |this| may be deleted after calling, so the
   // caller should immediately null out the pointer used to make the call.
-  virtual void RemoveChildWindow(BridgedNativeWidget* child) = 0;
+  virtual void RemoveChildWindow(BridgedNativeWidgetImpl* child) = 0;
 
  protected:
   // Instances of this class may be self-deleting.

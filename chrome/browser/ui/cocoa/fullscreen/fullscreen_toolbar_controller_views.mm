@@ -27,8 +27,8 @@
 }
 
 - (BOOL)isFullscreenTransitionInProgress {
-  views::BridgedNativeWidget* bridge_widget =
-      views::NativeWidgetMac::GetBridgeForNativeWindow([self window]);
+  views::BridgedNativeWidgetImpl* bridge_widget =
+      views::NativeWidgetMac::GetBridgeImplForNativeWindow([self window]);
   return bridge_widget->in_fullscreen_transition();
 }
 
@@ -36,8 +36,8 @@
   NSWindow* ns_window = browserView_->GetNativeWindow();
   if (!ns_view_) {
     ns_view_.reset(
-        [views::NativeWidgetMac::GetBridgeForNativeWindow(ns_window)->ns_view()
-                retain]);
+        [views::NativeWidgetMac::GetBridgeImplForNativeWindow(ns_window)
+                ->ns_view() retain]);
   }
   return ns_window;
 }

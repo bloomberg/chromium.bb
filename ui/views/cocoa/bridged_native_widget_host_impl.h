@@ -30,11 +30,11 @@ class RecyclableCompositorMac;
 
 namespace views {
 
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 class NativeWidgetMac;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
-// communicates to the BridgedNativeWidget, which interacts with the Cocoa
+// communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     : public BridgedNativeWidgetHostHelper,
@@ -50,10 +50,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* parent);
   ~BridgedNativeWidgetHostImpl() override;
 
-  // Provide direct access to the BridgedNativeWidget that this is hosting.
+  // Provide direct access to the BridgedNativeWidgetImpl that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
-  BridgedNativeWidget* bridge_impl() const { return bridge_impl_.get(); }
+  BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
 
   void InitWindow(const Widget::InitParams& params);
@@ -217,10 +217,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
 
-  // TODO(ccameron): Rather than instantiate a BridgedNativeWidget here,
-  // we will instantiate a mojo BridgedNativeWidget interface to a Cocoa
+  // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
+  // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
   // instance that may be in another process.
-  std::unique_ptr<BridgedNativeWidget> bridge_impl_;
+  std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
 
   std::unique_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.

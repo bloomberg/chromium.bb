@@ -93,11 +93,11 @@
 namespace views {
 namespace test {
 
-// BridgedNativeWidget friend to access private members.
+// BridgedNativeWidgetImpl friend to access private members.
 class BridgedNativeWidgetTestApi {
  public:
   explicit BridgedNativeWidgetTestApi(NSWindow* window) {
-    bridge_ = NativeWidgetMac::GetBridgeForNativeWindow(window);
+    bridge_ = NativeWidgetMac::GetBridgeImplForNativeWindow(window);
   }
 
   // Simulate a frame swap from the compositor.
@@ -116,7 +116,7 @@ class BridgedNativeWidgetTestApi {
   }
 
  private:
-  BridgedNativeWidget* bridge_;
+  BridgedNativeWidgetImpl* bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestApi);
 };
@@ -148,8 +148,8 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(TestWindowNativeWidgetMac);
 };
 
-// Tests for parts of NativeWidgetMac not covered by BridgedNativeWidget, which
-// need access to Cocoa APIs.
+// Tests for parts of NativeWidgetMac not covered by BridgedNativeWidgetImpl,
+// which need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
  public:
   NativeWidgetMacTest() {}
@@ -757,8 +757,8 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_EQ(child, top_level_widget->GetWidget());
 
   // To verify the parent, we need to use NativeWidgetMac APIs.
-  BridgedNativeWidget* bridged_native_widget =
-      NativeWidgetMac::GetBridgeForNativeWindow(child->GetNativeWindow());
+  BridgedNativeWidgetImpl* bridged_native_widget =
+      NativeWidgetMac::GetBridgeImplForNativeWindow(child->GetNativeWindow());
   EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
 
   const gfx::Rect child_bounds(50, 50, 200, 100);
@@ -1247,7 +1247,7 @@ TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   EXPECT_TRUE([retained_animation isAnimating]);
 
   // Hide without waiting for the animation to complete. Animation should cancel
-  // and clear references from BridgedNativeWidget.
+  // and clear references from BridgedNativeWidgetImpl.
   modal_dialog_widget->Hide();
   EXPECT_FALSE([retained_animation isAnimating]);
   EXPECT_FALSE(test_api.show_animation());
@@ -1348,9 +1348,9 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
 
   // TODO(tapted): Ideally [native_parent orderOut:nil] would also work here.
   // But it does not. AppKit's childWindow management breaks down after an
-  // -orderOut: (see BridgedNativeWidget::OnVisibilityChanged()). For regular
-  // child windows, BridgedNativeWidget fixes the behavior with its own
-  // management. However, it can't do that for sheets without encountering
+  // -orderOut: (see BridgedNativeWidgetImpl::OnVisibilityChanged()). For
+  // regular child windows, BridgedNativeWidgetImpl fixes the behavior with its
+  // own management. However, it can't do that for sheets without encountering
   // http://crbug.com/605098 and http://crbug.com/667602. -[NSApp hide:] makes
   // the NSWindow hidden in a different way, which does not break like
   // -orderOut: does. Which is good, because a user can always do -[NSApp
@@ -1546,8 +1546,8 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   NSWindow* parent = MakeNativeParent();
   Widget* dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  BridgedNativeWidget* bridge =
-      NativeWidgetMac::GetBridgeForNativeWindow(dialog->GetNativeWindow());
+  BridgedNativeWidgetImpl* bridge =
+      NativeWidgetMac::GetBridgeImplForNativeWindow(dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
@@ -1559,7 +1559,8 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   parent = parent_widget->GetNativeWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  bridge = NativeWidgetMac::GetBridgeForNativeWindow(dialog->GetNativeWindow());
+  bridge =
+      NativeWidgetMac::GetBridgeImplForNativeWindow(dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
@@ -2106,8 +2107,8 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
     NativeWidgetMacTest::SetUp();
 
     widget_ = CreateTopLevelPlatformWidget();
-    bridge_ =
-        NativeWidgetMac::GetBridgeForNativeWindow(widget_->GetNativeWindow());
+    bridge_ = NativeWidgetMac::GetBridgeImplForNativeWindow(
+        widget_->GetNativeWindow());
     fake_full_keyboard_access_ =
         ui::test::ScopedFakeFullKeyboardAccess::GetInstance();
     DCHECK(fake_full_keyboard_access_);
@@ -2120,7 +2121,7 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
   }
 
   Widget* widget_ = nullptr;
-  BridgedNativeWidget* bridge_ = nullptr;
+  BridgedNativeWidgetImpl* bridge_ = nullptr;
   ui::test::ScopedFakeFullKeyboardAccess* fake_full_keyboard_access_ = nullptr;
 };
 

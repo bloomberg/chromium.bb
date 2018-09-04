@@ -186,8 +186,8 @@ class DragDropClientMacTest : public WidgetTest {
     gfx::Rect bounds(0, 0, 100, 100);
     widget_->SetBounds(bounds);
 
-    bridge_ =
-        NativeWidgetMac::GetBridgeForNativeWindow(widget_->GetNativeWindow());
+    bridge_ = NativeWidgetMac::GetBridgeImplForNativeWindow(
+        widget_->GetNativeWindow());
     bridge_host_ = NativeWidgetMac::GetBridgeHostImplForNativeWindow(
         widget_->GetNativeWindow());
     widget_->Show();
@@ -207,7 +207,7 @@ class DragDropClientMacTest : public WidgetTest {
 
  protected:
   Widget* widget_ = nullptr;
-  BridgedNativeWidget* bridge_ = nullptr;
+  BridgedNativeWidgetImpl* bridge_ = nullptr;
   BridgedNativeWidgetHostImpl* bridge_host_ = nullptr;
   DragDropView* target_ = nullptr;
   base::scoped_nsobject<MockDraggingInfo> dragging_info_;

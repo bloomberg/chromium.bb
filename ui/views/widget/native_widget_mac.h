@@ -15,6 +15,12 @@
 class NativeWidgetMacNSWindow;
 #endif
 
+namespace views_bridge_mac {
+namespace mojom {
+class BridgedNativeWidget;
+}  // namespace mojom
+}  // namespace views_bridge_mac
+
 namespace views {
 namespace test {
 class HitTestNativeWidgetMac;
@@ -22,7 +28,7 @@ class MockNativeWidgetMac;
 class WidgetTest;
 }
 
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 class BridgedNativeWidgetHostImpl;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
@@ -34,11 +40,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // the supplied handle has no associated Widget.
   static BridgedNativeWidgetHostImpl* GetBridgeHostImplForNativeWindow(
       gfx::NativeWindow window);
-  static BridgedNativeWidget* GetBridgeForNativeWindow(
+  static BridgedNativeWidgetImpl* GetBridgeImplForNativeWindow(
       gfx::NativeWindow window);
 
   // Informs |delegate_| that the native widget is about to be destroyed.
-  // BridgedNativeWidget::OnWindowWillClose() invokes this early when the
+  // BridgedNativeWidgetImpl::OnWindowWillClose() invokes this early when the
   // NSWindowDelegate informs the bridge that the window is being closed (later,
   // invoking OnWindowDestroyed()).
   void WindowDestroying();
@@ -144,7 +150,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   std::string GetName() const override;
 
  protected:
-  // Creates the NSWindow that will be passed to the BridgedNativeWidget.
+  // Creates the NSWindow that will be passed to the BridgedNativeWidgetImpl.
   // Called by InitNativeWidget. The return value will be autoreleased.
   // Note that some tests (in particular, views_unittests that interact
   // with ScopedFakeNSWindowFullscreen, on 10.10) assume that these windows
@@ -157,7 +163,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(NSWindow* window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
-  BridgedNativeWidget* bridge() const;
+  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
+  BridgedNativeWidgetImpl* bridge_impl() const;
   BridgedNativeWidgetHostImpl* bridge_host_for_testing() const {
     return bridge_host_.get();
   }

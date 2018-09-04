@@ -32,7 +32,7 @@ namespace test {
 class DragDropClientMacTest;
 }
 
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 class View;
 
 // Implements drag and drop on MacViews. This class acts as a bridge between
@@ -40,7 +40,7 @@ class View;
 // DesktopDragDropClientAuraX11.
 class VIEWS_EXPORT DragDropClientMac {
  public:
-  explicit DragDropClientMac(BridgedNativeWidget* bridge, View* root_view);
+  DragDropClientMac(BridgedNativeWidgetImpl* bridge, View* root_view);
   ~DragDropClientMac();
 
   // Initiates a drag and drop session. Returns the drag operation that was
@@ -80,7 +80,7 @@ class VIEWS_EXPORT DragDropClientMac {
   int operation_;
 
   // The bridge between the content view and the drag drop client.
-  BridgedNativeWidget* bridge_;  // Weak. Owns |this|.
+  BridgedNativeWidgetImpl* bridge_;  // Weak. Owns |this|.
 
   // The closure for the drag and drop's run loop.
   base::Closure quit_closure_;

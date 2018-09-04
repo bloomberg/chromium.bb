@@ -45,13 +45,12 @@
 namespace views {
 
 WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
-    BridgedNativeWidget* child,
+    BridgedNativeWidgetImpl* child,
     NSView* anchor_view)
     : child_(child),
       anchor_view_([anchor_view retain]),
       observer_bridge_(
           [[WidgetOwnerNSWindowAdapterBridge alloc] initWithAdapter:this]) {
-
   // Although the |anchor_view| must be in an NSWindow when the child dialog is
   // created, it's permitted for the |anchor_view| to be removed from its view
   // hierarchy before the child dialog window is fully removed from screen. When
@@ -65,8 +64,8 @@ WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
              name:NSWindowWillCloseNotification
            object:anchor_window_];
 
-  // BridgedNativeWidget removes NSWindow parent/child relationships for hidden
-  // windows. Observe when the parent's visibility changes so they can be
+  // BridgedNativeWidgetImpl removes NSWindow parent/child relationships for
+  // hidden windows. Observe when the parent's visibility changes so they can be
   // reconnected.
   [[NSNotificationCenter defaultCenter]
       addObserver:observer_bridge_
@@ -153,7 +152,8 @@ bool WidgetOwnerNSWindowAdapter::IsVisibleParent() const {
   return [anchor_window_ isVisible];
 }
 
-void WidgetOwnerNSWindowAdapter::RemoveChildWindow(BridgedNativeWidget* child) {
+void WidgetOwnerNSWindowAdapter::RemoveChildWindow(
+    BridgedNativeWidgetImpl* child) {
   DCHECK_EQ(child, child_);
   [GetNSWindow() removeChildWindow:child->ns_window()];
   delete this;

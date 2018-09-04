@@ -9,12 +9,12 @@
 #include "ui/views/widget/tooltip_manager.h"
 
 namespace views {
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 
-// Manages native Cocoa tooltips for the given BridgedNativeWidget.
+// Manages native Cocoa tooltips for the given BridgedNativeWidgetImpl.
 class TooltipManagerMac : public TooltipManager {
  public:
-  explicit TooltipManagerMac(BridgedNativeWidget* widget);
+  explicit TooltipManagerMac(BridgedNativeWidgetImpl* widget);
   ~TooltipManagerMac() override;
 
   // TooltipManager:
@@ -24,7 +24,7 @@ class TooltipManagerMac : public TooltipManager {
   void TooltipTextChanged(View* view) override;
 
  private:
-  BridgedNativeWidget* widget_;  // Weak. Owns this.
+  BridgedNativeWidgetImpl* widget_;  // Weak. Owns this.
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerMac);
 };

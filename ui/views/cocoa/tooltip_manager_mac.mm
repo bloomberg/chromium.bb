@@ -19,9 +19,8 @@ const int kTooltipMaxWidthPixels = 250;
 
 namespace views {
 
-TooltipManagerMac::TooltipManagerMac(BridgedNativeWidget* widget)
-    : widget_(widget) {
-}
+TooltipManagerMac::TooltipManagerMac(BridgedNativeWidgetImpl* widget)
+    : widget_(widget) {}
 
 TooltipManagerMac::~TooltipManagerMac() {
 }
