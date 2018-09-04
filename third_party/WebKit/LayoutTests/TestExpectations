@@ -1630,6 +1630,16 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 # V8 will break this and needs rebaseline.
 crbug.com/855582 http/tests/devtools/sources/debugger-ui/last-execution-context.js [ Failure Pass ]
 
+# Tests that need rebaselining once `globalThis` ships in V8.
+# TODO(mathias): Mark as `NeedsRebaseline` once V8 with `globalThis` rolls into Chromium.
+crbug.com/v8/5537 http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 http/tests/worklet/webexposed/global-interface-listing-paint-worklet-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 virtual/stable/http/tests/serviceworker/webexposed/global-interface-listing-service-worker-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 virtual/stable/webexposed/global-interface-listing-dedicated-worker-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 virtual/stable/webexposed/global-interface-listing-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 virtual/stable/webexposed/global-interface-listing-shared-worker-expected.txt [ Failure Pass ]
+crbug.com/v8/5537 webexposed/global-interface-listing-expected.txt [ Failure Pass ]
+
 ### sheriff 2018-05-28
 crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
 
