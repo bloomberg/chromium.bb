@@ -84,7 +84,7 @@ class VROrientationDeviceTest : public testing::Test {
 
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(SensorReadingSharedBuffer) *
-        static_cast<uint64_t>(mojom::SensorType::LAST));
+        (static_cast<uint64_t>(mojom::SensorType::kMaxValue) + 1));
 
     shared_buffer_mapping_ = shared_buffer_handle_->MapAtOffset(
         mojom::SensorInitParams::kReadBufferSizeForTests, GetBufferOffset());

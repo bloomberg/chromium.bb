@@ -40,7 +40,7 @@ double GetSensorMaxAllowedFrequency(SensorType type) {
     // No default so the compiler will warn us if a new type is added.
   }
   NOTREACHED() << "Unknown sensor type " << type;
-  return SensorTraits<SensorType::LAST>::kMaxAllowedFrequency;
+  return SensorTraits<SensorType::kMaxValue>::kMaxAllowedFrequency;
 }
 
 double GetSensorDefaultFrequency(mojom::SensorType type) {
@@ -74,7 +74,7 @@ double GetSensorDefaultFrequency(mojom::SensorType type) {
     // No default so the compiler will warn us if a new type is added.
   }
   NOTREACHED() << "Unknown sensor type " << type;
-  return SensorTraits<SensorType::LAST>::kDefaultFrequency;
+  return SensorTraits<SensorType::kMaxValue>::kDefaultFrequency;
 }
 
 }  // namespace device
