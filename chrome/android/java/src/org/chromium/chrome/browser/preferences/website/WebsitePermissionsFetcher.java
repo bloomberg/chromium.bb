@@ -234,36 +234,13 @@ public class WebsitePermissionsFetcher {
             WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
             if (address == null) continue;
             Website site = findOrCreateSite(address, null);
-            switch (contentSettingsType) {
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
-                    site.setContentSettingException(ContentSettingException.Type.ADS, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
-                    site.setContentSettingException(
-                            ContentSettingException.Type.AUTOPLAY, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
-                    site.setContentSettingException(
-                            ContentSettingException.Type.BACKGROUND_SYNC, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
-                    site.setContentSettingException(ContentSettingException.Type.COOKIE, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-                    site.setContentSettingException(
-                            ContentSettingException.Type.JAVASCRIPT, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
-                    site.setContentSettingException(ContentSettingException.Type.POPUP, exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
-                    site.setContentSettingException(ContentSettingException.Type.SOUND, exception);
-                    break;
-                default:
-                    assert false : "Unexpected content setting type received: "
-                                   + contentSettingsType;
-                    break;
+            for (int i = 0; i < ContentSettingException.CONTENT_TYPES.length; i++) {
+                if (contentSettingsType == ContentSettingException.CONTENT_TYPES[i]) {
+                    site.setContentSettingException(i, exception);
+                    return;
+                }
             }
+            assert false : "Unexpected content setting type received: " + contentSettingsType;
         }
     }
 

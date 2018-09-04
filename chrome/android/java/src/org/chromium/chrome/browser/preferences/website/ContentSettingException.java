@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.support.annotation.IntDef;
 
+import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.io.Serializable;
@@ -20,8 +21,8 @@ public class ContentSettingException implements Serializable {
             Type.POPUP, Type.SOUND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
-        // Values used to address array index in Website. Should be enumerated from 0
-        // and can't have gaps.
+        // Values used to address array index below, inside Website and SingleWebsitePreferences.
+        // Should be enumerated from 0 and can't have gaps.
         int ADS = 0;
         int AUTOPLAY = 1;
         int BACKGROUND_SYNC = 2;
@@ -34,6 +35,17 @@ public class ContentSettingException implements Serializable {
          */
         int NUM_ENTRIES = 7;
     }
+
+    // Mapping from {@link Type} to ContentSettingType.
+    final static int[] CONTENT_TYPES = {
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS,
+            ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
+    };
 
     private final int mContentSettingType;
     private final String mPattern;

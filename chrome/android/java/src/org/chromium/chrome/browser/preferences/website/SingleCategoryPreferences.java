@@ -155,47 +155,25 @@ public class SingleCategoryPreferences extends PreferenceFragment
      * @param website The website to check.
      */
     private boolean isOnBlockList(WebsitePreference website) {
-        ContentSetting setting;
-        // This list is ordered alphabetically by permission.
-        if (mCategory.showSites(SiteSettingsCategory.Type.ADS)) {
-            setting = website.site().getContentSettingPermission(ContentSettingException.Type.ADS);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
-            setting = website.site().getContentSettingPermission(
-                    ContentSettingException.Type.AUTOPLAY);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
-            setting = website.site().getContentSettingPermission(
-                    ContentSettingException.Type.BACKGROUND_SYNC);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.CAMERA)) {
-            setting = website.site().getPermission(PermissionInfo.Type.CAMERA);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.CLIPBOARD)) {
-            setting = website.site().getPermission(PermissionInfo.Type.CLIPBOARD);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
-            setting =
-                    website.site().getContentSettingPermission(ContentSettingException.Type.COOKIE);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
-            setting = website.site().getPermission(PermissionInfo.Type.GEOLOCATION);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
-            setting = website.site().getContentSettingPermission(
-                    ContentSettingException.Type.JAVASCRIPT);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.MICROPHONE)) {
-            setting = website.site().getPermission(PermissionInfo.Type.MICROPHONE);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)) {
-            setting = website.site().getPermission(PermissionInfo.Type.NOTIFICATION);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.POPUPS)) {
-            setting =
-                    website.site().getContentSettingPermission(ContentSettingException.Type.POPUP);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
-            setting = website.site().getPermission(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.SENSORS)) {
-            setting = website.site().getPermission(PermissionInfo.Type.SENSORS);
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            setting =
-                    website.site().getContentSettingPermission(ContentSettingException.Type.SOUND);
-        } else {
-            return false;
+        for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_ENTRIES; i++) {
+            if (!mCategory.showSites(i)) continue;
+            for (@ContentSettingException.Type int j = 0;
+                    j < ContentSettingException.Type.NUM_ENTRIES; j++) {
+                if (ContentSettingException.CONTENT_TYPES[j]
+                        == SiteSettingsCategory.contentSettingsType(i)) {
+                    return ContentSetting.BLOCK == website.site().getContentSettingPermission(j);
+                }
+            }
+            for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
+                if (PermissionInfo.CONTENT_TYPES[j]
+                        == SiteSettingsCategory.contentSettingsType(i)) {
+                    return (j == PermissionInfo.Type.MIDI)
+                            ? false
+                            : ContentSetting.BLOCK == website.site().getPermission(j);
+                }
+            }
         }
-
-        return setting == ContentSetting.BLOCK;
+        return false;
     }
 
     /**
