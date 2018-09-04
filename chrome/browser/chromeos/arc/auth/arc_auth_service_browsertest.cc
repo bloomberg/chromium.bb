@@ -99,31 +99,10 @@ class FakeAuthInstance : public mojom::AuthInstance {
 
   void RequestAccountInfo(base::OnceClosure done_closure) {
     done_closure_ = std::move(done_closure);
-    host_->RequestAccountInfo(true /* initial_signin */, base::nullopt);
-  }
-
-  void RequestSecondaryAccountInfo(base::OnceClosure done_closure,
-                                   const std::string& account_name) {
-    done_closure_ = std::move(done_closure);
-    host_->RequestAccountInfo(false /* initial_signin */, account_name);
-  }
-
-  void OnSecondaryAccountUpserted(const std::string& account_name) override {
-    ++num_account_upserted_calls_;
-    upserted_account_name_ = account_name;
-  }
-
-  void OnSecondaryAccountRemoved(const std::string& account_name) override {
-    ++num_account_removed_calls_;
-    removed_account_name_ = account_name;
+    host_->RequestAccountInfo(true /* initial_signin */);
   }
 
   mojom::AccountInfo* account_info() { return account_info_.get(); }
-
-  int num_account_upserted_calls_ = 0;
-  std::string upserted_account_name_;
-  int num_account_removed_calls_ = 0;
-  std::string removed_account_name_;
 
  private:
   mojom::AuthHostPtr host_;
@@ -336,83 +315,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
             auth_instance().account_info()->account_type);
   EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
-  EXPECT_FALSE(auth_instance().account_info()->is_secondary_account);
-}
-
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       SecondaryAccountUpsertsArePropagated) {
-  const std::string gaia_id = "123999";
-  const std::string email = "email.111@gmail.com";
-
-  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SeedAccountInfo(gaia_id, email);
-
-  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
-
-  chromeos::AccountManager::AccountKey account_key{
-      gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  auth_service().OnTokenUpserted(account_key);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, auth_instance().num_account_upserted_calls_);
-  EXPECT_EQ(email, auth_instance().upserted_account_name_);
-}
-
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       SecondaryAccountRemovalsArePropagated) {
-  const std::string gaia_id = "123999";
-  const std::string email = "email.111@gmail.com";
-
-  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SeedAccountInfo(gaia_id, email);
-
-  EXPECT_EQ(0, auth_instance().num_account_removed_calls_);
-
-  chromeos::AccountManager::AccountKey account_key{
-      gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  auth_service().OnAccountRemoved(account_key);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, auth_instance().num_account_removed_calls_);
-  EXPECT_EQ(email, auth_instance().removed_account_name_);
-}
-
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       DeviceAccountUpsertsAreNotPropagated) {
-  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-
-  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
-
-  chromeos::AccountManager::AccountKey account_key{
-      kFakeGaiaId, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  auth_service().OnTokenUpserted(account_key);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
-}
-
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
-  const std::string gaia_id = "123999";
-  const std::string email = "email.111@gmail.com";
-
-  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SeedAccountInfo(gaia_id, email);
-  test_url_loader_factory().AddResponse(
-      arc::kAuthTokenExchangeEndPoint,
-      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
-
-  base::RunLoop run_loop;
-  auth_instance().RequestSecondaryAccountInfo(run_loop.QuitClosure(), email);
-  run_loop.Run();
-
-  ASSERT_TRUE(auth_instance().account_info());
-  EXPECT_EQ(email, auth_instance().account_info()->account_name.value());
-  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
-  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
-            auth_instance().account_info()->account_type);
-  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
-  EXPECT_FALSE(auth_instance().account_info()->is_managed);
-  EXPECT_TRUE(auth_instance().account_info()->is_secondary_account);
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {

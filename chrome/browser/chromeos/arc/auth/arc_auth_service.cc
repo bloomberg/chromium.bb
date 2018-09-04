@@ -131,8 +131,7 @@ mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
                                         const std::string& auth_info,
                                         const std::string& account_name,
                                         mojom::ChromeAccountType account_type,
-                                        bool is_managed,
-                                        bool is_secondary_account) {
+                                        bool is_managed) {
   mojom::AccountInfoPtr account_info = mojom::AccountInfo::New();
   account_info->account_name = account_name;
   if (account_type == mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT) {
@@ -145,7 +144,6 @@ mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
   }
   account_info->account_type = account_type;
   account_info->is_managed = is_managed;
-  account_info->is_secondary_account = is_secondary_account;
   return account_info;
 }
 
@@ -190,19 +188,6 @@ ArcAuthService::~ArcAuthService() {
   }
   arc_bridge_service_->auth()->RemoveObserver(this);
   arc_bridge_service_->auth()->SetHost(nullptr);
-}
-
-void ArcAuthService::OnConnectionReady() {
-  if (chromeos::switches::IsAccountManagerEnabled()) {
-    // The Mojo |OnSecondaryAccountUpserted| API is guaranteed to be called at
-    // least once for every account at startup. We need to get the list of
-    // accounts from |AccountManager|, just to be safe, since we may have missed
-    // the initial |AccountManager::Observer| notifications. We can safely call
-    // the Mojo |OnSecondaryAccountUpserted| API twice for every account since
-    // it is guaranteed to be idempotent.
-    account_manager_->GetAccounts(base::BindOnce(
-        &ArcAuthService::GetAccountsCallback, weak_ptr_factory_.GetWeakPtr()));
-  }
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -301,27 +286,8 @@ void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info,
   instance->OnAccountInfoReady(std::move(account_info), status);
 }
 
-void ArcAuthService::RequestAccountInfo(
-    bool initial_signin,
-    const base::Optional<std::string>& account_name) {
+void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Check if |account_name| points to a Secondary Account.
-  if (account_name.has_value()) {
-    DCHECK(!account_name.value().empty());
-
-    const std::string& gaia_id =
-        account_tracker_service_->FindAccountInfoByEmail(account_name.value())
-            .gaia;
-    DCHECK(!gaia_id.empty());
-
-    if (!IsDeviceAccount(chromeos::AccountManager::AccountKey{
-            gaia_id,
-            chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
-      FetchSecondaryAccountInfo(account_name.value());
-      return;
-    }
-  }
 
   FetchDeviceAccountInfo(initial_signin);
 }
@@ -334,8 +300,7 @@ void ArcAuthService::FetchDeviceAccountInfo(bool initial_signin) {
         CreateAccountInfo(false /* is_enforced */,
                           std::string() /* auth_info */,
                           std::string() /* auth_name */, account_type,
-                          policy_util::IsAccountManaged(profile_),
-                          false /* is_secondary_account */),
+                          policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
     return;
   }
@@ -358,8 +323,7 @@ void ArcAuthService::FetchDeviceAccountInfo(bool initial_signin) {
     OnAccountInfoReady(
         CreateAccountInfo(true /* is_enforced */, std::string() /* auth_info */,
                           std::string() /* auth_name */, account_type,
-                          true /* is_managed */,
-                          false /* is_secondary_account */),
+                          true /* is_managed */),
         mojom::ArcSignInStatus::SUCCESS);
     return;
   }
@@ -387,42 +351,16 @@ void ArcAuthService::OnTokenUpserted(
     const chromeos::AccountManager::AccountKey& account_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // We send only Secondary Account update notifications to ARC++. ARC++ has a
-  // polling mechanism for the Device Account (See the Mojo APIs
-  // |RequestAccountInfo| and |OnAccountInfoReady|).
-  if (IsDeviceAccount(account_key)) {
-    return;
-  }
-
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
-                                               OnSecondaryAccountUpserted);
-  if (!instance) {
-    LOG(ERROR) << "Auth instance is not available.";
-    return;
-  }
-
-  const std::string& account_name =
-      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
-  DCHECK(!account_name.empty());
-  instance->OnSecondaryAccountUpserted(account_name);
+  // TODO(sinhak): Implement sending notifications to ARC++.
+  NOTREACHED();
 }
 
 void ArcAuthService::OnAccountRemoved(
     const chromeos::AccountManager::AccountKey& account_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!IsDeviceAccount(account_key));
 
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
-                                               OnSecondaryAccountRemoved);
-  if (!instance) {
-    LOG(ERROR) << "Auth instance is not available.";
-    return;
-  }
-
-  const std::string& account_name =
-      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
-  DCHECK(!account_name.empty());
-  instance->OnSecondaryAccountRemoved(account_name);
+  // TODO(sinhak): Implement sending notifications to ARC++.
+  NOTREACHED();
 }
 
 void ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched(
@@ -445,8 +383,7 @@ void ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched(
           CreateAccountInfo(true /* is_enforced */, enrollment_token,
                             std::string() /* account_name */,
                             mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT,
-                            true /* is_managed */,
-                            false /* is_secondary_account */),
+                            true /* is_managed */),
           mojom::ArcSignInStatus::SUCCESS);
       break;
     }
@@ -480,8 +417,7 @@ void ArcAuthService::OnDeviceAccountAuthCodeFetched(
     OnAccountInfoReady(
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
                           full_account_id, GetAccountType(profile_),
-                          policy_util::IsAccountManaged(profile_),
-                          false /* is_secondary_account */),
+                          policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
   } else if (chromeos::DemoSession::Get() &&
              chromeos::DemoSession::Get()->started()) {
@@ -491,8 +427,7 @@ void ArcAuthService::OnDeviceAccountAuthCodeFetched(
         CreateAccountInfo(true /* is_enforced */, std::string() /* auth_info */,
                           std::string() /* auth_name */,
                           mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
-                          true /* is_managed */,
-                          false /* is_secondary_account */),
+                          true /* is_managed */),
         mojom::ArcSignInStatus::SUCCESS);
   } else {
     // Send error to ARC.
@@ -530,8 +465,7 @@ void ArcAuthService::OnSecondaryAccountAuthCodeFetched(
     OnAccountInfoReady(
         CreateAccountInfo(true /* is_enforced */, auth_code, account_name,
                           mojom::ChromeAccountType::USER_ACCOUNT,
-                          false /* is_managed */,
-                          true /* is_secondary_account */),
+                          false /* is_managed */),
         mojom::ArcSignInStatus::SUCCESS);
   } else {
     OnAccountInfoReady(
