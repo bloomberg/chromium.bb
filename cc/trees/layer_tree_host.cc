@@ -729,30 +729,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 
-  Layer* root_scroll =
-      PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
-  Layer* page_scale_layer = viewport_layers_.page_scale.get();
-  if (!page_scale_layer && root_scroll)
-    page_scale_layer = root_scroll->parent();
-
-  if (hud_layer_) {
-    hud_layer_->PrepareForCalculateDrawProperties(device_viewport_size_,
-                                                  device_scale_factor_);
-    // The HUD layer is managed outside the layer list sent to LayerTreeHost
-    // and needs to have its property tree state set.
-    if (IsUsingLayerLists() && root_layer_.get()) {
-      hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
-      hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
-      hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
-      hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
-      hud_layer_->set_property_tree_sequence_number(
-          root_layer_->property_tree_sequence_number());
-    }
-  }
-
-  gfx::Transform identity_transform;
-  LayerList update_layer_list;
-
   // The non-layer-list mode is used when blink provides cc with a layer tree
   // and cc needs to compute property trees from that.
   // In layer lists mode, blink sends cc property trees directly so they do not
@@ -762,6 +738,12 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+    Layer* root_scroll =
+        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
+    Layer* page_scale_layer = viewport_layers_.page_scale.get();
+    if (!page_scale_layer && root_scroll)
+      page_scale_layer = root_scroll->parent();
+    gfx::Transform identity_transform;
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer(),
         outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
@@ -775,6 +757,16 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                            "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
                            TRACE_EVENT_SCOPE_THREAD, "property_trees",
                            property_trees_.AsTracedValue());
+      // The HUD layer is managed outside the layer list sent to LayerTreeHost
+      // and needs to have its property tree state set.
+      if (hud_layer_ && root_layer_.get()) {
+        hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
+        hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
+        hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
+        hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
+        hud_layer_->set_property_tree_sequence_number(
+            root_layer_->property_tree_sequence_number());
+      }
     }
 
 #if DCHECK_IS_ON()
@@ -793,6 +785,8 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 #endif
 
     draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+
+    LayerList update_layer_list;
     draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
                                                    &update_layer_list);
 
@@ -1378,9 +1372,13 @@ void LayerTreeHost::SetElasticOverscrollFromImplSide(
 
 void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
   if (show_hud_info) {
-    if (!hud_layer_.get()) {
+    if (!hud_layer_.get())
       hud_layer_ = HeadsUpDisplayLayer::Create();
-    }
+
+    gfx::Size device_viewport_in_layout_pixels =
+        gfx::Size(device_viewport_size_.width() / device_scale_factor_,
+                  device_viewport_size_.height() / device_scale_factor_);
+    hud_layer_->SetBounds(device_viewport_in_layout_pixels);
 
     if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);
