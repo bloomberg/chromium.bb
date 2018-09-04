@@ -80,14 +80,17 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['erikchen@chromium.org'])
-class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
-  """Measure memory usage on trivial sites."""
+class MemoryBenchmarkDesktop(_MemoryInfra):
+  """Measure memory usage on synthetic sites."""
   options = {'pageset_repeat': 5}
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateStorySet(self, options):
-    return page_sets.TrivialSitesStorySet(wait_in_seconds=0,
-                                          measure_memory=True)
+    story_set = page_sets.TrivialSitesStorySet(wait_in_seconds=0,
+        measure_memory=True)
+    for page in page_sets.WebWorkerStorySet(measure_memory=True):
+      story_set.AddStory(page)
+    return story_set
 
   @classmethod
   def Name(cls):
