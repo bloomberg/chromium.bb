@@ -2,7 +2,6 @@ include_rules = [
   "+chrome/browser",
   "+chrome/child",
   "+chrome/chrome_watcher",
-  "+chrome/common/chrome_features.h",
   "+chrome/installer/util",
   "+chrome/install_static",
   "+chrome/gpu/chrome_content_gpu_client.h",

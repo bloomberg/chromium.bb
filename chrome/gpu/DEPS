@@ -1,5 +1,4 @@
 include_rules = [
-  "+chrome/common",
   "+components/arc/common",
   "+components/arc/video_accelerator",
   "+components/metrics",
