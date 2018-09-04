@@ -955,27 +955,28 @@ void MTPDeviceDelegateImplLinux::ReadDirectoryInternal(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_in_progress_);
 
   base::Optional<uint32_t> dir_id = CachedPathToId(root);
-  if (dir_id) {
-    GetFileInfoSuccessCallback success_callback_wrapper =
-        base::Bind(&MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory,
-                   weak_ptr_factory_.GetWeakPtr(), *dir_id, success_callback,
-                   error_callback);
-    ErrorCallback error_callback_wrapper =
-        base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback, *dir_id);
-    base::Closure closure =
-        base::Bind(&GetFileInfoOnUIThread, storage_name_, read_only_, *dir_id,
-                   success_callback_wrapper, error_callback_wrapper);
-    EnsureInitAndRunTask(PendingTaskInfo(base::FilePath(),
-                                         content::BrowserThread::UI,
-                                         FROM_HERE,
-                                         closure));
-  } else {
+  if (!dir_id) {
     error_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    PendingRequestDone();
+    return;
   }
-  PendingRequestDone();
+
+  GetFileInfoSuccessCallback success_callback_wrapper =
+      base::Bind(&MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory,
+                 weak_ptr_factory_.GetWeakPtr(), *dir_id, success_callback,
+                 error_callback);
+  ErrorCallback error_callback_wrapper =
+      base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback, *dir_id);
+  base::Closure closure =
+      base::Bind(&GetFileInfoOnUIThread, storage_name_, read_only_, *dir_id,
+                 success_callback_wrapper, error_callback_wrapper);
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   closure);
 }
 
 void MTPDeviceDelegateImplLinux::CreateSnapshotFileInternal(
