@@ -1672,9 +1672,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   }
 
   // If the text node is empty, dirty the line where new text will be inserted.
-  if (IsInLayoutNGInlineFormattingContext()) {
-    NGPaintFragment::MarkLineBoxesDirtyFor(*this);
-  } else if (!FirstTextBox() && Parent()) {
+  if (!FirstTextBox() && Parent()) {
     Parent()->DirtyLinesFromChangedChild(this);
     dirtied_lines = true;
   }

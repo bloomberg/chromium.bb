@@ -315,18 +315,6 @@ void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
-    LayoutObject* child,
-    MarkingBehavior marking_behaviour) {
-  if (paint_fragment_) {
-    NGPaintFragment::MarkLineBoxesDirtyFor(*child);
-    return;
-  }
-
-  Base::DirtyLinesFromChangedChild(child, marking_behaviour);
-}
-
-template <typename Base>
 void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   if (NGPaintFragment* fragment = PaintFragment()) {

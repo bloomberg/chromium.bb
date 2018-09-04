@@ -4499,14 +4499,6 @@ RootInlineBox* LayoutBlockFlow::CreateRootInlineBox() {
   return new RootInlineBox(LineLayoutItem(this));
 }
 
-void LayoutBlockFlow::DirtyLinesFromChangedChild(
-    LayoutObject* child,
-    MarkingBehavior marking_behaviour) {
-  line_boxes_.DirtyLinesFromChangedChild(
-      LineLayoutItem(this), LineLayoutItem(child),
-      marking_behaviour == kMarkContainerChain);
-}
-
 bool LayoutBlockFlow::IsPagedOverflow(const ComputedStyle& style) {
   return style.IsOverflowPaged() &&
          GetNode() != GetDocument().ViewportDefiningElement();
