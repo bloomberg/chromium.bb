@@ -1005,10 +1005,7 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
 void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Log(
     const param_type& p,
     std::string* l) {
-#if defined(OS_FUCHSIA)
-  l->append("Handle: ");
-  LogParam(p.GetPlatformHandle()->get(), l);
-#elif defined(OS_WIN)
+#if defined(OS_FUCHSIA) || defined(OS_WIN)
   l->append("Handle: ");
   LogParam(p.GetPlatformHandle(), l);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
