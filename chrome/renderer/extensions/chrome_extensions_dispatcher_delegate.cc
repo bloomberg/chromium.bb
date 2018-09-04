@@ -297,7 +297,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_MIRRORING_SESSION_PARAMETERS_JS);
 
   // These bindings are unnecessary with native bindings enabled.
-  if (!base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings)) {
+  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
     source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
     source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
 
@@ -333,8 +333,7 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
-  DCHECK(
-      base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
+  DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   extensions::APIBindingsSystem* bindings = bindings_system->api_system();
   bindings->GetHooksForAPI("app")->SetDelegate(
       std::make_unique<extensions::AppHooksDelegate>(

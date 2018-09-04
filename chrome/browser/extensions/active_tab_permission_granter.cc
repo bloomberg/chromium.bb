@@ -199,7 +199,8 @@ void ActiveTabPermissionGranter::DidFinishNavigation(
   // activeTab consumption (we likely need to build some UI around it first).
   // However, features::kRuntimeHostPermissions is all-but unusable without
   // this behaviour.
-  if (base::FeatureList::IsEnabled(features::kRuntimeHostPermissions)) {
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kRuntimeHostPermissions)) {
     const content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
     if (!navigation_entry ||

@@ -37,7 +37,8 @@ class NativeBindingsApiTest : public ExtensionApiTest {
   ~NativeBindingsApiTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kNativeCrxBindings);
+    scoped_feature_list_.InitAndEnableFeature(
+        extensions_features::kNativeCrxBindings);
     ExtensionApiTest::SetUp();
   }
 

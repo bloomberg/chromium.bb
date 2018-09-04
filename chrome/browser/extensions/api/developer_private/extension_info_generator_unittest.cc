@@ -399,7 +399,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
 TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
   // Start with the switch enabled.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
       "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
@@ -466,7 +467,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
 TEST_F(ExtensionInfoGeneratorUnitTest,
        RuntimeHostPermissionsBeyondRequestedScope) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       CreateExtension("extension", ListBuilder().Append("http://*/*").Build(),

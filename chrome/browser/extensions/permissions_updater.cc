@@ -121,7 +121,8 @@ void PermissionsUpdater::GrantOptionalPermissions(
 void PermissionsUpdater::GrantRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRuntimeHostPermissions));
+  DCHECK(base::FeatureList::IsEnabled(
+      extensions_features::kRuntimeHostPermissions));
 
   // We don't want to grant the extension object/process more privilege than it
   // requested, even if the user grants additional permission. For instance, if
@@ -182,7 +183,8 @@ void PermissionsUpdater::RevokeOptionalPermissions(
 void PermissionsUpdater::RevokeRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRuntimeHostPermissions));
+  DCHECK(base::FeatureList::IsEnabled(
+      extensions_features::kRuntimeHostPermissions));
   // Similar to the process in adding permissions, we might be revoking more
   // permissions than the extension currently has explicit access to. For
   // instance, we might be revoking https://*.google.com/* even if the extension

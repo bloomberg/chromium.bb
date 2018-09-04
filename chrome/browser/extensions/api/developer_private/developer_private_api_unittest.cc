@@ -382,7 +382,8 @@ void DeveloperPrivateApiUnitTest::TearDown() {
 TEST_F(DeveloperPrivateApiUnitTest,
        DeveloperPrivateUpdateExtensionConfiguration) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   // Sadly, we need a "real" directory here, because toggling prefs causes
   // a reload (which needs a path).
   const Extension* extension = LoadUnpackedExtension();
@@ -1320,7 +1321,8 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileUserScript) {
 
 TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
@@ -1379,7 +1381,8 @@ TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
 
 TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
@@ -1445,7 +1448,8 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
 
 TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
@@ -1467,7 +1471,8 @@ TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_SpecificSitesRemovedOnTransitionToOnClick) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
@@ -1510,7 +1515,8 @@ TEST_F(DeveloperPrivateApiUnitTest,
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_SpecificSitesRemovedOnTransitionToAllSites) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
@@ -1536,7 +1542,8 @@ TEST_F(DeveloperPrivateApiUnitTest,
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_GrantScopeGreaterThanRequestedScope) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("http://*/*").Build();

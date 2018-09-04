@@ -93,7 +93,8 @@ void PartitionHostPermissions(
 // by the runtime host permissions experiment.
 bool ShouldConsiderExtension(const Extension& extension) {
   // No extensions are affected if the experiment is disabled.
-  if (!base::FeatureList::IsEnabled(features::kRuntimeHostPermissions))
+  if (!base::FeatureList::IsEnabled(
+          extensions_features::kRuntimeHostPermissions))
     return false;
 
   // Certain extensions are always exempt from having permissions withheld.

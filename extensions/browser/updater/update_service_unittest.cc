@@ -940,10 +940,10 @@ class UpdateServiceCanUpdateTest : public UpdateServiceTest,
 
     if (GetParam()) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kNewExtensionUpdaterService);
+          extensions_features::kNewExtensionUpdaterService);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kNewExtensionUpdaterService);
+          extensions_features::kNewExtensionUpdaterService);
     }
 
     store_extension_ =

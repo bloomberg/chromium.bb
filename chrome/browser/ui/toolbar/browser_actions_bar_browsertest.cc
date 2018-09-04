@@ -665,7 +665,7 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
     scoped_feature_list_.InitAndEnableFeature(
-        extensions::features::kRuntimeHostPermissions);
+        extensions_features::kRuntimeHostPermissions);
   }
 
   void SetUpOnMainThread() override {

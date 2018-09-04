@@ -171,8 +171,8 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
       source_map_(source_map),
       natives_enabled_(0),
       exception_handler_(new DefaultExceptionHandler(context)),
-      lazily_initialize_handlers_(
-          base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
+      lazily_initialize_handlers_(base::FeatureList::IsEnabled(
+          extensions_features::kNativeCrxBindings)) {
   v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Isolate* isolate = context->isolate();
   SetPrivate(global, kModulesField, v8::Object::New(isolate));

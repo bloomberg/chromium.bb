@@ -616,7 +616,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
 TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // Add an extension with all urls, and withhold permission.
@@ -772,7 +773,8 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // submenu either.
   scoped_feature_list.reset();  // Need to delete the old list first.
   scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndDisableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndDisableFeature(
+      extensions_features::kRuntimeHostPermissions);
   const Extension* feature_disabled_extension = AddExtensionWithHostPermission(
       "feature_disabled_extension", manifest_keys::kBrowserAction,
       Manifest::INTERNAL, "http://www.google.com/*");

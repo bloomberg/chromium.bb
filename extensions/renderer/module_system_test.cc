@@ -52,8 +52,9 @@ class GetAPINatives : public ObjectBackedNativeHandler {
   GetAPINatives(ScriptContext* context,
                 NativeExtensionBindingsSystem* bindings_system)
       : ObjectBackedNativeHandler(context), bindings_system_(bindings_system) {
-    DCHECK_EQ(base::FeatureList::IsEnabled(features::kNativeCrxBindings),
-              !!bindings_system);
+    DCHECK_EQ(
+        base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings),
+        !!bindings_system);
   }
   ~GetAPINatives() override {}
 
@@ -160,7 +161,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_);
 
-  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings))
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings))
     bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(nullptr);
 
   {
