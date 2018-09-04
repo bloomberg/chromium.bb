@@ -479,10 +479,16 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
   // occurs later upon first VideoDecodePerfHistory API request that requires DB
   // access. DB operations will not block the UI thread.
   if (!decode_history) {
-    // TODO(https://crbug/865321): For non guest sessions, this should instead
-    // be a pointer to GetOriginalProfile()->GetVideoDecodePerfHistory().
-    // Passing nullptr while we sort out lifetime issues.
-    media::VideoDecodeStatsDBProvider* seed_db_provider = nullptr;
+    // Use the original profile's DB to seed the OTR VideoDeocdePerfHisotry. The
+    // original DB is treated as read-only, while OTR playbacks will write stats
+    // to the InMemory version (cleared on profile destruction). Guest profiles
+    // don't have a root profile like incognito, meaning they don't have a seed
+    // DB to call on and we can just pass null.
+    media::VideoDecodeStatsDBProvider* seed_db_provider =
+        IsGuestSession() ? nullptr
+                         // Safely passing raw pointer to VideoDecodePerfHistory
+                         // because original profile will outlive this profile.
+                         : GetOriginalProfile()->GetVideoDecodePerfHistory();
 
     auto db_factory =
         std::make_unique<media::InMemoryVideoDecodeStatsDBFactory>(

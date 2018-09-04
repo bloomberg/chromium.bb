@@ -22,6 +22,7 @@ class FilePath;
 namespace media {
 
 class DecodeStatsProto;
+class InMemoryVideoDecodeStatsDBImpl;
 
 // Factory interface to create a DB instance.
 class MEDIA_EXPORT VideoDecodeStatsDBImplFactory
@@ -63,6 +64,18 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   void GetDecodeStats(const VideoDescKey& key,
                       GetDecodeStatsCB get_stats_cb) override;
   void DestroyStats(base::OnceClosure destroy_done_cb) override;
+
+  // Tracking down root cause of crash probable UAF (https://crbug/865321).
+  // We will CHECK if a |dependent_db_| is found to be set during destruction.
+  // Dependent DB should always be destroyed and unhooked before |this|.
+  void set_dependent_db(InMemoryVideoDecodeStatsDBImpl* dependent) {
+    // One of these should be non-null.
+    CHECK(!dependent_db_ || !dependent);
+    // They shouldn't already match.
+    CHECK(dependent_db_ != dependent);
+
+    dependent_db_ = dependent;
+  }
 
  private:
   friend class VideoDecodeStatsDBTest;
@@ -113,6 +126,9 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
   // Directory where levelDB should store database files.
   base::FilePath db_dir_;
+
+  // See set_dependent_db().
+  InMemoryVideoDecodeStatsDBImpl* dependent_db_ = nullptr;
 
   // Ensures all access to class members come on the same sequence. API calls
   // and callbacks should occur on the same sequence used during construction.
