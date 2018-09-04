@@ -14,11 +14,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
  public:
   base::string16 GetPublisherName() override;
 
-  void UpdateInstallStatus(
-      bool system_install,
-      installer::ArchiveType archive_type,
-      installer::InstallStatus install_status) override;
-
  protected:
   // Disallow construction from others.
   GoogleChromeDistribution();
