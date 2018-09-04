@@ -170,7 +170,8 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 KeyboardController::KeyboardController()
-    : weak_factory_report_lingering_state_(this),
+    : ime_observer_(this),
+      weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
@@ -195,12 +196,12 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
   show_on_keyboard_window_load_ = false;
   keyboard_locked_ = false;
   state_ = KeyboardControllerState::UNKNOWN;
-  ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
   SetContainerBehaviorInternal(ContainerType::FULL_WIDTH);
   ChangeState(KeyboardControllerState::INITIAL);
   visual_bounds_in_screen_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
+  UpdateInputMethodObserver();
 }
 
 void KeyboardController::DisableKeyboard() {
@@ -222,7 +223,7 @@ void KeyboardController::DisableKeyboard() {
   container_behavior_.reset();
   animation_observer_.reset();
 
-  ui_->GetInputMethod()->RemoveObserver(this);
+  ime_observer_.RemoveAll();
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardDisabled();
   ui_->SetController(nullptr);
@@ -236,8 +237,7 @@ void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
   // Observe changes to root window bounds.
   parent_container_->GetRootWindow()->AddObserver(this);
 
-  // TODO(https://crbug.com/845780): Investigate whether this does anything.
-  OnTextInputStateChanged(ui_->GetInputMethod()->GetTextInputClient());
+  UpdateInputMethodObserver();
 
   if (GetKeyboardWindow()) {
     DCHECK(!GetKeyboardWindow()->parent());
@@ -554,6 +554,12 @@ void KeyboardController::Reload() {
   }
 }
 
+void KeyboardController::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+  ime_observer_.RemoveAll();
+  OnTextInputStateChanged(nullptr);
+}
+
 void KeyboardController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
   TRACE_EVENT0("vk", "OnTextInputStateChanged");
@@ -626,6 +632,7 @@ void KeyboardController::LoadKeyboardWindowInBackground() {
 void KeyboardController::ShowKeyboardInternal(const display::Display& display) {
   keyboard::MarkKeyboardLoadStarted();
   PopulateKeyboardContent(display, true);
+  UpdateInputMethodObserver();
 }
 
 void KeyboardController::PopulateKeyboardContent(
@@ -900,6 +907,25 @@ void KeyboardController::RemoveObserver(
 
 bool KeyboardController::IsKeyboardVisible() {
   return state_ == KeyboardControllerState::SHOWN;
+}
+
+void KeyboardController::UpdateInputMethodObserver() {
+  ui::InputMethod* ime = ui_->GetInputMethod();
+
+  // IME could be null during initialization. Ignoring the case is okay because
+  // UpdateInputMethodObserver() will be called later on.
+  if (!ime)
+    return;
+
+  if (ime_observer_.IsObserving(ime))
+    return;
+
+  // Only observes the current active IME.
+  ime_observer_.RemoveAll();
+  ime_observer_.Add(ime);
+
+  // TODO(https://crbug.com/845780): Investigate whether this does anything.
+  OnTextInputStateChanged(ime->GetTextInputClient());
 }
 
 }  // namespace keyboard

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
@@ -275,7 +276,7 @@ class KEYBOARD_EXPORT KeyboardController
   void OnBlur() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
   void OnFocus() override {}
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowVirtualKeyboardIfEnabled() override;
 
@@ -327,8 +328,12 @@ class KEYBOARD_EXPORT KeyboardController
   // Records that keyboard was shown on the currently focused UKM source.
   void RecordUkmKeyboardShown();
 
+  // Ensures that the current IME is observed if it is changed.
+  void UpdateInputMethodObserver();
+
   std::unique_ptr<KeyboardUI> ui_;
-  KeyboardLayoutDelegate* layout_delegate_;
+  KeyboardLayoutDelegate* layout_delegate_ = nullptr;
+  ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;
 
   // Container window that the keyboard window is a child of.
   aura::Window* parent_container_ = nullptr;
@@ -344,10 +349,10 @@ class KEYBOARD_EXPORT KeyboardController
   std::unique_ptr<QueuedDisplayChange> queued_display_change_;
 
   // If true, show the keyboard window when it loads.
-  bool show_on_keyboard_window_load_;
+  bool show_on_keyboard_window_load_ = false;
 
   // If true, the keyboard is always visible even if no window has input focus.
-  bool keyboard_locked_;
+  bool keyboard_locked_ = false;
   KeyboardEventFilter event_filter_;
 
   base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
@@ -357,7 +362,7 @@ class KEYBOARD_EXPORT KeyboardController
   // keyboard window. If not, this should be empty.
   gfx::Rect visual_bounds_in_screen_;
 
-  KeyboardControllerState state_;
+  KeyboardControllerState state_ = KeyboardControllerState::UNKNOWN;
 
   NotificationManager notification_manager_;
 
