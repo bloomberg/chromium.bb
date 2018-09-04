@@ -6,6 +6,7 @@
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -18,7 +19,8 @@ class OmniboxEditController {
   virtual void OnAutocompleteAccept(const GURL& destination_url,
                                     WindowOpenDisposition disposition,
                                     ui::PageTransition transition,
-                                    AutocompleteMatchType::Type match_type);
+                                    AutocompleteMatchType::Type match_type,
+                                    base::TimeTicks match_selection_timestamp);
 
   virtual void OnInputInProgress(bool in_progress);
 
@@ -40,12 +42,16 @@ class OmniboxEditController {
   GURL destination_url() const { return destination_url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
   ui::PageTransition transition() const { return transition_; }
+  base::TimeTicks match_selection_timestamp() const {
+    return match_selection_timestamp_;
+  }
 
  private:
   // The details necessary to open the user's desired omnibox match.
   GURL destination_url_;
   WindowOpenDisposition disposition_;
   ui::PageTransition transition_;
+  base::TimeTicks match_selection_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditController);
 };

@@ -96,8 +96,10 @@ class OmniboxResultView : public views::View,
   // Whether |this| matches the model's selected index.
   bool IsSelected() const;
 
-  // Call model's OpenMatch() with the selected index and provided disposition.
-  void OpenMatch(WindowOpenDisposition disposition);
+  // Call model's OpenMatch() with the selected index and provided disposition
+  // and timestamp the match was selected (base::TimeTicks() if unknown).
+  void OpenMatch(WindowOpenDisposition disposition,
+                 base::TimeTicks match_selection_timestamp);
 
   // views::View:
   const char* GetClassName() const override;

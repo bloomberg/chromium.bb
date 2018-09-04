@@ -77,7 +77,8 @@ class OmniboxView {
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
                          const base::string16& pasted_text,
-                         size_t selected_line);
+                         size_t selected_line,
+                         base::TimeTicks match_selection_timestamp);
 
   // Returns the current text of the edit control, which could be the
   // "temporary" text set by the popup, the "permanent" text set by the

@@ -331,5 +331,5 @@ void OmniboxPopupViewMac::OpenURLForRow(size_t row,
                                         WindowOpenDisposition disposition) {
   DCHECK_LT(row, GetResult().size());
   omnibox_view_->OpenMatch(GetResult().match_at(row), disposition, GURL(),
-                           base::string16(), row);
+                           base::string16(), row, base::TimeTicks());
 }

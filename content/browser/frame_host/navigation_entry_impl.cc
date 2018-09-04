@@ -686,7 +686,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,
     PreviewsState previews_state,
-    const base::TimeTicks& navigation_start) const {
+    base::TimeTicks navigation_start,
+    base::TimeTicks input_start) const {
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), GetBaseURLForDataURL(),
@@ -696,7 +697,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       CSPDisposition::CHECK /* should_check_main_world_csp */,
       has_started_from_context_menu(), has_user_gesture(),
       std::vector<ContentSecurityPolicy>() /* initiator_csp */,
-      CSPSource() /* initiator_self_source */);
+      CSPSource() /* initiator_self_source */, input_start);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(

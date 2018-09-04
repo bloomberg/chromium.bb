@@ -39,7 +39,8 @@ void WebOmniboxEditControllerImpl::OnAutocompleteAccept(
     const GURL& destination_url,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
-    AutocompleteMatchType::Type match_type) {
+    AutocompleteMatchType::Type match_type,
+    base::TimeTicks match_selection_timestamp) {
   if (destination_url.is_valid()) {
     transition = ui::PageTransitionFromInt(
         transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);

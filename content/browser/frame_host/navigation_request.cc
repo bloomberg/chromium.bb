@@ -287,9 +287,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    const base::TimeTicks& navigation_start,
+    base::TimeTicks navigation_start,
     NavigationControllerImpl* controller,
-    std::unique_ptr<NavigationUIData> navigation_ui_data) {
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
+    base::TimeTicks input_start) {
   // A form submission happens either because the navigation is a
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
@@ -322,7 +323,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
       frame_entry, request_body, dest_url, dest_referrer, navigation_type,
-      previews_state, navigation_start);
+      previews_state, navigation_start, input_start);
 
   RequestNavigationParams request_params =
       entry.ConstructRequestNavigationParams(

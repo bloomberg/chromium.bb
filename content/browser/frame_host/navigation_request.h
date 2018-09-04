@@ -91,9 +91,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
-      const base::TimeTicks& navigation_start,
+      base::TimeTicks navigation_start,
       NavigationControllerImpl* controller,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      base::TimeTicks input_start);
 
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and

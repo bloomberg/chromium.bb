@@ -153,10 +153,20 @@ ui::PageTransition LocationBarViewMac::GetPageTransition() const {
   return transition();
 }
 
+base::TimeTicks LocationBarViewMac::GetMatchSelectionTimestamp() const {
+  return match_selection_timestamp();
+}
+
 void LocationBarViewMac::AcceptInput() {
+  AcceptInput(base::TimeTicks());
+}
+
+void LocationBarViewMac::AcceptInput(
+    base::TimeTicks match_selection_timestamp) {
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  omnibox_view_->model()->AcceptInput(disposition, false);
+  omnibox_view_->model()->AcceptInput(disposition, false,
+                                      match_selection_timestamp);
 }
 
 void LocationBarViewMac::FocusLocation(bool select_all) {

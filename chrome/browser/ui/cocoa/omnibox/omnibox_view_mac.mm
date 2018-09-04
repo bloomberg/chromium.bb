@@ -259,12 +259,13 @@ void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
                                const base::string16& pasted_text,
-                               size_t selected_line) {
+                               size_t selected_line,
+                               base::TimeTicks match_selection_timestamp) {
   // Coalesce text and selection updates from the following function. If we
   // don't do this, the user may see intermediate states as brief flickers.
   in_coalesced_update_block_ = true;
-  OmniboxView::OpenMatch(
-      match, disposition, alternate_nav_url, pasted_text, selected_line);
+  OmniboxView::OpenMatch(match, disposition, alternate_nav_url, pasted_text,
+                         selected_line, match_selection_timestamp);
   in_coalesced_update_block_ = false;
   if (do_coalesced_text_update_) {
     SetText(coalesced_text_update_);

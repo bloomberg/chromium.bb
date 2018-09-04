@@ -31,7 +31,8 @@ class TestOmniboxView : public OmniboxView {
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
                  const base::string16& pasted_text,
-                 size_t selected_line) override {}
+                 size_t selected_line,
+                 base::TimeTicks match_selection_timestamp) override {}
   base::string16 GetText() const override;
   void SetUserText(const base::string16& text, bool update_popup) override;
   void SetWindowTextAndCaretPos(const base::string16& text,

@@ -60,7 +60,8 @@ class OmniboxViewMac : public OmniboxView,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
                  const base::string16& pasted_text,
-                 size_t selected_line) override;
+                 size_t selected_line,
+                 base::TimeTicks match_selection_timestamp) override;
   base::string16 GetText() const override;
   void SetWindowTextAndCaretPos(const base::string16& text,
                                 size_t caret_pos,
