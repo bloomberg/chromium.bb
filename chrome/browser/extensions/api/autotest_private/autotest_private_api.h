@@ -241,6 +241,20 @@ class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateSetCrostiniEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateSetCrostiniEnabledFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniEnabled",
+                             AUTOTESTPRIVATE_SETCROSTINIENABLED)
+
+ private:
+  ~AutotestPrivateSetCrostiniEnabledFunction() override;
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateSetCrostiniEnabledFunction);
+};
+
 class AutotestPrivateRunCrostiniInstallerFunction
     : public UIThreadExtensionFunction {
  public:

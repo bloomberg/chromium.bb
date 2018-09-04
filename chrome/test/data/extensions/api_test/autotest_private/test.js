@@ -151,6 +151,10 @@ chrome.test.runTests([
             });
         });
   },
+  function setCrostiniEnabled() {
+    chrome.autotestPrivate.setCrostiniEnabled(true, chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
   function runCrostiniInstaller() {
     chrome.autotestPrivate.runCrostiniInstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));

@@ -32,6 +32,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -119,6 +120,9 @@ std::unique_ptr<base::DictionaryValue> MakeDictionaryFromNotification(
   result->SetInteger("progress", notification.progress());
   return result;
 }
+
+constexpr char kCrostiniNotAvailableForCurrentUserError[] =
+    "Crostini is not available for the current user";
 
 #else
 
@@ -670,6 +674,28 @@ ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
 #endif
 }
 
+AutotestPrivateSetCrostiniEnabledFunction::
+    ~AutotestPrivateSetCrostiniEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetCrostiniEnabledFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetCrostiniEnabledFunction";
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<api::autotest_private::SetCrostiniEnabled::Params> params(
+      api::autotest_private::SetCrostiniEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!IsCrostiniUIAllowedForProfile(ProfileManager::GetActiveUserProfile())) {
+    return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
+  }
+  // Set the preference to indicate Crostini is enabled/disabled.
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      crostini::prefs::kCrostiniEnabled, params->enabled);
+  return RespondNow(NoArguments());
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
 AutotestPrivateRunCrostiniInstallerFunction::
     ~AutotestPrivateRunCrostiniInstallerFunction() = default;
 
@@ -678,7 +704,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateInstallCrostiniFunction";
 #if defined(OS_CHROMEOS)
   if (!IsCrostiniUIAllowedForProfile(ProfileManager::GetActiveUserProfile())) {
-    return RespondNow(Error("Crostini is not available for the current user"));
+    return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
   }
   // Run GUI installer which will install crostini vm / container and
   // start terminal app on completion.  After starting the installer,
