@@ -18,8 +18,8 @@ namespace {
 
 class TestEasyResizeWindowTargeter : public EasyResizeWindowTargeter {
  public:
-  explicit TestEasyResizeWindowTargeter(aura::Window* window)
-      : EasyResizeWindowTargeter(window, gfx::Insets(), gfx::Insets()) {}
+  TestEasyResizeWindowTargeter()
+      : EasyResizeWindowTargeter(gfx::Insets(), gfx::Insets()) {}
 };
 
 }  // namespace
@@ -29,11 +29,14 @@ using EasyResizeWindowTargeterTest = aura::test::AuraMusClientTestBase;
 TEST_F(EasyResizeWindowTargeterTest, SetHitTestMask) {
   aura::Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
-  TestEasyResizeWindowTargeter window_targeter(&window);
+  std::unique_ptr<TestEasyResizeWindowTargeter> window_targeter_ptr =
+      std::make_unique<TestEasyResizeWindowTargeter>();
+  TestEasyResizeWindowTargeter* window_targeter = window_targeter_ptr.get();
+  window.SetEventTargeter(std::move(window_targeter_ptr));
   const gfx::Rect bounds1 = gfx::Rect(10, 20, 200, 300);
   window.SetBounds(bounds1);
   const gfx::Insets insets1(1, 2, 3, 4);
-  window_targeter.SetInsets(insets1, insets1);
+  window_targeter->SetInsets(insets1, insets1);
   ASSERT_TRUE(window_tree()->last_hit_test_mask().has_value());
   EXPECT_EQ(gfx::Rect(insets1.left(), insets1.top(),
                       bounds1.width() - insets1.width(),
@@ -50,12 +53,12 @@ TEST_F(EasyResizeWindowTargeterTest, SetHitTestMask) {
             *window_tree()->last_hit_test_mask());
 
   // Empty insets should reset the mask.
-  window_targeter.SetInsets(gfx::Insets(), gfx::Insets());
+  window_targeter->SetInsets(gfx::Insets(), gfx::Insets());
   EXPECT_FALSE(window_tree()->last_hit_test_mask().has_value());
 
   const gfx::Insets insets2(-1, 3, 4, 5);
   const gfx::Insets effective_insets2(0, 3, 4, 5);
-  window_targeter.SetInsets(insets2, insets2);
+  window_targeter->SetInsets(insets2, insets2);
   ASSERT_TRUE(window_tree()->last_hit_test_mask().has_value());
   EXPECT_EQ(gfx::Rect(effective_insets2.left(), effective_insets2.top(),
                       bounds2.width() - effective_insets2.width(),

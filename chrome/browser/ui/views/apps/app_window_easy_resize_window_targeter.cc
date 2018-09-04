@@ -8,12 +8,10 @@
 #include "ui/base/base_window.h"
 
 AppWindowEasyResizeWindowTargeter::AppWindowEasyResizeWindowTargeter(
-    aura::Window* aura_window,
     const gfx::Insets& insets,
     ui::BaseWindow* native_app_window)
-    : wm::EasyResizeWindowTargeter(aura_window, insets, insets),
-      native_app_window_(native_app_window) {
-}
+    : wm::EasyResizeWindowTargeter(insets, insets),
+      native_app_window_(native_app_window) {}
 
 AppWindowEasyResizeWindowTargeter::~AppWindowEasyResizeWindowTargeter() {}
 

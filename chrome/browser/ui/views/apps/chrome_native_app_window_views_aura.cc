@@ -86,7 +86,7 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
   // window. The root window does not have a delegate, which is needed to
   // handle the event in Linux.
   window->SetEventTargeter(std::make_unique<AppWindowEasyResizeWindowTargeter>(
-      window, gfx::Insets(frame->resize_inside_bounds_size()), this));
+      gfx::Insets(frame->resize_inside_bounds_size()), this));
 
   return frame;
 }

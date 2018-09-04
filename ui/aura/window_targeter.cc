@@ -189,6 +189,10 @@ ui::EventTarget* WindowTargeter::FindNextBestTarget(
   return nullptr;
 }
 
+void WindowTargeter::OnInstalled(Window* window) {
+  window_ = window;
+}
+
 Window* WindowTargeter::FindTargetForLocatedEvent(Window* window,
                                                   ui::LocatedEvent* event) {
   if (!window->parent()) {

@@ -17,21 +17,22 @@ namespace wm {
 // TODO(sky): make this class final.
 class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
  public:
-  // |container| window is the owner of this targeter.
   // NOTE: the insets must be negative.
-  EasyResizeWindowTargeter(aura::Window* container,
-                           const gfx::Insets& mouse_extend,
+  EasyResizeWindowTargeter(const gfx::Insets& mouse_extend,
                            const gfx::Insets& touch_extend);
 
   ~EasyResizeWindowTargeter() override;
 
  protected:
   // aura::WindowTargeter:
+  void OnInstalled(aura::Window* w) override;
   void OnSetInsets(const gfx::Insets& last_mouse_extend,
                    const gfx::Insets& last_touch_extend) override;
 
  private:
   class HitMaskSetter;
+
+  void UpdateHitMaskSetter();
 
   // aura::WindowTargeter:
   // Delegates to WindowTargeter's impl and prevents overriding in subclasses.
@@ -40,9 +41,7 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
 
   // Returns true if the hit testing (GetHitTestRects()) should use the
   // extended bounds.
-  bool ShouldUseExtendedBounds(const aura::Window* window) const override;
-
-  aura::Window* container_;
+  bool ShouldUseExtendedBounds(const aura::Window* w) const override;
 
   std::unique_ptr<HitMaskSetter> hit_mask_setter_;
 
