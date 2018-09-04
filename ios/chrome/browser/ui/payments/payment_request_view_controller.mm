@@ -35,9 +35,9 @@ NSString* const kPaymentRequestCollectionViewID =
 
 namespace {
 const CGFloat kFooterCellHorizontalPadding = 16;
-
 const CGFloat kButtonEdgeInset = 9;
 const CGFloat kSeparatorEdgeInset = 14;
+const CGFloat kSummaryPageInfoRowHeight = 55;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSummary = kSectionIdentifierEnumZero,
@@ -397,6 +397,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
+
+  // TODO(crbug.com/879588): Remove this when/if cr_preferredHeightForWidth
+  // works on the next iOS 12 releases.
+  if (@available(iOS 12, *)) {
+    if (item.type == ItemTypeSummaryPageInfo)
+      return kSummaryPageInfoRowHeight;
+  }
 
   UIEdgeInsets inset = [self collectionView:collectionView
                                      layout:collectionView.collectionViewLayout
