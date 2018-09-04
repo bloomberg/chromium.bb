@@ -23,29 +23,24 @@ const int64_t kFolderNone = -1;
 }  // namespace
 
 @implementation BookmarkPathCache
-// Registers the feature preferences.
+
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterInt64Pref(prefs::kIosBookmarkCachedFolderId, kFolderNone);
-  registry->RegisterDoublePref(prefs::kIosBookmarkCachedScrollPosition, 0);
+  registry->RegisterIntegerPref(prefs::kIosBookmarkCachedTopMostRow, 0);
 }
 
-// Caches the bookmark UI position that the user was last viewing.
-+ (void)cacheBookmarkUIPositionWithPrefService:(PrefService*)prefService
++ (void)cacheBookmarkTopMostRowWithPrefService:(PrefService*)prefService
                                       folderId:(int64_t)folderId
-                                scrollPosition:(double)scrollPosition {
+                                    topMostRow:(int)topMostRow {
   prefService->SetInt64(prefs::kIosBookmarkCachedFolderId, folderId);
-  prefService->SetDouble(prefs::kIosBookmarkCachedScrollPosition,
-                         scrollPosition);
+  prefService->SetInteger(prefs::kIosBookmarkCachedTopMostRow, topMostRow);
 }
 
-// Gets the bookmark UI position that the user was last viewing. Returns YES if
-// a valid cache exists. |folderId| and |scrollPosition| are out variables, only
-// populated if the return is YES.
-+ (BOOL)getBookmarkUIPositionCacheWithPrefService:(PrefService*)prefService
++ (BOOL)getBookmarkTopMostRowCacheWithPrefService:(PrefService*)prefService
                                             model:
                                                 (bookmarks::BookmarkModel*)model
                                          folderId:(int64_t*)folderId
-                                   scrollPosition:(double*)scrollPosition {
+                                       topMostRow:(int*)topMostRow {
   *folderId = prefService->GetInt64(prefs::kIosBookmarkCachedFolderId);
 
   // If the cache was at root node, consider it as nothing was cached.
@@ -59,13 +54,11 @@ const int64_t kFolderNone = -1;
   if (!bookmark)
     return NO;
 
-  *scrollPosition =
-      prefService->GetDouble(prefs::kIosBookmarkCachedScrollPosition);
+  *topMostRow = prefService->GetInteger(prefs::kIosBookmarkCachedTopMostRow);
   return YES;
 }
 
-// Clears the bookmark UI position cache.
-+ (void)clearBookmarkUIPositionCacheWithPrefService:(PrefService*)prefService {
++ (void)clearBookmarkTopMostRowCacheWithPrefService:(PrefService*)prefService {
   prefService->SetInt64(prefs::kIosBookmarkCachedFolderId, kFolderNone);
 }
 

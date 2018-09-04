@@ -34,19 +34,20 @@ TEST_F(BookmarkPathCacheTest, TestPathCache) {
   const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
   const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");
   int64_t folderId = f1->id();
-  double position = 23;
-  [BookmarkPathCache cacheBookmarkUIPositionWithPrefService:&prefs_
+  int topMostRow = 23;
+  [BookmarkPathCache cacheBookmarkTopMostRowWithPrefService:&prefs_
                                                    folderId:folderId
-                                             scrollPosition:position];
+                                                 topMostRow:topMostRow];
 
   int64_t resultFolderId;
-  double resultPosition;
-  [BookmarkPathCache getBookmarkUIPositionCacheWithPrefService:&prefs_
-                                                         model:_bookmarkModel
-                                                      folderId:&resultFolderId
-                                                scrollPosition:&resultPosition];
+  int resultTopMostRow;
+  [BookmarkPathCache
+      getBookmarkTopMostRowCacheWithPrefService:&prefs_
+                                          model:_bookmarkModel
+                                       folderId:&resultFolderId
+                                     topMostRow:&resultTopMostRow];
   EXPECT_EQ(folderId, resultFolderId);
-  EXPECT_EQ(position, resultPosition);
+  EXPECT_EQ(topMostRow, resultTopMostRow);
 }
 
 TEST_F(BookmarkPathCacheTest, TestPathCacheWhenFolderDeleted) {
@@ -54,21 +55,21 @@ TEST_F(BookmarkPathCacheTest, TestPathCacheWhenFolderDeleted) {
   const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
   const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");
   int64_t folderId = f1->id();
-  double position = 23;
-  [BookmarkPathCache cacheBookmarkUIPositionWithPrefService:&prefs_
+  int topMostRow = 23;
+  [BookmarkPathCache cacheBookmarkTopMostRowWithPrefService:&prefs_
                                                    folderId:folderId
-                                             scrollPosition:position];
+                                                 topMostRow:topMostRow];
 
   // Delete the folder.
   _bookmarkModel->Remove(f1);
 
   int64_t unusedFolderId;
-  double unusedPosition;
+  int unusedTopMostRow;
   BOOL result = [BookmarkPathCache
-      getBookmarkUIPositionCacheWithPrefService:&prefs_
+      getBookmarkTopMostRowCacheWithPrefService:&prefs_
                                           model:_bookmarkModel
                                        folderId:&unusedFolderId
-                                 scrollPosition:&unusedPosition];
+                                     topMostRow:&unusedTopMostRow];
   ASSERT_FALSE(result);
 }
 
