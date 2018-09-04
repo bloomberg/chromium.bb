@@ -1200,6 +1200,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     RestartCrostiniCallback callback,
     RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!profile->IsOffTheRecord());
   return CrostiniRestarterServiceFactory::GetForProfile(profile)->Register(
       profile, std::move(vm_name), std::move(container_name),
       std::move(callback), observer);

@@ -656,7 +656,10 @@ FileManagerPrivateMountCrostiniContainerFunction::
     ~FileManagerPrivateMountCrostiniContainerFunction() = default;
 
 bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
+  // Use OriginalProfile since using crostini in incognito such as saving
+  // files into Linux files should still work.
+  Profile* profile =
+      Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(IsCrostiniEnabled(profile));
   crostini::CrostiniManager::GetInstance()->RestartCrostini(
       profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
