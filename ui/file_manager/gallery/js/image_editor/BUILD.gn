@@ -209,6 +209,6 @@ js_unit_tests("unit_tests") {
 group("closure_compile") {
   deps = [
     ":closure_compile_module",
-    ":unit_tests",
+    ":unit_tests_type_check",
   ]
 }
