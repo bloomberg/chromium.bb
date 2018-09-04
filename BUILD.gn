@@ -818,7 +818,6 @@ if (is_chromeos) {
       "//chrome",
       "//chrome/test/chromedriver",
       "//media:media_unittests",
-      "//media/gpu:jpeg_decode_accelerator_unittest",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",

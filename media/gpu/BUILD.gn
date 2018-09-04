@@ -531,42 +531,44 @@ if (use_vaapi) {
   }
 }
 
-test("jpeg_decode_accelerator_unittest") {
-  deps = [
-    "//base",
-    "//media:test_support",
-    "//media/gpu",
-    "//media/mojo/services",
-    "//mojo/core/embedder",
-    "//testing/gtest",
-    "//third_party/libyuv",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx:test_support",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/gl:test_support",
-  ]
-  configs += [ "//third_party/libyuv:libyuv_config" ]
-  sources = [
-    "jpeg_decode_accelerator_unittest.cc",
-    "test/video_accelerator_unittest_helpers.h",
-  ]
-  data = [
-    "//media/test/data/peach_pi-1280x720.jpg",
-    "//media/test/data/peach_pi-40x23.jpg",
-    "//media/test/data/peach_pi-41x22.jpg",
-    "//media/test/data/peach_pi-41x23.jpg",
-  ]
-  if (use_vaapi) {
-    sources += [ "vaapi/vaapi_jpeg_decode_accelerator_unittest.cc" ]
-    data += [ "//media/test/data/pixel-1280x720.jpg" ]
-  }
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
-  }
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+if (use_v4l2_codec || use_vaapi) {
+  test("jpeg_decode_accelerator_unittest") {
+    deps = [
+      "//base",
+      "//media:test_support",
+      "//media/gpu",
+      "//media/mojo/services",
+      "//mojo/core/embedder",
+      "//testing/gtest",
+      "//third_party/libyuv",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+    configs += [ "//third_party/libyuv:libyuv_config" ]
+    sources = [
+      "jpeg_decode_accelerator_unittest.cc",
+      "test/video_accelerator_unittest_helpers.h",
+    ]
+    data = [
+      "//media/test/data/peach_pi-1280x720.jpg",
+      "//media/test/data/peach_pi-40x23.jpg",
+      "//media/test/data/peach_pi-41x22.jpg",
+      "//media/test/data/peach_pi-41x23.jpg",
+    ]
+    if (use_vaapi) {
+      sources += [ "vaapi/vaapi_jpeg_decode_accelerator_unittest.cc" ]
+      data += [ "//media/test/data/pixel-1280x720.jpg" ]
+    }
+    if (use_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 }
 
