@@ -333,17 +333,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     return keyframe;
   }
 
-  StringKeyframeVector* CreateCompositableTransformKeyframeVector(
-      const Vector<String>& values) {
-    StringKeyframeVector* frames = new StringKeyframeVector;
-    for (size_t i = 0; i < values.size(); ++i) {
-      double offset = 1.0f / (values.size() - 1) * i;
-      frames->push_back(
-          CreateReplaceOpKeyframe(CSSPropertyTransform, values[i], offset));
-    }
-    return frames;
-  }
-
   StringKeyframe* CreateSVGKeyframe(const QualifiedName& name,
                                     const String& value,
                                     double offset) {
