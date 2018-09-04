@@ -14,6 +14,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -32,8 +33,11 @@ static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
 }  // namespace
 
 D3D11VideoDecoderImpl::D3D11VideoDecoderImpl(
+    std::unique_ptr<MediaLog> media_log,
     base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
-    : get_stub_cb_(get_stub_cb), weak_factory_(this) {}
+    : media_log_(std::move(media_log)),
+      get_stub_cb_(get_stub_cb),
+      weak_factory_(this) {}
 
 D3D11VideoDecoderImpl::~D3D11VideoDecoderImpl() {
   // TODO(liberato): be sure to clear |picture_buffers_| on the main thread.
@@ -175,7 +179,8 @@ void D3D11VideoDecoderImpl::Initialize(
 #endif
 
   accelerated_video_decoder_ = std::make_unique<H264Decoder>(
-      std::make_unique<D3D11H264Accelerator>(this, proxy_context, video_decoder,
+      std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
+                                             proxy_context, video_decoder,
                                              video_device_, video_context_),
       config.color_space_info());
 
@@ -446,6 +451,11 @@ void D3D11VideoDecoderImpl::NotifyNewKey() {
 void D3D11VideoDecoderImpl::NotifyError(const char* reason) {
   state_ = State::kError;
   DLOG(ERROR) << reason;
+  if (media_log_) {
+    media_log_->AddEvent(media_log_->CreateStringEvent(
+        MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error", reason));
+  }
+
   if (init_cb_)
     std::move(init_cb_).Run(false);
 

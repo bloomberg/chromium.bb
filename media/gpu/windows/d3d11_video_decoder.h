@@ -23,6 +23,7 @@ namespace media {
 
 class D3D11VideoDecoderImpl;
 class D3D11VideoDecoderTest;
+class MediaLog;
 
 // Thread-hopping implementation of D3D11VideoDecoder.  It's meant to run on
 // a random thread, and hop to the gpu main thread.  It does this so that it
@@ -34,6 +35,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
  public:
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+      std::unique_ptr<MediaLog> media_log,
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
@@ -71,6 +73,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   friend class D3D11VideoDecoderTest;
 
   D3D11VideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    std::unique_ptr<MediaLog> media_log,
                     const gpu::GpuPreferences& gpu_preferences,
                     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
                     std::unique_ptr<D3D11VideoDecoderImpl> impl);
@@ -81,7 +84,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
     // D3D11 version 11.1 required.
     kInsufficientD3D11FeatureLevel = 1,
 
-    // The video profile for a supported codec is not supported.
+    // The video profile is not supported .
     kProfileNotSupported = 2,
 
     // GPU options: require zero copy.
@@ -90,12 +93,19 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
     // GPU options: require zero copy.
     kZeroCopyVideoRequired = 4,
 
+    // The video codec must be H264.
+    kCodecNotSupported = 5,
+
     // For UMA. Must be the last entry. It should be initialized to the
     // numerically largest value above; if you add more entries, then please
     // update this to the last one.
-    kMaxValue = kZeroCopyVideoRequired
+    kMaxValue = kCodecNotSupported
   };
 
+  std::unique_ptr<MediaLog> media_log_;
+
+  // Record a UMA about why IsPotentiallySupported returned false, or that it
+  // returned true.  Also will add a MediaLog entry, etc.
   void SetWasSupportedReason(D3D11VideoNotSupportedReason enum_value);
 
   // The implementation, which we trampoline to the impl thread.

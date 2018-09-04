@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -49,6 +50,7 @@ namespace media {
 
 std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    std::unique_ptr<MediaLog> media_log,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb) {
@@ -58,17 +60,22 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
   // when it's released.
   // Note that we WrapUnique<VideoDecoder> rather than D3D11VideoDecoder to make
   // this castable; the deleters have to match.
-  return base::WrapUnique<VideoDecoder>(new D3D11VideoDecoder(
-      std::move(gpu_task_runner), gpu_preferences, gpu_workarounds,
-      std::make_unique<D3D11VideoDecoderImpl>(get_stub_cb)));
+  std::unique_ptr<MediaLog> cloned_media_log = media_log->Clone();
+  return base::WrapUnique<VideoDecoder>(
+      new D3D11VideoDecoder(std::move(gpu_task_runner), std::move(media_log),
+                            gpu_preferences, gpu_workarounds,
+                            std::make_unique<D3D11VideoDecoderImpl>(
+                                std::move(cloned_media_log), get_stub_cb)));
 }
 
 D3D11VideoDecoder::D3D11VideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    std::unique_ptr<MediaLog> media_log,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     std::unique_ptr<D3D11VideoDecoderImpl> impl)
-    : impl_(std::move(impl)),
+    : media_log_(std::move(media_log)),
+      impl_(std::move(impl)),
       impl_task_runner_(std::move(gpu_task_runner)),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
@@ -174,6 +181,34 @@ void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
 void D3D11VideoDecoder::SetWasSupportedReason(
     D3D11VideoNotSupportedReason enum_value) {
   UMA_HISTOGRAM_ENUMERATION("Media.D3D11.WasVideoSupported", enum_value);
+
+  const char* reason = nullptr;
+  switch (enum_value) {
+    case D3D11VideoNotSupportedReason::kVideoIsSupported:
+      reason = "Playback is supported by D3D11VideoDecoder";
+      break;
+    case D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel:
+      reason = "Insufficient D3D11 feature level";
+      break;
+    case D3D11VideoNotSupportedReason::kProfileNotSupported:
+      reason = "Video profile is not supported by D3D11VideoDecoder";
+      break;
+    case D3D11VideoNotSupportedReason::kCodecNotSupported:
+      reason = "H264 is required for D3D11VideoDecoder";
+      break;
+    case D3D11VideoNotSupportedReason::kZeroCopyNv12Required:
+      reason = "Must allow zero-copy NV12 for D3D11VideoDecoder";
+      break;
+    case D3D11VideoNotSupportedReason::kZeroCopyVideoRequired:
+      reason = "Must allow zero-copy video for D3D11VideoDecoder";
+      break;
+  }
+
+  DVLOG(2) << reason;
+  if (media_log_) {
+    media_log_->AddEvent(media_log_->CreateStringEvent(
+        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info", reason));
+  }
 }
 
 bool D3D11VideoDecoder::IsPotentiallySupported(
@@ -192,7 +227,6 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
   if (FAILED(hr)) {
     SetWasSupportedReason(
         D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
-    DVLOG(2) << "Insufficient D3D11 feature level";
     return false;
   }
 
@@ -205,11 +239,10 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     if (config.profile() == H264PROFILE_HIGH10PROFILE) {
       // Must use NV12, which excludes HDR.
       SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
-      DVLOG(2) << "High 10 profile is not supported.";
       return false;
     }
   } else {
-    DVLOG(2) << "Profile is not H264.";
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kCodecNotSupported);
     return false;
   }
 
@@ -217,24 +250,14 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
   // have the target colorspace.  It's commented as being for vpx, though, so
   // we skip it here for now.
 
-  // Must use the validating decoder.
-  // TODO(tmathmeyer): support passthrough decoder. No logging to UMA since
-  // this condition should go away soon.
-  if (gpu_preferences_.use_passthrough_cmd_decoder) {
-    DVLOG(2) << "Must use validating decoder.";
-    return false;
-  }
-
   // Must allow zero-copy of nv12 textures.
   if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
     SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyNv12Required);
-    DVLOG(2) << "Must allow zero-copy NV12.";
     return false;
   }
 
   if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
     SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyVideoRequired);
-    DVLOG(2) << "Must allow zero-copy video.";
     return false;
   }
 

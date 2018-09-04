@@ -26,6 +26,7 @@ namespace media {
 class CdmProxyContext;
 class D3D11H264Accelerator;
 class D3D11PictureBuffer;
+class MediaLog;
 
 class D3D11VideoDecoderClient {
  public:
@@ -39,6 +40,7 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   // |cdm_proxy_context| may be null for clear content.
   D3D11H264Accelerator(
       D3D11VideoDecoderClient* client,
+      MediaLog* media_log,
       CdmProxyContext* cdm_proxy_context,
       Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
       Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
@@ -70,7 +72,11 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   bool SubmitSliceData();
   bool RetrieveBitstreamBuffer();
 
+  // Record a failure to DVLOG and |media_log_|.
+  void RecordFailure(const std::string& reason, HRESULT hr = S_OK) const;
+
   D3D11VideoDecoderClient* client_;
+  MediaLog* media_log_ = nullptr;
   CdmProxyContext* const cdm_proxy_context_;
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;

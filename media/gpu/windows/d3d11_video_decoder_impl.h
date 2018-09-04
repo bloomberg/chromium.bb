@@ -27,10 +27,13 @@
 
 namespace media {
 
+class MediaLog;
+
 class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
                                                public D3D11VideoDecoderClient {
  public:
   explicit D3D11VideoDecoderImpl(
+      std::unique_ptr<MediaLog> media_log,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
   ~D3D11VideoDecoderImpl() override;
 
@@ -88,6 +91,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   // Enter the kError state.  This will fail any pending |init_cb_| and / or
   // pending decode as well.
   void NotifyError(const char* reason);
+
+  std::unique_ptr<MediaLog> media_log_;
 
   base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
   gpu::CommandBufferStub* stub_ = nullptr;
