@@ -163,7 +163,7 @@ function createShortcut(appId, directory) {
  *
  * @param {string} appId Files app windowId.
  * @param {Object} directory Directory of shortcut to be removed.
- * @return {Promise} Promise fullfilled on success.
+ * @return {Promise} Promise fulfilled on success.
  */
 function removeShortcut(appId, directory) {
   // Focus the item first since actions are calculated asynchronously. The
@@ -201,7 +201,7 @@ function removeShortcut(appId, directory) {
  * @param {string} appId Files app windowId.
  * @param {Object} currentDir Directory which should be a current directory.
  * @param {Object} shortcutDir Directory whose shortcut should be selected.
- * @return {Promise} Promise fullfilled on success.
+ * @return {Promise} Promise fulfilled on success.
  */
 function expectSelection(appId, currentDir, shortcutDir) {
   const shortcut = shortcutDir.navItem;
@@ -215,7 +215,7 @@ function expectSelection(appId, currentDir, shortcutDir) {
  *
  * @param {string} appId Files app windowId.
  * @param {Object} directory Directory whose shortcut will be clicked.
- * @return {Promise} Promise fullfilled with the fakeMouseClick result.
+ * @return {Promise} Promise fulfilled with result of fakeMouseClick.
  */
 function clickShortcut(appId, directory) {
   const shortcut = directory.navItem;
