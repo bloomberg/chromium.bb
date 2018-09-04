@@ -189,9 +189,13 @@ camera.views.Camera.prototype = {
  * Prepares the view.
  */
 camera.views.Camera.prototype.prepare = function() {
-  // Monitor the locked state to avoid retrying camera connection when locked.
+  // Monitor the states to avoid retrying camera connection when locked/minimized.
   chrome.idle.onStateChanged.addListener(newState => {
     this.locked_ = (newState == 'locked');
+    this.stop_();
+  });
+  chrome.app.window.current().onMinimized.addListener(() => {
+    this.stop_();
   });
   // Start the camera after preparing the options (device ids).
   this.options_.prepare();
@@ -600,7 +604,7 @@ camera.views.Camera.prototype.start_ = function() {
   var constraintsCandidates = [];
 
   var tryStartWithConstraints = (index) => {
-    if (this.locked_) {
+    if (this.locked_ || chrome.app.window.current().isMinimized()) {
       scheduleRetry();
       return;
     }
