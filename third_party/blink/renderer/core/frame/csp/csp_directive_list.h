@@ -69,8 +69,7 @@ class CORE_EXPORT CSPDirectiveList
                         const String& nonce,
                         const WTF::OrdinalNumber& context_line,
                         SecurityViolationReportingPolicy,
-                        const String& style_content,
-                        ContentSecurityPolicy::InlineType inline_type) const;
+                        const String& style_content) const;
   bool AllowEval(ScriptState*,
                  SecurityViolationReportingPolicy,
                  ContentSecurityPolicy::ExceptionStatus,
@@ -142,7 +141,7 @@ class CORE_EXPORT CSPDirectiveList
                        ContentSecurityPolicy::InlineType) const;
   bool AllowStyleHash(const CSPHashValue&,
                       ContentSecurityPolicy::InlineType) const;
-  bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
+  bool AllowDynamic() const;
   bool AllowDynamicWorker() const;
 
   bool AllowRequestWithoutIntegrity(WebURLRequest::RequestContext,
@@ -213,8 +212,8 @@ class CORE_EXPORT CSPDirectiveList
 
   bool ParseDirective(const UChar* begin,
                       const UChar* end,
-                      String* name,
-                      String* value);
+                      String& name,
+                      String& value);
   void ParseRequireSRIFor(const String& name, const String& value);
   void ParseReportURI(const String& name, const String& value);
   void ParseReportTo(const String& name, const String& value);
@@ -294,16 +293,14 @@ class CORE_EXPORT CSPDirectiveList
                                        ScriptState*,
                                        ContentSecurityPolicy::ExceptionStatus,
                                        const String& script_content) const;
-  bool CheckInlineAndReportViolation(
-      SourceListDirective*,
-      const String& console_message,
-      Element*,
-      const String& source,
-      const String& context_url,
-      const WTF::OrdinalNumber& context_line,
-      bool is_script,
-      const String& hash_value,
-      ContentSecurityPolicy::DirectiveType effective_type) const;
+  bool CheckInlineAndReportViolation(SourceListDirective*,
+                                     const String& console_message,
+                                     Element*,
+                                     const String& source,
+                                     const String& context_url,
+                                     const WTF::OrdinalNumber& context_line,
+                                     bool is_script,
+                                     const String& hash_value) const;
 
   bool CheckSourceAndReportViolation(SourceListDirective*,
                                      const KURL&,
@@ -369,11 +366,7 @@ class CORE_EXPORT CSPDirectiveList
   Member<SourceListDirective> object_src_;
   Member<SourceListDirective> prefetch_src_;
   Member<SourceListDirective> script_src_;
-  Member<SourceListDirective> script_src_attr_;
-  Member<SourceListDirective> script_src_elem_;
   Member<SourceListDirective> style_src_;
-  Member<SourceListDirective> style_src_attr_;
-  Member<SourceListDirective> style_src_elem_;
   Member<SourceListDirective> worker_src_;
   Member<SourceListDirective> navigate_to_;
   Member<StringListDirective> trusted_types_;
@@ -390,4 +383,4 @@ class CORE_EXPORT CSPDirectiveList
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CSP_DIRECTIVE_LIST_H_
+#endif
