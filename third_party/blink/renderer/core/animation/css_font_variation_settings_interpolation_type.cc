@@ -104,10 +104,10 @@ static InterpolationValue ConvertFontVariationSettings(
   if (!settings || settings->size() == 0) {
     return nullptr;
   }
-  size_t length = settings->size();
+  wtf_size_t length = settings->size();
   std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
-  for (size_t i = 0; i < length; ++i) {
+  for (wtf_size_t i = 0; i < length; ++i) {
     numbers->Set(i, InterpolableNumber::Create(settings->at(i).Value()));
     tags.push_back(settings->at(i).Tag());
   }
@@ -152,10 +152,10 @@ InterpolationValue CSSFontVariationSettingsInterpolationType::MaybeConvertValue(
     return nullptr;
   }
   const CSSValueList& list = ToCSSValueList(value);
-  size_t length = list.length();
+  wtf_size_t length = list.length();
   std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
-  for (size_t i = 0; i < length; ++i) {
+  for (wtf_size_t i = 0; i < length; ++i) {
     const cssvalue::CSSFontVariationValue& item =
         cssvalue::ToCSSFontVariationValue(list.Item(i));
     numbers->Set(i, InterpolableNumber::Create(item.Value()));
@@ -209,8 +209,8 @@ void CSSFontVariationSettingsInterpolationType::ApplyStandardPropertyValue(
 
   scoped_refptr<FontVariationSettings> settings =
       FontVariationSettings::Create();
-  size_t length = numbers.length();
-  for (size_t i = 0; i < length; ++i) {
+  wtf_size_t length = numbers.length();
+  for (wtf_size_t i = 0; i < length; ++i) {
     settings->Append(FontVariationAxis(
         tags[i], ToInterpolableNumber(numbers.Get(i))->Value()));
   }

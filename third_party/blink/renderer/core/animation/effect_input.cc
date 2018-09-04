@@ -149,7 +149,7 @@ bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
 
   PropertyHandleSet properties_with_offset_0;
   PropertyHandleSet properties_with_offset_1;
-  for (size_t i = 0; i < keyframes.size(); i++) {
+  for (wtf_size_t i = 0; i < keyframes.size(); i++) {
     for (const PropertyHandle& property : keyframes[i]->Properties()) {
       if (!property.IsCSSProperty())
         continue;
@@ -507,9 +507,9 @@ StringKeyframeVector ConvertObjectForm(Element* element,
     // Now create a keyframe (or retrieve and augment an existing one) for each
     // value this property maps to. As explained above, this loop performs both
     // the initial creation and merging mentioned in the spec.
-    size_t num_keyframes = values.size();
+    wtf_size_t num_keyframes = values.size();
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    for (size_t i = 0; i < num_keyframes; ++i) {
+    for (wtf_size_t i = 0; i < num_keyframes; ++i) {
       // As all offsets are null for these 'property keyframes', the computed
       // offset is just the fractional position of each keyframe in the array.
       //
@@ -547,7 +547,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   //     being > 1 before we throw due to the offsets not being loosely ordered.
   StringKeyframeVector results;
   double previous_offset = 0.0;
-  for (size_t i = 0; i < keys.size(); i++) {
+  for (wtf_size_t i = 0; i < keys.size(); i++) {
     auto* keyframe = keyframes.at(keys[i]);
 
     if (i < offsets.size()) {
@@ -624,7 +624,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // for easing property of the AnimationEffectTimingReadOnly interface, and if
   // any of the values fail to parse, throw a TypeError and abort this
   // procedure.
-  for (size_t i = results.size(); i < easings.size(); i++) {
+  for (wtf_size_t i = results.size(); i < easings.size(); i++) {
     scoped_refptr<TimingFunction> timing_function =
         AnimationInputHelpers::ParseTimingFunction(easings[i], &document,
                                                    exception_state);

@@ -236,7 +236,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   PersistentHeapVector<Member<StringKeyframe>>
   CreateCompositableFloatKeyframeVector(Vector<double>& values) {
     PersistentHeapVector<Member<StringKeyframe>> frames;
-    for (size_t i = 0; i < values.size(); i++) {
+    for (wtf_size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       String value = String::Number(values[i]);
       frames.push_back(

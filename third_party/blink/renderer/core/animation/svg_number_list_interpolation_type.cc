@@ -14,7 +14,7 @@ namespace blink {
 InterpolationValue SVGNumberListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  size_t underlying_length =
+  wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
       UnderlyingLengthChecker::Create(underlying_length));
@@ -24,7 +24,7 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertNeutral(
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(underlying_length);
-  for (size_t i = 0; i < underlying_length; i++)
+  for (wtf_size_t i = 0; i < underlying_length; i++)
     result->Set(i, InterpolableNumber::Create(0));
   return InterpolationValue(std::move(result));
 }
@@ -37,7 +37,7 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertSVGValue(
   const SVGNumberList& number_list = ToSVGNumberList(svg_value);
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(number_list.length());
-  for (size_t i = 0; i < number_list.length(); i++)
+  for (wtf_size_t i = 0; i < number_list.length(); i++)
     result->Set(i, InterpolableNumber::Create(number_list.at(i)->Value()));
   return InterpolationValue(std::move(result));
 }
@@ -53,7 +53,7 @@ PairwiseInterpolationValue SVGNumberListInterpolationType::MaybeMergeSingles(
 }
 
 static void PadWithZeroes(std::unique_ptr<InterpolableValue>& list_pointer,
-                          size_t padded_length) {
+                          wtf_size_t padded_length) {
   InterpolableList& list = ToInterpolableList(*list_pointer);
 
   if (list.length() >= padded_length)
@@ -61,7 +61,7 @@ static void PadWithZeroes(std::unique_ptr<InterpolableValue>& list_pointer,
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(padded_length);
-  size_t i = 0;
+  wtf_size_t i = 0;
   for (; i < list.length(); i++)
     result->Set(i, std::move(list.GetMutable(i)));
   for (; i < padded_length; i++)
@@ -85,7 +85,7 @@ void SVGNumberListInterpolationType::Composite(
       *underlying_value_owner.MutableValue().interpolable_value);
 
   DCHECK_GE(underlying_list.length(), list.length());
-  size_t i = 0;
+  wtf_size_t i = 0;
   for (; i < list.length(); i++)
     underlying_list.GetMutable(i)->ScaleAndAdd(underlying_fraction,
                                                *list.Get(i));
@@ -98,7 +98,7 @@ SVGPropertyBase* SVGNumberListInterpolationType::AppliedSVGValue(
     const NonInterpolableValue*) const {
   SVGNumberList* result = SVGNumberList::Create();
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  for (size_t i = 0; i < list.length(); i++)
+  for (wtf_size_t i = 0; i < list.length(); i++)
     result->Append(
         SVGNumber::Create(ToInterpolableNumber(list.Get(i))->Value()));
   return result;

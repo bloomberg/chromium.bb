@@ -65,7 +65,7 @@ class UnderlyingFilterListChecker
     if (non_interpolable_list_->length() !=
         underlying_non_interpolable_list.length())
       return false;
-    for (size_t i = 0; i < non_interpolable_list_->length(); i++) {
+    for (wtf_size_t i = 0; i < non_interpolable_list_->length(); i++) {
       if (!FilterInterpolationFunctions::FiltersAreCompatible(
               *non_interpolable_list_->Get(i),
               *underlying_non_interpolable_list.Get(i)))
@@ -112,11 +112,11 @@ class InheritedFilterListChecker
 
 InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
                                      double zoom) {
-  size_t length = filter_operations.size();
+  wtf_size_t length = filter_operations.size();
   std::unique_ptr<InterpolableList> interpolable_list =
       InterpolableList::Create(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue filter_result =
         FilterInterpolationFunctions::MaybeConvertFilter(
             *filter_operations.Operations()[i], zoom);
@@ -176,11 +176,11 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     return nullptr;
 
   const CSSValueList& list = ToCSSValueList(value);
-  size_t length = list.length();
+  wtf_size_t length = list.length();
   std::unique_ptr<InterpolableList> interpolable_list =
       InterpolableList::Create(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item_result =
         FilterInterpolationFunctions::MaybeConvertCSSFilter(list.Item(i));
     if (!item_result)
@@ -207,10 +207,10 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
       ToNonInterpolableList(*start.non_interpolable_value);
   NonInterpolableList& end_non_interpolable_list =
       ToNonInterpolableList(*end.non_interpolable_value);
-  size_t start_length = start_non_interpolable_list.length();
-  size_t end_length = end_non_interpolable_list.length();
+  wtf_size_t start_length = start_non_interpolable_list.length();
+  wtf_size_t end_length = end_non_interpolable_list.length();
 
-  for (size_t i = 0; i < start_length && i < end_length; i++) {
+  for (wtf_size_t i = 0; i < start_length && i < end_length; i++) {
     if (!FilterInterpolationFunctions::FiltersAreCompatible(
             *start_non_interpolable_list.Get(i),
             *end_non_interpolable_list.Get(i)))
@@ -227,9 +227,9 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
   // with corresponding filters in the longer list.
   InterpolationValue& shorter = start_length < end_length ? start : end;
   InterpolationValue& longer = start_length < end_length ? end : start;
-  size_t shorter_length =
+  wtf_size_t shorter_length =
       ToNonInterpolableList(*shorter.non_interpolable_value).length();
-  size_t longer_length =
+  wtf_size_t longer_length =
       ToNonInterpolableList(*longer.non_interpolable_value).length();
   InterpolableList& shorter_interpolable_list =
       ToInterpolableList(*shorter.interpolable_value);
@@ -237,7 +237,7 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
       ToNonInterpolableList(*longer.non_interpolable_value);
   std::unique_ptr<InterpolableList> extended_interpolable_list =
       InterpolableList::Create(longer_length);
-  for (size_t i = 0; i < longer_length; i++) {
+  for (wtf_size_t i = 0; i < longer_length; i++) {
     if (i < shorter_length)
       extended_interpolable_list->Set(
           i, std::move(shorter_interpolable_list.GetMutable(i)));
@@ -263,10 +263,10 @@ void CSSFilterListInterpolationType::Composite(
           *underlying_value_owner.Value().non_interpolable_value);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*value.non_interpolable_value);
-  size_t underlying_length = underlying_non_interpolable_list.length();
-  size_t length = non_interpolable_list.length();
+  wtf_size_t underlying_length = underlying_non_interpolable_list.length();
+  wtf_size_t length = non_interpolable_list.length();
 
-  for (size_t i = 0; i < underlying_length && i < length; i++) {
+  for (wtf_size_t i = 0; i < underlying_length && i < length; i++) {
     if (!FilterInterpolationFunctions::FiltersAreCompatible(
             *underlying_non_interpolable_list.Get(i),
             *non_interpolable_list.Get(i))) {
@@ -282,7 +282,7 @@ void CSSFilterListInterpolationType::Composite(
   DCHECK_EQ(underlying_length, underlying_interpolable_list.length());
   DCHECK_EQ(length, interpolable_list.length());
 
-  for (size_t i = 0; i < length && i < underlying_length; i++)
+  for (wtf_size_t i = 0; i < length && i < underlying_length; i++)
     underlying_interpolable_list.GetMutable(i)->ScaleAndAdd(
         underlying_fraction, *interpolable_list.Get(i));
 
@@ -291,7 +291,7 @@ void CSSFilterListInterpolationType::Composite(
 
   std::unique_ptr<InterpolableList> extended_interpolable_list =
       InterpolableList::Create(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     if (i < underlying_length)
       extended_interpolable_list->Set(
           i, std::move(underlying_interpolable_list.GetMutable(i)));
@@ -313,12 +313,12 @@ void CSSFilterListInterpolationType::ApplyStandardPropertyValue(
       ToInterpolableList(interpolable_value);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
-  size_t length = interpolable_list.length();
+  wtf_size_t length = interpolable_list.length();
   DCHECK_EQ(length, non_interpolable_list.length());
 
   FilterOperations filter_operations;
   filter_operations.Operations().ReserveCapacity(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     filter_operations.Operations().push_back(
         FilterInterpolationFunctions::CreateFilter(
             *interpolable_list.Get(i), *non_interpolable_list.Get(i), state));

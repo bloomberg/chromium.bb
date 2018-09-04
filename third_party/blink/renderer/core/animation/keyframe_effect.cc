@@ -164,7 +164,7 @@ Vector<ScriptValue> KeyframeEffect::getKeyframes(ScriptState* script_state) {
       KeyframeEffectModelBase::GetComputedOffsets(keyframes);
   computed_keyframes.ReserveInitialCapacity(keyframes.size());
   ScriptState::Scope scope(script_state);
-  for (size_t i = 0; i < keyframes.size(); i++) {
+  for (wtf_size_t i = 0; i < keyframes.size(); i++) {
     V8ObjectBuilder object_builder(script_state);
     keyframes[i]->AddKeyframePropertiesToV8Object(object_builder);
     object_builder.Add("computedOffset", computed_offsets[i]);

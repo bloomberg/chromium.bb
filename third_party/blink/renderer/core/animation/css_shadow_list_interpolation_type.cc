@@ -42,7 +42,7 @@ InterpolationValue CSSShadowListInterpolationType::ConvertShadowList(
     return CreateNeutralValue();
   const ShadowDataVector& shadows = shadow_list->Shadows();
   return ListInterpolationFunctions::CreateList(
-      shadows.size(), [&shadows, zoom](size_t index) {
+      shadows.size(), [&shadows, zoom](wtf_size_t index) {
         return ShadowInterpolationFunctions::ConvertShadowData(shadows[index],
                                                                zoom);
       });
@@ -121,7 +121,7 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
 
   const CSSValueList& value_list = ToCSSValueList(value);
   return ListInterpolationFunctions::CreateList(
-      value_list.length(), [&value_list](size_t index) {
+      value_list.length(), [&value_list](wtf_size_t index) {
         return ShadowInterpolationFunctions::MaybeConvertCSSValue(
             value_list.Item(index));
       });
@@ -162,13 +162,13 @@ static scoped_refptr<ShadowList> CreateShadowList(
     const StyleResolverState& state) {
   const InterpolableList& interpolable_list =
       ToInterpolableList(interpolable_value);
-  size_t length = interpolable_list.length();
+  wtf_size_t length = interpolable_list.length();
   if (length == 0)
     return nullptr;
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
   ShadowDataVector shadows;
-  for (size_t i = 0; i < length; i++)
+  for (wtf_size_t i = 0; i < length; i++)
     shadows.push_back(ShadowInterpolationFunctions::CreateShadowData(
         *interpolable_list.Get(i), non_interpolable_list.Get(i), state));
   return ShadowList::Adopt(shadows);

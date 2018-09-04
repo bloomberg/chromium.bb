@@ -27,7 +27,7 @@ CSSLengthListInterpolationType::CSSLengthListInterpolationType(
 InterpolationValue CSSLengthListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  size_t underlying_length =
+  wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
       UnderlyingLengthChecker::Create(underlying_length));
@@ -35,10 +35,11 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertNeutral(
   if (underlying_length == 0)
     return nullptr;
 
-  return ListInterpolationFunctions::CreateList(underlying_length, [](size_t) {
-    return InterpolationValue(
-        LengthInterpolationFunctions::CreateNeutralInterpolableValue());
-  });
+  return ListInterpolationFunctions::CreateList(
+      underlying_length, [](wtf_size_t) {
+        return InterpolationValue(
+            LengthInterpolationFunctions::CreateNeutralInterpolableValue());
+      });
 }
 
 static InterpolationValue MaybeConvertLengthList(
@@ -48,7 +49,7 @@ static InterpolationValue MaybeConvertLengthList(
     return nullptr;
 
   return ListInterpolationFunctions::CreateList(
-      length_list.size(), [&length_list, zoom](size_t index) {
+      length_list.size(), [&length_list, zoom](wtf_size_t index) {
         return LengthInterpolationFunctions::MaybeConvertLength(
             length_list[index], zoom);
       });
@@ -116,7 +117,7 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertValue(
 
   const CSSValueList& list = ToCSSValueList(value);
   return ListInterpolationFunctions::CreateList(
-      list.length(), [&list](size_t index) {
+      list.length(), [&list](wtf_size_t index) {
         return LengthInterpolationFunctions::MaybeConvertCSSValue(
             list.Item(index));
       });
@@ -160,13 +161,13 @@ void CSSLengthListInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   const InterpolableList& interpolable_list =
       ToInterpolableList(interpolable_value);
-  const size_t length = interpolable_list.length();
+  const wtf_size_t length = interpolable_list.length();
   DCHECK_GT(length, 0U);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
   DCHECK_EQ(non_interpolable_list.length(), length);
   Vector<Length> result(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     result[i] = LengthInterpolationFunctions::CreateLength(
         *interpolable_list.Get(i), non_interpolable_list.Get(i),
         state.CssToLengthConversionData(), value_range_);

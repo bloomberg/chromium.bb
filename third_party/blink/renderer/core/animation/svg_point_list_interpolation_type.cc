@@ -15,7 +15,7 @@ namespace blink {
 InterpolationValue SVGPointListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  size_t underlying_length =
+  wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
       UnderlyingLengthChecker::Create(underlying_length));
@@ -25,7 +25,7 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertNeutral(
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(underlying_length);
-  for (size_t i = 0; i < underlying_length; i++)
+  for (wtf_size_t i = 0; i < underlying_length; i++)
     result->Set(i, InterpolableNumber::Create(0));
   return InterpolationValue(std::move(result));
 }
@@ -38,7 +38,7 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertSVGValue(
   const SVGPointList& point_list = ToSVGPointList(svg_value);
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(point_list.length() * 2);
-  for (size_t i = 0; i < point_list.length(); i++) {
+  for (wtf_size_t i = 0; i < point_list.length(); i++) {
     const SVGPoint& point = *point_list.at(i);
     result->Set(2 * i, InterpolableNumber::Create(point.X()));
     result->Set(2 * i + 1, InterpolableNumber::Create(point.Y()));
@@ -50,8 +50,9 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertSVGValue(
 PairwiseInterpolationValue SVGPointListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  size_t start_length = ToInterpolableList(*start.interpolable_value).length();
-  size_t end_length = ToInterpolableList(*end.interpolable_value).length();
+  wtf_size_t start_length =
+      ToInterpolableList(*start.interpolable_value).length();
+  wtf_size_t end_length = ToInterpolableList(*end.interpolable_value).length();
   if (start_length != end_length)
     return nullptr;
 
@@ -63,10 +64,11 @@ void SVGPointListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  size_t start_length =
+  wtf_size_t start_length =
       ToInterpolableList(*underlying_value_owner.Value().interpolable_value)
           .length();
-  size_t end_length = ToInterpolableList(*value.interpolable_value).length();
+  wtf_size_t end_length =
+      ToInterpolableList(*value.interpolable_value).length();
   if (start_length == end_length)
     InterpolationType::Composite(underlying_value_owner, underlying_fraction,
                                  value, interpolation_fraction);
@@ -81,7 +83,7 @@ SVGPropertyBase* SVGPointListInterpolationType::AppliedSVGValue(
 
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   DCHECK_EQ(list.length() % 2, 0U);
-  for (size_t i = 0; i < list.length(); i += 2) {
+  for (wtf_size_t i = 0; i < list.length(); i += 2) {
     FloatPoint point =
         FloatPoint(ToInterpolableNumber(list.Get(i))->Value(),
                    ToInterpolableNumber(list.Get(i + 1))->Value());

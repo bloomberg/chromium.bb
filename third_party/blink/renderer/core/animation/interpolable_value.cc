@@ -16,7 +16,7 @@ bool InterpolableList::Equals(const InterpolableValue& other) const {
   const InterpolableList& other_list = ToInterpolableList(other);
   if (length() != other_list.length())
     return false;
-  for (size_t i = 0; i < length(); i++) {
+  for (wtf_size_t i = 0; i < length(); i++) {
     if (!values_[i]->Equals(*other_list.values_[i]))
       return false;
   }
@@ -47,7 +47,7 @@ void InterpolableList::Interpolate(const InterpolableValue& to,
   DCHECK_EQ(to_list.length(), length());
   DCHECK_EQ(result_list.length(), length());
 
-  for (size_t i = 0; i < length(); i++) {
+  for (wtf_size_t i = 0; i < length(); i++) {
     DCHECK(values_[i]);
     DCHECK(to_list.values_[i]);
     values_[i]->Interpolate(*(to_list.values_[i]), progress,
@@ -57,7 +57,7 @@ void InterpolableList::Interpolate(const InterpolableValue& to,
 
 std::unique_ptr<InterpolableValue> InterpolableList::CloneAndZero() const {
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(length());
-  for (size_t i = 0; i < length(); i++)
+  for (wtf_size_t i = 0; i < length(); i++)
     result->Set(i, values_[i]->CloneAndZero());
   return std::move(result);
 }
@@ -67,7 +67,7 @@ void InterpolableNumber::Scale(double scale) {
 }
 
 void InterpolableList::Scale(double scale) {
-  for (size_t i = 0; i < length(); i++)
+  for (wtf_size_t i = 0; i < length(); i++)
     values_[i]->Scale(scale);
 }
 
@@ -80,7 +80,7 @@ void InterpolableList::ScaleAndAdd(double scale,
                                    const InterpolableValue& other) {
   const InterpolableList& other_list = ToInterpolableList(other);
   DCHECK_EQ(other_list.length(), length());
-  for (size_t i = 0; i < length(); i++)
+  for (wtf_size_t i = 0; i < length(); i++)
     values_[i]->ScaleAndAdd(scale, *other_list.values_[i]);
 }
 

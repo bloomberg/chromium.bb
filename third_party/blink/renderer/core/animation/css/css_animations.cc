@@ -98,7 +98,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
   // Construct and populate the style for each keyframe
   PropertySet specified_properties_for_use_counter;
-  for (size_t i = 0; i < style_keyframes.size(); ++i) {
+  for (wtf_size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
     StringKeyframe* keyframe = StringKeyframe::Create();
     const Vector<double>& offsets = style_keyframe->Keys();
@@ -129,7 +129,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     }
     keyframes.push_back(keyframe);
     // The last keyframe specified at a given offset is used.
-    for (size_t j = 1; j < offsets.size(); ++j) {
+    for (wtf_size_t j = 1; j < offsets.size(); ++j) {
       keyframes.push_back(
           ToStringKeyframe(keyframe->CloneWithOffset(offsets[j])));
     }
@@ -153,8 +153,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
                    [](const Member<Keyframe>& a, const Member<Keyframe>& b) {
                      return a->CheckedOffset() < b->CheckedOffset();
                    });
-  size_t target_index = 0;
-  for (size_t i = 1; i < keyframes.size(); i++) {
+  wtf_size_t target_index = 0;
+  for (wtf_size_t i = 1; i < keyframes.size(); i++) {
     if (keyframes[i]->CheckedOffset() ==
         keyframes[target_index]->CheckedOffset()) {
       for (const auto& property : keyframes[i]->Properties()) {
@@ -342,14 +342,14 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
   if (animation_data && style.Display() != EDisplay::kNone) {
     const Vector<AtomicString>& name_list = animation_data->NameList();
-    for (size_t i = 0; i < name_list.size(); ++i) {
+    for (wtf_size_t i = 0; i < name_list.size(); ++i) {
       AtomicString name = name_list[i];
       if (name == CSSAnimationData::InitialName())
         continue;
 
       // Find n where this is the nth occurence of this animation name.
-      size_t name_index = 0;
-      for (size_t j = 0; j < i; j++) {
+      wtf_size_t name_index = 0;
+      for (wtf_size_t j = 0; j < i; j++) {
         if (name_list[j] == name)
           name_index++;
       }
@@ -370,10 +370,10 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         continue;  // Cancel the animation if there's no style rule for it.
 
       const RunningAnimation* existing_animation = nullptr;
-      size_t existing_animation_index = 0;
+      wtf_size_t existing_animation_index = 0;
 
       if (css_animations) {
-        for (size_t i = 0; i < css_animations->running_animations_.size();
+        for (wtf_size_t i = 0; i < css_animations->running_animations_.size();
              i++) {
           const RunningAnimation& running_animation =
               *css_animations->running_animations_[i];
@@ -427,7 +427,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
     }
   }
 
-  for (size_t i = 0; i < cancel_running_animation_flags.size(); i++) {
+  for (wtf_size_t i = 0; i < cancel_running_animation_flags.size(); i++) {
     if (cancel_running_animation_flags[i]) {
       DCHECK(css_animations && !is_animation_style_change);
       update.CancelAnimation(
@@ -486,7 +486,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   // https://code.google.com/p/chromium/issues/detail?id=339847
   DisableCompositingQueryAsserts disabler;
 
-  for (size_t paused_index :
+  for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
     Animation& animation = *running_animations_[paused_index]->animation;
     if (animation.Paused())
@@ -510,9 +510,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     running_animations_[entry.index]->Update(entry);
   }
 
-  const Vector<size_t>& cancelled_indices =
+  const Vector<wtf_size_t>& cancelled_indices =
       pending_update_.CancelledAnimationIndices();
-  for (size_t i = cancelled_indices.size(); i-- > 0;) {
+  for (wtf_size_t i = cancelled_indices.size(); i-- > 0;) {
     DCHECK(i == cancelled_indices.size() - 1 ||
            cancelled_indices[i] < cancelled_indices[i + 1]);
     Animation& animation =
@@ -926,7 +926,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
         update,  animating_element,  *old_style,        style,
         nullptr, active_transitions, listed_properties, *transition_data};
 
-    for (size_t transition_index = 0;
+    for (wtf_size_t transition_index = 0;
          transition_index < transition_data->PropertyList().size();
          ++transition_index) {
       const CSSTransitionData::TransitionProperty& transition_property =

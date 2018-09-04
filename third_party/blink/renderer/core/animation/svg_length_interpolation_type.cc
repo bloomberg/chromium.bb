@@ -18,7 +18,7 @@ std::unique_ptr<InterpolableValue>
 SVGLengthInterpolationType::NeutralInterpolableValue() {
   std::unique_ptr<InterpolableList> list_of_values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
     list_of_values->Set(i, InterpolableNumber::Create(0));
 
   return std::move(list_of_values);
@@ -33,7 +33,7 @@ InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
 
   std::unique_ptr<InterpolableList> list_of_values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
     list_of_values->Set(i, InterpolableNumber::Create(length_array.values[i]));
 
   return InterpolationValue(std::move(list_of_values));
@@ -52,7 +52,7 @@ SVGLength* SVGLengthInterpolationType::ResolveInterpolableSVGLength(
       CSSPrimitiveValue::UnitType::kUserUnits;
   unsigned unit_type_count = 0;
   // We optimise for the common case where only one unit type is involved.
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
     double entry = ToInterpolableNumber(list_of_values.Get(i))->Value();
     if (!entry)
       continue;
@@ -71,7 +71,7 @@ SVGLength* SVGLengthInterpolationType::ResolveInterpolableSVGLength(
 
     // SVGLength does not support calc expressions, so we convert to canonical
     // units.
-    for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+    for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
       double entry = ToInterpolableNumber(list_of_values.Get(i))->Value();
       if (entry)
         value += length_context.ConvertValueToUserUnits(

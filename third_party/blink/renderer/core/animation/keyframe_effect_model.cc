@@ -194,12 +194,12 @@ Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
     result.front() = 0;
   }
 
-  size_t last_index = 0;
+  wtf_size_t last_index = 0;
   last_offset = result.front();
-  for (size_t i = 1; i < result.size(); ++i) {
+  for (wtf_size_t i = 1; i < result.size(); ++i) {
     double offset = result[i];
     if (!std::isnan(offset)) {
-      for (size_t j = 1; j < i - last_index; ++j) {
+      for (wtf_size_t j = 1; j < i - last_index; ++j) {
         result[last_index + j] =
             last_offset + (offset - last_offset) * j / (i - last_index);
       }
@@ -238,7 +238,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
   DCHECK_EQ(computed_offsets.size(), keyframes_.size());
-  for (size_t i = 0; i < keyframes_.size(); i++) {
+  for (wtf_size_t i = 0; i < keyframes_.size(); i++) {
     double computed_offset = computed_offsets[i];
     const auto& keyframe = keyframes_[i];
 
@@ -277,9 +277,9 @@ void KeyframeEffectModelBase::EnsureInterpolationEffectPopulated() const {
 
   for (const auto& entry : *keyframe_groups_) {
     const PropertySpecificKeyframeVector& keyframes = entry.value->Keyframes();
-    for (size_t i = 0; i < keyframes.size() - 1; i++) {
-      size_t start_index = i;
-      size_t end_index = i + 1;
+    for (wtf_size_t i = 0; i < keyframes.size() - 1; i++) {
+      wtf_size_t start_index = i;
+      wtf_size_t end_index = i + 1;
       double start_offset = keyframes[start_index]->Offset();
       double end_offset = keyframes[end_index]->Offset();
       double apply_from = start_offset;

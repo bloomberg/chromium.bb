@@ -34,7 +34,7 @@ bool CSSTimingData::TimingMatchForStyleRecalc(
   if (timing_function_list_.size() != other.timing_function_list_.size())
     return false;
 
-  for (size_t i = 0; i < timing_function_list_.size(); i++) {
+  for (wtf_size_t i = 0; i < timing_function_list_.size(); i++) {
     if (!DataEquivalent(timing_function_list_.at(i),
                         other.timing_function_list_.at(i))) {
       return false;
