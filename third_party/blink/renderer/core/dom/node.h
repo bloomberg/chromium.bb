@@ -1053,7 +1053,9 @@ inline void Node::LazyReattachIfAttached() {
   context.performing_reattach = true;
 
   DetachLayoutTree(context);
-  MarkAncestorsWithChildNeedsStyleRecalc();
+  // Comments and processing instructions are never marked dirty.
+  if (NeedsStyleRecalc())
+    MarkAncestorsWithChildNeedsStyleRecalc();
 }
 
 inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {

@@ -334,4 +334,22 @@ TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
 }
 
+TEST_F(NodeTest, LazyReattachCommentAndPI) {
+  SetBodyContent("<!-- -->");
+  HTMLElement* body = GetDocument().body();
+  ProcessingInstruction* pi =
+      ProcessingInstruction::Create(GetDocument(), "A", "B");
+  body->appendChild(pi, ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Node* comment = body->firstChild();
+  EXPECT_EQ(Node::kCommentNode, comment->getNodeType());
+
+  comment->LazyReattachIfAttached();
+  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+
+  pi->LazyReattachIfAttached();
+  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+}
+
 }  // namespace blink
