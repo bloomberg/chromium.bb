@@ -97,6 +97,10 @@ struct NGInlineBoxState {
   // Text with different font or vertical-align needs to be wrapped with an
   // inline box.
   bool CanAddTextOfStyle(const ComputedStyle&) const;
+
+  // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
+  // |pending_descendants|.
+  NGLineHeightMetrics MetricsForTopAndBottomAlign() const;
 };
 
 // Represents the inline tree structure. This class provides:

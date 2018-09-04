@@ -547,21 +547,18 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   // |pending_descendants|.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
+    NGLineHeightMetrics max = box->MetricsForTopAndBottomAlign();
     for (NGPendingPositions& child : box->pending_descendants) {
-      if (child.metrics.IsEmpty()) {
-        // This can happen with boxes with no content in quirks mode
-        child.metrics = NGLineHeightMetrics(LayoutUnit(), LayoutUnit());
-      }
+      // In quirks mode, metrics is empty if no content.
+      if (child.metrics.IsEmpty())
+        child.metrics = NGLineHeightMetrics::Zero();
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
           DCHECK(!box->text_metrics.IsEmpty());
           baseline_shift = child.metrics.ascent + box->text_top;
           break;
         case EVerticalAlign::kTop:
-          if (box->metrics.IsEmpty())
-            baseline_shift = child.metrics.ascent;
-          else
-            baseline_shift = child.metrics.ascent - box->metrics.ascent;
+          baseline_shift = child.metrics.ascent - max.ascent;
           break;
         case EVerticalAlign::kTextBottom:
           if (const SimpleFontData* font_data =
@@ -574,10 +571,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
           NOTREACHED();
           FALLTHROUGH;
         case EVerticalAlign::kBottom:
-          if (box->metrics.IsEmpty())
-            baseline_shift = -child.metrics.descent;
-          else
-            baseline_shift = box->metrics.descent - child.metrics.descent;
+          baseline_shift = max.descent - child.metrics.descent;
           break;
         default:
           NOTREACHED();
@@ -664,6 +658,36 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   line_box->MoveInBlockDirection(baseline_shift, box->fragment_start,
                                  fragment_end);
   return kPositionNotPending;
+}
+
+NGLineHeightMetrics NGInlineBoxState::MetricsForTopAndBottomAlign() const {
+  // |metrics| is the bounds of "aligned subtree", that is, bounds of
+  // descendants that are not 'vertical-align: top' nor 'bottom'.
+  // https://drafts.csswg.org/css2/visudet.html#propdef-vertical-align
+  NGLineHeightMetrics box = metrics;
+
+  // In quirks mode, metrics is empty if no content.
+  if (box.IsEmpty())
+    box = NGLineHeightMetrics::Zero();
+
+  // If the height of a box that has 'vertical-align: top' or 'bottom' exceeds
+  // the height of the "aligned subtree", align the edge to the "aligned
+  // subtree" and extend the other edge.
+  NGLineHeightMetrics max = box;
+  for (const NGPendingPositions& child : pending_descendants) {
+    if ((child.vertical_align == EVerticalAlign::kTop ||
+         child.vertical_align == EVerticalAlign::kBottom) &&
+        child.metrics.LineHeight() > max.LineHeight()) {
+      if (child.vertical_align == EVerticalAlign::kTop) {
+        max = NGLineHeightMetrics(box.ascent,
+                                  child.metrics.LineHeight() - box.ascent);
+      } else if (child.vertical_align == EVerticalAlign::kBottom) {
+        max = NGLineHeightMetrics(child.metrics.LineHeight() - box.descent,
+                                  box.descent);
+      }
+    }
+  }
+  return max;
 }
 
 }  // namespace blink
