@@ -1834,15 +1834,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // results in a scroll. This is only handled by RenderWidgetHostViewAura
 // and is needed for trackpad scrolling on Chromebooks.
 #if defined(USE_AURA)
-
-#if defined(THREAD_SANITIZER) || defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/833380
-#define MAYBE_ScrollEventToOOPIF DISABLED_ScrollEventToOOPIF
-#else
-#define MAYBE_ScrollEventToOOPIF ScrollEventToOOPIF
-#endif
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_ScrollEventToOOPIF) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
