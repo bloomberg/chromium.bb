@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
@@ -27,6 +28,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -1440,19 +1442,35 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0)),
-      window2(CreateTestWindowInShellWithId(1));
+      window2(CreateTestWindowInShellWithId(1)),
+      window3(CreateTestWindowInShellWithId(2));
   wm::WindowState *state1 = wm::GetWindowState(window1.get()),
-                  *state2 = wm::GetWindowState(window2.get());
+                  *state2 = wm::GetWindowState(window2.get()),
+                  *state3 = wm::GetWindowState(window3.get());
   state1->Maximize();
   state2->Maximize();
+  state3->Maximize();
   EXPECT_TRUE(state1->IsMaximized());
   EXPECT_TRUE(state2->IsMaximized());
+  EXPECT_TRUE(state3->IsMaximized());
+
+  // The windows need to be activated for the mru window tracker.
+  wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window3.get());
+  auto ordering = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
 
   // Press app list button.
   PressAppListButton();
   EXPECT_TRUE(state1->IsMinimized());
   EXPECT_TRUE(state2->IsMinimized());
+  EXPECT_TRUE(state3->IsMinimized());
   GetAppListTestHelper()->CheckVisibility(true);
+
+  // Tests that the window ordering remains the same as before we minimize.
+  EXPECT_TRUE(std::equal(
+      ordering.begin(), ordering.end(),
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().begin()));
 }
 
 // Tests that the app list button will end split view mode.

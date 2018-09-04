@@ -301,7 +301,8 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 
   if (GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5) {
     // Minimize the hidden windows so they can be used normally with alt+tab
-    // and overview.
+    // and overview. Minimize in reverse order to preserve mru ordering.
+    std::reverse(hidden_windows_.begin(), hidden_windows_.end());
     for (auto* window : hidden_windows_) {
       ScopedAnimationDisabler disable(window);
       wm::GetWindowState(window)->Minimize();
