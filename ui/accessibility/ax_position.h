@@ -63,7 +63,7 @@ bool operator!=(const AXPosition<AXPositionType, AXNodeType>& first,
 // distinguish between "before text" and "after text" positions. To do this, if
 // the child index is 0 and the anchor is a leaf node, then it's an "after text"
 // position. If the child index is |BEFORE_TEXT| and the anchor is a leaf node,
-// then his is a "before text" position.
+// then this is a "before text" position.
 // It doesn't make sense to have a "before text" position on a text position,
 // because it is identical to setting its offset to the first character.
 //
