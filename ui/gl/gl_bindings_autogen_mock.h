@@ -1237,6 +1237,7 @@ static void GL_BINDING_CALL Mock_glMatrixLoadfEXT(GLenum matrixMode,
 static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierByRegion(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);
+static void GL_BINDING_CALL Mock_glMinSampleShading(GLfloat value);
 static void GL_BINDING_CALL Mock_glObjectLabel(GLenum identifier,
                                                GLuint name,
                                                GLsizei length,

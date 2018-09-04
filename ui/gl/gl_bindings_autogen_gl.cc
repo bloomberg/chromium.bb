@@ -1854,6 +1854,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glMemoryBarrierEXT"));
   }
 
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glMinSampleShadingFn = reinterpret_cast<glMinSampleShadingProc>(
+        GetGLProcAddress("glMinSampleShading"));
+  }
+
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
     fn.glObjectLabelFn =
         reinterpret_cast<glObjectLabelProc>(GetGLProcAddress("glObjectLabel"));
@@ -4479,6 +4484,10 @@ void GLApiBase::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 
 void GLApiBase::glMemoryBarrierEXTFn(GLbitfield barriers) {
   driver_->fn.glMemoryBarrierEXTFn(barriers);
+}
+
+void GLApiBase::glMinSampleShadingFn(GLfloat value) {
+  driver_->fn.glMinSampleShadingFn(value);
 }
 
 void GLApiBase::glObjectLabelFn(GLenum identifier,
@@ -7835,6 +7844,11 @@ void TraceGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 void TraceGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMemoryBarrierEXT")
   gl_api_->glMemoryBarrierEXTFn(barriers);
+}
+
+void TraceGLApi::glMinSampleShadingFn(GLfloat value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMinSampleShading")
+  gl_api_->glMinSampleShadingFn(value);
 }
 
 void TraceGLApi::glObjectLabelFn(GLenum identifier,
@@ -12092,6 +12106,12 @@ void DebugGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   gl_api_->glMemoryBarrierEXTFn(barriers);
 }
 
+void DebugGLApi::glMinSampleShadingFn(GLfloat value) {
+  GL_SERVICE_LOG("glMinSampleShading"
+                 << "(" << value << ")");
+  gl_api_->glMinSampleShadingFn(value);
+}
+
 void DebugGLApi::glObjectLabelFn(GLenum identifier,
                                  GLuint name,
                                  GLsizei length,
@@ -15726,6 +15746,10 @@ void NoContextGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 
 void NoContextGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   NoContextHelper("glMemoryBarrierEXT");
+}
+
+void NoContextGLApi::glMinSampleShadingFn(GLfloat value) {
+  NoContextHelper("glMinSampleShading");
 }
 
 void NoContextGLApi::glObjectLabelFn(GLenum identifier,
