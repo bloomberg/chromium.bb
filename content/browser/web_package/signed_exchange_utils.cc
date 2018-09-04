@@ -5,12 +5,14 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
 #include "content/public/common/content_features.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
@@ -52,6 +54,43 @@ bool ShouldHandleAsSignedHTTPExchange(
   return validator->RequestEnablesFeature(request_url, head.headers.get(),
                                           features::kSignedHTTPExchange.name,
                                           base::Time::Now());
+}
+
+base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
+    const std::string& content_type) {
+  // https://wicg.github.io/webpackage/loading.html#signed-exchange-version
+  // Step 1. Let mimeType be the supplied MIME type of response. [spec text]
+  // |content_type| is the supplied MIME type.
+  // Step 2. If mimeType is undefined, return undefined. [spec text]
+  // Step 3. If mimeType's essence is not "application/signed-exchange", return
+  //         undefined. [spec text]
+  const std::string::size_type semicolon = content_type.find(';');
+  const std::string essence = base::ToLowerASCII(base::TrimWhitespaceASCII(
+      content_type.substr(0, semicolon), base::TRIM_ALL));
+  if (essence != "application/signed-exchange")
+    return base::nullopt;
+
+  // Step 4.Let params be mimeType's parameters. [spec text]
+  std::map<std::string, std::string> params;
+  if (semicolon != base::StringPiece::npos) {
+    net::HttpUtil::NameValuePairsIterator parser(
+        content_type.begin() + semicolon + 1, content_type.end(), ';');
+    while (parser.GetNext()) {
+      const base::StringPiece name(parser.name_begin(), parser.name_end());
+      params[base::ToLowerASCII(name)] = parser.value();
+    }
+    if (!parser.valid())
+      return base::nullopt;
+  }
+  // Step 5. If params["v"] exists, return it. Otherwise, return undefined.
+  //        [spec text]
+  auto iter = params.find("v");
+  if (iter != params.end()) {
+    if (iter->second == "b2")
+      return base::make_optional(SignedExchangeVersion::kB2);
+    return base::make_optional(SignedExchangeVersion::kUnknown);
+  }
+  return base::nullopt;
 }
 
 }  // namespace signed_exchange_utils
