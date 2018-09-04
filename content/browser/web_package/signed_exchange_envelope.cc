@@ -180,20 +180,6 @@ bool ParseResponseMap(const cbor::CBORValue& value,
         devtools_proxy, "Failed to parse status code to integer.");
     return false;
   }
-  // https://wicg.github.io/webpackage/loading.html#parsing-b1
-  // Step 26. If parsedExchange’s response's status is a redirect status or the
-  //          signed exchange version of parsedExchange’s response is not
-  //          undefined, return a failure. [spec text]
-  // TODO(crbug.com/803774): Reject if inner response is a signed exchange.
-  if (net::HttpResponseHeaders::IsRedirectResponseCode(response_code)) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf(
-            "Exchange's response status must not be a redirect status. "
-            "status: %d",
-            response_code));
-    return false;
-  }
   out->set_response_code(static_cast<net::HttpStatusCode>(response_code));
 
   for (const auto& it : response_map) {
@@ -249,6 +235,37 @@ bool ParseResponseMap(const cbor::CBORValue& value,
       return false;
     }
   }
+
+  // https://wicg.github.io/webpackage/loading.html#parsing-b1
+  // Step 26. If parsedExchange’s response's status is a redirect status or the
+  //          signed exchange version of parsedExchange’s response is not
+  //          undefined, return a failure. [spec text]
+  if (net::HttpResponseHeaders::IsRedirectResponseCode(out->response_code())) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Exchange's response status must not be a redirect status. "
+            "status: %d",
+            response_code));
+    return false;
+  }
+  // Note: This does not reject content-type like "application/signed-exchange"
+  // (no "v=" parameter). In that case, SignedExchangeRequestHandler does not
+  // handle the inner response and UA just downloads it.
+  // See https://github.com/WICG/webpackage/issues/299 for details.
+  auto found = out->response_headers().find("content-type");
+  if (found != out->response_headers().end() &&
+      signed_exchange_utils::GetSignedExchangeVersion(found->second)
+          .has_value()) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Exchange's inner response must not be a signed-exchange. "
+            "conetent-type: %s",
+            found->second.c_str()));
+    return false;
+  }
+
   return true;
 }
 
