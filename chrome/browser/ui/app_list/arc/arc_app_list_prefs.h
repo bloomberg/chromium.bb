@@ -24,12 +24,12 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
-#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/layout.h"
 
+class ArcDefaultAppList;
 class PrefService;
 class Profile;
 
@@ -56,7 +56,6 @@ class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
                         public arc::ConnectionObserver<arc::mojom::AppInstance>,
                         public arc::ArcSessionManager::Observer,
-                        public ArcDefaultAppList::Delegate,
                         public arc::ArcPolicyBridge::Observer {
  public:
   struct AppInfo {
@@ -273,9 +272,6 @@ class ArcAppListPrefs : public KeyedService,
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
-  // ArcDefaultAppList::Delegate:
-  void OnDefaultAppsReady() override;
-
   // arc::ArcPolicyBridge::Observer:
   void OnPolicySent(const std::string& policy) override;
 
@@ -307,7 +303,7 @@ class ArcAppListPrefs : public KeyedService,
                        const std::string& key,
                        base::Value value);
 
-  void SetDefaltAppsReadyCallback(base::Closure callback);
+  void SetDefaltAppsReadyCallback(base::OnceClosure callback);
   void SimulateDefaultAppAvailabilityTimeoutForTesting();
 
  private:
@@ -391,11 +387,9 @@ class ArcAppListPrefs : public KeyedService,
                          const bool shortcut,
                          const bool launchable);
   // Adds or updates local pref for given package.
-  void AddOrUpdatePackagePrefs(PrefService* prefs,
-                               const arc::mojom::ArcPackageInfo& package);
+  void AddOrUpdatePackagePrefs(const arc::mojom::ArcPackageInfo& package);
   // Removes given package from local pref.
-  void RemovePackageFromPrefs(PrefService* prefs,
-                              const std::string& package_name);
+  void RemovePackageFromPrefs(const std::string& package_name);
 
   void DisableAllApps();
   void RemoveAllAppsAndPackages();
@@ -492,6 +486,9 @@ class ArcAppListPrefs : public KeyedService,
                      const std::vector<uint8_t>& icon_png_data);
   void DiscardResizeRequest(ResizeRequest* request);
 
+  // Callback called once default apps are ready.
+  void OnDefaultAppsReady();
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -543,8 +540,8 @@ class ArcAppListPrefs : public KeyedService,
   arc::ArcPackageSyncableService* sync_service_ = nullptr;
 
   bool default_apps_ready_ = false;
-  ArcDefaultAppList default_apps_;
-  base::Closure default_apps_ready_callback_;
+  std::unique_ptr<ArcDefaultAppList> default_apps_;
+  base::OnceClosure default_apps_ready_callback_;
   // Set of packages installed by policy in case of managed user.
   std::set<std::string> packages_by_policy_;
 
