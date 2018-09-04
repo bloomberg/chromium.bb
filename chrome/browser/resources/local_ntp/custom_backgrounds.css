@@ -421,7 +421,6 @@ html[dir=rtl] #bg-sel-footer-cancel {
 #bg-sel-footer-done:not(:disabled) {
   background-color: rgb(26, 115, 232);
   color: white;
-  outline: initial;
 }
 
 #bg-sel-footer-done:hover:not(:disabled) {
