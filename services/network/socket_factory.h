@@ -18,6 +18,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
+#include "services/network/tcp_bound_socket.h"
 #include "services/network/tcp_connected_socket.h"
 #include "services/network/tcp_server_socket.h"
 
@@ -33,8 +34,8 @@ namespace network {
 // Helper class that handles socket requests. It takes care of destroying
 // socket implementation instances when mojo  pipes are broken.
 class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
-    : public TCPServerSocket::Delegate,
-      public TCPConnectedSocket::Delegate {
+    : public TCPConnectedSocket::Delegate,
+      public TCPServerSocket::Delegate {
  public:
   // Constructs a SocketFactory. If |net_log| is non-null, it is used to
   // log NetLog events when logging is enabled. |net_log| used to must outlive
@@ -43,6 +44,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
                 net::URLRequestContext* url_request_context);
   virtual ~SocketFactory();
 
+  // These all correspond to the NetworkContext methods of the same name.
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver);
   void CreateTCPServerSocket(
@@ -58,6 +60,30 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,
       mojom::NetworkContext::CreateTCPConnectedSocketCallback callback);
+  void CreateTCPBoundSocket(
+      const net::IPEndPoint& local_addr,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPBoundSocketRequest request,
+      mojom::NetworkContext::CreateTCPBoundSocketCallback callback);
+
+  // Destroys the specified BoundSocket object.
+  void DestroyBoundSocket(mojo::BindingId bound_socket_id);
+
+  // Invoked when a BoundSocket successfully starts listening. Destroys the
+  // BoundSocket object, adding a binding for the provided TCPServerSocket in
+  // its place.
+  void OnBoundSocketListening(
+      mojo::BindingId bound_socket_id,
+      std::unique_ptr<TCPServerSocket> server_socket,
+      mojom::TCPServerSocketRequest server_socket_request);
+
+  // Invoked when a BoundSocket successfully establishes a connection. Destroys
+  // the BoundSocket object, adding a binding for the provided
+  // TCPConnectedSocket in its place.
+  void OnBoundSocketConnected(
+      mojo::BindingId bound_socket_id,
+      std::unique_ptr<TCPConnectedSocket> connected_socket,
+      mojom::TCPConnectedSocketRequest connected_socket_request);
 
  private:
   // TCPServerSocket::Delegate implementation:
@@ -93,6 +119,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
       tcp_connected_socket_bindings_;
   mojo::StrongBindingSet<mojom::TLSClientSocket> tls_socket_bindings_;
+  mojo::StrongBindingSet<mojom::TCPBoundSocket> tcp_bound_socket_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketFactory);
 };

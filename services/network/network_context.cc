@@ -817,6 +817,17 @@ void NetworkContext::CreateTCPConnectedSocket(
       std::move(request), std::move(observer), std::move(callback));
 }
 
+void NetworkContext::CreateTCPBoundSocket(
+    const net::IPEndPoint& local_addr,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::TCPBoundSocketRequest request,
+    CreateTCPBoundSocketCallback callback) {
+  socket_factory_->CreateTCPBoundSocket(
+      local_addr,
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
+      std::move(request), std::move(callback));
+}
+
 void NetworkContext::CreateProxyResolvingSocketFactory(
     mojom::ProxyResolvingSocketFactoryRequest request) {
   proxy_resolving_socket_factories_.AddBinding(
