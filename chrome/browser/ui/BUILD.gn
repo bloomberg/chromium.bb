@@ -3679,6 +3679,8 @@ jumbo_split_static_library("ui") {
         "app_list/arc/arc_app_list_prefs_factory.h",
         "app_list/arc/arc_app_model_builder.cc",
         "app_list/arc/arc_app_model_builder.h",
+        "app_list/arc/arc_app_scoped_pref_update.cc",
+        "app_list/arc/arc_app_scoped_pref_update.h",
         "app_list/arc/arc_app_utils.cc",
         "app_list/arc/arc_app_utils.h",
         "app_list/arc/arc_data_removal_dialog.h",

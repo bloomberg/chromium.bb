@@ -2226,8 +2226,43 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
   // Validate that OEM state is preserved.
   for (const auto& default_app : fake_default_apps()) {
     const std::string app_id = ArcAppTest::GetAppId(default_app);
+    EXPECT_TRUE(prefs->IsDefault(app_id));
     EXPECT_EQ(oem_states[app_id], prefs->IsOem(app_id));
   }
+}
+
+// Test that validates disabling default app removes app from the list and this
+// is persistent in next sessions.
+TEST_P(ArcDefaulAppTest, DisableDefaultApps) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  ValidateHaveApps(fake_default_apps());
+
+  // Install default app.
+  const arc::mojom::AppInfo default_app = fake_default_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(default_app);
+  std::vector<arc::mojom::AppInfo> package_apps;
+  package_apps.push_back(default_app);
+  app_instance()->SendPackageAppListRefreshed(default_app.package_name,
+                                              package_apps);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  ASSERT_TRUE(app_info);
+  EXPECT_TRUE(app_info->ready);
+  EXPECT_TRUE(prefs->IsDefault(app_id));
+
+  // Disable default app. In this case list of apps for package is empty.
+  package_apps.clear();
+  app_instance()->SendPackageAppListRefreshed(default_app.package_name,
+                                              package_apps);
+  EXPECT_FALSE(prefs->GetApp(app_id));
+
+  // Sign-out and sign-in again. Disabled default app should not appear.
+  RestartArc();
+
+  prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+  EXPECT_FALSE(prefs->GetApp(app_id));
 }
 
 TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {

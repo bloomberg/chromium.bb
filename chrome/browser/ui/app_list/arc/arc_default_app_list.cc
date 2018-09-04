@@ -9,20 +9,26 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_scoped_pref_update.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/arc/arc_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {
 
-const char kActivity[] = "activity";
-const char kAppPath[] = "app_path";
-const char kName[] = "name";
-const char kOem[] = "oem";
-const char kPackageName[] = "package_name";
+constexpr char kActivity[] = "activity";
+constexpr char kAppPath[] = "app_path";
+constexpr char kName[] = "name";
+constexpr char kOem[] = "oem";
+constexpr char kPackageName[] = "package_name";
+
+constexpr char kDefaultApps[] = "arc.apps.default";
+constexpr char kHidden[] = "hidden";
 
 // Sub-directory wher ARC apps forward declarations are stored.
 const base::FilePath::CharType kArcDirectory[] = FILE_PATH_LITERAL("arc");
@@ -114,6 +120,16 @@ ReadAppsFromFileThread() {
   return apps;
 }
 
+// Returns true if default app |app_id| is marked as hidden in the prefs.
+bool IsAppHidden(const PrefService* prefs, const std::string& app_id) {
+  const base::DictionaryValue* apps_dict = prefs->GetDictionary(kDefaultApps);
+  const base::DictionaryValue* app_dict;
+  if (!apps_dict || !apps_dict->GetDictionary(app_id, &app_dict))
+    return false;
+  bool hidden = false;
+  return app_dict->GetBoolean(kHidden, &hidden) && hidden;
+}
+
 }  // namespace
 
 // static
@@ -121,10 +137,17 @@ void ArcDefaultAppList::UseTestAppsDirectory() {
   use_test_apps_directory = true;
 }
 
-ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate,
-                                     content::BrowserContext* context)
-    : delegate_(delegate), context_(context), weak_ptr_factory_(this) {
-  CHECK(delegate_);
+// static
+void ArcDefaultAppList::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(kDefaultApps);
+}
+
+ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
+                                     base::OnceClosure ready_callback)
+    : profile_(profile),
+      ready_callback_(std::move(ready_callback)),
+      weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Once ready OnAppsReady is called.
@@ -135,17 +158,22 @@ ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-ArcDefaultAppList::~ArcDefaultAppList() {}
+ArcDefaultAppList::~ArcDefaultAppList() = default;
 
 void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  apps_.swap(*apps.get());
+  const PrefService* const prefs = profile_->GetPrefs();
+  for (auto& entry : *apps.get()) {
+    AppInfoMap& app_map =
+        IsAppHidden(prefs, entry.first) ? hidden_apps_ : visible_apps_;
+    app_map[entry.first] = std::move(entry.second);
+  }
 
   // Register Play Store as default app. Some services and ArcSupportHost may
   // not be available in tests.
   extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(context_)->extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   const extensions::Extension* arc_host =
       service ? service->GetInstalledExtension(arc::kPlayStoreAppId) : nullptr;
   if (arc_host && arc::IsPlayStoreAvailable()) {
@@ -155,17 +183,14 @@ void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
                                        arc::kPlayStoreActivity,
                                        false /* oem */,
                                        base::FilePath() /* app_path */);
-    apps_.insert(
-        std::pair<std::string,
-                  std::unique_ptr<ArcDefaultAppList::AppInfo>>(
-                      arc::kPlayStoreAppId, std::move(play_store_app)));
+    AppInfoMap& app_map =
+        IsAppHidden(prefs, arc::kPlayStoreAppId) ? hidden_apps_ : visible_apps_;
+    app_map.insert(
+        std::pair<std::string, std::unique_ptr<ArcDefaultAppList::AppInfo>>(
+            arc::kPlayStoreAppId, std::move(play_store_app)));
   }
 
-  // Initially consider packages are installed.
-  for (const auto& app : apps_)
-    packages_[app.second->package_name] = false;
-
-  delegate_->OnDefaultAppsReady();
+  std::move(ready_callback_).Run();
 }
 
 const ArcDefaultAppList::AppInfo* ArcDefaultAppList::GetApp(
@@ -175,13 +200,8 @@ const ArcDefaultAppList::AppInfo* ArcDefaultAppList::GetApp(
        app_id != arc::kPlayStoreAppId)) {
     return nullptr;
   }
-  const auto it = apps_.find(app_id);
-  if (it == apps_.end())
-    return nullptr;
-  // Check if its package was uninstalled.
-  const auto it_package = packages_.find(it->second->package_name);
-  DCHECK(it_package != packages_.end());
-  if (it_package->second)
+  const auto it = visible_apps_.find(app_id);
+  if (it == visible_apps_.end())
     return nullptr;
   return it->second.get();
 }
@@ -191,23 +211,54 @@ bool ArcDefaultAppList::HasApp(const std::string& app_id) const {
 }
 
 bool ArcDefaultAppList::HasPackage(const std::string& package_name) const {
-  return packages_.count(package_name);
+  for (const auto& it : visible_apps_) {
+    if (it.second->package_name == package_name)
+      return true;
+  }
+  return false;
 }
 
-void ArcDefaultAppList::MaybeMarkPackageUninstalled(
-    const std::string& package_name, bool uninstalled) {
-  auto it = packages_.find(package_name);
-  if (it == packages_.end())
+void ArcDefaultAppList::SetAppHidden(const std::string& app_id, bool hidden) {
+  AppInfoMap& active_map = hidden ? visible_apps_ : hidden_apps_;
+  AppInfoMap& inactive_map = hidden ? hidden_apps_ : visible_apps_;
+
+  auto it = active_map.find(app_id);
+  if (it == active_map.end())
     return;
-  it->second = uninstalled;
+  inactive_map[app_id] = std::move(it->second);
+  active_map.erase(it);
+
+  // Store hidden flag.
+  arc::ArcAppScopedPrefUpdate(profile_->GetPrefs(), app_id, kDefaultApps)
+      .Get()
+      ->SetBoolean(kHidden, hidden);
+}
+
+void ArcDefaultAppList::SetAppsHiddenForPackage(
+    const std::string& package_name) {
+  std::unordered_set<std::string> apps_to_hide;
+  for (const auto& app : visible_apps_) {
+    if (app.second->package_name == package_name)
+      apps_to_hide.insert(app.first);
+  }
+  for (const auto& app : apps_to_hide)
+    SetAppHidden(app, true);
+}
+
+std::map<std::string, const ArcDefaultAppList::AppInfo*>
+ArcDefaultAppList::GetActiveApps() const {
+  std::map<std::string, const AppInfo*> result;
+  for (const auto& it : visible_apps_) {
+    if (HasApp(it.first))
+      result[it.first] = it.second.get();
+  }
+  return result;
 }
 
 std::unordered_set<std::string> ArcDefaultAppList::GetActivePackages() const {
   std::unordered_set<std::string> result;
-  for (const auto& package_info : packages_) {
-    if (!package_info.second)
-      result.insert(package_info.first);
-  }
+  for (const auto& it : GetActiveApps())
+    result.insert(it.second->package_name);
   return result;
 }
 
