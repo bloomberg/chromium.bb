@@ -618,6 +618,9 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
       DCHECK(network_ != NetworkChangeNotifier::kInvalidNetworkHandle);
       network_ = factory_->FindAlternateNetwork(network_);
       if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+        net_log_.AddEvent(
+            NetLogEventType::
+                QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK);
         DVLOG(1) << "Retry connection on alternate network";
         session_ = nullptr;
         io_state_ = STATE_CONNECT;
