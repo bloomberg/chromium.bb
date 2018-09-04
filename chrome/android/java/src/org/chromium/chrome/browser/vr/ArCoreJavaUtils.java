@@ -50,8 +50,8 @@ public class ArCoreJavaUtils {
         int ARCORE_INSTALLED = 2;
     }
 
-    private long mNativeArCoreJavaUtils = 0;
-    private boolean mAppInfoInitialized = false;
+    private long mNativeArCoreJavaUtils;
+    private boolean mAppInfoInitialized;
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
 
     /**

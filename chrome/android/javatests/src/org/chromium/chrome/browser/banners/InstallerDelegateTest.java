@@ -32,7 +32,7 @@ public class InstallerDelegateTest implements InstallerDelegate.Observer {
      * Returns a mocked set of installed packages.
      */
     public static class TestPackageManager extends MockPackageManager {
-        public boolean isInstalled = false;
+        public boolean isInstalled;
 
         @Override
         public PackageInfo getPackageInfo(String packageName, int flags)

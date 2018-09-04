@@ -21,10 +21,10 @@ import java.util.concurrent.Callable;
  */
 public class MockDownloadNotificationService extends DownloadNotificationService {
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
-    private boolean mPaused = false;
+    private boolean mPaused;
     private Context mContext;
     private int mLastNotificationId;
-    private boolean mIsForegroundRunning = false;
+    private boolean mIsForegroundRunning;
 
     void setContext(Context context) {
         mContext = context;

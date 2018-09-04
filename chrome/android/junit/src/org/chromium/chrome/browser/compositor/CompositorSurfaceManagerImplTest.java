@@ -74,7 +74,7 @@ public class CompositorSurfaceManagerImplTest {
              * Fake surface that lets us control whether it's valid or not.
              */
             public static class MyFakeSurface extends Surface {
-                public boolean valid = false;
+                public boolean valid;
 
                 @Override
                 public boolean isValid() {

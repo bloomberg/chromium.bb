@@ -40,7 +40,7 @@ public class MediaViewerUtils {
     private static final String MIMETYPE_IMAGE = "image";
     private static final String MIMETYPE_VIDEO = "video";
 
-    private static boolean sIsMediaLauncherActivityForceEnabledForTest = false;
+    private static boolean sIsMediaLauncherActivityForceEnabledForTest;
 
     /**
      * Creates an Intent that allows viewing the given file in an internal media viewer.

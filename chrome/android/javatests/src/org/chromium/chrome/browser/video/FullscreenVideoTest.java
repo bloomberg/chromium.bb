@@ -49,7 +49,7 @@ public class FullscreenVideoTest {
     public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     private static final int TEST_TIMEOUT = 3000;
-    private boolean mIsTabFullscreen = false;
+    private boolean mIsTabFullscreen;
     private ChromeActivity mActivity;
 
     private class FullscreenTabObserver extends EmptyTabObserver {

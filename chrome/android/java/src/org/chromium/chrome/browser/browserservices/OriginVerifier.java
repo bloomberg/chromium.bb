@@ -67,7 +67,7 @@ public class OriginVerifier {
     private final String mPackageName;
     private final String mSignatureFingerprint;
     private final @Relation int mRelation;
-    private long mNativeOriginVerifier = 0;
+    private long mNativeOriginVerifier;
     private Origin mOrigin;
 
     /** Small helper class to post a result of origin verification. */

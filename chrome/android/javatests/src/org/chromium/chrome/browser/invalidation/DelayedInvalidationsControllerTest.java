@@ -54,8 +54,8 @@ public class DelayedInvalidationsControllerTest {
      * It intercepts access to the Android Sync Adapter.
      */
     private static class MockDelayedInvalidationsController extends DelayedInvalidationsController {
-        private boolean mInvalidated = false;
-        private List<Bundle> mBundles = null;
+        private boolean mInvalidated;
+        private List<Bundle> mBundles;
 
         private MockDelayedInvalidationsController() {}
 

@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.vr.VrCoreVersionChecker;
 public class MockVrCoreVersionChecker extends VrCoreVersionChecker {
     private boolean mUseActualImplementation;
     private VrCoreInfo mMockReturnValue = new VrCoreInfo(null, VrCoreCompatibility.VR_READY);
-    private VrCoreInfo mLastReturnValue = null;
+    private VrCoreInfo mLastReturnValue;
 
     @Override
     public VrCoreInfo getVrCoreInfo() {

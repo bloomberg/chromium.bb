@@ -52,7 +52,7 @@ public class BluetoothChooserDialogTest {
     static class BluetoothChooserDialogWithFakeNatives extends BluetoothChooserDialog {
         int mFinishedEventType = -1;
         String mFinishedDeviceId;
-        int mRestartSearchCount = 0;
+        int mRestartSearchCount;
 
         BluetoothChooserDialogWithFakeNatives(WindowAndroid windowAndroid, String origin,
                 int securityLevel, long nativeBluetoothChooserDialogPtr) {
@@ -417,9 +417,9 @@ public class BluetoothChooserDialogTest {
     }
 
     private static class TestAndroidPermissionDelegate implements AndroidPermissionDelegate {
-        Dialog mDialog = null;
-        PermissionCallback mCallback = null;
-        String[] mPermissionsRequested = null;
+        Dialog mDialog;
+        PermissionCallback mCallback;
+        String[] mPermissionsRequested;
 
         public TestAndroidPermissionDelegate(Dialog dialog) {
             mDialog = dialog;
@@ -459,7 +459,7 @@ public class BluetoothChooserDialogTest {
     }
 
     private static class FakeLocationUtils extends LocationUtils {
-        public boolean mLocationGranted = false;
+        public boolean mLocationGranted;
 
         @Override
         public boolean hasAndroidLocationPermission() {

@@ -34,9 +34,9 @@ public class ChromeBackgroundServiceTest {
     private MockTaskService mTaskService;
 
     static class MockTaskService extends ChromeBackgroundService {
-        private boolean mDidLaunchBrowser = false;
-        private boolean mDidCallOnPersistentSchedulerWakeUp = false;
-        private boolean mDidCallOnBrowserUpgraded = false;
+        private boolean mDidLaunchBrowser;
+        private boolean mDidCallOnPersistentSchedulerWakeUp;
+        private boolean mDidCallOnBrowserUpgraded;
 
         @Override
         protected void launchBrowser(Context context, String tag) {

@@ -156,7 +156,7 @@ public class VrShellDelegate
     private static boolean sRegisteredDaydreamHook;
     private static boolean sRegisteredVrAssetsComponent;
     private static @VrSupportLevel Integer sVrSupportLevel;
-    private static Boolean sBootsToVr = null;
+    private static Boolean sBootsToVr;
     private static boolean sTestVrShellDelegateOnStartup;
 
     private ChromeActivity mActivity;
@@ -190,8 +190,8 @@ public class VrShellDelegate
     private boolean mExitedDueToUnsupportedMode;
     private boolean mPaused;
     private boolean mVisible;
-    private boolean mRestoreSystemUiVisibility = false;
-    private Integer mRestoreOrientation = null;
+    private boolean mRestoreSystemUiVisibility;
+    private Integer mRestoreOrientation;
     private boolean mRequestedWebVr;
     private boolean mListeningForWebVrActivate;
     private boolean mMaybeActivateAfterHeadsetInsertion;

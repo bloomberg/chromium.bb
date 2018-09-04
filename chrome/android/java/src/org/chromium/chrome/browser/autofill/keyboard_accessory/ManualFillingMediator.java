@@ -37,7 +37,7 @@ import java.util.Map;
 class ManualFillingMediator
         extends EmptyTabObserver implements KeyboardAccessoryCoordinator.VisibilityDelegate {
     private WindowAndroid mWindowAndroid;
-    private @Px int mPreviousControlHeight = 0;
+    private @Px int mPreviousControlHeight;
     private final WindowAndroid.KeyboardVisibilityListener mVisibilityListener =
             this::onKeyboardVisibilityChanged;
 

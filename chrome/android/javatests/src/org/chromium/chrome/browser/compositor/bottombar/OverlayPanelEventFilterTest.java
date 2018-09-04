@@ -106,8 +106,8 @@ public class OverlayPanelEventFilterTest {
      * Mocks an OverlayPanel, so it doesn't create WebContents or animations.
      */
     private final class MockOverlayPanel extends OverlayPanel {
-        private boolean mWasTapDetectedOnPanel = false;
-        private boolean mWasScrollDetectedOnPanel = false;
+        private boolean mWasTapDetectedOnPanel;
+        private boolean mWasScrollDetectedOnPanel;
 
         public MockOverlayPanel(Context context, OverlayPanelManager panelManager) {
             super(context, null, panelManager);

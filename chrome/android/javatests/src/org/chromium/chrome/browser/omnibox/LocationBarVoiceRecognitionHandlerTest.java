@@ -82,8 +82,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         private int mDismissedSource = -1;
         @VoiceInteractionSource
         private int mFailureSource = -1;
-        private Boolean mResult = null;
-        private Float mVoiceConfidenceValue = null;
+        private Boolean mResult;
+        private Float mVoiceConfidenceValue;
 
         public TestLocationBarVoiceRecognitionHandler(Delegate delegate) {
             super(delegate);

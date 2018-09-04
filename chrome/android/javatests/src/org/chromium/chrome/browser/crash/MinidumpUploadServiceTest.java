@@ -208,8 +208,8 @@ public class MinidumpUploadServiceTest {
         // to return fake ones. It also ensures that the service never tries to create a callable
         // too many times.
         TestMinidumpUploadService service = new TestMinidumpUploadService() {
-            int mIndex = 0;
-            boolean mTriggerNetworkChange = false;
+            int mIndex;
+            boolean mTriggerNetworkChange;
 
             @Override
             MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {
