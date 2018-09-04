@@ -259,6 +259,13 @@
 -TabCaptureApiPixelTest.OffscreenTabEndToEnd
 -TabCaptureApiPixelTest.OffscreenTabEvilTests
 
+# Touch gestures don't work in webcontents. https://crbug.com/866991.
+-TopControlsSlideControllerTest.DisplayRotation
+-TopControlsSlideControllerTest.TestScrollingPage
+-TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
+-TopControlsSlideControllerTest.TestClosingATab
+-TopControlsSlideControllerTest.TestFocusEditableElements
+
 # Unmanaged platform keys tests.
 -Unmanaged/UnmanagedPlatformKeysTest.Basic/0
 -Unmanaged/UnmanagedPlatformKeysTest.Basic/1
