@@ -3,21 +3,18 @@
 # found in the LICENSE file.
 
 import("//components/cronet/native/include/headers.gni")
-import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
 
 config("cronet_native_include_config") {
   include_dirs = [
     "//components/cronet/native/generated",
     "//components/cronet/native/include",
-    "//components/grpc_support/include",
   ]
 }
 
 source_set("cronet_native_headers") {
   deps = [
     "//base",
-    "//components/grpc_support:headers",
   ]
 
   configs += [ ":cronet_native_include_config" ]
@@ -41,7 +38,6 @@ source_set("cronet_native_impl") {
     "//base",
     "//components/cronet:cronet_common",
     "//components/cronet:cronet_version_header",
-    "//components/grpc_support:grpc_support",
     "//net",
   ]
 
