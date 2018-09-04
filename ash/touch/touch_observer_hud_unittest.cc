@@ -5,7 +5,6 @@
 #include "ash/touch/touch_observer_hud.h"
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

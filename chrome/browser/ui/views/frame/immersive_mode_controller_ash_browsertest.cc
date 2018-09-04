@@ -6,7 +6,6 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.mojom.h"

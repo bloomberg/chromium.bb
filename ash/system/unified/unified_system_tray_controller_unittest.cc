@@ -4,7 +4,6 @@
 
 #include "ash/system/unified/unified_system_tray_controller.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -30,12 +29,8 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
-    // Mash doesn't do this yet, so don't do it in tests either.
-    // http://crbug.com/718072
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-      chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
-                                                              &local_state_);
-    }
+    chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
+                                                            &local_state_);
     // Networking stubs may have asynchronous initialization.
     base::RunLoop().RunUntilIdle();
 
@@ -57,9 +52,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     model_.reset();
 
     // This roughly matches production shutdown order.
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-      chromeos::NetworkHandler::Get()->ShutdownPrefServices();
-    }
+    chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();

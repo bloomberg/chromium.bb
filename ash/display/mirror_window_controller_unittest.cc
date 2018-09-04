@@ -6,7 +6,6 @@
 
 #include "ash/display/mirror_window_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"

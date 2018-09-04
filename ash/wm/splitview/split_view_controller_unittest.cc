@@ -8,7 +8,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -21,7 +20,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/drag_window_resizer_mash.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -1681,14 +1679,8 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     // TODO(xdai): This piece of codes seems knowing too much impl details about
     // WindowResizer. Revisit the logic here later to see if there is anything
     // we can do to simplify the logic and hide impl details.
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-      real_window_resizer = static_cast<DragWindowResizer*>(resizer)
-                                ->next_window_resizer_for_testing();
-
-    } else {
-      real_window_resizer = static_cast<DragWindowResizerMash*>(resizer)
-                                ->next_window_resizer_for_testing();
-    }
+    real_window_resizer = static_cast<DragWindowResizer*>(resizer)
+                              ->next_window_resizer_for_testing();
     TabletModeBrowserWindowDragController* browser_controller =
         static_cast<TabletModeBrowserWindowDragController*>(
             real_window_resizer);

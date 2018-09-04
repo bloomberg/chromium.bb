@@ -18,7 +18,6 @@
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/session/session_controller.h"

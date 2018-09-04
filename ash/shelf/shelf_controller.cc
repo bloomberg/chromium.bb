@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"

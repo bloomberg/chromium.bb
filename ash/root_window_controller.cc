@@ -22,7 +22,6 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_settings.h"
@@ -671,8 +670,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
-      shell->EnableKeyboard();
+    shell->EnableKeyboard();
   } else {
     window_tree_host_->Show();
 
@@ -683,8 +681,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   // TODO: TouchExplorationManager doesn't work with mash.
   // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTouchExplorationMode) &&
-      Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
+          switches::kAshDisableTouchExplorationMode)) {
     touch_exploration_manager_ =
         std::make_unique<TouchExplorationManager>(this);
   }

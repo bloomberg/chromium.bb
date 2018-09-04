@@ -10,7 +10,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -111,11 +110,6 @@ TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
 
 TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsEnabled) {
-  // TODO(mash): Turning on accessibility keyboard does not create a valid
-  // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
   AccessibilityController* accessibility_controller =
       Shell::Get()->accessibility_controller();
   accessibility_controller->SetVirtualKeyboardEnabled(true);

@@ -15,7 +15,6 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -162,9 +161,7 @@ void AshTestBase::SetUp() {
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  // TODO: mus/mash needs to support CursorManager. http://crbug.com/637853.
-  if (Shell::GetAshConfig() == Config::CLASSIC)
-    Shell::Get()->cursor_manager()->EnableMouseEvents();
+  Shell::Get()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as

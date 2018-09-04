@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"

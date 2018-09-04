@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"

@@ -14,7 +14,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnifier_scale_utils.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"

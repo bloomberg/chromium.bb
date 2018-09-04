@@ -13,7 +13,6 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -460,12 +459,6 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
-  // TODO: fix. This test verifies that when a window is added the bounds are
-  // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
-  // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
   // Normal window bounds shouldn't be changed.
   gfx::Rect window_bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> window(CreateTestWindow(window_bounds));

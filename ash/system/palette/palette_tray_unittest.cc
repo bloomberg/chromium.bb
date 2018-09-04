@@ -10,7 +10,6 @@
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/root_window_controller.h"

@@ -74,7 +74,6 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -393,11 +392,6 @@ bool Shell::HasRemoteClient(aura::Window* window) {
 }
 
 // static
-Config Shell::GetAshConfig() {
-  return Config::CLASSIC;
-}
-
-// static
 void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
                                     bool for_test) {
   PaletteTray::RegisterLocalStatePrefs(registry);
@@ -561,16 +555,13 @@ void Shell::UpdateCursorCompositingEnabled() {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  if (GetAshConfig() != Config::MASH_DEPRECATED) {
-    // TODO: needs to work in mash. http://crbug.com/705592.
-    CursorWindowController* cursor_window_controller =
-        window_tree_host_manager_->cursor_window_controller();
+  CursorWindowController* cursor_window_controller =
+      window_tree_host_manager_->cursor_window_controller();
 
-    if (cursor_window_controller->is_cursor_compositing_enabled() == enabled)
-      return;
-    cursor_window_controller->SetCursorCompositingEnabled(enabled);
-    native_cursor_manager_->SetNativeCursorEnabled(!enabled);
-  }
+  if (cursor_window_controller->is_cursor_compositing_enabled() == enabled)
+    return;
+  cursor_window_controller->SetCursorCompositingEnabled(enabled);
+  native_cursor_manager_->SetNativeCursorEnabled(!enabled);
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
