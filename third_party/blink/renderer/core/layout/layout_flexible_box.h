@@ -187,8 +187,11 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                            LayoutUnit available_free_space);
   void AlignFlexLines(Vector<FlexLine>&);
   void AlignChildren(Vector<FlexLine>&);
-  void ApplyStretchAlignmentToChild(FlexItem& child,
+  // Computes the cross-axis size that a stretched child should have and stores
+  // it in child.cross_axis_size.
+  void ComputeStretchedSizeForChild(FlexItem& child,
                                     LayoutUnit line_cross_axis_extent);
+  void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
   void FlipForWrapReverse(const Vector<FlexLine>&,
                           LayoutUnit cross_axis_start_edge);
