@@ -68,7 +68,7 @@
 namespace blink {
 
 namespace {
-constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
+constexpr TimeDelta kTextFinderTestTimeout = TimeDelta::FromSeconds(10);
 }
 
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
@@ -888,7 +888,7 @@ void TextFinder::ScopeStringMatchesSoon(int identifier,
   // https://crbug.com/875203
   if (options.run_synchronously_for_testing) {
     ScopeStringMatches(
-        IdleDeadline::Create(CurrentTimeTicks() + kForcedInvocationDeadline,
+        IdleDeadline::Create(CurrentTimeTicks() + kTextFinderTestTimeout,
                              IdleDeadline::CallbackType::kCalledWhenIdle),
         identifier, search_text, options);
   } else {
