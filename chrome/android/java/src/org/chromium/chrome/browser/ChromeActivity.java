@@ -619,7 +619,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onShown(Tab tab) {
                 setStatusBarColor(tab, tab.getThemeColor());
-                OfflineIndicatorController.onUpdate();
             }
 
             @Override
@@ -931,8 +930,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mPictureInPictureController.cleanup(this);
         }
         VrModuleProvider.getDelegate().maybeRegisterVrEntryHook(this);
-
-        OfflineIndicatorController.onUpdate();
 
         getManualFillingController().onResume();
     }
