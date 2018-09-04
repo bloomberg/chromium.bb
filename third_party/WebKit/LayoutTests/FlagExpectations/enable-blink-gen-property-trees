@@ -237,8 +237,4 @@ crbug.com/879610 fast/dom/scroll-reveal-left-overflow.html [ Failure ]
 crbug.com/879610 fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 
 Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
-
-# Scroll snap data missing.
-crbug.com/853945 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
-
 crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
