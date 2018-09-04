@@ -271,7 +271,7 @@ bool TryToRestoreWritablePermissions(void* addr, size_t len) {
 }
 
 // Tests that protection bits are set correctly for read-only region.
-TEST_F(PlatformSharedMemoryRegionTest, MappingProtectionSetCorrectly) {
+TEST_F(PlatformSharedMemoryRegionTest, DISABLED_MappingProtectionSetCorrectly) {
   PlatformSharedMemoryRegion region =
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
