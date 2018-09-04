@@ -33,7 +33,7 @@ LayerTreeHostEmbedder::LayerTreeHostEmbedder(
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
       single_thread_client ? single_thread_client
                            : &layer_tree_host_single_thread_client_,
-      &params);
+      std::move(params));
 }
 
 }  // namespace blink
