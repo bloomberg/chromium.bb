@@ -107,7 +107,7 @@ class CORE_EXPORT ContentSecurityPolicy
     kReportTo,
     kReportURI,
     kRequireSRIFor,
-    kRequireTrustedTypes,
+    kTrustedTypes,
     kSandbox,
     kScriptSrc,
     kStyleSrc,
@@ -249,6 +249,7 @@ class CORE_EXPORT ContentSecurityPolicy
                     RedirectStatus = RedirectStatus::kNoRedirect,
                     SecurityViolationReportingPolicy =
                         SecurityViolationReportingPolicy::kReport) const;
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
   bool AllowWorkerContextFromSource(
       const KURL&,
       RedirectStatus = RedirectStatus::kNoRedirect,

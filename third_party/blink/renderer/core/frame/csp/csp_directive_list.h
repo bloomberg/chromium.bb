@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
+#include "third_party/blink/renderer/core/frame/csp/string_list_directive.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -123,6 +124,7 @@ class CORE_EXPORT CSPDirectiveList
   bool AllowBaseURI(const KURL&,
                     ResourceRequest::RedirectStatus,
                     SecurityViolationReportingPolicy) const;
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
   bool AllowWorkerFromSource(const KURL&,
                              ResourceRequest::RedirectStatus,
                              SecurityViolationReportingPolicy) const;
@@ -348,7 +350,6 @@ class CORE_EXPORT CSPDirectiveList
 
   bool upgrade_insecure_requests_;
   bool treat_as_public_address_;
-  bool require_safe_types_;
 
   Member<MediaListDirective> plugin_types_;
   Member<SourceListDirective> base_uri_;
@@ -368,6 +369,7 @@ class CORE_EXPORT CSPDirectiveList
   Member<SourceListDirective> style_src_;
   Member<SourceListDirective> worker_src_;
   Member<SourceListDirective> navigate_to_;
+  Member<StringListDirective> trusted_types_;
 
   uint8_t require_sri_for_;
 
