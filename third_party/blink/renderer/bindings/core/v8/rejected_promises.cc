@@ -216,7 +216,7 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
   }
 
   // Then look it up in the reported errors.
-  for (size_t i = 0; i < reported_as_errors_.size(); ++i) {
+  for (wtf_size_t i = 0; i < reported_as_errors_.size(); ++i) {
     std::unique_ptr<Message>& message = reported_as_errors_.at(i);
     if (!message->IsCollected() && message->HasPromise(data.GetPromise())) {
       message->MakePromiseStrong();
@@ -261,7 +261,8 @@ void RejectedPromises::ProcessQueueNow(MessageQueue queue) {
   auto* new_end = std::remove_if(
       reported_as_errors_.begin(), reported_as_errors_.end(),
       [](const auto& message) { return message->IsCollected(); });
-  reported_as_errors_.Shrink(new_end - reported_as_errors_.begin());
+  reported_as_errors_.Shrink(
+      static_cast<wtf_size_t>(new_end - reported_as_errors_.begin()));
 
   for (auto& message : queue) {
     if (message->IsCollected())

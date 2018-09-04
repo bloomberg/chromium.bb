@@ -183,7 +183,15 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
       WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
       WriteUint32(AsymmetricKeyTypeForWireFormat(key.GetType()));
       WriteUint32(params.ModulusLengthBits());
-      WriteUint32(params.PublicExponent().size());
+
+      if (params.PublicExponent().size() >
+          std::numeric_limits<uint32_t>::max()) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "A CryptoKey object could not be cloned.");
+        return false;
+      }
+      WriteUint32(static_cast<uint32_t>(params.PublicExponent().size()));
       WriteRawBytes(params.PublicExponent().Data(),
                     params.PublicExponent().size());
       WriteUint32(AlgorithmIdForWireFormat(params.GetHash().Id()));
@@ -216,7 +224,7 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
         "A CryptoKey object could not be cloned.");
     return false;
   }
-  WriteUint32(key_data.size());
+  WriteUint32(static_cast<uint32_t>(key_data.size()));
   WriteRawBytes(key_data.Data(), key_data.size());
 
   return true;

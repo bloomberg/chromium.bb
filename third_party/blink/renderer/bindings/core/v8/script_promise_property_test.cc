@@ -187,10 +187,7 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
       public testing::Test {
  public:
   template <typename T>
-  void Test(const T& value,
-            const char* expected,
-            const char* file,
-            size_t line) {
+  void Test(const T& value, const char* expected, const char* file, int line) {
     typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T,
                                   ToV8UndefinedGenerator>
         Property;

@@ -60,7 +60,7 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
                                      const v8::Local<v8::Array>& item_array,
                                      WebVector<WebMenuItemInfo>& items) {
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  for (size_t i = 0; i < item_array->Length(); ++i) {
+  for (uint32_t i = 0; i < item_array->Length(); ++i) {
     v8::Local<v8::Object> item =
         item_array->Get(context, i).ToLocalChecked().As<v8::Object>();
     v8::Local<v8::Value> type;

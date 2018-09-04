@@ -212,8 +212,9 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
 
 void ScheduledAction::CreateLocalHandlesForArgs(
     Vector<v8::Local<v8::Value>>* handles) {
-  handles->ReserveCapacity(info_.Size());
-  for (size_t i = 0; i < info_.Size(); ++i)
+  wtf_size_t handle_count = SafeCast<wtf_size_t>(info_.Size());
+  handles->ReserveCapacity(handle_count);
+  for (wtf_size_t i = 0; i < handle_count; ++i)
     handles->push_back(info_.Get(i));
 }
 

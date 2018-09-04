@@ -106,7 +106,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
       return v8::Date::New(context, key->Date()).ToLocalChecked();
     case IDBKey::kArrayType: {
       v8::Local<v8::Array> array = v8::Array::New(isolate, key->Array().size());
-      for (size_t i = 0; i < key->Array().size(); ++i) {
+      for (wtf_size_t i = 0; i < key->Array().size(); ++i) {
         v8::Local<v8::Value> value =
             ToV8(key->Array()[i].get(), creation_context, isolate);
         if (value.IsEmpty())
@@ -290,7 +290,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::TryCatch block(isolate);
-  for (size_t i = 0; i < key_path_elements.size(); ++i) {
+  for (wtf_size_t i = 0; i < key_path_elements.size(); ++i) {
     const String& element = key_path_elements[i];
 
     // Special cases from https://w3c.github.io/IndexedDB/#key-path-construct
@@ -365,7 +365,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   if (key_path.GetType() == IDBKeyPath::kArrayType) {
     IDBKey::KeyArray result;
     const Vector<String>& array = key_path.Array();
-    for (size_t i = 0; i < array.size(); ++i) {
+    for (wtf_size_t i = 0; i < array.size(); ++i) {
       result.emplace_back(CreateIDBKeyFromValueAndKeyPath(
           isolate, value, array[i], exception_state));
       if (!result.back())
@@ -442,7 +442,7 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> array = v8::Array::New(isolate, values.size());
-  for (size_t i = 0; i < values.size(); ++i) {
+  for (wtf_size_t i = 0; i < values.size(); ++i) {
     v8::Local<v8::Value> v8_value =
         DeserializeIDBValue(isolate, creation_context, values[i].get());
     if (v8_value.IsEmpty())
@@ -516,7 +516,7 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
   // injection required by the object store. The simplest example is writing
   // numbers or booleans to an object store with an auto-incrementing primary
   // keys.
-  for (size_t i = 0; i < key_path_elements.size() - 1; ++i) {
+  for (wtf_size_t i = 0; i < key_path_elements.size() - 1; ++i) {
     if (!value->IsObject())
       return false;
 
@@ -575,7 +575,7 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
     return false;
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  for (size_t i = 0; i < key_path_elements.size(); ++i) {
+  for (wtf_size_t i = 0; i < key_path_elements.size(); ++i) {
     const String& key_path_element = key_path_elements[i];
     // Can't overwrite properties like array or string length.
     if (IsImplicitProperty(isolate, current, key_path_element))

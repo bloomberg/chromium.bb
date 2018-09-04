@@ -18,7 +18,7 @@ class V8EventListenerInfo {
                       bool passive,
                       bool once,
                       v8::Local<v8::Object> handler,
-                      int backend_node_id)
+                      uint64_t backend_node_id)
       : event_type(event_type),
         use_capture(use_capture),
         passive(passive),
@@ -31,7 +31,7 @@ class V8EventListenerInfo {
   bool passive;
   bool once;
   v8::Local<v8::Object> handler;
-  int backend_node_id;
+  uint64_t backend_node_id;
 };
 
 using V8EventListenerInfoList = Vector<V8EventListenerInfo>;
