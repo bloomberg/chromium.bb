@@ -1247,7 +1247,7 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   return rect;
 }
 
-LayoutRect LayoutInline::AbsoluteVisualRect() const {
+LayoutRect LayoutInline::VisualRectInDocument() const {
   if (!Continuation()) {
     LayoutRect rect = VisualOverflowRect();
     MapToVisualRectInAncestorSpace(View(), rect);

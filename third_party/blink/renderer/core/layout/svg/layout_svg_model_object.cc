@@ -56,7 +56,7 @@ void LayoutSVGModelObject::MapLocalToAncestor(
   SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
-LayoutRect LayoutSVGModelObject::AbsoluteVisualRect() const {
+LayoutRect LayoutSVGModelObject::VisualRectInDocument() const {
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View());
 }
 

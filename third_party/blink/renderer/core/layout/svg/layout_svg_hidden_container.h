@@ -48,7 +48,7 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     return true;
   }
-  LayoutRect AbsoluteVisualRect() const final { return LayoutRect(); }
+  LayoutRect VisualRectInDocument() const final { return LayoutRect(); }
   FloatRect VisualRectInLocalSVGCoordinates() const final {
     return FloatRect();
   }

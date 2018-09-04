@@ -191,7 +191,7 @@ bool HasOffscreenRect(const Node* node, WebFocusType direction) {
   if (!layout_object)
     return true;
 
-  LayoutRect rect(layout_object->AbsoluteVisualRect());
+  LayoutRect rect(layout_object->VisualRectInDocument());
   if (rect.IsEmpty())
     return true;
 

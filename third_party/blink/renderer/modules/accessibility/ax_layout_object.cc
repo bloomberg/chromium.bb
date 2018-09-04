@@ -463,7 +463,7 @@ bool AXLayoutObject::IsLoaded() const {
 bool AXLayoutObject::IsOffScreen() const {
   DCHECK(layout_object_);
   IntRect content_rect =
-      PixelSnappedIntRect(layout_object_->AbsoluteVisualRect());
+      PixelSnappedIntRect(layout_object_->VisualRectInDocument());
   LocalFrameView* view = layout_object_->GetFrame()->View();
   IntRect view_rect(IntPoint(), view->Size());
   view_rect.Intersect(content_rect);

@@ -1598,7 +1598,7 @@ void LayoutObject::ClearPreviousVisualRects() {
   SetShouldDoFullPaintInvalidation();
 }
 
-LayoutRect LayoutObject::AbsoluteVisualRect() const {
+LayoutRect LayoutObject::VisualRectInDocument() const {
   LayoutRect rect = LocalVisualRect();
   MapToVisualRectInAncestorSpace(View(), rect);
   return rect;
