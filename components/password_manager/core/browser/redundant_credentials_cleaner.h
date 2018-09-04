@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_BLACKLISTED_DUPLICATES_CLEANER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_BLACKLISTED_DUPLICATES_CLEANER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_REDUNDANT_CREDENTIALS_CLEANER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_REDUNDANT_CREDENTIALS_CLEANER_H_
 
 #include <memory>
 #include <vector>
@@ -27,11 +27,11 @@ class PasswordStore;
 // cleared.
 // TODO(https://crbug.com/866794): Remove the code once majority of the users
 // executed it.
-class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer {
+class RedundantCredentialsCleaner : public PasswordStoreConsumer {
  public:
-  BlacklistedDuplicatesCleaner(scoped_refptr<PasswordStore> store,
-                               PrefService* prefs);
-  ~BlacklistedDuplicatesCleaner() override;
+  RedundantCredentialsCleaner(scoped_refptr<PasswordStore> store,
+                              PrefService* prefs);
+  ~RedundantCredentialsCleaner() override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -41,9 +41,9 @@ class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer {
   scoped_refptr<PasswordStore> store_;
   PrefService* prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleaner);
+  DISALLOW_COPY_AND_ASSIGN(RedundantCredentialsCleaner);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_BLACKLISTED_DUPLICATES_CLEANER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_REDUNDANT_CREDENTIALS_CLEANER_H_
