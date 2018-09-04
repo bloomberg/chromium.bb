@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/chrome_build.gni")
 import("//chrome/installer/setup/buildflags.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
@@ -47,10 +46,8 @@ if (is_win) {
 
   static_library("lib") {
     sources = [
-      "${branding_path_component}_behaviors.cc",
       "archive_patch_helper.cc",
       "archive_patch_helper.h",
-      "brand_behaviors.h",
       "install.cc",
       "install.h",
       "install_worker.cc",
@@ -73,8 +70,6 @@ if (is_win) {
       "setup_singleton.h",
       "setup_util.cc",
       "setup_util.h",
-      "uninstall_metrics.cc",
-      "uninstall_metrics.h",
       "update_active_setup_version_work_item.cc",
       "update_active_setup_version_work_item.h",
       "user_experiment.cc",
@@ -94,13 +89,11 @@ if (is_win) {
       "//components/base32",
       "//components/crash/content/app",
       "//components/crash/core/common",
-      "//components/metrics",
       "//components/zucchini:zucchini_io",
       "//components/zucchini:zucchini_lib",
       "//courgette:courgette_lib",
       "//rlz:rlz_lib",
       "//third_party/bspatch",
-      "//third_party/crashpad/crashpad/client",
       "//third_party/zlib",
       "//ui/base:fullscreen_win",
     ]
@@ -125,7 +118,6 @@ if (is_win) {
       "setup_singleton_unittest.cc",
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
-      "uninstall_metrics_unittest.cc",
       "update_active_setup_version_work_item_unittest.cc",
       "user_experiment_unittest.cc",
       "user_hive_visitor_unittest.cc",
