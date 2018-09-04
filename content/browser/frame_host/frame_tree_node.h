@@ -62,9 +62,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // calling the constructor.
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
-                RenderFrameHostDelegate* render_frame_delegate,
-                RenderWidgetHostDelegate* render_widget_delegate,
-                RenderFrameHostManager::Delegate* manager_delegate,
                 FrameTreeNode* parent,
                 blink::WebTreeScopeType scope,
                 const std::string& name,

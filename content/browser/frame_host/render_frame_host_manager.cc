@@ -68,15 +68,10 @@ bool IsDataOrAbout(const GURL& url) {
 
 }  // namespace
 
-RenderFrameHostManager::RenderFrameHostManager(
-    FrameTreeNode* frame_tree_node,
-    RenderFrameHostDelegate* render_frame_delegate,
-    RenderWidgetHostDelegate* render_widget_delegate,
-    Delegate* delegate)
+RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
+                                               Delegate* delegate)
     : frame_tree_node_(frame_tree_node),
       delegate_(delegate),
-      render_frame_delegate_(render_frame_delegate),
-      render_widget_delegate_(render_widget_delegate),
       weak_factory_(this) {
   DCHECK(frame_tree_node_);
 }
@@ -1706,9 +1701,9 @@ RenderFrameHostManager::CreateRenderFrameHost(
   }
 
   return RenderFrameHostFactory::Create(
-      site_instance, render_view_host, render_frame_delegate_,
-      render_widget_delegate_, frame_tree, frame_tree_node_, frame_routing_id,
-      widget_routing_id, hidden, renderer_initiated_creation);
+      site_instance, render_view_host, frame_tree->render_frame_delegate(),
+      frame_tree, frame_tree_node_, frame_routing_id, widget_routing_id, hidden,
+      renderer_initiated_creation);
 }
 
 bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
@@ -2169,7 +2164,9 @@ void RenderFrameHostManager::CommitPending() {
   // Removing them when they are deleted is too late.
   // This needs to be done before updating the frame tree structure, else it
   // will have trouble removing the descendants.
-  render_frame_delegate_->FullscreenStateChanged(current_frame_host(), false);
+  frame_tree_node_->frame_tree()
+      ->render_frame_delegate()
+      ->FullscreenStateChanged(current_frame_host(), false);
 
   // While the old frame is still current, remove its children from the tree.
   frame_tree_node_->ResetForNewProcess();
