@@ -98,7 +98,7 @@ class CORE_EXPORT V8ScriptRunner final {
                                        const WTF::TextPosition&);
 
   // Calls a function on the V8 extras binding object.
-  template <size_t N>
+  template <uint32_t N>
   static v8::MaybeLocal<v8::Value> CallExtra(ScriptState* script_state,
                                              const char* name,
                                              v8::Local<v8::Value> (&args)[N]) {
@@ -115,7 +115,7 @@ class CORE_EXPORT V8ScriptRunner final {
  private:
   static v8::MaybeLocal<v8::Value> CallExtraHelper(ScriptState*,
                                                    const char* name,
-                                                   size_t num_args,
+                                                   uint32_t num_args,
                                                    v8::Local<v8::Value>* args);
 };
 

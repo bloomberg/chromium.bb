@@ -779,7 +779,7 @@ void V8DOMConfiguration::InitializeDOMInterfaceTemplate(
     v8::Local<v8::FunctionTemplate> interface_template,
     const char* interface_name,
     v8::Local<v8::FunctionTemplate> parent_interface_template,
-    size_t v8_internal_field_count) {
+    uint32_t v8_internal_field_count) {
   interface_template->SetClassName(V8AtomicString(isolate, interface_name));
   interface_template->ReadOnlyPrototype();
   v8::Local<v8::ObjectTemplate> instance_template =

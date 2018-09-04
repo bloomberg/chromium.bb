@@ -16,9 +16,9 @@ ScriptValue WebGLAny(ScriptState* script_state, bool value) {
 
 ScriptValue WebGLAny(ScriptState* script_state,
                      const bool* value,
-                     size_t size) {
+                     uint32_t size) {
   v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
             v8::Boolean::New(script_state->GetIsolate(), value[i]))))
@@ -28,9 +28,9 @@ ScriptValue WebGLAny(ScriptState* script_state,
 }
 
 ScriptValue WebGLAny(ScriptState* script_state, const Vector<bool>& value) {
-  size_t size = value.size();
+  wtf_size_t size = value.size();
   v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
-  for (size_t i = 0; i < size; ++i) {
+  for (wtf_size_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
             v8::Boolean::New(script_state->GetIsolate(), value[i]))))
@@ -40,9 +40,9 @@ ScriptValue WebGLAny(ScriptState* script_state, const Vector<bool>& value) {
 }
 
 ScriptValue WebGLAny(ScriptState* script_state, const Vector<unsigned>& value) {
-  size_t size = value.size();
+  wtf_size_t size = value.size();
   v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
-  for (size_t i = 0; i < size; ++i) {
+  for (wtf_size_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
             v8::Integer::NewFromUnsigned(script_state->GetIsolate(),
@@ -53,9 +53,9 @@ ScriptValue WebGLAny(ScriptState* script_state, const Vector<unsigned>& value) {
 }
 
 ScriptValue WebGLAny(ScriptState* script_state, const Vector<int>& value) {
-  size_t size = value.size();
+  wtf_size_t size = value.size();
   v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
-  for (size_t i = 0; i < size; ++i) {
+  for (wtf_size_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
             v8::Integer::New(script_state->GetIsolate(), value[i]))))

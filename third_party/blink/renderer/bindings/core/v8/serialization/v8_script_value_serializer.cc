@@ -170,7 +170,6 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
   // TODO(jbroman): Ideally this method would take a WTF::StringView, but the
   // StringUTF8Adaptor trick doesn't yet work with StringView.
   StringUTF8Adaptor utf8(string);
-  DCHECK_LT(utf8.length(), std::numeric_limits<uint32_t>::max());
   WriteUint32(utf8.length());
   WriteRawBytes(utf8.Data(), utf8.length());
 }
@@ -268,8 +267,10 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(image_data->width());
     WriteUint32(image_data->height());
     DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
-    WriteUint32(pixel_buffer->ByteLength());
-    WriteRawBytes(pixel_buffer->Data(), pixel_buffer->ByteLength());
+    uint32_t pixel_buffer_length =
+        SafeCast<uint32_t>(pixel_buffer->ByteLength());
+    WriteUint32(pixel_buffer_length);
+    WriteRawBytes(pixel_buffer->Data(), pixel_buffer_length);
     return true;
   }
   if (wrapper_type_info == &V8DOMPoint::wrapperTypeInfo) {
@@ -446,7 +447,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteTag(kOffscreenCanvasTransferTag);
     WriteUint32(canvas->width());
     WriteUint32(canvas->height());
-    WriteUint32(canvas->PlaceholderCanvasId());
+    WriteUint64(canvas->PlaceholderCanvasId());
     WriteUint32(canvas->ClientId());
     WriteUint32(canvas->SinkId());
     return true;
@@ -555,7 +556,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
   // The index returned from this function will be serialized into the data
   // stream. When deserializing, this will be used to index into the
   // sharedArrayBufferContents array of the SerializedScriptValue.
-  size_t index = shared_array_buffers_.Find(shared_array_buffer);
+  uint32_t index = shared_array_buffers_.Find(shared_array_buffer);
   if (index == kNotFound) {
     shared_array_buffers_.push_back(shared_array_buffer);
     index = shared_array_buffers_.size() - 1;

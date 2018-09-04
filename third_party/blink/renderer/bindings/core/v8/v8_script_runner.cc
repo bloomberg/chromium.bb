@@ -452,7 +452,7 @@ void V8ScriptRunner::ReportException(v8::Isolate* isolate,
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
     ScriptState* script_state,
     const char* name,
-    size_t num_args,
+    uint32_t num_args,
     v8::Local<v8::Value>* args) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Value> function_value;

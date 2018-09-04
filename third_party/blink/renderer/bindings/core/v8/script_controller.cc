@@ -188,7 +188,7 @@ V8Extensions& ScriptController::RegisteredExtensions() {
 
 void ScriptController::RegisterExtensionIfNeeded(v8::Extension* extension) {
   const V8Extensions& extensions = RegisteredExtensions();
-  for (size_t i = 0; i < extensions.size(); ++i) {
+  for (wtf_size_t i = 0; i < extensions.size(); ++i) {
     if (extensions[i] == extension)
       return;
   }
