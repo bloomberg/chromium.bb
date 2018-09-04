@@ -1162,6 +1162,8 @@ jumbo_split_static_library("ui") {
       "android/view_android_helper.cc",
       "android/view_android_helper.h",
       "browser_otr_state_android.cc",
+      "omnibox/query_in_omnibox_factory.cc",
+      "omnibox/query_in_omnibox_factory.h",
       "screen_capture_notification_ui_stub.cc",
       "webui/eoc_internals/eoc_internals_page_handler.cc",
       "webui/eoc_internals/eoc_internals_page_handler.h",

@@ -2237,7 +2237,6 @@ jumbo_split_static_library("browser") {
       "android/omnibox/omnibox_prerender.cc",
       "android/omnibox/omnibox_prerender.h",
       "android/omnibox/query_in_omnibox_android.cc",
-      "android/omnibox/query_in_omnibox_android.h",
       "android/oom_intervention/near_oom_monitor.cc",
       "android/oom_intervention/near_oom_monitor.h",
       "android/oom_intervention/oom_intervention_config.cc",

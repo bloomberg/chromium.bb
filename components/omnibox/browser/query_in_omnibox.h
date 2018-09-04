@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -15,7 +16,7 @@ class TemplateURLService;
 
 // This class holds the business logic for Query in Omnibox shared between both
 // Android and Desktop.
-class QueryInOmnibox {
+class QueryInOmnibox : public KeyedService {
  public:
   QueryInOmnibox(AutocompleteClassifier* autocomplete_classifier,
                  TemplateURLService* template_url_service);
