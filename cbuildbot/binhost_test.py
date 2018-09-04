@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import collections
 import inspect
 import os
 import unittest
@@ -222,44 +221,6 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
                                                    'chrome')
     if os.path.exists(filename):
       self.testChromePrebuiltsPresent(filename)
-
-  def testReleaseGroupSharing(self):
-    """Verify that the boards built in release groups have compatible settings.
-
-    This means that all of the subconfigs in the release group have matching
-    use flags, cflags, and architecture.
-    """
-    for config in self.site_config.values():
-      # Only test release groups.
-      if not config.name.endswith('-release-group'):
-        continue
-
-      # Get a list of the compatibility IDs.
-      compat_ids_for_config = collections.defaultdict(set)
-      for subconfig in config.child_configs:
-        if subconfig.sync_chrome is not False:
-          for board in subconfig.boards:
-            compat_id = self.GetCompatId(subconfig, board)
-            compat_ids_for_config[compat_id].add(board)
-
-      if len(compat_ids_for_config) > 1:
-        arch_useflags = set(tuple(x[:-1]) for x in compat_ids_for_config)
-        if len(arch_useflags) > 1:
-          # If two configs in the same group have mismatched Chrome binaries
-          # (e.g. different use flags), Chrome may be built twice in parallel
-          # and this may result in flaky, slow, and possibly incorrect builds.
-          msg = '%s: %s and %s have mismatched Chrome binaries -- %s'
-          fatal = True
-        else:
-          # TODO(davidjames): This should be marked fatal once the
-          # ivybridge-freon-release-group is cleaned up.
-          msg = '%s: %s and %s have mismatched cflags -- %s'
-          fatal = False
-        ids, board_sets = zip(*compat_ids_for_config.iteritems())
-        boards = [next(iter(x)) for x in board_sets]
-        err = self.GetCompatIdDiff(ids[0], ids[1])
-        msg %= (config.name, boards[0], boards[1], err)
-        self.Complain(msg, fatal=fatal)
 
   def testDumping(self):
     """Verify Chrome prebuilts exist for all configs that build Chrome.
