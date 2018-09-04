@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/installer/setup/uninstall_metrics.h"
+#include "chrome/installer/util/uninstall_metrics.h"
 
 #include <memory>
 #include <string>
@@ -51,7 +51,9 @@ TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
   ASSERT_TRUE(root.get());
   base::string16 uninstall_metrics_string;
 
-  EXPECT_TRUE(ExtractUninstallMetrics(*root, &uninstall_metrics_string));
+  EXPECT_TRUE(
+      ExtractUninstallMetrics(*static_cast<base::DictionaryValue*>(root.get()),
+                              &uninstall_metrics_string));
   EXPECT_EQ(expected_url_string, uninstall_metrics_string);
 }
 

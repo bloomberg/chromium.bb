@@ -81,6 +81,11 @@ base::string16 BrowserDistribution::GetVersionKey() const {
   return app_reg_data_->GetVersionKey();
 }
 
+void BrowserDistribution::DoPostUninstallOperations(
+    const base::Version& version, const base::FilePath& local_data_path,
+    const base::string16& distribution_data) {
+}
+
 base::string16 BrowserDistribution::GetDisplayName() {
   return GetShortcutName();
 }
@@ -110,6 +115,10 @@ base::string16 BrowserDistribution::GetLongAppDescription() {
   const base::string16& app_description =
       installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
   return app_description;
+}
+
+base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
+  return L"";
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
