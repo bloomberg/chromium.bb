@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -65,6 +66,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
@@ -98,7 +100,6 @@ import java.util.Locale;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
         ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUET,
         ChromeFeatureList.UNIFIED_CONSENT})
 public class NewTabPageAdapterTest {
@@ -140,11 +141,6 @@ public class NewTabPageAdapterTest {
 
         public SectionDescriptor(List<SnippetArticle> suggestions) {
             mSuggestions = suggestions;
-        }
-
-        public SectionDescriptor withoutHeader() {
-            mHeader = false;
-            return this;
         }
 
         public SectionDescriptor withViewAllButton() {
@@ -738,6 +734,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testArticlesForYouSection() {
+        when(mPrefServiceBridge.getBoolean(eq(Pref.NTP_ARTICLES_LIST_VISIBLE))).thenReturn(true);
         // Show one section of suggestions from the test category, and one section with Articles for
         // You.
         List<SnippetArticle> suggestions = createDummySuggestions(3, TEST_CATEGORY);
@@ -753,11 +750,11 @@ public class NewTabPageAdapterTest {
         reloadNtp();
         assertItemsFor(section(suggestions), section(articles));
 
-        // Remove the test category section. The remaining lone Articles for You section should not
+        // Remove the test category section. The remaining lone Articles for You section should
         // have a header.
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.NOT_PROVIDED);
         reloadNtp();
-        assertItemsFor(section(articles).withoutHeader());
+        assertItemsFor(section(articles));
     }
 
     /**

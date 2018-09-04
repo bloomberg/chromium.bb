@@ -1430,9 +1430,6 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 extern const char kEnableContentSuggestionsNewFaviconServerName[];
 extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 
-extern const char kEnableContentSuggestionsSettingsName[];
-extern const char kEnableContentSuggestionsSettingsDescription[];
-
 extern const char kEnableContentSuggestionsThumbnailDominantColorName[];
 extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 
@@ -1450,9 +1447,6 @@ extern const char kEnableMediaControlsExpandGestureDescription[];
 
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
-
-extern const char kEnableNtpArticleSuggestionsExpandableHeaderName[];
-extern const char kEnableNtpArticleSuggestionsExpandableHeaderDescription[];
 
 extern const char kEnableNtpAssetDownloadSuggestionsName[];
 extern const char kEnableNtpAssetDownloadSuggestionsDescription[];

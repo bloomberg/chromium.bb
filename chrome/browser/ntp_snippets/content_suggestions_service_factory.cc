@@ -307,19 +307,6 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                 : google_apis::GetNonStableAPIKey();
   }
 
-  // Pass the pref name associated to the search suggest toggle, and use it to
-  // also guard the remote suggestions feature.
-  // This pref should only be used if article suggestions expandable header is
-  // disabled.
-  // TODO(https://crbug.com/710636): Cleanup this clunky dependency once the
-  // preference design is stable.
-  std::string additional_toggle_pref;
-  if (!base::FeatureList::IsEnabled(
-          ntp_snippets::kArticleSuggestionsExpandableHeader) &&
-      base::FeatureList::IsEnabled(
-          chrome::android::kContentSuggestionsSettings)) {
-    additional_toggle_pref = prefs::kSearchSuggestEnabled;
-  }
   std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker;
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   if (IsKeepingPrefetchedSuggestionsEnabled()) {
@@ -349,8 +336,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                          url_loader_factory),
       std::make_unique<RemoteSuggestionsDatabase>(database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
-          identity_manager->HasPrimaryAccount(), pref_service,
-          additional_toggle_pref),
+          identity_manager->HasPrimaryAccount(), pref_service, std::string()),
       std::move(prefetched_pages_tracker),
       std::move(breaking_news_raw_data_provider), debug_logger,
       std::make_unique<base::OneShotTimer>());

@@ -107,7 +107,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@DisableFeatures({"NetworkPrediction", ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER})
+@DisableFeatures("NetworkPrediction")
 @RetryOnFailure
 public class NewTabPageTest {
     @Rule
@@ -639,7 +639,6 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage"})
-    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testArticleExpandableHeaderOnMultipleTabs() throws Exception {
         // Disable the sign-in promo so the header is visible above the fold.
         SignInPromo.setDisablePromoForTests(true);
@@ -692,7 +691,6 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "RenderTest"})
-    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testArticleExpandableHeaderAppearance() throws Exception {
         NewTabPage ntp =
                 (NewTabPage) mActivityTestRule.getActivity().getActivityTab().getNativePage();
