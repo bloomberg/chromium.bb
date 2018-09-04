@@ -193,6 +193,20 @@ ClientDiscardableHandle ClientDiscardableManager::GetHandle(
   return found->second;
 }
 
+bool ClientDiscardableManager::HandleIsDeleted(
+    ClientDiscardableHandle::Id handle_id) {
+  auto found = handles_.find(handle_id);
+  if (found == handles_.end())
+    return true;
+
+  if (found->second.CanBeReUsed()) {
+    handles_.erase(found);
+    return true;
+  }
+
+  return false;
+}
+
 bool ClientDiscardableManager::HandleIsDeletedForTracing(
     ClientDiscardableHandle::Id handle_id) const {
   auto found = handles_.find(handle_id);
