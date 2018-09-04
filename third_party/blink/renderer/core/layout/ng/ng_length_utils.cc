@@ -737,6 +737,21 @@ NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace& constraint_space,
                         style.IsFlippedLinesWritingMode());
 }
 
+NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,
+                                   const NGLayoutInputNode node) {
+  if (constraint_space.IsAnonymous() || !node.IsTableCell())
+    return NGBoxStrut();
+
+  // At the moment we just access the values set by the parent table layout.
+  // Once we have a NGTableLayoutAlgorithm this should pass the intrinsic
+  // padding via the constraint space object.
+
+  // TODO(karlo): intrinsic padding can sometimes be negative; that seems
+  // insane, but works in the old code; in NG it trips DCHECKs.
+  return {LayoutUnit(), LayoutUnit(), node.IntrinsicPaddingBlockStart(),
+          node.IntrinsicPaddingBlockEnd()};
+}
+
 NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                           const ComputedStyle& style) {
   // If we are producing an anonymous fragment (e.g. a column) we shouldn't
@@ -753,27 +768,6 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
       ResolveMarginPaddingLength(constraint_space, style.PaddingBefore());
   padding.block_end =
       ResolveMarginPaddingLength(constraint_space, style.PaddingAfter());
-  return padding;
-}
-
-NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
-                          const NGLayoutInputNode node) {
-  // If we are producing an anonymous fragment (e.g. a column), it has no
-  // borders, padding or scrollbars. Using the ones from the container can only
-  // cause trouble.
-  if (constraint_space.IsAnonymous())
-    return NGBoxStrut();
-
-  NGBoxStrut padding = ComputePadding(constraint_space, node.Style());
-  if (node.GetLayoutBox()->IsTableCell()) {
-    // Use values calculated by the table layout code
-    const LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
-    // TODO(karlo): intrinsic padding can sometimes be negative; that
-    // seems insane, but works in the old code; in NG it trips
-    // DCHECKs.
-    padding.block_start += LayoutUnit(cell->IntrinsicPaddingBefore());
-    padding.block_end += LayoutUnit(cell->IntrinsicPaddingAfter());
-  }
   return padding;
 }
 
@@ -899,7 +893,9 @@ NGBoxStrut CalculateBorderScrollbarPadding(
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
   return ComputeBorders(constraint_space, node) +
-         ComputePadding(constraint_space, node) + node.GetScrollbarSizes();
+         ComputePadding(constraint_space, node.Style()) +
+         ComputeIntrinsicPadding(constraint_space, node) +
+         node.GetScrollbarSizes();
 }
 
 NGLogicalSize CalculateBorderBoxSize(

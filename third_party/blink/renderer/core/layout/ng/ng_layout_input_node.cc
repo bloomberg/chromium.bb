@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
@@ -102,6 +103,10 @@ bool NGLayoutInputNode::ListMarkerOccupiesWholeLine() const {
   return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
 }
 
+bool NGLayoutInputNode::IsTableCell() const {
+  return IsBlock() && box_->IsTableCell();
+}
+
 bool NGLayoutInputNode::IsAnonymousBlock() const {
   return box_->IsAnonymousBlock();
 }
@@ -171,6 +176,16 @@ void NGLayoutInputNode::IntrinsicSize(
   *aspect_ratio =
       NGLogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),
                     LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
+}
+
+LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockStart() const {
+  DCHECK(IsTableCell());
+  return LayoutUnit(ToLayoutTableCell(box_)->IntrinsicPaddingBefore());
+}
+
+LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockEnd() const {
+  DCHECK(IsTableCell());
+  return LayoutUnit(ToLayoutTableCell(box_)->IntrinsicPaddingAfter());
 }
 
 NGLayoutInputNode NGLayoutInputNode::NextSibling() {

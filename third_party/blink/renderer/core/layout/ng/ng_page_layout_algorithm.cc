@@ -24,7 +24,7 @@ NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
 scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
-  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Node());
+  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
