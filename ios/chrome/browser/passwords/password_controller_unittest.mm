@@ -727,10 +727,10 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     ExecuteJavaScript(kClearInputFieldsScript);
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(form_data, data.origin, data.action,
-                            data.username_field, data.username_value,
-                            data.password_field, data.password_value, nullptr,
-                            nullptr, false);
+    SetPasswordFormFillData(data.origin, data.action, data.username_field,
+                            data.username_value, data.password_field,
+                            data.password_value, nullptr, nullptr, false,
+                            &form_data);
 
     __block BOOL block_was_called = NO;
     [passwordController_ fillPasswordForm:form_data
@@ -810,8 +810,8 @@ BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "un0", "test_user",
-                          "pw0", "test_password", nullptr, nullptr, false);
+  SetPasswordFormFillData(base_url, base_url, "un0", "test_user", "pw0",
+                          "test_password", nullptr, nullptr, false, &form_data);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -938,8 +938,8 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   // we can test with an initially-empty username field. Testing with a
   // username field that contains input is performed by a specific test below.
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "un", "user0", "pw",
-                          "password0", "abc", "def", true);
+  SetPasswordFormFillData(base_url, base_url, "un", "user0", "pw", "password0",
+                          "abc", "def", true, &form_data);
   form_data.name = base::ASCIIToUTF16(FormName(0));
 
   __block BOOL block_was_called = NO;
@@ -1035,9 +1035,9 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     const auto& test_data = kTestData[form_i];
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(
-        form_data, base_url, base_url, test_data.username_element, "user0",
-        test_data.password_element, "password0", "abc", "def", true);
+    SetPasswordFormFillData(base_url, base_url, test_data.username_element,
+                            "user0", test_data.password_element, "password0",
+                            "abc", "def", true, &form_data);
     form_data.name = base::ASCIIToUTF16(test_data.form_name);
 
     __block BOOL block_was_called = NO;

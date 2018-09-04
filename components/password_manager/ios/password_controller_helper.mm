@@ -74,6 +74,15 @@ constexpr char kCommandPrefix[] = "passwordForm";
             withUsername:(const base::string16&)username
                 password:(const base::string16&)password
        completionHandler:(nullable void (^)(BOOL))completionHandler;
+
+@end
+
+// Category for test only.
+@interface PasswordControllerHelper (Testing)
+
+// Replaces JsPasswordManager for test.
+- (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager;
+
 @end
 
 @implementation PasswordControllerHelper {
@@ -300,6 +309,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
           completionHandler(result);
         }
       }];
+}
+
+#pragma mark - Private methods for test only
+
+- (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager {
+  _jsPasswordManager = jsPasswordManager;
 }
 
 #pragma mark - Public methods
