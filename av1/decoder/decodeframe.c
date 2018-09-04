@@ -88,7 +88,6 @@ static void set_planes_to_neutral_grey(const SequenceHeader *const seq_params,
                                        const YV12_BUFFER_CONFIG *const buf,
                                        int only_chroma) {
   const int val = 1 << (seq_params->bit_depth - 1);
-
   for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
     const int is_uv = plane > 0;
     for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
@@ -4393,11 +4392,14 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
       frame_bufs[i].ref_count = 0;
       cm->buffer_pool->release_fb_cb(cm->buffer_pool->cb_priv,
                                      &frame_bufs[i].raw_frame_buffer);
+    } else {
+      // Previous sequence with different bitdepth may have set to a
+      // neutral gray in different bit depth, need reset here.
+      YV12_BUFFER_CONFIG *cur_buf = &frame_bufs[i].buf;
+      if (cur_buf->buffer_alloc_sz >= cur_buf->frame_size)
+        set_planes_to_neutral_grey(seq_params, cur_buf, 0);
     }
     frame_bufs[i].cur_frame_offset = 0;
-    // Previous sequence with different bitdepth may have set to a
-    // neutral gray in different bit depth, need reset here.
-    set_planes_to_neutral_grey(seq_params, &frame_bufs[i].buf, 0);
     av1_zero(frame_bufs[i].ref_frame_offset);
   }
   unlock_buffer_pool(cm->buffer_pool);
