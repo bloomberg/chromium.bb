@@ -37,21 +37,17 @@ class ResolverThread : public base::SimpleThread {
   void Run() override;
 
  private:
-  void OnResolutionComplete(int rv);
+  void OnResolutionComplete(base::OnceClosure on_done, int rv);
 
   AddressList* addresses_;
   std::string host_;
   int rv_;
 
-  base::WeakPtrFactory<ResolverThread> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ResolverThread);
 };
 
 ResolverThread::ResolverThread()
-    : SimpleThread("resolver_thread"),
-      rv_(ERR_UNEXPECTED),
-      weak_factory_(this) {}
+    : SimpleThread("resolver_thread"), rv_(ERR_UNEXPECTED) {}
 
 ResolverThread::~ResolverThread() = default;
 
@@ -67,17 +63,18 @@ void ResolverThread::Run() {
 
   std::unique_ptr<net::HostResolver::Request> request;
   HostPortPair host_port_pair(host_, 80);
-  rv_ = resolver->Resolve(HostResolver::RequestInfo(host_port_pair),
-                          DEFAULT_PRIORITY, addresses_,
-                          base::Bind(&ResolverThread::OnResolutionComplete,
-                                     weak_factory_.GetWeakPtr()),
-                          &request, NetLogWithSource());
+  base::RunLoop run_loop;
+  rv_ = resolver->Resolve(
+      HostResolver::RequestInfo(host_port_pair), DEFAULT_PRIORITY, addresses_,
+      base::Bind(&ResolverThread::OnResolutionComplete, base::Unretained(this),
+                 run_loop.QuitClosure()),
+      &request, NetLogWithSource());
 
   if (rv_ != ERR_IO_PENDING)
     return;
 
   // Run the mesage loop until OnResolutionComplete quits it.
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
@@ -88,10 +85,9 @@ int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
   return rv_;
 }
 
-void ResolverThread::OnResolutionComplete(int rv) {
+void ResolverThread::OnResolutionComplete(base::OnceClosure on_done, int rv) {
   rv_ = rv;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(on_done).Run();
 }
 
 }  // namespace
