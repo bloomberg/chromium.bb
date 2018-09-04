@@ -4936,7 +4936,6 @@ crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac Linux ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
-crbug.com/871416 fast/spatial-navigation/snav-stay-in-overflow-div.html [ Pass Failure ]
 
 # Only passes on bots with GPUs.
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
