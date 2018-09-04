@@ -837,6 +837,11 @@ bool NotificationPlatformBridgeWin::HandleActivation(
     return false;
   }
 
+  if (launch_id.is_for_dismiss_button()) {
+    LogActivationStatus(ActivationStatus::SUCCESS);
+    return true;  // We're done! The toast has already dismissed.
+  }
+
   base::Optional<base::string16> reply;
   base::string16 inline_reply =
       command_line.GetSwitchValueNative(switches::kNotificationInlineReply);
