@@ -2721,8 +2721,6 @@ crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-9.h
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-list-item.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
-crbug.com/626703 external/wpt/webrtc/no-media-call.html [ Timeout ]
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 Mac10.12 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-16.xml [ Skip ]
