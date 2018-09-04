@@ -357,10 +357,7 @@ TraceLog* TraceLog::GetInstance() {
 void TraceLog::ResetForTesting() {
   if (!g_trace_log_for_testing)
     return;
-  {
-    AutoLock lock(g_trace_log_for_testing->lock_);
-    CategoryRegistry::ResetForTesting();
-  }
+  CategoryRegistry::ResetForTesting();
   g_trace_log_for_testing->~TraceLog();
   new (g_trace_log_for_testing) TraceLog;
 }
