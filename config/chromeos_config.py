@@ -2450,6 +2450,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'rainier',
       'reef',
       'samus',
+      'scarlet',
       'sentry',
       'stout',
       'tatl',
@@ -2520,7 +2521,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
       'nyan_blaze', # contact: xixuan@
-      'scarlet', #contact: shapiroc@ (crbug.com/878863)
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
