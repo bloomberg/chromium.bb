@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
+#include "base/win/windows_version.h"
 
 namespace base {
 namespace {
@@ -218,17 +219,22 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       return false;
     }
 
-    // Windows ignores DACLs on certain unnamed objects (like shared sections).
-    // So, we generate a random name when we need to enforce read-only.
-    uint64_t rand_values[4];
-    RandBytes(&rand_values, sizeof(rand_values));
-    name_ = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
-                         rand_values[0], rand_values[1],
-                         rand_values[2], rand_values[3]);
+    if (base::win::GetVersion() < base::win::VERSION_WIN8_1) {
+      // Windows < 8.1 ignores DACLs on certain unnamed objects (like shared
+      // sections). So, we generate a random name when we need to enforce
+      // read-only.
+      uint64_t rand_values[4];
+      RandBytes(&rand_values, sizeof(rand_values));
+      name_ = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
+                           rand_values[0], rand_values[1], rand_values[2],
+                           rand_values[3]);
+      DCHECK(!name_.empty());
+    }
   }
-  DCHECK(!name_.empty());
+
   shm_ = SharedMemoryHandle(
-      CreateFileMappingWithReducedPermissions(&sa, rounded_size, name_.c_str()),
+      CreateFileMappingWithReducedPermissions(
+          &sa, rounded_size, name_.empty() ? nullptr : name_.c_str()),
       rounded_size, UnguessableToken::Create());
   if (!shm_.IsValid()) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
