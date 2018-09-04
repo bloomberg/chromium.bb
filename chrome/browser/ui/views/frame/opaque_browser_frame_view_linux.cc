@@ -31,6 +31,8 @@ OpaqueBrowserFrameViewLinux::~OpaqueBrowserFrameViewLinux() {
 }
 
 bool OpaqueBrowserFrameViewLinux::IsUsingSystemTheme() {
+  // On X11, this does the correct thing. On Windows, UsingSystemTheme() will
+  // return true when using the default blue theme too.
   return theme_service_->UsingSystemTheme();
 }
 
