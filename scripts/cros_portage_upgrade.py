@@ -33,7 +33,7 @@ WORLD_TARGET = 'world'
 UPGRADED = 'Upgraded'
 
 # Arches we care about -- we actively develop/support/ship.
-STANDARD_BOARD_ARCHS = set(('amd64', 'arm', 'x86'))
+STANDARD_BOARD_ARCHS = set(('amd64', 'arm'))
 
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*'])
