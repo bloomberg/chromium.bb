@@ -4,6 +4,7 @@
 
 assert(!is_component_build, "component build is unsupported on iOS")
 
+import("//build/config/ios/ios_sdk.gni")
 import("//ios/features.gni")
 
 declare_args() {
@@ -36,6 +37,8 @@ group("all") {
       "//components/cronet/ios:cronet_package",
     ]
   } else {
+    assert(xcode_version_int >= 1000, "Xcode 10 is required.")
+
     deps = [
       # List all the targets that need to be built on iOS by default.
       "//ios/chrome/app:chrome",

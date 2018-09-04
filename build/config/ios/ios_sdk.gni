@@ -165,5 +165,3 @@ if (ios_enable_code_signing && !use_ios_simulator) {
     }
   }
 }
-
-assert(xcode_version_int >= 1000, "Xcode 10 is required.")
