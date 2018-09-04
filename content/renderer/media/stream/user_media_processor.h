@@ -105,6 +105,8 @@ class CONTENT_EXPORT UserMediaProcessor
     return media_stream_device_observer_.get();
   }
 
+  bool HasActiveSources() const;
+
   // MediaStreamDispatcherEventHandler implementation.
   void OnDeviceStopped(const MediaStreamDevice& device) override;
 

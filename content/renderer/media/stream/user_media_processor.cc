@@ -1372,6 +1372,10 @@ void UserMediaProcessor::StopLocalSource(
   source_impl->StopSource();
 }
 
+bool UserMediaProcessor::HasActiveSources() const {
+  return !local_sources_.empty();
+}
+
 const mojom::MediaStreamDispatcherHostPtr&
 UserMediaProcessor::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
