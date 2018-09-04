@@ -22,6 +22,9 @@ struct NGLineHeightMetrics {
       : ascent(LayoutUnit::Min()), descent(LayoutUnit::Min()) {}
   NGLineHeightMetrics(LayoutUnit initial_ascent, LayoutUnit initial_descent)
       : ascent(initial_ascent), descent(initial_descent) {}
+  static NGLineHeightMetrics Zero() {
+    return NGLineHeightMetrics(LayoutUnit(), LayoutUnit());
+  }
 
   // Compute from ComputedStyle, using the font metrics of the prikmary font.
   // The leading is not included.

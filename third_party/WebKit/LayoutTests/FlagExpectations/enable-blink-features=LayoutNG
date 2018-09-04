@@ -385,7 +385,6 @@ crbug.com/591099 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pas
 crbug.com/591099 fast/forms/select/menulist-appearance-rtl.html [ Failure ]
 crbug.com/591099 fast/frames/crash-frameset-CSS-content-property.html [ Crash Pass ]
 crbug.com/591099 fast/inline-block/tricky-baseline.html [ Failure ]
-crbug.com/591099 fast/inline-block/vertical-align-top-and-bottom-2.html [ Failure ]
 crbug.com/835484 fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
 crbug.com/835484 fast/inline/continuation-outlines-with-layers.html [ Failure ]
 crbug.com/835484 fast/inline/continuation-outlines.html [ Failure ]
