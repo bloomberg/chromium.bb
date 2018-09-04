@@ -212,20 +212,6 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
 
-// Returns a base::ScopedClosureRunner that can be used to automatically destroy
-// an instance of JpegClient in a given task runner. Takes ownership of
-// |client|.
-base::ScopedClosureRunner CreateClientDestroyer(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<JpegClient> client) {
-  return base::ScopedClosureRunner(base::BindOnce(
-      [](scoped_refptr<base::SingleThreadTaskRunner> destruction_runner,
-         std::unique_ptr<JpegClient> client_to_delete) {
-        destruction_runner->DeleteSoon(FROM_HERE, std::move(client_to_delete));
-      },
-      task_runner, std::move(client)));
-}
-
 JpegClient::JpegClient(
     const std::vector<ParsedJpegImage*>& test_image_files,
     std::unique_ptr<ClientStateNotification<ClientState>> note,
@@ -535,6 +521,26 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   }
 }
 
+// This class holds a |client| that will be deleted on |task_runner|. This is
+// necessary because |client->decoder_| expects to be destroyed on the thread on
+// which it was created.
+class ScopedJpegClient {
+ public:
+  ScopedJpegClient(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   std::unique_ptr<JpegClient> client)
+      : task_runner_(task_runner), client_(std::move(client)) {}
+  ~ScopedJpegClient() {
+    task_runner_->DeleteSoon(FROM_HERE, std::move(client_));
+  }
+  JpegClient* client() const { return client_.get(); }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::unique_ptr<JpegClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedJpegClient);
+};
+
 class JpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
   JpegDecodeAcceleratorTest() = default;
@@ -557,44 +563,37 @@ void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
   base::Thread decoder_thread("DecoderThread");
   ASSERT_TRUE(decoder_thread.Start());
 
-  // The raw pointer to a client should not be used after a task to destroy the
-  // client is posted to |decoder_thread| by the corresponding element in
-  // |client_destroyers|. It's necessary to destroy the client in that thread
-  // because |client->decoder_| expects to be destroyed in the thread in which
-  // it was created.
-  std::vector<JpegClient*> clients;
-  std::vector<base::ScopedClosureRunner> client_destroyers;
+  std::vector<std::unique_ptr<ScopedJpegClient>> scoped_clients;
 
   for (size_t i = 0; i < num_concurrent_decoders; i++) {
     auto client = std::make_unique<JpegClient>(
         test_image_files_,
         std::make_unique<ClientStateNotification<ClientState>>(),
         false /* is_skip */);
-    clients.push_back(client.get());
-    client_destroyers.emplace_back(
-        CreateClientDestroyer(decoder_thread.task_runner(), std::move(client)));
+    scoped_clients.emplace_back(
+        new ScopedJpegClient(decoder_thread.task_runner(), std::move(client)));
+
     decoder_thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&JpegClient::CreateJpegDecoder,
-                              base::Unretained(clients.back())));
-    ASSERT_EQ(clients[i]->note()->Wait(), CS_INITIALIZED);
+        FROM_HERE,
+        base::BindOnce(&JpegClient::CreateJpegDecoder,
+                       base::Unretained(scoped_clients.back()->client())));
+    ASSERT_EQ(scoped_clients.back()->client()->note()->Wait(), CS_INITIALIZED);
   }
 
   for (size_t index = 0; index < test_image_files_.size(); index++) {
-    for (size_t i = 0; i < num_concurrent_decoders; i++) {
+    for (const auto& scoped_client : scoped_clients) {
       decoder_thread.task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&JpegClient::StartDecode,
-                                    base::Unretained(clients[i]), index, true));
+                                    base::Unretained(scoped_client->client()),
+                                    index, true));
     }
     if (index < expected_status_.size()) {
-      for (size_t i = 0; i < num_concurrent_decoders; i++) {
-        ASSERT_EQ(clients[i]->note()->Wait(), expected_status_[index]);
+      for (const auto& scoped_client : scoped_clients) {
+        ASSERT_EQ(scoped_client->client()->note()->Wait(),
+                  expected_status_[index]);
       }
     }
   }
-
-  // Doing this will destroy each client in the right thread (|decoder_thread|).
-  client_destroyers.clear();
-  decoder_thread.Stop();
 }
 
 void JpegDecodeAcceleratorTest::PerfDecodeByJDA(int decode_times) {
@@ -606,33 +605,23 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(int decode_times) {
       test_image_files_,
       std::make_unique<ClientStateNotification<ClientState>>(),
       true /* is_skip */);
-
-  // The raw pointer to the client should not be used after a task to destroy
-  // the client is posted to |decoder_thread| by the |client_destroyer|. It's
-  // necessary to destroy the client in that thread because |client->decoder_|
-  // expects to be destroyed in the thread in which it was created.
-  JpegClient* client_raw = client.get();
-  base::ScopedClosureRunner client_destroyer =
-      CreateClientDestroyer(decoder_thread.task_runner(), std::move(client));
+  auto scoped_client = std::make_unique<ScopedJpegClient>(
+      decoder_thread.task_runner(), std::move(client));
 
   decoder_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&JpegClient::CreateJpegDecoder,
-                                base::Unretained(client_raw)));
-  ASSERT_EQ(client_raw->note()->Wait(), CS_INITIALIZED);
+                                base::Unretained(scoped_client->client())));
+  ASSERT_EQ(scoped_client->client()->note()->Wait(), CS_INITIALIZED);
 
   const int32_t bitstream_buffer_id = 0;
-  client_raw->PrepareMemory(bitstream_buffer_id);
+  scoped_client->client()->PrepareMemory(bitstream_buffer_id);
   for (int index = 0; index < decode_times; index++) {
     decoder_thread.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&JpegClient::StartDecode, base::Unretained(client_raw),
-                       bitstream_buffer_id, false));
-    ASSERT_EQ(client_raw->note()->Wait(), CS_DECODE_PASS);
+        FROM_HERE, base::BindOnce(&JpegClient::StartDecode,
+                                  base::Unretained(scoped_client->client()),
+                                  bitstream_buffer_id, false));
+    ASSERT_EQ(scoped_client->client()->note()->Wait(), CS_DECODE_PASS);
   }
-
-  // Doing this will destroy the client in the right thread (|decoder_thread|).
-  client_destroyer.RunAndReset();
-  decoder_thread.Stop();
 }
 
 void JpegDecodeAcceleratorTest::PerfDecodeBySW(int decode_times) {
