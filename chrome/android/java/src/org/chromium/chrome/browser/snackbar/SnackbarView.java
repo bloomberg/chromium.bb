@@ -36,20 +36,22 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * Visual representation of a snackbar. On phone it matches the width of the activity; on tablet it
  * has a fixed width and is anchored at the start-bottom corner of the current window.
  */
-class SnackbarView {
+// TODO (jianli): Change this class and its methods back to package protected after the offline
+// indicator experiment is done.
+public class SnackbarView {
     private static final int MAX_LINES = 5;
 
-    private final Activity mActivity;
-    private final ViewGroup mContainerView;
-    private final ViewGroup mSnackbarView;
-    private final TemplatePreservingTextView mMessageView;
+    protected final Activity mActivity;
+    protected final ViewGroup mContainerView;
+    protected final ViewGroup mSnackbarView;
+    protected final TemplatePreservingTextView mMessageView;
     private final TextView mActionButtonView;
     private final ImageView mProfileImageView;
     private final int mAnimationDuration;
     private final boolean mIsTablet;
     private ViewGroup mOriginalParent;
-    private ViewGroup mParent;
-    private Snackbar mSnackbar;
+    protected ViewGroup mParent;
+    protected Snackbar mSnackbar;
     private boolean mAnimateOverWebContent;
     private View mRootContentView;
 
@@ -75,7 +77,7 @@ class SnackbarView {
      * @param parentView The ViewGroup used to display this snackbar. If this is null, this class
      *                   will determine where to attach the snackbar.
      */
-    SnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar,
+    public SnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar,
             @Nullable ViewGroup parentView) {
         mActivity = activity;
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
@@ -103,15 +105,14 @@ class SnackbarView {
         updateInternal(snackbar, false);
     }
 
-    void show() {
+    public void show() {
         addToParent();
         mContainerView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 mContainerView.removeOnLayoutChangeListener(this);
-                mContainerView.setTranslationY(
-                        mContainerView.getHeight() + getLayoutParams().bottomMargin);
+                mContainerView.setTranslationY(getYPositionForMoveAnimation());
                 Animator animator = ObjectAnimator.ofFloat(mContainerView, View.TRANSLATION_Y, 0);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.setDuration(mAnimationDuration);
@@ -120,7 +121,7 @@ class SnackbarView {
         });
     }
 
-    void dismiss() {
+    public void dismiss() {
         // Disable action button during animation.
         mActionButtonView.setEnabled(false);
         AnimatorSet animatorSet = new AnimatorSet();
@@ -132,13 +133,13 @@ class SnackbarView {
                 mParent.removeView(mContainerView);
             }
         });
-        Animator moveDown = ObjectAnimator.ofFloat(mContainerView, View.TRANSLATION_Y,
-                mContainerView.getHeight() + getLayoutParams().bottomMargin);
-        moveDown.setInterpolator(new DecelerateInterpolator());
+        Animator moveAnimator = ObjectAnimator.ofFloat(
+                mContainerView, View.TRANSLATION_Y, getYPositionForMoveAnimation());
+        moveAnimator.setInterpolator(new DecelerateInterpolator());
         Animator fadeOut = ObjectAnimator.ofFloat(mContainerView, View.ALPHA, 0f);
         fadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
 
-        animatorSet.playTogether(fadeOut, moveDown);
+        animatorSet.playTogether(fadeOut, moveAnimator);
         startAnimatorOnSurfaceView(animatorSet);
     }
 
@@ -151,17 +152,13 @@ class SnackbarView {
         if (!mCurrentVisibleRect.equals(mPreviousVisibleRect)) {
             mPreviousVisibleRect.set(mCurrentVisibleRect);
 
-            mParent.getLocationInWindow(mTempLocation);
-            int keyboardHeight =
-                    mParent.getHeight() + mTempLocation[1] - mCurrentVisibleRect.bottom;
-            keyboardHeight = Math.max(0, keyboardHeight);
             FrameLayout.LayoutParams lp = getLayoutParams();
 
             int prevBottomMargin = lp.bottomMargin;
             int prevWidth = lp.width;
             int prevGravity = lp.gravity;
 
-            lp.bottomMargin = keyboardHeight;
+            lp.bottomMargin = getBottomMarginForLayout();
             if (mIsTablet) {
                 int margin = mParent.getResources()
                         .getDimensionPixelSize(R.dimen.snackbar_margin_tablet);
@@ -176,6 +173,16 @@ class SnackbarView {
                 mContainerView.setLayoutParams(lp);
             }
         }
+    }
+
+    protected int getYPositionForMoveAnimation() {
+        return mContainerView.getHeight() + getLayoutParams().bottomMargin;
+    }
+
+    protected int getBottomMarginForLayout() {
+        mParent.getLocationInWindow(mTempLocation);
+        int keyboardHeight = mParent.getHeight() + mTempLocation[1] - mCurrentVisibleRect.bottom;
+        return Math.max(0, keyboardHeight);
     }
 
     /**
@@ -202,7 +209,7 @@ class SnackbarView {
      * Sends an accessibility event to mMessageView announcing that this window was added so that
      * the mMessageView content description is read aloud if accessibility is enabled.
      */
-    void announceforAccessibility() {
+    public void announceforAccessibility() {
         mMessageView.announceForAccessibility(mMessageView.getContentDescription() + " "
                 + mContainerView.getResources().getString(R.string.bottom_bar_screen_position));
     }
