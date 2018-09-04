@@ -34,7 +34,6 @@ enum EffectiveConnectionType;
 class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
-class URLRequestContextGetter;
 class FileNetLogObserver;
 }  // namespace net
 
@@ -114,13 +113,7 @@ class CronetURLRequestContext {
   // Returns true if running on network thread.
   bool IsOnNetworkThread() const;
 
-  // Returns net::URLRequestContext owned by |this|.
   net::URLRequestContext* GetURLRequestContext();
-
-  // Returns a new instance of net::URLRequestContextGetter.
-  // The net::URLRequestContext and base::SingleThreadTaskRunner that
-  // net::URLRequestContextGetter returns are owned by |this|.
-  net::URLRequestContextGetter* CreateURLRequestContextGetter();
 
   // TODO(xunjieli): Keep only one version of StartNetLog().
 
@@ -157,7 +150,6 @@ class CronetURLRequestContext {
 
  private:
   friend class TestUtil;
-  class ContextGetter;
 
   // NetworkTasks performs tasks on the network thread and owns objects that
   // live on the network thread.

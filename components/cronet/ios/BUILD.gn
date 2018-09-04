@@ -113,7 +113,7 @@ ios_framework_bundle("cronet_framework") {
   libs = [ "UIKit.Framework" ]
 
   public_deps = [
-    "//components/grpc_support:headers",
+    "//components/grpc_support",
   ]
 
   public_headers = _cronet_public_headers
