@@ -8,7 +8,10 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
@@ -100,6 +103,9 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (DocumentHasForceAllowFlag(document))
     return true;
 
+  if (DocumentIsCapturingUserMedia(document))
+    return true;
+
   if (!document.GetFrame())
     return false;
 
@@ -153,6 +159,25 @@ bool AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
     const Document& document) {
   return GetAutoplayPolicyForDocument(document) !=
          AutoplayPolicy::Type::kNoUserGestureRequired;
+}
+
+// static
+bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
+  if (!document.GetFrame())
+    return false;
+
+  WebFrame* web_frame = WebFrame::FromFrame(document.GetFrame());
+  if (!web_frame)
+    return false;
+  
+  WebLocalFrame* frame = web_frame->ToWebLocalFrame();
+  if (!frame || !frame->Client())
+    return false;
+
+  if (WebUserMediaClient* media_client = frame->Client()->UserMediaClient())
+    return media_client->IsCapturing();
+
+  return false;
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
