@@ -1729,10 +1729,10 @@ int HostProcessMain() {
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
+  base::RunLoop run_loop;
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          message_loop.task_runner(),
-          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
+          message_loop.task_runner(), run_loop.QuitClosure()));
   if (!context)
     return kInitializationFailed;
 
@@ -1749,7 +1749,7 @@ int HostProcessMain() {
   new HostProcess(std::move(context), &exit_code, &shutdown_watchdog);
 
   // Run the main (also UI) message loop until the host no longer needs it.
-  base::RunLoop().Run();
+  run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
   base::TaskScheduler::GetInstance()->Shutdown();
