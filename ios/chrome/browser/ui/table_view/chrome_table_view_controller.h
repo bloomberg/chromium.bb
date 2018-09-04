@@ -71,6 +71,10 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
             (NSAttributedString*)attributedMessage
                                          image:(UIImage*)image;
 
+// Updates the accessibility label of the UILabel displaying the empty table
+// view message to |newLabel|.
+- (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel;
+
 // Removes the empty table view, if one is present.
 - (void)removeEmptyTableView;
 

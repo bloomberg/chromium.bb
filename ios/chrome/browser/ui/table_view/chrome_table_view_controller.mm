@@ -132,6 +132,10 @@
                                                        image:image];
 }
 
+- (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel {
+  self.emptyView.messageAccessibilityLabel = newLabel;
+}
+
 - (void)removeEmptyTableView {
   if (self.emptyView) {
     // Check that the tableView.backgroundView hasn't been modified

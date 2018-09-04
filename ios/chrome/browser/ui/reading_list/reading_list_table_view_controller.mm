@@ -861,6 +861,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
       addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
                                        image:[UIImage
                                                  imageNamed:kEmptyStateImage]];
+  [self updateEmptyTableViewMessageAccessibilityLabel:
+            GetReadingListEmptyMessageA11yLabel()];
   self.tableView.alwaysBounceVertical = NO;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   [self.audience readingListHasItems:NO];
