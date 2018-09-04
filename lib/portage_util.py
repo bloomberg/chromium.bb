@@ -49,7 +49,7 @@ _ver = (r'(?P<version>'
 _pvr_re = re.compile(r'^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
 
 # This regex matches a category name.
-_category_re = re.compile(r'^(?P<category>[\w\+\.][\w\+\.\-]*)$', re.VERBOSE)
+_category_re = re.compile(r'^(?P<category>\w[\w\+\.\-]*)$', re.VERBOSE)
 
 # This regex matches blank lines, commented lines, and the EAPI line.
 _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
