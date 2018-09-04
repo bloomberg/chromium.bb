@@ -2015,10 +2015,7 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
       if ([ns_selected_text length] == 0)
         return;
       scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
-      NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
-      [pasteboard->get() declareTypes:types owner:nil];
-      if ([pasteboard->get() setString:ns_selected_text
-                               forType:NSStringPboardType]) {
+      if ([pasteboard->get() writeObjects:@[ ns_selected_text ]]) {
         NSPerformService(@"Look Up in Dictionary", pasteboard->get());
       }
     }
