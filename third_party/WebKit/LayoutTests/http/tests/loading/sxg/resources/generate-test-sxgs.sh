@@ -88,4 +88,20 @@ gen-signedexchange \
   -o fallback-to-another-sxg.sxg \
   -miRecordSize 100
 
+# Generate the nested signed exchange file.
+gen-signedexchange \
+  -version 1b2 \
+  -uri 'https://127.0.0.1:8443/loading/sxg/resources/inner-url.html?fallback-from-nested-sxg' \
+  -status 200 \
+  -content sxg-location.sxg \
+  -responseHeader 'content-type: application/signed-exchange;v=b2' \
+  -certificate $certs_dir/127.0.0.1.sxg.pem \
+  -certUrl https://127.0.0.1:8443/loading/sxg/resources/127.0.0.1.sxg.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/sxg/resources/resource.validity.msg \
+  -privateKey $certs_dir/127.0.0.1.sxg.key \
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o nested-sxg.sxg \
+  -miRecordSize 100
+
 rm -fr $tmpdir
