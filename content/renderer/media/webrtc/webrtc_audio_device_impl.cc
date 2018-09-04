@@ -323,34 +323,6 @@ int32_t WebRtcAudioDeviceImpl::MinMicrophoneVolume(uint32_t* min_volume) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
-  DCHECK(initialized_);
-  // This method is called during initialization on the signaling thread and
-  // then later on the worker thread.  Due to this we cannot DCHECK on what
-  // thread we're on since it might incorrectly initialize the
-  // worker_thread_checker_.
-  base::AutoLock auto_lock(lock_);
-  *available = renderer_ && renderer_->channels() == 2;
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
-    bool* available) const {
-  DCHECK(initialized_);
-  // This method is called during initialization on the signaling thread and
-  // then later on the worker thread.  Due to this we cannot DCHECK on what
-  // thread we're on since it might incorrectly initialize the
-  // worker_thread_checker_.
-
-  // TODO(xians): These kind of hardware methods do not make much sense since we
-  // support multiple sources. Remove or figure out new APIs for such methods.
-  base::AutoLock auto_lock(lock_);
-  if (capturers_.empty())
-    return -1;
-  *available = (capturers_.back()->GetInputFormat().channels() == 2);
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   DCHECK(worker_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);

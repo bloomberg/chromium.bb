@@ -334,13 +334,6 @@ void ProcessedLocalAudioSource::OnCaptureProcessorCreated(
   audio_processor_proxy_->SetControls(controls);
 }
 
-// TODO(https://crbug.com/879243): Is this needed when doing audio processing in
-// the audio service?
-media::AudioParameters ProcessedLocalAudioSource::GetInputFormat() const {
-  return audio_processor_ ? audio_processor_->InputFormat()
-                          : media::AudioParameters();
-}
-
 void ProcessedLocalAudioSource::SetOutputDeviceForAec(
     const std::string& output_device_id) {
   DVLOG(1) << "ProcessedLocalAudioSource::SetOutputDeviceForAec()";
