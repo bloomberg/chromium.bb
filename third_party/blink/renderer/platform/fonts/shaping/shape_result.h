@@ -286,6 +286,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // mapping from character index to x-position and O(log n) time, using binary
   // search, from x-position to character index.
   class CharacterPositionData {
+    USING_FAST_MALLOC(CharacterPositionData);
+
    public:
     CharacterPositionData(unsigned num_characters, float width)
         : data_(num_characters), width_(width) {}
