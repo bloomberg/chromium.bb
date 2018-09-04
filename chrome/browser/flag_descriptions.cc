@@ -1730,7 +1730,7 @@ const char kStrictSiteIsolationDescription[] =
     "default. Here, 'Disabled' is a legacy value that actually means "
     "'Default,' in which case site isolation may be already enabled based on "
     "platform, enterprise policy, or field trial. See also "
-    "#site-isolation-trial-opt-outfor how to disable site isolation for "
+    "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
 const char kSiteIsolationTrialOptOutName[] = "Site isolation trial opt-out";
