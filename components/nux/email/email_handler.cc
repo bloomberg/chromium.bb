@@ -24,6 +24,12 @@
 
 namespace nux {
 
+struct EmailProviderType {
+  const char* name;
+  const char* url;
+  const int icon;
+};
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class EmailProviders {
@@ -40,29 +46,19 @@ const char* kEmailInteractionHistogram =
 
 // Strings in costants not translated because this is an experiment.
 // Translate before wide release.
-
-constexpr const char* kEmailNames[] = {
-    "Gmail", "Yahoo", "Outlook", "AOL", "iCloud",
-};
-
-// TODO(hcarmona): get correct URLs
-constexpr const char* kEmailUrls[] = {
-    "https://gmail.com",       "https://youtube.com",
-    "https://maps.google.com", "https://translate.google.com",
-    "https://news.google.com",
+// TODO(hcarmona): populate with icon ids.
+const EmailProviderType kEmail[] = {
+    {"Gmail", "https://accounts.google.com/b/0/AddMailService", 0},
+    {"Yahoo", "https://mail.yahoo.com", 0},
+    {"Outlook", "https://login.live.com/login.srf?", 0},
+    {"AOL", "https://mail.aol.com", 0},
+    {"iCloud", "https://www.icloud.com/mail", 0},
 };
 
 constexpr const int kEmailIconSize = 48;  // Pixels.
-constexpr const int kEmailIcons[] = {
-    // TODO(hcarmona): populate list of icons
-};
 
-static_assert(base::size(kEmailNames) == base::size(kEmailUrls),
-              "names and urls must match");
-static_assert(base::size(kEmailNames) == (size_t)EmailProviders::kCount,
+static_assert(base::size(kEmail) == (size_t)EmailProviders::kCount,
               "names and histograms must match");
-/*static_assert(base::size(kEmailNames) == base::size(kEmailIcons),
-              "names and icons must match");*/
 
 EmailHandler::EmailHandler(PrefService* prefs,
                            favicon::FaviconService* favicon_service,
@@ -103,10 +99,10 @@ void EmailHandler::HandleAddEmails(const base::ListValue* args) {
                                 (EmailProviders)i,
                                 EmailProviders::kCount);
       */
-      GURL app_url = GURL(kEmailUrls[i]);
+      GURL app_url = GURL(kEmail[i].url);
       bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(),
                               bookmarkIndex++,
-                              base::ASCIIToUTF16(kEmailNames[i]), app_url);
+                              base::ASCIIToUTF16(kEmail[i].name), app_url);
 
       // Preload the favicon cache with Chrome-bundled images. Otherwise, the
       // pre-populated bookmarks don't have favicons and look bad. Favicons are
@@ -114,7 +110,7 @@ void EmailHandler::HandleAddEmails(const base::ListValue* args) {
       favicon_service_->MergeFavicon(
           app_url, app_url, favicon_base::IconType::kFavicon,
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              kEmailIcons[i]),
+              kEmail[i].icon),
           gfx::Size(kEmailIconSize, kEmailIconSize));
     }
   }
@@ -154,6 +150,14 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_EMAIL_CHOOSER_JS);
 
   // Add icons
+
+  // Add constants to loadtime data
+  for (size_t i = 0; i < (size_t)EmailProviders::kCount; ++i) {
+    html_source->AddString("email_name_" + std::to_string(i), kEmail[i].name);
+    html_source->AddString("email_url_" + std::to_string(i), kEmail[i].url);
+  }
+  html_source->AddInteger("email_count", (int)EmailProviders::kCount);
+  html_source->SetJsonPath("strings.js");
 }
 
 }  // namespace nux

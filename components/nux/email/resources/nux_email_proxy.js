@@ -13,6 +13,9 @@ cr.define('nux', function() {
      * @param {!Function} callback
      */
     addBookmark(data, callback) {}
+
+    /** @return {!Array<Object>} Array of email providers. */
+    getEmailList() {}
   }
 
   /** @implements {NuxEmailProxy} */
@@ -26,6 +29,20 @@ cr.define('nux', function() {
     addBookmark(data, callback) {
       chrome.bookmarks.create(data, callback);
       // TODO(scottchen): request C++ to cache favicon
+    }
+
+    /** @override */
+    getEmailList() {
+      let emailCount = loadTimeData.getInteger('email_count');
+      let emailList = [];
+      for (let i = 0; i < emailCount; ++i) {
+        emailList.push({
+          name: loadTimeData.getString(`email_name_${i}`),
+          icon: loadTimeData.getString(`email_name_${i}`).toLowerCase(),
+          url: loadTimeData.getString(`email_url_${i}`)
+        })
+      }
+      return emailList;
     }
   }
 
