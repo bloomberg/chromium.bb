@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
@@ -17,6 +16,7 @@ namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
 
+class DocumentLoader;
 class LocalFrame;
 
 class CORE_EXPORT Deprecation {
