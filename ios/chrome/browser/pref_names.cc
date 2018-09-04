@@ -64,8 +64,7 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 const char kIosBookmarkCachedFolderId[] = "ios.bookmark.cached_folder_id";
 
 // Caches the scroll position of Bookmarks.
-const char kIosBookmarkCachedScrollPosition[] =
-    "ios.bookmark.cached_scroll_position";
+const char kIosBookmarkCachedTopMostRow[] = "ios.bookmark.cached_top_most_row";
 
 // Preference that keep information about where to create a new bookmark.
 const char kIosBookmarkFolderDefault[] = "ios.bookmark.default_folder";
