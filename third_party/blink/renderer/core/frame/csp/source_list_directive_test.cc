@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 
-#include <vector>
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -1041,6 +1039,7 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
        {"http://example1.com/foo/ 'nonce-xyz' 'sha512-xyz'",
         "http://example1.com/foo/ 'nonce-zyx' 'nonce-xyz' 'sha512-xyz'"},
        false},
+
   };
 
   for (const auto& test : cases) {
@@ -1376,7 +1375,7 @@ TEST_F(SourceListDirectiveTest, ParseHost) {
     const UChar* start = characters.data();
     const UChar* end = start + characters.size();
     EXPECT_EQ(test.expected,
-              SourceListDirective::ParseHost(start, end, &host, &disposition))
+              SourceListDirective::ParseHost(start, end, host, disposition))
         << "SourceListDirective::parseHost fail to parse: " << test.sources;
   }
 }
