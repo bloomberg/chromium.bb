@@ -8,7 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 
@@ -18,7 +18,7 @@ namespace {
 const int64_t kMaxImageSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string LoadImageData(const base::FilePath& path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 
   // Confirm that the file's size is within our threshold.
   int64_t file_size;
