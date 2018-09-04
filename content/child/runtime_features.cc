@@ -501,6 +501,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnablePortals(
       base::FeatureList::IsEnabled(blink::features::kPortals));
-};
+
+  if (command_line.HasSwitch(switches::kDisableBackgroundFetch))
+    WebRuntimeFeatures::EnableBackgroundFetch(false);
+}
 
 }  // namespace content
