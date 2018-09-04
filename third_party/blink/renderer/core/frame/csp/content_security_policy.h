@@ -110,7 +110,11 @@ class CORE_EXPORT ContentSecurityPolicy
     kTrustedTypes,
     kSandbox,
     kScriptSrc,
+    kScriptSrcAttr,
+    kScriptSrcElem,
     kStyleSrc,
+    kStyleSrcAttr,
+    kStyleSrcElem,
     kTreatAsPublicAddress,
     kUndefined,
     kUpgradeInsecureRequests,
@@ -464,6 +468,23 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool HasPolicyFromSource(ContentSecurityPolicyHeaderSource) const;
 
+  static bool IsScriptDirective(
+      ContentSecurityPolicy::DirectiveType directive_type) {
+    return (
+        directive_type == ContentSecurityPolicy::DirectiveType::kScriptSrc ||
+        directive_type ==
+            ContentSecurityPolicy::DirectiveType::kScriptSrcAttr ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
+  }
+
+  static bool IsStyleDirective(
+      ContentSecurityPolicy::DirectiveType directive_type) {
+    return (
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrc ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcAttr ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
@@ -496,7 +517,7 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static void FillInCSPHashValues(const String& source,
                                   uint8_t hash_algorithms_used,
-                                  Vector<CSPHashValue>& csp_hash_values);
+                                  Vector<CSPHashValue>* csp_hash_values);
 
   // checks a vector of csp hashes against policy, probably a good idea
   // to use in tandem with FillInCSPHashValues.
@@ -536,4 +557,4 @@ class CORE_EXPORT ContentSecurityPolicy
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CONTENT_SECURITY_POLICY_H_

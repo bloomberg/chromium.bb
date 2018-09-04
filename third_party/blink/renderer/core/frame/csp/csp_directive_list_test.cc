@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
 
+#include <list>
+#include <string>
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
@@ -19,7 +23,6 @@ namespace blink {
 class CSPDirectiveListTest : public testing::Test {
  public:
   CSPDirectiveListTest() : csp(ContentSecurityPolicy::Create()) {}
-
   void SetUp() override {
     csp->SetupSelf(
         *SecurityOrigin::CreateFromString("https://example.test/image.png"));
@@ -62,50 +65,89 @@ TEST_F(CSPDirectiveListTest, Header) {
 
 TEST_F(CSPDirectiveListTest, IsMatchingNoncePresent) {
   struct TestCase {
+    ContentSecurityPolicy::DirectiveType type;
     const char* list;
     const char* nonce;
     bool expected;
   } cases[] = {
-      {"script-src 'self'", "yay", false},
-      {"script-src 'self'", "boo", false},
-      {"script-src 'nonce-yay'", "yay", true},
-      {"script-src 'nonce-yay'", "boo", false},
-      {"script-src 'nonce-yay' 'nonce-boo'", "yay", true},
-      {"script-src 'nonce-yay' 'nonce-boo'", "boo", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc, "script-src 'self'",
+       "yay", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc, "script-src 'self'",
+       "boo", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "script-src 'nonce-yay'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "script-src 'nonce-yay'", "boo", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "script-src 'nonce-yay' 'nonce-boo'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "script-src 'nonce-yay' 'nonce-boo'", "boo", true},
 
       // Falls back to 'default-src'
-      {"default-src 'nonce-yay'", "yay", true},
-      {"default-src 'nonce-yay'", "boo", false},
-      {"default-src 'nonce-boo'; script-src 'nonce-yay'", "yay", true},
-      {"default-src 'nonce-boo'; script-src 'nonce-yay'", "boo", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "default-src 'nonce-yay'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "default-src 'nonce-yay'", "boo", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "default-src 'nonce-boo'; script-src 'nonce-yay'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "default-src 'nonce-boo'; script-src 'nonce-yay'", "boo", false},
 
       // Unrelated directives do not affect result
-      {"style-src 'nonce-yay'", "yay", false},
-      {"style-src 'nonce-yay'", "boo", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "style-src 'nonce-yay'", "yay", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       "style-src 'nonce-yay'", "boo", false},
+
+      // Script-src-elem/attr falls back on script-src and then default-src.
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       "script-src 'nonce-yay'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       "script-src 'nonce-yay'; default-src 'nonce-boo'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       "script-src 'nonce-boo'; default-src 'nonce-yay'", "yay", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       "script-src-elem 'nonce-yay'; script-src 'nonce-boo'; default-src "
+       "'nonce-boo'",
+       "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       "default-src 'nonce-yay'", "yay", true},
+
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       "script-src 'nonce-yay'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       "script-src 'nonce-yay'; default-src 'nonce-boo'", "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       "script-src 'nonce-boo'; default-src 'nonce-yay'", "yay", false},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       "script-src-attr 'nonce-yay'; script-src 'nonce-boo'; default-src "
+       "'nonce-boo'",
+       "yay", true},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       "default-src 'nonce-yay'", "yay", true},
   };
 
   for (const auto& test : cases) {
     // Report-only
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, kContentSecurityPolicyHeaderTypeReport);
-    Member<SourceListDirective> script_src = directive_list->OperativeDirective(
-        ContentSecurityPolicy::DirectiveType::kScriptSrc);
+    Member<SourceListDirective> directive =
+        directive_list->OperativeDirective(test.type);
     EXPECT_EQ(test.expected,
-              directive_list->IsMatchingNoncePresent(script_src, test.nonce));
+              directive_list->IsMatchingNoncePresent(directive, test.nonce));
     // Empty/null strings are always not present, regardless of the policy.
-    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(script_src, ""));
-    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(script_src, String()));
+    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(directive, ""));
+    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(directive, String()));
 
     // Enforce
     directive_list =
         CreateList(test.list, kContentSecurityPolicyHeaderTypeEnforce);
-    script_src = directive_list->OperativeDirective(
-        ContentSecurityPolicy::DirectiveType::kScriptSrc);
+    directive = directive_list->OperativeDirective(test.type);
     EXPECT_EQ(test.expected,
-              directive_list->IsMatchingNoncePresent(script_src, test.nonce));
+              directive_list->IsMatchingNoncePresent(directive, test.nonce));
     // Empty/null strings are always not present, regardless of the policy.
-    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(script_src, ""));
-    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(script_src, String()));
+    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(directive, ""));
+    EXPECT_FALSE(directive_list->IsMatchingNoncePresent(directive, String()));
   }
 }
 
@@ -392,7 +434,6 @@ TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
     const WebURLRequest::RequestContext context;
     bool expected;
   } cases[] = {
-
       {"require-sri-for script", "https://example.com/file",
        WebURLRequest::kRequestContextScript, false},
 
@@ -865,132 +906,110 @@ TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
 }
 
 TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
-  enum DefaultBehaviour {
-    kDefault,
-    kNoDefault,
-    kChildAndDefault,
-    kChildAndScriptAndDefault
-  };
-
   struct TestCase {
     ContentSecurityPolicy::DirectiveType directive;
-    const DefaultBehaviour type;
+    std::vector<ContentSecurityPolicy::DirectiveType> fallback_list;
   } cases[] = {
       // Directives with default directive.
-      {ContentSecurityPolicy::DirectiveType::kChildSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kConnectSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kFontSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kImgSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kManifestSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kMediaSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kObjectSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kScriptSrc, kDefault},
-      {ContentSecurityPolicy::DirectiveType::kStyleSrc, kDefault},
+      {ContentSecurityPolicy::DirectiveType::kChildSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kConnectSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kFontSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kImgSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kManifestSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kMediaSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kObjectSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kStyleSrc,
+       {ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
       // Directives with no default directive.
-      {ContentSecurityPolicy::DirectiveType::kBaseURI, kNoDefault},
-      {ContentSecurityPolicy::DirectiveType::kDefaultSrc, kNoDefault},
-      {ContentSecurityPolicy::DirectiveType::kFrameAncestors, kNoDefault},
-      {ContentSecurityPolicy::DirectiveType::kFormAction, kNoDefault},
+      {ContentSecurityPolicy::DirectiveType::kBaseURI, {}},
+      {ContentSecurityPolicy::DirectiveType::kDefaultSrc, {}},
+      {ContentSecurityPolicy::DirectiveType::kFrameAncestors, {}},
+      {ContentSecurityPolicy::DirectiveType::kFormAction, {}},
       // Directive with multiple default directives.
-      {ContentSecurityPolicy::DirectiveType::kFrameSrc, kChildAndDefault},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcAttr,
+       {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+        ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+       {ContentSecurityPolicy::DirectiveType::kScriptSrc,
+        ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
+      {ContentSecurityPolicy::DirectiveType::kFrameSrc,
+       {ContentSecurityPolicy::DirectiveType::kChildSrc,
+        ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
       {ContentSecurityPolicy::DirectiveType::kWorkerSrc,
-       kChildAndScriptAndDefault},
+       {ContentSecurityPolicy::DirectiveType::kChildSrc,
+        ContentSecurityPolicy::DirectiveType::kScriptSrc,
+        ContentSecurityPolicy::DirectiveType::kDefaultSrc}},
   };
 
-  // Initial set-up.
   std::stringstream all_directives;
   for (const auto& test : cases) {
     const char* name = ContentSecurityPolicy::GetDirectiveName(test.directive);
     all_directives << name << " http://" << name << ".com; ";
   }
-  CSPDirectiveList* all_directives_list = CreateList(
-      all_directives.str().c_str(), kContentSecurityPolicyHeaderTypeEnforce);
+
   CSPDirectiveList* empty =
       CreateList("", kContentSecurityPolicyHeaderTypeEnforce);
 
-  for (const auto& test : cases) {
-    const char* name = ContentSecurityPolicy::GetDirectiveName(test.directive);
-    // When CSPDirectiveList is empty, then `null` should be returned for any
-    // type.
+  std::string directive_string;
+  CSPDirectiveList* directive_list;
+  // Initial set-up.
+  for (auto& test : cases) {
+    // With an empty directive list the returned directive should always be
+    // null.
     EXPECT_FALSE(empty->OperativeDirective(test.directive));
 
-    // When all directives present, then given a type that directive value
-    // should be returned.
-    HeapVector<Member<CSPSource>> sources =
-        all_directives_list->OperativeDirective(test.directive)->list_;
-    EXPECT_EQ(sources.size(), 1u);
-    EXPECT_TRUE(sources[0]->host_.StartsWith(name));
+    // Add the directive itself as it should be the first one to be returned.
+    test.fallback_list.insert(test.fallback_list.begin(), test.directive);
 
-    std::stringstream all_except_this;
-    std::stringstream all_except_child_src_and_this;
-    std::stringstream all_except_child_src_and_script_src_and_this;
-    for (const auto& subtest : cases) {
-      if (subtest.directive == test.directive)
-        continue;
-      const char* directive_name =
-          ContentSecurityPolicy::GetDirectiveName(subtest.directive);
-      all_except_this << directive_name << " http://" << directive_name
-                      << ".com; ";
-      if (subtest.directive !=
-          ContentSecurityPolicy::DirectiveType::kChildSrc) {
-        all_except_child_src_and_this << directive_name << " http://"
-                                      << directive_name << ".com; ";
-      }
-      if (subtest.directive !=
-              ContentSecurityPolicy::DirectiveType::kChildSrc &&
-          subtest.directive !=
-              ContentSecurityPolicy::DirectiveType::kScriptSrc) {
-        all_except_child_src_and_script_src_and_this
-            << directive_name << " http://" << directive_name << ".com; ";
-      }
-    }
-    CSPDirectiveList* all_except_this_list = CreateList(
-        all_except_this.str().c_str(), kContentSecurityPolicyHeaderTypeEnforce);
-    CSPDirectiveList* all_except_child_src_and_this_list =
-        CreateList(all_except_child_src_and_this.str().c_str(),
-                   kContentSecurityPolicyHeaderTypeEnforce);
-    CSPDirectiveList* all_except_child_src_and_script_src_and_this_list =
-        CreateList(all_except_child_src_and_script_src_and_this.str().c_str(),
-                   kContentSecurityPolicyHeaderTypeEnforce);
+    // Start the tests with all directives present.
+    directive_string = all_directives.str();
 
-    switch (test.type) {
-      case kDefault:
-        sources =
-            all_except_this_list->OperativeDirective(test.directive)->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "default-src.com");
-        break;
-      case kNoDefault:
-        EXPECT_FALSE(all_except_this_list->OperativeDirective(test.directive));
-        break;
-      case kChildAndDefault:
-        sources =
-            all_except_this_list->OperativeDirective(test.directive)->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "child-src.com");
-        sources = all_except_child_src_and_this_list
-                      ->OperativeDirective(test.directive)
-                      ->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "default-src.com");
-        break;
-      case kChildAndScriptAndDefault:
-        sources =
-            all_except_this_list->OperativeDirective(test.directive)->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "child-src.com");
-        sources = all_except_child_src_and_this_list
-                      ->OperativeDirective(test.directive)
-                      ->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "script-src.com");
-        sources = all_except_child_src_and_script_src_and_this_list
-                      ->OperativeDirective(test.directive)
-                      ->list_;
-        EXPECT_EQ(sources.size(), 1u);
-        EXPECT_EQ(sources[0]->host_, "default-src.com");
-        break;
+    while (test.fallback_list.size()) {
+      directive_list = CreateList(directive_string.c_str(),
+                                  kContentSecurityPolicyHeaderTypeEnforce);
+
+      CSPDirective* operative_directive =
+          directive_list->OperativeDirective(test.directive);
+
+      // We should have an actual directive returned here.
+      EXPECT_TRUE(operative_directive);
+
+      // The OperativeDirective should be first one in the fallback chain.
+      EXPECT_EQ(test.fallback_list.front(),
+                ContentSecurityPolicy::GetDirectiveType(
+                    operative_directive->GetName()));
+
+      // Remove the first directive in the fallback chain from the directive
+      // list and continue by testing that the next one is returned until we
+      // have no more directives in the fallback list.
+      const char* current_directive_name =
+          ContentSecurityPolicy::GetDirectiveName(test.fallback_list.front());
+
+      std::stringstream current_directive;
+      current_directive << current_directive_name << " http://"
+                        << current_directive_name << ".com; ";
+
+      size_t index = directive_string.find(current_directive.str());
+      directive_string.replace(index, current_directive.str().size(), "");
+
+      test.fallback_list.erase(test.fallback_list.begin());
     }
+
+    // After we have checked and removed all the directives in the fallback
+    // chain we should ensure that there is no unexpected directive outside of
+    // the fallback chain that is returned.
+    directive_list = CreateList(directive_string.c_str(),
+                                kContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_FALSE(directive_list->OperativeDirective(test.directive));
   }
 }
 
