@@ -289,7 +289,9 @@ enum class LinuxBackendMigrationStatus {
   kFailed = 1,
   // All the data is in the encrypted loginDB.
   kCopiedAll = 2,
-  kMaxValue = kCopiedAll
+  // The standard login database is encrypted.
+  kLoginDBReplaced = 3,
+  kMaxValue = kLoginDBReplaced
 };
 
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
