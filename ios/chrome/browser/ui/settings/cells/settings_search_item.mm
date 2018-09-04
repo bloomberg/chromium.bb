@@ -26,6 +26,8 @@ const CGFloat kIconTintAlpha = 0.3f;
 const CGFloat kBackgroundAlpha = 0.1f;
 // Input text corner radius.
 const CGFloat kCornerRadius = 12.0f;
+// Input field disabled alpha.
+const CGFloat kDisabledAlpha = 0.6f;
 }  // namespace
 
 @interface SettingsSearchCell ()<UITextFieldDelegate>
@@ -35,12 +37,14 @@ const CGFloat kCornerRadius = 12.0f;
 
 @synthesize delegate = _delegate;
 @synthesize placeholder = _placeholder;
+@synthesize enabled = _enabled;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [SettingsSearchCell class];
     self.accessibilityTraits |= UIAccessibilityTraitSearchField;
+    self.enabled = YES;
   }
   return self;
 }
@@ -52,6 +56,8 @@ const CGFloat kCornerRadius = 12.0f;
       base::mac::ObjCCastStrict<SettingsSearchCell>(cell);
   [super configureCell:searchCell];
   searchCell.textField.placeholder = self.placeholder;
+  searchCell.textField.enabled = self.isEnabled;
+  searchCell.textField.alpha = self.isEnabled ? 1.0f : kDisabledAlpha;
   searchCell.delegate = self.delegate;
 }
 
@@ -80,6 +86,7 @@ const CGFloat kCornerRadius = 12.0f;
     searchIconView.contentMode = UIViewContentModeCenter;
 
     _textField = [[UITextField alloc] init];
+    _textField.accessibilityIdentifier = @"SettingsSearchCellTextField";
     _textField.contentVerticalAlignment =
         UIControlContentVerticalAlignmentCenter;
     _textField.backgroundColor =
@@ -108,6 +115,15 @@ const CGFloat kCornerRadius = 12.0f;
                                         kVerticalMargin, kHorizontalMargin));
   }
   return self;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+
+  self.textField.placeholder = @"";
+  self.textField.enabled = YES;
+  self.textField.alpha = 1.0f;
+  self.delegate = nil;
 }
 
 #pragma mark - UITextFieldDelegate
