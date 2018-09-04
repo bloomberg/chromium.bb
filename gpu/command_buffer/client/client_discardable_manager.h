@@ -31,6 +31,7 @@ class GPU_EXPORT ClientDiscardableManager {
   void FreeHandle(ClientDiscardableHandle::Id handle_id);
   bool HandleIsValid(ClientDiscardableHandle::Id handle_id) const;
   ClientDiscardableHandle GetHandle(ClientDiscardableHandle::Id handle_id);
+  bool HandleIsDeleted(ClientDiscardableHandle::Id handle_id);
 
   // For diagnostic tracing only.
   bool HandleIsDeletedForTracing(ClientDiscardableHandle::Id handle_id) const;
