@@ -3958,7 +3958,8 @@ LayoutRect LayoutObject::DebugRect() const {
 }
 
 void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
-  // setSelectionState() propagates the state up the containing block chain to
+  // LayoutSelection::Commit() propagates the state up the containing node
+  // chain to
   // tell if a block contains selected nodes or not. If this layout object is
   // not a block, we need to get the selection state from the containing block
   // to tell if we have any selected node children.
@@ -3966,7 +3967,7 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
       IsLayoutBlock() ? ToLayoutBlock(this) : ContainingBlock();
   if (!block)
     return;
-  if (!block->HasSelectedChildren())
+  if (!block->IsSelected())
     return;
 
   // ::selection style only applies to direct selection leaf children of the
@@ -3976,7 +3977,7 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
        child = child->NextSibling()) {
     if (!child->CanBeSelectionLeaf())
       continue;
-    if (child->GetSelectionState() == SelectionState::kNone)
+    if (!child->IsSelected())
       continue;
     if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
       child->SetShouldDoFullPaintInvalidation(

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -79,7 +78,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   if (local_paint_info.phase == PaintPhase::kSelection &&
-      layout_replaced_.GetSelectionState() == SelectionState::kNone)
+      !layout_replaced_.IsSelected())
     return;
 
   bool skip_clip = layout_replaced_.IsSVGRoot() &&
@@ -145,7 +144,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // want it to run right up to the edges of surrounding content.
   bool draw_selection_tint =
       local_paint_info.phase == PaintPhase::kForeground &&
-      IsSelected(layout_replaced_.GetSelectionState()) &&
+      layout_replaced_.IsSelected() && layout_replaced_.CanBeSelectionLeaf() &&
       !local_paint_info.IsPrinting();
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,

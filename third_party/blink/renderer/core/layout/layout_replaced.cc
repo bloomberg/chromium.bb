@@ -975,7 +975,7 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
 }
 
 LayoutRect LayoutReplaced::LocalSelectionRect() const {
-  if (GetSelectionState() == SelectionState::kNone)
+  if (!IsSelected())
     return LayoutRect();
 
   if (IsInline()) {

@@ -240,9 +240,7 @@ class LineLayoutItem {
                                             accumulated_offset);
   }
 
-  SelectionState GetSelectionState() const {
-    return layout_object_->GetSelectionState();
-  }
+  bool IsSelected() const { return layout_object_->IsSelected(); }
 
   // TODO(dgrogan/eae): Needed for Color::current. Can we move this somewhere?
   Color ResolveColor(const ComputedStyle& style_to_use,
