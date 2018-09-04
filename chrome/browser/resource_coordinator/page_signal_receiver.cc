@@ -72,11 +72,12 @@ void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
 
 void PageSignalReceiver::OnLoadTimePerformanceEstimate(
     const PageNavigationIdentity& page_navigation_id,
+    base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
-  NotifyObserversIfKnownCu(page_navigation_id,
-                           &PageSignalObserver::OnLoadTimePerformanceEstimate,
-                           cpu_usage_estimate, private_footprint_kb_estimate);
+  NotifyObserversIfKnownCu(
+      page_navigation_id, &PageSignalObserver::OnLoadTimePerformanceEstimate,
+      load_duration, cpu_usage_estimate, private_footprint_kb_estimate);
 }
 
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {

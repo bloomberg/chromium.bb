@@ -27,6 +27,7 @@ class LocalSiteCharacteristicsNoopDataWriter
   void NotifyUsesAudioInBackground() override;
   void NotifyUsesNotificationsInBackground() override;
   void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 

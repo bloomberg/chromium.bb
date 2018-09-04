@@ -173,7 +173,8 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
   EXPECT_TRUE(cu_graph.page->TimeSinceLastNavigation().is_zero());
 
   // 1st navigation.
-  cu_graph.page->OnMainFrameNavigationCommitted(10u, "http://www.example.org");
+  cu_graph.page->OnMainFrameNavigationCommitted(
+      ResourceCoordinatorClock::NowTicks(), 10u, "http://www.example.org");
   EXPECT_EQ("http://www.example.org", cu_graph.page->main_frame_url());
   EXPECT_EQ(10u, cu_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
@@ -182,7 +183,8 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
 
   // 2nd navigation.
   cu_graph.page->OnMainFrameNavigationCommitted(
-      20u, "http://www.example.org/bobcat");
+      ResourceCoordinatorClock::NowTicks(), 20u,
+      "http://www.example.org/bobcat");
   EXPECT_EQ("http://www.example.org/bobcat", cu_graph.page->main_frame_url());
   EXPECT_EQ(20u, cu_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(17));

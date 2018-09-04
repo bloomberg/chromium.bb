@@ -31,6 +31,7 @@ class SiteCharacteristicsDataWriter {
 
   // Records performance measurements.
   virtual void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) = 0;
 };

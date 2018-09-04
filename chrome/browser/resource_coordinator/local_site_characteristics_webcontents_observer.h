@@ -60,6 +60,7 @@ class LocalSiteCharacteristicsWebContentsObserver
   void OnLoadTimePerformanceEstimate(
       content::WebContents* web_contents,
       const PageNavigationIdentity& page_navigation_id,
+      base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 

@@ -120,7 +120,10 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UsesNotificationsInBackground());
 
   writer_->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(202),
       base::TimeDelta::FromMicroseconds(101), 1005);
+  EXPECT_EQ(1u, test_impl_->load_duration().num_datums());
+  EXPECT_EQ(202.0, test_impl_->load_duration().value());
   EXPECT_EQ(1u, test_impl_->cpu_usage_estimate().num_datums());
   EXPECT_EQ(101.0, test_impl_->cpu_usage_estimate().value());
 

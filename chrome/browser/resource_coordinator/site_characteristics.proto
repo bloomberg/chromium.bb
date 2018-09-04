@@ -18,12 +18,15 @@ message SiteCharacteristicsFeatureProto {
 }
 
 // Contains decaying average performance measurement estimates.
-// Next Id: 3
+// Next Id: 4
 message SiteCharacteristicsPerformanceMeasurement {
   // A decaying average of the CPU usage measurements. Units: microseconds.
   optional float avg_cpu_usage_us = 1;
   // A decaying average of the process footprint measurements. Units: kilobytes.
   optional float avg_footprint_kb = 2;
+  // A decaying average of the duration from navigation commit to "loaded".
+  // Units: microseconds.
+  optional float avg_load_duration_us = 3;
 };
 
 // Defines the characteristics that we want to track about a given site.

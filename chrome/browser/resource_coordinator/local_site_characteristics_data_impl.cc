@@ -146,10 +146,12 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
+    base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
   is_dirty_ = true;
 
+  load_duration_.AppendDatum(load_duration.InMicroseconds());
   cpu_usage_estimate_.AppendDatum(cpu_usage_estimate.InMicroseconds());
   private_footprint_kb_estimate_.AppendDatum(private_footprint_kb_estimate);
 }
@@ -169,7 +171,8 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     const url::Origin& origin,
     OnDestroyDelegate* delegate,
     LocalSiteCharacteristicsDatabase* database)
-    : cpu_usage_estimate_(kSampleWeightFactor),
+    : load_duration_(kSampleWeightFactor),
+      cpu_usage_estimate_(kSampleWeightFactor),
       private_footprint_kb_estimate_(kSampleWeightFactor),
       origin_(origin),
       loaded_tabs_count_(0U),
@@ -410,6 +413,8 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     // If there was on-disk data, update the in-memory performance averages.
     if (db_site_characteristics->has_load_time_estimates()) {
       const auto& estimates = db_site_characteristics->load_time_estimates();
+      if (estimates.has_avg_load_duration_us())
+        load_duration_.PrependDatum(estimates.avg_load_duration_us());
       if (estimates.has_avg_cpu_usage_us())
         cpu_usage_estimate_.PrependDatum(estimates.avg_cpu_usage_us());
       if (estimates.has_avg_footprint_kb()) {
@@ -450,6 +455,8 @@ LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
   if (cpu_usage_estimate_.num_datums() ||
       private_footprint_kb_estimate_.num_datums()) {
     auto* estimates = site_characteristics_.mutable_load_time_estimates();
+    if (load_duration_.num_datums())
+      estimates->set_avg_load_duration_us(load_duration_.value());
     if (cpu_usage_estimate_.num_datums())
       estimates->set_avg_cpu_usage_us(cpu_usage_estimate_.value());
     if (private_footprint_kb_estimate_.num_datums()) {
