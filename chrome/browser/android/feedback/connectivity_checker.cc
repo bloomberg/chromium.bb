@@ -13,13 +13,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "content/public/browser/storage_partition.h"
 #include "jni/ConnectivityChecker_jni.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
@@ -60,7 +60,7 @@ void JNI_ConnectivityChecker_PostCallback(
 
 // A utility class for checking if the device is currently connected to the
 // Internet.
-class ConnectivityChecker : public net::URLFetcherDelegate {
+class ConnectivityChecker {
  public:
   ConnectivityChecker(Profile* profile,
                       const GURL& url,
@@ -71,16 +71,14 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   // completed, |this| is deleted.
   void StartAsyncCheck();
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
   // Cancels the URLFetcher, and triggers the callback with a negative result
   // and the timeout flag set.
   void OnTimeout();
 
  private:
-  // The context in which the connectivity check is performed.
-  net::URLRequestContextGetter* request_context_;
+  void OnURLLoadComplete(scoped_refptr<net::HttpResponseHeaders> headers);
+
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   // The URL to connect to.
   const GURL& url_;
@@ -92,7 +90,7 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_callback_;
 
   // The URLFetcher that executes the connectivity check.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Whether |this| is already being destroyed, at which point the callback
   // has already happened, and no further action should be taken.
@@ -101,21 +99,18 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   std::unique_ptr<base::OneShotTimer> expiration_timer_;
 };
 
-void ConnectivityChecker::OnURLFetchComplete(const net::URLFetcher* source) {
+void ConnectivityChecker::OnURLLoadComplete(
+    scoped_refptr<net::HttpResponseHeaders> headers) {
   if (is_being_destroyed_)
     return;
   is_being_destroyed_ = true;
 
-  DCHECK_EQ(url_fetcher_.get(), source);
-  net::URLRequestStatus status = source->GetStatus();
-  int response_code = source->GetResponseCode();
-
-  bool connected = status.is_success() && response_code == net::HTTP_NO_CONTENT;
-  if (connected) {
+  DCHECK(url_loader_);
+  bool connected = headers && headers->response_code() == net::HTTP_NO_CONTENT;
+  if (connected)
     ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_CONNECTED);
-  } else {
+  else
     ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_NOT_CONNECTED);
-  }
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
@@ -125,25 +120,28 @@ ConnectivityChecker::ConnectivityChecker(
     const GURL& url,
     const base::TimeDelta& timeout,
     const base::android::JavaRef<jobject>& java_callback)
-    : request_context_(profile->GetRequestContext()),
+    : shared_url_loader_factory_(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetURLLoaderFactoryForBrowserProcess()),
       url_(url),
       timeout_(timeout),
       java_callback_(java_callback),
-      is_being_destroyed_(false) {
-}
+      is_being_destroyed_(false) {}
 
 void ConnectivityChecker::StartAsyncCheck() {
-  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(),
-      data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
-  url_fetcher_->SetRequestContext(request_context_);
-  url_fetcher_->SetStopOnRedirect(true);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
-  url_fetcher_->SetAllowCredentials(false);
-  url_fetcher_->Start();
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url_;
+  request->allow_credentials = false;
+  request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER
+  url_loader_ = network::SimpleURLLoader::Create(std::move(request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+  url_loader_->DownloadHeadersOnly(
+      shared_url_loader_factory_.get(),
+      base::BindOnce(&ConnectivityChecker::OnURLLoadComplete,
+                     base::Unretained(this)));
   expiration_timer_.reset(new base::OneShotTimer());
   expiration_timer_->Start(FROM_HERE, timeout_, this,
                            &ConnectivityChecker::OnTimeout);
@@ -153,7 +151,7 @@ void ConnectivityChecker::OnTimeout() {
   if (is_being_destroyed_)
     return;
   is_being_destroyed_ = true;
-  url_fetcher_.reset();
+  url_loader_.reset();
   ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_TIMEOUT);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
