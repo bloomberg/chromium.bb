@@ -100,9 +100,6 @@ FrameTree::FrameTree(Navigator* navigator,
       manager_delegate_(manager_delegate),
       root_(new FrameTreeNode(this,
                               navigator,
-                              render_frame_delegate,
-                              render_widget_delegate,
-                              manager_delegate,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
@@ -195,10 +192,8 @@ bool FrameTree::AddFrame(
     return false;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent->navigator(), render_frame_delegate_,
-      render_widget_delegate_, manager_delegate_, parent, scope, frame_name,
-      frame_unique_name, is_created_by_script, devtools_frame_token,
-      frame_owner_properties));
+      this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
+      is_created_by_script, devtools_frame_token, frame_owner_properties));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and feature policy should apply to the initial

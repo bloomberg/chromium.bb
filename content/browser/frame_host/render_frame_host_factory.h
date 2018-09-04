@@ -19,7 +19,6 @@ class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderViewHostImpl;
-class RenderWidgetHostDelegate;
 class SiteInstance;
 
 // A factory for creating RenderFrameHosts. There is a global factory function
@@ -33,7 +32,6 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       SiteInstance* site_instance,
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
-      RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
@@ -54,7 +52,6 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       SiteInstance* site_instance,
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
-      RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,

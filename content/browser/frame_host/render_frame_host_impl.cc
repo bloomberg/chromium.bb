@@ -84,7 +84,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -547,7 +546,6 @@ void RenderFrameHostImpl::SetNetworkFactoryForTesting(
 RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
-                                         RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int32_t routing_id,
@@ -643,8 +641,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     if (!render_widget_host_) {
       DCHECK(frame_tree_node->parent());
       render_widget_host_ = RenderWidgetHostFactory::Create(
-          rwh_delegate, GetProcess(), widget_routing_id, std::move(widget),
-          hidden);
+          frame_tree_->render_widget_delegate(), GetProcess(),
+          widget_routing_id, std::move(widget), hidden);
       render_widget_host_->set_owned_by_render_frame_host(true);
     } else {
       DCHECK(!render_widget_host_->owned_by_render_frame_host());
