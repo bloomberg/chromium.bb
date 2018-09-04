@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
+#include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
