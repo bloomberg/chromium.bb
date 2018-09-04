@@ -21,7 +21,6 @@
 
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
@@ -305,7 +304,7 @@ InlineBox* InlineBox::PrevLeafChildIgnoringLineBreak() const {
 }
 
 bool InlineBox::IsSelected() const {
-  return GetLineLayoutItem().GetSelectionState() != SelectionState::kNone;
+  return GetLineLayoutItem().IsSelected();
 }
 
 bool InlineBox::CanAccommodateEllipsis(bool ltr,

@@ -1148,7 +1148,7 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
   if (block.HasLayer() && block.Layer()->FirstChild())
     return false;
   // Selection may overflow.
-  if (block.GetSelectionState() != SelectionState::kNone)
+  if (block.IsSelected())
     return false;
   // Other cases that the contents may overflow. The conditions are copied from
   // BlockPainter for SPv1 clip. TODO(wangxianzhu): clean up.

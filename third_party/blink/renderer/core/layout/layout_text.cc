@@ -2028,7 +2028,7 @@ LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
 LayoutRect LayoutText::LocalSelectionRect() const {
   DCHECK(!NeedsLayout());
 
-  if (GetSelectionState() == SelectionState::kNone)
+  if (!IsSelected())
     return LayoutRect();
   LayoutBlock* cb = ContainingBlock();
   if (!cb)

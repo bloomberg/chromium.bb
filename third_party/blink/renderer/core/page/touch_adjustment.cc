@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -143,7 +142,7 @@ bool ProvidesContextMenuItems(Node* node) {
       return true;
     // Only the selected part of the layoutObject is a valid target, but this
     // will be corrected in appendContextSubtargetsForNode.
-    if (node->GetLayoutObject()->GetSelectionState() != SelectionState::kNone)
+    if (node->GetLayoutObject()->IsSelected())
       return true;
   }
   return false;
@@ -205,7 +204,7 @@ static inline void AppendContextSubtargetsForNode(
       last_offset = offset;
     }
   } else {
-    if (text_layout_object->GetSelectionState() == SelectionState::kNone)
+    if (!text_layout_object->IsSelected())
       return AppendBasicSubtargetsForNode(node, subtargets);
     const FrameSelection& frame_selection =
         text_layout_object->GetFrame()->Selection();
