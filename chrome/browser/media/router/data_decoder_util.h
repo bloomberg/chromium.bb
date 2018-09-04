@@ -16,6 +16,9 @@ class Connector;
 
 namespace media_router {
 
+// The batch ID used by data_decoder_util functions.
+static constexpr char kDataDecoderServiceBatchId[] = "media_router";
+
 // A wrapper over their data_decoder functions for parsing XML/JSON that batches
 // all calls with a shared batch ID.
 // Thread safety: A newly constructed DataDecoder is not bound to any thread. On

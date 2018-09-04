@@ -17,6 +17,10 @@
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace cast_channel {
 
 class CastSocketService;
@@ -108,10 +112,15 @@ class CastMessageHandler : public CastSocket::Observer {
                                    const InternalMessage& message) = 0;
   };
 
-  explicit CastMessageHandler(CastSocketService* socket_service,
-                              const std::string& user_agent,
-                              const std::string& browser_version,
-                              const std::string& locale);
+  // |connector|: Connector to be used for data_decoder service. The connector
+  // must not be bound to any thread.
+  // |data_decoder_batch_id|: Batch ID used for data_decoder service.
+  CastMessageHandler(CastSocketService* socket_service,
+                     std::unique_ptr<service_manager::Connector> connector,
+                     const std::string& data_decoder_batch_id,
+                     const std::string& user_agent,
+                     const std::string& browser_version,
+                     const std::string& locale);
   ~CastMessageHandler() override;
 
   // Ensures a virtual connection exists for (|source_id|, |destination_id|) on
@@ -170,8 +179,7 @@ class CastMessageHandler : public CastSocket::Observer {
     bool AddLaunchRequest(std::unique_ptr<LaunchSessionRequest> request,
                           base::TimeDelta timeout);
 
-    void HandlePendingRequest(int request_id,
-                              const base::DictionaryValue& response);
+    void HandlePendingRequest(int request_id, const base::Value& response);
 
    private:
     // Invokes the pending callback associated with |request_id| with a timed
@@ -208,8 +216,10 @@ class CastMessageHandler : public CastSocket::Observer {
   // Callback for CastTransport::SendMessage.
   void OnMessageSent(int result);
 
-  void HandleCastInternalMessage(const CastSocket& socket,
-                                 const CastMessage& message);
+  void HandleCastInternalMessage(int channel_id,
+                                 const std::string& source_id,
+                                 const std::string& destination_id,
+                                 std::unique_ptr<base::Value> payload);
 
   // Set of pending requests keyed by socket ID.
   base::flat_map<int, std::unique_ptr<PendingRequests>> pending_requests_;
@@ -217,6 +227,10 @@ class CastMessageHandler : public CastSocket::Observer {
   // Source ID used for platform messages. The suffix is randomized to
   // distinguish it from other Cast senders on the same network.
   const std::string sender_id_;
+
+  // Used for parsing JSON payload from receivers.
+  std::unique_ptr<service_manager::Connector> connector_;
+  const std::string data_decoder_batch_id_;
 
   // User agent and browser version strings included in virtual connection
   // messages.
