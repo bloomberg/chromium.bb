@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Background Fetch requires an activated Service Worker
+PASS Argument verification is done for BackgroundFetchManager.fetch()
+PASS IDs must be unique among active Background Fetch registrations
+PASS Using Background Fetch to successfully fetch a single resource
+PASS Background Fetch that exceeds the quota throws a QuotaExceededError
+FAIL Fetches can have requests with duplicate URLs promise_test: Unhandled rejection with value: object "TypeError: Fetches with duplicate requests are not yet supported. Consider adding query params to make the requests unique. For updates check http://crbug.com/871174"
+Harness: the test ran to completion.
+

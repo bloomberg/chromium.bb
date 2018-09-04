@@ -33,7 +33,9 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 namespace blink {
 
@@ -204,6 +206,10 @@ ScriptPromise BackgroundFetchManager::fetch(
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
+  // A HashSet to find whether there are any duplicate requests within the
+  // fetch. https://bugs.chromium.org/p/chromium/issues/detail?id=871174.
+  HashSet<KURL> kurls;
+
   // Based on security steps from https://fetch.spec.whatwg.org/#main-fetch
   // TODO(crbug.com/757441): Remove all this duplicative code once Fetch (and
   // all its security checks) are implemented in the Network Service, such that
@@ -273,6 +279,27 @@ ScriptPromise BackgroundFetchManager::fetch(
                                  "CORS preflights are not yet supported "
                                  "by this browser");
     }
+
+    kurls.insert(request_url);
+  }
+
+  const bool has_duplicate_requests = kurls.size() != web_requests.size();
+
+  UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasDuplicateRequests",
+                        has_duplicate_requests);
+
+  // Note: This is a proprietary check, due to the way Chrome currently handles
+  // storing background fetch records. Entries are keyed by the URL, so if two
+  // requests have the same URL, and different responses, the first response
+  // will be lost when the second request/response pair is stored.
+  if (has_duplicate_requests) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
+            "Fetches with duplicate requests are not yet supported. "
+            "Consider adding query params to make the requests unique. "
+            "For updates check http://crbug.com/871174"));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
