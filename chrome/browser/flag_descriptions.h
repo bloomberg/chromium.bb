@@ -1109,6 +1109,9 @@ extern const char kSyncStandaloneTransportDescription[];
 extern const char kSyncSupportSecondaryAccountName[];
 extern const char kSyncSupportSecondaryAccountDescription[];
 
+extern const char kSyncUSSAutofillProfileName[];
+extern const char kSyncUSSAutofillProfileDescription[];
+
 extern const char kSyncUSSAutofillWalletDataName[];
 extern const char kSyncUSSAutofillWalletDataDescription[];
 

@@ -4345,6 +4345,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromevoxDeveloperOption)},
 #endif
 
+    {"sync-USS-autofill-profile",
+     flag_descriptions::kSyncUSSAutofillProfileName,
+     flag_descriptions::kSyncUSSAutofillProfileDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillProfile)},
+
     {"sync-USS-autofill-wallet-data",
      flag_descriptions::kSyncUSSAutofillWalletDataName,
      flag_descriptions::kSyncUSSAutofillWalletDataDescription, kOsAll,
