@@ -9,6 +9,11 @@
 
 OAuthMultiloginResult::OAuthMultiloginResult() {}
 
+OAuthMultiloginResult::OAuthMultiloginResult(
+    const OAuthMultiloginResult& other) {
+  cookies_ = other.cookies();
+}
+
 // static
 base::StringPiece OAuthMultiloginResult::StripXSSICharacters(
     const std::string& raw_data) {

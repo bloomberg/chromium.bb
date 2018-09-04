@@ -24,6 +24,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -365,7 +366,8 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       // initialized so it is acceptable to use of this
       // |GaiaCookieManagerService| as the time when the profile is loaded.
       profile_load_time_(base::Time::Now()),
-      list_accounts_request_counter_(0) {
+      list_accounts_request_counter_(0),
+      weak_ptr_factory_(this) {
   DCHECK(!source_.empty());
 }
 
@@ -679,6 +681,12 @@ void GaiaCookieManagerService::SignalComplete(
     observer.OnAddAccountToCookieCompleted(account_id, error);
 }
 
+void GaiaCookieManagerService::SignalSetAccountsComplete(
+    const GoogleServiceAuthError& error) {
+  for (auto& observer : observer_list_)
+    observer.OnSetAccountsInCookieCompleted(error);
+}
+
 void GaiaCookieManagerService::OnUbertokenSuccess(
     const std::string& uber_token) {
   DCHECK(requests_.front().request_type() ==
@@ -789,12 +797,10 @@ void GaiaCookieManagerService::OnOAuthMultiloginSuccess(
 
 void GaiaCookieManagerService::OnOAuthMultiloginFailure(
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "Failed Multilogin "
+  VLOG(1) << "Failed Multilogin for accounts: "
           << base::JoinString(requests_.front().account_ids(), " ")
           << " error=" << error.ToString();
-  access_tokens_.clear();
-  token_requests_.clear();
-  HandleNextRequest();
+  OnSetAccountsFinished(error);
 }
 
 void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
@@ -958,13 +964,51 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
   gaia_auth_fetcher_->StartListAccounts();
 }
 
+void GaiaCookieManagerService::OnSetAccountsFinished(
+    const GoogleServiceAuthError& error) {
+  access_tokens_.clear();
+  token_requests_.clear();
+  cookies_to_set_.clear();
+  HandleNextRequest();
+  SignalSetAccountsComplete(error);
+}
+
+void GaiaCookieManagerService::OnCookieSet(const std::string& cookie_name,
+                                           const std::string& cookie_domain,
+                                           bool success) {
+  cookies_to_set_.erase(std::make_pair(cookie_name, cookie_domain));
+  if (!success) {
+    VLOG(1) << "Failed to set cookie " << cookie_name
+            << " for domain=" << cookie_domain << ".";
+  }
+  if (cookies_to_set_.empty())
+    OnSetAccountsFinished(GoogleServiceAuthError::AuthErrorNone());
+}
+
 void GaiaCookieManagerService::StartSettingCookies(
     const OAuthMultiloginResult& result) {
   network::mojom::CookieManager* cookie_manager =
       signin_client_->GetCookieManager();
 
-  for (net::CanonicalCookie& cookie : result.cookies()) {
-    cookie_manager->SetCanonicalCookie(cookie, true, true, base::DoNothing());
+  DCHECK(cookies_to_set_.empty());
+
+  const std::vector<net::CanonicalCookie>& cookies = result.cookies();
+
+  for (const net::CanonicalCookie& cookie : cookies) {
+    const auto& inserted =
+        cookies_to_set_.insert(std::make_pair(cookie.Name(), cookie.Domain()));
+    if (inserted.second) {
+      base::OnceCallback<void(bool success)> callback = base::Bind(
+          &GaiaCookieManagerService::OnCookieSet,
+          weak_ptr_factory_.GetWeakPtr(), cookie.Name(), cookie.Domain());
+      // It is assumed that OnCookieSet() is not run synchronously.
+      cookie_manager->SetCanonicalCookie(
+          cookie, true, true,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
+                                                      false));
+    } else
+      LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
+                 << cookie.Domain();
   }
 }
 

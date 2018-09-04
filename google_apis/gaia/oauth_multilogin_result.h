@@ -19,6 +19,7 @@
 class OAuthMultiloginResult {
  public:
   OAuthMultiloginResult();
+  OAuthMultiloginResult(const OAuthMultiloginResult& other);
   ~OAuthMultiloginResult();
 
   std::vector<net::CanonicalCookie> cookies() const { return cookies_; }
