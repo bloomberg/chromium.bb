@@ -725,7 +725,8 @@ void PasswordManager::CreateFormManagers(
     form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
         client_,
         driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
-        new_form->form_data, nullptr));
+        new_form->form_data, nullptr,
+        std::make_unique<FormSaverImpl>(client_->GetPasswordStore())));
     form_managers_.back()->set_old_parsing_result(*new_form);
   }
 }

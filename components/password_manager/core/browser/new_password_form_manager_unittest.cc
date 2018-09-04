@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,7 +27,9 @@ using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::Mock;
+using testing::NiceMock;
 using testing::SaveArg;
+using testing::SaveArgPointee;
 
 namespace password_manager {
 
@@ -59,6 +62,45 @@ void CheckPendingCredentials(const PasswordForm& expected,
   EXPECT_EQ(expected.form_data, actual.form_data);
 }
 
+class MockFormSaver : public StubFormSaver {
+ public:
+  MockFormSaver() = default;
+
+  ~MockFormSaver() override = default;
+
+  // FormSaver:
+  MOCK_METHOD1(PermanentlyBlacklist, void(autofill::PasswordForm* observed));
+  MOCK_METHOD2(
+      Save,
+      void(const autofill::PasswordForm& pending,
+           const std::map<base::string16, const PasswordForm*>& best_matches));
+  MOCK_METHOD4(
+      Update,
+      void(const autofill::PasswordForm& pending,
+           const std::map<base::string16, const PasswordForm*>& best_matches,
+           const std::vector<autofill::PasswordForm>* credentials_to_update,
+           const autofill::PasswordForm* old_primary_key));
+  MOCK_METHOD1(PresaveGeneratedPassword,
+               void(const autofill::PasswordForm& generated));
+  MOCK_METHOD0(RemovePresavedPassword, void());
+
+  std::unique_ptr<FormSaver> Clone() override {
+    return std::make_unique<MockFormSaver>();
+  }
+
+  // Convenience downcasting method.
+  static MockFormSaver& Get(NewPasswordFormManager* form_manager) {
+    return *static_cast<MockFormSaver*>(form_manager->form_saver());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
+};
+
+std::string GetSignonRealm(GURL origin) {
+  return origin.GetOrigin().spec();
+}
+
 }  // namespace
 
 // TODO(https://crbug.com/831123): Test sending metrics.
@@ -71,6 +113,8 @@ class NewPasswordFormManagerTest : public testing::Test {
   NewPasswordFormManagerTest() : task_runner_(new TestMockTimeTaskRunner) {
     GURL origin = GURL("https://accounts.google.com/a/ServiceLoginAuth");
     GURL action = GURL("https://accounts.google.com/a/ServiceLogin");
+    GURL psl_origin = GURL("https://myaccounts.google.com/a/ServiceLoginAuth");
+    GURL psl_action = GURL("https://myaccounts.google.com/a/ServiceLogin");
 
     observed_form_.origin = origin;
     observed_form_.action = action;
@@ -110,9 +154,17 @@ class NewPasswordFormManagerTest : public testing::Test {
     saved_match_.signon_realm = "https://accounts.google.com/";
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
+    saved_match_.username_element = ASCIIToUTF16("field1");
     saved_match_.password_value = ASCIIToUTF16("test1");
+    saved_match_.password_element = ASCIIToUTF16("field2");
     saved_match_.is_public_suffix_match = false;
     saved_match_.scheme = PasswordForm::SCHEME_HTML;
+
+    psl_saved_match_ = saved_match_;
+    psl_saved_match_.origin = psl_origin;
+    psl_saved_match_.action = psl_action;
+    psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
+    psl_saved_match_.is_public_suffix_match = true;
 
     parsed_form_ = saved_match_;
     parsed_form_.form_data = observed_form_;
@@ -129,6 +181,7 @@ class NewPasswordFormManagerTest : public testing::Test {
   FormData observed_form_;
   FormData observed_form_only_password_fields_;
   PasswordForm saved_match_;
+  PasswordForm psl_saved_match_;
   PasswordForm blacklisted_match_;
   PasswordForm parsed_form_;
   StubPasswordManagerClient client_;
@@ -145,7 +198,8 @@ class NewPasswordFormManagerTest : public testing::Test {
     fetcher_.reset(new FakeFormFetcher());
     fetcher_->Fetch();
     form_manager_.reset(new NewPasswordFormManager(
-        &client_, driver_.AsWeakPtr(), observed_form_, fetcher_.get()));
+        &client_, driver_.AsWeakPtr(), observed_form_, fetcher_.get(),
+        std::make_unique<NiceMock<MockFormSaver>>()));
   }
 };
 
@@ -517,6 +571,176 @@ TEST_F(NewPasswordFormManagerTest, IsEqualToSubmittedForm) {
 
   observed_form_.action = GURL("https://example.com");
   EXPECT_FALSE(form_manager_->IsEqualToSubmittedForm(observed_form_));
+}
+
+// Tests that when credentials with a new username (i.e. not saved yet) is
+// successfully submitted, then they are saved correctly.
+TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  base::string16 new_username = saved_match_.username_value + ASCIIToUTF16("1");
+  base::string16 new_password = saved_match_.password_value + ASCIIToUTF16("1");
+  submitted_form.fields[kUsernameFieldIndex].value = new_username;
+  submitted_form.fields[kPasswordFieldIndex].value = new_password;
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  EXPECT_TRUE(form_manager_->IsNewLogin());
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+  PasswordForm saved_form;
+  std::map<base::string16, const PasswordForm*> best_matches;
+  EXPECT_CALL(form_saver, Save(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
+
+  form_manager_->Save();
+
+  std::string expected_signon_realm = submitted_form.origin.GetOrigin().spec();
+  EXPECT_EQ(submitted_form.origin, saved_form.origin);
+  EXPECT_EQ(expected_signon_realm, saved_form.signon_realm);
+  EXPECT_EQ(new_username, saved_form.username_value);
+  EXPECT_EQ(new_password, saved_form.password_value);
+  EXPECT_TRUE(saved_form.preferred);
+
+  EXPECT_EQ(submitted_form.fields[kUsernameFieldIndex].name,
+            saved_form.username_element);
+  EXPECT_EQ(submitted_form.fields[kPasswordFieldIndex].name,
+            saved_form.password_element);
+  EXPECT_EQ(1u, best_matches.size());
+  base::string16 saved_username = saved_match_.username_value;
+  ASSERT_TRUE(best_matches.find(saved_username) != best_matches.end());
+  EXPECT_EQ(saved_match_, *best_matches[saved_username]);
+}
+
+// Check that if there is saved PSL matched credentials with the same
+// username/password as in submitted form, then the saved form is the same
+// already saved only with origin and signon_realm from the submitted form.
+TEST_F(NewPasswordFormManagerTest, SavePSLToAlreadySaved) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&psl_saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  // Change
+  submitted_form.fields[kUsernameFieldIndex].value =
+      psl_saved_match_.username_value;
+  submitted_form.fields[kPasswordFieldIndex].value =
+      psl_saved_match_.password_value;
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  EXPECT_TRUE(form_manager_->IsNewLogin());
+  EXPECT_TRUE(form_manager_->IsPendingCredentialsPublicSuffixMatch());
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+  PasswordForm saved_form;
+  std::map<base::string16, const PasswordForm*> best_matches;
+  EXPECT_CALL(form_saver, Save(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
+
+  form_manager_->Save();
+
+  EXPECT_EQ(submitted_form.origin, saved_form.origin);
+  EXPECT_EQ(GetSignonRealm(submitted_form.origin), saved_form.signon_realm);
+  EXPECT_EQ(saved_form.username_value, psl_saved_match_.username_value);
+  EXPECT_EQ(saved_form.password_value, psl_saved_match_.password_value);
+  EXPECT_EQ(saved_form.username_element, psl_saved_match_.username_element);
+  EXPECT_EQ(saved_form.password_element, psl_saved_match_.password_element);
+
+  EXPECT_TRUE(saved_form.preferred);
+
+  EXPECT_EQ(1u, best_matches.size());
+  base::string16 saved_username = psl_saved_match_.username_value;
+  ASSERT_TRUE(best_matches.find(saved_username) != best_matches.end());
+  EXPECT_EQ(psl_saved_match_, *best_matches[saved_username]);
+}
+
+// Tests that when credentials with already saved username but with a new
+// password are submitted, then the saved password is updated.
+TEST_F(NewPasswordFormManagerTest, OverridePassword) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  base::string16 username = saved_match_.username_value;
+  base::string16 new_password = saved_match_.password_value + ASCIIToUTF16("1");
+  submitted_form.fields[kUsernameFieldIndex].value = username;
+  submitted_form.fields[kPasswordFieldIndex].value = new_password;
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+  PasswordForm updated_form;
+  std::map<base::string16, const PasswordForm*> best_matches;
+  std::vector<PasswordForm> credentials_to_update;
+  EXPECT_CALL(form_saver, Update(_, _, _, nullptr))
+      .WillOnce(DoAll(SaveArg<0>(&updated_form), SaveArg<1>(&best_matches),
+                      SaveArgPointee<2>(&credentials_to_update)));
+
+  form_manager_->Save();
+
+  EXPECT_TRUE(ArePasswordFormUniqueKeyEqual(saved_match_, updated_form));
+  EXPECT_TRUE(updated_form.preferred);
+  EXPECT_EQ(new_password, updated_form.password_value);
+  EXPECT_EQ(1u, best_matches.size());
+  ASSERT_TRUE(best_matches.find(username) != best_matches.end());
+  EXPECT_EQ(saved_match_, *best_matches[username]);
+  EXPECT_TRUE(credentials_to_update.empty());
+}
+
+// Tests that when the user changes password on a change password form then the
+// saved password is updated.
+TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  CreateFormManager(observed_form_only_password_fields_);
+  PasswordForm not_best_saved_match = saved_match_;
+  not_best_saved_match.preferred = false;
+  PasswordForm saved_match_another_username = saved_match_;
+  saved_match_another_username.username_value += ASCIIToUTF16("1");
+
+  fetcher_->SetNonFederated(
+      {&saved_match_, &not_best_saved_match, &saved_match_another_username},
+      0u);
+
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = saved_match_.password_value;
+  base::string16 new_password = saved_match_.password_value + ASCIIToUTF16("1");
+  submitted_form.fields[1].value = new_password;
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+  PasswordForm updated_form;
+  std::map<base::string16, const PasswordForm*> best_matches;
+  std::vector<PasswordForm> credentials_to_update;
+  EXPECT_CALL(form_saver, Update(_, _, _, nullptr))
+      .WillOnce(DoAll(SaveArg<0>(&updated_form), SaveArg<1>(&best_matches),
+                      SaveArgPointee<2>(&credentials_to_update)));
+
+  form_manager_->Save();
+
+  EXPECT_TRUE(ArePasswordFormUniqueKeyEqual(saved_match_, updated_form));
+  EXPECT_TRUE(updated_form.preferred);
+  EXPECT_EQ(new_password, updated_form.password_value);
+
+  EXPECT_EQ(2u, best_matches.size());
+  base::string16 username = saved_match_.username_value;
+  ASSERT_TRUE(best_matches.find(username) != best_matches.end());
+  EXPECT_EQ(saved_match_, *best_matches[username]);
+  base::string16 another_username = saved_match_another_username.username_value;
+  ASSERT_TRUE(best_matches.find(another_username) != best_matches.end());
+  EXPECT_EQ(saved_match_another_username, *best_matches[another_username]);
+
+  ASSERT_EQ(1u, credentials_to_update.size());
+  not_best_saved_match.password_value = new_password;
+  EXPECT_EQ(not_best_saved_match, credentials_to_update[0]);
 }
 
 }  // namespace  password_manager
