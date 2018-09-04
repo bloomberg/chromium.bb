@@ -44,7 +44,7 @@ bool AXMenuListPopup::IsOffScreen() const {
   if (!parent_)
     return true;
 
-  return parent_->IsCollapsed();
+  return parent_->IsExpanded() == kExpandedCollapsed;
 }
 
 AXRestriction AXMenuListPopup::Restriction() const {
