@@ -48,10 +48,6 @@ class BrowserDistribution {
 
   virtual base::string16 GetLongAppDescription();
 
-  virtual void UpdateInstallStatus(bool system_install,
-      installer::ArchiveType archive_type,
-      installer::InstallStatus install_status);
-
  protected:
   explicit BrowserDistribution(
       std::unique_ptr<AppRegistrationData> app_reg_data);
