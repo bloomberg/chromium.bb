@@ -446,32 +446,17 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   // TODO(vmiura): Need a way to ensure we don't hold onto bindings?
   // ri->BindTexture(image_target, 0);
 
-  GLenum query_target = GL_NONE;
   if (worker_context_provider_->ContextCapabilities().sync_query) {
     if (!staging_buffer->query_id)
       ri->GenQueriesEXT(1, &staging_buffer->query_id);
 
-    // GL_COMMANDS_COMPLETED_CHROMIUM is used by default because native
-    // GpuMemoryBuffers can be accessed by the GPU after commands are issued
-    // until GPU reads are done.
-    query_target = GL_COMMANDS_COMPLETED_CHROMIUM;
-
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
     // TODO(reveman): This avoids a performance problem on ARM ChromeOS
     // devices. crbug.com/580166
-    query_target = GL_COMMANDS_ISSUED_CHROMIUM;
+    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, staging_buffer->query_id);
+#else
+    ri->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, staging_buffer->query_id);
 #endif
-
-    // GL_COMMANDS_ISSUED_CHROMIUM is sufficient for shared memory
-    // GpuMemoryBuffers because they're uploaded using glTexImage2D (see
-    // gl::GLImageMemory::CopyTexImage).
-    const auto* buffer = staging_buffer->gpu_memory_buffer.get();
-    if (buffer &&
-        buffer->GetType() == gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER) {
-      query_target = GL_COMMANDS_ISSUED_CHROMIUM;
-    }
-
-    ri->BeginQueryEXT(query_target, staging_buffer->query_id);
   }
 
   // Since compressed texture's cannot be pre-allocated we might have an
@@ -508,8 +493,13 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     }
   }
 
-  if (query_target != GL_NONE)
-    ri->EndQueryEXT(query_target);
+  if (worker_context_provider_->ContextCapabilities().sync_query) {
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+    ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+#else
+    ri->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+#endif
+  }
 
   ri->DeleteTextures(1, &mailbox_texture_id);
 
