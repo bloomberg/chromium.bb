@@ -22,7 +22,6 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/ssl_config_type_converter.h"
-#include "services/network/tcp_connected_socket.h"
 #include "services/network/tls_client_socket.h"
 #include "services/network/udp_socket.h"
 
@@ -108,6 +107,46 @@ void SocketFactory::CreateTCPConnectedSocket(
   tcp_connected_socket_bindings_.AddBinding(std::move(socket),
                                             std::move(request));
   socket_raw->Connect(local_addr, remote_addr_list, std::move(callback));
+}
+
+void SocketFactory::CreateTCPBoundSocket(
+    const net::IPEndPoint& local_addr,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::TCPBoundSocketRequest request,
+    mojom::NetworkContext::CreateTCPBoundSocketCallback callback) {
+  auto socket =
+      std::make_unique<TCPBoundSocket>(this, net_log_, traffic_annotation);
+  net::IPEndPoint local_addr_out;
+  int result = socket->Bind(local_addr, &local_addr_out);
+  if (result != net::OK) {
+    std::move(callback).Run(result, base::nullopt);
+    return;
+  }
+  socket->set_id(tcp_bound_socket_bindings_.AddBinding(std::move(socket),
+                                                       std::move(request)));
+  std::move(callback).Run(result, local_addr_out);
+}
+
+void SocketFactory::DestroyBoundSocket(mojo::BindingId bound_socket_id) {
+  tcp_bound_socket_bindings_.RemoveBinding(bound_socket_id);
+}
+
+void SocketFactory::OnBoundSocketListening(
+    mojo::BindingId bound_socket_id,
+    std::unique_ptr<TCPServerSocket> server_socket,
+    mojom::TCPServerSocketRequest server_socket_request) {
+  tcp_server_socket_bindings_.AddBinding(std::move(server_socket),
+                                         std::move(server_socket_request));
+  tcp_bound_socket_bindings_.RemoveBinding(bound_socket_id);
+}
+
+void SocketFactory::OnBoundSocketConnected(
+    mojo::BindingId bound_socket_id,
+    std::unique_ptr<TCPConnectedSocket> connected_socket,
+    mojom::TCPConnectedSocketRequest connected_socket_request) {
+  tcp_connected_socket_bindings_.AddBinding(
+      std::move(connected_socket), std::move(connected_socket_request));
+  tcp_bound_socket_bindings_.RemoveBinding(bound_socket_id);
 }
 
 void SocketFactory::CreateTLSClientSocket(

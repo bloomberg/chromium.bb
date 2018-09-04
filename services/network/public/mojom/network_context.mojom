@@ -499,11 +499,28 @@ interface NetworkContext {
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
       SocketObserver? observer)
-     => (int32 result,
-         net.interfaces.IPEndPoint? local_addr,
-         net.interfaces.IPEndPoint? peer_addr,
-         handle<data_pipe_consumer>? receive_stream,
-         handle<data_pipe_producer>? send_stream);
+      => (int32 result,
+          net.interfaces.IPEndPoint? local_addr,
+          net.interfaces.IPEndPoint? peer_addr,
+          handle<data_pipe_consumer>? receive_stream,
+          handle<data_pipe_producer>? send_stream);
+
+  // Creates a TCPSocket bound to |local_addr|. The socket created can only be
+  // used for the purpose specified in |traffic_annotation|, and cannot be
+  // re-used for other purposes. |local_addr| is treated the same as in
+  // CreateTCPServerSocket().
+  //
+  // On success, the resulting local address will be written to |local_addr_out|
+  // and |result| is net::OK. On failure, |result| is a network error code.
+  //
+  // It's recommended consumers use CreateTCPServerSocket() or
+  // CreateTCPConnectedSocket(). This method is just provided so legacy
+  // consumers can mimic Berkeley sockets semantics.
+  CreateTCPBoundSocket(net.interfaces.IPEndPoint local_addr,
+                       MutableNetworkTrafficAnnotationTag traffic_annotation,
+                       TCPBoundSocket& socket)
+      => (int32 result,
+          net.interfaces.IPEndPoint? local_addr);
 
   // Creates a ProxyResolvingSocketFactory that shares some configuration params
   // with this NetworkContext, but uses separate socket pools.

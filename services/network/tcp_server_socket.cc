@@ -22,10 +22,20 @@ TCPServerSocket::TCPServerSocket(
     Delegate* delegate,
     net::NetLog* net_log,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : TCPServerSocket(
+          std::make_unique<net::TCPServerSocket>(net_log, net::NetLogSource()),
+          0 /*backlog*/,
+          delegate,
+          traffic_annotation) {}
+
+TCPServerSocket::TCPServerSocket(
+    std::unique_ptr<net::ServerSocket> server_socket,
+    int backlog,
+    Delegate* delegate,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : delegate_(delegate),
-      socket_(
-          std::make_unique<net::TCPServerSocket>(net_log, net::NetLogSource())),
-      backlog_(0),
+      socket_(std::move(server_socket)),
+      backlog_(backlog),
       traffic_annotation_(traffic_annotation),
       weak_factory_(this) {}
 

@@ -198,6 +198,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override;
+  void CreateTCPBoundSocket(
+      const net::IPEndPoint& local_addr,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPBoundSocketRequest request,
+      CreateTCPBoundSocketCallback callback) override;
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override;
   void CreateWebSocket(mojom::WebSocketRequest request,

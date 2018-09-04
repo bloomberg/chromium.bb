@@ -24,6 +24,10 @@ struct NetLogSource;
 class NET_EXPORT TCPServerSocket : public ServerSocket {
  public:
   TCPServerSocket(NetLog* net_log, const NetLogSource& source);
+
+  // Adopts the provided socket, which must not be a connected socket.
+  explicit TCPServerSocket(std::unique_ptr<TCPSocket> socket);
+
   ~TCPServerSocket() override;
 
   // Takes ownership of |socket|, which has been opened, but may or may not be
@@ -56,7 +60,7 @@ class NET_EXPORT TCPServerSocket : public ServerSocket {
                          CompletionOnceCallback forward_callback,
                          int result);
 
-  TCPSocket socket_;
+  std::unique_ptr<TCPSocket> socket_;
 
   std::unique_ptr<TCPSocket> accepted_socket_;
   IPEndPoint accepted_address_;
