@@ -98,27 +98,12 @@ class MockMediaRouter : public MediaRouterBase {
 
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
-
-  void SendRouteMessage(const MediaRoute::Id& route_id,
-                        const std::string& message,
-                        SendRouteMessageCallback callback) override {
-    SendRouteMessageInternal(route_id, message, callback);
-  }
-  MOCK_METHOD3(SendRouteMessageInternal,
+  MOCK_METHOD2(SendRouteMessage,
                void(const MediaRoute::Id& route_id,
-                    const std::string& message,
-                    SendRouteMessageCallback& callback));
-
-  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
-                              std::unique_ptr<std::vector<uint8_t>> data,
-                              SendRouteMessageCallback callback) override {
-    SendRouteBinaryMessageInternal(route_id, data.get(), callback);
-  }
-  MOCK_METHOD3(SendRouteBinaryMessageInternal,
+                    const std::string& message));
+  MOCK_METHOD2(SendRouteBinaryMessage,
                void(const MediaRoute::Id& route_id,
-                    std::vector<uint8_t>* data,
-                    SendRouteMessageCallback& callback));
-
+                    std::unique_ptr<std::vector<uint8_t>> data));
   MOCK_METHOD0(OnUserGesture, void());
 
   void SearchSinks(const MediaSink::Id& sink_id,

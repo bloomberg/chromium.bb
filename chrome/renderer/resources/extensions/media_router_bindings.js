@@ -1310,36 +1310,22 @@ MediaRouteProvider.prototype.terminateRoute = function(routeId) {
  * Posts a message to the route designated by |routeId|.
  * @param {!string} routeId
  * @param {!string} message
- * @return {!Promise.<boolean>} Resolved with true if the message was sent,
- *    or false on failure.
  */
 MediaRouteProvider.prototype.sendRouteMessage = function(
   routeId, message) {
   this.handlers_.onBeforeInvokeHandler();
-  return this.handlers_.sendRouteMessage(routeId, message)
-      .then(function() {
-        return {'sent': true};
-      }, function() {
-        return {'sent': false};
-      });
+  this.handlers_.sendRouteMessage(routeId, message);
 };
 
 /**
  * Sends a binary message to the route designated by |routeId|.
  * @param {!string} routeId
  * @param {!Array<number>} data
- * @return {!Promise.<boolean>} Resolved with true if the data was sent,
- *    or false on failure.
  */
 MediaRouteProvider.prototype.sendRouteBinaryMessage = function(
   routeId, data) {
   this.handlers_.onBeforeInvokeHandler();
-  return this.handlers_.sendRouteBinaryMessage(routeId, new Uint8Array(data))
-      .then(function() {
-        return {'sent': true};
-      }, function() {
-        return {'sent': false};
-      });
+  this.handlers_.sendRouteBinaryMessage(routeId, new Uint8Array(data));
 };
 
 /**

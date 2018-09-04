@@ -170,7 +170,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     }
 
     @Override
-    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
+    public void sendStringMessage(String routeId, String message) {
         if (mCloseRouteWithErrorOnSend) {
             mManager.onRouteClosedWithError(routeId, "Sending message failed. Closing the route.");
         } else {

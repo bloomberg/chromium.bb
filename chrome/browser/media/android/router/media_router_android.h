@@ -54,11 +54,10 @@ class MediaRouterAndroid : public MediaRouterBase {
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
-                        const std::string& message,
-                        SendRouteMessageCallback callback) override;
-  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
-                              std::unique_ptr<std::vector<uint8_t>> data,
-                              SendRouteMessageCallback callback) override;
+                        const std::string& message) override;
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      std::unique_ptr<std::vector<uint8_t>> data) override;
   void OnUserGesture() override;
   void SearchSinks(const MediaSink::Id& sink_id,
                    const MediaSource::Id& source_id,
@@ -90,9 +89,6 @@ class MediaRouterAndroid : public MediaRouterBase {
   void OnRouteClosedWithError(const MediaRoute::Id& route_id,
                               const std::string& message);
 
-  // Notifies the media router about the result of sending a message.
-  void OnMessageSentResult(bool success, int callback_id);
-
   // Notifies the media router about a message received from the media route.
   void OnMessage(const MediaRoute::Id& route_id, const std::string& message);
 
@@ -116,8 +112,8 @@ class MediaRouterAndroid : public MediaRouterBase {
     mojom::RoutePresentationConnectionPtr Init();
 
     // blink::mojom::PresentationConnection overrides.
-    void OnMessage(blink::mojom::PresentationConnectionMessagePtr message,
-                   OnMessageCallback callback) override;
+    void OnMessage(
+        blink::mojom::PresentationConnectionMessagePtr message) override;
     void DidChangeState(
         blink::mojom::PresentationConnectionState state) override {}
     // Destroys |this| by removing it from MediaRouterAndroid's collection.
@@ -185,10 +181,6 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   using MediaRoutes = std::vector<MediaRoute>;
   MediaRoutes active_routes_;
-
-  using SendMessageCallbacks =
-      base::IDMap<std::unique_ptr<SendRouteMessageCallback>>;
-  SendMessageCallbacks message_callbacks_;
 
   std::unordered_map<MediaRoute::Id,
                      std::vector<std::unique_ptr<PresentationConnectionProxy>>>

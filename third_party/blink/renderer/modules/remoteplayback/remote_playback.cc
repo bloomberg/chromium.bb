@@ -548,10 +548,8 @@ void RemotePlayback::HandlePresentationResponse(
 }
 
 void RemotePlayback::OnMessage(
-    mojom::blink::PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
+    mojom::blink::PresentationConnectionMessagePtr message) {
   // Messages are ignored.
-  std::move(callback).Run(true);
 }
 
 void RemotePlayback::DidChangeState(

@@ -100,16 +100,14 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     }
 
     @Override
-    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
+    public void sendStringMessage(String routeId, String message) {
         Log.d(TAG, "Received message from client: %s", message);
 
         if (!mRoutes.containsKey(routeId)) {
-            mManager.onMessageSentResult(false, nativeCallbackId);
             return;
         }
 
-        mManager.onMessageSentResult(
-                mMessageHandler.handleMessageFromClient(message), nativeCallbackId);
+        mMessageHandler.handleMessageFromClient(message);
     }
 
     @Override

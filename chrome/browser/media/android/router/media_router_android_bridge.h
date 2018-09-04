@@ -39,8 +39,7 @@ class MediaRouterAndroidBridge {
                          int route_request_id);
   virtual void TerminateRoute(const MediaRoute::Id& route_id);
   virtual void SendRouteMessage(const MediaRoute::Id& route_id,
-                                const std::string& message,
-                                int callback_id);
+                                const std::string& message);
   virtual void DetachRoute(const MediaRoute::Id& route_id);
   virtual bool StartObservingMediaSinks(const MediaSource::Id& source_id);
   virtual void StopObservingMediaSinks(const MediaSource::Id& source_id);
@@ -70,10 +69,6 @@ class MediaRouterAndroidBridge {
       const base::android::JavaRef<jobject>& obj,
       const base::android::JavaRef<jstring>& jmedia_route_id,
       const base::android::JavaRef<jstring>& jmessage);
-  void OnMessageSentResult(JNIEnv* env,
-                           const base::android::JavaRef<jobject>& obj,
-                           jboolean jsuccess,
-                           jint jcallback_id);
   void OnMessage(JNIEnv* env,
                  const base::android::JavaRef<jobject>& obj,
                  const base::android::JavaRef<jstring>& jmedia_route_id,

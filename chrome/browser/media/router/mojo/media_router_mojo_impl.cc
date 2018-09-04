@@ -383,36 +383,30 @@ void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterMojoImpl::SendRouteMessage(const MediaRoute::Id& route_id,
-                                           const std::string& message,
-                                           SendRouteMessageCallback callback) {
+                                           const std::string& message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    std::move(callback).Run(false);
     return;
   }
 
-  media_route_providers_[*provider_id]->SendRouteMessage(route_id, message,
-                                                         std::move(callback));
+  media_route_providers_[*provider_id]->SendRouteMessage(route_id, message);
 }
 
 void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    std::unique_ptr<std::vector<uint8_t>> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    std::move(callback).Run(false);
     return;
   }
 
-  media_route_providers_[*provider_id]->SendRouteBinaryMessage(
-      route_id, *data, std::move(callback));
+  media_route_providers_[*provider_id]->SendRouteBinaryMessage(route_id, *data);
 }
 
 void MediaRouterMojoImpl::OnUserGesture() {}

@@ -73,8 +73,7 @@ class PresentationConnection : public EventTargetWithInlineData,
                 const String& message);
 
   // mojom::blink::PresentationConnection implementation.
-  void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
-                 OnMessageCallback) override;
+  void OnMessage(mojom::blink::PresentationConnectionMessagePtr) override;
   void DidChangeState(mojom::blink::PresentationConnectionState) override;
   void RequestClose() override;
 

@@ -84,15 +84,14 @@ void MediaRouterAndroidBridge::TerminateRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterAndroidBridge::SendRouteMessage(const MediaRoute::Id& route_id,
-                                                const std::string& message,
-                                                int callback_id) {
+                                                const std::string& message) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
       base::android::ConvertUTF8ToJavaString(env, route_id);
   ScopedJavaLocalRef<jstring> jmessage =
       base::android::ConvertUTF8ToJavaString(env, message);
   Java_ChromeMediaRouter_sendStringMessage(env, java_media_router_, jroute_id,
-                                           jmessage, callback_id);
+                                           jmessage);
 }
 
 void MediaRouterAndroidBridge::DetachRoute(const MediaRoute::Id& route_id) {
@@ -195,13 +194,6 @@ void MediaRouterAndroidBridge::OnRouteClosedWithError(
   native_media_router_->OnRouteClosedWithError(
       ConvertJavaStringToUTF8(env, jmedia_route_id),
       ConvertJavaStringToUTF8(env, jmessage));
-}
-
-void MediaRouterAndroidBridge::OnMessageSentResult(JNIEnv* env,
-                                                   const JavaRef<jobject>& obj,
-                                                   jboolean jsuccess,
-                                                   jint jcallback_id) {
-  native_media_router_->OnMessageSentResult(jsuccess, jcallback_id);
 }
 
 void MediaRouterAndroidBridge::OnMessage(

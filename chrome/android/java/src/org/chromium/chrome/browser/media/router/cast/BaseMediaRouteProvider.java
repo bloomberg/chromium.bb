@@ -202,7 +202,7 @@ public abstract class BaseMediaRouteProvider
     public abstract void detachRoute(String routeId);
 
     @Override
-    public abstract void sendStringMessage(String routeId, String message, int nativeCallbackId);
+    public abstract void sendStringMessage(String routeId, String message);
 
     // ChromeCastSessionObserver implementation.
     @Override

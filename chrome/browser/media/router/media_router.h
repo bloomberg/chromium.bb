@@ -72,8 +72,6 @@ using PresentationConnectionStateSubscription = base::CallbackList<void(
 // TODO(imcheng): Reduce number of parameters by putting them into structs.
 class MediaRouter : public KeyedService {
  public:
-  using SendRouteMessageCallback = base::OnceCallback<void(bool sent)>;
-
   ~MediaRouter() override = default;
 
   // Creates a media route from |source_id| to |sink_id|.
@@ -146,15 +144,13 @@ class MediaRouter : public KeyedService {
 
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
   virtual void SendRouteMessage(const MediaRoute::Id& route_id,
-                                const std::string& message,
-                                SendRouteMessageCallback callback) = 0;
+                                const std::string& message) = 0;
 
   // Sends |data| to a MediaSink connected via MediaRoute with |route_id|.
   // This is called for Blob / ArrayBuffer / ArrayBufferView types.
   virtual void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      std::unique_ptr<std::vector<uint8_t>> data,
-      SendRouteMessageCallback callback) = 0;
+      std::unique_ptr<std::vector<uint8_t>> data) = 0;
 
   // Returns the IssueManager owned by the MediaRouter. Guaranteed to be
   // non-null.
