@@ -1157,15 +1157,5 @@ void ChromeMainDelegate::PreCreateMainMessageLoop() {
 
   // Initialize NSApplication using the custom subclass.
   chrome_browser_application_mac::RegisterBrowserCrApp();
-
-  if (l10n_util::GetLocaleOverride().empty()) {
-    // The browser process only wants to support the language Cocoa will use,
-    // so force the app locale to be overridden with that value. This must
-    // happen before the ResourceBundle is loaded, which happens in
-    // ChromeBrowserMainParts::PreEarlyInitialization().
-    // Don't do this if the locale is already set, which is done by integration
-    // tests to ensure tests always run with the same locale.
-    l10n_util::OverrideLocaleWithCocoaLocale();
-  }
 #endif
 }

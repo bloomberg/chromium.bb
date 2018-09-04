@@ -27,6 +27,10 @@ IOSChromeVariationsServiceClient::IOSChromeVariationsServiceClient() {}
 
 IOSChromeVariationsServiceClient::~IOSChromeVariationsServiceClient() {}
 
+std::string IOSChromeVariationsServiceClient::GetApplicationLocale() {
+  return GetApplicationContext()->GetApplicationLocale();
+}
+
 base::Callback<base::Version()>
 IOSChromeVariationsServiceClient::GetVersionForSimulationCallback() {
   return base::Bind(&GetVersionForSimulation);

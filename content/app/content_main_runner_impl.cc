@@ -73,7 +73,6 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
-#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mach_port_broker.h"
@@ -884,14 +883,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     BrowserThreadImpl::CreateTaskExecutor();
 
     delegate_->PreCreateMainMessageLoop();
-#if defined(OS_WIN)
-    if (l10n_util::GetLocaleOverrides().empty()) {
-      // Override the configured locale with the user's preferred UI language.
-      // Don't do this if the locale is already set, which is done by
-      // integration tests to ensure tests always run with the same locale.
-      l10n_util::OverrideLocaleWithUILanguageList();
-    }
-#endif
 
     // Create a MessageLoop if one does not already exist for the current
     // thread. This thread won't be promoted as BrowserThread::UI until
