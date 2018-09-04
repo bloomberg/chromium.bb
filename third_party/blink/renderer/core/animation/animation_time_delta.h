@@ -91,18 +91,19 @@ AnimationTimeDelta operator*(T a, AnimationTimeDelta td) {
 
 // Comparison operators on AnimationTimeDelta.
 bool CORE_EXPORT operator==(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs);
+                            const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator!=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs);
+                            const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
-                                     const AnimationTimeDelta& rhs);
+                           const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs);
+                            const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,
-                                      const AnimationTimeDelta& rhs);
+                            const AnimationTimeDelta& rhs);
 
 // Defined to allow DCHECK_EQ/etc to work with the class.
-CORE_EXPORT std::ostream& operator<<(std::ostream& os, AnimationTimeDelta time);
+CORE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                     const AnimationTimeDelta& time);
 
 #else  // !defined(BLINK_ANIMATION_USE_TIME_DELTA)
 
