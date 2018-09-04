@@ -232,6 +232,18 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   return self;
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  self.collectionView.accessibilityIdentifier =
+      kPaymentRequestEditCollectionViewAccessibilityID;
+
+  // Customize collection view settings.
+  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.styler.separatorInset =
+      UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
+}
+
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [[NSNotificationCenter defaultCenter]
@@ -239,6 +251,11 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
          selector:@selector(keyboardDidShow)
              name:UIKeyboardDidShowNotification
            object:nil];
+
+  // Validate the form so that the first field with an invalid value gets focus.
+  if (_dataSource.state == EditViewControllerStateEdit) {
+    [self validateForm];
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -359,27 +376,6 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   }
 
   [self navigationItem].rightBarButtonItem.enabled = [self isFormValid];
-}
-
-- (void)viewDidLoad {
-  [super viewDidLoad];
-
-  // Validate the form so that the first field with an invalid value gets focus.
-  // Perform validation asynchronously to allow for the view to update.
-  if (_dataSource.state == EditViewControllerStateEdit) {
-    __weak PaymentRequestEditViewController* weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf validateForm];
-    });
-  }
-
-  self.collectionView.accessibilityIdentifier =
-      kPaymentRequestEditCollectionViewAccessibilityID;
-
-  // Customize collection view settings.
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-  self.styler.separatorInset =
-      UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
 }
 
 #pragma mark - PaymentRequestEditConsumer
