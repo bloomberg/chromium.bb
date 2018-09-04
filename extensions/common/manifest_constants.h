@@ -160,8 +160,6 @@ extern const char kThemeDisplayProperties[];
 extern const char kThemeImages[];
 extern const char kThemeTints[];
 extern const char kTtsEngine[];
-extern const char kTtsGenderFemale[];
-extern const char kTtsGenderMale[];
 extern const char kTtsVoices[];
 extern const char kTtsVoicesEventTypeEnd[];
 extern const char kTtsVoicesEventTypeError[];

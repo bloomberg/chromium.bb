@@ -84,7 +84,7 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
   std::unique_ptr<base::DictionaryValue> lang_to_voices =
       std::make_unique<base::DictionaryValue>();
   lang_to_voices->SetKey(
-      "es", base::Value("{\"name\":\"Voice8\",\"extension\":\"id8\"}"));
+      "es", base::Value("{\"name\":\"Voice7\",\"extension\":\"id7\"}"));
   lang_to_voices->SetKey(
       "noLanguage", base::Value("{\"name\":\"Android\",\"extension\":\"\"}"));
   pref_service_.registry()->RegisterDictionaryPref(
@@ -132,82 +132,76 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     VoiceData voice0;
     voices.push_back(voice0);
     VoiceData voice1;
-    voice1.gender = TTS_GENDER_FEMALE;
+    voice1.events.insert(TTS_EVENT_WORD);
     voices.push_back(voice1);
     VoiceData voice2;
-    voice2.events.insert(TTS_EVENT_WORD);
+    voice2.lang = "de-DE";
     voices.push_back(voice2);
     VoiceData voice3;
-    voice3.lang = "de-DE";
+    voice3.lang = "fr-CA";
     voices.push_back(voice3);
     VoiceData voice4;
-    voice4.lang = "fr-CA";
+    voice4.name = "Voice4";
     voices.push_back(voice4);
     VoiceData voice5;
-    voice5.name = "Voice5";
+    voice5.extension_id = "id5";
     voices.push_back(voice5);
     VoiceData voice6;
-    voice6.extension_id = "id6";
+    voice6.extension_id = "id7";
+    voice6.name = "Voice6";
+    voice6.lang = "es-es";
     voices.push_back(voice6);
     VoiceData voice7;
     voice7.extension_id = "id7";
     voice7.name = "Voice7";
-    voice7.lang = "es-es";
+    voice7.lang = "es-mx";
     voices.push_back(voice7);
     VoiceData voice8;
-    voice8.extension_id = "id8";
-    voice8.name = "Voice8";
-    voice8.lang = "es-mx";
+    voice8.extension_id = "";
+    voice8.name = "Android";
+    voice8.lang = "";
+    voice8.native = true;
     voices.push_back(voice8);
-    VoiceData voice9;
-    voice9.extension_id = "";
-    voice9.name = "Android";
-    voice9.lang = "";
-    voice9.native = true;
-    voices.push_back(voice9);
 
     Utterance utterance(nullptr);
     EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
 
-    utterance.set_gender(TTS_GENDER_FEMALE);
-    EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
-
     std::set<TtsEventType> types;
     types.insert(TTS_EVENT_WORD);
     utterance.set_required_event_types(types);
-    EXPECT_EQ(2, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
 
     utterance.set_lang("de-DE");
-    EXPECT_EQ(3, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(2, tts_controller->GetMatchingVoice(&utterance, voices));
 
     utterance.set_lang("fr-FR");
+    EXPECT_EQ(3, tts_controller->GetMatchingVoice(&utterance, voices));
+
+    utterance.set_voice_name("Voice4");
     EXPECT_EQ(4, tts_controller->GetMatchingVoice(&utterance, voices));
 
-    utterance.set_voice_name("Voice5");
+    utterance.set_voice_name("");
+    utterance.set_extension_id("id5");
     EXPECT_EQ(5, tts_controller->GetMatchingVoice(&utterance, voices));
 
-    utterance.set_voice_name("");
-    utterance.set_extension_id("id6");
-    EXPECT_EQ(6, tts_controller->GetMatchingVoice(&utterance, voices));
-
 #if defined(OS_CHROMEOS)
-    // Voice7 is matched when the utterance locale exactly matches its locale.
+    // Voice6 is matched when the utterance locale exactly matches its locale.
     utterance.set_extension_id("");
     utterance.set_lang("es-es");
-    EXPECT_EQ(7, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(6, tts_controller->GetMatchingVoice(&utterance, voices));
 
-    // The 8th voice is the default for "es", even though the utterance is
-    // "es-ar". |voice7| is not matched because it is not the default.
+    // The 7th voice is the default for "es", even though the utterance is
+    // "es-ar". |voice6| is not matched because it is not the default.
     utterance.set_extension_id("");
     utterance.set_lang("es-ar");
-    EXPECT_EQ(8, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(7, tts_controller->GetMatchingVoice(&utterance, voices));
 
-    // The 9th voice is like the built-in "Android" voice, it has no lang
+    // The 8th voice is like the built-in "Android" voice, it has no lang
     // and no extension ID. Make sure it can still be matched.
     utterance.set_voice_name("Android");
     utterance.set_extension_id("");
     utterance.set_lang("");
-    EXPECT_EQ(9, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(8, tts_controller->GetMatchingVoice(&utterance, voices));
 #endif  // defined(OS_CHROMEOS)
   }
 }

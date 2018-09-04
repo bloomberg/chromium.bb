@@ -87,11 +87,7 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 // VoiceData
 //
 
-
-VoiceData::VoiceData()
-    : gender(TTS_GENDER_NONE),
-      remote(false),
-      native(false) {}
+VoiceData::VoiceData() : remote(false), native(false) {}
 
 VoiceData::VoiceData(const VoiceData& other) = default;
 
@@ -109,7 +105,6 @@ Utterance::Utterance(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       id_(next_utterance_id_++),
       src_id_(-1),
-      gender_(TTS_GENDER_NONE),
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
@@ -223,8 +218,6 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
                         !utterance->voice_name().empty());
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasLang",
                         !utterance->lang().empty());
-  UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasGender",
-                        utterance->gender() != TTS_GENDER_NONE);
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasRate",
                         utterance->continuous_parameters().rate != 1.0);
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasPitch",
@@ -470,7 +463,6 @@ int TtsControllerImpl::GetMatchingVoice(
   //   Utterange language (exact region preferred, then general language code)
   //   App/system language (exact region preferred, then general language code)
   //   Required event types
-  //   Gender
   //   User-selected preference of voice given the general language code.
 
   // TODO(gaochun): Replace the global variable g_browser_process with
@@ -509,10 +501,10 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty() && !utterance->lang().empty()) {
       // An exact language match is worth more than a partial match.
       if (voice.lang == utterance->lang()) {
-        score += 128;
+        score += 64;
       } else if (l10n_util::GetLanguage(voice.lang) ==
                  l10n_util::GetLanguage(utterance->lang())) {
-        score += 64;
+        score += 32;
       }
     }
 
@@ -520,7 +512,7 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty()) {
       if (l10n_util::GetLanguage(voice.lang) ==
           l10n_util::GetLanguage(app_lang))
-        score += 32;
+        score += 16;
     }
 
     // Next, prefer required event types.
@@ -536,14 +528,7 @@ int TtsControllerImpl::GetMatchingVoice(
         }
       }
       if (has_all_required_event_types)
-        score += 16;
-    }
-
-    // Prefer the requested gender.
-    if (voice.gender != TTS_GENDER_NONE &&
-        utterance->gender() != TTS_GENDER_NONE &&
-        voice.gender == utterance->gender()) {
-      score += 8;
+        score += 8;
     }
 
 #if defined(OS_CHROMEOS)

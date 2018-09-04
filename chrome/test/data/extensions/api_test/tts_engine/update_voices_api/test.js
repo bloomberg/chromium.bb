@@ -2,24 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var testVoiceData = [
-  {
-    eventTypes: ['start'],
-    extensionId: 'pkplfbidichfdicaijlchgnapepdginl',
-    lang: 'zh-TW',
-    remote: false,
-    voiceName: 'David'
-  },
-  {
-    eventTypes: ['end', 'interrupted', 'cancelled'],
-    extensionId: 'pkplfbidichfdicaijlchgnapepdginl',
-    gender: 'female',
-    lang: 'en-GB',
-    remote: false,
-    voiceName: 'Laura'
-  }
-];
-
 function setup() {
   var speakListener = function(utterance, options, sendTtsEvent) {};
   var stopListener = function() {};
@@ -29,6 +11,23 @@ function setup() {
 
 chrome.test.runTests([
   function testGetVoices() {
+    var testVoiceData = [
+      {
+        eventTypes: ['start'],
+        extensionId: 'pkplfbidichfdicaijlchgnapepdginl',
+        lang: 'zh-TW',
+        remote: false,
+        voiceName: 'David'
+      },
+      {
+        eventTypes: ['end', 'interrupted', 'cancelled'],
+        extensionId: 'pkplfbidichfdicaijlchgnapepdginl',
+        gender: 'female',
+        lang: 'en-GB',
+        remote: false,
+        voiceName: 'Laura'
+      }
+    ];
     setup();
     chrome.tts.getVoices(function(voices) {
       chrome.test.assertEq(1, voices.length);
@@ -43,6 +42,8 @@ chrome.test.runTests([
       chrome.tts.getVoices(function(runtimeVoices) {
         chrome.test.assertEq(testVoiceData.length, runtimeVoices.length);
         for (var i = 0; i < runtimeVoices.length; i++) {
+          // The result should not have 'gender'.
+          delete testVoiceData[i]['gender'];
           chrome.test.assertEq(testVoiceData[i], runtimeVoices[i]);
           chrome.test.assertEq(runtimeVoices[i], testVoiceData[i]);
         }
