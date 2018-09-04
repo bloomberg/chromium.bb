@@ -1416,6 +1416,11 @@
     'screen_orientation': {
       'filepath': 'screen_orientation',
     },
+    'security': {
+      'filepath': 'base/json/'\
+                  '|base/memory/.*shared_memory'\
+                  '|components/cbor/',
+    },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
@@ -2326,6 +2331,7 @@
     'safe_browsing': ['timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
+    'security': ['security-watchlist@chromium.org'],
     'service_worker': ['horo+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org',
                        'kinuko+serviceworker@chromium.org',
