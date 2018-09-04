@@ -9319,13 +9319,16 @@ Called by update_net_error_codes.py.-->
     D3D11 is not 11.1 or later.
   </int>
   <int value="2" label="kProfileNotSupported">
-    A supported video codec is using the an unsupported profile.
+    A video codec is using an unsupported HDR profile.
   </int>
   <int value="3" label="kZeroCopyNv12Required">
     The GPU is not configured to allow zero copy for nv12.
   </int>
   <int value="4" label="kZeroCopyVideoRequired">
     The GPU is not configured to allow zero copy for videos.
+  </int>
+  <int value="5" label="kCodecNotSupported">
+    Video is using an unsupported codec.
   </int>
 </enum>
 

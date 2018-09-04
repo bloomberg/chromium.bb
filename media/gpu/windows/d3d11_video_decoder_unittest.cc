@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
@@ -32,6 +33,7 @@ class MockD3D11VideoDecoderImpl : public D3D11VideoDecoderImpl {
  public:
   MockD3D11VideoDecoderImpl()
       : D3D11VideoDecoderImpl(
+            nullptr,
             base::RepeatingCallback<gpu::CommandBufferStub*()>()) {}
 
   MOCK_METHOD6(
@@ -75,9 +77,9 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     // We store it in a std::unique_ptr<VideoDecoder> so that the default
     // deleter works.  The dtor is protected.
     decoder_ = base::WrapUnique<VideoDecoder>(
-        d3d11_decoder_raw_ =
-            new D3D11VideoDecoder(gpu_task_runner_, gpu_preferences_,
-                                  gpu_workarounds_, std::move(impl)));
+        d3d11_decoder_raw_ = new D3D11VideoDecoder(
+            gpu_task_runner_, nullptr /* MediaLog */, gpu_preferences_,
+            gpu_workarounds_, std::move(impl)));
     d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
                             base::Unretained(&create_device_mock_)));
@@ -177,12 +179,6 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9) {
 
 TEST_F(D3D11VideoDecoderTest, RequiresZeroCopyPreference) {
   gpu_preferences_.enable_zero_copy_dxgi_video = false;
-  CreateDecoder();
-  InitializeDecoder(supported_config_, kExpectFailure);
-}
-
-TEST_F(D3D11VideoDecoderTest, FailsIfUsingPassthroughDecoder) {
-  gpu_preferences_.use_passthrough_cmd_decoder = true;
   CreateDecoder();
   InitializeDecoder(supported_config_, kExpectFailure);
 }
