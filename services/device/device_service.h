@@ -15,6 +15,7 @@
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/bluetooth_system.mojom.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -113,6 +114,8 @@ class DeviceService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  void BindBluetoothSystemFactoryRequest(
+      mojom::BluetoothSystemFactoryRequest request);
   void BindFingerprintRequest(mojom::FingerprintRequest request);
   void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
   void BindGeolocationContextRequest(mojom::GeolocationContextRequest request);

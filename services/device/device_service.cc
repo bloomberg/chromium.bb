@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/device/bluetooth/bluetooth_system_factory.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
 #include "services/device/geolocation/geolocation_config.h"
@@ -113,6 +114,9 @@ DeviceService::~DeviceService() {
 }
 
 void DeviceService::OnStart() {
+  registry_.AddInterface<mojom::BluetoothSystemFactory>(
+      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryRequest,
+                          base::Unretained(this)));
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
@@ -176,6 +180,11 @@ void DeviceService::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void DeviceService::BindBluetoothSystemFactoryRequest(
+    mojom::BluetoothSystemFactoryRequest request) {
+  BluetoothSystemFactory::CreateFactory(std::move(request));
 }
 
 #if !defined(OS_ANDROID)
