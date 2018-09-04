@@ -50,18 +50,9 @@ namespace password_manager {
 
 namespace {
 
-bool DoesStringContainOnlyDigits(const base::string16& s) {
-  for (auto c : s) {
-    if (!base::IsAsciiDigit(c))
-      return false;
-  }
-  return true;
-}
-
-// Heuristics to determine that a string is very unlikely to be a username.
-bool IsProbablyNotUsername(const base::string16& s) {
-  return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
-}
+// This namespace is for fixing Jumbo builds, because the same functions are
+// defined in new_password_form_manager.cc.
+namespace password_form_manager_helpers {
 
 // Returns true iff |best_matches| contain a preferred credential with a
 // username other than |preferred_username|.
@@ -95,6 +86,21 @@ void SanitizePossibleUsernames(PasswordForm* form) {
            autofill::IsValidCreditCardNumber(pair.first) ||
            autofill::IsSSN(pair.first);
   });
+}
+
+}  // namespace password_form_manager_helpers
+
+bool DoesStringContainOnlyDigits(const base::string16& s) {
+  for (auto c : s) {
+    if (!base::IsAsciiDigit(c))
+      return false;
+  }
+  return true;
+}
+
+// Heuristics to determine that a string is very unlikely to be a username.
+bool IsProbablyNotUsername(const base::string16& s) {
+  return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
 }
 
 // Copies field properties masks from the form |from| to the form |to|.
@@ -299,7 +305,8 @@ void PasswordFormManager::Save() {
       submitted_form_->submission_event);
 
   if ((user_action_ == UserAction::kNone) &&
-      DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
+      password_form_manager_helpers::DidPreferenceChange(
+          best_matches_, pending_credentials_.username_value)) {
     SetUserAction(UserAction::kChoose);
   }
   if (user_action_ == UserAction::kOverridePassword &&
@@ -311,7 +318,8 @@ void PasswordFormManager::Save() {
   }
 
   if (is_new_login_) {
-    SanitizePossibleUsernames(&pending_credentials_);
+    password_form_manager_helpers::SanitizePossibleUsernames(
+        &pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_.form_data, *submitted_form_,
                                     best_matches_, &pending_credentials_);
@@ -324,9 +332,9 @@ void PasswordFormManager::Save() {
                         &credentials_to_update, nullptr);
   }
 
-  // This is not in ProcessUpdate() to catch PSL matched credentials.
   if (pending_credentials_.times_used == 1 &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+    // This also includes PSL matched credentials.
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
   }

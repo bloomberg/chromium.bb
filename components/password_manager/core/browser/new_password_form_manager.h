@@ -27,6 +27,7 @@ class FormStructure;
 
 namespace password_manager {
 
+class FormSaver;
 class PasswordFormMetricsRecorder;
 class PasswordManagerClient;
 class PasswordManagerDriver;
@@ -41,11 +42,13 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
   // |this| creates an instance of it itself (meant for production code). Once
   // the fetcher is shared between PasswordFormManager instances, it will be
-  // required that |form_fetcher| is not null.
+  // required that |form_fetcher| is not null. |form_saver| is used to
+  // save/update the form.
   NewPasswordFormManager(PasswordManagerClient* client,
                          const base::WeakPtr<PasswordManagerDriver>& driver,
                          const autofill::FormData& observed_form,
-                         FormFetcher* form_fetcher);
+                         FormFetcher* form_fetcher,
+                         std::unique_ptr<FormSaver> form_saver);
 
   ~NewPasswordFormManager() override;
 
@@ -121,6 +124,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   static void set_wait_for_server_predictions_for_filling(bool value) {
     wait_for_server_predictions_for_filling_ = value;
   }
+
+  FormSaver* form_saver() { return form_saver_.get(); }
+
 #endif
 
  protected:
@@ -171,6 +177,17 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
     votes_uploader_.set_password_overridden(password_overridden);
   }
 
+  // Helper for Save in the case there is at least one match for the pending
+  // credentials. This sends needed signals to the autofill server, and also
+  // triggers some UMA reporting.
+  void ProcessUpdate();
+
+  // Goes through |not_best_matches_|, updates the password of those which share
+  // the old password and username with |pending_credentials_| to the new
+  // password of |pending_credentials_|, and returns copies of all such modified
+  // credentials.
+  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate();
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -209,12 +226,17 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // FormFetcher instance which owns the login data from PasswordStore.
   FormFetcher* form_fetcher_;
 
+  // FormSaver instance used by |this| to all tasks related to storing
+  // credentials.
+  const std::unique_ptr<FormSaver> form_saver_;
+
   VotesUploader votes_uploader_;
 
   // |is_submitted_| = true means that a submission of the managed form was seen
   // and then |submitted_form_| contains the submitted form.
   bool is_submitted_ = false;
   autofill::FormData submitted_form_;
+  std::unique_ptr<autofill::PasswordForm> parsed_submitted_form_;
 
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written
@@ -267,6 +289,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };
 
-}  // namespace  password_manager
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
