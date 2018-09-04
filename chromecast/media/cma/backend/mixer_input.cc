@@ -81,6 +81,7 @@ MixerInput::MixerInput(Source* source,
                              input_samples_per_second_);
   }
 
+  slew_volume_.SetSampleRate(output_samples_per_second_);
   source_->InitializeAudioPlayback(source_read_size, initial_rendering_delay);
 
   SetFilterGroup(filter_group);
