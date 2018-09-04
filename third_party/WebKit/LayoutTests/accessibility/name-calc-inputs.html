@@ -178,6 +178,41 @@ test(function(t) {
 }, "Text input with title and aria-placeholder");
 </script>
 
+<div class="container">
+    <div role="textbox" id="text14" aria-placeholder="text14-aria-placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput14 = accessibilityController.accessibleElementById("text14");
+    assert_equals(axTextInput14.name, "text14-aria-placeholder");
+    assert_equals(axTextInput14.nameFrom, "placeholder");
+}, "Div with textbox role and aria-placeholder");
+</script>
+
+<div class="container">
+    <div role="textbox" id="text15" title="text15-title" aria-placeholder="text15-aria-placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput15 = accessibilityController.accessibleElementById("text15");
+    assert_equals(axTextInput15.name, "text15-aria-placeholder");
+    assert_equals(axTextInput15.nameFrom, "placeholder");
+}, "Div with textbox role and title and aria-placeholder");
+</script>
+
+<div class="container">
+    <div id="text16" role="button" aria-placeholder="text16-aria-placeholder">
+</div>
+<script>
+test(function(t) {
+    var axTextInput16 = accessibilityController.accessibleElementById("text16");
+    assert_equals(axTextInput16.name, "");
+    assert_equals(axTextInput16.nameFrom, "");
+}, "Div without textbox role and aria-placeholder");
+</script>
+
 <script>
 if (window.testRunner)
     document.body.className = "hideAllContainers";
