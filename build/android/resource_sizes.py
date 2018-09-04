@@ -14,6 +14,7 @@ from contextlib import contextmanager
 import json
 import logging
 import os
+import posixpath
 import re
 import struct
 import sys
@@ -380,7 +381,8 @@ def PrintApkAnalysis(apk_filename, tool_prefix, out_dir, chartjson=None):
     if filename.endswith('/'):
       continue
     if filename.endswith('.so'):
-      should_extract_lib = not (skip_extract_lib or 'crazy' in filename)
+      basename = posixpath.basename(filename)
+      should_extract_lib = not skip_extract_lib and basename.startswith('lib')
       native_code.AddZipInfo(
           member, extracted_multiplier=int(should_extract_lib))
     elif filename.endswith('.dex'):
