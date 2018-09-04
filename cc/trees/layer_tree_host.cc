@@ -72,49 +72,54 @@ static base::AtomicSequenceNumber s_image_decode_sequence_number;
 namespace cc {
 
 LayerTreeHost::InitParams::InitParams() = default;
-
 LayerTreeHost::InitParams::~InitParams() = default;
+LayerTreeHost::InitParams::InitParams(InitParams&&) = default;
+LayerTreeHost::InitParams& LayerTreeHost::InitParams::operator=(InitParams&&) =
+    default;
 
 std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    InitParams* params) {
-  DCHECK(params->main_task_runner.get());
-  DCHECK(impl_task_runner.get());
-  DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::THREADED));
-  layer_tree_host->InitializeThreaded(params->main_task_runner,
-                                      impl_task_runner);
+    InitParams params) {
+  DCHECK(params.settings);
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
+      params.main_task_runner;
+  DCHECK(main_task_runner);
+  DCHECK(impl_task_runner);
+  auto layer_tree_host = base::WrapUnique(
+      new LayerTreeHost(std::move(params), CompositorMode::THREADED));
+  layer_tree_host->InitializeThreaded(std::move(main_task_runner),
+                                      std::move(impl_task_runner));
   return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHost>
-LayerTreeHost::CreateSingleThreaded(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
-    InitParams* params) {
-  DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
+    InitParams params) {
+  DCHECK(params.settings);
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
+      params.main_task_runner;
+  auto layer_tree_host = base::WrapUnique(
+      new LayerTreeHost(std::move(params), CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
-                                            params->main_task_runner);
+                                            std::move(main_task_runner));
   return layer_tree_host;
 }
 
-LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
+LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
     : micro_benchmark_controller_(this),
-      image_worker_task_runner_(params->image_worker_task_runner),
-      ukm_recorder_factory_(std::move(params->ukm_recorder_factory)),
+      image_worker_task_runner_(std::move(params.image_worker_task_runner)),
+      ukm_recorder_factory_(std::move(params.ukm_recorder_factory)),
       compositor_mode_(mode),
       ui_resource_manager_(std::make_unique<UIResourceManager>()),
-      client_(params->client),
+      client_(params.client),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      settings_(*params->settings),
+      settings_(*params.settings),
       debug_state_(settings_.initial_debug_state),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
-      task_graph_runner_(params->task_graph_runner),
+      task_graph_runner_(params.task_graph_runner),
       content_source_id_(0),
       event_listener_properties_(),
-      mutator_host_(params->mutator_host),
+      mutator_host_(params.mutator_host),
       defer_commits_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);

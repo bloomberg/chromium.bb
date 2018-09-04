@@ -171,10 +171,11 @@ void LayerTreeView::Initialize(
   }
   if (!is_threaded) {
     // Single-threaded layout tests, and unit tests.
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  } else {
     layer_tree_host_ =
-        cc::LayerTreeHost::CreateThreaded(compositor_thread_, &params);
+        cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
+  } else {
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(compositor_thread_,
+                                                         std::move(params));
   }
 }
 

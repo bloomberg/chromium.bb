@@ -72,7 +72,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   void reset_needs_commit() { needs_commit_ = false; }
 
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                    LayerTreeHost::InitParams* params,
+                    LayerTreeHost::InitParams params,
                     CompositorMode mode);
 
  private:

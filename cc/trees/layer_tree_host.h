@@ -101,15 +101,18 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
     InitParams();
     ~InitParams();
+
+    InitParams(InitParams&&);
+    InitParams& operator=(InitParams&&);
   };
 
   static std::unique_ptr<LayerTreeHost> CreateThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      InitParams* params);
+      InitParams params);
 
   static std::unique_ptr<LayerTreeHost> CreateSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client,
-      InitParams* params);
+      InitParams params);
 
   virtual ~LayerTreeHost();
 
@@ -556,7 +559,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       std::unique_ptr<RenderFrameMetadataObserver> observer);
 
  protected:
-  LayerTreeHost(InitParams* params, CompositorMode mode);
+  LayerTreeHost(InitParams params, CompositorMode mode);
 
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
