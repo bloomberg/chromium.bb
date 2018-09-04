@@ -207,13 +207,14 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   // S13nServiceWorker: |info| holds info about the precreated provider host.
   if (info) {
     DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return base::WrapUnique(new ServiceWorkerNetworkProvider(
         std::move(info), std::move(script_loader_factory_info),
-        std::move(fallback_loader_factory)));
+        std::move(controller_info), std::move(fallback_loader_factory)));
   }
 
   return base::WrapUnique(new ServiceWorkerNetworkProvider(
@@ -317,12 +318,13 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id,
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
-      nullptr /* controller */, std::move(fallback_loader_factory));
+      std::move(controller_info), std::move(fallback_loader_factory));
   if (script_loader_factory_info.is_valid())
     script_loader_factory_.Bind(std::move(script_loader_factory_info));
 }

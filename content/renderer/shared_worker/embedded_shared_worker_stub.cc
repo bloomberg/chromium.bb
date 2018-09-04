@@ -88,8 +88,11 @@ class WebServiceWorkerNetworkProviderForSharedWorker
  public:
   WebServiceWorkerNetworkProviderForSharedWorker(
       std::unique_ptr<ServiceWorkerNetworkProvider> provider,
-      bool is_secure_context)
-      : provider_(std::move(provider)), is_secure_context_(is_secure_context) {}
+      bool is_secure_context,
+      std::unique_ptr<NavigationResponseOverrideParameters> response_override)
+      : provider_(std::move(provider)),
+        is_secure_context_(is_secure_context),
+        response_override_(std::move(response_override)) {}
 
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
@@ -97,7 +100,15 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     auto extra_data = std::make_unique<RequestExtraData>();
     extra_data->set_service_worker_provider_id(provider_->provider_id());
     extra_data->set_initiated_in_secure_context(is_secure_context_);
+    if (response_override_) {
+      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+      DCHECK_EQ(blink::WebURLRequest::kRequestContextSharedWorker,
+                request.GetRequestContext());
+      extra_data->set_navigation_response_override(
+          std::move(response_override_));
+    }
     request.SetExtraData(std::move(extra_data));
+
     // If the provider does not have a controller at this point, the renderer
     // expects subresource requests to never be handled by a controlling service
     // worker, so set |skip_service_worker| to skip service workers here.
@@ -189,6 +200,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
  private:
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
   const bool is_secure_context_;
+  std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 };
 
 }  // namespace
@@ -205,7 +217,9 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider)
@@ -221,6 +235,20 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          appcache_host_id == kAppCacheNoHostId);
 
+  if (main_script_load_params) {
+    response_override_ =
+        std::make_unique<NavigationResponseOverrideParameters>();
+    response_override_->url_loader_client_endpoints =
+        std::move(main_script_load_params->url_loader_client_endpoints);
+    response_override_->response = main_script_load_params->response_head;
+    // TODO(nhiroki): Set |response_override_->redirects|.
+    // (https://crbug.com/715632)
+    response_override_->redirect_responses =
+        main_script_load_params->redirect_response_heads;
+    response_override_->redirect_infos =
+        main_script_load_params->redirect_infos;
+  }
+
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
@@ -230,6 +258,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
   service_worker_provider_info_ = std::move(service_worker_provider_info);
   main_script_loader_factory_ = std::move(main_script_loader_factory);
+  controller_info_ = std::move(controller_info);
 
   // Make the factory bundle.
   subresource_loader_factories_ =
@@ -343,11 +372,11 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   std::unique_ptr<ServiceWorkerNetworkProvider> provider =
       ServiceWorkerNetworkProvider::CreateForSharedWorker(
           std::move(service_worker_provider_info_),
-          std::move(main_script_loader_factory_),
+          std::move(main_script_loader_factory_), std::move(controller_info_),
           subresource_loader_factories_);
 
   return std::make_unique<WebServiceWorkerNetworkProviderForSharedWorker>(
-      std::move(provider), IsOriginSecure(url_));
+      std::move(provider), IsOriginSecure(url_), std::move(response_override_));
 }
 
 void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(

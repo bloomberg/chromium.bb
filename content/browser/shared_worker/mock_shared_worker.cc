@@ -106,7 +106,9 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_sciript_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {

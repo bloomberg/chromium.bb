@@ -737,8 +737,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // an implementation of a URLLoaderClient to get the response body.
   if (response_override) {
     DCHECK(!sync_load_response);
-    DCHECK_NE(network::mojom::RequestContextFrameType::kNone,
-              request.GetFrameType());
   }
 
   RequestExtraData empty_extra_data;

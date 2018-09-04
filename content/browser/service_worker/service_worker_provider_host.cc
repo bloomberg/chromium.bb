@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
@@ -478,14 +479,30 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
 
   // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());
-  // If there is no connection to the renderer yet, |this| is hosting a reserved
-  // client undergoing navigation. The controller will be sent on navigation
-  // commit. See CommitNavigation in frame.mojom.
-  if (!container_.is_bound()) {
-    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kWindow, client_type());
-    DCHECK(!is_execution_ready_);
-    return;
+
+  // The final response hasn't been committed yet, so there's no reason to send
+  // the controller since it can be changed again before the final response.
+  if (!is_execution_ready_) {
+    if (client_type() == blink::mojom::ServiceWorkerClientType::kWindow) {
+      // |this| is hosting a reserved client undergoing navigation. The
+      // controller will be sent on navigation commit. See CommitNavigation in
+      // frame.mojom.
+      DCHECK(!container_.is_bound());
+      return;
+    }
+    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kSharedWorker,
+              client_type());
+
+    // NetworkService (PlzWorker):
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // When PlzWorker is enabled, the controller will be sent when the
+      // response is committed to the renderer at SharedWorkerHost::Start().
+      return;
+    }
+    // When NetworkService is disabled and the client is for a shared worker,
+    // the controller won't be sent on response commit, so send it here.
   }
+
   SendSetControllerServiceWorker(notify_controllerchange);
 }
 
@@ -694,13 +711,29 @@ void ServiceWorkerProviderHost::PostMessageToClient(
 void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
   // CountFeature message should be sent only for clients.
   DCHECK(IsProviderForClient());
-  // If there is no connection to the renderer yet, |this| is hosting a reserved
-  // client undergoing navigation. The use counter will be sent correctly in
-  // CompleteNavigationInitialized() later.
-  if (!container_.is_bound()) {
-    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kWindow, client_type());
-    DCHECK(!is_execution_ready_);
-    return;
+
+  // The final response hasn't been committed yet, so there's no reason to send
+  // the use counter since it can be changed again before the final response.
+  if (!is_execution_ready_) {
+    if (client_type() == blink::mojom::ServiceWorkerClientType::kWindow) {
+      // |this| is hosting a reserved client undergoing navigation. The use
+      // counter will be sent correctly in CompleteNavigationInitialized()
+      // later.
+      DCHECK(!container_.is_bound());
+      return;
+    }
+    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kSharedWorker,
+              client_type());
+
+    // NetworkService (PlzWorker):
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // When PlzWorker is enabled, the use counter will be sent when the
+      // response is committed to the renderer at SharedWorkerHost::Start().
+      // TODO(nhiroki): Send the use counter on starting the shared worker.
+      return;
+    }
+    // When NetworkService is disabled and the client is for a shared worker,
+    // the use counter won't be sent on response commit, so send it here.
   }
 
   container_->CountFeature(feature);

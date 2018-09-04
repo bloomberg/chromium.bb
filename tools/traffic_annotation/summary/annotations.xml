@@ -233,6 +233,7 @@ Refer to README.md for content description and update process.
  <item id="service_worker_navigation_preload" hash_code="129872904" type="0" content_hash_code="79473248" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_fetch_dispatcher.cc"/>
  <item id="service_worker_write_to_cache_job" hash_code="117963307" type="0" content_hash_code="18065724" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_write_to_cache_job.cc"/>
  <item id="services_http_server_error_response" hash_code="59302801" type="0" content_hash_code="127774041" os_list="linux,windows" file_path="services/network/public/cpp/server/http_server.cc"/>
+ <item id="shared_worker_script_load" hash_code="107347227" type="0" content_hash_code="64293499" os_list="linux,mac,windows" file_path="content/browser/shared_worker/shared_worker_script_fetcher.cc"/>
  <item id="sigined_exchange_cert_fetcher" hash_code="79442849" type="0" content_hash_code="8138156" os_list="linux,windows" file_path="content/browser/web_package/signed_exchange_cert_fetcher.cc"/>
  <item id="signed_in_profile_avatar" hash_code="108903331" type="0" content_hash_code="72850619" os_list="linux,windows" file_path="chrome/browser/profiles/profile_downloader.cc"/>
  <item id="socket_bio_adapter" hash_code="516551" type="0" content_hash_code="21643352" os_list="linux,windows" file_path="net/socket/socket_bio_adapter.cc"/>
