@@ -201,7 +201,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Whether we've received a frame from the renderer since navigating.
   // Only used when surface synchronization is on.
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
-  bool received_frame_after_navigation_ = false;
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>
       pending_first_frame_requests_;
