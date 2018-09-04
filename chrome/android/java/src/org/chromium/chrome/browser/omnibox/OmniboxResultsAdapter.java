@@ -147,6 +147,12 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         public void onGestureDown();
 
         /**
+         * Triggered when the user touch on the suggestion view finishes.
+         * @param ev the event for the ACTION_UP.
+         */
+        public void onGestureUp(long timetamp);
+
+        /**
          * Triggered when text width information is updated.
          * These values should be used to calculate max text widths.
          * @param requiredWidth a new required width.

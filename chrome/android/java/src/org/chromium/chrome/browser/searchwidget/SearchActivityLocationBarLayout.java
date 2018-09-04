@@ -54,7 +54,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    protected void loadUrl(String url, int transition) {
+    protected void loadUrl(String url, int transition, long inputStart) {
         mDelegate.loadUrl(url);
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(true, url, transition);
     }
