@@ -308,6 +308,7 @@ NetInternalsTest.*
 NTP4WebUITest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
+PrintPreviewBaseSettingsSectionTest.*
 PrintPreviewCustomMarginsTest.*
 PrintPreviewDestinationDialogTest.*
 PrintPreviewDestinationItemTest.*
