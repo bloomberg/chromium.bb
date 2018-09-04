@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // https://github.com/wicg/trusted-types
+
+typedef (DOMString or TrustedHTML or TrustedScript or TrustedScriptURL or TrustedURL) TrustedString;
+
 [
     Exposed=(Window),
     RuntimeEnabled=TrustedDOMTypes

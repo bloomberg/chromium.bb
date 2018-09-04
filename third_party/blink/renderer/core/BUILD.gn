@@ -2179,6 +2179,7 @@ jumbo_source_set("unit_tests") {
     "timing/performance_test.cc",
     "timing/time_clamper_test.cc",
     "timing/window_performance_test.cc",
+    "trustedtypes/trusted_types_util_test.cc",
     "url/url_search_params_test.cc",
     "workers/dedicated_worker_test.cc",
     "workers/main_thread_worklet_test.cc",
