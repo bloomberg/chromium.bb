@@ -4,6 +4,7 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
@@ -56,12 +57,14 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
     back_action = false;
   }
 
-  // Minimize all windows that aren't the app list.
+  // Minimize all windows that aren't the app list in reverse order to preserve
+  // the mru ordering.
   aura::Window* app_list_container =
       Shell::Get()->GetPrimaryRootWindow()->GetChildById(
           kShellWindowId_AppListTabletModeContainer);
   aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  std::reverse(windows.begin(), windows.end());
   for (auto* window : windows) {
     if (!app_list_container->Contains(window) &&
         !wm::GetWindowState(window)->IsMinimized()) {
