@@ -33,6 +33,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -234,9 +235,15 @@ bool ChromeKeyboardUI::HasKeyboardWindow() const {
 }
 
 ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
-  aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
-  DCHECK(root_window);
-  return root_window->GetHost()->GetInputMethod();
+  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  if (!bridge || !bridge->GetInputContextHandler()) {
+    // Needed by a handful of browser tests that use MockInputMethod.
+    return ash::Shell::GetRootWindowForNewWindows()
+        ->GetHost()
+        ->GetInputMethod();
+  }
+
+  return bridge->GetInputContextHandler()->GetInputMethod();
 }
 
 void ChromeKeyboardUI::SetController(keyboard::KeyboardController* controller) {
