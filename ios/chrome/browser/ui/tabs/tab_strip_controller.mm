@@ -1092,6 +1092,8 @@ UIColor* BackgroundColor() {
   if (IsUIRefreshPhase1Enabled()) {
     [_tabSwitcherButton setTitle:TextForTabCount(model.count)
                         forState:UIControlStateNormal];
+    [_tabSwitcherButton
+        setAccessibilityValue:[NSString stringWithFormat:@"%zd", model.count]];
   }
 }
 
