@@ -6,7 +6,14 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 # Describes a list of js_library targets that will each have an html file
 # written listing all its (flattened) js dependencies, for loading as a test.
+#
+# A companion group target with a "_type_check" suffix is also generated with
+# this template. This depends on a list of js_type_check(..) targets -- one for
+# each test -- that will type check the test js file and its dependency subtree.
+#
 # Must be declared after the js_library targets it depends on.
+#
+# Note js_type_check(..) is a no-op unless `closure_compile` is set in gn args.
 #
 # Variables:
 #   deps:
@@ -23,6 +30,14 @@ import("//third_party/closure_compiler/compile_js.gni")
 #       ":baz_unittest",
 #     ]
 #     mocks = [ "my_mocks.js" ]
+#   }
+#   group("closure_compile") {
+#     # ...
+#     ":folder_tests_type_check".
+#   }
+#   test("browser_tests") {
+#     # ...
+#     data_deps += [ "//folder:folder_tests" ]
 #   }
 
 template("js_unit_tests") {
@@ -61,8 +76,14 @@ template("js_unit_tests") {
       ]
     }
   }
+  type_check_group_name = target_name + "_type_check"
+  group(type_check_group_name) {
+    deps = type_check_deps
+  }
   group(target_name) {
     data = get_target_outputs(":$html_gen_target_name")
-    deps = [ ":$html_gen_target_name" ] + type_check_deps
+    deps = [
+      ":$html_gen_target_name",
+    ]
   }
 }
