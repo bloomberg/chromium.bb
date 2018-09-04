@@ -197,6 +197,8 @@ void LocalCardMigrationManager::OnDidGetMigrationRiskData(
 // PaymentsRequest. Also create a new callback function OnDidMigrateLocalCards.
 void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
   migration_request_.app_locale = app_locale_;
+  migration_request_.billing_customer_number = payments::GetBillingCustomerId(
+      personal_data_manager_, payments_client_->GetPrefService());
   payments_client_->MigrateCards(
       migration_request_, migratable_credit_cards_,
       base::BindOnce(&LocalCardMigrationManager::OnDidMigrateLocalCards,

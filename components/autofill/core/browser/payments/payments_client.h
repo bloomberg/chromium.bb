@@ -102,6 +102,7 @@ class PaymentsClient {
     MigrationRequestDetails(const MigrationRequestDetails& other);
     ~MigrationRequestDetails();
 
+    int64_t billing_customer_number = 0;
     base::string16 context_token;
     std::string risk_data;
     std::string app_locale;
