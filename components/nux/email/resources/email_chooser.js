@@ -24,39 +24,7 @@ Polymer({
     /** @private */
     bookmarkBarWasHidden_: Boolean,
 
-    emailList: {
-      type: Array,
-      // TODO(scottchen): get from loadTimeData
-      value: function() {
-        return [
-          {
-            name: 'Gmail',
-            icon: 'gmail',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'YouTube',
-            icon: 'youtube',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'Maps',
-            icon: 'maps',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'Translate',
-            icon: 'translate',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'News',
-            icon: 'news',
-            url: 'https://gmail.com',
-          },
-        ];
-      },
-    },
+    emailList: Array,
 
     /** @private {nux_email.EmailProviderModel} */
     selectedEmailProvider_: {
@@ -71,6 +39,7 @@ Polymer({
 
   ready: function() {
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
+    this.emailList = this.browserProxy_.getEmailList();
     window.addEventListener('beforeunload', () => {
       this.revertBookmark_();
     });
