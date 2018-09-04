@@ -152,7 +152,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // Add a child. Accepts all constructor arguments for |Child|.
     template <class... Args>
     void AddChild(Args&&... args) {
-      children_.push_back(Child(std::forward<Args>(args)...));
+      children_.emplace_back(std::forward<Args>(args)...);
     }
     void InsertChild(unsigned,
                      scoped_refptr<NGLayoutResult>,
