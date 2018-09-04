@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -180,21 +182,14 @@ bool TtsSpeakFunction::RunAsync() {
     return false;
   }
 
+  // TODO(katie): Remove this after M73. This is just used to track how the
+  // gender deprecation is progressing.
   std::string gender_str;
-  TtsGenderType gender;
   if (options->HasKey(constants::kGenderKey))
     EXTENSION_FUNCTION_VALIDATE(
         options->GetString(constants::kGenderKey, &gender_str));
-  if (gender_str == constants::kGenderMale) {
-    gender = TTS_GENDER_MALE;
-  } else if (gender_str == constants::kGenderFemale) {
-    gender = TTS_GENDER_FEMALE;
-  } else if (gender_str.empty()) {
-    gender = TTS_GENDER_NONE;
-  } else {
-    error_ = constants::kErrorInvalidGender;
-    return false;
-  }
+  UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasGender",
+                        !gender_str.empty());
 
   double rate = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
   if (options->HasKey(constants::kRateKey)) {
@@ -280,7 +275,6 @@ bool TtsSpeakFunction::RunAsync() {
   utterance->set_src_id(src_id);
   utterance->set_src_url(source_url());
   utterance->set_lang(lang);
-  utterance->set_gender(gender);
   utterance->set_continuous_parameters(rate, pitch, volume);
   utterance->set_can_enqueue(can_enqueue);
   utterance->set_required_event_types(required_event_types);
@@ -327,10 +321,6 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
     result_voice->SetBoolean(constants::kRemoteKey, voice.remote);
     if (!voice.lang.empty())
       result_voice->SetString(constants::kLangKey, voice.lang);
-    if (voice.gender == TTS_GENDER_MALE)
-      result_voice->SetString(constants::kGenderKey, constants::kGenderMale);
-    else if (voice.gender == TTS_GENDER_FEMALE)
-      result_voice->SetString(constants::kGenderKey, constants::kGenderFemale);
     if (!voice.extension_id.empty())
       result_voice->SetString(constants::kExtensionIdKey, voice.extension_id);
 

@@ -125,12 +125,6 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
       result_voice.lang = voice.lang;
       result_voice.remote = voice.remote;
       result_voice.extension_id = extension->id();
-      if (voice.gender == constants::kGenderMale)
-        result_voice.gender = TTS_GENDER_MALE;
-      else if (voice.gender == constants::kGenderFemale)
-        result_voice.gender = TTS_GENDER_FEMALE;
-      else
-        result_voice.gender = TTS_GENDER_NONE;
 
       for (std::set<std::string>::const_iterator iter =
                voice.event_types.begin();
@@ -294,8 +288,6 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
         continue;
       }
     }
-    if (voice_data->HasKey(constants::kGenderKey))
-      voice_data->GetString(constants::kGenderKey, &voice.gender);
     if (voice_data->HasKey(constants::kRemoteKey))
       voice_data->GetBoolean(constants::kRemoteKey, &voice.remote);
     if (voice_data->HasKey(constants::kExtensionIdKey)) {
