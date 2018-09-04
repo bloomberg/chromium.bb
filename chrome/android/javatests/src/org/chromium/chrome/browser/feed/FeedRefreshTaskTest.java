@@ -77,7 +77,7 @@ public class FeedRefreshTaskTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Accessing the bridge will create if needed, and may run initialization logic.
-            FeedProcessScopeFactory.getFeedSchedulerBridge();
+            FeedProcessScopeFactory.getFeedScheduler();
             mTaskScheduler.getTaskInfoList().clear();
         });
     }

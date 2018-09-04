@@ -19,9 +19,7 @@ import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.action.ActionApi;
-import com.google.android.libraries.feed.host.offlineindicator.OfflineIndicatorApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
@@ -50,8 +48,6 @@ import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
@@ -147,20 +143,6 @@ public class FeedNewTabPage extends NewTabPage {
         }
     }
 
-    private static class StubOfflineIndicatorApi implements OfflineIndicatorApi {
-        @Override
-        public void getOfflineStatus(
-                List<String> urlsToRetrieve, Consumer<List<String>> urlListConsumer) {
-            urlListConsumer.accept(Collections.emptyList());
-        }
-
-        @Override
-        public void addOfflineStatusListener(OfflineStatusListener offlineStatusListener) {}
-
-        @Override
-        public void removeOfflineStatusListener(OfflineStatusListener offlineStatusListener) {}
-    }
-
     /**
      * Provides the additional capabilities needed for the {@link FeedNewTabPage} container view.
      */
@@ -201,14 +183,14 @@ public class FeedNewTabPage extends NewTabPage {
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
         ActionApi actionApi = new FeedActionHandler(navigationDelegate,
-                () -> FeedProcessScopeFactory.getFeedSchedulerBridge().onSuggestionConsumed());
+                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed());
+        FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         FeedStreamScope streamScope =
                 feedProcessScope
                         .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(activity.getResources(), mUiConfig),
-                                new BasicSnackbarApi(), new FeedBasicLogging(),
-                                new StubOfflineIndicatorApi())
+                                new BasicSnackbarApi(), new FeedBasicLogging(), offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
@@ -315,8 +297,8 @@ public class FeedNewTabPage extends NewTabPage {
     @VisibleForTesting
     public static void setInTestMode(boolean inTestMode) {
         if (inTestMode) {
-            FeedProcessScopeFactory.createFeedProcessScopeForTesting(
-                    new TestFeedScheduler(), new TestNetworkClient());
+            FeedProcessScopeFactory.createFeedProcessScopeForTesting(new TestFeedScheduler(),
+                    new TestNetworkClient(), new TestFeedOfflineIndicator());
         } else {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
         }

@@ -21,6 +21,28 @@ FeedOfflineHost::FeedOfflineHost(
 
 FeedOfflineHost::~FeedOfflineHost() = default;
 
+base::Optional<int64_t> FeedOfflineHost::GetOfflineId(std::string url) {
+  return {};
+}
+
+void FeedOfflineHost::GetOfflineStatus(
+    std::vector<std::string> urls,
+    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+  // TODO(skym): Call OfflinePageModel::GetPagesByURL() for each url.
+}
+
+void FeedOfflineHost::OnContentRemoved(std::vector<std::string> urls) {
+  // TODO(skym): Call PrefetchService::RemoveSuggestion().
+}
+
+void FeedOfflineHost::OnNewContentReceived() {
+  // TODO(skym): Call PrefetchService::NewSuggestionsAvailable().
+}
+
+void FeedOfflineHost::OnNoListeners() {
+  // TODO(skym): Clear out local cache of offline data.
+}
+
 void FeedOfflineHost::GetCurrentArticleSuggestions(
     offline_pages::SuggestionsProvider::SuggestionCallback
         suggestions_callback) {
