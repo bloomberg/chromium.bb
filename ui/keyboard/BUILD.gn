@@ -57,6 +57,7 @@ jumbo_component("keyboard") {
   deps = [
     ":resources",
     "//base",
+    "//chromeos/services/ime/public/cpp:features",
     "//services/metrics/public/cpp:ukm_builders",
     "//ui/aura",
     "//ui/base",
