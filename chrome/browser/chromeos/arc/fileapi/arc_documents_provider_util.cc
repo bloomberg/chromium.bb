@@ -217,30 +217,6 @@ std::vector<base::FilePath::StringType> GetExtensionsForArcMimeType(
   return std::vector<base::FilePath::StringType>();
 }
 
-std::string StripMimeSubType(const std::string& mime_type) {
-  if (mime_type.empty())
-    return mime_type;
-  size_t index = mime_type.find_first_of('/', 0);
-  if (index == 0 || index == mime_type.size() - 1 ||
-      index == std::string::npos) {
-    // This looks malformed, return an empty string.
-    return std::string();
-  }
-  return mime_type.substr(0, index);
-}
-
-// This is based on net/base/mime_util.cc: net::FindMimeType.
-const char* FindArcMimeTypeFromExtension(const std::string& ext) {
-  for (const auto& mapping : kAndroidMimeTypeMappings) {
-    std::vector<base::StringPiece> extensions = base::SplitStringPiece(
-        mapping.extensions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    auto iter = std::find(extensions.begin(), extensions.end(), ext);
-    if (iter != extensions.end())
-      return mapping.mime_type;
-  }
-  return nullptr;
-}
-
 // TODO(crbug.com/675868): Consolidate with the similar logic for Drive.
 base::FilePath::StringType GetFileNameForDocument(
     const mojom::DocumentPtr& document) {
@@ -267,23 +243,10 @@ base::FilePath::StringType GetFileNameForDocument(
     extension = extension.substr(1);  // Strip the leading dot.
   std::vector<base::FilePath::StringType> possible_extensions =
       GetExtensionsForArcMimeType(document->mime_type);
-
   if (!possible_extensions.empty() &&
       !base::ContainsValue(possible_extensions, extension)) {
-    // Lookup the extension in the hardcoded map before appending an extension,
-    // as some extensions (eg. 3gp) are typed differently by Android. Only
-    // append the suggested extension if the lookup fails (i.e. no valid mime
-    // type returned), or the returned mime type is of a different category.
-    // TODO(crbug.com/878221): Fix discrepancy in MIME types and extensions
-    // between the hard coded map and the Android content provider.
-    const char* missed_possible_mime_type =
-        FindArcMimeTypeFromExtension(extension);
-    if (missed_possible_mime_type == nullptr ||
-        StripMimeSubType(document->mime_type) !=
-            StripMimeSubType(missed_possible_mime_type)) {
-      filename =
-          base::FilePath(filename).AddExtension(possible_extensions[0]).value();
-    }
+    filename =
+        base::FilePath(filename).AddExtension(possible_extensions[0]).value();
   }
 
   return filename;
