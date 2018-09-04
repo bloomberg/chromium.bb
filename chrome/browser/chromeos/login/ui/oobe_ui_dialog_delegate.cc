@@ -202,6 +202,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
+  dialog_view_->web_contents()->SetDelegate(this);
+
   captive_portal_delegate_ =
       new CaptivePortalDialogDelegate(dialog_view_->web_contents());
 
@@ -313,6 +315,19 @@ OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
 
 gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
+}
+
+bool OobeUIDialogDelegate::TakeFocus(content::WebContents* source,
+                                     bool reverse) {
+  LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
+  return true;
+}
+
+void OobeUIDialogDelegate::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, dialog_widget_->GetFocusManager());
 }
 
 void OobeUIDialogDelegate::OnDisplayMetricsChanged(

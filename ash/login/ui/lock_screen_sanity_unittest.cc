@@ -192,6 +192,7 @@ TEST_F(LockScreenSanityTest,
 // Verifies that tabbing from the lock screen will eventually focus the shelf.
 // Then, a shift+tab will bring focus back to the lock screen.
 TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   // Make lock screen shelf visible.
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);

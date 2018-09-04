@@ -16,8 +16,10 @@
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/display/display_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class TabletModeClient;
@@ -56,6 +58,7 @@ class CaptivePortalDialogDelegate;
 class OobeUIDialogDelegate : public display::DisplayObserver,
                              public TabletModeClientObserver,
                              public ui::WebDialogDelegate,
+                             public content::WebContentsDelegate,
                              public keyboard::KeyboardControllerObserver,
                              public CaptivePortalWindowProxy::Observer {
  public:
@@ -88,6 +91,12 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   void UpdateSizeAndPosition(int width, int height);
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
+
+  // content::WebContentsDelegate:
+  bool TakeFocus(content::WebContents* source, bool reverse) override;
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
 
  private:
   // display::DisplayObserver:
@@ -143,6 +152,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   std::map<ui::Accelerator, std::string> accel_map_;
   ash::mojom::OobeDialogState state_ = ash::mojom::OobeDialogState::HIDDEN;
+
+  views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   // Whether the captive portal screen should be shown the next time the Gaia
   // dialog is opened.

@@ -248,6 +248,10 @@ bool ViewsScreenLocker::HandleFocusLockScreenApps(bool reverse) {
   return true;
 }
 
+void ViewsScreenLocker::HandleFocusOobeDialog() {
+  NOTREACHED();
+}
+
 void ViewsScreenLocker::HandleLoginAsGuest() {
   NOTREACHED();
 }

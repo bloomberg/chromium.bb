@@ -5,6 +5,7 @@
 #include "ash/wm/ash_focus_rules.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/focus_rules.h"
@@ -22,6 +23,14 @@ bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
                                             int container_id) {
   for (; window; window = window->parent()) {
     if (window->id() >= container_id)
+      return true;
+  }
+  return false;
+}
+
+bool BelongsToContainerWithId(const aura::Window* window, int container_id) {
+  for (; window; window = window->parent()) {
+    if (window->id() == container_id)
       return true;
   }
   return false;
@@ -57,8 +66,16 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   if (!window)
     return true;
 
-  if (!BaseFocusRules::CanActivateWindow(window)) {
+  if (!BaseFocusRules::CanActivateWindow(window))
     return false;
+
+  // Special case to allow the login shelf to be activatable when the OOBE
+  // modal is visible. See http://crbug/871184
+  // TODO: remove this special case once login shelf is moved into a child
+  // widget of the lock screen (https://crbug.com/767235).
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
+      BelongsToContainerWithId(window, kShellWindowId_ShelfContainer)) {
+    return true;
   }
 
   int modal_container_id = Shell::GetOpenSystemModalWindowContainerId();

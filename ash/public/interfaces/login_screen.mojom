@@ -190,6 +190,9 @@ interface LoginScreen {
   // Sets if the guest button on the login shelf can be shown during gaia
   // signin screen.
   SetShowGuestButtonForGaiaScreen(bool can_show);
+
+  // Transitions focus to the shelf area. If |reverse|, focuses the status area.
+  FocusLoginShelf(bool reverse);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
@@ -249,6 +252,9 @@ interface LoginScreenClient {
   // lock screen.
   // |reverse|:   Whether the tab order is reversed.
   FocusLockScreenApps(bool reverse);
+
+  // Passes focus to the OOBE dialog if it is showing. No-op otherwise.
+  FocusOobeDialog();
 
   // Show the gaia sign-in dialog. If |can_close| is true, the dialog can be
   // closed. The value in |prefilled_account| will be used to prefill the
