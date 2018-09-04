@@ -1020,8 +1020,7 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
 #endif
 
   gpu_binder_registry_.AddInterface(
-      base::Bind(&metrics::CallStackProfileCollector::Create,
-                 metrics::CallStackProfileParams::GPU_PROCESS));
+      base::Bind(&metrics::CallStackProfileCollector::Create));
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -3489,8 +3488,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                  g_browser_process->rappor_service()),
       ui_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&metrics::CallStackProfileCollector::Create,
-                          metrics::CallStackProfileParams::RENDERER_PROCESS));
+      base::BindRepeating(&metrics::CallStackProfileCollector::Create));
 
   if (NetBenchmarking::CheckBenchmarkingEnabled()) {
     Profile* profile =

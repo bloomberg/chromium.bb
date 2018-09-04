@@ -399,7 +399,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/component_updater:test_support",
     "//components/encrypted_messages:encrypted_message_proto",
-    "//components/metrics/public/cpp:call_stack_unit_tests",
     "//components/prefs:test_support",
     "//components/variations",
     "//extensions/buildflags",
@@ -426,7 +425,6 @@ source_set("unit_tests") {
   # these tests.
   if (is_ios) {
     sources -= [ "child_call_stack_profile_collector_unittest.cc" ]
-    deps -= [ "//components/metrics/public/cpp:call_stack_unit_tests" ]
   }
 }
 
