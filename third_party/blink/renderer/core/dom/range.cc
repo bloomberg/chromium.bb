@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -990,7 +990,7 @@ DocumentFragment* Range::createContextualFragment(
   Document& document = start_.Container().GetDocument();
 
   String markup =
-      TrustedHTML::GetString(string_or_html, &document, exception_state);
+      GetStringFromTrustedHTML(string_or_html, &document, exception_state);
   if (!exception_state.HadException()) {
     return createContextualFragmentFromString(markup, exception_state);
   }

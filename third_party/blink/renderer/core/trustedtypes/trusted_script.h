@@ -12,10 +12,6 @@
 
 namespace blink {
 
-class Document;
-class ExceptionState;
-class StringOrTrustedScript;
-
 class CORE_EXPORT TrustedScript final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -26,10 +22,6 @@ class CORE_EXPORT TrustedScript final : public ScriptWrappable {
 
   // TrustedScript.idl
   String toString() const;
-
-  static String GetString(StringOrTrustedScript,
-                          const Document*,
-                          ExceptionState&);
 
  private:
   TrustedScript(const String& script);
