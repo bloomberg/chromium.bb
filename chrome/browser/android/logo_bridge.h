@@ -48,13 +48,13 @@ class LogoBridge {
                        const base::android::JavaParamRef<jstring>& j_url);
 
  private:
-  class AnimatedLogoFetcher;
+  class AnimatedLogoLoader;
 
   virtual ~LogoBridge();
 
   search_provider_logos::LogoService* logo_service_;
 
-  std::unique_ptr<AnimatedLogoFetcher> animated_logo_fetcher_;
+  std::unique_ptr<AnimatedLogoLoader> animated_logo_loader_;
 
   base::WeakPtrFactory<LogoBridge> weak_ptr_factory_;
 
