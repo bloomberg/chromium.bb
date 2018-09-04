@@ -91,11 +91,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   int Volume() const;
   int MaxVolume() const;
 
-  // Audio parameters utilized by the source of the audio capturer.
-  // TODO(phoglund): Think over the implications of this accessor and if we can
-  // remove it.
-  media::AudioParameters GetInputFormat() const;
-
   void SetOutputDeviceForAec(const std::string& output_device_id);
 
  protected:

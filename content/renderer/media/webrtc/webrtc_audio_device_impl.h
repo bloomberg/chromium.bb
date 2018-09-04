@@ -164,8 +164,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
 
   int32_t MaxMicrophoneVolume(uint32_t* max_volume) const override;
   int32_t MinMicrophoneVolume(uint32_t* min_volume) const override;
-  int32_t StereoPlayoutIsAvailable(bool* available) const override;
-  int32_t StereoRecordingIsAvailable(bool* available) const override;
   int32_t PlayoutDelay(uint16_t* delay_ms) const override;
 
  public:
