@@ -971,7 +971,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: None/foo=bar\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1029,7 +1030,8 @@ class TestMain(NetTestCase):
     self._check_output(
         u'Triggered task: None/foo=bar/' + FILE_HASH + u'\n'
         u'To collect results, use:\n'
-        u'  swarming.py collect -S https://localhost:1 12300\n'
+        u'  tools/swarming_client/swarming.py collect '
+        u'-S https://localhost:1 12300\n'
         u'Or visit:\n'
         u'  https://localhost:1/user/task/12300\n',
         u'')
@@ -1083,7 +1085,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: None/foo=bar\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1139,7 +1142,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1209,7 +1213,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 --json foo.json\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 --json foo.json\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1314,7 +1319,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')

@@ -1805,11 +1805,11 @@ def CMDtrigger(parser, args):
         }
         tools.write_json(unicode(options.dump_json), data, True)
         print('To collect results, use:')
-        print('  swarming.py collect -S %s --json %s' %
+        print('  tools/swarming_client/swarming.py collect -S %s --json %s' %
             (options.swarming, options.dump_json))
       else:
         print('To collect results, use:')
-        print('  swarming.py collect -S %s %s' %
+        print('  tools/swarming_client/swarming.py collect -S %s %s' %
             (options.swarming, ' '.join(t['task_id'] for t in tasks_sorted)))
       print('Or visit:')
       for t in tasks_sorted:
