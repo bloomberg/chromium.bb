@@ -106,8 +106,7 @@ class MODULES_EXPORT RemotePlayback final
   void OnConnectionError(const mojom::blink::PresentationError&);
 
   // mojom::blink::PresentationConnection implementation.
-  void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
-                 OnMessageCallback) override;
+  void OnMessage(mojom::blink::PresentationConnectionMessagePtr) override;
   void DidChangeState(mojom::blink::PresentationConnectionState) override;
   void RequestClose() override;
 

@@ -41,8 +41,8 @@ class MockMediaRouterAndroidBridge : public MediaRouterAndroidBridge {
                     int,
                     int));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id&));
-  MOCK_METHOD3(SendRouteMessage,
-               void(const MediaRoute::Id&, const std::string&, int));
+  MOCK_METHOD2(SendRouteMessage,
+               void(const MediaRoute::Id&, const std::string&));
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id&));
   MOCK_METHOD1(StartObservingMediaSinks, bool(const MediaSource::Id&));
   MOCK_METHOD1(StopObservingMediaSinks, void(const MediaSource::Id&));

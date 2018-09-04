@@ -109,24 +109,12 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     TerminateRouteCallback& callback));
   MOCK_METHOD1(StartObservingMediaSinks, void(const std::string& source));
   MOCK_METHOD1(StopObservingMediaSinks, void(const std::string& source));
-  void SendRouteMessage(const std::string& media_route_id,
-                        const std::string& message,
-                        SendRouteMessageCallback callback) override {
-    SendRouteMessageInternal(media_route_id, message, callback);
-  }
-  MOCK_METHOD3(SendRouteMessageInternal,
+  MOCK_METHOD2(SendRouteMessage,
                void(const std::string& media_route_id,
-                    const std::string& message,
-                    SendRouteMessageCallback& callback));
-  void SendRouteBinaryMessage(const std::string& media_route_id,
-                              const std::vector<uint8_t>& data,
-                              SendRouteMessageCallback callback) override {
-    SendRouteBinaryMessageInternal(media_route_id, data, callback);
-  }
-  MOCK_METHOD3(SendRouteBinaryMessageInternal,
+                    const std::string& message));
+  MOCK_METHOD2(SendRouteBinaryMessage,
                void(const std::string& media_route_id,
-                    const std::vector<uint8_t>& data,
-                    SendRouteMessageCallback& callback));
+                    const std::vector<uint8_t>& data));
   MOCK_METHOD1(StartListeningForRouteMessages,
                void(const std::string& route_id));
   MOCK_METHOD1(StopListeningForRouteMessages,
@@ -170,8 +158,6 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
   void RouteRequestSuccess(RouteCallback& cb) const;
   void RouteRequestTimeout(RouteCallback& cb) const;
   void TerminateRouteSuccess(TerminateRouteCallback& cb) const;
-  void SendRouteMessageSuccess(SendRouteMessageCallback& cb) const;
-  void SendRouteBinaryMessageSuccess(SendRouteBinaryMessageCallback& cb) const;
   void SearchSinksSuccess(SearchSinksCallback& cb) const;
   void CreateMediaRouteControllerSuccess(
       CreateMediaRouteControllerCallback& cb) const;

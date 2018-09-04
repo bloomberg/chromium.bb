@@ -186,20 +186,16 @@ void WiredDisplayMediaRouteProvider::TerminateRoute(
 
 void WiredDisplayMediaRouteProvider::SendRouteMessage(
     const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+    const std::string& message) {
   // Messages should be handled by LocalPresentationManager.
   NOTREACHED();
-  std::move(callback).Run(false);
 }
 
 void WiredDisplayMediaRouteProvider::SendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   // Messages should be handled by LocalPresentationManager.
   NOTREACHED();
-  std::move(callback).Run(false);
 }
 
 void WiredDisplayMediaRouteProvider::StartObservingMediaSinks(

@@ -77,9 +77,8 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
     }
 
     @Override
-    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
+    public void sendStringMessage(String routeId, String message) {
         Log.e(TAG, "Remote playback does not support sending messages");
-        mManager.onMessageSentResult(false, nativeCallbackId);
     }
 
     @VisibleForTesting

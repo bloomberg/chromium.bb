@@ -45,14 +45,9 @@ MediaRouterAndroid::PresentationConnectionProxy::Init() {
 }
 
 void MediaRouterAndroid::PresentationConnectionProxy::OnMessage(
-    blink::mojom::PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
-  if (message->is_message()) {
-    media_router_android_->SendRouteMessage(route_id_, message->get_message(),
-                                            std::move(callback));
-  } else {
-    std::move(callback).Run(false);
-  }
+    blink::mojom::PresentationConnectionMessagePtr message) {
+  if (message->is_message())
+    media_router_android_->SendRouteMessage(route_id_, message->get_message());
 }
 
 void MediaRouterAndroid::PresentationConnectionProxy::RequestClose() {
@@ -79,8 +74,7 @@ void MediaRouterAndroid::PresentationConnectionProxy::SendMessage(
     const std::string& message) {
   DCHECK(peer_);
   peer_->OnMessage(
-      blink::mojom::PresentationConnectionMessage::NewMessage(message),
-      base::DoNothing());
+      blink::mojom::PresentationConnectionMessage::NewMessage(message));
 }
 
 MediaRouterAndroid::MediaRouteRequest::MediaRouteRequest(
@@ -173,19 +167,14 @@ void MediaRouterAndroid::TerminateRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterAndroid::SendRouteMessage(const MediaRoute::Id& route_id,
-                                          const std::string& message,
-                                          SendRouteMessageCallback callback) {
-  int callback_id = message_callbacks_.Add(
-      std::make_unique<SendRouteMessageCallback>(std::move(callback)));
-  bridge_->SendRouteMessage(route_id, message, callback_id);
+                                          const std::string& message) {
+  bridge_->SendRouteMessage(route_id, message);
 }
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    std::unique_ptr<std::vector<uint8_t>> data) {
   // Binary messaging is not supported on Android.
-  std::move(callback).Run(false);
 }
 
 void MediaRouterAndroid::OnUserGesture() {}
@@ -328,12 +317,6 @@ void MediaRouterAndroid::OnRouteClosedWithError(const MediaRoute::Id& route_id,
       route_id,
       blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR,
       message);
-}
-
-void MediaRouterAndroid::OnMessageSentResult(bool success, int callback_id) {
-  SendRouteMessageCallback* callback = message_callbacks_.Lookup(callback_id);
-  std::move(*callback).Run(success);
-  message_callbacks_.Remove(callback_id);
 }
 
 void MediaRouterAndroid::OnMessage(const MediaRoute::Id& route_id,

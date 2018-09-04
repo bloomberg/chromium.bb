@@ -122,20 +122,15 @@ void CastMediaRouteProvider::TerminateRoute(const std::string& route_id,
       RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 
-void CastMediaRouteProvider::SendRouteMessage(
-    const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+void CastMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
+                                              const std::string& message) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
 }
 
 void CastMediaRouteProvider::SendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
 }
 
 void CastMediaRouteProvider::StartObservingMediaSinks(

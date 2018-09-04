@@ -23,16 +23,11 @@ using ::testing::Invoke;
 
 namespace media_router {
 
-using OnMessageCallback = BrowserPresentationConnectionProxy::OnMessageCallback;
-
 namespace {
 
-void ExpectMessageAndRunCallback(
-    const PresentationConnectionMessagePtr expected_message,
-    const PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
+void ExpectMessage(const PresentationConnectionMessagePtr expected_message,
+                   const PresentationConnectionMessagePtr message) {
   EXPECT_EQ(expected_message, message);
-  std::move(callback).Run(true);
 }
 
 }  // namespace
@@ -97,11 +92,9 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageTextMessage) {
   PresentationConnectionMessagePtr connection_message =
       PresentationConnectionMessage::NewMessage(message);
 
-  EXPECT_CALL(*mock_router(),
-              SendRouteMessageInternal(kMediaRouteId, message, _));
+  EXPECT_CALL(*mock_router(), SendRouteMessage(kMediaRouteId, message));
 
-  browser_connection_proxy()->OnMessage(std::move(connection_message),
-                                        base::BindOnce([](bool result) {}));
+  browser_connection_proxy()->OnMessage(std::move(connection_message));
 }
 
 TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
@@ -112,28 +105,25 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
   PresentationConnectionMessagePtr connection_message =
       PresentationConnectionMessage::NewData(expected_data);
 
-  EXPECT_CALL(*mock_router(), SendRouteBinaryMessageInternal(_, _, _))
-      .WillOnce(Invoke([&expected_data](const MediaRoute::Id& route_id,
-                                        std::vector<uint8_t>* data,
-                                        const OnMessageCallback& callback) {
+  EXPECT_CALL(*mock_router(), SendRouteBinaryMessage(_, _))
+      .WillOnce([&expected_data](const MediaRoute::Id& route_id,
+                                 std::unique_ptr<std::vector<uint8_t>> data) {
         EXPECT_EQ(*data, expected_data);
-      }));
+      });
 
-  browser_connection_proxy()->OnMessage(std::move(connection_message),
-                                        base::BindOnce([](bool result) {}));
+  browser_connection_proxy()->OnMessage(std::move(connection_message));
 }
 
 TEST_F(BrowserPresentationConnectionProxyTest, OnMessagesReceived) {
-  EXPECT_CALL(*controller_connection_proxy(), OnMessage(_, _))
-      .WillOnce([&](auto message, auto callback) {
-        ExpectMessageAndRunCallback(
-            PresentationConnectionMessage::NewMessage("foo"),
-            std::move(message), std::move(callback));
+  EXPECT_CALL(*controller_connection_proxy(), OnMessage(_))
+      .WillOnce([&](auto message) {
+        ExpectMessage(PresentationConnectionMessage::NewMessage("foo"),
+                      std::move(message));
       })
-      .WillOnce([&](auto message, auto callback) {
-        ExpectMessageAndRunCallback(PresentationConnectionMessage::NewData(
-                                        std::vector<uint8_t>({1, 2, 3})),
-                                    std::move(message), std::move(callback));
+      .WillOnce([&](auto message) {
+        ExpectMessage(PresentationConnectionMessage::NewData(
+                          std::vector<uint8_t>({1, 2, 3})),
+                      std::move(message));
       });
 
   std::vector<RouteMessagePtr> route_messages;

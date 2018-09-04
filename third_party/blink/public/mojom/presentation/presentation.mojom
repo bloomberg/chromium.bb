@@ -69,7 +69,7 @@ interface PresentationConnection {
   // Called when a message is sent by the target connection.
   // TODO(crbug.com/749327): Remove the return value since it is no longer
   // used.
-  OnMessage(PresentationConnectionMessage message) => (bool success);
+  OnMessage(PresentationConnectionMessage message);
 
   // Called when target connection notifies connection state change.
   DidChangeState(PresentationConnectionState state);

@@ -196,8 +196,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
         })";
     EXPECT_CALL(*mock_sink_service_.app_discovery_service(),
                 DoFetchDialAppInfo(_, _));
-    provider_->SendRouteMessage(route_id, kClientConnectMessage,
-                                base::DoNothing());
+    provider_->SendRouteMessage(route_id, kClientConnectMessage);
     base::RunLoop().RunUntilIdle();
     auto app_info_cb =
         mock_sink_service_.app_discovery_service()->PassCallback();
@@ -252,10 +251,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     activity_manager_->SetExpectedRequest(app_launch_url, "POST",
                                           "pairingCode=foo");
     provider_->SendRouteMessage(
-        route_id,
-        base::StringPrintf(kCustomDialLaunchMessage,
-                           custom_dial_launch_seq_number_),
-        base::DoNothing());
+        route_id, base::StringPrintf(kCustomDialLaunchMessage,
+                                     custom_dial_launch_seq_number_));
     base::RunLoop().RunUntilIdle();
 
     // Simulate a successful launch response.
@@ -325,8 +322,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
                                 network::ResourceResponseHead(), "",
                                 network::URLLoaderCompletionStatus());
 
-    provider_->SendRouteMessage(route_id, kStopSessionMessage,
-                                base::DoNothing());
+    provider_->SendRouteMessage(route_id, kStopSessionMessage);
     ExpectTerminateRouteCommon();
   }
 

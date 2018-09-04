@@ -61,13 +61,6 @@ public interface MediaRouteManager {
     public void onRouteClosedWithError(String mediaRouteId, String message);
 
     /**
-     * Called when sending the message to the route finished.
-     * @param success Indicates if the message was sent successfully.
-     * @param callbackId The identifier of the callback to pass the result to.
-     */
-    public void onMessageSentResult(boolean success, int callbackId);
-
-    /**
      * Called when a specified media route receives a message.
      * @param mediaRouteId The identifier of the media route.
      * @param message The message contents.

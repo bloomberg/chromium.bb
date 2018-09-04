@@ -166,17 +166,13 @@ PresentationConnection::~PresentationConnection() {
 }
 
 void PresentationConnection::OnMessage(
-    mojom::blink::PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
-  DCHECK(!callback.is_null());
+    mojom::blink::PresentationConnectionMessagePtr message) {
   if (message->is_data()) {
     const auto& data = message->get_data();
     DidReceiveBinaryMessage(&data.front(), data.size());
   } else {
     DidReceiveTextMessage(message->get_message());
   }
-
-  std::move(callback).Run(true);
 }
 
 void PresentationConnection::DidChangeState(
@@ -520,10 +516,8 @@ void PresentationConnection::setBinaryType(const String& binary_type) {
 
 void PresentationConnection::SendMessageToTargetConnection(
     mojom::blink::PresentationConnectionMessagePtr message) {
-  if (target_connection_) {
-    target_connection_->OnMessage(std::move(message),
-                                  base::OnceCallback<void(bool)>());
-  }
+  if (target_connection_)
+    target_connection_->OnMessage(std::move(message));
 }
 
 void PresentationConnection::DidReceiveTextMessage(const WebString& message) {

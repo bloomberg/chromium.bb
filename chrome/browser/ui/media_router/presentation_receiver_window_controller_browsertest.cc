@@ -87,21 +87,17 @@ class CloseObserver final : public content::WebContentsObserver {
 class FakeControllerConnection final
     : public blink::mojom::PresentationConnection {
  public:
-  using OnMessageCallback = base::OnceCallback<void(bool)>;
-
   FakeControllerConnection() : binding_(this) {}
 
   void SendTextMessage(const std::string& message) {
     ASSERT_TRUE(receiver_connection_.is_bound());
     receiver_connection_->OnMessage(
-        blink::mojom::PresentationConnectionMessage::NewMessage(message),
-        base::BindOnce([](bool success) { ASSERT_TRUE(success); }));
+        blink::mojom::PresentationConnectionMessage::NewMessage(message));
   }
 
   // blink::mojom::PresentationConnection implementation
-  MOCK_METHOD2(OnMessage,
-               void(blink::mojom::PresentationConnectionMessagePtr message,
-                    OnMessageCallback callback));
+  MOCK_METHOD1(OnMessage,
+               void(blink::mojom::PresentationConnectionMessagePtr message));
   void DidChangeState(
       blink::mojom::PresentationConnectionState state) override {}
   void RequestClose() override {}
@@ -300,25 +296,21 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
                                    "sink", "desc", true, true));
 
   base::RunLoop connection_loop;
-  EXPECT_CALL(controller_connection, OnMessage(_, _))
-      .WillOnce([&](auto response, auto callback) {
-        ASSERT_TRUE(response->is_message());
-        EXPECT_EQ("ready", response->get_message());
-        std::move(callback).Run(true);
-        connection_loop.Quit();
-      });
+  EXPECT_CALL(controller_connection, OnMessage(_)).WillOnce([&](auto response) {
+    ASSERT_TRUE(response->is_message());
+    EXPECT_EQ("ready", response->get_message());
+    connection_loop.Quit();
+  });
   connection_loop.Run();
 
   // Test ping-pong message.
   const std::string message("turtles");
   base::RunLoop run_loop;
-  EXPECT_CALL(controller_connection, OnMessage(_, _))
-      .WillOnce([&](auto response, auto callback) {
-        ASSERT_TRUE(response->is_message());
-        EXPECT_EQ("Pong: " + message, response->get_message());
-        std::move(callback).Run(true);
-        run_loop.Quit();
-      });
+  EXPECT_CALL(controller_connection, OnMessage(_)).WillOnce([&](auto response) {
+    ASSERT_TRUE(response->is_message());
+    EXPECT_EQ("Pong: " + message, response->get_message());
+    run_loop.Quit();
+  });
   controller_connection.SendTextMessage(message);
   run_loop.Run();
 
