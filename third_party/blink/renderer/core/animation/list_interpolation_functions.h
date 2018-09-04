@@ -18,7 +18,7 @@ class InterpolationType;
 class ListInterpolationFunctions {
  public:
   template <typename CreateItemCallback>
-  static InterpolationValue CreateList(size_t length, CreateItemCallback);
+  static InterpolationValue CreateList(wtf_size_t length, CreateItemCallback);
   static InterpolationValue CreateEmptyList() {
     return InterpolationValue(InterpolableList::Create(0));
   }
@@ -71,12 +71,12 @@ class NonInterpolableList : public NonInterpolableValue {
     return base::AdoptRef(new NonInterpolableList(std::move(list)));
   }
 
-  size_t length() const { return list_.size(); }
-  const NonInterpolableValue* Get(size_t index) const {
+  wtf_size_t length() const { return list_.size(); }
+  const NonInterpolableValue* Get(wtf_size_t index) const {
     return list_[index].get();
   }
-  NonInterpolableValue* Get(size_t index) { return list_[index].get(); }
-  scoped_refptr<NonInterpolableValue>& GetMutable(size_t index) {
+  NonInterpolableValue* Get(wtf_size_t index) { return list_[index].get(); }
+  scoped_refptr<NonInterpolableValue>& GetMutable(wtf_size_t index) {
     return list_[index];
   }
 
@@ -94,14 +94,14 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(NonInterpolableList);
 
 template <typename CreateItemCallback>
 InterpolationValue ListInterpolationFunctions::CreateList(
-    size_t length,
+    wtf_size_t length,
     CreateItemCallback create_item) {
   if (length == 0)
     return CreateEmptyList();
   std::unique_ptr<InterpolableList> interpolable_list =
       InterpolableList::Create(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
-  for (size_t i = 0; i < length; i++) {
+  for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item = create_item(i);
     if (!item)
       return nullptr;

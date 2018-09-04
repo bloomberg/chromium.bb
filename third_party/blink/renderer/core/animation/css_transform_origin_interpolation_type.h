@@ -26,7 +26,7 @@ class CSSTransformOriginInterpolationType
     const CSSValueList& list = ToCSSValueList(value);
     DCHECK_EQ(list.length(), 3U);
     return ListInterpolationFunctions::CreateList(
-        list.length(), [&list](size_t index) {
+        list.length(), [&list](wtf_size_t index) {
           const CSSValue& item = list.Item(index);
           if (index < 2)
             return CSSPositionAxisListInterpolationType::

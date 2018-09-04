@@ -134,7 +134,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertValue(
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(kTranslateComponentIndexCount);
-  for (size_t i = 0; i < kTranslateComponentIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kTranslateComponentIndexCount; i++) {
     InterpolationValue component = nullptr;
     if (i < list.length()) {
       component =

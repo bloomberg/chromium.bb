@@ -114,7 +114,7 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
   const CSSPrimitiveValue* lengths[] = {
       shadow.x.Get(), shadow.y.Get(), shadow.blur.Get(), shadow.spread.Get(),
   };
-  for (size_t i = 0; i < arraysize(lengths); i++) {
+  for (wtf_size_t i = 0; i < base::size(lengths); i++) {
     if (lengths[i]) {
       InterpolationValue length_field =
           LengthInterpolationFunctions::MaybeConvertCSSValue(*lengths[i]);

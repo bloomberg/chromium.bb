@@ -69,7 +69,7 @@ std::unique_ptr<InterpolableList>
 LengthInterpolationFunctions::CreateNeutralInterpolableValue() {
   const size_t kLength = CSSPrimitiveValue::kLengthUnitTypeCount;
   std::unique_ptr<InterpolableList> values = InterpolableList::Create(kLength);
-  for (size_t i = 0; i < kLength; i++)
+  for (wtf_size_t i = 0; i < kLength; i++)
     values->Set(i, InterpolableNumber::Create(0));
   return values;
 }
@@ -89,7 +89,7 @@ InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
 
   std::unique_ptr<InterpolableList> values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++)
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++)
     values->Set(i, InterpolableNumber::Create(length_array.values[i]));
 
   bool has_percentage =
@@ -148,7 +148,7 @@ void LengthInterpolationFunctions::Composite(
 void LengthInterpolationFunctions::SubtractFromOneHundredPercent(
     InterpolationValue& result) {
   InterpolableList& list = ToInterpolableList(*result.interpolable_value);
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
     double value = -ToInterpolableNumber(*list.Get(i)).Value();
     if (i == CSSPrimitiveValue::kUnitTypePercentage)
       value += 100;
@@ -177,7 +177,7 @@ Length LengthInterpolationFunctions::CreateLength(
       CSSLengthNonInterpolableValue::HasPercentage(non_interpolable_value);
   double pixels = 0;
   double percentage = 0;
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
     double value = ToInterpolableNumber(*interpolable_list.Get(i)).Value();
     if (value == 0)
       continue;
@@ -212,7 +212,7 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
   CSSCalcExpressionNode* root_node = nullptr;
   CSSPrimitiveValue* first_value = nullptr;
 
-  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
     double value = ToInterpolableNumber(*interpolable_list.Get(i)).Value();
     if (value == 0 &&
         (i != CSSPrimitiveValue::kUnitTypePercentage || !has_percentage)) {

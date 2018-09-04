@@ -83,7 +83,7 @@ InvalidatableInterpolation::ConvertSingleKeyframe(
 void InvalidatableInterpolation::AddConversionCheckers(
     const InterpolationType& type,
     ConversionCheckers& conversion_checkers) const {
-  for (size_t i = 0; i < conversion_checkers.size(); i++) {
+  for (wtf_size_t i = 0; i < conversion_checkers.size(); i++) {
     conversion_checkers[i]->SetType(type);
     conversion_checkers_.push_back(std::move(conversion_checkers[i]));
   }
@@ -227,7 +227,7 @@ void InvalidatableInterpolation::ApplyStack(
     const ActiveInterpolations& interpolations,
     InterpolationEnvironment& environment) {
   DCHECK(!interpolations.IsEmpty());
-  size_t starting_index = 0;
+  wtf_size_t starting_index = 0;
 
   // Compute the underlying value to composite onto.
   UnderlyingValueOwner underlying_value_owner;
@@ -257,7 +257,7 @@ void InvalidatableInterpolation::ApplyStack(
 
   // Composite interpolations onto the underlying value.
   bool should_apply = false;
-  for (size_t i = starting_index; i < interpolations.size(); i++) {
+  for (wtf_size_t i = starting_index; i < interpolations.size(); i++) {
     const InvalidatableInterpolation& current_interpolation =
         ToInvalidatableInterpolation(*interpolations.at(i));
     DCHECK(current_interpolation.DependsOnUnderlyingValue());

@@ -16,11 +16,11 @@ namespace blink {
 class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<UnderlyingLengthChecker> Create(
-      size_t underlying_length) {
+      wtf_size_t underlying_length) {
     return base::WrapUnique(new UnderlyingLengthChecker(underlying_length));
   }
 
-  static size_t GetUnderlyingLength(const InterpolationValue& underlying) {
+  static wtf_size_t GetUnderlyingLength(const InterpolationValue& underlying) {
     if (!underlying)
       return 0;
     return ToInterpolableList(*underlying.interpolable_value).length();
@@ -32,10 +32,10 @@ class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
   }
 
  private:
-  UnderlyingLengthChecker(size_t underlying_length)
+  UnderlyingLengthChecker(wtf_size_t underlying_length)
       : underlying_length_(underlying_length) {}
 
-  size_t underlying_length_;
+  wtf_size_t underlying_length_;
 };
 
 }  // namespace blink

@@ -59,7 +59,7 @@ class ImageListPropertyFunctions {
     }
 
     FillLayer* prev = nullptr;
-    for (size_t i = 0; i < image_list.size(); i++) {
+    for (wtf_size_t i = 0; i < image_list.size(); i++) {
       if (!fill_layer)
         fill_layer = prev->EnsureNext();
       fill_layer->SetImage(image_list[i]);
