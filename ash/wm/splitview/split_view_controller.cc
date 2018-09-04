@@ -913,7 +913,7 @@ void SplitViewController::UpdateBlackScrim(
   gfx::Rect work_area_bounds =
       GetDisplayWorkAreaBoundsInScreen(GetDefaultSnappedWindow());
   if (!IsCurrentScreenOrientationLandscape())
-    TransposeRect(&work_area_bounds);
+    work_area_bounds.Transpose();
   float opacity = kBlackScrimOpacity;
   const float ratio = kOneThirdPositionRatio - kBlackScrimFadeInRatio;
   const int distance = std::min(std::abs(location - work_area_bounds.x()),
@@ -1152,8 +1152,8 @@ void SplitViewController::AdjustSnappedWindowBounds(
       GetMinimumWindowSize(right_or_bottom_window, is_landscape);
 
   if (!is_landscape) {
-    TransposeRect(left_or_top_rect);
-    TransposeRect(right_or_bottom_rect);
+    left_or_top_rect->Transpose();
+    right_or_bottom_rect->Transpose();
   }
 
   if (left_or_top_rect->width() < left_minimum_width)
@@ -1166,8 +1166,8 @@ void SplitViewController::AdjustSnappedWindowBounds(
   }
 
   if (!is_landscape) {
-    TransposeRect(left_or_top_rect);
-    TransposeRect(right_or_bottom_rect);
+    left_or_top_rect->Transpose();
+    right_or_bottom_rect->Transpose();
   }
 }
 
