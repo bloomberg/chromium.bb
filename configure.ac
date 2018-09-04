@@ -91,6 +91,9 @@ AC_ARG_VAR([WESTON_SHELL_CLIENT],
 
 PKG_PROG_PKG_CONFIG()
 
+# Check pthread
+AX_PTHREAD
+
 # Check for dlsym instead of dlopen because ASAN hijacks the latter
 WESTON_SEARCH_LIBS([DL], [dl], [dlsym])
 
