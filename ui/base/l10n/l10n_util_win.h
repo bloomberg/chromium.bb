@@ -70,7 +70,7 @@ UI_BASE_EXPORT void OverrideLocaleWithUILanguageList();
 
 // Retrieve the locale override, or an empty vector if the locale has not been
 // or failed to be overridden.
-UI_BASE_EXPORT const std::vector<std::string>& GetLocaleOverrides();
+const std::vector<std::string>& GetLocaleOverrides();
 
 }  // namespace l10n_util
 

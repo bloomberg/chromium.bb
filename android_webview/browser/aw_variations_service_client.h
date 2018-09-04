@@ -25,6 +25,7 @@ class AwVariationsServiceClient : public variations::VariationsServiceClient {
   ~AwVariationsServiceClient() override;
 
  private:
+  std::string GetApplicationLocale() override;
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;

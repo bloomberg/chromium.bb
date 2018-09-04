@@ -34,6 +34,7 @@
 #include "components/metrics/metrics_service.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
@@ -85,6 +86,15 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
     base::CommandLine* singleton_command_line =
         base::CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
+  }
+
+  // If ui_task is not NULL, the app is actually a browser_test.
+  if (!parameters().ui_task) {
+    // The browser process only wants to support the language Cocoa will use,
+    // so force the app locale to be overriden with that value. This must
+    // happen before the ResourceBundle is loaded, which happens in
+    // ChromeBrowserMainParts::PreEarlyInitialization().
+    l10n_util::OverrideLocaleWithCocoaLocale();
   }
 
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();

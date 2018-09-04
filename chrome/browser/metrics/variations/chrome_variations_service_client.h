@@ -24,6 +24,7 @@ class ChromeVariationsServiceClient
   ~ChromeVariationsServiceClient() override;
 
   // variations::VariationsServiceClient:
+  std::string GetApplicationLocale() override;
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
