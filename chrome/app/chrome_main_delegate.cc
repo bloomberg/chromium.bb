@@ -535,7 +535,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
 
-  SetUpBundleOverrides();
   chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
@@ -734,7 +733,7 @@ void ChromeMainDelegate::InitMacCrashReporter(
     CHECK(command_line.HasSwitch(switches::kProcessType) &&
           !process_type.empty())
         << "Helper application requires --type.";
-  } else {
+  } else if (base::mac::AmIBundled()) {
     CHECK(!command_line.HasSwitch(switches::kProcessType) &&
           process_type.empty())
         << "Main application forbids --type, saw " << process_type;
@@ -1106,10 +1105,6 @@ ui::DataPack* ChromeMainDelegate::LoadServiceManifestDataPack() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   DCHECK(process_type.empty());
-
-#if defined(OS_MACOSX)
-  SetUpBundleOverrides();
-#endif
 
   base::FilePath resources_pack_path;
   base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);

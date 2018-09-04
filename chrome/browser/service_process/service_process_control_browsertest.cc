@@ -16,6 +16,7 @@
 #include "base/process/process_iterator.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -69,6 +70,22 @@ class ServiceProcessControlBrowserTest
   }
 
   void SetUp() override {
+#if defined(OS_MACOSX)
+    // browser_tests and the child processes run as standalone executables,
+    // rather than bundled apps. For this test, set up the CHILD_PROCESS_EXE to
+    // point to a bundle so that the service process has an Info.plist.
+    base::FilePath exe_path;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+    exe_path = exe_path.DirName()
+                   .DirName()
+                   .Append("Contents")
+                   .Append("Versions")
+                   .Append(chrome::kChromeVersion)
+                   .Append(chrome::kHelperProcessExecutablePath);
+    child_process_exe_override_ = std::make_unique<base::ScopedPathOverride>(
+        content::CHILD_PROCESS_EXE, exe_path);
+#endif
+
     InProcessBrowserTest::SetUp();
 
     // This should not be needed because TearDown() ends with a closed
@@ -80,10 +97,14 @@ class ServiceProcessControlBrowserTest
   void TearDown() override {
     if (ServiceProcessControl::GetInstance()->IsConnected())
       EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
+
 #if defined(OS_MACOSX)
     // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
+
+    child_process_exe_override_.reset();
 #endif  // OS_MACOSX
+
     if (service_process_.IsValid()) {
       int exit_code;
       EXPECT_TRUE(service_process_.WaitForExitWithTimeout(
@@ -117,6 +138,9 @@ class ServiceProcessControlBrowserTest
   }
 
  private:
+#if defined(OS_MACOSX)
+  std::unique_ptr<base::ScopedPathOverride> child_process_exe_override_;
+#endif
   base::Process service_process_;
 };
 
