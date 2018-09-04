@@ -178,7 +178,7 @@ public class StripLayoutHelperTest {
     private static class TestTabModel extends EmptyTabModel {
         private final List<Tab> mMockTabs = new ArrayList<>();
         private int mMaxId = -1;
-        private int mIndex = 0;
+        private int mIndex;
 
         public void addTab(final String title) {
             mMaxId++;

@@ -191,7 +191,7 @@ public class PermissionParamsListBuilderUnitTest {
 
     private static class FakeSystemSettingsActivityRequiredListener
             implements SystemSettingsActivityRequiredListener {
-        int mCallCount = 0;
+        int mCallCount;
         Intent mIntentOverride;
 
         @Override

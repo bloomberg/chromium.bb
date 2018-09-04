@@ -39,7 +39,7 @@ public class WebApkServiceConnectionManagerTest {
     private WebApkServiceConnectionManager mConnectionManager;
 
     private class TestCallback implements WebApkServiceConnectionManager.ConnectionCallback {
-        public boolean mGotResult = false;
+        public boolean mGotResult;
 
         @Override
         public void onConnected(IBinder service) {

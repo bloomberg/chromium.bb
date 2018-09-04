@@ -101,7 +101,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // The websites that are currently displayed to the user.
     private List<WebsitePreference> mWebsites;
     // Whether tri-state ContentSetting is required.
-    private boolean mRequiresTriStateSetting = false;
+    private boolean mRequiresTriStateSetting;
 
     // Keys for common ContentSetting toggle for categories. These two toggles are mutually
     // exclusive: a category should only show one of them, at most.

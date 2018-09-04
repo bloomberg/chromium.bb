@@ -18,7 +18,7 @@ import java.io.File;
  * Service which extracts a dex file from parent APK and optimizes it.
  */
 public class DexOptimizerServiceImpl extends Service {
-    private static int sCounter = 0;
+    private static int sCounter;
 
     public IBinder onBind(Intent intent) {
         return new IDexOptimizerService.Stub() {

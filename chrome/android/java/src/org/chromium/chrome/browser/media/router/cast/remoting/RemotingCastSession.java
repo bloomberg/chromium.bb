@@ -48,7 +48,7 @@ public class RemotingCastSession
     private ApplicationMetadata mApplicationMetadata;
     private MediaNotificationInfo.Builder mNotificationBuilder;
     private RemoteMediaPlayerWrapper mMediaPlayerWrapper;
-    private boolean mStoppingApplication = false;
+    private boolean mStoppingApplication;
 
     public RemotingCastSession(GoogleApiClient apiClient, String sessionId,
             ApplicationMetadata metadata, String applicationStatus, CastDevice castDevice,

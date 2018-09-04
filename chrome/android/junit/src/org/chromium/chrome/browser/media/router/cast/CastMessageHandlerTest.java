@@ -72,7 +72,7 @@ public class CastMessageHandlerTest {
     private CastMediaRouteProvider mRouteProvider;
     private CastSession mSession;
     private CastMessageHandler mMessageHandler;
-    private int mNumStopApplicationCalled = 0;
+    private int mNumStopApplicationCalled;
 
     private interface CheckedRunnable { void run() throws Exception; }
 

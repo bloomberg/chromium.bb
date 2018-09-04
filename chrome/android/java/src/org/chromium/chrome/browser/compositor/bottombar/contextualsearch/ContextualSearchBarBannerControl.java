@@ -66,7 +66,7 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
      * The padded height of the Bar Banner in pixels. Set to zero initially, calculated on the first
      * call.
      */
-    private float mPaddedHeightPx = 0.f;
+    private float mPaddedHeightPx;
 
     /**
      * The precomputed minimum width of the Ripple resource in pixels.

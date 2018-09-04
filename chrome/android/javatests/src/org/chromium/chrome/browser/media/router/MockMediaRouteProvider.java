@@ -30,12 +30,12 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     private final Map<String, MediaRoute> mPresentationIdToRoute =
             new HashMap<String, MediaRoute>();
 
-    private int mSinksObservedDelayMillis = 0;
-    private int mCreateRouteDelayMillis = 0;
+    private int mSinksObservedDelayMillis;
+    private int mCreateRouteDelayMillis;
     private boolean mIsSupportsSource = true;
-    private String mCreateRouteErrorMessage = null;
-    private String mJoinRouteErrorMessage = null;
-    private boolean mCloseRouteWithErrorOnSend = false;
+    private String mCreateRouteErrorMessage;
+    private String mJoinRouteErrorMessage;
+    private boolean mCloseRouteWithErrorOnSend;
 
     /**
      * Factory for {@link MockMediaRouteProvider}.

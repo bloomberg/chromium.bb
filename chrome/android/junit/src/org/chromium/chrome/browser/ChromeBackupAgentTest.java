@@ -71,7 +71,7 @@ public class ChromeBackupAgentTest {
      */
     @Implements(BackupManager.class)
     public static class BackupManagerShadow {
-        private static int sDataChangedCalls = 0;
+        private static int sDataChangedCalls;
 
         public static int getDataChangedCalls() {
             return sDataChangedCalls;
@@ -383,7 +383,7 @@ public class ChromeBackupAgentTest {
         byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8("user1");
         final byte[][] values = {{0}, {1}, {1}, {23, 42}, unameBytes};
         when(backupData.getKey()).thenAnswer(new Answer<String>() {
-            private int mPos = 0;
+            private int mPos;
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
@@ -392,7 +392,7 @@ public class ChromeBackupAgentTest {
         });
 
         when(backupData.getDataSize()).thenAnswer(new Answer<Integer>() {
-            private int mPos = 0;
+            private int mPos;
 
             @Override
             public Integer answer(InvocationOnMock invocation) throws Throwable {
@@ -402,7 +402,7 @@ public class ChromeBackupAgentTest {
 
         when(backupData.readEntityData(any(byte[].class), anyInt(), anyInt()))
                 .thenAnswer(new Answer<Integer>() {
-                    private int mPos = 0;
+                    private int mPos;
 
                     @Override
                     public Integer answer(InvocationOnMock invocation) throws Throwable {
@@ -415,7 +415,7 @@ public class ChromeBackupAgentTest {
                 });
 
         when(backupData.readNextHeader()).thenAnswer(new Answer<Boolean>() {
-            private int mPos = 0;
+            private int mPos;
 
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {

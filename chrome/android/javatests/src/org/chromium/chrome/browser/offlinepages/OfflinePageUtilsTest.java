@@ -83,7 +83,7 @@ public class OfflinePageUtilsTest {
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;
     private String mTestPage;
-    private boolean mServerTurnedOn = false;
+    private boolean mServerTurnedOn;
 
     @Before
     public void setUp() throws Exception {

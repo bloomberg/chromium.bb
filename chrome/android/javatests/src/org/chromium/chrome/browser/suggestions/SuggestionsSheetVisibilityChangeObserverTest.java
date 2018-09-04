@@ -204,7 +204,7 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
 
     private static class SelfVerifyingCallbackHelper extends CallbackHelper {
         private final String mName;
-        private int mVerifiedCallCount = 0;
+        private int mVerifiedCallCount;
 
         public SelfVerifyingCallbackHelper(String name) {
             mName = name;

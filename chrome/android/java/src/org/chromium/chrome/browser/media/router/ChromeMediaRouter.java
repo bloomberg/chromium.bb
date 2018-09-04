@@ -80,8 +80,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new HashMap<String, Map<MediaRouteProvider, List<MediaSink>>>();
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
-    private static boolean sAndroidMediaRouterSetForTest = false;
-    private static MediaRouter sAndroidMediaRouterForTest = null;
+    private static boolean sAndroidMediaRouterSetForTest;
+    private static MediaRouter sAndroidMediaRouterForTest;
 
     @VisibleForTesting
     public static void setAndroidMediaRouterForTest(MediaRouter router) {

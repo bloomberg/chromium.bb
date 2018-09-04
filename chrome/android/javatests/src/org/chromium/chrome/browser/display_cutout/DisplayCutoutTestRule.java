@@ -138,7 +138,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     private TestDisplayCutoutController mTestController;
 
     /** Tracks whether the current tab is fullscreen. */
-    private boolean mIsTabFullscreen = false;
+    private boolean mIsTabFullscreen;
 
     /** The {@link Tab} we are running the test in. */
     private Tab mTab;

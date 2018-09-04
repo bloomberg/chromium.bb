@@ -70,7 +70,7 @@ public class WebApkUpdateManagerTest {
      */
     private static class TestWebApkUpdateManager extends WebApkUpdateManager {
         private CallbackHelper mWaiter;
-        private boolean mNeedsUpdate = false;
+        private boolean mNeedsUpdate;
 
         public TestWebApkUpdateManager(CallbackHelper waiter, WebappDataStorage storage) {
             super(storage);

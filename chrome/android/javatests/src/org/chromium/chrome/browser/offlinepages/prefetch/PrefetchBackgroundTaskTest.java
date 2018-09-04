@@ -110,8 +110,8 @@ public class PrefetchBackgroundTaskTest {
     private static class TestBackgroundTaskScheduler implements BackgroundTaskScheduler {
         private HashMap<Integer, TestPrefetchBackgroundTask> mTasks = new HashMap<>();
         private Semaphore mStartSemaphore = new Semaphore(0);
-        private int mAddCount = 0;
-        private int mRemoveCount = 0;
+        private int mAddCount;
+        private int mRemoveCount;
 
         @Override
         public boolean schedule(final Context context, final TaskInfo taskInfo) {

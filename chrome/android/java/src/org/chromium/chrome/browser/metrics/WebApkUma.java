@@ -295,8 +295,8 @@ public class WebApkUma {
      */
     public static void logSpaceUsageUMAWhenInstallationFails() {
         new AsyncTask<Void>() {
-            long mAvailableSpaceInByte = 0;
-            long mCacheSizeInByte = 0;
+            long mAvailableSpaceInByte;
+            long mCacheSizeInByte;
             @Override
             protected Void doInBackground() {
                 mAvailableSpaceInByte = getAvailableSpaceAboveLowSpaceLimit();

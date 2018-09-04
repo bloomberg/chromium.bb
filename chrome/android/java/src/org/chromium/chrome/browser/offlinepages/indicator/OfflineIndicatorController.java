@@ -54,9 +54,9 @@ public class OfflineIndicatorController
 
     private static int sTimeToWaitForStableOffline = TIME_TO_WAIT_FOR_STABLE_OFFLINE;
 
-    private boolean mIsShowingOfflineIndicator = false;
+    private boolean mIsShowingOfflineIndicator;
     // Set to true if the offline indicator has been shown once.
-    private boolean mHasOfflineIndicatorShown = false;
+    private boolean mHasOfflineIndicatorShown;
     private ConnectivityDetector mConnectivityDetector;
     private ChromeActivity mObservedActivity = null;
 

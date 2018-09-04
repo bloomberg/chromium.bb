@@ -187,7 +187,7 @@ public class OfflinePageUtilsUnitTest {
     /** A shadow/wrapper of android.os.Environment that allows injecting a test directory. */
     @Implements(Environment.class)
     public static class WrappedEnvironment {
-        private static File sDataDirectory = null;
+        private static File sDataDirectory;
 
         public static void setDataDirectoryForTest(File testDirectory) {
             sDataDirectory = testDirectory;
