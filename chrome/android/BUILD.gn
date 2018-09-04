@@ -276,7 +276,6 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
     "//third_party/android_tools:android_arch_lifecycle_runtime_java",
@@ -509,7 +508,6 @@ junit_binary("chrome_junit_tests") {
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
     "//net/android:net_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
@@ -645,7 +643,6 @@ android_library("chrome_test_java") {
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
     "//services/service_manager/public/java:service_manager_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
@@ -728,7 +725,6 @@ if (enable_vr || (enable_arcore && package_arcore)) {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
@@ -1256,7 +1252,6 @@ android_library("chrome_sync_shell_java") {
     # but that code is stripped out via proguard. Adding this deps adds
     # usages and prevents removal of the proto code.
     "//components/sync:test_support_proto_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
   ]
 }
 
@@ -1683,7 +1678,6 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//components/sync/android:sync_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
