@@ -81,7 +81,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       strict_mixed_content_checking_enforced_(false),
       upgrade_insecure_requests_(false),
       treat_as_public_address_(false),
-      require_safe_types_(false),
       require_sri_for_(RequireSRIForToken::kNone),
       use_reporting_api_(false) {}
 
@@ -949,6 +948,23 @@ bool CSPDirectiveList::AllowBaseURI(
   return result;
 }
 
+bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
+  if (trusted_types_->Allows(policy_name))
+    return true;
+
+  ReportViolation(
+      "trusted-types", ContentSecurityPolicy::DirectiveType::kTrustedTypes,
+      String::Format(
+          "Refused to create a TrustedTypePolicy named '%s' because "
+          "it violates the following Content Security Policy directive: "
+          "\"%s\".",
+          policy_name.Utf8().data(),
+          trusted_types_.Get()->GetText().Utf8().data()),
+      KURL(), RedirectStatus::kNoRedirect);
+
+  return DenyIfEnforcingPolicy();
+}
+
 bool CSPDirectiveList::AllowWorkerFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
@@ -1306,14 +1322,12 @@ void CSPDirectiveList::RequireTrustedTypes(const String& name,
     policy_->ReportInvalidInReportOnly(name);
     return;
   }
-  if (require_safe_types_) {
+  if (trusted_types_) {
     policy_->ReportDuplicateDirective(name);
     return;
   }
-  require_safe_types_ = true;
   policy_->RequireTrustedTypes();
-  if (!value.IsEmpty())
-    policy_->ReportValueForEmptyDirective(name, value);
+  trusted_types_ = new StringListDirective(name, value, policy_);
 }
 
 void CSPDirectiveList::EnforceStrictMixedContentChecking(const String& name,
@@ -1412,8 +1426,7 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
       ParseRequireSRIFor(name, value);
     } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo) {
       ParseReportTo(name, value);
-    } else if (type ==
-                   ContentSecurityPolicy::DirectiveType::kRequireTrustedTypes &&
+    } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes &&
                RuntimeEnabledFeatures::TrustedDOMTypesEnabled()) {
       RequireTrustedTypes(name, value);
     } else if (type == ContentSecurityPolicy::DirectiveType::kPrefetchSrc) {
@@ -1663,6 +1676,7 @@ void CSPDirectiveList::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_src_);
   visitor->Trace(worker_src_);
   visitor->Trace(navigate_to_);
+  visitor->Trace(trusted_types_);
 }
 
 }  // namespace blink

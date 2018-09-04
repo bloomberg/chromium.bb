@@ -191,8 +191,9 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
   if (treat_as_public_address_) {
     security_context.SetAddressSpace(mojom::IPAddressSpace::kPublic);
   }
-  if (require_safe_types_)
+  if (require_safe_types_) {
     security_context.SetRequireTrustedTypes();
+  }
 
   // Upgrade Insecure Requests: Update the policy.
   security_context.SetInsecureRequestPolicy(
@@ -1011,6 +1012,20 @@ bool ContentSecurityPolicy::AllowBaseURI(
   return is_allowed;
 }
 
+bool ContentSecurityPolicy::AllowTrustedTypePolicy(
+    const String& policy_name) const {
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(CheckHeaderType::kCheckAll,
+                                policy->HeaderType())) {
+      continue;
+    }
+    is_allowed &= policy->AllowTrustedTypePolicy(policy_name);
+  }
+
+  return is_allowed;
+}
+
 bool ContentSecurityPolicy::AllowWorkerContextFromSource(
     const KURL& url,
     RedirectStatus redirect_status,
@@ -1718,8 +1733,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "report-uri";
     case DirectiveType::kRequireSRIFor:
       return "require-sri-for";
-    case DirectiveType::kRequireTrustedTypes:
-      return "require-trusted-types";
+    case DirectiveType::kTrustedTypes:
+      return "trusted-types";
     case DirectiveType::kSandbox:
       return "sandbox";
     case DirectiveType::kScriptSrc:
@@ -1781,8 +1796,8 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kReportURI;
   if (name == "require-sri-for")
     return DirectiveType::kRequireSRIFor;
-  if (name == "require-trusted-types")
-    return DirectiveType::kRequireTrustedTypes;
+  if (name == "trusted-types")
+    return DirectiveType::kTrustedTypes;
   if (name == "sandbox")
     return DirectiveType::kSandbox;
   if (name == "script-src")

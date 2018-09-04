@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -16,6 +19,15 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const TrustedTypePolicyOptions& policy_options,
     bool exposed,
     ExceptionState& exception_state) {
+  if (!GetFrame()
+           ->GetDocument()
+           ->GetContentSecurityPolicy()
+           ->AllowTrustedTypePolicy(policy_name)) {
+    exception_state.ThrowTypeError("Policy " + policy_name + " disallowed.");
+    return nullptr;
+  }
+  // TODO(orsibatiz): After policy naming rules are estabilished, check for the
+  // policy_name to be according to them.
   if (policy_map_.Contains(policy_name)) {
     exception_state.ThrowTypeError("Policy with name" + policy_name +
                                    " already exists.");

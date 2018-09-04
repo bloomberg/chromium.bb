@@ -25,6 +25,8 @@ blink_core_sources("frame") {
     "csp/media_list_directive.h",
     "csp/source_list_directive.cc",
     "csp/source_list_directive.h",
+    "csp/string_list_directive.cc",
+    "csp/string_list_directive.h",
     "deprecated_schedule_style_recalc_during_layout.cc",
     "deprecated_schedule_style_recalc_during_layout.h",
     "deprecation.cc",
