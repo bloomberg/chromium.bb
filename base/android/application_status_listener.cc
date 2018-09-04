@@ -56,6 +56,7 @@ void ApplicationStatusListener::Notify(ApplicationState state) {
 // static
 void ApplicationStatusListener::NotifyApplicationStateChange(
     ApplicationState state) {
+  TRACE_COUNTER1("browser", "ApplicationState", static_cast<int>(state));
   g_observers.Get().Notify(FROM_HERE, &ApplicationStatusListener::Notify,
                            state);
 }
