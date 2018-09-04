@@ -181,6 +181,10 @@ std::unique_ptr<VideoDecoderForMixer> VideoDecoderForMixer::Create(
   return MockVideoDecoderForMixer<1, 1, 60>::Create();
 }
 
+void VideoDecoderForMixer::InitializeGraphicsForTesting() {
+  // No initialization required.
+}
+
 template <int64_t CRN, int64_t CRD, int64_t CF>
 std::unique_ptr<VideoDecoderForTest>
 MockVideoDecoderForMixer<CRN, CRD, CF>::Create() {

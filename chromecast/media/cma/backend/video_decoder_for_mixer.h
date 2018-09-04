@@ -38,6 +38,11 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   static std::unique_ptr<VideoDecoderForMixer> Create(
       const MediaPipelineDeviceParams& params);
 
+  // On some platforms, graphics needs to be initialized before this component
+  // will function appropriately in tests. Add the initialization here if
+  // necessary.
+  static void InitializeGraphicsForTesting();
+
   ~VideoDecoderForMixer() override {}
 
   // Initializes the VideoDecoderForMixer. Called after allocation and before
