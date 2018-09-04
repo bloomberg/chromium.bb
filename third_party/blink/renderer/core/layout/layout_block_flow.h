@@ -486,6 +486,10 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void CreateFloatingObjects();
 
+  void DirtyLinesFromChangedChild(
+      LayoutObject* child,
+      MarkingBehavior marking_behaviour = kMarkContainerChain) override;
+
   void WillBeDestroyed() override;
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;
@@ -630,14 +634,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       IndentTextOrNot apply_text_indent) const;
 
   virtual RootInlineBox* CreateRootInlineBox();  // Subclassed by SVG
-
-  void DirtyLinesFromChangedChild(
-      LayoutObject* child,
-      MarkingBehavior marking_behaviour = kMarkContainerChain) final {
-    line_boxes_.DirtyLinesFromChangedChild(
-        LineLayoutItem(this), LineLayoutItem(child),
-        marking_behaviour == kMarkContainerChain);
-  }
 
   bool IsPagedOverflow(const ComputedStyle&);
 

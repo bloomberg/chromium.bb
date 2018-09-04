@@ -157,7 +157,8 @@ NGPaintFragment::NGPaintFragment(
     NGPaintFragment* parent)
     : physical_fragment_(std::move(fragment)),
       offset_(offset),
-      parent_(parent) {
+      parent_(parent),
+      is_dirty_inline_(false) {
   DCHECK(physical_fragment_);
 }
 
@@ -348,7 +349,8 @@ NGPaintFragment* NGPaintFragment::GetForInlineContainer(
 NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     const LayoutObject* layout_object) {
   DCHECK(layout_object && layout_object->IsInline() &&
-         !layout_object->IsFloatingOrOutOfFlowPositioned());
+         !layout_object->IsFloatingOrOutOfFlowPositioned())
+      << layout_object;
 
   if (layout_object->IsInLayoutNGInlineFormattingContext())
     return FragmentRange(layout_object->FirstInlineFragment());
@@ -448,6 +450,68 @@ NGPaintFragment* NGPaintFragment::FirstLineBox() const {
       return child.get();
   }
   return nullptr;
+}
+
+void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
+  if (!layout_object.IsInline() ||
+      layout_object.IsFloatingOrOutOfFlowPositioned())
+    return;
+  const auto& range = InlineFragmentsFor(&layout_object);
+  if (!range.IsEmpty()) {
+    for (NGPaintFragment* fragment : range)
+      fragment->MarkLineBoxDirty();
+    return;
+  }
+  if (layout_object.IsLayoutInline()) {
+    for (LayoutObject* runner = layout_object.NextInPreOrder(&layout_object);
+         runner; runner = runner->NextInPreOrder(&layout_object)) {
+      if (!runner->IsInline() || !runner->IsFloatingOrOutOfFlowPositioned())
+        continue;
+      const auto& range = InlineFragmentsFor(runner);
+      if (range.IsEmpty())
+        continue;
+      for (NGPaintFragment* fragment : range)
+        fragment->MarkLineBoxDirty();
+      return;
+    }
+    // Culled inline without children.
+    return;
+  }
+  // |layout_object| isn't in fragment tree.
+  if (!layout_object.IsInLayoutNGInlineFormattingContext()) {
+    // |layout_object| has not been laied out.
+    if (LayoutObject* next = layout_object.NextSibling()) {
+      if (next->IsInLayoutNGInlineFormattingContext())
+        return MarkLineBoxesDirtyFor(*next);
+    }
+    // |layout_object| is a newly created object.
+    if (LayoutObject* previous = layout_object.PreviousSibling()) {
+      if (previous->IsInLayoutNGInlineFormattingContext())
+        return MarkLineBoxesDirtyFor(*previous);
+    }
+  }
+  const LayoutObject& parent = *layout_object.Parent();
+  if (!parent.IsLayoutNGMixin())
+    return MarkLineBoxesDirtyFor(parent);
+  const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
+  if (!block.PaintFragment()) {
+    // We have not yet layout.
+    return;
+  }
+  // We inserted |layout_object| into empty block.
+  block.PaintFragment()->FirstLineBox()->is_dirty_inline_ = true;
+}
+
+void NGPaintFragment::MarkLineBoxDirty() {
+  for (NGPaintFragment* fragment :
+       NGPaintFragmentTraversal::InclusiveAncestorsOf(*this)) {
+    if (fragment->is_dirty_inline_)
+      return;
+    fragment->is_dirty_inline_ = true;
+    if (fragment->PhysicalFragment().IsLineBox())
+      return;
+  }
+  NOTREACHED() << this;  // Should have a line box ancestor.
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
