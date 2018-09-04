@@ -1882,17 +1882,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
                       blink::WebInputEvent::kMouseWheel));
 }
 
-#if defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/833380
-#define MAYBE_InputEventRouterWheelCoalesceTest \
-  DISABLED_InputEventRouterWheelCoalesceTest
-#else
-#define MAYBE_InputEventRouterWheelCoalesceTest \
-  InputEventRouterWheelCoalesceTest
-#endif
-
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_InputEventRouterWheelCoalesceTest) {
+                       InputEventRouterWheelCoalesceTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
