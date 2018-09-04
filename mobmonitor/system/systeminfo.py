@@ -369,7 +369,7 @@ class Disk(SystemInfoStorage):
 
       results = cmd_result.output.split()
       for result in results:
-        devicename = os.path.abspath(osutils.ResolveSymlink(result))
+        devicename = os.path.realpath(result)
         result = os.path.basename(result)
 
         # Ensure that each of our data dicts have the same keys.

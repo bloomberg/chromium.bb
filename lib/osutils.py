@@ -1367,10 +1367,11 @@ def IsMounted(path):
   return False
 
 
-def ResolveSymlink(file_name, root='/'):
+def ResolveSymlinkInRoot(file_name, root):
   """Resolve a symlink |file_name| relative to |root|.
 
-  For example:
+  This can be used to resolve absolute symlinks within an alternative root
+  path (i.e. chroot). For example:
 
     ROOT-A/absolute_symlink --> /an/abs/path
     ROOT-A/relative_symlink --> a/relative/path

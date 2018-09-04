@@ -881,33 +881,31 @@ tmpfs /mnt/\134 tmpfs ro 0 0
     self.assertEqual(r[6].destination, '/mnt/\\')
 
 
-class ResolveSymlinkTest(cros_test_lib.TestCase):
-  """Tests for ResolveSymlink."""
+class ResolveSymlinkInRootTest(cros_test_lib.TempDirTestCase):
+  """Tests for ResolveSymlinkInRoot."""
+
+  def setUp(self):
+    # Create symlinks in tempdir so they are cleaned up automatically.
+    os.chdir(self.tempdir)
 
   def testRelativeLink(self):
     os.symlink('target', 'link')
-    self.assertEqual(osutils.ResolveSymlink('link'), 'target')
-    os.unlink('link')
+    self.assertEqual(osutils.ResolveSymlinkInRoot('link', '/root'), 'target')
 
   def testAbsoluteLink(self):
     os.symlink('/target', 'link')
-    self.assertEqual(osutils.ResolveSymlink('link'), '/target')
-    self.assertEqual(osutils.ResolveSymlink('link', '/root'), '/root/target')
-    os.unlink('link')
+    self.assertEqual(osutils.ResolveSymlinkInRoot('link', '/root'),
+                     '/root/target')
 
   def testRecursion(self):
     os.symlink('target', 'link1')
     os.symlink('link1', 'link2')
-    self.assertEqual(osutils.ResolveSymlink('link2'), 'target')
-    os.unlink('link2')
-    os.unlink('link1')
+    self.assertEqual(osutils.ResolveSymlinkInRoot('link2', '/root'), 'target')
 
   def testRecursionWithAbsoluteLink(self):
     os.symlink('target', 'link1')
     os.symlink('/link1', 'link2')
-    self.assertEqual(osutils.ResolveSymlink('link2', '.'), './target')
-    os.unlink('link2')
-    os.unlink('link1')
+    self.assertEqual(osutils.ResolveSymlinkInRoot('link2', '.'), './target')
 
 
 class IsInsideVmTest(cros_test_lib.MockTempDirTestCase):

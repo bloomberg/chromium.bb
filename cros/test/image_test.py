@@ -154,7 +154,7 @@ class BlacklistTest(image_test_lib.ImageTestCase):
         # Absolute path to the interpreter.
         interp = os.path.join(image_test_lib.ROOT_A, interp.lstrip('/'))
         # Interpreter could be a symlink. Resolve it.
-        interp = osutils.ResolveSymlink(interp, image_test_lib.ROOT_A)
+        interp = osutils.ResolveSymlinkInRoot(interp, image_test_lib.ROOT_A)
         if not os.path.isfile(interp):
           failures.append('File %s uses non-existing interpreter %s.' %
                           (full_name, interp))
