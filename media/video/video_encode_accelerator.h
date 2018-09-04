@@ -254,6 +254,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // previous Flush() is not finished yet.
   virtual void Flush(FlushCallback flush_callback);
 
+  // Returns true if the encoder support flush. This method must be called after
+  // VEA has been initialized.
+  virtual bool IsFlushSupported();
+
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which
   // will Destroy() it properly by default.

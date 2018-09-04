@@ -134,6 +134,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       input_memory_type_(V4L2_MEMORY_USERPTR),
       output_streamon_(false),
       output_buffer_queued_count_(0),
+      is_flush_supported_(false),
       encoder_thread_("V4L2EncoderThread"),
       device_poll_thread_("V4L2EncoderDevicePollThread"),
       weak_this_ptr_factory_(this) {
@@ -175,6 +176,13 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
              << std::hex << output_format_fourcc_;
     return false;
   }
+
+  // Ask if V4L2_ENC_CMD_STOP (Flush) is supported.
+  struct v4l2_encoder_cmd cmd = {};
+  cmd.cmd = V4L2_ENC_CMD_STOP;
+  is_flush_supported_ = (device_->Ioctl(VIDIOC_TRY_ENCODER_CMD, &cmd) == 0);
+  if (!is_flush_supported_)
+    VLOGF(2) << "V4L2_ENC_CMD_STOP is not supported.";
 
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
@@ -393,6 +401,10 @@ void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
   flush_callback_ = std::move(flush_callback);
   // Push a null frame to indicate Flush.
   EncodeTask(nullptr, false);
+}
+
+bool V4L2VideoEncodeAccelerator::IsFlushSupported() {
+  return is_flush_supported_;
 }
 
 VideoEncodeAccelerator::SupportedProfiles

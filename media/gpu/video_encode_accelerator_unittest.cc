@@ -172,11 +172,6 @@ bool g_verify_all_output = false;
 
 bool g_fake_encoder = false;
 
-// Skip checking the flush functionality. Currently only Chrome OS devices
-// support flush, so we need this to skip the check. This is set by the
-// command line switch "--disable_flush".
-bool g_disable_flush = false;
-
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
@@ -1691,8 +1686,10 @@ void VEAClient::BitstreamBufferReady(
           static_cast<int>(metadata.payload_size_bytes)));
       quality_validator_->AddDecodeBuffer(buffer);
     }
-    // If flush is disabled, pretend flush is done when all frames are received.
-    if (g_disable_flush && num_encoded_frames_ == num_frames_to_encode_) {
+    // If the encoder does not support flush, pretend flush is done when all
+    // frames are received.
+    if (!encoder_->IsFlushSupported() &&
+        num_encoded_frames_ == num_frames_to_encode_) {
       FlushEncoderSuccessfully();
     }
 
@@ -1967,7 +1964,7 @@ void VEAClient::FlushEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
 
-  if (g_disable_flush)
+  if (!encoder_->IsFlushSupported())
     return;
 
   encoder_->Flush(
@@ -2598,13 +2595,6 @@ int main(int argc, char** argv) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
-#if defined(OS_CHROMEOS)
-  // Currently only ARC++ uses flush function, we only verify it on Chrome OS.
-  media::g_disable_flush = false;
-#else
-  media::g_disable_flush = true;
-#endif
-
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -2633,10 +2623,6 @@ int main(int argc, char** argv) {
     }
     if (it->first == "run_at_fps") {
       media::g_run_at_fps = true;
-      continue;
-    }
-    if (it->first == "disable_flush") {
-      media::g_disable_flush = true;
       continue;
     }
     if (it->first == "verify_all_output") {
