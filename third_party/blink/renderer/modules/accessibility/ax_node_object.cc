@@ -284,6 +284,12 @@ bool AXNodeObject::IsDescendantOfElementType(
   return false;
 }
 
+// TODO(accessibility) Needs a new name as it does check ARIA, including
+// checking the @role for an iframe, and @aria-haspopup/aria-pressed via
+// ButtonType().
+// TODO(accessibility) This value is cached in native_role_ so it needs to
+// be recached if anything it depends on change, such as IsClickable(),
+// DataList(), aria-pressed, the parent's tag, role on an iframe, etc.
 AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
   if (!GetNode())
     return kUnknownRole;
