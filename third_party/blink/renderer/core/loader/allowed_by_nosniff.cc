@@ -127,9 +127,9 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
                           const ResourceResponse& response,
                           bool is_worker_global_scope) {
   // Is it a file:-URL? If so, decide based on file suffix.
-  if (RuntimeEnabledFeatures::WorkerNosniffBlockEnabled() &&
-      is_worker_global_scope && response.Url().IsLocalFile()) {
-    return response.Url().LastPathComponent().EndsWith(".js");
+  if (response.Url().IsLocalFile() &&
+      response.Url().LastPathComponent().EndsWith(".js")) {
+    return true;
   }
 
   String mime_type = response.HttpContentType();
