@@ -9252,6 +9252,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     rd_stats->rate +=
         get_drl_cost(mbmi, mbmi_ext, x->drl_mode_cost0, ref_frame_type);
 
+    if (RDCOST(x->rdmult, rd_stats->rate, 0) > ref_best_rd &&
+        mbmi->mode != NEARESTMV && mbmi->mode != NEAREST_NEARESTMV) {
+      continue;
+    }
+
     int64_t best_rd2 = INT64_MAX;
 
     const RD_STATS backup_rd_stats = *rd_stats;
