@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/brand_behaviors.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_state.h"
@@ -883,7 +884,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   // Note that we must retrieve the distribution-specific data before deleting
   // product.GetVersionKey().
-  base::string16 distribution_data(browser_dist->GetDistributionData(reg_root));
+  base::string16 distribution_data(GetDistributionData());
 
   // Remove Control Panel uninstall link.
   // Assert that this is only called with the one relevant distribution.
@@ -1020,8 +1021,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   if (!force_uninstall && product_state) {
     VLOG(1) << "Uninstallation complete. Launching post-uninstall operations.";
-    browser_dist->DoPostUninstallOperations(product_state->version(),
-        backup_state_file, distribution_data);
+    DoPostUninstallOperations(product_state->version(), backup_state_file,
+                              distribution_data);
   }
 
   // Try and delete the preserved local state once the post-install
