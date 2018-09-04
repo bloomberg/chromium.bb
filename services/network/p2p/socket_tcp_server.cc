@@ -22,11 +22,14 @@ const int kListenBacklog = 5;
 
 namespace network {
 
-P2PSocketTcpServer::P2PSocketTcpServer(Delegate* delegate,
+P2PSocketTcpServer::P2PSocketTcpServer(P2PSocketManager* socket_manager,
                                        mojom::P2PSocketClientPtr client,
                                        mojom::P2PSocketRequest socket,
                                        P2PSocketType client_type)
-    : P2PSocket(delegate, std::move(client), std::move(socket), P2PSocket::TCP),
+    : P2PSocket(socket_manager,
+                std::move(client),
+                std::move(socket),
+                P2PSocket::TCP),
       client_type_(client_type),
       socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
       accept_callback_(base::BindRepeating(&P2PSocketTcpServer::OnAccepted,
@@ -40,7 +43,7 @@ P2PSocketTcpServer::~P2PSocketTcpServer() {
 }
 
 // TODO(guidou): Add support for port range.
-void P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
+bool P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
                               uint16_t min_port,
                               uint16_t max_port,
                               const P2PHostAndIPEndPoint& remote_address) {
@@ -50,7 +53,7 @@ void P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
   if (result < 0) {
     LOG(ERROR) << "Listen() failed: " << result;
     OnError();
-    return;
+    return false;
   }
 
   result = socket_->GetLocalAddress(&local_address_);
@@ -58,7 +61,7 @@ void P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
     LOG(ERROR) << "P2PSocketTcpServer::Init(): can't to get local address: "
                << result;
     OnError();
-    return;
+    return false;
   }
   VLOG(1) << "Local address: " << local_address_.ToString();
 
@@ -67,6 +70,45 @@ void P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
   // in this state.
   client_->SocketCreated(local_address_, remote_address.ip_address);
   DoAccept();
+  return true;
+}
+
+std::unique_ptr<P2PSocketTcpBase>
+P2PSocketTcpServer::AcceptIncomingTcpConnectionInternal(
+    const net::IPEndPoint& remote_address,
+    mojom::P2PSocketClientPtr client,
+    mojom::P2PSocketRequest request) {
+  auto it = accepted_sockets_.find(remote_address);
+  if (it == accepted_sockets_.end())
+    return nullptr;
+
+  std::unique_ptr<net::StreamSocket> socket = std::move(it->second);
+  accepted_sockets_.erase(it);
+
+  std::unique_ptr<P2PSocketTcpBase> result;
+  if (client_type_ == P2P_SOCKET_TCP_CLIENT) {
+    result.reset(new P2PSocketTcp(socket_manager_, std::move(client),
+                                  std::move(request), client_type_, nullptr));
+  } else {
+    result.reset(new P2PSocketStunTcp(socket_manager_, std::move(client),
+                                      std::move(request), client_type_,
+                                      nullptr));
+  }
+  if (!result->InitAccepted(remote_address, std::move(socket)))
+    return nullptr;
+
+  return result;
+}
+
+void P2PSocketTcpServer::OnError() {
+  socket_.reset();
+
+  if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN) {
+    binding_.Close();
+    client_.reset();
+  }
+
+  state_ = STATE_ERROR;
 }
 
 void P2PSocketTcpServer::DoAccept() {
@@ -87,39 +129,14 @@ void P2PSocketTcpServer::HandleAcceptResult(int result) {
     return;
   }
 
-  net::IPEndPoint remote_address;
-  if (accept_socket_->GetPeerAddress(&remote_address) != net::OK) {
+  net::IPEndPoint address;
+  if (accept_socket_->GetPeerAddress(&address) != net::OK) {
     LOG(ERROR) << "Failed to get address of an accepted socket.";
     accept_socket_.reset();
     return;
   }
-
-  mojom::P2PSocketPtr socket_ptr;
-  auto socket_request = mojo::MakeRequest(&socket_ptr);
-
-  mojom::P2PSocketClientPtr client;
-  auto client_request = mojo::MakeRequest(&client);
-
-  client_->IncomingTcpConnection(remote_address, std::move(socket_ptr),
-                                 std::move(client_request));
-
-  std::unique_ptr<P2PSocketTcpBase> p2p_socket;
-  if (client_type_ == P2P_SOCKET_TCP_CLIENT) {
-    p2p_socket = std::make_unique<P2PSocketTcp>(delegate_, std::move(client),
-                                                std::move(socket_request),
-                                                client_type_, nullptr);
-  } else {
-    p2p_socket = std::make_unique<P2PSocketStunTcp>(
-        delegate_, std::move(client), std::move(socket_request), client_type_,
-        nullptr);
-  }
-
-  P2PSocketTcpBase* p2p_socket_ptr = p2p_socket.get();
-  delegate_->AddAcceptedConnection(std::move(p2p_socket));
-
-  // InitAccepted() may call delegate_->DestroySocket(), so it must be
-  // called after AddAcceptedConnection().
-  p2p_socket_ptr->InitAccepted(remote_address, std::move(accept_socket_));
+  accepted_sockets_[address] = std::move(accept_socket_);
+  client_->IncomingTcpConnection(address);
 }
 
 void P2PSocketTcpServer::OnAccepted(int result) {
@@ -128,11 +145,23 @@ void P2PSocketTcpServer::OnAccepted(int result) {
     DoAccept();
 }
 
+void P2PSocketTcpServer::AcceptIncomingTcpConnection(
+    const net::IPEndPoint& remote_address,
+    mojom::P2PSocketClientPtr client,
+    mojom::P2PSocketRequest request) {
+  std::unique_ptr<P2PSocketTcpBase> socket =
+      AcceptIncomingTcpConnectionInternal(remote_address, std::move(client),
+                                          std::move(request));
+  if (socket)
+    socket_manager_->AddAcceptedConnection(std::move(socket));
+}
+
 void P2PSocketTcpServer::Send(
     const std::vector<int8_t>& data,
     const P2PPacketInfo& packet_info,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  OnError();
+  NOTREACHED();
+  delete this;
 }
 
 void P2PSocketTcpServer::SetOption(P2PSocketOption option, int32_t value) {

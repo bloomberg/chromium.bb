@@ -26,8 +26,6 @@
 #include "services/network/p2p/socket.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "third_party/webrtc/media/base/rtputils.h"
-#include "third_party/webrtc/media/base/turnutils.h"
 
 namespace network {
 
@@ -44,22 +42,6 @@ const int kPublicPort = 53;  // DNS port.
 // because of resource exhaustion in the Unix sockets domain.
 // Trouble has been seen on Linux at 3479 sockets in test, so leave a margin.
 const int kMaxSimultaneousSockets = 3000;
-
-const size_t kMinRtcpHeaderLength = 8;
-const size_t kDtlsRecordHeaderLength = 13;
-
-bool IsDtlsPacket(base::span<const uint8_t> data) {
-  return data.size() >= kDtlsRecordHeaderLength &&
-         (data[0] > 19 && data[0] < 64);
-}
-
-bool IsRtcpPacket(base::span<const uint8_t> data) {
-  if (data.size() < kMinRtcpHeaderLength)
-    return false;
-
-  int type = data[1] & 0x7F;
-  return type >= 64 && type < 96;
-}
 
 }  // namespace
 
@@ -183,36 +165,13 @@ void P2PSocketManager::DestroySocket(P2PSocket* socket) {
   sockets_.erase(iter);
 }
 
-void P2PSocketManager::DumpPacket(base::span<const uint8_t> packet,
+void P2PSocketManager::DumpPacket(const int8_t* packet_header,
+                                  size_t header_length,
+                                  size_t packet_length,
                                   bool incoming) {
-  if ((incoming && !dump_incoming_rtp_packet_) ||
-      (!incoming && !dump_outgoing_rtp_packet_)) {
-    return;
-  }
-
-  if (IsDtlsPacket(packet) || IsRtcpPacket(packet))
-    return;
-
-  size_t rtp_packet_pos = 0;
-  size_t rtp_packet_size = packet.size();
-  if (!cricket::UnwrapTurnPacket(packet.data(), packet.size(), &rtp_packet_pos,
-                                 &rtp_packet_size)) {
-    return;
-  }
-
-  auto rtp_packet = packet.subspan(rtp_packet_pos, rtp_packet_size);
-
-  size_t header_size = 0;
-  bool valid = cricket::ValidateRtpHeader(rtp_packet.data(), rtp_packet.size(),
-                                          &header_size);
-  if (!valid) {
-    NOTREACHED();
-    return;
-  }
-
-  std::vector<uint8_t> header_buffer(rtp_packet.data(),
-                                     rtp_packet.data() + header_size);
-  trusted_socket_manager_client_->DumpPacket(header_buffer, rtp_packet.size(),
+  std::vector<uint8_t> header_buffer(header_length);
+  memcpy(&header_buffer[0], packet_header, header_length);
+  trusted_socket_manager_client_->DumpPacket(header_buffer, packet_length,
                                              incoming);
 }
 
@@ -298,23 +257,42 @@ void P2PSocketManager::CreateSocket(P2PSocketType type,
   if (!socket)
     return;
 
-  P2PSocket* socket_ptr = socket.get();
-  sockets_[socket_ptr] = std::move(socket);
-
-  // Init() may call SocketManager::DestroySocket(), so it must be called after
-  // adding the socket to |sockets_|.
-  socket_ptr->Init(local_address, port_range.min_port, port_range.max_port,
-                   remote_address);
+  if (socket->Init(local_address, port_range.min_port, port_range.max_port,
+                   remote_address)) {
+    if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {
+      socket->StartRtpDump(dump_incoming_rtp_packet_,
+                           dump_outgoing_rtp_packet_);
+    }
+    sockets_[socket.get()] = std::move(socket);
+  }
 }
 
 void P2PSocketManager::StartRtpDump(bool incoming, bool outgoing) {
-  dump_incoming_rtp_packet_ |= incoming;
-  dump_outgoing_rtp_packet_ |= outgoing;
+  if ((!dump_incoming_rtp_packet_ && incoming) ||
+      (!dump_outgoing_rtp_packet_ && outgoing)) {
+    if (incoming)
+      dump_incoming_rtp_packet_ = true;
+
+    if (outgoing)
+      dump_outgoing_rtp_packet_ = true;
+
+    for (auto& it : sockets_)
+      it.first->StartRtpDump(incoming, outgoing);
+  }
 }
 
 void P2PSocketManager::StopRtpDump(bool incoming, bool outgoing) {
-  dump_incoming_rtp_packet_ &= !incoming;
-  dump_outgoing_rtp_packet_ &= !outgoing;
+  if ((dump_incoming_rtp_packet_ && incoming) ||
+      (dump_outgoing_rtp_packet_ && outgoing)) {
+    if (incoming)
+      dump_incoming_rtp_packet_ = false;
+
+    if (outgoing)
+      dump_outgoing_rtp_packet_ = false;
+
+    for (auto& it : sockets_)
+      it.first->StopRtpDump(incoming, outgoing);
+  }
 }
 
 void P2PSocketManager::NetworkNotificationClientConnectionError() {

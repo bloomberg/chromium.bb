@@ -16,7 +16,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/p2p/socket.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,25 +28,6 @@ const char kTestIpAddress1[] = "123.44.22.31";
 const uint16_t kTestPort1 = 234;
 const char kTestIpAddress2[] = "133.11.22.33";
 const uint16_t kTestPort2 = 543;
-
-class FakeP2PSocketDelegate : public P2PSocket::Delegate {
- public:
-  FakeP2PSocketDelegate();
-  ~FakeP2PSocketDelegate() override;
-
-  // P2PSocket::Delegate interface.
-  void DestroySocket(P2PSocket* socket) override;
-  void DumpPacket(base::span<const uint8_t> data, bool incoming) override;
-  void AddAcceptedConnection(std::unique_ptr<P2PSocket> accepted) override;
-
-  void ExpectDestroyed(P2PSocket* socket);
-
-  std::unique_ptr<P2PSocket> pop_accepted_socket();
-
- private:
-  std::set<P2PSocket*> destroyed_sockets_;
-  std::list<std::unique_ptr<P2PSocket>> accepted_;
-};
 
 class FakeSocket : public net::StreamSocket {
  public:
@@ -123,10 +103,7 @@ class FakeSocketClient : public mojom::P2PSocketClient {
   MOCK_METHOD2(SocketCreated,
                void(const net::IPEndPoint&, const net::IPEndPoint&));
   MOCK_METHOD1(SendComplete, void(const P2PSendPacketMetrics&));
-  MOCK_METHOD3(IncomingTcpConnection,
-               void(const net::IPEndPoint&,
-                    network::mojom::P2PSocketPtr socket,
-                    network::mojom::P2PSocketClientRequest client_request));
+  MOCK_METHOD1(IncomingTcpConnection, void(const net::IPEndPoint&));
   MOCK_METHOD3(DataReceived,
                void(const net::IPEndPoint&,
                     const std::vector<int8_t>&,

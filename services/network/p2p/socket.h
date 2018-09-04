@@ -9,9 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
-
 #include "base/component_export.h"
-#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -26,38 +24,18 @@ class NetLog;
 }
 
 namespace network {
-
 class ProxyResolvingClientSocketFactory;
+class P2PSocketManager;
 class P2PMessageThrottler;
 
 // Base class for P2P sockets.
 class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
  public:
-  // Interface implemented in P2PSocketManager.
-  class Delegate {
-   public:
-    Delegate() = default;
-
-    // Destroys |socket| and removes it from the list of sockets.
-    virtual void DestroySocket(P2PSocket* socket) = 0;
-
-    // Called by P2PSocketTcpServer after a new socket is created for an
-    // incoming connection.
-    virtual void AddAcceptedConnection(std::unique_ptr<P2PSocket> socket) = 0;
-
-    // Called for each incoming/outgoing packet.
-    virtual void DumpPacket(base::span<const uint8_t> data, bool incoming) = 0;
-
-   protected:
-    virtual ~Delegate() = default;
-  };
-
   static const int kStunHeaderSize = 20;
   static const size_t kMaximumPacketSize = 32768;
-
   // Creates P2PSocket of the specific type.
   static P2PSocket* Create(
-      Delegate* delegate,
+      P2PSocketManager* socket_manager,
       mojom::P2PSocketClientPtr client,
       mojom::P2PSocketRequest socket,
       P2PSocketType type,
@@ -67,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
 
   ~P2PSocket() override;
 
-  // Initializes the socket. Returns false when initialization fails.
+  // Initalizes the socket. Returns false when initialization fails.
   // |min_port| and |max_port| specify the valid range of allowed ports.
   // |min_port| must be less than or equal to |max_port|.
   // If |min_port| is zero, |max_port| must also be zero and it means all ports
@@ -76,10 +54,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
   // in the valid range.
   // If |local_address.port()| is nonzero and not in the valid range,
   // initialization will fail.
-  virtual void Init(const net::IPEndPoint& local_address,
+  virtual bool Init(const net::IPEndPoint& local_address,
                     uint16_t min_port,
                     uint16_t max_port,
                     const P2PHostAndIPEndPoint& remote_address) = 0;
+
+  void StartRtpDump(bool incoming, bool outgoing);
+  void StopRtpDump(bool incoming, bool outgoing);
 
   mojom::P2PSocketClientPtr ReleaseClientForTesting();
   mojom::P2PSocketRequest ReleaseBindingForTesting();
@@ -120,26 +101,25 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
     STATE_UNINITIALIZED,
     STATE_CONNECTING,
     STATE_OPEN,
+    STATE_ERROR,
   };
 
-  P2PSocket(Delegate* delegate,
+  P2PSocket(P2PSocketManager* socket_manager,
             mojom::P2PSocketClientPtr client,
             mojom::P2PSocketRequest socket,
             ProtocolType protocol_type);
 
   // Verifies that the packet |data| has a valid STUN header. In case
   // of success stores type of the message in |type|.
-  static bool GetStunPacketType(const uint8_t* data,
+  static bool GetStunPacketType(const int8_t* data,
                                 int data_size,
                                 StunMessageType* type);
   static bool IsRequestOrResponse(StunMessageType type);
 
   static void ReportSocketError(int result, const char* histogram_name);
 
-  // Should be called by subclasses on protocol errors. Closes P2PSocket and
-  // P2PSocketClient channels and calls delegate_->DestroySocket() to
-  // destroy the socket.
-  void OnError();
+  // Calls |socket_manager_| to record the RTP header.
+  void DumpRtpPacket(const int8_t* packet, size_t length, bool incoming);
 
   // Used by subclasses to track the metrics of delayed bytes and packets.
   void IncrementDelayedPackets();
@@ -147,7 +127,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
   void IncrementDelayedBytes(uint32_t size);
   void DecrementDelayedBytes(uint32_t size);
 
-  Delegate* delegate_;
+  P2PSocketManager* socket_manager_;
   mojom::P2PSocketClientPtr client_;
   mojo::Binding<mojom::P2PSocket> binding_;
   State state_;
@@ -157,6 +137,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
   ProtocolType protocol_type_;
 
  private:
+  void OnConnectionError();
   // Track total delayed packets for calculating how many packets are
   // delayed by system at the end of call.
   uint32_t send_packets_delayed_total_;
