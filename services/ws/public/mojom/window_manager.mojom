@@ -78,6 +78,9 @@ interface WindowManager {
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
 
+  // The modal parent of a child modal window. Type: window Id.
+  const string kChildModalParent_Property = "prop:child-modal-parent";
+
   // Whether the window is trying to draw attention to itself (e.g. pulsing its
   // shelf icon). Type: bool.
   const string kDrawAttention_Property = "prop:draw-attention";

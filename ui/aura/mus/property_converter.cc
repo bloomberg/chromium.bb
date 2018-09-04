@@ -108,6 +108,9 @@ PropertyConverter::PropertyConverter() {
       client::kAnimationsDisabledKey,
       ws::mojom::WindowManager::kAnimationsDisabled_Property,
       CreateAcceptAnyValueCallback());
+  RegisterWindowPtrProperty(
+      client::kChildModalParentKey,
+      ws::mojom::WindowManager::kChildModalParent_Property);
 }
 
 PropertyConverter::~PropertyConverter() {}
@@ -171,6 +174,14 @@ bool PropertyConverter::ConvertPropertyForTransport(
     return true;
   }
 
+  // window_ptr_properties_ aren't processed here since Window* values aren't
+  // transferrable. A post processing step in WindowTree and WindowTreeClient
+  // takes care of the conversion.
+  if (IsWindowPtrPropertyRegistered(
+          static_cast<const WindowProperty<Window*>*>(key))) {
+    return true;
+  }
+
   // Handle primitive property types generically.
   DCHECK_GT(primitive_properties_.count(key), 0u);
   PrimitiveType default_value = primitive_properties_[key].default_value;
@@ -209,6 +220,10 @@ std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
       static_cast<const WindowProperty<base::UnguessableToken*>*>(key);
   if (unguessable_token_properties_.count(unguessable_token_key) > 0)
     return unguessable_token_properties_[unguessable_token_key];
+
+  auto* window_ptr_key = static_cast<const WindowProperty<Window*>*>(key);
+  if (window_ptr_properties_.count(window_ptr_key) > 0)
+    return window_ptr_properties_[window_ptr_key];
 
   return std::string();
 }
@@ -307,6 +322,17 @@ void PropertyConverter::SetPropertyFromTransportValue(
     }
   }
 
+  // window_ptr_properties_ aren't processed here since Window* values aren't
+  // transferrable. A post processing step in WindowTree and WindowTreeClient
+  // takes care of the conversion.
+  for (const auto& window_ptr_property : window_ptr_properties_) {
+    if (window_ptr_property.second == transport_name) {
+      LOG(ERROR) << transport_name << " is a registered window property but "
+                 << "should not be processed here.";
+      return;
+    }
+  }
+
   DVLOG(2) << "Unknown mus property name: " << transport_name;
 }
 
@@ -386,6 +412,29 @@ void PropertyConverter::RegisterUnguessableTokenProperty(
       << "Property already registered: " << transport_name;
   unguessable_token_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
+}
+
+void PropertyConverter::RegisterWindowPtrProperty(
+    const WindowProperty<Window*>* property,
+    const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
+  window_ptr_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
+}
+
+const WindowProperty<Window*>* PropertyConverter::GetWindowPtrProperty(
+    const std::string& transport_name) const {
+  for (const auto& iter : window_ptr_properties_) {
+    if (transport_name == iter.second)
+      return iter.first;
+  }
+  return nullptr;
+}
+
+bool PropertyConverter::IsWindowPtrPropertyRegistered(
+    const WindowProperty<Window*>* property) const {
+  return window_ptr_properties_.find(property) != window_ptr_properties_.end();
 }
 
 base::flat_map<std::string, std::vector<uint8_t>>

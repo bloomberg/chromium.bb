@@ -186,7 +186,7 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
 
 // A property key to store the address of the source window that the drag
-// originated from if the window is currenlty in tab-dragging process.
+// originated from if the window is currently in tab-dragging process.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
     kTabDraggingSourceWindowKey;
 

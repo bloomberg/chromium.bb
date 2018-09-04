@@ -20,6 +20,7 @@
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
 #include "services/ws/pointer_watcher.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/server_window.h"
 #include "services/ws/topmost_window_observer.h"
 #include "services/ws/window_delegate_impl.h"
@@ -932,28 +933,6 @@ bool WindowTree::SetModalTypeImpl(const ClientWindowId& client_window_id,
   return true;
 }
 
-bool WindowTree::SetChildModalParentImpl(const ClientWindowId& child_id,
-                                         const ClientWindowId& parent_id) {
-  DVLOG(3) << "setting child window modal parent client=" << client_id_
-           << " child_id=" << child_id << " parent_id=" << parent_id;
-  aura::Window* child = GetWindowByClientId(child_id);
-  aura::Window* parent = GetWindowByClientId(parent_id);
-  // A value of null for |parent_id| resets the modal parent.
-  if (!child) {
-    DVLOG(1) << "SetChildModalParent failed (invalid id)";
-    return false;
-  }
-
-  if (!IsClientCreatedWindow(child) ||
-      (parent && !IsClientCreatedWindow(parent))) {
-    DVLOG(1) << "SetChildModalParent failed (access denied)";
-    return false;
-  }
-
-  wm::SetModalParent(child, parent);
-  return true;
-}
-
 bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
                                          bool visible) {
   aura::Window* window = GetWindowByClientId(window_id);
@@ -988,7 +967,9 @@ bool WindowTree::SetWindowPropertyImpl(
     DVLOG(1) << "SetWindowProperty failed (no window)";
     return false;
   }
-  DCHECK(window_service_->property_converter()->IsTransportNameRegistered(name))
+  aura::PropertyConverter* property_converter =
+      window_service_->property_converter();
+  DCHECK(property_converter->IsTransportNameRegistered(name))
       << "Attempting to set an unregistered property; this is not implemented. "
       << "property name=" << name;
   if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
@@ -998,11 +979,22 @@ bool WindowTree::SetWindowPropertyImpl(
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kProperty);
+  // Special handle the property whose value is a pointer to aura::Window since
+  // property converter can't convert the transported value.
+  const aura::WindowProperty<aura::Window*>* property =
+      property_converter->GetWindowPtrProperty(name);
+  if (property) {
+    aura::Window* prop_window = nullptr;
+    if (value.has_value())
+      prop_window = GetWindowByTransportId(mojo::ConvertTo<Id>(value.value()));
+    window->SetProperty(property, prop_window);
+    return true;
+  }
+
   std::unique_ptr<std::vector<uint8_t>> data;
   if (value.has_value())
     data = std::make_unique<std::vector<uint8_t>>(value.value());
-  window_service_->property_converter()->SetPropertyFromTransportValue(
-      window, name, data.get());
+  property_converter->SetPropertyFromTransportValue(window, name, data.get());
   return true;
 }
 
@@ -1553,14 +1545,6 @@ void WindowTree::SetModalType(uint32_t change_id,
                               ui::ModalType type) {
   window_tree_client_->OnChangeCompleted(
       change_id, SetModalTypeImpl(MakeClientWindowId(window_id), type));
-}
-
-void WindowTree::SetChildModalParent(uint32_t change_id,
-                                     Id window_id,
-                                     Id parent_window_id) {
-  window_tree_client_->OnChangeCompleted(
-      change_id, SetChildModalParentImpl(MakeClientWindowId(window_id),
-                                         MakeClientWindowId(parent_window_id)));
 }
 
 void WindowTree::ReorderWindow(uint32_t change_id,

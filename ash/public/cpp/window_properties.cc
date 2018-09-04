@@ -123,6 +123,8 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::client::kTitleShownKey,
       ws::mojom::WindowManager::kWindowTitleShown_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterWindowPtrProperty(
+      kTabDraggingSourceWindowKey, mojom::kTabDraggingSourceWindow_Property);
 }
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kArcPackageNameKey, nullptr);
