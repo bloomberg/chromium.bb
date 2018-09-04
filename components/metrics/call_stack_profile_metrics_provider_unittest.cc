@@ -37,23 +37,48 @@ class CallStackProfileMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileMetricsProviderTest);
 };
 
-// Checks that the pending profile is passed to ProvideCurrentSessionData.
-TEST_F(CallStackProfileMetricsProviderTest, ProvideCurrentSessionData) {
+// Checks that the unserialized pending profile is encoded in the session data.
+TEST_F(CallStackProfileMetricsProviderTest,
+       ProvideCurrentSessionDataUnserialized) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
-      base::TimeTicks::Now(), SampledProfile());
+  SampledProfile profile;
+  profile.set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
+  CallStackProfileMetricsProvider::ReceiveProfile(base::TimeTicks::Now(),
+                                                  profile);
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   ASSERT_EQ(1, uma_proto.sampled_profile().size());
+  EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION,
+            uma_proto.sampled_profile(0).trigger_event());
+}
+
+// Checks that the serialized pending profile is encoded in the session data.
+TEST_F(CallStackProfileMetricsProviderTest,
+       ProvideCurrentSessionDataSerialized) {
+  CallStackProfileMetricsProvider provider;
+  provider.OnRecordingEnabled();
+  std::string contents;
+  {
+    SampledProfile profile;
+    profile.set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
+    profile.SerializeToString(&contents);
+  }
+  CallStackProfileMetricsProvider::ReceiveSerializedProfile(
+      base::TimeTicks::Now(), contents);
+  ChromeUserMetricsExtension uma_proto;
+  provider.ProvideCurrentSessionData(&uma_proto);
+  ASSERT_EQ(1, uma_proto.sampled_profile().size());
+  EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION,
+            uma_proto.sampled_profile(0).trigger_event());
 }
 
 // Checks that the pending profile is provided to ProvideCurrentSessionData
 // when collected before CallStackProfileMetricsProvider is instantiated.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfileProvidedWhenCollectedBeforeInstantiation) {
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
-      base::TimeTicks::Now(), SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveProfile(base::TimeTicks::Now(),
+                                                  SampledProfile());
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   ChromeUserMetricsExtension uma_proto;
@@ -66,8 +91,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
 TEST_F(CallStackProfileMetricsProviderTest, ProfileNotProvidedWhileDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
-      base::TimeTicks::Now(), SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveProfile(base::TimeTicks::Now(),
+                                                  SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
@@ -81,8 +106,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   provider.OnRecordingEnabled();
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingDisabled();
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
-                                                           SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveProfile(profile_start_time,
+                                                  SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
@@ -97,8 +122,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingDisabled();
   provider.OnRecordingEnabled();
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
-                                                           SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveProfile(profile_start_time,
+                                                  SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
@@ -112,8 +137,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   provider.OnRecordingDisabled();
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
   provider.OnRecordingEnabled();
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(profile_start_time,
-                                                           SampledProfile());
+  CallStackProfileMetricsProvider::ReceiveProfile(profile_start_time,
+                                                  SampledProfile());
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
   EXPECT_EQ(0, uma_proto.sampled_profile_size());

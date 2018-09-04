@@ -31,11 +31,17 @@ const size_t kMaxPendingProfiles = 1250;
 // A set of profiles and the start time of the collection associated with them.
 struct ProfileState {
   ProfileState(base::TimeTicks start_timestamp, SampledProfile profile);
+  ProfileState(base::TimeTicks start_timestamp, std::string serialized_profile);
   ProfileState(ProfileState&&);
   ProfileState& operator=(ProfileState&&);
 
   // The time at which the profile collection was started.
   base::TimeTicks start_timestamp;
+
+  // A serialized SampledProfile. The profile for this instance will be
+  // contained in exactly one of |serialized_profile| or |profile|. If
+  // |serialized_profile| is empty, the profile will be in |profile|.
+  std::string serialized_profile;
 
   // The call stack profile message collected by the profiler.
   SampledProfile profile;
@@ -47,6 +53,11 @@ struct ProfileState {
 ProfileState::ProfileState(base::TimeTicks start_timestamp,
                            SampledProfile profile)
     : start_timestamp(start_timestamp), profile(std::move(profile)) {}
+
+ProfileState::ProfileState(base::TimeTicks start_timestamp,
+                           std::string serialized_profile)
+    : start_timestamp(start_timestamp),
+      serialized_profile(std::move(serialized_profile)) {}
 
 ProfileState::ProfileState(ProfileState&&) = default;
 
@@ -195,11 +206,22 @@ CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 
 // static
-void CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+void CallStackProfileMetricsProvider::ReceiveProfile(
     base::TimeTicks profile_start_time,
     SampledProfile profile) {
   PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
       ProfileState(profile_start_time, std::move(profile)));
+  // TODO(wittman): Check if we have a lot of raw profiles outstanding
+  // (e.g. because the client is offline) and if so, convert them to serialized
+  // form to minimize memory usage.
+}
+
+// static
+void CallStackProfileMetricsProvider::ReceiveSerializedProfile(
+    base::TimeTicks profile_start_time,
+    std::string serialized_sampled_profile) {
+  PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
+      ProfileState(profile_start_time, std::move(serialized_sampled_profile)));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
@@ -220,8 +242,15 @@ void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
          pending_profiles.empty());
 
   for (const auto& profile_state : pending_profiles) {
-    SampledProfile* sampled_profile = uma_proto->add_sampled_profile();
-    *sampled_profile = std::move(profile_state.profile);
+    if (!profile_state.serialized_profile.empty()) {
+      SampledProfile profile;
+      if (profile.ParseFromArray(profile_state.serialized_profile.data(),
+                                 profile_state.serialized_profile.size())) {
+        *uma_proto->add_sampled_profile() = std::move(profile);
+      }
+    } else {
+      *uma_proto->add_sampled_profile() = std::move(profile_state.profile);
+    }
   }
 }
 

@@ -25,12 +25,11 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
     ~Receiver() override {}
 
     void Collect(base::TimeTicks start_timestamp,
-                 SampledProfile profile) override {
-      this->profiles.push_back(ChildCallStackProfileCollector::ProfileState(
-          start_timestamp, std::move(profile)));
+                 mojom::SampledProfilePtr profile) override {
+      profile_start_times.push_back(start_timestamp);
     }
 
-    std::vector<ChildCallStackProfileCollector::ProfileState> profiles;
+    std::vector<base::TimeTicks> profile_start_times;
 
    private:
     mojo::Binding<mojom::CallStackProfileCollector> binding_;
@@ -74,18 +73,17 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   child_collector_.SetParentProfileCollector(std::move(receiver_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, profiles().size());
-  ASSERT_EQ(1u, receiver_impl_->profiles.size());
-  EXPECT_EQ(start_timestamp, receiver_impl_->profiles[0].start_timestamp);
+  ASSERT_EQ(1u, receiver_impl_->profile_start_times.size());
+  EXPECT_EQ(start_timestamp, receiver_impl_->profile_start_times[0]);
 
   // Add a profile after providing the interface. It should also be passed.
-  receiver_impl_->profiles.clear();
+  receiver_impl_->profile_start_times.clear();
   CollectEmptyProfile();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, profiles().size());
-  ASSERT_EQ(1u, receiver_impl_->profiles.size());
+  ASSERT_EQ(1u, receiver_impl_->profile_start_times.size());
   EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
-            (base::TimeTicks::Now() -
-             receiver_impl_->profiles[0].start_timestamp));
+            (base::TimeTicks::Now() - receiver_impl_->profile_start_times[0]));
 }
 
 TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {

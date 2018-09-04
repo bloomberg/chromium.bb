@@ -763,7 +763,7 @@ bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
 // profiler.
 std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
   ThreadProfiler::SetBrowserProcessReceiverCallback(base::BindRepeating(
-      &metrics::CallStackProfileMetricsProvider::ReceiveCompletedProfile));
+      &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
   return ThreadProfiler::CreateAndStartOnMainThread();
 }
 

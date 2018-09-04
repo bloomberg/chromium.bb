@@ -13,28 +13,21 @@
 
 namespace metrics {
 
-CallStackProfileCollector::CallStackProfileCollector(
-    CallStackProfileParams::Process expected_process)
-    : expected_process_(expected_process) {}
+CallStackProfileCollector::CallStackProfileCollector() = default;
 
-CallStackProfileCollector::~CallStackProfileCollector() {}
+CallStackProfileCollector::~CallStackProfileCollector() = default;
 
 // static
 void CallStackProfileCollector::Create(
-    CallStackProfileParams::Process expected_process,
     mojom::CallStackProfileCollectorRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<CallStackProfileCollector>(expected_process),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<CallStackProfileCollector>(),
+                          std::move(request));
 }
 
 void CallStackProfileCollector::Collect(base::TimeTicks start_timestamp,
-                                        SampledProfile profile) {
-  if (profile.process() != ToExecutionContextProcess(expected_process_))
-    return;
-
-  CallStackProfileMetricsProvider::ReceiveCompletedProfile(start_timestamp,
-                                                           std::move(profile));
+                                        mojom::SampledProfilePtr profile) {
+  CallStackProfileMetricsProvider::ReceiveSerializedProfile(
+      start_timestamp, std::move(profile->contents));
 }
 
 }  // namespace metrics

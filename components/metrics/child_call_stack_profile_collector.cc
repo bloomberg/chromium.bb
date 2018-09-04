@@ -47,8 +47,10 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   parent_collector_ = std::move(parent_collector);
   if (parent_collector_) {
     for (ProfileState& state : profiles_) {
+      mojom::SampledProfilePtr mojo_profile = mojom::SampledProfile::New();
+      state.profile.SerializeToString(&mojo_profile->contents);
       parent_collector_->Collect(state.start_timestamp,
-                                 std::move(state.profile));
+                                 std::move(mojo_profile));
     }
   }
   profiles_.clear();
@@ -72,7 +74,9 @@ void ChildCallStackProfileCollector::Collect(base::TimeTicks start_timestamp,
   }
 
   if (parent_collector_) {
-    parent_collector_->Collect(start_timestamp, std::move(profile));
+    mojom::SampledProfilePtr mojo_profile = mojom::SampledProfile::New();
+    profile.SerializeToString(&mojo_profile->contents);
+    parent_collector_->Collect(start_timestamp, std::move(mojo_profile));
   } else if (retain_profiles_) {
     profiles_.push_back(ProfileState(start_timestamp, std::move(profile)));
   }
