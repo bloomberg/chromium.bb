@@ -774,7 +774,7 @@ class ListOverlaysTest(cros_test_lib.TempDirTestCase):
 
   def testMissingOverlays(self):
     """Tests that exceptions are raised when an overlay is missing."""
-    self.assertRaises(portage_util.MissingOverlayException,
+    self.assertRaises(portage_util.MissingOverlayError,
                       portage_util._ListOverlays,
                       board='foo', buildroot=self.tempdir)
 
@@ -867,7 +867,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         try:
           d[o] = portage_util.FindOverlays(o, b, self.tempdir)
-        except portage_util.MissingOverlayException:
+        except portage_util.MissingOverlayError:
           d[o] = []
     self._no_overlays = not bool(any(d.values()))
 
@@ -1272,7 +1272,7 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     """Tests an incomplete or otherwise invalid package raises an exception."""
     # No package name is provided.
     os.unlink(os.path.join(self.tempdir, 'PF'))
-    self.assertRaises(portage_util.PortageDBException,
+    self.assertRaises(portage_util.PortageDBError,
                       portage_util.InstalledPackage, None, self.tempdir)
 
     # Check that doesn't fail when the package name is provided.

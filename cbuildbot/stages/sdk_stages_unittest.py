@@ -258,7 +258,7 @@ class SDKPackageToolchainOverlaysStageTest(
         toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
         if toolchains.issubset(sdk_toolchains):
           all_toolchain_combos.add('-'.join(sorted(toolchains)))
-      except portage_util.MissingOverlayException:
+      except portage_util.MissingOverlayError:
         pass
 
     for toolchains in all_toolchain_combos:

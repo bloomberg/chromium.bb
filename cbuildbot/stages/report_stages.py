@@ -935,7 +935,7 @@ class ReportStage(generic_stages.BuilderStage,
         try:
           upload_urls = self._GetUploadUrls(
               'LATEST-*', builder_run=builder_run)
-        except portage_util.MissingOverlayException as e:
+        except portage_util.MissingOverlayError as e:
           # If the build failed prematurely, some overlays might be
           # missing. Ignore them in this stage.
           logging.warning(e)

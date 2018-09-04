@@ -237,7 +237,7 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
     for board in self._run.site_config.GetBoards():
       try:
         toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
-      except portage_util.MissingOverlayException:
+      except portage_util.MissingOverlayError:
         # The board overlay may not exist, e.g. on external builders.
         continue
 

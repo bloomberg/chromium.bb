@@ -85,7 +85,11 @@ SourceInfo = collections.namedtuple(
     ))
 
 
-class MissingOverlayException(Exception):
+class Error(Exception):
+  """Base exception class for portage_util."""
+
+
+class MissingOverlayError(Error):
   """This exception indicates that a needed overlay is missing."""
 
 
@@ -151,7 +155,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
     Args:
       repo: The repo name to look up.
       optional: If |repo| does not exist, return False, else
-        raise an MissingOverlayException.
+        raise an MissingOverlayError.
 
     Returns:
       True if |repo| was found.
@@ -160,7 +164,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
       if optional:
         return False
       else:
-        raise MissingOverlayException('%s was not found' % repo)
+        raise MissingOverlayError('%s was not found' % repo)
 
     for master in overlays[repo]['masters'] + [repo]:
       if master not in seen:
@@ -185,7 +189,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 
   # If neither public nor private board was found, die.
   if not found_pub and not found_priv:
-    raise MissingOverlayException('board overlay not found: %s' % board)
+    raise MissingOverlayError('board overlay not found: %s' % board)
 
   return ret
 
@@ -300,22 +304,22 @@ def GetOverlayName(overlay):
       return None
 
 
-class EBuildVersionFormatException(Exception):
+class EBuildVersionFormatError(Error):
   """Exception for bad ebuild version string format."""
 
   def __init__(self, filename):
     self.filename = filename
     message = ('Ebuild file name %s '
                'does not match expected format.' % filename)
-    super(EBuildVersionFormatException, self).__init__(message)
+    super(EBuildVersionFormatError, self).__init__(message)
 
 
-class EbuildFormatIncorrectException(Exception):
+class EbuildFormatIncorrectError(Error):
   """Exception for bad ebuild format."""
 
   def __init__(self, filename, message):
     message = 'Ebuild %s has invalid format: %s ' % (filename, message)
-    super(EbuildFormatIncorrectException, self).__init__(message)
+    super(EbuildFormatIncorrectError, self).__init__(message)
 
 
 class EBuild(object):
@@ -429,7 +433,7 @@ class EBuild(object):
     self.overlay, self.category, self.pkgname, filename = path.rsplit('/', 3)
     m = self._PACKAGE_VERSION_PATTERN.match(filename)
     if not m:
-      raise EBuildVersionFormatException(filename)
+      raise EBuildVersionFormatError(filename)
     self.version, self.version_no_rev, revision = m.groups()
     if revision is not None:
       self.current_revision = int(revision.replace('-r', ''))
@@ -455,13 +459,13 @@ class EBuild(object):
     try:
       new_vars = EBuild.GetCrosWorkonVars(
           self._unstable_ebuild_path, self.pkgname)
-    except EbuildFormatIncorrectException:
+    except EbuildFormatIncorrectError:
       new_vars = None
 
     # Grab the current project settings.
     try:
       old_vars = EBuild.GetCrosWorkonVars(self.ebuild_path, self.pkgname)
-    except EbuildFormatIncorrectException:
+    except EbuildFormatIncorrectError:
       old_vars = None
 
     # Merge the two settings.
@@ -634,7 +638,7 @@ class EBuild(object):
       rev_subdirs = settings['CROS_WORKON_SUBDIRS_TO_REV'].split(',')
 
     if not (projects or srcpaths):
-      raise EbuildFormatIncorrectException(
+      raise EbuildFormatIncorrectError(
           ebuild_path,
           'Unable to determine CROS_WORKON_{PROJECT,SRCPATH} values.')
 
@@ -645,7 +649,7 @@ class EBuild(object):
         tuple(subtree.split() or [''])
         for subtree in settings.get('CROS_WORKON_SUBTREE', '').split(',')]
     if (len(projects) > 1 or len(srcpaths) > 1) and len(rev_subdirs) > 0:
-      raise EbuildFormatIncorrectException(
+      raise EbuildFormatIncorrectError(
           ebuild_path,
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
           'cros_workon projects or source paths.')
@@ -684,7 +688,7 @@ class EBuild(object):
 
     # Each project specification has to have the same amount of items.
     if num_projects != len(localnames):
-      raise EbuildFormatIncorrectException(
+      raise EbuildFormatIncorrectError(
           ebuild_path,
           'Number of _PROJECT and _LOCALNAME items don\'t match.')
 
@@ -692,7 +696,7 @@ class EBuild(object):
     # of items.
     if len(srcpaths) > num_projects:
       if num_projects > 0:
-        raise EbuildFormatIncorrectException(
+        raise EbuildFormatIncorrectError(
             ebuild_path,
             '_PROJECT has fewer items than _SRCPATH.')
       num_projects = len(srcpaths)
@@ -700,20 +704,20 @@ class EBuild(object):
       localnames = [''] * num_projects
     elif len(srcpaths) < num_projects:
       if len(srcpaths) > 0:
-        raise EbuildFormatIncorrectException(
+        raise EbuildFormatIncorrectError(
             ebuild_path,
             '_SRCPATH has fewer items than _PROJECT.')
       srcpaths = [''] * num_projects
 
     # We better have at least one PROJECT or SRCPATH value at this point.
     if num_projects == 0:
-      raise EbuildFormatIncorrectException(
+      raise EbuildFormatIncorrectError(
           ebuild_path, 'No _PROJECT or _SRCPATH value found.')
 
     # Subtree must be either 1 or len(project).
     if num_projects != len(subtrees):
       if len(subtrees) > 1:
-        raise EbuildFormatIncorrectException(
+        raise EbuildFormatIncorrectError(
             ebuild_path, 'Incorrect number of _SUBTREE items.')
       # Multiply by num_projects. Note that subtrees is a list of tuples, and
       # there should be at least one element.
@@ -834,7 +838,7 @@ class EBuild(object):
       return default
 
     if not self.is_workon:
-      raise EbuildFormatIncorrectException(
+      raise EbuildFormatIncorrectError(
           self._ebuild_path_no_version,
           'Package has a chromeos-version.sh script but is not workon-able.')
 
@@ -1075,7 +1079,7 @@ class EBuild(object):
         if not cls._WORKON_COMMIT_PATTERN.search(line))
 
 
-class PortageDBException(Exception):
+class PortageDBError(Error):
   """Generic PortageDB error."""
 
 
@@ -1112,7 +1116,7 @@ class PortageDB(object):
     pkgdir = os.path.join(self.db_path, category, pv)
     try:
       pkg = InstalledPackage(self, pkgdir, category, pv)
-    except PortageDBException:
+    except PortageDBError:
       return None
     self._ebuilds[pkg_key] = pkg
     return pkg
@@ -1172,7 +1176,7 @@ class InstalledPackage(object):
           value is known.
 
     Raises:
-      PortageDBException if the pkgdir doesn't contain a valid package.
+      PortageDBError if the pkgdir doesn't contain a valid package.
     """
     self._portage_db = portage_db
     self.pkgdir = pkgdir
@@ -1184,17 +1188,17 @@ class InstalledPackage(object):
       self._fields['PF'] = pf
 
     if self.pf is None:
-      raise PortageDBException("Package doesn't contain package-version value.")
+      raise PortageDBError("Package doesn't contain package-version value.")
 
     # Check that the ebuild is present.
     ebuild_path = os.path.join(self.pkgdir, '%s.ebuild' % self.pf)
     if not os.path.exists(ebuild_path):
-      raise PortageDBException("Package doesn't contain an ebuild file.")
+      raise PortageDBError("Package doesn't contain an ebuild file.")
 
     split_pv = SplitPV(self.pf)
     if split_pv is None:
-      raise PortageDBException('Package and version "%s" doesn\'t have a valid '
-                               'format.' % self.pf)
+      raise PortageDBError('Package and version "%s" doesn\'t have a valid '
+                           'format.' % self.pf)
     self.package = split_pv.package
     self.version = split_pv.version
 
