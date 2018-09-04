@@ -78,10 +78,11 @@ void LocalSiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground() {
 }
 
 void LocalSiteCharacteristicsDataWriter::NotifyLoadTimePerformanceMeasurement(
+    base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  impl_->NotifyLoadTimePerformanceMeasurement(cpu_usage_estimate,
+  impl_->NotifyLoadTimePerformanceMeasurement(load_duration, cpu_usage_estimate,
                                               private_footprint_kb_estimate);
 }
 

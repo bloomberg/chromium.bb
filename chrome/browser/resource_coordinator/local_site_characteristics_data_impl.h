@@ -85,6 +85,9 @@ class LocalSiteCharacteristicsDataImpl
 
   // Accessors for load-time performance measurement estimates.
   // If |num_datum| is zero, there's no estimate available.
+  const ExponentialMovingAverage& load_duration() const {
+    return load_duration_;
+  }
   const ExponentialMovingAverage& cpu_usage_estimate() const {
     return cpu_usage_estimate_;
   }
@@ -101,6 +104,7 @@ class LocalSiteCharacteristicsDataImpl
 
   // Call when a load-time performance measurement becomes available.
   void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate);
 
@@ -223,7 +227,8 @@ class LocalSiteCharacteristicsDataImpl
   SiteCharacteristicsProto site_characteristics_;
 
   // The in-memory storage for the moving performance averages.
-  ExponentialMovingAverage cpu_usage_estimate_;
+  ExponentialMovingAverage load_duration_;       // microseconds.
+  ExponentialMovingAverage cpu_usage_estimate_;  // microseconds.
   ExponentialMovingAverage private_footprint_kb_estimate_;
 
   // This site's origin.

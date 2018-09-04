@@ -65,8 +65,10 @@ void PageCoordinationUnitImpl::OnTitleUpdated() {
 }
 
 void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted(
+    base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
     const std::string& url) {
+  navigation_committed_time_ = navigation_committed_time;
   main_frame_url_ = url;
   navigation_id_ = navigation_id;
   SendEvent(mojom::Event::kNavigationCommitted);
@@ -144,9 +146,6 @@ PageCoordinationUnitImpl::GetMainFrameCoordinationUnit() const {
 }
 
 void PageCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
-  if (event == mojom::Event::kNavigationCommitted) {
-    navigation_committed_time_ = ResourceCoordinatorClock::NowTicks();
-  }
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
 }

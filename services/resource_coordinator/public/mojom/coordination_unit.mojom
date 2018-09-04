@@ -89,9 +89,12 @@ interface PageCoordinationUnit {
   OnFaviconUpdated();
   OnTitleUpdated();
 
+  // |navigation_committed_time| is the time when the commit occurred.
   // |navigation_id| is the unique ID of the navigation handle that was
   // committed.
-  OnMainFrameNavigationCommitted(int64 navigation_id, string url);
+  OnMainFrameNavigationCommitted(
+      mojo_base.mojom.TimeTicks navigation_committed_time,
+      int64 navigation_id, string url);
 };
 
 interface ProcessCoordinationUnit {

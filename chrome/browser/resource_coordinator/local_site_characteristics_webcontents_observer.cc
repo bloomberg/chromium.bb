@@ -213,6 +213,7 @@ void LocalSiteCharacteristicsWebContentsObserver::
 void LocalSiteCharacteristicsWebContentsObserver::OnLoadTimePerformanceEstimate(
     content::WebContents* contents,
     const PageNavigationIdentity& page_navigation_id,
+    base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -236,7 +237,7 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadTimePerformanceEstimate(
                                 .IsSameOriginWith(writer_origin_)) {
     if (writer_) {
       writer_->NotifyLoadTimePerformanceMeasurement(
-          cpu_usage_estimate, private_footprint_kb_estimate);
+          load_duration, cpu_usage_estimate, private_footprint_kb_estimate);
     }
   }
 }

@@ -134,6 +134,10 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
   }
 
   if (page_resource_coordinator_) {
+    // Grab the current time up front, as this is as close as we'll get to the
+    // original commit time.
+    base::TimeTicks navigation_committed_time = base::TimeTicks::Now();
+
     content::RenderFrameHost* render_frame_host =
         navigation_handle->GetRenderFrameHost();
     // Make sure the hierarchical structure is constructed before sending signal
@@ -157,7 +161,7 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
       UpdateUkmRecorder(navigation_handle->GetNavigationId());
       ResetFlag();
       page_resource_coordinator_->OnMainFrameNavigationCommitted(
-          navigation_handle->GetNavigationId(),
+          navigation_committed_time, navigation_handle->GetNavigationId(),
           navigation_handle->GetURL().spec());
     }
   }

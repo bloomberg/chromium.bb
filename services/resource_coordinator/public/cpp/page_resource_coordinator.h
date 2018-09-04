@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -25,7 +26,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT PageResourceCoordinator
   void SetUKMSourceId(int64_t ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
-  void OnMainFrameNavigationCommitted(uint64_t navigation_id,
+  void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
+                                      uint64_t navigation_id,
                                       const std::string& url);
 
   void AddFrame(const FrameResourceCoordinator& frame);

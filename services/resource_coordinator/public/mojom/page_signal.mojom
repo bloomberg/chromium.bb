@@ -53,7 +53,17 @@ interface PageSignalReceiver {
   // This notification needs the url that was loaded, as by the time the
   // notification comes back around, the WebContents may have navigated to
   // another site altogether.
+  // |load_duration| is the wall-clock duration from navigation commit, until
+  // the page is considered loaded (currently almost idle).
+  // |cpu_usage_estimate| is an estimate of how much CPU time was consumed by
+  // this page load across all the the processes involved. This is approximate
+  // primarily because it's impossible to accurately approportion the cost
+  // of shared processes to individual pages. Other considerations involve
+  // the timing of measurement, as well as the fact that there's no accounting
+  // for processes that contributed to a page in the past, but no longer do
+  // so at the time of measurement.
   OnLoadTimePerformanceEstimate(PageNavigationIdentity page_navigation_id,
+                                mojo_base.mojom.TimeDelta load_duration,
                                 mojo_base.mojom.TimeDelta cpu_usage_estimate,
                                 uint64 private_footprint_kb_estimate);
 };

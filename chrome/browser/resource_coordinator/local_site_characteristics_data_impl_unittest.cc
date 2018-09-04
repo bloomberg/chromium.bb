@@ -410,11 +410,16 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Add a couple of performance samples.
   local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(100),
       base::TimeDelta::FromMicroseconds(1000), 2000u);
   local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(200),
       base::TimeDelta::FromMicroseconds(500), 1000u);
 
   // Make sure the local performance samples are averaged as expected.
+  EXPECT_EQ(2U, local_site_data->load_duration().num_datums());
+  EXPECT_EQ(150, local_site_data->load_duration().value());
+
   EXPECT_EQ(2U, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(750.0, local_site_data->cpu_usage_estimate().value());
 
@@ -462,6 +467,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Set the previously saved performance averages.
   auto* estimates = test_proto->mutable_load_time_estimates();
+  estimates->set_avg_load_duration_us(50);
   estimates->set_avg_cpu_usage_us(250);
   estimates->set_avg_footprint_kb(500);
 
@@ -480,6 +486,9 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Make sure the local performance samples have been updated with the previous
   // averages.
+  EXPECT_EQ(3U, local_site_data->load_duration().num_datums());
+  EXPECT_EQ(137.5, local_site_data->load_duration().value());
+
   EXPECT_EQ(3U, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(562.5, local_site_data->cpu_usage_estimate().value());
 
@@ -496,6 +505,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
           [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
             ASSERT_TRUE(proto.has_load_time_estimates());
             const auto& estimates = proto.load_time_estimates();
+            ASSERT_TRUE(estimates.has_avg_load_duration_us());
+            EXPECT_EQ(137.5, estimates.avg_load_duration_us());
             ASSERT_TRUE(estimates.has_avg_cpu_usage_us());
             EXPECT_EQ(562.5, estimates.avg_cpu_usage_us());
             ASSERT_TRUE(estimates.has_avg_footprint_kb());

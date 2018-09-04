@@ -35,7 +35,8 @@ class PageCoordinationUnitImpl
   void SetUKMSourceId(int64_t ukm_source_id) override;
   void OnFaviconUpdated() override;
   void OnTitleUpdated() override;
-  void OnMainFrameNavigationCommitted(int64_t navigation_id,
+  void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
+                                      int64_t navigation_id,
                                       const std::string& url) override;
 
   // There is no direct relationship between processes and pages. However,
