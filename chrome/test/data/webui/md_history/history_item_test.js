@@ -77,6 +77,7 @@ suite('<history-item> integration test', function() {
   test('basic separator insertion', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
     return PolymerTest.flushTasks().then(function() {
+      Polymer.dom.flush();
       // Check that the correct number of time gaps are inserted.
       const items = Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -94,6 +95,7 @@ suite('<history-item> integration test', function() {
     element.searchedTerm = 'search';
 
     return PolymerTest.flushTasks().then(function() {
+      Polymer.dom.flush();
       const items = Polymer.dom(element.root).querySelectorAll('history-item');
 
       assertTrue(items[0].hasTimeGap);
@@ -105,6 +107,7 @@ suite('<history-item> integration test', function() {
   test('separator insertion after deletion', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
     return PolymerTest.flushTasks().then(function() {
+      Polymer.dom.flush();
       const items = Polymer.dom(element.root).querySelectorAll('history-item');
 
       element.removeItemsByIndex_([3]);
