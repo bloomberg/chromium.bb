@@ -13,6 +13,7 @@ PASS PaymentRequest interface: attribute id
 PASS PaymentRequest interface: attribute shippingAddress
 PASS PaymentRequest interface: attribute shippingOption
 PASS PaymentRequest interface: attribute shippingType
+FAIL PaymentRequest interface: attribute onmerchantvalidation assert_true: The prototype object must have a property "onmerchantvalidation" expected true got false
 PASS PaymentRequest interface: attribute onshippingaddresschange
 PASS PaymentRequest interface: attribute onshippingoptionchange
 FAIL PaymentRequest interface: attribute onpaymentmethodchange assert_true: The prototype object must have a property "onpaymentmethodchange" expected true got false
@@ -26,6 +27,7 @@ PASS PaymentRequest interface: paymentRequest must inherit property "id" with th
 PASS PaymentRequest interface: paymentRequest must inherit property "shippingAddress" with the proper type
 PASS PaymentRequest interface: paymentRequest must inherit property "shippingOption" with the proper type
 PASS PaymentRequest interface: paymentRequest must inherit property "shippingType" with the proper type
+FAIL PaymentRequest interface: paymentRequest must inherit property "onmerchantvalidation" with the proper type assert_inherits: property "onmerchantvalidation" not found in prototype chain
 PASS PaymentRequest interface: paymentRequest must inherit property "onshippingaddresschange" with the proper type
 PASS PaymentRequest interface: paymentRequest must inherit property "onshippingoptionchange" with the proper type
 FAIL PaymentRequest interface: paymentRequest must inherit property "onpaymentmethodchange" with the proper type assert_inherits: property "onpaymentmethodchange" not found in prototype chain
@@ -66,6 +68,19 @@ PASS PaymentResponse interface: attribute payerPhone
 PASS PaymentResponse interface: operation complete(PaymentComplete)
 PASS PaymentResponse interface: operation retry(PaymentValidationErrors)
 FAIL PaymentResponse interface: attribute onpayerdetailchange assert_true: The prototype object must have a property "onpayerdetailchange" expected true got false
+FAIL MerchantValidationEvent interface: existence and properties of interface object assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface object length assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface object name assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface: attribute validationURL assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent interface: operation complete([object Object]) assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
+FAIL MerchantValidationEvent must be primary interface of new MerchantValidationEvent("merchantvalidation") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
+FAIL Stringification of new MerchantValidationEvent("merchantvalidation") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
+FAIL MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "validationURL" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
+FAIL MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "complete([object Object])" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
+FAIL MerchantValidationEvent interface: calling complete([object Object]) on new MerchantValidationEvent("merchantvalidation") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
 FAIL PaymentMethodChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface object length assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface object name assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
