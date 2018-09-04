@@ -4,6 +4,11 @@ This library implements the Open Screen Protocol.  Information about the
 protocol can be found in the Open Screen [GitHub
 repository](https://github.com/webscreens/openscreenprotocol).
 
+## Style guide
+
+Open Screen Library code should follow the
+[Open Screen Library Style Guide](docs/style_guide.md).
+
 ## Build dependencies
 
 Although we plan to address this in the future, there are currently some build
