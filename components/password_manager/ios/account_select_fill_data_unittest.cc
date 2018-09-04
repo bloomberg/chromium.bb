@@ -33,10 +33,10 @@ class AccountSelectFillDataTest : public PlatformTest {
  public:
   AccountSelectFillDataTest() {
     for (size_t i = 0; i < base::size(form_data_); ++i) {
-      SetPasswordFormFillData(form_data_[i], kUrl, kUrl, kUsernameElements[i],
-                              kUsernames[i], kPasswordElements[i],
-                              kPasswords[i], kAdditionalUsernames[i],
-                              kAdditionalPasswords[i], false);
+      SetPasswordFormFillData(kUrl, kUrl, kUsernameElements[i], kUsernames[i],
+                              kPasswordElements[i], kPasswords[i],
+                              kAdditionalUsernames[i], kAdditionalPasswords[i],
+                              false, &form_data_[i]);
 
       form_data_[i].name = base::ASCIIToUTF16(kFormNames[i]);
     }
