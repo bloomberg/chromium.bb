@@ -247,7 +247,7 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
 // Apple platforms don't allow binding multiple TCP sockets to the same port
 // even with SO_REUSEADDR enabled.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(TCPBoundSocketTest, ListenError) {
+TEST_F(TCPBoundSocketTest, DISABLED_ListenError) {
   // Bind a socket.
   network::mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint bound_address1;
