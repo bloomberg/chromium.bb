@@ -76,6 +76,7 @@
 #include "components/toolbar/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
 
 namespace vr {
@@ -2153,7 +2154,7 @@ void UiSceneCreator::CreateUrlBar() {
       kUrlBarSecurityButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::ShowPageInfo,
                           base::Unretained(browser_)),
-      toolbar::kHttpsInvalidIcon, audio_delegate_);
+      gfx::kNoneIcon, audio_delegate_);
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);

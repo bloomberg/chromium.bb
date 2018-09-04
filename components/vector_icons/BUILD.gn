@@ -48,6 +48,8 @@ aggregate_vector_icons("components_vector_icons") {
 static_library("vector_icons") {
   sources = get_target_outputs(":components_vector_icons")
 
+  defines = [ "COMPONENTS_VECTOR_ICONS_IMPL" ]
+
   deps = [
     ":components_vector_icons",
     "//base",
