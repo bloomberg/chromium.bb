@@ -346,8 +346,7 @@ void CastContentBrowserClient::AddNetworkHintsMessageFilter(
     return;
 
   scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
-      new network_hints::NetworkHintsMessageFilter(
-          url_request_context_factory_->host_resolver()));
+      new network_hints::NetworkHintsMessageFilter(render_process_id));
   host->AddFilter(network_hints_message_filter.get());
 }
 
