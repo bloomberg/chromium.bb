@@ -177,9 +177,6 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void SetModalType(uint32_t change_id,
                     ws::Id window_id,
                     ui::ModalType modal_type) override;
-  void SetChildModalParent(uint32_t change_id,
-                           ws::Id window_id,
-                           ws::Id parent_window_id) override;
   void ReorderWindow(uint32_t change_id,
                      ws::Id window_id,
                      ws::Id relative_window_id,

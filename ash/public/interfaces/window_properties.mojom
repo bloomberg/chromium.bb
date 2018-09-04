@@ -69,6 +69,11 @@ const string kIsDraggingTabs_Property = "ash:is-dragging-tabs";
 // If true, the window is currently showing in overview mode.
 const string kIsShowingInOverview_Property = "ash:is-showing-in-overview";
 
+// A property key to store the address of the source window that the drag
+// originated from if the window is currently in tab-dragging process.
+const string kTabDraggingSourceWindow_Property =
+    "ash:tab-dragging-source-window";
+
 // This is put on windows to indicate that ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.

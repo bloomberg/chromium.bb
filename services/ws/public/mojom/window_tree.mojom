@@ -197,12 +197,6 @@ interface WindowTree {
   // . Client does not have a valid user id (i.e., it is an embedded app).
   SetModalType(uint32 change_id, uint64 window_id, ui.mojom.ModalType type);
 
-  // Sets the modal parent of a CHILD_MODAL window. This is the modal parent of
-  // the window, which is not necessarily the same as the parent of the window.
-  SetChildModalParent(uint32 change_id,
-                      uint64 window_id,
-                      uint64 parent_window_id);
-
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can
   // reorder its children.

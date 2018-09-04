@@ -83,6 +83,10 @@ component("lib") {
     "//ui/wm/public",
   ]
 
+  deps = [
+    "//services/ws/public/cpp",
+  ]
+
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
 }
 

@@ -288,8 +288,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   bool RemoveTransientWindowFromParentImpl(const ClientWindowId& transient_id);
   bool SetModalTypeImpl(const ClientWindowId& client_window_id,
                         ui::ModalType type);
-  bool SetChildModalParentImpl(const ClientWindowId& child_id,
-                               const ClientWindowId& parent_id);
   bool SetWindowVisibilityImpl(const ClientWindowId& window_id, bool visible);
   bool SetWindowPropertyImpl(const ClientWindowId& window_id,
                              const std::string& name,
@@ -383,9 +381,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SetModalType(uint32_t change_id,
                     Id window_id,
                     ui::ModalType type) override;
-  void SetChildModalParent(uint32_t change_id,
-                           Id window_id,
-                           Id parent_window_id) override;
   void ReorderWindow(uint32_t change_id,
                      Id transport_window_id,
                      Id transport_relative_window_id,

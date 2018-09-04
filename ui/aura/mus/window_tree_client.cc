@@ -121,7 +121,7 @@ WindowTreeHostMus* GetWindowTreeHostMus(WindowMus* window) {
 }
 
 bool IsInternalProperty(const void* key) {
-  return key == client::kModalKey || key == client::kChildModalParentKey;
+  return key == client::kModalKey;
 }
 
 // Create and return a MouseEvent or TouchEvent from |event| if |event| is a
@@ -601,18 +601,6 @@ bool WindowTreeClient::HandleInternalPropertyChanged(WindowMus* window,
                         window->GetWindow()->GetProperty(client::kModalKey));
     return true;
   }
-  if (key == client::kChildModalParentKey) {
-    const uint32_t change_id =
-        ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
-            window, ChangeType::CHILD_MODAL_PARENT));
-    Window* child_modal_parent =
-        window->GetWindow()->GetProperty(client::kChildModalParentKey);
-    tree_->SetChildModalParent(
-        change_id, window->server_id(),
-        child_modal_parent ? WindowMus::Get(child_modal_parent)->server_id()
-                           : kInvalidServerId);
-    return true;
-  }
   return false;
 }
 
@@ -904,13 +892,24 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
   WindowPortPropertyDataMus* data_mus =
       static_cast<WindowPortPropertyDataMus*>(data.get());
 
+  PropertyConverter* property_converter = delegate_->GetPropertyConverter();
   std::string transport_name;
   std::unique_ptr<std::vector<uint8_t>> transport_value;
-  if (!delegate_->GetPropertyConverter()->ConvertPropertyForTransport(
+  if (!property_converter->ConvertPropertyForTransport(
           window->GetWindow(), key, &transport_name, &transport_value)) {
     return;
   }
   DCHECK_EQ(transport_name, data_mus->transport_name);
+  const auto* window_ptr_key = static_cast<const WindowProperty<Window*>*>(key);
+  if (property_converter->IsWindowPtrPropertyRegistered(window_ptr_key)) {
+    DCHECK(!transport_value);
+    Window* value = window->GetWindow()->GetProperty(window_ptr_key);
+    WindowMus* window_mus = WindowMus::Get(value);
+    if (window_mus) {
+      transport_value = std::make_unique<std::vector<uint8_t>>(
+          mojo::ConvertTo<std::vector<uint8_t>>(window_mus->server_id()));
+    }
+  }
 
   base::Optional<std::vector<uint8_t>> transport_value_mojo;
   if (transport_value)

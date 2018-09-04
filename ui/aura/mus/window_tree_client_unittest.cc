@@ -68,10 +68,12 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey3, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestPropertyKey4, nullptr);
 
 const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";
 const char kTestPropertyServerKey3[] = "test-property-server3";
+const char kTestPropertyServerKey4[] = "test-property-server4";
 
 ws::Id server_id(Window* window) {
   return window ? WindowMus::Get(window)->server_id() : 0;
@@ -113,6 +115,8 @@ void RegisterTestProperties(PropertyConverter* converter) {
   converter->RegisterPrimitiveProperty(
       kTestPropertyKey3, kTestPropertyServerKey3,
       PropertyConverter::CreateAcceptAnyValueCallback());
+  converter->RegisterWindowPtrProperty(kTestPropertyKey4,
+                                       kTestPropertyServerKey4);
 }
 
 // Convert a primitive aura property value to a mus transport value.
@@ -798,6 +802,26 @@ TEST_F(WindowTreeClientTest, SetStringProperty) {
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, false));
   EXPECT_EQ(example, *root_window()->GetProperty(client::kNameKey));
+}
+
+TEST_F(WindowTreeClientTest, SetWindowPointerProperty) {
+  PropertyConverter* property_converter = GetPropertyConverter();
+  RegisterTestProperties(property_converter);
+
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.Show();
+  root_window()->SetProperty(kTestPropertyKey4, &window);
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
+  EXPECT_EQ(WindowMus::Get(&window)->server_id(),
+            mojo::ConvertTo<ws::Id>(*value));
+  window_tree()->AckAllChanges();
+
+  root_window()->ClearProperty(kTestPropertyKey4);
+  value = window_tree()->GetLastPropertyValue();
+  EXPECT_FALSE(value.has_value());
 }
 
 // Verifies visible is reverted if the server replied that the change failed.

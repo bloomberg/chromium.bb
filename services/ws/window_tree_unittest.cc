@@ -37,6 +37,9 @@
 namespace ws {
 namespace {
 
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kTestPropertyKey, nullptr);
+const char kTestPropertyServerKey[] = "test-property-server";
+
 // Passed to Embed() to give the default behavior (see kEmbedFlag* in mojom for
 // details).
 constexpr uint32_t kDefaultEmbedFlags = 0;
@@ -349,6 +352,55 @@ TEST(WindowTreeTest, WindowToWindowData) {
   EXPECT_EQ(aura::PropertyConverter::PrimitiveType(true),
             mojo::ConvertTo<aura::PropertyConverter::PrimitiveType>(
                 data->properties[mojom::WindowManager::kAlwaysOnTop_Property]));
+}
+
+TEST(WindowTreeTest, SetWindowPointerProperty) {
+  WindowServiceTestSetup setup;
+  setup.service()->property_converter()->RegisterWindowPtrProperty(
+      kTestPropertyKey, kTestPropertyServerKey);
+
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level1 = helper->NewTopLevelWindow();
+  aura::Window* top_level2 = helper->NewTopLevelWindow();
+  Id id1 = helper->TransportIdForWindow(top_level1);
+  Id id2 = helper->TransportIdForWindow(top_level2);
+
+  base::Optional<std::vector<uint8_t>> value =
+      mojo::ConvertTo<std::vector<uint8_t>>(id2);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id1, kTestPropertyServerKey, value);
+  EXPECT_EQ(top_level2, top_level1->GetProperty(kTestPropertyKey));
+
+  value.reset();
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id1, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level1->GetProperty(kTestPropertyKey));
+}
+
+TEST(WindowTreeTest, SetWindowPointerPropertyWithInvalidValues) {
+  WindowServiceTestSetup setup;
+  setup.service()->property_converter()->RegisterWindowPtrProperty(
+      kTestPropertyKey, kTestPropertyServerKey);
+
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level = helper->NewTopLevelWindow();
+  Id id = helper->TransportIdForWindow(top_level);
+  base::Optional<std::vector<uint8_t>> value =
+      mojo::ConvertTo<std::vector<uint8_t>>(kInvalidTransportId);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
+
+  value = mojo::ConvertTo<std::vector<uint8_t>>(10);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
+
+  value->clear();
+  value->push_back(1);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
 }
 
 TEST(WindowTreeTest, EventLocation) {

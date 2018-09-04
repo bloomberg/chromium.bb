@@ -206,4 +206,18 @@ bool TypeConverter<bool, std::vector<uint8_t>>::Convert(
   return !input.empty() && (input[0] == 1);
 }
 
+// static
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, uint64_t>::Convert(
+    uint64_t input) {
+  return TypeConverter<std::vector<uint8_t>, int64_t>::Convert(
+      static_cast<int64_t>(input));
+}
+
+// static
+ws::Id TypeConverter<uint64_t, std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  return static_cast<uint64_t>(
+      TypeConverter<int64_t, std::vector<uint8_t>>::Convert(input));
+}
+
 }  // namespace mojo
