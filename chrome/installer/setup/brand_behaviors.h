@@ -10,7 +10,6 @@
 #define CHROME_INSTALLER_SETUP_BRAND_BEHAVIORS_H_
 
 #include "base/strings/string16.h"
-#include "chrome/installer/util/util_constants.h"
 
 namespace base {
 class FilePath;
@@ -18,13 +17,6 @@ class Version;
 }  // namespace base
 
 namespace installer {
-
-// Communicates a change in install status to the updater. |archive_type|, if
-// not UNKNOWN_ARCHIVE_TYPE, indicates what type of install/update is being
-// applied. |install_status|, if not UNKNOWN_STATUS, indicates the result of the
-// install/update.
-void UpdateInstallStatus(installer::ArchiveType archive_type,
-                         installer::InstallStatus install_status);
 
 // Returns an opaque string holding data relating to the browser being
 // uninstalled. This function is called before the product's Clients key is
