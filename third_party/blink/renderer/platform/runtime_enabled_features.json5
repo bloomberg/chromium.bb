@@ -386,6 +386,10 @@
       name: "EditingNG",
     },
     {
+      name: "EncodingStreams",
+      status: "experimental",
+    },
+    {
       name: "EncryptedMediaEncryptionSchemeQuery",
       status: "test",
     },

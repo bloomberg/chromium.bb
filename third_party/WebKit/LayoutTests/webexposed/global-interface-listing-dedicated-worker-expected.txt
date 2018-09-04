@@ -1091,6 +1091,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter ignoreBOM
 [Worker]     method constructor
 [Worker]     method decode
+[Worker] interface TextDecoderStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter encoding
+[Worker]     getter fatal
+[Worker]     getter ignoreBOM
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface TextDetector
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -1100,6 +1108,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter encoding
 [Worker]     method constructor
 [Worker]     method encode
+[Worker] interface TextEncoderStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter encoding
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface TransformStream
 [Worker]     getter readable
 [Worker]     getter writable

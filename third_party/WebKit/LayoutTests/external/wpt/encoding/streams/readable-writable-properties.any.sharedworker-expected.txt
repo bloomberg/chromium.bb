@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL TextEncoderStream readable and writable properties must pass brand checks TextEncoderStream is not defined
-FAIL TextDecoderStream readable and writable properties must pass brand checks TextDecoderStream is not defined
-Harness: the test ran to completion.
-
