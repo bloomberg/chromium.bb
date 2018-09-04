@@ -8,23 +8,12 @@
 #define CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "chrome/installer/util/util_constants.h"
 
-#if defined(OS_WIN)
-#include <windows.h>  // NOLINT
-#endif
-
 class AppRegistrationData;
-
-namespace base {
-class FilePath;
-class Version;
-}
 
 class BrowserDistribution {
  public:
@@ -43,11 +32,6 @@ class BrowserDistribution {
   base::string16 GetStateMediumKey() const;
   base::string16 GetVersionKey() const;
 
-  virtual void DoPostUninstallOperations(
-      const base::Version& version,
-      const base::FilePath& local_data_path,
-      const base::string16& distribution_data);
-
   // Returns the localized display name of this distribution.
   virtual base::string16 GetDisplayName();
 
@@ -63,10 +47,6 @@ class BrowserDistribution {
   virtual base::string16 GetPublisherName();
 
   virtual base::string16 GetLongAppDescription();
-
-#if defined(OS_WIN)
-  virtual base::string16 GetDistributionData(HKEY root_key);
-#endif
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_UTIL_UNINSTALL_METRICS_H_
-#define CHROME_INSTALLER_UTIL_UNINSTALL_METRICS_H_
+#ifndef CHROME_INSTALLER_SETUP_UNINSTALL_METRICS_H_
+#define CHROME_INSTALLER_SETUP_UNINSTALL_METRICS_H_
 
 #include "base/strings/string16.h"
 
 namespace base {
-class DictionaryValue;
 class FilePath;
-}
+class Value;
+}  // namespace base
 
 namespace installer {
 
 // Extracts uninstall metrics from the given JSON value.
-bool ExtractUninstallMetrics(const base::DictionaryValue& root,
+bool ExtractUninstallMetrics(const base::Value& root,
                              base::string16* uninstall_metrics);
 
 // Extracts uninstall metrics from the JSON file located at file_path.
@@ -28,4 +28,4 @@ bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
 
 }  // namespace installer
 
-#endif  // CHROME_INSTALLER_UTIL_UNINSTALL_METRICS_H_
+#endif  // CHROME_INSTALLER_SETUP_UNINSTALL_METRICS_H_

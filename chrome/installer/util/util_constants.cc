@@ -203,7 +203,6 @@ const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallDisplayNameField[] = L"DisplayName";
-const char kUninstallMetricsName[] = "uninstall_metrics";
 const wchar_t kUninstallInstallationDate[] = L"installation_date";
 
 // Google Update installer result API.
