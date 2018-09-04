@@ -1333,4 +1333,19 @@ TEST_F(UserMediaClientImplTest,
   EXPECT_FALSE(source->device().matched_output_device_id);
 }
 
+TEST_F(UserMediaClientImplTest, IsCapturing) {
+  EXPECT_FALSE(user_media_client_impl_->IsCapturing());
+  EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
+  blink::WebMediaStream stream = RequestLocalMediaStream();
+  EXPECT_TRUE(user_media_client_impl_->IsCapturing());
+
+  user_media_client_impl_->StopTrack(stream.AudioTracks()[0]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(user_media_client_impl_->IsCapturing());
+
+  user_media_client_impl_->StopTrack(stream.VideoTracks()[0]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(user_media_client_impl_->IsCapturing());
+}
+
 }  // namespace content

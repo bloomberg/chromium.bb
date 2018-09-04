@@ -45,6 +45,7 @@ class WebUserMediaClient {
   virtual void CancelUserMediaRequest(const WebUserMediaRequest&) = 0;
   virtual void ApplyConstraints(const WebApplyConstraintsRequest&) = 0;
   virtual void StopTrack(const WebMediaStreamTrack&) = 0;
+  virtual bool IsCapturing() = 0;
 };
 
 }  // namespace blink
