@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "components/autofill/android/form_field_data_android.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "jni/FormData_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -30,7 +31,10 @@ FormDataAndroid::~FormDataAndroid() {
   Java_FormData_onNativeDestroyed(env, obj);
 }
 
-ScopedJavaLocalRef<jobject> FormDataAndroid::GetJavaPeer() {
+ScopedJavaLocalRef<jobject> FormDataAndroid::GetJavaPeer(
+    const FormStructure* form_structure) {
+  // |form_structure| is ephemeral and shouldn't be used outside this call
+  // stack.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null()) {
@@ -38,6 +42,8 @@ ScopedJavaLocalRef<jobject> FormDataAndroid::GetJavaPeer() {
       fields_.push_back(std::unique_ptr<FormFieldDataAndroid>(
           new FormFieldDataAndroid(&form_.fields[i])));
     }
+    if (form_structure)
+      ApplyHeuristicFieldType(*form_structure);
     ScopedJavaLocalRef<jstring> jname =
         ConvertUTF16ToJavaString(env, form_.name);
     ScopedJavaLocalRef<jstring> jhost =
@@ -93,6 +99,19 @@ bool FormDataAndroid::GetSimilarFieldIndex(const FormFieldData& field,
 
 bool FormDataAndroid::SimilarFormAs(const FormData& form) {
   return form_.SimilarFormAs(form);
+}
+
+void FormDataAndroid::ApplyHeuristicFieldType(
+    const FormStructure& form_structure) {
+  DCHECK(form_structure.field_count() == fields_.size());
+  auto form_field_data_android = fields_.begin();
+  for (const auto& autofill_field : form_structure) {
+    DCHECK(form_field_data_android->get()->SimilarFieldAs(*autofill_field));
+    form_field_data_android->get()->set_heuristic_type(
+        AutofillType(autofill_field->heuristic_type()));
+    if (++form_field_data_android == fields_.end())
+      break;
+  }
 }
 
 }  // namespace autofill

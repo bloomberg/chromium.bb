@@ -612,6 +612,9 @@ std::string AutofillType::ToString() const {
 
 // static
 std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
+  // You are free to add or remove the String representation of ServerFieldType,
+  // but don't change any existing values, Android WebView presents them to
+  // Autofill Service as part of APIs.
   switch (type) {
     case NO_SERVER_DATA:
       return "NO_SERVER_DATA";

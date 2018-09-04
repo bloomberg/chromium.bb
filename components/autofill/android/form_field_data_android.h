@@ -7,6 +7,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -21,8 +22,14 @@ class FormFieldDataAndroid {
   base::android::ScopedJavaLocalRef<jobject> GetJavaPeer();
   void GetValue();
   void OnFormFieldDidChange(const base::string16& value);
+  bool SimilarFieldAs(const FormFieldData& field) const;
+
+  void set_heuristic_type(const AutofillType& heuristic_type) {
+    heuristic_type_ = heuristic_type;
+  }
 
  private:
+  AutofillType heuristic_type_;
   // Not owned.
   FormFieldData* field_ptr_;
   JavaObjectWeakGlobalRef java_ref_;

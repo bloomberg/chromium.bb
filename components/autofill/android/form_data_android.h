@@ -12,6 +12,7 @@
 namespace autofill {
 
 class FormFieldDataAndroid;
+class FormStructure;
 
 // This class is native peer of FormData.java, to make autofill::FormData
 // available in Java.
@@ -20,7 +21,8 @@ class FormDataAndroid {
   FormDataAndroid(const FormData& form);
   virtual ~FormDataAndroid();
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaPeer();
+  base::android::ScopedJavaLocalRef<jobject> GetJavaPeer(
+      const FormStructure* form_structure);
 
   // Get autofill values from Java side and return FormData.
   const FormData& GetAutofillValues();
@@ -45,6 +47,8 @@ class FormDataAndroid {
   // Invoked when form field which specified by |index| is charged to new
   // |value|.
   void OnFormFieldDidChange(size_t index, const base::string16& value);
+
+  void ApplyHeuristicFieldType(const FormStructure& form);
 
   const FormData& form_for_testing() { return form_; }
 
