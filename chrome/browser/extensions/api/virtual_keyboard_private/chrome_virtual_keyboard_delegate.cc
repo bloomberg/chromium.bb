@@ -281,8 +281,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled()));
   features->AppendString(GenerateFeatureFlag(
       "virtualkeyboardmdui", keyboard::IsVirtualKeyboardMdUiEnabled()));
-  features->AppendString(
-      GenerateFeatureFlag("imeservice", keyboard::IsImeServiceEnabled()));
 
   const keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
