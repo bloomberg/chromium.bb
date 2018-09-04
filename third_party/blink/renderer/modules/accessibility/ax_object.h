@@ -518,7 +518,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Check object state.
   virtual bool IsAutofillAvailable() { return false; }
   virtual bool IsClickable() const;
-  virtual bool IsCollapsed() const { return false; }
   virtual AccessibilityExpanded IsExpanded() const {
     return kExpandedUndefined;
   }

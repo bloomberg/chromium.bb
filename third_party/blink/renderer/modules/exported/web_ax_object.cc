@@ -260,13 +260,6 @@ bool WebAXObject::IsClickable() const {
   return private_->IsClickable();
 }
 
-bool WebAXObject::IsCollapsed() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsCollapsed();
-}
-
 bool WebAXObject::IsControl() const {
   if (IsDetached())
     return false;
