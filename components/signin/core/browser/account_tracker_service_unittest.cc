@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -954,9 +953,9 @@ TEST_F(AccountTrackerServiceTest, NoDeprecatedServiceFlags) {
     ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", email_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     update->Append(std::move(dict));
   }
 
@@ -980,9 +979,9 @@ TEST_F(AccountTrackerServiceTest, MigrateDeprecatedServiceFlags) {
     service_flags->Append(std::make_unique<base::Value>("uca"));
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", email_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     dict->SetList("service_flags", std::move(service_flags));
     update->Append(std::move(dict));
   }
@@ -1009,15 +1008,15 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
     ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", email_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     update->Append(std::move(dict));
 
     dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+    dict->SetString("account_id", email_beta);
+    dict->SetString("email", email_beta);
+    dict->SetString("gaia", gaia_beta);
     update->Append(std::move(dict));
   }
 
@@ -1057,15 +1056,15 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
     ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", email_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     update->Append(std::move(dict));
 
     dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(std::string()));
+    dict->SetString("account_id", email_beta);
+    dict->SetString("email", email_beta);
+    dict->SetString("gaia", "");
     update->Append(std::move(dict));
   }
 
@@ -1105,22 +1104,22 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
     ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", email_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     update->Append(std::move(dict));
 
     dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+    dict->SetString("account_id", email_beta);
+    dict->SetString("email", email_beta);
+    dict->SetString("gaia", gaia_beta);
     update->Append(std::move(dict));
 
     // Succeed miggrated account.
     dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(gaia_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    dict->SetString("account_id", gaia_alpha);
+    dict->SetString("email", email_alpha);
+    dict->SetString("gaia", gaia_alpha);
     update->Append(std::move(dict));
   }
 

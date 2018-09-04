@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1040,9 +1039,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email));
-    dict->SetString("email", base::UTF8ToUTF16(email));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    dict->SetString("account_id", email);
+    dict->SetString("email", email);
+    dict->SetString("gaia", gaia_id);
     update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
@@ -1098,14 +1097,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email1));
-    dict->SetString("email", base::UTF8ToUTF16(email1));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id1));
+    dict->SetString("account_id", email1);
+    dict->SetString("email", email1);
+    dict->SetString("gaia", gaia_id1);
     update->Append(std::move(dict));
     dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email2));
-    dict->SetString("email", base::UTF8ToUTF16(email2));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id2));
+    dict->SetString("account_id", email2);
+    dict->SetString("email", email2);
+    dict->SetString("gaia", gaia_id2);
     update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
