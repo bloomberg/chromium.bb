@@ -11,30 +11,30 @@ namespace openscreen {
 TEST(ScreenListTest, AddScreens) {
   ScreenList list;
 
-  EXPECT_TRUE(list.GetScreens().empty());
+  EXPECT_TRUE(list.screens().empty());
 
   const ScreenInfo screen1{
       "id1", "name1", "eth0", {{192, 168, 1, 10}, 12345}, {{}, 0}};
   list.OnScreenAdded(screen1);
 
-  ASSERT_EQ(1u, list.GetScreens().size());
-  EXPECT_EQ(screen1, list.GetScreens()[0]);
+  ASSERT_EQ(1u, list.screens().size());
+  EXPECT_EQ(screen1, list.screens()[0]);
 
   const ScreenInfo screen2{
       "id2", "name2", "eth0", {{192, 168, 1, 11}, 12345}, {{}, 0}};
   list.OnScreenAdded(screen2);
 
-  ASSERT_EQ(2u, list.GetScreens().size());
-  EXPECT_EQ(screen1, list.GetScreens()[0]);
-  EXPECT_EQ(screen2, list.GetScreens()[1]);
+  ASSERT_EQ(2u, list.screens().size());
+  EXPECT_EQ(screen1, list.screens()[0]);
+  EXPECT_EQ(screen2, list.screens()[1]);
 
   list.OnScreenAdded(screen1);
 
   // No duplicate checking.
-  ASSERT_EQ(3u, list.GetScreens().size());
-  EXPECT_EQ(screen1, list.GetScreens()[0]);
-  EXPECT_EQ(screen2, list.GetScreens()[1]);
-  EXPECT_EQ(screen1, list.GetScreens()[2]);
+  ASSERT_EQ(3u, list.screens().size());
+  EXPECT_EQ(screen1, list.screens()[0]);
+  EXPECT_EQ(screen2, list.screens()[1]);
+  EXPECT_EQ(screen1, list.screens()[2]);
 }
 
 TEST(ScreenListTest, ChangeScreens) {
@@ -53,9 +53,9 @@ TEST(ScreenListTest, ChangeScreens) {
   EXPECT_TRUE(list.OnScreenChanged(screen1_alt_name));
   EXPECT_FALSE(list.OnScreenChanged(screen3));
 
-  ASSERT_EQ(2u, list.GetScreens().size());
-  EXPECT_EQ(screen1_alt_name, list.GetScreens()[0]);
-  EXPECT_EQ(screen2, list.GetScreens()[1]);
+  ASSERT_EQ(2u, list.screens().size());
+  EXPECT_EQ(screen1_alt_name, list.screens()[0]);
+  EXPECT_EQ(screen2, list.screens()[1]);
 }
 
 TEST(ScreenListTest, RemoveScreens) {
@@ -72,8 +72,8 @@ TEST(ScreenListTest, RemoveScreens) {
 
   EXPECT_TRUE(list.OnScreenRemoved(screen1));
 
-  ASSERT_EQ(1u, list.GetScreens().size());
-  EXPECT_EQ(screen2, list.GetScreens()[0]);
+  ASSERT_EQ(1u, list.screens().size());
+  EXPECT_EQ(screen2, list.screens()[0]);
 }
 
 TEST(ScreenListTest, RemoveAllScreens) {
@@ -87,7 +87,7 @@ TEST(ScreenListTest, RemoveAllScreens) {
   list.OnScreenAdded(screen2);
 
   EXPECT_TRUE(list.OnAllScreensRemoved());
-  ASSERT_TRUE(list.GetScreens().empty());
+  ASSERT_TRUE(list.screens().empty());
 }
 
 }  // namespace openscreen

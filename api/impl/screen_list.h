@@ -31,7 +31,7 @@ class ScreenList {
   // Returns true if |screens_| was not empty before this call, otherwise false.
   bool OnAllScreensRemoved();
 
-  const std::vector<ScreenInfo>& GetScreens() const { return screens_; }
+  const std::vector<ScreenInfo>& screens() const { return screens_; }
 
  private:
   std::vector<ScreenInfo> screens_;

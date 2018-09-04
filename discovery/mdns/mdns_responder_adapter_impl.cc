@@ -29,6 +29,7 @@ uint16_t GetNetworkOrderPort(const mDNSOpaque16& port) {
   return port.b[0] << 8 | port.b[1];
 }
 
+#if DCHECK_IS_ON()
 bool IsValidServiceName(const std::string& service_name) {
   // Service name requirements come from RFC 6335:
   //  - No more than 16 characters.
@@ -59,6 +60,7 @@ bool IsValidServiceProtocol(const std::string& protocol) {
   // RFC 6763 requires _tcp be used for TCP services and _udp for all others.
   return protocol == "_tcp" || protocol == "_udp";
 }
+#endif  // if DCHECK_IS_ON()
 
 void MakeSubnetMaskFromPrefixLength(uint8_t mask[4], uint8_t prefix_length) {
   for (int i = 0; i < 4; prefix_length -= 8, ++i) {

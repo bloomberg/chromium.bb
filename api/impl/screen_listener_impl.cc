@@ -146,7 +146,7 @@ bool ScreenListenerImpl::SearchNow() {
 }
 
 const std::vector<ScreenInfo>& ScreenListenerImpl::GetScreens() const {
-  return screen_list_.GetScreens();
+  return screen_list_.screens();
 }
 
 void ScreenListenerImpl::SetState(ScreenListenerState state) {

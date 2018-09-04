@@ -141,7 +141,7 @@ class ScreenListener {
   ScreenListenerState state() const { return state_; }
 
   // Returns the last error reported by this listener.
-  const ScreenListenerErrorInfo& GetLastError() const { return last_error_; }
+  const ScreenListenerErrorInfo& last_error() const { return last_error_; }
 
   // Returns the current list of screens known to the ScreenListener.
   virtual const std::vector<ScreenInfo>& GetScreens() const = 0;
