@@ -94,8 +94,7 @@ class WebRequestProxyingWebSocket
       InfoMap* info_map,
       network::mojom::WebSocketPtrInfo proxied_socket_ptr_info,
       network::mojom::WebSocketRequest proxied_request,
-      network::mojom::AuthenticationHandlerRequest auth_request,
-      scoped_refptr<WebRequestAPI::ProxySet> proxies);
+      network::mojom::AuthenticationHandlerRequest auth_request);
 
  private:
   void OnBeforeRequestComplete(int error_code);

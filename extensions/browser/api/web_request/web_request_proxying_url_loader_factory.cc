@@ -522,9 +522,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
-  if (factory_->proxies_->IsAPIDestroyed())
-    return;
-
   if (!request_completed_) {
     target_client_->OnComplete(status);
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
@@ -587,16 +584,15 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    scoped_refptr<WebRequestAPI::ProxySet> proxies) {
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (proxies->is_shutdown())
-    return;
+  auto* proxies =
+      WebRequestAPI::ProxySet::GetFromResourceContext(resource_context);
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, resource_context, render_process_id,
       std::move(request_id_generator), std::move(navigation_ui_data), info_map,
-      std::move(loader_request), std::move(target_factory_info), proxies.get());
+      std::move(loader_request), std::move(target_factory_info), proxies);
 
   proxies->AddProxy(std::move(proxy));
 }
