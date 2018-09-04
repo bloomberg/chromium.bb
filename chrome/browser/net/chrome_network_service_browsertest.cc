@@ -77,11 +77,6 @@ class ChromeNetworkServiceBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
-#if defined(OS_MACOSX)
-  // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS:
-  // crbug.com/843324.
-  return;
-#endif
   // First set a cookie with cookie encryption enabled.
   network::mojom::NetworkContextPtr context =
       CreateNetworkContext(/*enable_encrypted_cookies=*/true);
@@ -106,11 +101,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
 
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest,
                        MAYBE_EncryptedCookies) {
-#if defined(OS_MACOSX)
-  // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS:
-  // crbug.com/843324.
-  return;
-#endif
   net::CookieCryptoDelegate* crypto_delegate =
       cookie_config::GetCookieCryptoDelegate();
   std::string ciphertext;

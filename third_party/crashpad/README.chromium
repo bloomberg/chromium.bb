@@ -37,3 +37,4 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - thread_log_messages.cc (using ThreadLocalStorage::Slot instead of StaticSlot)
+ - Add an additional rpath for crashpad_handler on Mac in component builds.
