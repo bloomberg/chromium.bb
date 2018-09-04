@@ -7,11 +7,21 @@
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "content/shell/app/shell_main_delegate.h"
+#include "content/shell/common/shell_switches.h"
 
 #if defined(OS_MACOSX)
 int ContentMain(int argc,
                 const char** argv) {
-  content::ShellMainDelegate delegate;
+  bool is_browsertest = false;
+  std::string browser_test_flag(std::string("--") +
+                                switches::kContentBrowserTest);
+  for (int i = 0; i < argc; ++i) {
+    if (browser_test_flag == argv[i]) {
+      is_browsertest = true;
+      break;
+    }
+  }
+  content::ShellMainDelegate delegate(is_browsertest);
   content::ContentMainParams params(&delegate);
   params.argc = argc;
   params.argv = argv;
