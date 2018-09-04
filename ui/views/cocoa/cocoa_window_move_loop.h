@@ -12,12 +12,12 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 
-// Used by views::BridgedNativeWidget when dragging detached tabs.
+// Used by views::BridgedNativeWidgetImpl when dragging detached tabs.
 class CocoaWindowMoveLoop {
  public:
-  CocoaWindowMoveLoop(BridgedNativeWidget* owner,
+  CocoaWindowMoveLoop(BridgedNativeWidgetImpl* owner,
                       const NSPoint& initial_mouse_in_screen);
   ~CocoaWindowMoveLoop();
 
@@ -32,7 +32,7 @@ class CocoaWindowMoveLoop {
     WINDOW_DESTROYED,
   };
 
-  BridgedNativeWidget* owner_;  // Weak. Owns this.
+  BridgedNativeWidgetImpl* owner_;  // Weak. Owns this.
 
   // Initial mouse location at the time before the CocoaWindowMoveLoop is
   // created.

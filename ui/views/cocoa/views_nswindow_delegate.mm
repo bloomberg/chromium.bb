@@ -15,7 +15,7 @@
 
 @implementation ViewsNSWindowDelegate
 
-- (id)initWithBridgedNativeWidget:(views::BridgedNativeWidget*)parent {
+- (id)initWithBridgedNativeWidget:(views::BridgedNativeWidgetImpl*)parent {
   DCHECK(parent);
   if ((self = [super init])) {
     parent_ = parent;

@@ -16,7 +16,7 @@ class TextInputClient;
 }
 
 namespace views {
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 }
 
 // The NSView that sits as the root contentView of the NSWindow, whilst it has
@@ -28,7 +28,7 @@ class BridgedNativeWidget;
                                                 NSServicesMenuRequestor> {
  @private
   // Weak, reset by clearView.
-  views::BridgedNativeWidget* bridge_;
+  views::BridgedNativeWidgetImpl* bridge_;
 
   // Weak. If non-null the TextInputClient of the currently focused View in the
   // hierarchy rooted at |hostedView_|. Owned by the focused View.
@@ -54,12 +54,13 @@ class BridgedNativeWidget;
   base::string16 lastTooltipText_;
 }
 
-@property(readonly, nonatomic) views::BridgedNativeWidget* bridge;
+@property(readonly, nonatomic) views::BridgedNativeWidgetImpl* bridge;
 @property(assign, nonatomic) ui::TextInputClient* textInputClient;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
-- (id)initWithBridge:(views::BridgedNativeWidget*)bridge bounds:(gfx::Rect)rect;
+- (id)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
+              bounds:(gfx::Rect)rect;
 
 // Clear the hosted view. For example, if it is about to be destroyed.
 - (void)clearView;

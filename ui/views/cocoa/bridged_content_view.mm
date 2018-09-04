@@ -273,7 +273,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (id)initWithBridge:(views::BridgedNativeWidget*)bridge
+- (id)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
               bounds:(gfx::Rect)bounds {
   // To keep things simple, assume the origin is (0, 0) until there exists a use
   // case for something other than that.

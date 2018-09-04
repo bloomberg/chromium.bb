@@ -57,7 +57,7 @@
 
 namespace views {
 
-DragDropClientMac::DragDropClientMac(BridgedNativeWidget* bridge,
+DragDropClientMac::DragDropClientMac(BridgedNativeWidgetImpl* bridge,
                                      View* root_view)
     : drop_helper_(root_view),
       operation_(0),

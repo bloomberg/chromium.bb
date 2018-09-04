@@ -290,12 +290,12 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 namespace views {
 namespace test {
 
-// Provides the |parent| argument to construct a BridgedNativeWidget.
+// Provides the |parent| argument to construct a BridgedNativeWidgetImpl.
 class MockNativeWidgetMac : public NativeWidgetMac {
  public:
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
-  using NativeWidgetMac::bridge;
+  using NativeWidgetMac::bridge_impl;
   using NativeWidgetMac::bridge_host_for_testing;
 
   // internal::NativeWidgetPrivate:
@@ -308,7 +308,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge()->SetWindow(window);
+    bridge_impl()->SetWindow(window);
     bridge_host_for_testing()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
@@ -327,7 +327,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(MockNativeWidgetMac);
 };
 
-// Helper test base to construct a BridgedNativeWidget with a valid parent.
+// Helper test base to construct a BridgedNativeWidgetImpl with a valid parent.
 class BridgedNativeWidgetTestBase : public ui::CocoaTest {
  public:
   struct SkipInitialization {};
@@ -339,7 +339,9 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   explicit BridgedNativeWidgetTestBase(SkipInitialization tag)
       : native_widget_mac_(nullptr) {}
 
-  BridgedNativeWidget* bridge() { return native_widget_mac_->bridge(); }
+  BridgedNativeWidgetImpl* bridge() {
+    return native_widget_mac_->bridge_impl();
+  }
   BridgedNativeWidgetHostImpl* bridge_host() {
     return native_widget_mac_->bridge_host_for_testing();
   }
@@ -382,7 +384,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
   NSWindow* bridge_window() const {
-    return native_widget_mac_->bridge()->ns_window();
+    return native_widget_mac_->bridge_impl()->ns_window();
   }
 
  protected:
@@ -833,7 +835,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetInitTest);
 };
 
-// Test that BridgedNativeWidget remains sane if Init() is never called.
+// Test that BridgedNativeWidgetImpl remains sane if Init() is never called.
 TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   // Don't use a Widget* as the delegate. ~Widget() checks for Widget::
   // |native_widget_destroyed_| being set to true. That can only happen with a
@@ -1605,8 +1607,8 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
                         object:window];
 
   // On a failure, Cocoa starts by sending an unexpected *exit* fullscreen, and
-  // BridgedNativeWidget will think it's just a delayed transition and try to go
-  // back into fullscreen but get ignored by Cocoa.
+  // BridgedNativeWidgetImpl will think it's just a delayed transition and try
+  // to go back into fullscreen but get ignored by Cocoa.
   EXPECT_EQ(0, [window ignoredToggleFullScreenCount]);
   EXPECT_TRUE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification

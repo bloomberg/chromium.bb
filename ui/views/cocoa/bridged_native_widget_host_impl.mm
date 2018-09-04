@@ -45,7 +45,7 @@ bool PositionWindowInScreenCoordinates(Widget* widget,
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
     : native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidget(this, this, parent)) {}
+      bridge_impl_(new BridgedNativeWidgetImpl(this, this, parent)) {}
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // Destroy the bridge first to prevent any calls back into this during
@@ -202,7 +202,7 @@ void BridgedNativeWidgetHostImpl::DestroyCompositor() {
   if (layer()) {
     // LayerOwner supports a change in ownership, e.g., to animate a closing
     // window, but that won't work as expected for the root layer in
-    // BridgedNativeWidget.
+    // BridgedNativeWidgetImpl.
     DCHECK_EQ(this, layer()->owner());
     layer()->CompleteAllAnimations();
     layer()->SuppressPaint();
@@ -685,7 +685,7 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, internal::InputMethodDelegate:
+// BridgedNativeWidgetImpl, internal::InputMethodDelegate:
 
 ui::EventDispatchDetails BridgedNativeWidgetHostImpl::DispatchKeyEventPostIME(
     ui::KeyEvent* key) {

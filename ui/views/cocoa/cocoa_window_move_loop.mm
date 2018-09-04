@@ -39,13 +39,11 @@
 
 namespace views {
 
-CocoaWindowMoveLoop::CocoaWindowMoveLoop(
-    BridgedNativeWidget* owner,
-    const NSPoint& initial_mouse_in_screen)
+CocoaWindowMoveLoop::CocoaWindowMoveLoop(BridgedNativeWidgetImpl* owner,
+                                         const NSPoint& initial_mouse_in_screen)
     : owner_(owner),
       initial_mouse_in_screen_(initial_mouse_in_screen),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 CocoaWindowMoveLoop::~CocoaWindowMoveLoop() {
   // Handle the pathological case, where |this| is destroyed while running.

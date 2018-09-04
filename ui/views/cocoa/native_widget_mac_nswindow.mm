@@ -114,9 +114,9 @@
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo {
-  // Note BridgedNativeWidget may have cleared [self delegate], in which case
-  // this will no-op. This indirection is necessary to handle AppKit invoking
-  // this selector via a posted task. See https://crbug.com/851376.
+  // Note BridgedNativeWidgetImpl may have cleared [self delegate], in which
+  // case this will no-op. This indirection is necessary to handle AppKit
+  // invoking this selector via a posted task. See https://crbug.com/851376.
   [[self viewsNSWindowDelegate] sheetDidEnd:sheet
                                  returnCode:returnCode
                                 contextInfo:contextInfo];
@@ -189,7 +189,7 @@
   // Dialogs and bubbles shouldn't take large shadows away from their parent.
   views::Widget* widget = [self viewsWidget];
   return widget->CanActivate() &&
-         !views::NativeWidgetMac::GetBridgeForNativeWindow(self)->parent();
+         !views::NativeWidgetMac::GetBridgeImplForNativeWindow(self)->parent();
 }
 
 // Lets the traffic light buttons on the parent window keep their active state.

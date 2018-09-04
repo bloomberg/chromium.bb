@@ -12,15 +12,15 @@
 
 namespace views {
 class NativeWidgetMac;
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 }
 
-// The delegate set on the NSWindow when a views::BridgedNativeWidget is
+// The delegate set on the NSWindow when a views::BridgedNativeWidgetImpl is
 // initialized.
 VIEWS_EXPORT
 @interface ViewsNSWindowDelegate : NSObject<NSWindowDelegate> {
  @private
-  views::BridgedNativeWidget* parent_;  // Weak. Owns this.
+  views::BridgedNativeWidgetImpl* parent_;  // Weak. Owns this.
   base::scoped_nsobject<NSCursor> cursor_;
 }
 
@@ -33,7 +33,7 @@ VIEWS_EXPORT
 @property(retain, nonatomic) NSCursor* cursor;
 
 // Initialize with the given |parent|.
-- (id)initWithBridgedNativeWidget:(views::BridgedNativeWidget*)parent;
+- (id)initWithBridgedNativeWidget:(views::BridgedNativeWidgetImpl*)parent;
 
 // Notify that the window has been reordered in (or removed from) the window
 // server's screen list. This is a substitute for -[NSWindowDelegate

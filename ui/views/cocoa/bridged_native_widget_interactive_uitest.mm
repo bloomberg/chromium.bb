@@ -251,7 +251,7 @@ void WaitForEvent(NSUInteger mask) {
 }  // namespace
 
 // This is used to inject test versions of NativeFrameView and
-// BridgedNativeWidget.
+// BridgedNativeWidgetImpl.
 class HitTestNativeWidgetMac : public NativeWidgetMac {
  public:
   HitTestNativeWidgetMac(internal::NativeWidgetDelegate* delegate,

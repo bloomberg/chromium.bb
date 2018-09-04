@@ -16,13 +16,14 @@
 namespace views {
 
 // An adapter that allows a views::Widget to be owned by an NSWindow that is not
-// backed by another BridgedNativeWidget.
+// backed by another BridgedNativeWidgetImpl.
 class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
  public:
   // Create an adapter that will own |child|, tying its lifetime with the
   // NSWindow containing |anchor_view|. The object is self-deleting, via a call
   // to RemoveChildWindow() made in child->OnWindowWillClose().
-  WidgetOwnerNSWindowAdapter(BridgedNativeWidget* child, NSView* anchor_view);
+  WidgetOwnerNSWindowAdapter(BridgedNativeWidgetImpl* child,
+                             NSView* anchor_view);
 
   // Called when the owning window is closing.
   void OnWindowWillClose();
@@ -34,13 +35,13 @@ class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
   NSWindow* GetNSWindow() override;
   gfx::Vector2d GetChildWindowOffset() const override;
   bool IsVisibleParent() const override;
-  void RemoveChildWindow(BridgedNativeWidget* child) override;
+  void RemoveChildWindow(BridgedNativeWidgetImpl* child) override;
 
  private:
   // Self-deleting.
   ~WidgetOwnerNSWindowAdapter() override;
 
-  BridgedNativeWidget* child_;  // Weak. Owned by its NativeWidgetMac.
+  BridgedNativeWidgetImpl* child_;  // Weak. Owned by its NativeWidgetMac.
   base::scoped_nsobject<NSView> anchor_view_;
   base::scoped_nsobject<NSWindow> anchor_window_;
   base::scoped_nsobject<WidgetOwnerNSWindowAdapterBridge> observer_bridge_;
