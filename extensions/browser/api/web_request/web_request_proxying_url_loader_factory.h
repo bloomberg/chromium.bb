@@ -169,8 +169,7 @@ class WebRequestProxyingURLLoaderFactory
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      scoped_refptr<WebRequestAPI::ProxySet> proxies);
+      network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,

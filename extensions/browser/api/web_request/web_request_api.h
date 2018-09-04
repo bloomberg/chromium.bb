@@ -105,31 +105,21 @@ class WebRequestAPI
   };
 
   // A ProxySet is a set of proxies used by WebRequestAPI: It holds Proxy
-  // instances, and removes all proxies when the WebRequestAPI instance is
-  // gone, on the IO thread.
-  // This proxy set is created on the UI thread but anything else other than
-  // AddRef() and Release() including destruction will be done in the IO thread.
-  class ProxySet : public base::RefCountedThreadSafe<
-                       ProxySet,
-                       content::BrowserThread::DeleteOnIOThread> {
+  // instances, and removes all proxies when the ResourceContext it is bound to
+  // is destroyed.
+  class ProxySet : public base::SupportsUserData::Data {
    public:
     ProxySet();
+    ~ProxySet() override;
 
-    // Add a Proxy. This can be called only when |is_shutdown()| is false.
+    // Gets or creates a ProxySet from the given ResourceContext.
+    static ProxySet* GetFromResourceContext(
+        content::ResourceContext* resource_context);
+
+    // Add a Proxy.
     void AddProxy(std::unique_ptr<Proxy> proxy);
     // Remove a Proxy. The removed proxy is deleted upon this call.
     void RemoveProxy(Proxy* proxy);
-    // Set is_shutdown_ and deletes app proxies.
-    void Shutdown();
-    bool is_shutdown() const {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-      return is_shutdown_;
-    }
-
-    // Threadsafe methods to check and set if the WebRequestAPI has been
-    // destroyed.
-    void SetAPIDestroyed() { api_destroyed_.Set(); }
-    bool IsAPIDestroyed() { return api_destroyed_.IsSet(); }
 
     // Associates |proxy| with |id|. |proxy| must already be registered within
     // this ProxySet.
@@ -153,30 +143,15 @@ class WebRequestAPI
         AuthRequestCallback callback);
 
    private:
-    friend struct content::BrowserThread::DeleteOnThread<
-        content::BrowserThread::IO>;
-    friend class base::DeleteHelper<ProxySet>;
-
-    ~ProxySet();
-
     // Although these members are initialized on the UI thread, we expect at
     // least one memory barrier before actually calling Generate in the IO
     // thread, so we don't protect them with a lock.
     std::set<std::unique_ptr<Proxy>, base::UniquePtrComparator> proxies_;
-    bool is_shutdown_ = false;
 
     // Bi-directional mapping between request ID and Proxy for faster lookup.
     std::map<content::GlobalRequestID, Proxy*> request_id_to_proxy_map_;
     std::map<Proxy*, std::set<content::GlobalRequestID>>
         proxy_to_request_id_map_;
-
-    // Tracks whether the WebRequestAPI has been destroyed. Since WebRequestAPI
-    // is destroyed on the UI thread, and ProxySet is destroyed on the IO
-    // thread, there may be race conditions where a Proxy mojo pipe receives a
-    // connection error after WebRequestAPI is destroyed but before the ProxySet
-    // has been destroyed. Before running any error handlers, make sure to check
-    // this flag.
-    base::AtomicFlag api_destroyed_;
 
     DISALLOW_COPY_AND_ASSIGN(ProxySet);
   };
@@ -275,9 +250,6 @@ class WebRequestAPI
 
   content::BrowserContext* const browser_context_;
   InfoMap* const info_map_;
-
-  // Active proxies. Only used when the Network Service is enabled.
-  scoped_refptr<ProxySet> proxies_;
 
   scoped_refptr<RequestIDGenerator> request_id_generator_;
 

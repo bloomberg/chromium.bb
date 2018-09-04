@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -140,6 +141,10 @@ const char* const kWebRequestEvents[] = {
     keys::kOnResponseStartedEvent,
     keys::kOnHeadersReceivedEvent,
 };
+
+// User data key for WebRequestAPI::ProxySet.
+const void* const kWebRequestProxySetUserDataKey =
+    &kWebRequestProxySetUserDataKey;
 
 const char* GetRequestStageAsString(
     ExtensionWebRequestEventRouter::EventTypes type) {
@@ -387,6 +392,19 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
   return std::make_unique<WebRequestEventDetails>(request, extra_info_spec);
 }
 
+void MaybeProxyAuthRequestOnIO(
+    content::ResourceContext* resource_context,
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const content::GlobalRequestID& request_id,
+    WebRequestAPI::AuthRequestCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  auto* proxies =
+      WebRequestAPI::ProxySet::GetFromResourceContext(resource_context);
+  proxies->MaybeProxyAuthRequest(auth_info, std::move(response_headers),
+                                 request_id, std::move(callback));
+}
+
 }  // namespace
 
 void WebRequestAPI::Proxy::HandleAuthRequest(
@@ -401,16 +419,25 @@ void WebRequestAPI::Proxy::HandleAuthRequest(
 }
 
 WebRequestAPI::ProxySet::ProxySet() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 WebRequestAPI::ProxySet::~ProxySet() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
+WebRequestAPI::ProxySet* WebRequestAPI::ProxySet::GetFromResourceContext(
+    content::ResourceContext* resource_context) {
+  if (!resource_context->GetUserData(kWebRequestProxySetUserDataKey)) {
+    resource_context->SetUserData(kWebRequestProxySetUserDataKey,
+                                  std::make_unique<WebRequestAPI::ProxySet>());
+  }
+  return static_cast<WebRequestAPI::ProxySet*>(
+      resource_context->GetUserData(kWebRequestProxySetUserDataKey));
+}
+
 void WebRequestAPI::ProxySet::AddProxy(std::unique_ptr<Proxy> proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!is_shutdown_);
 
   proxies_.insert(std::move(proxy));
 }
@@ -428,13 +455,6 @@ void WebRequestAPI::ProxySet::RemoveProxy(Proxy* proxy) {
   auto proxy_it = proxies_.find(proxy);
   DCHECK(proxy_it != proxies_.end());
   proxies_.erase(proxy_it);
-}
-
-void WebRequestAPI::ProxySet::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  is_shutdown_ = true;
-
-  proxies_.clear();
 }
 
 void WebRequestAPI::ProxySet::AssociateProxyWithRequestId(
@@ -490,7 +510,6 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
       info_map_(ExtensionSystem::Get(browser_context_)->info_map()),
-      proxies_(base::MakeRefCounted<ProxySet>()),
       request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()),
       may_have_proxies_(MayHaveProxies()),
       rules_monitor_observer_(this),
@@ -516,10 +535,6 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
 }
 
 WebRequestAPI::~WebRequestAPI() {
-  proxies_->SetAPIDestroyed();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ProxySet::Shutdown, std::move(proxies_)));
 }
 
 void WebRequestAPI::Shutdown() {
@@ -614,7 +629,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           is_for_browser_initiated_requests ? -1 : frame->GetProcess()->GetID(),
           request_id_generator_, std::move(navigation_ui_data),
           base::Unretained(info_map_), std::move(proxied_request),
-          std::move(target_factory_info), proxies_));
+          std::move(target_factory_info)));
   return true;
 }
 
@@ -632,7 +647,8 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
     proxied_request_id.child_id = -1;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ProxySet::MaybeProxyAuthRequest, proxies_,
+      base::BindOnce(&MaybeProxyAuthRequestOnIO,
+                     browser_context_->GetResourceContext(),
                      base::RetainedRef(auth_info), std::move(response_headers),
                      proxied_request_id, std::move(callback)));
   return true;
@@ -660,8 +676,7 @@ void WebRequestAPI::MaybeProxyWebSocket(
           frame->GetProcess()->GetBrowserContext(),
           frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
           base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
-          std::move(proxied_request), std::move(authentication_request),
-          proxies_));
+          std::move(proxied_request), std::move(authentication_request)));
 }
 
 bool WebRequestAPI::MayHaveProxies() const {
