@@ -15,12 +15,14 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -340,6 +342,38 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
             chromeos::disks::MountCondition::MOUNT_CONDITION_NONE));
   }
 
+  void EnableCrostiniForProfile(
+      base::test::ScopedFeatureList* scoped_feature_list) {
+    // TODO(joelhockey): Setting prefs and features to allow crostini is not
+    // ideal.  It would be better if the crostini interface allowed for testing
+    // without such tight coupling.
+    browser()->profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kCrostiniEnabled, true);
+    scoped_feature_list->InitWithFeatures(
+        {features::kCrostini, features::kExperimentalCrostiniUI}, {});
+    // Profile must be signed in with email for crostini.
+    identity::SetPrimaryAccount(
+        SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
+        IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
+        "testuser@gmail.com");
+  }
+
+  void ExpectCrostiniMount() {
+    std::string known_hosts;
+    base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
+    std::string identity;
+    base::Base64Encode("privkey", &identity);
+    std::vector<std::string> mount_options = {
+        "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=" + identity,
+        "Port=2222"};
+    EXPECT_CALL(*disk_mount_manager_mock_,
+                MountPath("sshfs://testuser@hostname:", "",
+                          "crostini_user_termina_penguin", mount_options,
+                          chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                          chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+        .WillOnce(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
+  }
+
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
@@ -502,20 +536,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
-  // TODO(joelhockey): Setting prefs and features to allow crostini is not
-  // ideal.  It would be better if the crostini interface allowed for testing
-  // without such tight coupling.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniEnabled, true);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kCrostini, features::kExperimentalCrostiniUI}, {});
-
-  // Profile must be signed in with email for crostini.
-  identity::SetPrimaryAccount(
-      SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
-      IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
-      "testuser@gmail.com");
+  EnableCrostiniForProfile(&scoped_feature_list);
 
   // Setup CrostiniManager for testing.
   crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
@@ -524,21 +546,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
       CryptohomeIdForProfile(browser()->profile()), kCrostiniDefaultVmName,
       std::move(vm_info));
 
-  // DiskMountManager mock.
-  std::string known_hosts;
-  base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
-  std::string identity;
-  base::Base64Encode("privkey", &identity);
-  std::vector<std::string> mount_options = {
-      "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=" + identity,
-      "Port=2222"};
-  EXPECT_CALL(*disk_mount_manager_mock_,
-              MountPath("sshfs://testuser@hostname:", "",
-                        "crostini_user_termina_penguin", mount_options,
-                        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                        chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
-      .WillOnce(
-          Invoke(this, &FileManagerPrivateApiTest_Crostini_Test::SshfsMount));
+  ExpectCrostiniMount();
 
   // Add 'testing' volume with 'test_dir', create 'share_dir' in Downloads.
   base::ScopedTempDir temp_dir;
@@ -552,4 +560,23 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  EnableCrostiniForProfile(&scoped_feature_list);
+  crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+  ExpectCrostiniMount();
+
+  scoped_refptr<extensions::FileManagerPrivateMountCrostiniContainerFunction>
+      function(
+          new extensions::FileManagerPrivateMountCrostiniContainerFunction());
+  // Use incognito profile.
+  function->set_browser_context(browser()->profile()->GetOffTheRecordProfile());
+
+  extensions::api_test_utils::SendResponseHelper response_helper(
+      function.get());
+  function->RunWithValidation()->Execute();
+  response_helper.WaitForResponse();
+  EXPECT_TRUE(response_helper.GetResponse());
 }
