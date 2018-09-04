@@ -1991,6 +1991,8 @@ enum WebFeature {
   kFeaturePolicyReport = 2536,
   kV8Window_WebkitRTCPeerConnection_ConstructorGetter = 2537,
   kV8Window_WebkitMediaStream_ConstructorGetter = 2538,
+  kTextEncoderStreamConstructor = 2539,
+  kTextDecoderStreamConstructor = 2540,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

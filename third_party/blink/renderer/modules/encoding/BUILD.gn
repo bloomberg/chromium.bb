@@ -10,7 +10,11 @@ blink_modules_sources("encoding") {
     "encoding.h",
     "text_decoder.cc",
     "text_decoder.h",
+    "text_decoder_stream.cc",
+    "text_decoder_stream.h",
     "text_encoder.cc",
     "text_encoder.h",
+    "text_encoder_stream.cc",
+    "text_encoder_stream.h",
   ]
 }

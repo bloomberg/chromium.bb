@@ -43,7 +43,6 @@ class TransformStream::Algorithm : public ScriptFunction {
             ExceptionState& exception_state)
       : ScriptFunction(script_state),
         transformer_(transformer),
-        context_(exception_state.Context()),
         interface_name_(exception_state.InterfaceName()),
         property_name_(exception_state.PropertyName()) {}
 
@@ -58,7 +57,12 @@ class TransformStream::Algorithm : public ScriptFunction {
                    v8::Local<v8::Value> controller)
         : controller_(owner->GetScriptState(), controller),
           exception_state_(owner->GetScriptState()->GetIsolate(),
-                           owner->context_,
+                           // Using the original context would result in every
+                           // exception claiming to have happened during
+                           // construction. Since that is not helpful, don't
+                           // annotate exceptions with where we think they came
+                           // from.
+                           ExceptionState::kUnknownContext,
                            owner->interface_name_,
                            owner->property_name_),
           reject_promise_scope_(info, exception_state_) {}
@@ -74,7 +78,6 @@ class TransformStream::Algorithm : public ScriptFunction {
   };
 
   Member<TransformStreamTransformer> transformer_;
-  const ExceptionState::ContextType context_;
   const char* const interface_name_;
   const char* const property_name_;
 };

@@ -19933,6 +19933,8 @@ Called by update_net_error_codes.py.-->
   <int value="2536" label="FeaturePolicyReport"/>
   <int value="2537" label="V8Window_WebkitRTCPeerConnection_ConstructorGetter"/>
   <int value="2538" label="V8Window_WebkitMediaStream_ConstructorGetter"/>
+  <int value="2539" label="TextEncoderStreamConstructor"/>
+  <int value="2540" label="TextDecoderStreamConstructor"/>
 </enum>
 
 <enum name="FeedbackSource">

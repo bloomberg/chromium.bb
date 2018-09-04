@@ -748,6 +748,9 @@ function shouldHaveHadError(message)
 // that something is dead need to use this asynchronous collectGarbage
 // function.
 function asyncGC(callback) {
+    if (!callback) {
+        return new Promise(resolve => asyncGC(resolve));
+    }
     var documentsBefore = internals.numberOfLiveDocuments();
     GCController.collectAll();
     // FIXME: we need a better way of waiting for chromium events to happen
