@@ -1455,7 +1455,7 @@ const char kPasswordsKeyboardAccessoryDescription[] =
 const char kPasswordsMigrateLinuxToLoginDBName[] =
     "Migrate passwords to \"Login Data\"";
 const char kPasswordsMigrateLinuxToLoginDBDescription[] =
-    "Performs a one-off migration (with retries) of passwords from the "
+    "Performs a one-off irreversible migration of passwords from the "
     "gnome-keyring or kwallet into the profile directory.";
 
 const char kPdfIsolationName[] = "PDF Isolation";

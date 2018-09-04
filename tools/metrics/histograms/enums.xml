@@ -27659,6 +27659,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Not attempted"/>
   <int value="1" label="Failed"/>
   <int value="2" label="Copied everything"/>
+  <int value="3" label="The standard login database is encrypted"/>
 </enum>
 
 <enum name="LinuxSandboxStatus">

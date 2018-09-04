@@ -267,6 +267,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   ps = new PasswordStoreX(
       std::move(login_db),
+      profile->GetPath().Append(password_manager::kLoginDataFileName),
       profile->GetPath().Append(password_manager::kSecondLoginDataFileName),
       std::move(backend), prefs);
   RecordBackendStatistics(desktop_env, store_type, used_backend);
