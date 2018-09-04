@@ -6,7 +6,9 @@ include_rules = [
   "+crypto",
   "+mojo/public/cpp",
   "+net",
+  "+services/data_decoder/public",
   "+services/network",
+  "+services/service_manager/public",
 ]
 
 specific_include_rules = {

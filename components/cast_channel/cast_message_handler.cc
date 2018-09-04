@@ -10,12 +10,18 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "components/cast_channel/cast_socket_service.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace cast_channel {
 
 namespace {
 
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(5);
+
+void ReportParseError(const std::string& error) {
+  DVLOG(2) << "Error parsing JSON message: " << error;
+}
 
 }  // namespace
 
@@ -45,11 +51,16 @@ InternalMessage::InternalMessage(CastMessageType type, base::Value message)
     : type(type), message(std::move(message)) {}
 InternalMessage::~InternalMessage() = default;
 
-CastMessageHandler::CastMessageHandler(CastSocketService* socket_service,
-                                       const std::string& user_agent,
-                                       const std::string& browser_version,
-                                       const std::string& locale)
+CastMessageHandler::CastMessageHandler(
+    CastSocketService* socket_service,
+    std::unique_ptr<service_manager::Connector> connector,
+    const std::string& data_decoder_batch_id,
+    const std::string& user_agent,
+    const std::string& browser_version,
+    const std::string& locale)
     : sender_id_(base::StringPrintf("sender-%d", base::RandInt(0, 1000000))),
+      connector_(std::move(connector)),
+      data_decoder_batch_id_(data_decoder_batch_id),
       user_agent_(user_agent),
       browser_version_(browser_version),
       locale_(locale),
@@ -205,7 +216,18 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   DVLOG(2) << __func__ << ", channel_id: " << socket.id()
            << ", message: " << CastMessageToString(message);
   if (IsCastInternalNamespace(message.namespace_())) {
-    HandleCastInternalMessage(socket, message);
+    if (message.payload_type() ==
+        cast_channel::CastMessage_PayloadType_STRING) {
+      data_decoder::SafeJsonParser::ParseBatch(
+          connector_.get(), message.payload_utf8(),
+          base::BindRepeating(&CastMessageHandler::HandleCastInternalMessage,
+                              weak_ptr_factory_.GetWeakPtr(), socket.id(),
+                              message.source_id(), message.destination_id()),
+          base::BindRepeating(&ReportParseError), data_decoder_batch_id_);
+    } else {
+      DLOG(ERROR) << "Dropping internal message with binary payload: "
+                  << message.namespace_();
+    }
   } else {
     DVLOG(2) << "Got app message from cast channel with namespace: "
              << message.namespace_();
@@ -214,37 +236,46 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   }
 }
 
-void CastMessageHandler::HandleCastInternalMessage(const CastSocket& socket,
-                                                   const CastMessage& message) {
-  // TODO(https://crbug.com/809249): Parse message with data_decoder service.
-  std::unique_ptr<base::DictionaryValue> payload =
-      GetDictionaryFromCastMessage(message);
-  if (!payload)
+void CastMessageHandler::HandleCastInternalMessage(
+    int channel_id,
+    const std::string& source_id,
+    const std::string& destination_id,
+    std::unique_ptr<base::Value> payload) {
+  if (!payload->is_dict()) {
+    ReportParseError("Parsed message not a dictionary");
     return;
+  }
+
+  // Check if the socket still exists as it might have been removed during
+  // message parsing.
+  if (!socket_service_->GetSocket(channel_id)) {
+    DVLOG(2) << __func__ << ": socket not found: " << channel_id;
+    return;
+  }
 
   int request_id = 0;
   if (GetRequestIdFromResponse(*payload, &request_id) && request_id > 0) {
-    auto requests_it = pending_requests_.find(socket.id());
+    auto requests_it = pending_requests_.find(channel_id);
     if (requests_it != pending_requests_.end())
       requests_it->second->HandlePendingRequest(request_id, *payload);
   }
 
   CastMessageType type = ParseMessageTypeFromPayload(*payload);
   if (type == CastMessageType::kOther) {
-    DVLOG(2) << "Unknown message type: " << CastMessageToString(message);
+    DVLOG(2) << "Unknown message type: " << *payload;
     return;
   }
 
   if (type == CastMessageType::kCloseConnection) {
     // Source / destination is flipped.
-    virtual_connections_.erase(VirtualConnection(
-        socket.id(), message.destination_id(), message.source_id()));
+    virtual_connections_.erase(
+        VirtualConnection(channel_id, destination_id, source_id));
     return;
   }
 
   InternalMessage internal_message(type, std::move(*payload));
   for (auto& observer : observers_)
-    observer.OnInternalMessage(socket.id(), internal_message);
+    observer.OnInternalMessage(channel_id, internal_message);
 }
 
 void CastMessageHandler::SendCastMessage(CastSocket* socket,
@@ -336,7 +367,7 @@ bool CastMessageHandler::PendingRequests::AddLaunchRequest(
 
 void CastMessageHandler::PendingRequests::HandlePendingRequest(
     int request_id,
-    const base::DictionaryValue& response) {
+    const base::Value& response) {
   auto app_availability_it =
       std::find_if(pending_app_availability_requests.begin(),
                    pending_app_availability_requests.end(),

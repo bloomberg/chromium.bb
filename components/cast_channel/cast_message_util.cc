@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -92,16 +91,6 @@ bool IsCastMessageValid(const CastMessage& message_proto) {
           message_proto.has_payload_utf8()) ||
          (message_proto.payload_type() == CastMessage_PayloadType_BINARY &&
           message_proto.has_payload_binary());
-}
-
-std::unique_ptr<base::DictionaryValue> GetDictionaryFromCastMessage(
-    const CastMessage& message) {
-  if (!message.has_payload_utf8())
-    return nullptr;
-
-  // TODO(https://crbug.com/809249): Parse JSON using data_decoder service.
-  return base::DictionaryValue::From(
-      base::JSONReader::Read(message.payload_utf8()));
 }
 
 bool IsCastInternalNamespace(const std::string& message_namespace) {
