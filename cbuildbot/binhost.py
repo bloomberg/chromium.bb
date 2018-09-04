@@ -211,7 +211,7 @@ def GetChromeUseFlags(board, extra_useflags):
   assert cros_build_lib.IsInsideChroot()
   assert os.path.exists('/build/%s' % board), 'Board %s not set up' % board
   extra_env = {'USE': ' '.join(extra_useflags)}
-  cmd = ['equery-%s' % board, 'uses', constants.CHROME_CP]
+  cmd = ['equery-%s' % board, '-Cq', 'uses', constants.CHROME_CP]
   chrome_useflags = cros_build_lib.RunCommand(
       cmd, capture_output=True, print_cmd=False,
       extra_env=extra_env).output.rstrip().split()
