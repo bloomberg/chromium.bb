@@ -167,7 +167,7 @@ const CGFloat kFaviconSize = 16.0;
   // tab_view is not an an accessible element, and making it one would add
   // several complicated layers to UIA.  Instead, simply set active/inactive
   // here to be used by UIA.
-  [_closeButton setAccessibilityValue:(selected ? @"active" : @"inactive")];
+  [_titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
 }
 
 - (void)setCollapsed:(BOOL)collapsed {
@@ -187,6 +187,7 @@ const CGFloat kFaviconSize = 16.0;
     [_titleLabel setTruncateMode:GTMFadeTruncatingTail];
   }
   _titleLabel.text = title;
+  [_closeButton setAccessibilityValue:title];
 }
 
 - (UIImage*)favicon {
