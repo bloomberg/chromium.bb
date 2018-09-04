@@ -1121,6 +1121,7 @@ AutofillManager::AutofillManager(
           driver->GetURLLoaderFactory(),
           client->GetPrefs(),
           client->GetIdentityManager(),
+          client->GetPersonalDataManager(),
           driver->IsIncognito())),
       app_locale_(app_locale),
       personal_data_(personal_data),

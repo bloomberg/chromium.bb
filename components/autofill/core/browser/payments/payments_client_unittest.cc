@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -73,9 +74,13 @@ class PaymentsClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     TestingPrefServiceSimple pref_service_;
-    client_.reset(new PaymentsClient(test_shared_loader_factory_,
-                                     &pref_service_,
-                                     identity_test_env_.identity_manager()));
+    client_ = std::make_unique<PaymentsClient>(
+        test_shared_loader_factory_, &pref_service_,
+        identity_test_env_.identity_manager(), &test_personal_data_);
+    const std::string& account_id =
+        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com")
+            .account_id;
+    test_personal_data_.SetActiveAccountId(account_id);
   }
 
   void TearDown() override { client_.reset(); }
@@ -83,6 +88,11 @@ class PaymentsClientTest : public testing::Test {
   void EnableAutofillSendExperimentIdsInPaymentsRPCs() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillSendExperimentIdsInPaymentsRPCs);
+  }
+
+  void EnableAutofillGetPaymentsIdentityFromSync() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillGetPaymentsIdentityFromSync);
   }
 
   void DisableAutofillSendExperimentIdsInPaymentsRPCs() {
@@ -136,9 +146,6 @@ class PaymentsClientTest : public testing::Test {
   // Issue an UnmaskCard request. This requires an OAuth token before starting
   // the request.
   void StartUnmasking() {
-    if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
-      identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
-
     PaymentsClient::UnmaskRequestDetails request_details;
     request_details.billing_customer_number = 111222333444;
     request_details.card = test::GetMaskedServerCard();
@@ -151,9 +158,6 @@ class PaymentsClientTest : public testing::Test {
 
   // Issue a GetUploadDetails request.
   void StartGettingUploadDetails() {
-    if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
-      identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
-
     client_->GetUploadDetails(
         BuildTestProfiles(), kAllDetectableValues, std::vector<const char*>(),
         "language-LOCALE",
@@ -165,9 +169,6 @@ class PaymentsClientTest : public testing::Test {
   // Issue an UploadCard request. This requires an OAuth token before starting
   // the request.
   void StartUploading(bool include_cvc) {
-    if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
-      identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
-
     PaymentsClient::UploadRequestDetails request_details;
     request_details.billing_customer_number = 111222333444;
     request_details.card = test::GetCreditCard();
@@ -183,9 +184,6 @@ class PaymentsClientTest : public testing::Test {
   }
 
   void StartMigrating(bool uncheck_last_card, bool has_cardholder_name) {
-    if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
-      identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
-
     PaymentsClient::MigrationRequestDetails request_details;
     request_details.context_token = base::ASCIIToUTF16("context token");
     request_details.risk_data = "some risk data";
@@ -245,6 +243,7 @@ class PaymentsClientTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  TestPersonalDataManager test_personal_data_;
   std::unique_ptr<PaymentsClient> client_;
   identity::IdentityTestEnvironment identity_test_env_;
 
@@ -313,6 +312,15 @@ TEST_F(PaymentsClientTest, UnmaskSuccess) {
   EXPECT_EQ("1234", real_pan_);
 }
 
+TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
+  EnableAutofillGetPaymentsIdentityFromSync();
+  StartUnmasking();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("1234", real_pan_);
+}
+
 TEST_F(PaymentsClientTest, GetDetailsSuccess) {
   StartGettingUploadDetails();
   ReturnResponse(
@@ -353,6 +361,29 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesDetectedValuesInRequest) {
       "\"detected_values\":" + std::to_string(kAllDetectableValues);
   EXPECT_TRUE(GetUploadData().find(detected_values_string) !=
               std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
+  EnableAutofillGetPaymentsIdentityFromSync();
+  // Set up a different account.
+  const std::string& secondary_account_id =
+      identity_test_env_.MakeAccountAvailable("secondary@gmail.com").account_id;
+  test_personal_data_.SetActiveAccountId(secondary_account_id);
+
+  StartUploading(/*include_cvc=*/true);
+  ReturnResponse(net::HTTP_OK, "{}");
+
+  // Issue a token for the secondary account.
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      secondary_account_id, "secondary_account_token",
+      base::Time::Now() + base::TimeDelta::FromDays(10));
+
+  // Verify the auth header.
+  std::string auth_header_value;
+  EXPECT_TRUE(intercepted_headers_.GetHeader(
+      net::HttpRequestHeaders::kAuthorization, &auth_header_value))
+      << intercepted_headers_.ToString();
+  EXPECT_EQ("Bearer secondary_account_token", auth_header_value);
 }
 
 TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {

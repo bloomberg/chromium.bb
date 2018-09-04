@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/grit/components_scaled_resources.h"
@@ -66,6 +67,7 @@ CvcUnmaskViewController::CvcUnmaskViewController(
           IdentityManagerFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())
                   ->GetOriginalProfile()),
+          state->GetPersonalDataManager(),
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->IsOffTheRecord()),
       full_card_request_(this,

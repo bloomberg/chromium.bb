@@ -405,6 +405,12 @@ class PersonalDatabaseHelper
     return server_database_;
   }
 
+  // Whether we're currently using the ephemeral account storage for saving
+  // server cards.
+  bool IsUsingAccountStorageForServerCards() {
+    return server_database_ != profile_database_;
+  }
+
   // Set whether this should use the passed in account storage for server
   // addresses. If false, this will use the profile_storage.
   // It's an error to call this if no account storage was passed in at
@@ -696,6 +702,16 @@ void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service_, sync_service);
   sync_service_->RemoveObserver(this);
   sync_service_ = nullptr;
+}
+
+std::string PersonalDataManager::GetActiveSignedInAccountId() const {
+  // Get the account that is used for Sync (whether it's full Sync or not).
+  return sync_service_->GetAuthenticatedAccountInfo().account_id;
+}
+
+bool PersonalDataManager::IsSyncFeatureEnabled() const {
+  return !sync_service_->GetAuthenticatedAccountInfo().IsEmpty() &&
+         !database_helper_->IsUsingAccountStorageForServerCards();
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
