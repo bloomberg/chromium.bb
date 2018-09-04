@@ -116,7 +116,7 @@ const LayoutObject* LayoutSVGBlock::PushMappingToContainer(
                                                   geometry_map);
 }
 
-LayoutRect LayoutSVGBlock::AbsoluteVisualRect() const {
+LayoutRect LayoutSVGBlock::VisualRectInDocument() const {
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View());
 }
 

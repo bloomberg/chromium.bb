@@ -1491,9 +1491,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void InvalidatePaintRectangle(const LayoutRect&);
 
   // Returns the rect that should have paint invalidated whenever this object
-  // changes. The rect is in the view's coordinate space. This method deals with
-  // outlines and overflow.
-  virtual LayoutRect AbsoluteVisualRect() const;
+  // changes. The rect is in the coordinate space of the document's scrolling
+  // contents. This method deals with outlines and overflow.
+  virtual LayoutRect VisualRectInDocument() const;
 
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the object's local coordinate space. This is for
@@ -1544,7 +1544,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const LayoutRect&) const;
   HitTestResult HitTestForOcclusion() const {
-    return HitTestForOcclusion(AbsoluteVisualRect());
+    return HitTestForOcclusion(VisualRectInDocument());
   }
 
   // Return the offset to the column in which the specified point (in
