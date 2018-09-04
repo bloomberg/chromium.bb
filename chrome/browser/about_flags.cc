@@ -2127,7 +2127,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"extension-active-script-permission",
      flag_descriptions::kUserConsentForExtensionScriptsName,
      flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(extensions::features::kRuntimeHostPermissions)},
+     FEATURE_VALUE_TYPE(extensions_features::kRuntimeHostPermissions)},
 #endif  // ENABLE_EXTENSIONS
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-embedded-extension-options",

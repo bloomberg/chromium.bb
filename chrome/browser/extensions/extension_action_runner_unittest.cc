@@ -79,8 +79,8 @@ class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override;
 
-  // Used to enable features::kRuntimeHostPermissions for ExtensionActionRunner
-  // to take effect.
+  // Used to enable extensions_features::kRuntimeHostPermissions for
+  // ExtensionActionRunner to take effect.
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // The associated ExtensionActionRunner.
@@ -175,7 +175,8 @@ void ExtensionActionRunnerUnitTest::IncrementExecutionCount(
 void ExtensionActionRunnerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  scoped_feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list_.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   // Skip syncing for testing purposes.
   ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),

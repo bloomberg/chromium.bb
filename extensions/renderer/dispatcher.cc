@@ -669,7 +669,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"platformApp", IDR_PLATFORM_APP_JS},
   };
 
-  if (!base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
+  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
     resources.push_back({"binding", IDR_BINDING_JS});
     resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
     resources.push_back({"lastError", IDR_LAST_ERROR_JS});
@@ -1368,7 +1368,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
 std::unique_ptr<ExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
     std::unique_ptr<IPCMessageSender> ipc_sender) {
   std::unique_ptr<ExtensionBindingsSystem> bindings_system;
-  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
     auto system =
         std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
     delegate_->InitializeBindingsSystem(this, system.get());

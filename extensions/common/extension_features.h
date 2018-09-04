@@ -7,14 +7,12 @@
 
 #include "base/feature_list.h"
 
-namespace extensions {
-namespace features {
+namespace extensions_features {
 
 extern const base::Feature kNativeCrxBindings;
 extern const base::Feature kNewExtensionUpdaterService;
 extern const base::Feature kRuntimeHostPermissions;
 
-}  // namespace features
-}  // namespace extensions
+}  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSIONS_FEATURES_H_

@@ -51,7 +51,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
 
   void SetUp() override {
     scoped_feature_list_.InitAndDisableFeature(
-        features::kNewExtensionUpdaterService);
+        extensions_features::kNewExtensionUpdaterService);
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(

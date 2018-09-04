@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
 
   std::string message;
   bool use_native_bindings =
-      base::FeatureList::IsEnabled(features::kNativeCrxBindings);
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings);
   if (use_native_bindings) {
     // TODO(devlin): The specific event name (here, 'browserAction.onClicked')
     // may or may not be worth preserving. In most cases, it's unnecessary with
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
   std::string source;
   std::string message;
   bool use_native_bindings =
-      base::FeatureList::IsEnabled(features::kNativeCrxBindings);
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings);
   if (use_native_bindings) {
     source = extension->GetResourceURL("background.js").spec();
     message =
@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, CatchesLastError) {
   std::string message;
   size_t line_number = 0;
   size_t column_number = 0;
-  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
     // TODO(devlin): This is unfortunate. We lose a lot of context by using
     // RenderFrame::AddMessageToConsole() instead of console.error(). This could
     // be expanded; blink::SourceLocation knows how to capture an inspector

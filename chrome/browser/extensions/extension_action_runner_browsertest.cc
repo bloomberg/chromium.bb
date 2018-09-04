@@ -118,7 +118,8 @@ class ExtensionActionRunnerBrowserTest : public ExtensionBrowserTest {
 void ExtensionActionRunnerBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  scoped_feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list_.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 }
 
 void ExtensionActionRunnerBrowserTest::TearDownOnMainThread() {

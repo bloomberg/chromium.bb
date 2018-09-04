@@ -172,7 +172,7 @@ void ExtensionApiTest::SetUpOnMainThread() {
   }
   test_config_->SetBoolean(
       kNativeCrxBindingsEnabled,
-      base::FeatureList::IsEnabled(features::kNativeCrxBindings));
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   TestGetConfigFunction::set_test_config_state(test_config_.get());
 }
 

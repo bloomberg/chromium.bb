@@ -120,7 +120,7 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
   // With runtime host permissions, include a "host access" portion of the
   // tooltip if the extension has or wants access to the site.
   if (base::FeatureList::IsEnabled(
-          extensions::features::kRuntimeHostPermissions)) {
+          extensions_features::kRuntimeHostPermissions)) {
     PageInteractionStatus interaction_status =
         GetPageInteractionStatus(web_contents);
     int interaction_status_description_id = -1;
@@ -456,7 +456,7 @@ ExtensionActionViewController::GetIconImageSource(
   bool was_blocked = false;
   bool action_is_visible = extension_action_->GetIsVisible(tab_id);
   if (base::FeatureList::IsEnabled(
-          extensions::features::kRuntimeHostPermissions)) {
+          extensions_features::kRuntimeHostPermissions)) {
     PageInteractionStatus interaction_status =
         GetPageInteractionStatus(web_contents);
     // With the runtime host permissions feature, we only grayscale the icon if

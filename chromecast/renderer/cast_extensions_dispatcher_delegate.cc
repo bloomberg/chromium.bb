@@ -86,7 +86,6 @@ void CastExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void CastExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
-  DCHECK(
-      base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
+  DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   // TODO(rmrossi): Stub
 }

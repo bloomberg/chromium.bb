@@ -105,7 +105,8 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
 class RuntimeHostPermissionsEnabledScope {
  public:
   RuntimeHostPermissionsEnabledScope() {
-    feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kRuntimeHostPermissions);
   }
   ~RuntimeHostPermissionsEnabledScope() {}
 
