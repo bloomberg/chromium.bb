@@ -15,6 +15,7 @@ enum LaunchIdComponents {
   NORMAL = 0,
   BUTTON_INDEX = 1,
   CONTEXT_MENU = 2,
+  DISMISS_BUTTON = 3,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -90,6 +91,11 @@ NotificationLaunchId::NotificationLaunchId(const std::string& input) {
       min_num_tokens = 6;
       is_for_context_menu_ = true;
       break;
+    case DISMISS_BUTTON:
+      // type|notification_type|profile_id|incognito|origin|notification_id
+      min_num_tokens = 6;
+      is_for_dismiss_button_ = true;
+      break;
     default:
       // |components| has an invalid value.
       LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kComponentIdOutOfRange);
@@ -142,9 +148,16 @@ std::string NotificationLaunchId::Serialize() const {
   // and unsafe for origins -- and should therefore be encoded (as per
   // http://www.ietf.org/rfc/rfc1738.txt).
   std::string prefix;
-  LaunchIdComponents type = is_for_context_menu_
-                                ? CONTEXT_MENU
-                                : (button_index_ > -1 ? BUTTON_INDEX : NORMAL);
+  LaunchIdComponents type;
+  if (is_for_context_menu_)
+    type = CONTEXT_MENU;
+  else if (is_for_dismiss_button_)
+    type = DISMISS_BUTTON;
+  else if (button_index_ > -1)
+    type = BUTTON_INDEX;
+  else
+    type = NORMAL;
+
   if (button_index_ > -1)
     prefix = base::StringPrintf("|%d", button_index_);
   return base::StringPrintf(
