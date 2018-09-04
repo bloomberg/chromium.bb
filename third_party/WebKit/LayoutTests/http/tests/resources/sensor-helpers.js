@@ -219,7 +219,7 @@ function sensorMocks() {
       this.readingSizeInBytes_ =
           device.mojom.SensorInitParams.kReadBufferSizeForTests;
       this.sharedBufferSizeInBytes_ = this.readingSizeInBytes_ *
-              device.mojom.SensorType.LAST;
+              (device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION + 1);
       let rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to create buffer");
       this.sharedBufferHandle_ = rv.handle;
@@ -251,8 +251,7 @@ function sensorMocks() {
                 initParams: null};
       }
 
-      let offset = (device.mojom.SensorType.LAST - type) *
-          this.readingSizeInBytes_;
+      let offset = type * this.readingSizeInBytes_;
       let reportingMode = device.mojom.ReportingMode.ON_CHANGE;
       if (this.isContinuous_) {
         reportingMode = device.mojom.ReportingMode.CONTINUOUS;

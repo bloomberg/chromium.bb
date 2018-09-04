@@ -8,8 +8,7 @@ module device.mojom;
 // When adding new sensor type, update the documentation of sensor data values
 // in SensorReading struct at sensor_reading.h file.
 enum SensorType {
-  FIRST = 1,
-  AMBIENT_LIGHT = FIRST,
+  AMBIENT_LIGHT,
   PROXIMITY,
   ACCELEROMETER,
   LINEAR_ACCELERATION,
@@ -24,7 +23,6 @@ enum SensorType {
   RELATIVE_ORIENTATION_EULER_ANGLES,
   // Recommended for new code.
   RELATIVE_ORIENTATION_QUATERNION,
-  LAST = RELATIVE_ORIENTATION_QUATERNION // Note: LAST is also equal to the types count.
 };
 
 // Reporting mode supported by the Sensor.
