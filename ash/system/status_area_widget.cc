@@ -5,7 +5,6 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

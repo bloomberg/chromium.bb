@@ -31,7 +31,6 @@
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -805,12 +804,6 @@ void HandleToggleDictation() {
 }
 
 bool CanHandleToggleDockedMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    // TODO: Mash support for the Docked Magnifier https://crbug.com/814481.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   return features::IsDockedMagnifierEnabled();
 }
 
@@ -928,17 +921,6 @@ void HandleToggleHighContrast() {
   }
 }
 
-bool CanHandleToggleFullscreenMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    // TODO: Mash support for the Fullscreen Magnifier
-    // https://crbug.com/821551.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  return true;
-}
-
 void HandleToggleFullscreenMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
 
@@ -1007,12 +989,6 @@ bool CanHandleActiveMagnifierZoom() {
 
 // Change the scale of the active magnifier.
 void HandleActiveMagnifierZoom(int delta_index) {
-  // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
   if (Shell::Get()->magnification_controller()->IsEnabled()) {
     Shell::Get()->magnification_controller()->StepToNextScaleValue(delta_index);
     return;
@@ -1339,7 +1315,7 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_DOCKED_MAGNIFIER:
       return CanHandleToggleDockedMagnifier();
     case TOGGLE_FULLSCREEN_MAGNIFIER:
-      return CanHandleToggleFullscreenMagnifier();
+      return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
       return CanHandleToggleMessageCenterBubble();
     case TOGGLE_MIRROR_MODE:

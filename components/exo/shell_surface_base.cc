@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -39,6 +38,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor_extra/shadow.h"
@@ -980,13 +980,9 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
   window->AddChild(host_window());
-  // Use DESCENDANTS_ONLY event targeting policy for mus/mash.
-  // TODO(https://crbug.com/839521): Revisit after event dispatching code is
-  //     changed for mus/mash.
+  // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
-      ash::Shell::GetAshConfig() == ash::Config::CLASSIC
-          ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
-          : ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(
       widget_, client_controlled_move_resize_));
   SetApplicationId(window, application_id_);

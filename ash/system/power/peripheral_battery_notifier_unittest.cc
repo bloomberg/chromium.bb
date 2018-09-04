@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

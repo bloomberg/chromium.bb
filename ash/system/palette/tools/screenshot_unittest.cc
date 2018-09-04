@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"

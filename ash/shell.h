@@ -207,7 +207,6 @@ class WindowPositioner;
 class WindowSelectorController;
 class WindowTreeHostManager;
 
-enum class Config;
 enum class LoginStatus;
 
 // Shell is a singleton object that presents the Shell API and implements the
@@ -279,8 +278,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Whether |window| hosts a remote client (e.g. the keyboard shortcut viewer
   // app under classic ash, or a browser window under mash).
   static bool HasRemoteClient(aura::Window* window);
-
-  static Config GetAshConfig();
 
   // Registers all ash related local state prefs to the given |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,

@@ -1117,8 +1117,6 @@ component("ash") {
     "wm/drag_window_controller.cc",
     "wm/drag_window_controller.h",
     "wm/drag_window_resizer.cc",
-    "wm/drag_window_resizer_mash.cc",
-    "wm/drag_window_resizer_mash.h",
     "wm/event_client_impl.cc",
     "wm/event_client_impl.h",
     "wm/focus_rules.cc",

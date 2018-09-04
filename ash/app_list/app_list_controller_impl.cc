@@ -19,7 +19,6 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"

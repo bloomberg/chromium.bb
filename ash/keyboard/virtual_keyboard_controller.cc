@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

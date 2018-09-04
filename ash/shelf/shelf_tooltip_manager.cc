@@ -4,7 +4,6 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_tooltip_bubble.h"
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
@@ -148,10 +147,6 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   if (event->type() != ui::ET_MOUSE_MOVED)
-    return;
-
-  // A workaround for crbug.com/756163, likely not needed as Mus/Mash matures.
-  if (Shell::GetAshConfig() != Config::CLASSIC && event->location().IsOrigin())
     return;
 
   gfx::Point point = event->location();

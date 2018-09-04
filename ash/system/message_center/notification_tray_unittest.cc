@@ -12,7 +12,6 @@
 #include "ash/message_center/message_center_ui_controller.h"
 #include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"

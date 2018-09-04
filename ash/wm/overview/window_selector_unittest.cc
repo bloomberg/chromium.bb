@@ -16,7 +16,6 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -495,11 +494,8 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
-  // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-    // Hide the cursor before entering overview to test that it will be shown.
-    aura::client::GetCursorClient(root_window)->HideCursor();
-  }
+  // Hide the cursor before entering overview to test that it will be shown.
+  aura::client::GetCursorClient(root_window)->HideCursor();
 
   // In overview mode the windows should no longer overlap and the text filter
   // widget should be focused.
@@ -513,11 +509,8 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
-  // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-    // Cursor should have been unlocked.
-    EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
-  }
+  // Cursor should have been unlocked.
+  EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
 }
 
 // Tests activating minimized window.

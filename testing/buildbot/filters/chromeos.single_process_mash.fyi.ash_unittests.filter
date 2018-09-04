@@ -1,8 +1,7 @@
-# These tests fail.
+# These tests fail. https://crbug.com/646565
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/0
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/1
 -LockActionHandlerLayoutManagerTest.KeyboardBounds
--ShelfWindowWatcherTest.CreateAndRemoveShelfItemProperties
 -ShellTest.KeyboardCreation
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboard
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered
@@ -10,7 +9,7 @@
 -VirtualKeyboardControllerTest.ForceToShowKeyboardWithKeysetWhenKeyboardIsDisabled
 -VirtualKeyboardRootWindowControllerTest.ClickWithActiveModalDialog
 
-# These tests crash.
+# These tests crash. https://crbug.com/646565
 -LockContentsViewKeyboardUnitTest.AutoLayoutExtraSmallUsersListForKeyboard
 -LockContentsViewKeyboardUnitTest.AutoLayoutSmallUsersListForKeyboard
 -LockContentsViewKeyboardUnitTest.PinSubmitWithVirtualKeyboardShown
@@ -19,6 +18,8 @@
 -LockLayoutManagerTest.KeyboardBounds
 -LockWindowVirtualKeyboardTest.VirtualKeyboardDoesNotCoverAuthView
 -MagnificationControllerTest.TextfieldFocusedWithKeyboard
+# Crashes in ui::FakeContextFactory::GetLastCompositorFrame().
+-NonClientFrameControllerMashTest.ContentRegionNotDrawnForClient
 -ShelfLayoutManagerKeyboardTest.ShelfIgnoreWorkAreaChangeInNonStickyMode
 -ShelfLayoutManagerKeyboardTest.ShelfNotMoveOnKeyboardOpen
 -ShelfLayoutManagerKeyboardTest.ShelfShouldChangeWorkAreaInStickyMode

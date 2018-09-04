@@ -10,7 +10,6 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller_test_api.h"

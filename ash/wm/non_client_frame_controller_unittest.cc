@@ -5,7 +5,6 @@
 #include "ash/wm/non_client_frame_controller.h"
 
 #include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -23,6 +22,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/fake_context_factory.h"
@@ -112,8 +112,8 @@ class NonClientFrameControllerMashTest : public AshTestBase {
 };
 
 TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
-    return;  // TODO: decide if this test should be made to work with ws2.
+  if (!::features::IsSingleProcessMash() && !::features::IsMultiProcessMash())
+    return;
 
   std::map<std::string, std::vector<uint8_t>> properties;
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(

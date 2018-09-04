@@ -13,7 +13,6 @@
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"

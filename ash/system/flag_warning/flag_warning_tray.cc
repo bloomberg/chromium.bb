@@ -8,7 +8,6 @@
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/ash_typography.h"
-#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

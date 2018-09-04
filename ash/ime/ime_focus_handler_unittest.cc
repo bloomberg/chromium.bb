@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/wm/core/focus_controller.h"
 
 namespace ash {
@@ -77,8 +77,8 @@ class ImeFocusHandlerTest : public AshTestBase {
 // Tests that IME focus state is updated when the active window changes between
 // a ClientWindow and an ash window.
 TEST_F(ImeFocusHandlerTest, BetweenClientWindowAndAshWindow) {
-  // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
+  // Multi-process mash does not use shared IME.
+  if (::features::IsMultiProcessMash())
     return;
 
   // Activates a non-ash window. IME should lose focus.
@@ -100,8 +100,8 @@ TEST_F(ImeFocusHandlerTest, BetweenClientWindowAndAshWindow) {
 // Tests that IME stays un-focused when the active window changes between
 // different ClientWindows.
 TEST_F(ImeFocusHandlerTest, BetweenClientWindows) {
-  // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
+  // Multi-process mash does not use shared IME.
+  if (::features::IsMultiProcessMash())
     return;
 
   // Activates a non-ash window. IME should lose focus.
@@ -118,8 +118,8 @@ TEST_F(ImeFocusHandlerTest, BetweenClientWindows) {
 // Tests that IME stays focused when the active window changes between ash
 // windows.
 TEST_F(ImeFocusHandlerTest, BetweenAshWindows) {
-  // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
+  // Multi-process mash does not use shared IME.
+  if (::features::IsMultiProcessMash())
     return;
 
   // Activates an ash window. IME is focused.
