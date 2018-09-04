@@ -108,6 +108,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
             "safe_browsing_scout_reporting";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
+    private static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
@@ -158,6 +159,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeBaseCheckBoxPreference mSafeBrowsing;
     private ChromeBaseCheckBoxPreference mSafeBrowsingReporting;
     private ChromeBaseCheckBoxPreference mUsageAndCrashReporting;
+    private ChromeBaseCheckBoxPreference mUrlKeyedAnonymizedData;
     private Preference mContextualSearch;
 
     private boolean mIsEngineInitialized;
@@ -255,6 +257,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mUsageAndCrashReporting.setOnPreferenceChangeListener(this);
         mUsageAndCrashReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
+        mUrlKeyedAnonymizedData =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
+        mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
+        mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+
         mContextualSearch = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (!ContextualSearchFieldTrial.isEnabled()) {
             removePreference(mNonpersonalizedServices, mContextualSearch);
@@ -265,6 +272,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mGoogleActivityControls.setSummary(
                     R.string.sign_in_google_activity_controls_summary_child_account);
         }
+
+        boolean useSyncAndAllServices = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
+        mSyncGroup.setExpanded(!useSyncAndAllServices);
+        mNonpersonalizedServices.setExpanded(!useSyncAndAllServices);
 
         updatePreferences();
     }
@@ -359,28 +370,31 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         String key = preference.getKey();
         if (PREF_USE_SYNC_AND_ALL_SERVICES.equals(key)) {
             boolean enabled = (boolean) newValue;
-            if (enabled) {
+            if (!enabled) {
                 mSyncGroup.setExpanded(true);
                 mNonpersonalizedServices.setExpanded(true);
             }
             UnifiedConsentServiceBridge.setUnifiedConsentGiven(enabled);
             ThreadUtils.postOnUiThread(this::updateSyncStateFromSelectedModelTypes);
             ThreadUtils.postOnUiThread(this::updateDataTypeState);
+            ThreadUtils.postOnUiThread(this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-            PrefServiceBridge.getInstance().setSearchSuggestEnabled((boolean) newValue);
+            mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
-            PrefServiceBridge.getInstance().setSafeBrowsingEnabled((boolean) newValue);
+            mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
                 || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
-            PrefServiceBridge.getInstance().setSafeBrowsingExtendedReportingEnabled(
-                    (boolean) newValue);
+            mPrefServiceBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-            PrefServiceBridge.getInstance().setNetworkPredictionEnabled((boolean) newValue);
+            mPrefServiceBridge.setNetworkPredictionEnabled((boolean) newValue);
             recordNetworkPredictionEnablingUMA((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
-            PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
+            mPrefServiceBridge.setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
             UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
+        } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                    (boolean) newValue);
         } else if (isSyncTypePreference(preference)) {
             final boolean syncAutofillToggled = preference == mSyncAutofill;
             final boolean preferenceChecked = (boolean) newValue;
@@ -834,13 +848,22 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
+        mSearchSuggestions.setEnabled(!useSyncAndAllServices);
         mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
+        mNetworkPredictions.setEnabled(!useSyncAndAllServices);
         mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
+        mNavigationError.setEnabled(!useSyncAndAllServices);
         mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
+        mSafeBrowsing.setEnabled(!useSyncAndAllServices);
         mSafeBrowsingReporting.setChecked(
                 mPrefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
+        mSafeBrowsingReporting.setEnabled(!useSyncAndAllServices);
         mUsageAndCrashReporting.setChecked(
                 mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
+        mUsageAndCrashReporting.setEnabled(!useSyncAndAllServices);
+        mUrlKeyedAnonymizedData.setChecked(
+                UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
+        mUrlKeyedAnonymizedData.setEnabled(!useSyncAndAllServices);
 
         if (mContextualSearch != null) {
             boolean isContextualSearchEnabled = !mPrefServiceBridge.isContextualSearchDisabled();
@@ -869,7 +892,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                 return mPrefServiceBridge.isNetworkPredictionManaged();
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return PrefServiceBridge.getInstance().isMetricsReportingManaged();
+                return mPrefServiceBridge.isMetricsReportingManaged();
+            }
+            if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
+                return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged();
             }
             return false;
         };
