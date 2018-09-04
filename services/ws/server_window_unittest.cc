@@ -21,8 +21,7 @@ TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
   WindowServiceTestSetup setup;
   std::unique_ptr<wm::EasyResizeWindowTargeter> easy_resize_window_targeter =
       std::make_unique<wm::EasyResizeWindowTargeter>(
-          setup.root(), gfx::Insets(-10, -10, -10, -10),
-          gfx::Insets(-10, -10, -10, -10));
+          gfx::Insets(-10, -10, -10, -10), gfx::Insets(-10, -10, -10, -10));
   setup.root()->SetEventTargeter(std::move(easy_resize_window_targeter));
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();

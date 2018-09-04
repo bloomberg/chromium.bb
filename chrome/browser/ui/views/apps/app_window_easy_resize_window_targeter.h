@@ -16,9 +16,7 @@ class BaseWindow;
 // window.
 class AppWindowEasyResizeWindowTargeter : public wm::EasyResizeWindowTargeter {
  public:
-  // |aura_window| is the owner of this targeter.
-  AppWindowEasyResizeWindowTargeter(aura::Window* aura_window,
-                                    const gfx::Insets& insets,
+  AppWindowEasyResizeWindowTargeter(const gfx::Insets& insets,
                                     ui::BaseWindow* native_app_window);
 
   ~AppWindowEasyResizeWindowTargeter() override;

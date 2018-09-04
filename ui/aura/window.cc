@@ -308,7 +308,11 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 std::unique_ptr<WindowTargeter> Window::SetEventTargeter(
     std::unique_ptr<WindowTargeter> targeter) {
   std::unique_ptr<WindowTargeter> old_targeter = std::move(targeter_);
+  if (old_targeter)
+    old_targeter->OnInstalled(nullptr);
   targeter_ = std::move(targeter);
+  if (targeter_)
+    targeter_->OnInstalled(this);
   return old_targeter;
 }
 

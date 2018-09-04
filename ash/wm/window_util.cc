@@ -195,7 +195,7 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
   // events to be dispatched to windows outside the windows bounds that this
   // function calls into. http://crbug.com/679056.
   window->SetEventTargeter(std::make_unique<::wm::EasyResizeWindowTargeter>(
-      window, mouse_extend, touch_extend));
+      mouse_extend, touch_extend));
 }
 
 void CloseWidgetForWindow(aura::Window* window) {

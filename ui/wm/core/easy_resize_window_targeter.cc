@@ -76,21 +76,29 @@ class EasyResizeWindowTargeter::HitMaskSetter : public aura::WindowObserver {
 };
 
 EasyResizeWindowTargeter::EasyResizeWindowTargeter(
-    aura::Window* container,
     const gfx::Insets& mouse_extend,
-    const gfx::Insets& touch_extend)
-    : container_(container) {
-  DCHECK(container_);
+    const gfx::Insets& touch_extend) {
   SetInsets(mouse_extend, touch_extend);
 }
 
 EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {}
 
+void EasyResizeWindowTargeter::OnInstalled(aura::Window* w) {
+  aura::WindowTargeter::OnInstalled(w);
+  UpdateHitMaskSetter();
+}
+
 void EasyResizeWindowTargeter::OnSetInsets(
     const gfx::Insets& last_mouse_extend,
     const gfx::Insets& last_touch_extend) {
-  if (container_->env()->mode() != aura::Env::Mode::MUS)
+  UpdateHitMaskSetter();
+}
+
+void EasyResizeWindowTargeter::UpdateHitMaskSetter() {
+  if (!window() || window()->env()->mode() != aura::Env::Mode::MUS) {
+    hit_mask_setter_.reset();
     return;
+  }
 
   // Positive values equate to a hit test mask.
   const gfx::Insets positive_mouse_insets =
@@ -99,7 +107,7 @@ void EasyResizeWindowTargeter::OnSetInsets(
     hit_mask_setter_.reset();
   } else {
     if (!hit_mask_setter_)
-      hit_mask_setter_ = std::make_unique<HitMaskSetter>(container_);
+      hit_mask_setter_ = std::make_unique<HitMaskSetter>(window());
     hit_mask_setter_->SetHitMaskInsets(positive_mouse_insets);
   }
 }
@@ -111,28 +119,28 @@ bool EasyResizeWindowTargeter::EventLocationInsideBounds(
 }
 
 bool EasyResizeWindowTargeter::ShouldUseExtendedBounds(
-    const aura::Window* window) const {
-  // Use the extended bounds only for immediate child windows of |container_|.
+    const aura::Window* w) const {
+  DCHECK(window());
+  // Use the extended bounds only for immediate child windows of window().
   // Use the default targeter otherwise.
-  if (window->parent() != container_)
+  if (w->parent() != window())
     return false;
 
   // Only resizable windows benefit from the extended hit-test region.
-  if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+  if ((w->GetProperty(aura::client::kResizeBehaviorKey) &
        ws::mojom::kResizeBehaviorCanResize) == 0) {
     return false;
   }
 
   // For transient children use extended bounds if a transient parent or if
-  // transient parent's parent is a top level window in |container_|.
+  // transient parent's parent is a top level window in window().
   aura::client::TransientWindowClient* transient_window_client =
       aura::client::GetTransientWindowClient();
   const aura::Window* transient_parent =
-      transient_window_client
-          ? transient_window_client->GetTransientParent(window)
-          : nullptr;
-  return !transient_parent || transient_parent == container_ ||
-         transient_parent->parent() == container_;
+      transient_window_client ? transient_window_client->GetTransientParent(w)
+                              : nullptr;
+  return !transient_parent || transient_parent == window() ||
+         transient_parent->parent() == window();
 }
 
 }  // namespace wm

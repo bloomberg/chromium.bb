@@ -141,8 +141,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
   // active unless the window has a custom shape.
   gfx::Insets inset(-30);
   root_window()->SetEventTargeter(
-      std::make_unique<wm::EasyResizeWindowTargeter>(root_window(), inset,
-                                                     inset));
+      std::make_unique<wm::EasyResizeWindowTargeter>(inset, inset));
 
   aura::Window* window = widget()->GetNativeWindow();
   {
