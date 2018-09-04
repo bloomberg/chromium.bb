@@ -140,7 +140,7 @@ SignedExchangeHandler::SignedExchangeHandler(
   if (!IsSupportedSignedExchangeVersion(version_)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
-        base::StringPrintf("Unsupported version of the content type. Currentry "
+        base::StringPrintf("Unsupported version of the content type. Currently "
                            "content type must be "
                            "\"application/signed-exchange;v=b2\". But the "
                            "response content type was \"%s\"",

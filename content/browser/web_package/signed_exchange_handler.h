@@ -45,12 +45,12 @@ class SignedExchangeCertificateChain;
 class SignedExchangeDevToolsProxy;
 
 // SignedExchangeHandler reads "application/signed-exchange" format from a
-// net::SourceStream, parse and verify the signed exchange, and report
+// net::SourceStream, parses and verifies the signed exchange, and reports
 // the result asynchronously via SignedExchangeHandler::ExchangeHeadersCallback.
 //
 // Note that verifying a signed exchange requires an associated certificate
 // chain. SignedExchangeHandler creates a SignedExchangeCertFetcher to
-// fetch the certificate chain over network, and verify it with the
+// fetch the certificate chain over the network, and verifies it with the
 // net::CertVerifier.
 class CONTENT_EXPORT SignedExchangeHandler {
  public:

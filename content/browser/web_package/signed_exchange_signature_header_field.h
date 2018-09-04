@@ -21,7 +21,7 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 
-// SignedExchangeSignatureHeaderField provides parser for signed exchange's
+// SignedExchangeSignatureHeaderField provides a parser for signed exchange's
 // `Signature` header field.
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 class CONTENT_EXPORT SignedExchangeSignatureHeaderField {
