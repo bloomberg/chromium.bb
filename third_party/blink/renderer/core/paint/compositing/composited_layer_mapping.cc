@@ -896,7 +896,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     // Changes to either the internal hierarchy or the mask layer have an impact
     // on painting phases, so we need to update when either are updated.
     UpdatePaintingPhases();
-    // Need to update paint property states of the changed GraphicsLayers.
+    // Need to update paint LayerState of the changed GraphicsLayers.
+    // The pre-paint tree walk does this.
     layout_object.SetNeedsPaintPropertyUpdate();
   }
 
@@ -1145,8 +1146,9 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
                     ToIntSize(graphics_layer_parent_location);
   if (new_offset != squashing_layer_offset_from_layout_object_) {
     squashing_layer_offset_from_layout_object_ = new_offset;
-    // Need to update squashing layer state according to the new offset.
-    OwningLayer().GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    // Need to update squashing LayerState according to the new offset.
+    // The pre-paint tree walk does this.
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 
   *offset_from_transformed_ancestor =
@@ -1439,6 +1441,11 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
       snapped_clip_rect.Location() - snapped_offset_from_composited_ancestor);
 
   if (ancestor_clipping_mask_layer_) {
+    // Need to update LayerState for the new offset.
+    // The pre-paint tree walk does this.
+    if (ancestor_clipping_layer_->OffsetFromLayoutObject() !=
+        ancestor_clipping_mask_layer_->OffsetFromLayoutObject())
+      GetLayoutObject().SetNeedsPaintPropertyUpdate();
     ancestor_clipping_mask_layer_->SetOffsetFromLayoutObject(
         ancestor_clipping_layer_->OffsetFromLayoutObject());
     ancestor_clipping_mask_layer_->SetSize(ancestor_clipping_layer_->Size());
