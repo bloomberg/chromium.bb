@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
 #include "net/base/net_export.h"
@@ -73,6 +74,8 @@ class NET_EXPORT_PRIVATE SerialWorker
   void OnWorkJobFinished();
 
   State state_;
+
+  base::WeakPtrFactory<SerialWorker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialWorker);
 };
