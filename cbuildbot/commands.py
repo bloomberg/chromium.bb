@@ -367,7 +367,7 @@ def RunBinhostTest(buildroot, incremental=True):
     buildroot: The buildroot of the current build.
     incremental: If True, run the incremental compatibility test.
   """
-  cmd = ['../cbuildbot/binhost_test', '--log-level=debug']
+  cmd = ['../cbuildbot/binhost_test', '-v', '--log-level=debug']
 
   # Non incremental tests are listed in a special test suite.
   if not incremental:
