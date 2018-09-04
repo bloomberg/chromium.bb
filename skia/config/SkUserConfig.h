@@ -167,10 +167,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_IGNORE_MATRIX_IMAGE_FILTER_FIX
 #endif
 
-#ifndef SK_DISABLE_MASKFILTERED_MASK_CACHING
-#define SK_DISABLE_MASKFILTERED_MASK_CACHING
-#endif
-
 // remove after rebaselining svg layout tests
 #ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
