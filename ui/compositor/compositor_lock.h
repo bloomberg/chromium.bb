@@ -12,6 +12,10 @@
 #include "base/single_thread_task_runner.h"
 #include "ui/compositor/compositor_export.h"
 
+namespace cc {
+class ScopedDeferCommits;
+}
+
 namespace ui {
 
 class Compositor;
@@ -27,22 +31,12 @@ class CompositorLockClient {
   virtual void CompositorLockTimedOut() = 0;
 };
 
-// Implemented by clients which are locked by a compositor lock. Used by the
-// CompositorLockManager to notify their parent that lock state has changed.
-class CompositorLockManagerClient {
- public:
-  virtual ~CompositorLockManagerClient() {}
-
-  // Called when the lock state changes.
-  virtual void OnCompositorLockStateChanged(bool locked) = 0;
-};
-
 // A helper class used to manage compositor locks. Should be created/used by
 // classes which want to provide out compositor locking.
 class COMPOSITOR_EXPORT CompositorLockManager {
  public:
-  CompositorLockManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        CompositorLockManagerClient* client);
+  CompositorLockManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~CompositorLockManager();
 
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
@@ -50,7 +44,8 @@ class COMPOSITOR_EXPORT CompositorLockManager {
   // timeout is null, then no timeout is used.
   std::unique_ptr<CompositorLock> GetCompositorLock(
       CompositorLockClient* client,
-      base::TimeDelta timeout);
+      base::TimeDelta timeout,
+      std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits);
 
   void set_allow_locks_to_extend_timeout(bool allowed) {
     allow_locks_to_extend_timeout_ = allowed;
@@ -71,8 +66,6 @@ class COMPOSITOR_EXPORT CompositorLockManager {
 
   // The TaskRunner on which timeouts are run.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  // A client which is notified about lock state changes.
-  CompositorLockManagerClient* client_ = nullptr;
   // The estimated time that the locks will timeout.
   base::TimeTicks scheduled_timeout_;
   // If true, the |scheduled_timeout_| might be recalculated and extended.
@@ -99,8 +92,10 @@ class COMPOSITOR_EXPORT CompositorLock {
   // The |client| is informed about events from the CompositorLock. The
   // |delegate| is used to perform actual unlocking. If |timeout| is zero then
   // no timeout is scheduled, else a timeout is scheduled on the |task_runner|.
-  explicit CompositorLock(CompositorLockClient* client,
-                          base::WeakPtr<CompositorLockManager> manager);
+  explicit CompositorLock(
+      CompositorLockClient* client,
+      base::WeakPtr<CompositorLockManager> manager,
+      std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits);
   ~CompositorLock();
 
  private:
@@ -110,6 +105,7 @@ class COMPOSITOR_EXPORT CompositorLock {
   void TimeoutLock();
 
   CompositorLockClient* const client_;
+  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
   base::WeakPtr<CompositorLockManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);

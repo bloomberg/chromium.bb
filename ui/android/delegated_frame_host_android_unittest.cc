@@ -8,6 +8,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -69,18 +70,13 @@ class MockWindowAndroidCompositor : public WindowAndroidCompositor {
   }
 };
 
-class MockCompositorLockManagerClient : public ui::CompositorLockManagerClient {
- public:
-  MOCK_METHOD1(OnCompositorLockStateChanged, void(bool));
-};
-
 class DelegatedFrameHostAndroidTest : public testing::Test {
  public:
   DelegatedFrameHostAndroidTest()
       : frame_sink_manager_impl_(&shared_bitmap_manager_),
         frame_sink_id_(1, 1),
         task_runner_(new base::TestMockTimeTaskRunner()),
-        lock_manager_(task_runner_, &lock_manager_client_) {
+        lock_manager_(task_runner_) {
     host_frame_sink_manager_.SetLocalManager(&frame_sink_manager_impl_);
     frame_sink_manager_impl_.SetLocalClient(&host_frame_sink_manager_);
   }
@@ -98,8 +94,11 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
 
   ui::CompositorLock* GetLock(CompositorLockClient* client,
                               base::TimeDelta time_delta) {
-    return lock_manager_.GetCompositorLock(client, time_delta).release();
+    return lock_manager_.GetCompositorLock(client, time_delta, nullptr)
+        .release();
   }
+
+  bool IsLocked() const { return lock_manager_.IsLocked(); }
 
   void SubmitCompositorFrame(const gfx::Size& frame_size = gfx::Size(10, 10)) {
     viz::CompositorFrame frame =
@@ -115,13 +114,11 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
         .WillOnce(Return(true));
     EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
         .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-    EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-        .Times(1);
     frame_host_->AttachToCompositor(&compositor_);
+    EXPECT_TRUE(IsLocked());
 
-    EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-        .Times(1);
     SubmitCompositorFrame(frame_size);
+    EXPECT_FALSE(IsLocked());
   }
 
  protected:
@@ -134,7 +131,6 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
   viz::FrameSinkId frame_sink_id_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
   std::unique_ptr<DelegatedFrameHostAndroid> frame_host_;
-  MockCompositorLockManagerClient lock_manager_client_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   CompositorLockManager lock_manager_;
 };
@@ -192,14 +188,12 @@ TEST_F(DelegatedFrameHostAndroidTest, CompositorLockDuringFirstFrame) {
   EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).WillOnce(Return(true));
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(1);
   frame_host_->AttachToCompositor(&compositor_);
+  EXPECT_TRUE(IsLocked());
 
   // Lock should be released when we submit a compositor frame.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(1);
   SubmitCompositorFrame();
+  EXPECT_FALSE(IsLocked());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, CompositorLockDuringLaterFrame) {
@@ -226,14 +220,12 @@ TEST_F(DelegatedFrameHostAndroidTest, CompositorLockReleasedWithDetach) {
   EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).WillOnce(Return(true));
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(1);
   frame_host_->AttachToCompositor(&compositor_);
+  EXPECT_TRUE(IsLocked());
 
   // Lock should be released when we detach.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(1);
   frame_host_->DetachFromCompositor();
+  EXPECT_FALSE(IsLocked());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, ResizeLockBasic) {
@@ -246,19 +238,16 @@ TEST_F(DelegatedFrameHostAndroidTest, ResizeLockBasic) {
   // Tell the frame host to resize, it should take a lock.
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(1);
   frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+  EXPECT_TRUE(IsLocked());
 
   // Submit a frame of the wrong size, nothing should change.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(0);
   SubmitCompositorFrame(gfx::Size(20, 20));
+  EXPECT_TRUE(IsLocked());
 
   // Submit a frame with the right size, the lock should release.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(1);
   SubmitCompositorFrame(gfx::Size(50, 50));
+  EXPECT_FALSE(IsLocked());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, ResizeLockNotTakenIfNoSizeChange) {
@@ -269,9 +258,8 @@ TEST_F(DelegatedFrameHostAndroidTest, ResizeLockNotTakenIfNoSizeChange) {
   SetUpValidFrame(gfx::Size(10, 10));
 
   // Tell the frame host to resize to the existing size, nothing should happen.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(0);
   frame_host_->PixelSizeWillChange(gfx::Size(10, 10));
+  EXPECT_FALSE(IsLocked());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, ResizeLockReleasedWithDetach) {
@@ -284,14 +272,12 @@ TEST_F(DelegatedFrameHostAndroidTest, ResizeLockReleasedWithDetach) {
   // Tell the frame host to resize, it should take a lock.
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(1);
   frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+  EXPECT_TRUE(IsLocked());
 
   // Lock should be released when we detach.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(1);
   frame_host_->DetachFromCompositor();
+  EXPECT_FALSE(IsLocked());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, TestBothCompositorLocks) {
@@ -303,21 +289,18 @@ TEST_F(DelegatedFrameHostAndroidTest, TestBothCompositorLocks) {
   EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).WillOnce(Return(true));
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(1);
   frame_host_->AttachToCompositor(&compositor_);
+  EXPECT_TRUE(IsLocked());
 
   // Tell the frame host to resize, it should take a second lock.
   EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
       .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
-      .Times(0);
   frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+  EXPECT_TRUE(IsLocked());
 
   // Submit a compositor frame of the right size, both locks should release.
-  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
-      .Times(1);
   SubmitCompositorFrame(gfx::Size(50, 50));
+  EXPECT_FALSE(IsLocked());
 }
 
 }  // namespace

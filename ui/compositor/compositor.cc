@@ -75,7 +75,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
-      lock_manager_(task_runner, this),
+      lock_manager_(task_runner),
       context_creation_weak_ptr_factory_(this) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
@@ -646,10 +646,6 @@ const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
 void Compositor::SetLayerTreeDebugState(
     const cc::LayerTreeDebugState& debug_state) {
   host_->SetDebugState(debug_state);
-}
-
-void Compositor::OnCompositorLockStateChanged(bool locked) {
-  host_->SetDeferCommits(locked);
 }
 
 void Compositor::RequestPresentationTimeForNextFrame(

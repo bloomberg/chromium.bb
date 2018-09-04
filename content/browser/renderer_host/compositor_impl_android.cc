@@ -696,7 +696,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false),
-      lock_manager_(base::ThreadTaskRunnerHandle::Get(), this),
+      lock_manager_(base::ThreadTaskRunnerHandle::Get()),
       enable_surface_synchronization_(
           features::IsSurfaceSynchronizationEnabled()),
       enable_viz_(
@@ -1254,7 +1254,8 @@ bool CompositorImpl::HavePendingReadbacks() {
 std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
     ui::CompositorLockClient* client,
     base::TimeDelta timeout) {
-  return lock_manager_.GetCompositorLock(client, timeout);
+  return lock_manager_.GetCompositorLock(client, timeout,
+                                         host_->DeferCommits());
 }
 
 bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
@@ -1272,11 +1273,6 @@ void CompositorImpl::SetVSyncPaused(bool paused) {
   vsync_paused_ = paused;
   if (display_private_)
     display_private_->SetVSyncPaused(paused);
-}
-
-void CompositorImpl::OnCompositorLockStateChanged(bool locked) {
-  if (host_)
-    host_->SetDeferCommits(locked);
 }
 
 void CompositorImpl::EnqueueLowEndBackgroundCleanup() {

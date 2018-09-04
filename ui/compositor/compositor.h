@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -49,7 +50,6 @@ class AnimationTimeline;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeFrameSink;
-class LayerTreeHost;
 class TaskGraphRunner;
 }
 
@@ -207,7 +207,6 @@ class COMPOSITOR_EXPORT ContextFactory {
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                      public cc::LayerTreeHostSingleThreadClient,
-                                     public CompositorLockManagerClient,
                                      public viz::HostFrameSinkClient,
                                      public ExternalBeginFrameClient {
  public:
@@ -376,7 +375,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       CompositorLockClient* client,
       base::TimeDelta timeout =
           base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs)) {
-    return lock_manager_.GetCompositorLock(client, timeout);
+    return lock_manager_.GetCompositorLock(client, timeout,
+                                           host_->DeferCommits());
   }
 
   // Registers a callback that is run when the next frame successfully makes it
@@ -425,9 +425,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
-
-  // CompositorLockManagerClient implementation.
-  void OnCompositorLockStateChanged(bool locked) override;
 
   bool IsLocked() { return lock_manager_.IsLocked(); }
 

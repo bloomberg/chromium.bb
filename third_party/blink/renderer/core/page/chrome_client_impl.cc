@@ -927,8 +927,9 @@ void ChromeClientImpl::SetEventListenerProperties(
 }
 
 void ChromeClientImpl::BeginLifecycleUpdates() {
+  web_view_->StopDeferringCommits();
+
   if (WebLayerTreeView* tree_view = web_view_->LayerTreeView()) {
-    tree_view->SetDeferCommits(false);
     tree_view->SetNeedsBeginFrame();
   }
 }

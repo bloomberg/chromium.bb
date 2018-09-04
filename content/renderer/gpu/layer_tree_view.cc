@@ -496,8 +496,8 @@ void LayerTreeView::SynchronouslyComposite(
   layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
 }
 
-void LayerTreeView::SetDeferCommits(bool defer_commits) {
-  layer_tree_host_->SetDeferCommits(defer_commits);
+std::unique_ptr<cc::ScopedDeferCommits> LayerTreeView::DeferCommits() {
+  return layer_tree_host_->DeferCommits();
 }
 
 int LayerTreeView::LayerTreeId() const {
