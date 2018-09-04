@@ -120,7 +120,7 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
 
   // Returns true if the hit testing (GetHitTestRects()) should use the
   // extended bounds.
-  virtual bool ShouldUseExtendedBounds(const aura::Window* window) const;
+  virtual bool ShouldUseExtendedBounds(const aura::Window* w) const;
 
   // Called after the hit-test area has been extended with SetInsets(). The
   // supplied insets are the values before the call to SetInsets().
