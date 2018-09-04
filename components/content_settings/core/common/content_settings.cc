@@ -139,6 +139,16 @@ ContentSetting ContentSettingPatternSource::GetContentSetting() const {
   return content_settings::ValueToContentSetting(&setting_value);
 }
 
+// static
+bool RendererContentSettingRules::IsRendererContentSetting(
+    ContentSettingsType content_type) {
+  return content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
+         content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+         content_type == CONTENT_SETTINGS_TYPE_AUTOPLAY ||
+         content_type == CONTENT_SETTINGS_TYPE_CLIENT_HINTS ||
+         content_type == CONTENT_SETTINGS_TYPE_POPUPS;
+}
+
 RendererContentSettingRules::RendererContentSettingRules() {}
 
 RendererContentSettingRules::~RendererContentSettingRules() {}
