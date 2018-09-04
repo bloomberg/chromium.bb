@@ -108,6 +108,17 @@ void NetworkQualityTracker::OnNetworkQualityChanged(
     int32_t bandwidth_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // If the RTT values are unavailable, set them to value 0.
+  if (http_rtt < base::TimeDelta())
+    http_rtt = base::TimeDelta();
+  if (transport_rtt < base::TimeDelta())
+    transport_rtt = base::TimeDelta();
+
+  // If the bandwidth value is unavailable, set it to the maximum possible
+  // value.
+  if (bandwidth_kbps < 0)
+    bandwidth_kbps = std::numeric_limits<int32_t>::max();
+
   if (http_rtt_ != http_rtt || transport_rtt_ != transport_rtt ||
       downlink_bandwidth_kbps_ != bandwidth_kbps) {
     http_rtt_ = http_rtt;

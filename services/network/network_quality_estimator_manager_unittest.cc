@@ -164,6 +164,41 @@ TEST_F(NetworkQualityEstimatorManagerTest, ClientNotified) {
       network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
 }
 
+// Test that when the network quality is unavailable, network quality estimator
+// manager reports the estimated network quality values as negative.
+TEST_F(NetworkQualityEstimatorManagerTest,
+       ClientNotifiedUnknownNetworkQuality) {
+  EXPECT_EQ(
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+      network_quality_estimator_manager_client()->effective_connection_type());
+  base::RunLoop().RunUntilIdle();
+
+  SimulateNetworkQualityChange(net::EFFECTIVE_CONNECTION_TYPE_3G);
+  network_quality_estimator_manager_client()->WaitForNotification(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  base::RunLoop().RunUntilIdle();
+  // Typical RTT and downlink values when effective connection type is 3G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
+            network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(400),
+            network_quality_estimator_manager_client()->transport_rtt());
+  EXPECT_EQ(
+      400,
+      network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
+
+  SimulateNetworkQualityChange(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  network_quality_estimator_manager_client()->WaitForNotification(
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_GT(base::TimeDelta(),
+            network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_GT(base::TimeDelta(),
+            network_quality_estimator_manager_client()->transport_rtt());
+  EXPECT_GT(
+      0, network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
+}
+
 TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
   auto network_quality_estimator_manager_client2 =
       std::make_unique<TestNetworkQualityEstimatorManagerClient>(
