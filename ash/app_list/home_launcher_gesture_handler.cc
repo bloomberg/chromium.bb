@@ -13,6 +13,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
@@ -56,16 +57,17 @@ bool CanProcessWindow(aura::Window* window,
   if (!Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
     return false;
 
-  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
-    return false;
-
-  if (Shell::Get()->window_selector_controller()->IsSelecting())
-    return false;
-
   if (window->type() == aura::client::WINDOW_TYPE_POPUP)
     return false;
 
   if (::wm::GetTransientParent(window))
+    return false;
+
+  // TODO(sammiequon): Make this feature work for these cases below.
+  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+    return false;
+
+  if (Shell::Get()->window_selector_controller()->IsSelecting())
     return false;
 
   wm::WindowState* state = wm::GetWindowState(window);
@@ -177,6 +179,10 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
 
   DCHECK_NE(Mode::kNone, mode);
   mode_ = mode;
+  base::RecordAction(base::UserMetricsAction(
+      mode_ == Mode::kSwipeDownToHide
+          ? "AppList_HomeLauncherToMRUWindowAttempt"
+          : "AppList_CurrentWindowToHomeLauncherAttempt"));
   window_ = windows[0];
   window_->AddObserver(this);
   windows.erase(windows.begin());
@@ -248,9 +254,18 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
     return false;
 
   last_event_location_ = base::make_optional(location);
-  UpdateWindows(
-      GetHeightInWorkAreaAsRatio(location.y(), window_) > 0.5 ? 1.0 : 0.0,
-      /*animate=*/true);
+  const bool hide_window =
+      GetHeightInWorkAreaAsRatio(location.y(), window_) > 0.5;
+  UpdateWindows(hide_window ? 1.0 : 0.0, /*animate=*/true);
+
+  if (!hide_window && mode_ == Mode::kSwipeDownToHide) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
+  } else if (hide_window && mode_ == Mode::kSwipeUpToShow) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
+  }
+
   return true;
 }
 
