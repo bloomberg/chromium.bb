@@ -49,7 +49,6 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
-#include "chrome/installer/setup/brand_behaviors.h"
 #include "chrome/installer/setup/buildflags.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
@@ -648,12 +647,14 @@ installer::InstallStatus InstallProducts(
     InstallerState* installer_state,
     base::FilePath* installer_directory) {
   DCHECK(installer_state);
+  const bool system_install = installer_state->system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
   installer_state->SetStage(installer::PRECONDITIONS);
   // Remove any legacy "-multifail" or "-stage:*" values from the product's
   // "ap" value.
-  installer::UpdateInstallStatus(archive_type, install_status);
+  BrowserDistribution::GetDistribution()->UpdateInstallStatus(
+      system_install, archive_type, install_status);
 
   // Drop to background processing mode if the process was started below the
   // normal process priority class. This is done here because InstallProducts-
@@ -688,7 +689,8 @@ installer::InstallStatus InstallProducts(
     }
   }
 
-  UpdateInstallStatus(archive_type, install_status);
+  installer_state->product().distribution()->UpdateInstallStatus(
+      system_install, archive_type, install_status);
 
   return install_status;
 }

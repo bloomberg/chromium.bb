@@ -111,3 +111,8 @@ base::string16 BrowserDistribution::GetLongAppDescription() {
       installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
   return app_description;
 }
+
+void BrowserDistribution::UpdateInstallStatus(bool system_install,
+    installer::ArchiveType archive_type,
+    installer::InstallStatus install_status) {
+}
