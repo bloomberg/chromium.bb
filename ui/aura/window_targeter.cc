@@ -282,8 +282,19 @@ bool WindowTargeter::EventLocationInsideBounds(
   return false;
 }
 
-bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* window) const {
-  return true;
+bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* w) const {
+  // window() is null when this is used as the default targeter (by
+  // WindowEventDispatcher). Insets should never be set in this case, so the
+  // return should not matter.
+  if (!window()) {
+    DCHECK(mouse_extend_.IsEmpty());
+    DCHECK(touch_extend_.IsEmpty());
+    return false;
+  }
+
+  // Insets should only apply to the window. Subclasses may enforce other
+  // policies.
+  return window() == w;
 }
 
 void WindowTargeter::OnSetInsets(const gfx::Insets& last_mouse_extend,

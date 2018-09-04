@@ -28,15 +28,15 @@ namespace {
 // |      ----------      |
 // |   hit        hit     |
 //  ----------------------
-class TestHoleWindowTargeter : public aura::WindowTargeter {
+class TestHoleWindowTargeter : public WindowTargeter {
  public:
   TestHoleWindowTargeter() = default;
   ~TestHoleWindowTargeter() override {}
 
  private:
-  // aura::WindowTargeter:
-  std::unique_ptr<aura::WindowTargeter::HitTestRects> GetExtraHitTestShapeRects(
-      aura::Window* target) const override {
+  // WindowTargeter:
+  std::unique_ptr<WindowTargeter::HitTestRects> GetExtraHitTestShapeRects(
+      Window* target) const override {
     gfx::Rect bounds = target->bounds();
     int x0 = 0;
     int x1 = bounds.width() / 3;
@@ -46,7 +46,7 @@ class TestHoleWindowTargeter : public aura::WindowTargeter {
     int y1 = bounds.height() / 3;
     int y2 = bounds.height() - bounds.height() / 3;
     int y3 = bounds.height();
-    auto shape_rects = std::make_unique<aura::WindowTargeter::HitTestRects>();
+    auto shape_rects = std::make_unique<WindowTargeter::HitTestRects>();
     shape_rects->emplace_back(x0, y0, bounds.width(), y1 - y0);
     shape_rects->emplace_back(x0, y1, x1 - x0, y2 - y1);
     shape_rects->emplace_back(x2, y1, x3 - x2, y2 - y1);
@@ -73,23 +73,23 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
     test::AuraTestBaseMus::SetUp();
 
     root_ = std::make_unique<Window>(nullptr);
-    root_->SetProperty(aura::client::kEmbedType,
-                       aura::client::WindowEmbedType::EMBED_IN_OWNER);
+    root_->SetProperty(client::kEmbedType,
+                       client::WindowEmbedType::EMBED_IN_OWNER);
     root_->Init(ui::LAYER_NOT_DRAWN);
     root_->SetEventTargeter(std::make_unique<WindowTargeter>());
     root_->SetBounds(gfx::Rect(0, 0, 300, 200));
     root_->Show();
 
     window2_ = new Window(nullptr);
-    window2_->SetProperty(aura::client::kEmbedType,
-                          aura::client::WindowEmbedType::EMBED_IN_OWNER);
+    window2_->SetProperty(client::kEmbedType,
+                          client::WindowEmbedType::EMBED_IN_OWNER);
     window2_->Init(ui::LAYER_TEXTURED);
     window2_->SetBounds(gfx::Rect(20, 30, 40, 60));
     window2_->Show();
 
     window3_ = new Window(nullptr);
-    window3_->SetProperty(aura::client::kEmbedType,
-                          aura::client::WindowEmbedType::EMBED_IN_OWNER);
+    window3_->SetProperty(client::kEmbedType,
+                          client::WindowEmbedType::EMBED_IN_OWNER);
     window3_->Init(ui::LAYER_TEXTURED);
     window3_->SetEventTargeter(std::make_unique<WindowTargeter>());
     window3_->SetBounds(gfx::Rect(50, 60, 100, 40));
@@ -175,9 +175,13 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   constexpr int kMouseInset = -5;
   constexpr int kTouchInset = -10;
-  auto targeter = std::make_unique<aura::WindowTargeter>();
+  auto targeter = std::make_unique<WindowTargeter>();
   targeter->SetInsets(gfx::Insets(kMouseInset), gfx::Insets(kTouchInset));
   window3()->SetEventTargeter(std::move(targeter));
+
+  targeter = std::make_unique<WindowTargeter>();
+  targeter->SetInsets(gfx::Insets(kMouseInset), gfx::Insets(kTouchInset));
+  window4()->SetEventTargeter(std::move(targeter));
 
   window2()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 2));
   const base::Optional<viz::HitTestRegionList> hit_test_data =
