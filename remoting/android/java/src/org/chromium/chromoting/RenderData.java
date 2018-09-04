@@ -14,13 +14,13 @@ public class RenderData {
     /** Stores pan and zoom configuration and converts image coordinates to screen coordinates. */
     public Matrix transform = new Matrix();
 
-    public int screenWidth = 0;
-    public int screenHeight = 0;
-    public int imageWidth = 0;
-    public int imageHeight = 0;
+    public int screenWidth;
+    public int screenHeight;
+    public int imageWidth;
+    public int imageHeight;
 
     /** Determines whether the local cursor should be drawn. */
-    public boolean drawCursor = false;
+    public boolean drawCursor;
 
     /**
      * Specifies the position, in image coordinates, at which the cursor image will be drawn.

@@ -52,7 +52,7 @@ public final class RemoteObjectHostImplTest {
      * {@link ConnectionErrorHandler} that records any error it received.
      */
     private static class CapturingErrorHandler implements ConnectionErrorHandler {
-        private MojoException mLastMojoException = null;
+        private MojoException mLastMojoException;
 
         /**
          * @see ConnectionErrorHandler#onConnectionError(MojoException)
@@ -93,7 +93,7 @@ public final class RemoteObjectHostImplTest {
      * This verifies that it is working correctly.
      */
     private static class HasMethodCapture implements RemoteObject.HasMethodResponse {
-        public Boolean methodExists = null;
+        public Boolean methodExists;
 
         @Override
         public void call(Boolean result) {

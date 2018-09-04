@@ -25,7 +25,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     /**
      * Stores the time of the most recent left button single tap processed.
      */
-    private long mLastTapTimeInMs = 0;
+    private long mLastTapTimeInMs;
 
     /**
      * Stores the position of the last left button single tap processed.

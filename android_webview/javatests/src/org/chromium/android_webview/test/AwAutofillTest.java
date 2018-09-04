@@ -725,7 +725,7 @@ public class AwAutofillTest {
             });
         }
 
-        private int mCnt = 0;
+        private int mCnt;
         private AwAutofillTest mTest;
         private volatile Integer mSessionValue;
         private HashMap<MetricsUtils.HistogramDelta, Integer> mSessionDelta;

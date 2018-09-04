@@ -67,7 +67,7 @@ public class NetworkChangeNotifierTest {
      */
     private static class NetworkChangeNotifierTestObserver
             implements NetworkChangeNotifier.ConnectionTypeObserver {
-        private boolean mReceivedNotification = false;
+        private boolean mReceivedNotification;
 
         @Override
         public void onConnectionTypeChanged(int connectionType) {
@@ -100,7 +100,7 @@ public class NetworkChangeNotifierTest {
             mReceivedConnectionSubtypeNotification = false;
         }
 
-        private boolean mReceivedConnectionSubtypeNotification = false;
+        private boolean mReceivedConnectionSubtypeNotification;
     }
 
     private static class Helper {

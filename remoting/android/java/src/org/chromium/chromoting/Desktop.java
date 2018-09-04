@@ -76,10 +76,10 @@ public class Desktop
     private ActivityLifecycleListener mActivityLifecycleListener;
 
     /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
-    private boolean mSoftInputVisible = false;
+    private boolean mSoftInputVisible;
 
     /** Indicates whether resize-to-client is enabled. */
-    private boolean mResizeToClientEnabled = false;
+    private boolean mResizeToClientEnabled;
 
     /** Holds the scheduled task object which will be called to hide the ActionBar. */
     private Runnable mActionBarAutoHideTask;
@@ -105,7 +105,7 @@ public class Desktop
     private boolean mHasPhysicalKeyboard;
 
     /** Tracks whether the activity is in windowed mode. */
-    private boolean mIsInWindowedMode = false;
+    private boolean mIsInWindowedMode;
 
     /** Called when the activity is first created. */
     @Override

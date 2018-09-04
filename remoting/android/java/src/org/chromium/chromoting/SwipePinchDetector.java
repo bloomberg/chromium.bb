@@ -32,7 +32,7 @@ public class SwipePinchDetector {
      * The initial coordinates above are valid when this flag is set. Used to determine whether a
      * MotionEvent's pointer coordinates are the first ones of the gesture.
      */
-    private boolean mInGesture = false;
+    private boolean mInGesture;
 
     /**
      * Threshold squared-distance, in pixels, to use for motion-detection.

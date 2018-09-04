@@ -25,7 +25,7 @@ import java.io.File;
 public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
     private final ConnectivityManager mConnectivityManager;
 
-    private boolean mPermittedByUser = false;
+    private boolean mPermittedByUser;
 
     @VisibleForTesting
     public AwMinidumpUploaderDelegate() {

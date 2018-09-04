@@ -858,7 +858,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
     private CaptureRequest.Builder mPreviewRequestBuilder;
-    private ImageReader mImageReader = null;
+    private ImageReader mImageReader;
     // We create a dedicated HandlerThread for operating the camera on. This
     // is needed, because the camera APIs requires a Looper for posting
     // asynchronous callbacks to. The native thread that calls the constructor

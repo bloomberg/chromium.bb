@@ -92,7 +92,7 @@ public class AccountManagerFacade {
             new CachedMetrics.TimesHistogramSample(
                     "Signin.AndroidPopulateAccountCacheWaitingTime", TimeUnit.MILLISECONDS);
 
-    private int mUpdateTasksCounter = 0;
+    private int mUpdateTasksCounter;
     private final ArrayList<Runnable> mCallbacksWaitingForPendingUpdates = new ArrayList<>();
 
     /**

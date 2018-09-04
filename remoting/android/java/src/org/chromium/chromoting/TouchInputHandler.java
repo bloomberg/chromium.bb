@@ -49,7 +49,7 @@ public class TouchInputHandler {
      * Used for tracking swipe gestures. Only the Y-direction is needed for responding to swipe-up
      * or swipe-down.
      */
-    private float mTotalMotionY = 0;
+    private float mTotalMotionY;
 
     /**
      * Distance in pixels beyond which a motion gesture is considered to be a swipe. This is
@@ -73,31 +73,31 @@ public class TouchInputHandler {
      * Set to true to prevent any further movement of the cursor, for example, when showing the
      * keyboard to prevent the cursor wandering from the area where keystrokes should be sent.
      */
-    private boolean mSuppressCursorMovement = false;
+    private boolean mSuppressCursorMovement;
 
     /**
      * Set to true to suppress the fling animation at the end of a gesture, for example, when
      * dragging whilst a button is held down.
      */
-    private boolean mSuppressFling = false;
+    private boolean mSuppressFling;
 
     /**
      * Set to true when 2-finger fling (scroll gesture with final velocity) is detected to trigger
      * a scrolling animation.
      */
-    private boolean mScrollFling = false;
+    private boolean mScrollFling;
 
     /**
      * Set to true when 3-finger swipe gesture is complete, so that further movement doesn't
      * trigger more swipe actions.
      */
-    private boolean mSwipeCompleted = false;
+    private boolean mSwipeCompleted;
 
     /**
      * Set to true when a 1 finger pan gesture originates with a longpress.  This means the user
      * is performing a drag operation.
      */
-    private boolean mIsDragging = false;
+    private boolean mIsDragging;
 
     private Event.ParameterCallback<Boolean, Void> mProcessAnimationCallback;
 

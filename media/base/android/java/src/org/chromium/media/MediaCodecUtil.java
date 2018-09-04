@@ -104,7 +104,7 @@ class MediaCodecUtil {
         private MediaCodecInfo[] mCodecList;
 
         private class CodecInfoIterator implements Iterator<MediaCodecInfo> {
-            private int mPosition = 0;
+            private int mPosition;
 
             @Override
             public boolean hasNext() {

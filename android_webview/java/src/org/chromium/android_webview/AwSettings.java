@@ -101,8 +101,8 @@ public class AwSettings {
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
-    private boolean mCSSHexAlphaColorEnabled = false;
-    private boolean mScrollTopLeftInteropEnabled = false;
+    private boolean mCSSHexAlphaColorEnabled;
+    private boolean mScrollTopLeftInteropEnabled;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;

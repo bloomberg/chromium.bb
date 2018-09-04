@@ -51,7 +51,7 @@ class InputStreamUnittest {
     @CalledByNative
     static InputStream getCountingStream(final int size) {
         return new InputStream() {
-            private int mCount = 0;
+            private int mCount;
 
             @Override
             public int read() {
