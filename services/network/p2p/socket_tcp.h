@@ -32,23 +32,26 @@ class ProxyResolvingClientSocketFactory;
 class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
  public:
   P2PSocketTcpBase(
-      Delegate* delegate,
+      P2PSocketManager* socket_manager,
       mojom::P2PSocketClientPtr client,
       mojom::P2PSocketRequest socket,
       P2PSocketType type,
       ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory);
   ~P2PSocketTcpBase() override;
 
-  void InitAccepted(const net::IPEndPoint& remote_address,
+  bool InitAccepted(const net::IPEndPoint& remote_address,
                     std::unique_ptr<net::StreamSocket> socket);
 
   // P2PSocket overrides.
-  void Init(const net::IPEndPoint& local_address,
+  bool Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
             const P2PHostAndIPEndPoint& remote_address) override;
 
   // mojom::P2PSocket implementation:
+  void AcceptIncomingTcpConnection(const net::IPEndPoint& remote_address,
+                                   mojom::P2PSocketClientPtr client,
+                                   mojom::P2PSocketRequest socket) override;
   void Send(const std::vector<int8_t>& data,
             const P2PPacketInfo& packet_info,
             const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -78,7 +81,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
       const net::NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   void WriteOrQueue(SendBuffer& send_buffer);
-  void OnPacket(std::vector<int8_t> data);
+  void OnPacket(const std::vector<int8_t>& data);
+  void OnError();
 
  private:
   friend class P2PSocketTcpTestBase;
@@ -118,7 +122,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
 class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcp : public P2PSocketTcpBase {
  public:
   P2PSocketTcp(
-      Delegate* delegate,
+      P2PSocketManager* socket_manager,
       mojom::P2PSocketClientPtr client,
       mojom::P2PSocketRequest socket,
       P2PSocketType type,
@@ -146,7 +150,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketStunTcp
     : public P2PSocketTcpBase {
  public:
   P2PSocketStunTcp(
-      Delegate* delegate,
+      P2PSocketManager* socket_manager,
       mojom::P2PSocketClientPtr client,
       mojom::P2PSocketRequest socket,
       P2PSocketType type,
@@ -163,7 +167,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketStunTcp
       const net::NetworkTrafficAnnotationTag traffic_annotation) override;
 
  private:
-  int GetExpectedPacketSize(const uint8_t* data, int len, int* pad_bytes);
+  int GetExpectedPacketSize(const int8_t* data, int len, int* pad_bytes);
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketStunTcp);
 };
