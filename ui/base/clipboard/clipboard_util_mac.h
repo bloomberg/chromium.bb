@@ -13,6 +13,10 @@
 
 namespace ui {
 
+// A publicly-used UTI for the name of a URL. It really should be in a system
+// header but isn't.
+UI_BASE_EXPORT extern NSString* const kUTTypeURLName;
+
 class UI_BASE_EXPORT UniquePasteboard
     : public base::RefCounted<UniquePasteboard> {
  public:

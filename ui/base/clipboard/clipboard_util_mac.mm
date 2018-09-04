@@ -10,10 +10,10 @@
 
 namespace ui {
 
+NSString* const kUTTypeURLName = @"public.url-name";
+
 namespace {
 NSString* const kWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
-NSString* const kPublicUrl = @"public.url";
-NSString* const kPublicUrlName = @"public.url-name";
 
 // It's much more convenient to return an NSString than a
 // base::ScopedCFTypeRef<CFStringRef>, since the methods on NSPasteboardItem
@@ -75,8 +75,8 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
   }
 
   [item setString:urlString forType:NSPasteboardTypeString];
-  [item setString:urlString forType:kPublicUrl];
-  [item setString:title forType:kPublicUrlName];
+  [item setString:urlString forType:base::mac::CFToNSCast(kUTTypeURL)];
+  [item setString:title forType:kUTTypeURLName];
   return item;
 }
 
@@ -104,12 +104,12 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
 
 //static
 NSString* ClipboardUtil::GetTitleFromPasteboardURL(NSPasteboard* pboard) {
-  return [pboard stringForType:kPublicUrlName];
+  return [pboard stringForType:kUTTypeURLName];
 }
 
 //static
 NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
-  return [pboard stringForType:kPublicUrl];
+  return [pboard stringForType:base::mac::CFToNSCast(kUTTypeURL)];
 }
 
 // static
