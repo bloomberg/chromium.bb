@@ -36,7 +36,6 @@ std::string ProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
 bool ProtocolUtils::ParseScripts(
     const std::string& response,
     std::map<Script*, std::unique_ptr<Script>>* scripts) {
-  DCHECK(!response.empty());
   DCHECK(scripts);
 
   SupportsScriptResponseProto response_proto;

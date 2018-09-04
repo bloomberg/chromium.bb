@@ -26,6 +26,7 @@ jumbo_static_library("browser") {
     "actions/use_card_action.h",
     "actions/wait_for_dom_action.cc",
     "actions/wait_for_dom_action.h",
+    "client.h",
     "client_memory.h",
     "controller.cc",
     "controller.h",

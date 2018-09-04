@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/controller.h"
 
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/ui_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -12,8 +13,8 @@ namespace autofill_assistant {
 // static
 void Controller::CreateAndStartForWebContents(
     content::WebContents* web_contents,
-    std::unique_ptr<UiController> ui_controller) {
-  new Controller(web_contents, std::move(ui_controller));
+    std::unique_ptr<Client> client) {
+  new Controller(web_contents, std::move(client));
 }
 
 Service* Controller::GetService() {
@@ -21,7 +22,7 @@ Service* Controller::GetService() {
 }
 
 UiController* Controller::GetUiController() {
-  return ui_controller_.get();
+  return client_->GetUiController();
 }
 
 WebController* Controller::GetWebController() {
@@ -33,13 +34,14 @@ ClientMemory* Controller::GetClientMemory() {
 }
 
 Controller::Controller(content::WebContents* web_contents,
-                       std::unique_ptr<UiController> ui_controller)
+                       std::unique_ptr<Client> client)
     : content::WebContentsObserver(web_contents),
-      ui_controller_(std::move(ui_controller)),
+      client_(std::move(client)),
       web_controller_(WebController::CreateForWebContents(web_contents)),
-      service_(std::make_unique<Service>(web_contents->GetBrowserContext())) {
-  ui_controller_->SetUiDelegate(this);
-  ui_controller_->ShowOverlay();
+      service_(std::make_unique<Service>(client_->GetApiKey(),
+                                         web_contents->GetBrowserContext())) {
+  GetUiController()->SetUiDelegate(this);
+  GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
     GetScripts();
   }
@@ -67,7 +69,7 @@ void Controller::OnGetScripts(bool result, const std::string& response) {
 }
 
 void Controller::OnClickOverlay() {
-  ui_controller_->HideOverlay();
+  GetUiController()->HideOverlay();
   // TODO(crbug.com/806868): Stop executing scripts.
 }
 

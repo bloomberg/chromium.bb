@@ -6,7 +6,7 @@
 
 namespace autofill_assistant {
 
-MockService::MockService() : Service(nullptr) {}
+MockService::MockService() : Service("api_key", nullptr) {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant
