@@ -2681,7 +2681,6 @@ crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.
 
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
-crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
