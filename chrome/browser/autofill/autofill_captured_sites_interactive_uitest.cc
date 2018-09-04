@@ -142,6 +142,7 @@ class AutofillCapturedSitesInteractiveTest
     }
 
     autofill_manager->client()->HideAutofillPopup();
+    ADD_FAILURE() << "Failed to autofill the form!";
     return false;
   }
 
