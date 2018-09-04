@@ -17,7 +17,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -449,7 +448,6 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // startup.
   if (pref_service_->HasPrefPath(policy_prefs::kUrlBlacklist) ||
       pref_service_->HasPrefPath(policy_prefs::kUrlWhitelist)) {
-    SCOPED_UMA_HISTOGRAM_TIMER("URLBlacklistManager.ConstructorBuildTime");
     SetBlacklist(
         BuildBlacklist(pref_service_->GetList(policy_prefs::kUrlBlacklist),
                        pref_service_->GetList(policy_prefs::kUrlWhitelist)));
