@@ -23,7 +23,7 @@ namespace content {
 
 namespace {
 
-// IsStateful{Request,Response}Header return true if |name| is a stateful
+// IsStateful{Request,Response}Header returns true if |name| is a stateful
 // header field. Stateful header fields will cause validation failure of
 // signed exchanges.
 // Note that |name| must be lower-cased.
@@ -210,7 +210,7 @@ bool ParseResponseMap(const cbor::CBORValue& value,
       return false;
     }
 
-    // 4. If exchange’s headers contain a stateful header field, as defined in
+    // 4. If exchange’s headers contains a stateful header field, as defined in
     // Section 4.1, return “invalid”. [spec text]
     if (IsStatefulResponseHeader(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(

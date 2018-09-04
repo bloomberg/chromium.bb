@@ -46,7 +46,6 @@ class CONTENT_EXPORT SignedExchangeCertificateChain {
  private:
   scoped_refptr<net::X509Certificate> cert_;
 
-  // Version b1 specific fields:
   std::string ocsp_;
   std::string sct_;
 };

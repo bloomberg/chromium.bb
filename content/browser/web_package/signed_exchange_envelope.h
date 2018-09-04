@@ -33,7 +33,7 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   // Parse headers from the application/signed-exchange;v=b2 format.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
   //
-  // This also performs the step 1, 3 and 4 of "Cross-origin trust" validation.
+  // This also performs the steps 1, 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeEnvelope> Parse(
       const GURL& fallback_url,
