@@ -22,3 +22,9 @@ crbug.com/850689 http/tests/inspector-protocol/network/interception-set-cookie.j
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
+
+# PlzWorker: These are tentatively failing because of unimplemented code.
+crbug.com/715632 external/wpt/fetch/sec-metadata/sharedworker.tentative.https.sub.html [ Failure ]
+crbug.com/715632 fast/workers/shared-worker-load-error.html [ Timeout ]
+crbug.com/715632 http/tests/fetch/chromium/data-saver.html [ Failure ]
+crbug.com/715632 fast/workers/chromium/worker-crash-with-invalid-location.html [ Crash ]

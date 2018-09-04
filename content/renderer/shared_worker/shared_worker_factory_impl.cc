@@ -31,8 +31,10 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         service_worker_provider_info,
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        script_loader_factory_ptr_info,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+        main_script_loader_factory,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
@@ -41,9 +43,10 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
       renderer_preferences, std::move(preference_watcher_request),
       std::move(content_settings), std::move(service_worker_provider_info),
-      appcache_host_id, std::move(script_loader_factory_ptr_info),
-      std::move(subresource_loaders), std::move(host), std::move(request),
-      std::move(interface_provider));
+      appcache_host_id, std::move(main_script_loader_factory),
+      std::move(main_script_load_params),
+      std::move(subresource_loader_factories), std::move(controller_info),
+      std::move(host), std::move(request), std::move(interface_provider));
 }
 
 }  // namespace content

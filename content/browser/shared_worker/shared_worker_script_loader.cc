@@ -62,6 +62,10 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
 
 SharedWorkerScriptLoader::~SharedWorkerScriptLoader() = default;
 
+base::WeakPtr<SharedWorkerScriptLoader> SharedWorkerScriptLoader::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void SharedWorkerScriptLoader::Start() {
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
@@ -82,13 +86,11 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
   DCHECK(interceptor);
 
-  // TODO(nhiroki): Create SubresourceLoaderParams for intercepting subresource
-  // requests and populating the "controller" field in ServiceWorkerContainer,
-  // and send the params to the renderer when we create the SharedWorker.
-  // Note that we shouldn't try the next interceptor if this interceptor
-  // provides SubresourceLoaderParams. See comments on
-  // NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() for
-  // details.
+  // Create SubresourceLoaderParams for intercepting subresource requests and
+  // populating the "controller" field in ServiceWorkerContainer. This can be
+  // null if the interceptor is not interested in this request.
+  subresource_loader_params_ =
+      interceptor->MaybeCreateSubresourceLoaderParams();
 
   if (single_request_handler) {
     // The interceptor elected to handle the request. Use it.
@@ -102,6 +104,12 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     // We continue in URLLoaderClient calls.
     return;
   }
+
+  // We shouldn't try the remaining interceptors if this interceptor provides
+  // SubresourceLoaderParams. For details, see comments on
+  // NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams().
+  if (subresource_loader_params_)
+    interceptor_index_ = interceptors_.size();
 
   // Continue until all the interceptors are tried.
   Start();

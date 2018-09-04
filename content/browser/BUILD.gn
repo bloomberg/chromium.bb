@@ -1661,6 +1661,8 @@ jumbo_source_set("browser") {
     "shared_worker/shared_worker_host.h",
     "shared_worker/shared_worker_instance.cc",
     "shared_worker/shared_worker_instance.h",
+    "shared_worker/shared_worker_script_fetcher.cc",
+    "shared_worker/shared_worker_script_fetcher.h",
     "shared_worker/shared_worker_script_loader.cc",
     "shared_worker/shared_worker_script_loader.h",
     "shared_worker/shared_worker_script_loader_factory.cc",

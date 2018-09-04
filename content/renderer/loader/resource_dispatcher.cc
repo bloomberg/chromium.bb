@@ -735,10 +735,23 @@ int ResourceDispatcher::StartAsync(
             request_id, this, loading_task_runner,
             true /* bypass_redirect_checks */);
 
-    DCHECK(continue_navigation_function);
-    *continue_navigation_function =
-        base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                       weak_factory_.GetWeakPtr(), request_id);
+    if (request->resource_type == RESOURCE_TYPE_SHARED_WORKER) {
+      // For shared workers, immediately post a task for continuing loading
+      // because shared workers don't have the concept of the navigation commit
+      // and |continue_navigation_function| is never called.
+      // TODO(nhiroki): Unify this case with the navigation case for code
+      // health.
+      loading_task_runner->PostTask(
+          FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                                    weak_factory_.GetWeakPtr(), request_id));
+    } else {
+      // For navigations, |continue_navigation_function| is called after the
+      // navigation commit.
+      DCHECK(continue_navigation_function);
+      *continue_navigation_function =
+          base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                         weak_factory_.GetWeakPtr(), request_id);
+    }
     return request_id;
   }
 

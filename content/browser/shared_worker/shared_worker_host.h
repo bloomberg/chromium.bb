@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/web/devtools_agent.mojom.h"
 
 class GURL;
@@ -40,6 +41,7 @@ class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
 class SharedWorkerServiceImpl;
 class URLLoaderFactoryBundleInfo;
+struct SubresourceLoaderParams;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
@@ -61,25 +63,41 @@ class CONTENT_EXPORT SharedWorkerHost
   // information about its ServiceWorkerProviderHost, the browser-side host for
   // supporting the shared worker as a service worker client.
   //
-  // S13nServiceWorker:
+  // S13nServiceWorker (non-NetworkService):
   // |main_script_loader_factory| is sent to the renderer process and is to be
   // used to request the shared worker's main script. Currently it's only
-  // non-null when S13nServiceWorker is enabled, to allow service worker
-  // machinery to observe the request, but other web platform features may also
-  // use it someday.
+  // non-null when S13nServiceWorker is enabled but NetworkService is disabled,
+  // to allow service worker machinery to observe the request.
+  //
+  // NetworkService (PlzWorker):
+  // |main_script_load_params| is sent to the renderer process and to be used to
+  // load the shared worker main script pre-requested by the browser process.
+  // This is only non-null when NetworkService is enabled.
   //
   // NetworkService:
   // |subresource_loader_factories| is sent to the renderer process and is to be
   // used to request subresources where applicable. For example, this allows the
   // shared worker to load chrome-extension:// URLs which the renderer's default
   // loader factory can't load.
+  //
+  // NetworkService (PlzWorker):
+  // |subresource_loader_params| contains information about the default loader
+  // factory for |subresource_loader_factories_| and the service worker
+  // controller. The default loader factory can be associated with some request
+  // interceptor like AppCacheRequestHandler. This is only non-null when
+  // NetworkService is enabled.
+  // When S13nServiceWorker is enabled but NetworkService is disabled, the
+  // default network loader factory is created by the RenderFrameHost, and
+  // service worker controller is sent via ServiceWorkerContainer#SetController.
   void Start(
       mojom::SharedWorkerFactoryPtr factory,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories);
+      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      base::Optional<SubresourceLoaderParams> subresource_loader_params);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);

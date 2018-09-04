@@ -15,6 +15,7 @@
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -68,7 +69,9 @@ class SharedWorkerHostTest : public testing::Test {
                    mojom::SharedWorkerFactoryPtr factory) {
     host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
                 {} /* main_script_loader_factory */,
-                nullptr /* subresource_loader_factories */);
+                nullptr /* subresource_loader_factories */,
+                nullptr /* main_script_load_params */,
+                base::nullopt /* subresource_loader_params */);
   }
 
   MessagePortChannel AddClient(SharedWorkerHost* host,
@@ -199,7 +202,9 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
   // Start the worker.
   host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
               {} /* main_script_loader_factory */,
-              nullptr /* subresource_loader_factories */);
+              nullptr /* subresource_loader_factories */,
+              nullptr /* resource_load_info */,
+              base::nullopt /* subresource_loader_params */);
 
   // Add a client.
   MockSharedWorkerClient client;

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -19,20 +20,27 @@
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
+#include "content/browser/shared_worker/shared_worker_script_fetcher.h"
+#include "content/browser/shared_worker/shared_worker_script_loader.h"
 #include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_constants_internal.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
+#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
+#include "content/public/common/renderer_preferences.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -40,6 +48,13 @@
 
 namespace content {
 namespace {
+
+using StartLoaderCallback =
+    base::OnceCallback<void(mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
+                            network::mojom::URLLoaderFactoryAssociatedPtrInfo,
+                            std::unique_ptr<URLLoaderFactoryBundleInfo>,
+                            blink::mojom::SharedWorkerMainScriptLoadParamsPtr,
+                            base::Optional<SubresourceLoaderParams>)>;
 
 bool IsShuttingDown(RenderProcessHost* host) {
   return !host || host->FastShutdownStarted() ||
@@ -87,6 +102,26 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   return factory_bundle;
 }
 
+void DidCreateScriptLoaderOnIO(
+    StartLoaderCallback callback,
+    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+        service_worker_provider_info,
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        main_script_loader_factory,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     std::move(service_worker_provider_info),
+                     std::move(main_script_loader_factory),
+                     std::move(subresource_loader_factories),
+                     std::move(main_script_load_params),
+                     std::move(subresource_loader_params)));
+}
+
 void CreateScriptLoaderOnIO(
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser_info,
@@ -95,12 +130,11 @@ void CreateScriptLoaderOnIO(
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         blob_url_loader_factory_info,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     int process_id,
-    base::OnceCallback<void(mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
-                            network::mojom::URLLoaderFactoryAssociatedPtrInfo,
-                            std::unique_ptr<URLLoaderFactoryBundleInfo>)>
-        callback) {
+    StartLoaderCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   // Set up for service worker.
   auto provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
@@ -144,6 +178,31 @@ void CreateScriptLoaderOnIO(
       appcache_handle_core ? appcache_handle_core->host()->GetWeakPtr()
                            : nullptr;
 
+  // NetworkService (PlzWorker):
+  // Start loading a shared worker main script.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(nhiroki): Figure out what we should do in |wc_getter| for loading
+    // shared worker's main script.
+    base::RepeatingCallback<WebContents*()> wc_getter =
+        base::BindRepeating([]() -> WebContents* { return nullptr; });
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+        GetContentClient()->browser()->CreateURLLoaderThrottles(
+            *resource_request, context->resource_context(), wc_getter,
+            nullptr /* navigation_ui_data */, -1 /* frame_tree_node_id */);
+
+    SharedWorkerScriptFetcher::CreateAndStart(
+        std::make_unique<SharedWorkerScriptLoaderFactory>(
+            process_id, context.get(), host,
+            std::move(appcache_host), context->resource_context(),
+            std::move(url_loader_factory)),
+        std::move(throttles), std::move(resource_request),
+        base::BindOnce(DidCreateScriptLoaderOnIO, std::move(callback),
+                       std::move(provider_info),
+                       nullptr /* main_script_loader_factory */,
+                       std::move(subresource_loader_factories)));
+    return;
+  }
+
   // Create the SharedWorkerScriptLoaderFactory.
   network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
@@ -153,12 +212,11 @@ void CreateScriptLoaderOnIO(
           std::move(url_loader_factory)),
       mojo::MakeRequest(&main_script_loader_factory));
 
-  // We continue in StartWorker.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(provider_info),
-                     std::move(main_script_loader_factory),
-                     std::move(subresource_loader_factories)));
+  DidCreateScriptLoaderOnIO(std::move(callback), std::move(provider_info),
+                            std::move(main_script_loader_factory),
+                            std::move(subresource_loader_factories),
+                            nullptr /* main_script_load_params */,
+                            base::nullopt /* subresource_loader_params */);
 }
 
 }  // namespace
@@ -330,6 +388,37 @@ void SharedWorkerServiceImpl::CreateWorker(
         CreateFactoryBundle(process_id, storage_partition,
                             constructor_uses_file_url);
 
+    // NetworkService (PlzWorker):
+    // Create a resource request for initiating shared worker script fetch from
+    // the browser process.
+    std::unique_ptr<network::ResourceRequest> resource_request;
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // TODO(nhiroki): Populate more fields like referrer.
+      // (https://crbug.com/715632)
+      resource_request = std::make_unique<network::ResourceRequest>();
+      resource_request->url = weak_host->instance()->url();
+      resource_request->request_initiator =
+          weak_host->instance()->constructor_origin();
+      resource_request->resource_type = RESOURCE_TYPE_SHARED_WORKER;
+
+      // Set the "Accept" header.
+      resource_request->headers.SetHeader(network::kAcceptHeader,
+                                          network::kDefaultAcceptHeader);
+
+      // Set the "DNT" header if necessary.
+      RendererPreferences renderer_preferences;
+      GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
+          RenderProcessHost::FromID(process_id)->GetBrowserContext(),
+          &renderer_preferences);
+      if (renderer_preferences.enable_do_not_track)
+        resource_request->headers.SetHeader(kDoNotTrackHeader, "1");
+
+      // TODO(nhiroki): Set the "Sec-Metadata" header and the "Save-Data"
+      // header. See AddAdditionalRequestHeaders() in navigation_request.cc for
+      // reference (https://crbug.com/715632).
+    }
+
+    // NetworkService (PlzWorker):
     // An appcache interceptor is available only when the network service is
     // enabled.
     AppCacheNavigationHandleCore* appcache_handle_core = nullptr;
@@ -350,7 +439,7 @@ void SharedWorkerServiceImpl::CreateWorker(
             appcache_handle_core,
             blob_url_loader_factory ? blob_url_loader_factory->Clone()
                                     : nullptr,
-            process_id,
+            std::move(resource_request), process_id,
             base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                            weak_factory_.GetWeakPtr(), std::move(instance),
                            weak_host, std::move(client), process_id, frame_id,
@@ -358,11 +447,14 @@ void SharedWorkerServiceImpl::CreateWorker(
     return;
   }
 
+  // Legacy case (to be deprecated):
   StartWorker(std::move(instance), weak_host, std::move(client), process_id,
               frame_id, message_port,
               nullptr /* service_worker_provider_info */,
               {} /* main_script_loader_factory */,
-              nullptr /* subresource_loader_factories */);
+              nullptr /* subresource_loader_factories */,
+              nullptr /* main_script_load_params */,
+              base::nullopt /* subresource_loader_params */);
 }
 
 void SharedWorkerServiceImpl::StartWorker(
@@ -376,7 +468,9 @@ void SharedWorkerServiceImpl::StartWorker(
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories) {
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The host may already be gone if something forcibly terminated the worker
@@ -404,7 +498,9 @@ void SharedWorkerServiceImpl::StartWorker(
 
   host->Start(std::move(factory), std::move(service_worker_provider_info),
               std::move(main_script_loader_factory),
-              std::move(subresource_loader_factories));
+              std::move(main_script_load_params),
+              std::move(subresource_loader_factories),
+              std::move(subresource_loader_params));
   host->AddClient(std::move(client), process_id, frame_id, message_port);
 }
 

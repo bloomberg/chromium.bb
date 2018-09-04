@@ -20,7 +20,9 @@
 #include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom.h"
 
 namespace blink {
 class MessagePortChannel;
@@ -32,6 +34,7 @@ class ChromeAppCacheService;
 class SharedWorkerInstance;
 class SharedWorkerHost;
 class StoragePartition;
+struct SubresourceLoaderParams;
 
 // Created per StoragePartition.
 class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
@@ -85,7 +88,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories);
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      base::Optional<SubresourceLoaderParams> subresource_loader_params);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);

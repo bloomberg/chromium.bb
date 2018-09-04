@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SCRIPT_LOADER_H_
 
 #include "base/macros.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/single_request_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -82,6 +83,12 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
+    return std::move(subresource_loader_params_);
+  }
+
+  base::WeakPtr<SharedWorkerScriptLoader> GetWeakPtr();
+
  private:
   void Start();
   void MaybeStartLoader(
@@ -93,6 +100,8 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   // preferentially get a chance to intercept a network request.
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
   size_t interceptor_index_ = 0;
+
+  base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   const int process_id_;
   const int32_t routing_id_;

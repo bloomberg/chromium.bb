@@ -86,10 +86,15 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
+  //
+  // For NetworkService (PlzWorker):
+  // |controller_info| contains the endpoint and object info that is needed to
+  // set up the controller service worker for the client.
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
+      mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
@@ -142,6 +147,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
+      mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // This is for controllers, used in CreateForController.
