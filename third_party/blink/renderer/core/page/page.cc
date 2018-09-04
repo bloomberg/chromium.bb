@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"

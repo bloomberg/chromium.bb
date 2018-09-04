@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
-#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
@@ -62,6 +61,7 @@ class FocusController;
 class Frame;
 class LinkHighlights;
 class OverscrollController;
+class PageOverlay;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
