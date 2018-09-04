@@ -386,9 +386,6 @@ void AutoplayPolicy::EnsureAutoplayInitiatedSet() {
 
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
     const {
-  if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
-    return false;
-
   // We want to allow muted video to autoplay if:
   // - the flag is enabled;
   // - Data Saver is not enabled;
