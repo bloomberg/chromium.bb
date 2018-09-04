@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
+#include "chromeos/services/ime/public/cpp/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
@@ -228,6 +229,10 @@ bool IsGestureTypingEnabled() {
 bool IsGestureEditingEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureEditing);
+}
+
+bool IsImeServiceEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::ime::kImeServiceConnectable);
 }
 
 bool InsertText(const base::string16& text) {
