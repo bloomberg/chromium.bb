@@ -1973,11 +1973,11 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
   metadata.viewport_size_in_pixels = active_tree_->GetDeviceViewport().size();
 
-#if defined(OS_ANDROID)
   metadata.top_controls_height =
       browser_controls_offset_manager_->TopControlsHeight();
   metadata.top_controls_shown_ratio =
       browser_controls_offset_manager_->TopControlsShownRatio();
+#if defined(OS_ANDROID)
   metadata.bottom_controls_height =
       browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =
@@ -2002,7 +2002,11 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
 
   bool allocate_new_local_surface_id =
 #if !defined(OS_ANDROID)
-      false;
+      last_draw_render_frame_metadata_ &&
+      (last_draw_render_frame_metadata_->top_controls_height !=
+           metadata.top_controls_height ||
+       last_draw_render_frame_metadata_->top_controls_shown_ratio !=
+           metadata.top_controls_shown_ratio);
 #else
       last_draw_render_frame_metadata_ &&
       (last_draw_render_frame_metadata_->top_controls_height !=

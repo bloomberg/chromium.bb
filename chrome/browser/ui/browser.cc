@@ -1212,6 +1212,19 @@ void Browser::TabStripEmpty() {
   instant_controller_.reset();
 }
 
+void Browser::SetTopControlsShownRatio(content::WebContents* web_contents,
+                                       float ratio) {
+  window_->SetTopControlsShownRatio(web_contents, ratio);
+}
+
+int Browser::GetTopControlsHeight() const {
+  return window_->GetTopControlsHeight();
+}
+
+void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
+  window_->SetTopControlsGestureScrollInProgress(in_progress);
+}
+
 bool Browser::CanOverscrollContent() const {
 #if defined(OS_WIN)
   // Don't enable overscroll on Windows machines unless they have a touch

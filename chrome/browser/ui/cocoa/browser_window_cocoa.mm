@@ -251,6 +251,22 @@ gfx::NativeWindow BrowserWindowCocoa::GetNativeWindow() const {
   return window();
 }
 
+void BrowserWindowCocoa::SetTopControlsShownRatio(
+    content::WebContents* web_contents,
+    float ratio) {
+  NOTIMPLEMENTED();
+}
+
+int BrowserWindowCocoa::GetTopControlsHeight() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void BrowserWindowCocoa::SetTopControlsGestureScrollInProgress(
+    bool in_progress) {
+  NOTIMPLEMENTED();
+}
+
 StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
   return [controller_ statusBubble];
 }

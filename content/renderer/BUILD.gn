@@ -532,7 +532,6 @@ target(link_target_type, "renderer") {
     "render_thread_impl.h",
     "render_view_impl.cc",
     "render_view_impl.h",
-    "render_view_impl_android.cc",
     "render_view_linux.cc",
     "render_view_win.cc",
     "render_widget.cc",

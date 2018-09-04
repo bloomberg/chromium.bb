@@ -63,6 +63,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // NatieView's size always equals this View's size.
   void SetNativeViewSize(const gfx::Size& size);
 
+  // Returns the container that contains this host's native view. Returns null
+  // if there's no attached native view or it has no container.
+  gfx::NativeView GetNativeViewContainer() const;
+
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this

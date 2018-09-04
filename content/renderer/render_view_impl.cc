@@ -420,6 +420,24 @@ content::mojom::WindowContainerType WindowFeaturesToContainerType(
   }
 }
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+// Check content::BrowserControlsState, and cc::BrowserControlsState
+// are kept in sync.
+static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
+                  int(cc::BrowserControlsState::kShown),
+              "mismatching enums: SHOWN");
+static_assert(int(BROWSER_CONTROLS_STATE_HIDDEN) ==
+                  int(cc::BrowserControlsState::kHidden),
+              "mismatching enums: HIDDEN");
+static_assert(int(BROWSER_CONTROLS_STATE_BOTH) ==
+                  int(cc::BrowserControlsState::kBoth),
+              "mismatching enums: BOTH");
+
+cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
+  return static_cast<cc::BrowserControlsState>(state);
+}
+#endif
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -1764,6 +1782,33 @@ void RenderViewImpl::ClearEditCommands() {
 const std::string& RenderViewImpl::GetAcceptLanguages() const {
   return renderer_preferences_.accept_languages;
 }
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+
+void RenderViewImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  if (GetWebWidget()) {
+    GetWebWidget()->UpdateBrowserControlsState(ContentToCc(constraints),
+                                               ContentToCc(current), animate);
+  }
+
+  top_controls_constraints_ = constraints;
+}
+
+void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
+  if (delta.height == 0)
+    return;
+
+  BrowserControlsState current = delta.height < 0
+                                     ? BROWSER_CONTROLS_STATE_SHOWN
+                                     : BROWSER_CONTROLS_STATE_HIDDEN;
+
+  UpdateBrowserControlsState(top_controls_constraints_, current, true);
+}
+
+#endif
 
 void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
   WidgetClient()->ConvertViewportToWindow(rect);

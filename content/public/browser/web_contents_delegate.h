@@ -551,6 +551,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
 
+  virtual void SetTopControlsShownRatio(WebContents* web_contents,
+                                        float ratio) {}
+
   // Requests to get browser controls info such as the height of the top/bottom
   // controls, and whether they will shrink the Blink's view size.
   // Note that they are not complete in the sense that there is no API to tell
@@ -559,6 +562,11 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual int GetTopControlsHeight() const;
   virtual int GetBottomControlsHeight() const;
   virtual bool DoBrowserControlsShrinkBlinkSize() const;
+
+  // Propagates to the browser that gesture scrolling has changed state. This is
+  // used by the browser to assist in controlling the behavior of sliding the
+  // top controls as a result of page gesture scrolling while in tablet mode.
+  virtual void SetTopControlsGestureScrollInProgress(bool in_progress);
 
   // Give WebContentsDelegates the opportunity to adjust the previews state.
   virtual void AdjustPreviewsStateForNavigation(

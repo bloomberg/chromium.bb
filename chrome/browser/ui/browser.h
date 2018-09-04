@@ -470,6 +470,10 @@ class Browser : public TabStripModelObserver,
   void TabStripEmpty() override;
 
   // Overridden from content::WebContentsDelegate:
+  void SetTopControlsShownRatio(content::WebContents* web_contents,
+                                float ratio) override;
+  int GetTopControlsHeight() const override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   bool CanOverscrollContent() const override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
   void SetFocusToLocationBar(bool select_all) override;

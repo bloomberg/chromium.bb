@@ -137,6 +137,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
   uint32_t GetCaptureSequenceNumber() const override;
+  bool DoBrowserControlsShrinkBlinkSize() const override;
+  float GetTopControlsHeight() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
@@ -461,6 +463,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                    const base::Optional<viz::LocalSurfaceId>&
                                        child_allocated_local_surface_id);
 
+  void OnDidUpdateVisualPropertiesComplete(
+      const cc::RenderFrameMetadata& metadata);
+
   // Tracks whether SnapToPhysicalPixelBoundary() has been called.
   bool has_snapped_to_boundary() { return has_snapped_to_boundary_; }
   void ResetHasSnappedToBoundary() { has_snapped_to_boundary_ = false; }
@@ -557,6 +562,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Tracks the ancestors of the RWHVA window for window location changes.
   std::unique_ptr<WindowAncestorObserver> ancestor_window_observer_;
+
+  float top_controls_shown_ratio_ = 0.f;
+  bool top_controls_gesture_scroll_in_progress_ = false;
 
   // Are we in the process of closing?  Tracked so fullscreen views can avoid
   // sending a second shutdown request to the host when they lose the focus

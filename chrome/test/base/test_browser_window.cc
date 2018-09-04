@@ -72,6 +72,17 @@ gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
   return NULL;
 }
 
+void TestBrowserWindow::SetTopControlsShownRatio(
+    content::WebContents* web_contents,
+    float ratio) {}
+
+int TestBrowserWindow::GetTopControlsHeight() const {
+  return 0;
+}
+
+void TestBrowserWindow::SetTopControlsGestureScrollInProgress(
+    bool in_progress) {}
+
 StatusBubble* TestBrowserWindow::GetStatusBubble() {
   return NULL;
 }

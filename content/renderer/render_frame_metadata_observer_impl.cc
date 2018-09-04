@@ -116,15 +116,15 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
       rfm1.device_scale_factor != rfm2.device_scale_factor ||
       rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
+      rfm1.top_controls_height != rfm2.top_controls_height ||
+      rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
       rfm1.local_surface_id != rfm2.local_surface_id) {
     *needs_activation_notification = true;
     return true;
   }
 
 #if defined(OS_ANDROID)
-  if (rfm1.top_controls_height != rfm2.top_controls_height ||
-      rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-      rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
+  if (rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
       rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
       rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
       rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||

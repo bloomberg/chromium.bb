@@ -37,6 +37,7 @@ class NativeViewHostMac : public NativeViewHostWrapper {
       override;
   void HideWidget() override;
   void SetFocus() override;
+  gfx::NativeView GetNativeViewContainer() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeCursor GetCursor(int x, int y) override;
 

@@ -442,10 +442,15 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
-  // In immersive fullscreen, the infobar always starts near the top of the
-  // screen.
-  if (immersive_mode_controller_->IsEnabled())
-    top = browser_view_->y();
+  // In immersive fullscreen or when top-chrome is fully hidden due to the page
+  // gesture scroll slide behavior, the infobar always starts near the top of
+  // the screen.
+  if (immersive_mode_controller_->IsEnabled() ||
+      (delegate_->IsTopControlsSlideBehaviorEnabled() &&
+       delegate_->GetTopControlsSlideBehaviorShownRatio() == 0.f)) {
+    // Can be null in tests.
+    top = browser_view_ ? browser_view_->y() : 0;
+  }
 
   infobar_container_->SetVisible(IsInfobarVisible());
   infobar_container_->SetBounds(
@@ -489,11 +494,18 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 
   gfx::Rect top_container_bounds(vertical_layout_rect_.width(), height);
 
-  // If the immersive mode controller is animating the top container, it may be
-  // partly offscreen.
-  top_container_bounds.set_y(
-      immersive_mode_controller_->GetTopContainerVerticalOffset(
-          top_container_bounds.size()));
+  if (delegate_->IsTopControlsSlideBehaviorEnabled()) {
+    // If the top controls are fully hidden, then it's positioned outside the
+    // views' bounds.
+    const float ratio = delegate_->GetTopControlsSlideBehaviorShownRatio();
+    top_container_bounds.set_y(ratio == 0 ? -height : 0);
+  } else {
+    // If the immersive mode controller is animating the top container, it may
+    // be partly offscreen.
+    top_container_bounds.set_y(
+        immersive_mode_controller_->GetTopContainerVerticalOffset(
+            top_container_bounds.size()));
+  }
   top_container_->SetBoundsRect(top_container_bounds);
 }
 
