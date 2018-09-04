@@ -66,7 +66,6 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
-      public ui::CompositorLockManagerClient,
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor,
       public viz::HostFrameSinkClient,
@@ -158,9 +157,6 @@ class CONTENT_EXPORT CompositorImpl
   // display::DisplayObserver implementation.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
-
-  // ui::CompositorLockManagerClient implementation.
-  void OnCompositorLockStateChanged(bool locked) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();

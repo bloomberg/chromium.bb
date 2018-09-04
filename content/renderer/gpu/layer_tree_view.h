@@ -40,6 +40,7 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
+class ScopedDeferCommits;
 }  // namespace cc
 
 namespace gfx {
@@ -138,7 +139,7 @@ class CONTENT_EXPORT LayerTreeView
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void SynchronouslyCompositeNoRasterForTesting() override;
   void CompositeWithRasterForTesting() override;
-  void SetDeferCommits(bool defer_commits) override;
+  std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const cc::LayerSelection& selection) override;

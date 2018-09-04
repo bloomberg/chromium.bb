@@ -90,6 +90,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
 
   content::LayerTreeView* layer_tree_view_ = nullptr;
   FrameTestHelpers::LayerTreeViewFactory layer_tree_view_factory_;
+
+  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
 };
 
 }  // namespace blink

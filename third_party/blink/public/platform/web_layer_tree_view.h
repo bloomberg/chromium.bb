@@ -33,6 +33,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -160,7 +161,9 @@ class WebLayerTreeView {
   virtual void CompositeWithRasterForTesting() {}
 
   // Prevents updates to layer tree from becoming visible.
-  virtual void SetDeferCommits(bool defer_commits) {}
+  virtual std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() {
+    return nullptr;
+  }
 
   struct ViewportLayers {
     cc::ElementId overscroll_elasticity_element_id;

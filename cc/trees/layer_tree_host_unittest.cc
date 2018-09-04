@@ -3372,7 +3372,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 
   void BeginTest() override {
     // Start with commits deferred.
-    PostSetDeferCommitsToMainThread(true);
+    PostGetDeferCommitsToMainThread(&scoped_defer_commits_);
     PostSetNeedsCommitToMainThread();
   }
 
@@ -3406,6 +3406,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void WillBeginMainFrame() override {
+    EXPECT_FALSE(scoped_defer_commits_);
     EXPECT_TRUE(IsCommitAllowed());
     num_send_begin_main_frame_++;
     EndTest();
@@ -3418,12 +3419,13 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 
   virtual void AllowCommits() {
     allow_commits_ = true;
-    layer_tree_host()->SetDeferCommits(false);
+    scoped_defer_commits_.reset();
   }
 
   virtual bool IsCommitAllowed() const { return allow_commits_; }
 
  private:
+  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
   bool allow_commits_ = false;
   int num_will_begin_impl_frame_ = 0;
   int num_send_begin_main_frame_ = 0;
@@ -3474,11 +3476,9 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
 
   void WillBeginMainFrame() override {
     ++begin_main_frame_count_;
-    if (allow_commits_)
-      return;
 
     // This should prevent the commit from happening.
-    layer_tree_host()->SetDeferCommits(true);
+    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
     // Wait to see if the commit happens. It's possible the deferred
     // commit happens when it shouldn't but takes long enough that
     // this passes. But it won't fail when it shouldn't.
@@ -3497,7 +3497,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
   }
 
  private:
-  bool allow_commits_ = false;
+  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
   int commit_count_ = 0;
   int begin_main_frame_count_ = 0;
 };
@@ -3520,7 +3520,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
       return;
 
     // This should prevent the commit from happening.
-    layer_tree_host()->SetDeferCommits(true);
+    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
     // Wait to see if the commit happens. It's possible the deferred
     // commit happens when it shouldn't but takes long enough that
     // this passes. But it won't fail when it shouldn't.
@@ -3538,7 +3538,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
     // Once we've waited and seen that commit did not happen, we
     // allow commits and should see this one go through.
     allow_commits_ = true;
-    layer_tree_host()->SetDeferCommits(false);
+    scoped_defer_commits_.reset();
   }
 
   void DidCommit() override {
@@ -3559,6 +3559,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
   }
 
  private:
+  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
   bool allow_commits_ = false;
   int commit_count_ = 0;
   int begin_main_frame_count_ = 0;

@@ -733,10 +733,20 @@ void LayerTreeTest::PostRequestNewLocalSurfaceIdToMainThread() {
                      main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
+void LayerTreeTest::PostGetDeferCommitsToMainThread(
+    std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetDeferCommits,
-                                main_thread_weak_ptr_, defer_commits));
+      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchGetDeferCommits,
+                                main_thread_weak_ptr_,
+                                base::Unretained(scoped_defer_commits)));
+}
+
+void LayerTreeTest::PostReturnDeferCommitsToMainThread(
+    std::unique_ptr<ScopedDeferCommits> scoped_defer_commits) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LayerTreeTest::DispatchReturnDeferCommits,
+                     main_thread_weak_ptr_, std::move(scoped_defer_commits)));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -928,10 +938,17 @@ void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {
     layer_tree_host_->RequestNewLocalSurfaceId();
 }
 
-void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
+void LayerTreeTest::DispatchGetDeferCommits(
+    std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetDeferCommits(defer_commits);
+    *scoped_defer_commits = layer_tree_host_->DeferCommits();
+}
+
+void LayerTreeTest::DispatchReturnDeferCommits(
+    std::unique_ptr<ScopedDeferCommits> scoped_defer_commits) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  // Just let |scoped_defer_commits| go out of scope.
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {

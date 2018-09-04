@@ -28,10 +28,6 @@ SimCompositor::SimCompositor() {
   // BeginMainFrame(), which will update and paint the WebViewImpl given to
   // SetWebView().
   layer_tree_view_ = layer_tree_view_factory_.Initialize(this);
-  // SimCompositor starts with defer commits enabled, but uses synchronous
-  // compositing which does not use defer commits anyhow, it only uses it for
-  // reading defered state in tests.
-  layer_tree_view_->SetDeferCommits(true);
 }
 
 SimCompositor::~SimCompositor() {
@@ -40,6 +36,11 @@ SimCompositor::~SimCompositor() {
 
 void SimCompositor::SetWebView(WebViewImpl& web_view) {
   web_view_ = &web_view;
+
+  // SimCompositor starts with defer commits enabled, but uses synchronous
+  // compositing which does not use defer commits anyhow, it only uses it for
+  // reading deferred state in tests.
+  web_view_->DeferCommitsForTesting();
 }
 
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {

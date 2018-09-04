@@ -68,6 +68,7 @@
 
 namespace cc {
 class Layer;
+class ScopedDeferCommits;
 }
 
 namespace blink {
@@ -447,6 +448,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       const IntRect& caret_bounds_in_document,
       bool zoom_into_legible_scale);
 
+  void StopDeferringCommits() { scoped_defer_commits_.reset(); }
+
+  void DeferCommitsForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
@@ -672,6 +677,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // split is complete, since in out-of-process iframes the page can be
   // visible, but the WebView should not be used as a widget.
   bool override_compositor_visibility_;
+
+  // We defer commits when transitioning to a new page. ChromeClientImpl calls
+  // StopDeferringCommits() to release this when a new page is loaded.
+  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
 };

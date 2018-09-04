@@ -114,7 +114,8 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       task_graph_runner_(params->task_graph_runner),
       content_source_id_(0),
       event_listener_properties_(),
-      mutator_host_(params->mutator_host) {
+      mutator_host_(params->mutator_host),
+      defer_commits_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 
@@ -419,7 +420,7 @@ void LayerTreeHost::WillCommit() {
 
 
 void LayerTreeHost::UpdateDeferCommitsInternal() {
-  proxy_->SetDeferCommits(defer_commits_ ||
+  proxy_->SetDeferCommits(defer_commits_count_ > 0 ||
                           (settings_.enable_surface_synchronization &&
                            !local_surface_id_from_parent_.is_valid()));
 }
@@ -507,11 +508,23 @@ void LayerTreeHost::DidLoseLayerTreeFrameSink() {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetDeferCommits(bool defer_commits) {
-  if (defer_commits_ == defer_commits)
-    return;
-  defer_commits_ = defer_commits;
-  UpdateDeferCommitsInternal();
+ScopedDeferCommits::ScopedDeferCommits(LayerTreeHost* host)
+    : host_(host->defer_commits_weak_ptr_factory_.GetWeakPtr()) {
+  host->defer_commits_count_++;
+  host->UpdateDeferCommitsInternal();
+}
+
+ScopedDeferCommits::~ScopedDeferCommits() {
+  LayerTreeHost* host = host_.get();
+  if (host) {
+    DCHECK_GT(host->defer_commits_count_, 0u);
+    if (--host->defer_commits_count_ == 0)
+      host->UpdateDeferCommitsInternal();
+  }
+}
+
+std::unique_ptr<ScopedDeferCommits> LayerTreeHost::DeferCommits() {
+  return std::make_unique<ScopedDeferCommits>(this);
 }
 
 DISABLE_CFI_PERF
