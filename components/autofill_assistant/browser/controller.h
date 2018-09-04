@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 
+#include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -27,9 +27,8 @@ class Controller : public ScriptExecutorDelegate,
                    public UiDelegate,
                    private content::WebContentsObserver {
  public:
-  static void CreateAndStartForWebContents(
-      content::WebContents* web_contents,
-      std::unique_ptr<UiController> ui_controller);
+  static void CreateAndStartForWebContents(content::WebContents* web_contents,
+                                           std::unique_ptr<Client> client);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -39,7 +38,7 @@ class Controller : public ScriptExecutorDelegate,
 
  private:
   Controller(content::WebContents* web_contents,
-             std::unique_ptr<UiController> ui_controller);
+             std::unique_ptr<Client> client);
   ~Controller() override;
 
   void GetScripts();
@@ -54,7 +53,7 @@ class Controller : public ScriptExecutorDelegate,
                      const GURL& validated_url) override;
   void WebContentsDestroyed() override;
 
-  std::unique_ptr<UiController> ui_controller_;
+  std::unique_ptr<Client> client_;
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
   std::map<Script*, std::unique_ptr<Script>> scripts_;

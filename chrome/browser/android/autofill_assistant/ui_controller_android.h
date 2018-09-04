@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_H_
 
-#include "components/autofill_assistant/browser/ui_controller.h"
-
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "components/autofill_assistant/browser/client.h"
+#include "components/autofill_assistant/browser/ui_controller.h"
 
 namespace autofill_assistant {
-// Class implements UiController and starts the Controller.
-class UiControllerAndroid : public UiController {
+// Class implements UiController, Client and starts the Controller.
+class UiControllerAndroid : public UiController, public Client {
  public:
   UiControllerAndroid(JNIEnv* env,
                       jobject jcaller,
@@ -30,6 +30,10 @@ class UiControllerAndroid : public UiController {
       base::OnceCallback<void(const std::string&)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
+
+  // Overrides Client:
+  std::string GetApiKey() override;
+  UiController* GetUiController() override;
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

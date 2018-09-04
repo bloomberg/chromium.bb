@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -21,8 +21,8 @@
 namespace {
 // TODO(crbug.com/806868): Provide correct server and endpoint.
 const char* const kAutofillAssistantServer = "";
-const char* const kScriptEndpoint = "";
-const char* const kActionEndpoint = "";
+const char* const kScriptEndpoint = "/v1/supportsSite2";
+const char* const kActionEndpoint = "/v1/actions2";
 
 net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("autofill_service", R"(
@@ -46,20 +46,37 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
 
 namespace autofill_assistant {
 
-Service::Service(content::BrowserContext* context) : context_(context) {
-  std::string api_key = google_apis::GetAPIKey();
+namespace switches {
+const char* const kAutofillAssistantServerURL = "autofill-assistant-url";
+}  // namespace switches
 
+Service::Service(const std::string& api_key, content::BrowserContext* context)
+    : context_(context) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  GURL service_url(kAutofillAssistantServer);
+  if (command_line->HasSwitch(switches::kAutofillAssistantServerURL)) {
+    GURL custom_url(command_line->GetSwitchValueASCII(
+        switches::kAutofillAssistantServerURL));
+    if (custom_url.is_valid()) {
+      service_url = custom_url;
+    } else {
+      LOG(WARNING) << "The following autofill assisstant URL specified in "
+                      "the command line is invalid: "
+                   << custom_url;
+    }
+  }
+
+  std::string api_key_query = base::StrCat({"key=", api_key});
   url::StringPieceReplacements<std::string> script_replacements;
   script_replacements.SetPathStr(kScriptEndpoint);
-  script_replacements.SetQueryStr(api_key);
-  script_server_url_ =
-      GURL(kAutofillAssistantServer).ReplaceComponents(script_replacements);
+  script_replacements.SetQueryStr(api_key_query);
+  script_server_url_ = service_url.ReplaceComponents(script_replacements);
 
   url::StringPieceReplacements<std::string> action_replacements;
   action_replacements.SetPathStr(kActionEndpoint);
-  action_replacements.SetQueryStr(api_key);
+  action_replacements.SetQueryStr(api_key_query);
   script_action_server_url_ =
-      GURL(kAutofillAssistantServer).ReplaceComponents(action_replacements);
+      service_url.ReplaceComponents(action_replacements);
 }
 
 Service::~Service() {}
@@ -122,6 +139,9 @@ std::unique_ptr<::network::SimpleURLLoader> Service::CreateAndStartLoader(
       ::network::SimpleURLLoader::Create(std::move(resource_request),
                                          traffic_annotation);
   simple_loader->AttachStringForUpload(request, "application/x-protobuffer");
+#ifdef DEBUG
+  simple_loader->SetAllowHttpErrorResults(true);
+#endif
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       content::BrowserContext::GetDefaultStoragePartition(context_)
           ->GetURLLoaderFactoryForBrowserProcess()
@@ -149,7 +169,8 @@ void Service::OnURLLoaderComplete(Loader* loader,
   if (loader_instance->loader->NetError() != net::OK || response_code != 200) {
     LOG(ERROR) << "Communicating with autofill assistant server error NetError="
                << loader_instance->loader->NetError()
-               << " response_code=" << response_code;
+               << " response_code=" << response_code << " message="
+               << (response_body == nullptr ? "" : *response_body);
     std::move(loader_instance->callback).Run(false, response_body_str);
     return;
   }

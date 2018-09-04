@@ -16,7 +16,7 @@ message ClientContextProto {
 // Get the list of scripts that can potentially be run on a url.
 message SupportsScriptRequestProto {
   required string url = 1;
-  required ClientContextProto client_context = 2;
+  required ClientContextProto client_context = 3;
 }
 
 // Response of the list of supported scripts.
