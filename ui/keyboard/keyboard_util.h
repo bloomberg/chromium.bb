@@ -162,9 +162,6 @@ KEYBOARD_EXPORT bool IsGestureEditingEnabled();
 // available.
 KEYBOARD_EXPORT bool IsVoiceInputEnabled();
 
-// Returns true if the IME service is enabled.
-KEYBOARD_EXPORT bool IsImeServiceEnabled();
-
 // Insert |text| into the active TextInputClient if there is one. Returns true
 // if |text| was successfully inserted.
 KEYBOARD_EXPORT bool InsertText(const base::string16& text);
