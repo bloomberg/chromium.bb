@@ -355,7 +355,8 @@ void ShelfWidget::OnShelfAlignmentChanged() {
   CHECK(status_area_widget_);
   shelf_view_->OnShelfAlignmentChanged();
   status_area_widget_->UpdateAfterShelfAlignmentChange();
-  delegate_view_->SchedulePaint();
+  // This call will in turn trigger a call to delegate_view_->SchedulePaint().
+  delegate_view_->UpdateOpaqueBackground();
 }
 
 void ShelfWidget::OnTabletModeChanged() {
