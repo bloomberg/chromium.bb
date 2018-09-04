@@ -222,6 +222,7 @@ test("exo_unittests") {
     "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
+    "//testing/buildbot/filters:exo_unittests_filters",
   ]
 
   if (is_linux) {

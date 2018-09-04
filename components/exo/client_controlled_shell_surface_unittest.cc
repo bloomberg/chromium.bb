@@ -608,7 +608,7 @@ TEST_F(ClientControlledShellSurfaceTest, NoSynthesizedEventOnFrameChange) {
 
   // AutoHide
   base::RunLoop().RunUntilIdle();
-  auto* env = aura::Env::GetInstance();
+  aura::Env* env = ash::Shell::Get()->aura_env();
   gfx::Rect cropped_fullscreen_bounds(0, 0, 800, 400);
   env->SetLastMouseLocation(gfx::Point(100, 30));
   TestEventHandler handler;
