@@ -56,7 +56,8 @@ class LocationBarControllerImpl : public LocationBarController {
   void OnAutocompleteAccept(const GURL& url,
                             WindowOpenDisposition disposition,
                             ui::PageTransition transition,
-                            AutocompleteMatchType::Type type) override;
+                            AutocompleteMatchType::Type type,
+                            base::TimeTicks match_selection_timestamp) override;
   void OnChanged() override;
   void OnInputInProgress(bool in_progress) override;
   void OnSetFocus() override;

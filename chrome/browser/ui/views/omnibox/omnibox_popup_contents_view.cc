@@ -326,18 +326,24 @@ OmniboxPopupContentsView::~OmniboxPopupContentsView() {
   // which case there's nothing we need to do.
 }
 
-void OmniboxPopupContentsView::OpenMatch(size_t index,
-                                         WindowOpenDisposition disposition) {
+void OmniboxPopupContentsView::OpenMatch(
+    size_t index,
+    WindowOpenDisposition disposition,
+    base::TimeTicks match_selection_timestamp) {
   DCHECK(HasMatchAt(index));
 
   omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
-                           GURL(), base::string16(), index);
+                           GURL(), base::string16(), index,
+                           match_selection_timestamp);
 }
 
-void OmniboxPopupContentsView::OpenMatch(WindowOpenDisposition disposition) {
+void OmniboxPopupContentsView::OpenMatch(
+    WindowOpenDisposition disposition,
+    base::TimeTicks match_selection_timestamp) {
   size_t index = model_->selected_line();
   omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
-                           GURL(), base::string16(), index);
+                           GURL(), base::string16(), index,
+                           match_selection_timestamp);
 }
 
 gfx::Image OmniboxPopupContentsView::GetMatchIcon(
@@ -523,7 +529,8 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
-      OpenMatch(event_location_index, WindowOpenDisposition::CURRENT_TAB);
+      OpenMatch(event_location_index, WindowOpenDisposition::CURRENT_TAB,
+                event->time_stamp());
       break;
     default:
       return;

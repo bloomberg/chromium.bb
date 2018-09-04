@@ -35,6 +35,11 @@ ui::PageTransition
   return ui::PAGE_TRANSITION_LINK;
 }
 
+base::TimeTicks TestBrowserWindow::TestLocationBar::GetMatchSelectionTimestamp()
+    const {
+  return base::TimeTicks();
+}
+
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
   return NULL;
 }

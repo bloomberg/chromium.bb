@@ -469,7 +469,8 @@ bool OmniboxEditModel::CanPasteAndGo(const base::string16& text) const {
   return match.destination_url.is_valid();
 }
 
-void OmniboxEditModel::PasteAndGo(const base::string16& text) {
+void OmniboxEditModel::PasteAndGo(const base::string16& text,
+                                  base::TimeTicks match_selection_timestamp) {
   DCHECK(CanPasteAndGo(text));
   UMA_HISTOGRAM_COUNTS("Omnibox.PasteAndGo", 1);
 
@@ -478,7 +479,8 @@ void OmniboxEditModel::PasteAndGo(const base::string16& text) {
   GURL alternate_nav_url;
   ClassifyString(text, &match, &alternate_nav_url);
   view_->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, alternate_nav_url,
-                   text, OmniboxPopupModel::kNoMatch);
+                   text, OmniboxPopupModel::kNoMatch,
+                   match_selection_timestamp);
 }
 
 bool OmniboxEditModel::ClassifiesAsSearch(const base::string16& text) const {
@@ -488,7 +490,8 @@ bool OmniboxEditModel::ClassifiesAsSearch(const base::string16& text) const {
 }
 
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
-                                   bool for_drop) {
+                                   bool for_drop,
+                                   base::TimeTicks match_selection_timestamp) {
   // Get the URL and transition type for the selected entry.
   GURL alternate_nav_url;
   AutocompleteMatch match = CurrentMatch(&alternate_nav_url);
@@ -557,7 +560,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
 
   DCHECK(popup_model());
   view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
-                   popup_model()->selected_line());
+                   popup_model()->selected_line(), match_selection_timestamp);
 }
 
 void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
@@ -594,7 +597,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  WindowOpenDisposition disposition,
                                  const GURL& alternate_nav_url,
                                  const base::string16& pasted_text,
-                                 size_t index) {
+                                 size_t index,
+                                 base::TimeTicks match_selection_timestamp) {
   const base::TimeTicks& now(base::TimeTicks::Now());
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
       now - time_user_first_modified_omnibox_);
@@ -739,9 +743,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     base::AutoReset<bool> tmp(&in_revert_, true);
     controller_->OnAutocompleteAccept(
         match.destination_url, disposition,
-        ui::PageTransitionFromInt(
-            match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-        match.type);
+        ui::PageTransitionFromInt(match.transition |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+        match.type, match_selection_timestamp);
 
     // The observer should have been synchronously notified of a pending load.
     if (observer && observer->HasSeenPendingLoad())

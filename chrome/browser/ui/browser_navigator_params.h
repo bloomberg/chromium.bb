@@ -253,6 +253,11 @@ struct NavigateParams {
   // possible, i.e. if the is a PWA installed for the target URL.
   bool open_pwa_window_if_possible = false;
 
+  // The time when the input which led to the navigation occurred. Currently
+  // only set when a link is clicked or the navigation takes place from the
+  // desktop omnibox.
+  base::TimeTicks input_start;
+
  private:
   NavigateParams();
   DISALLOW_COPY_AND_ASSIGN(NavigateParams);

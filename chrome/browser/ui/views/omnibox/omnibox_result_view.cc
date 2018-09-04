@@ -236,7 +236,7 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,8 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
     OpenMatch(event.IsOnlyLeftMouseButton()
                   ? WindowOpenDisposition::CURRENT_TAB
-                  : WindowOpenDisposition::NEW_BACKGROUND_TAB);
+                  : WindowOpenDisposition::NEW_BACKGROUND_TAB,
+              event.time_stamp());
   }
 }
 
@@ -384,8 +385,9 @@ bool OmniboxResultView::IsSelected() const {
   return model_->IsSelectedIndex(model_index_);
 }
 
-void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
-  model_->OpenMatch(model_index_, disposition);
+void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,
+                                  base::TimeTicks match_selection_timestamp) {
+  model_->OpenMatch(model_index_, disposition, match_selection_timestamp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

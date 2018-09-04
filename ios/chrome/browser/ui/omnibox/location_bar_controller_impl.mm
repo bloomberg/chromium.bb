@@ -158,7 +158,8 @@ void LocationBarControllerImpl::OnAutocompleteAccept(
     const GURL& gurl,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
-    AutocompleteMatchType::Type type) {
+    AutocompleteMatchType::Type type,
+    base::TimeTicks match_selection_timestamp) {
   if (gurl.is_valid()) {
     transition = ui::PageTransitionFromInt(
         transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);

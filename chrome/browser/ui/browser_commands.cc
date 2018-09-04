@@ -552,6 +552,7 @@ void OpenCurrentURL(Browser* browser) {
   // opener.
   params.tabstrip_add_types =
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
+  params.input_start = location_bar->GetMatchSelectionTimestamp();
   Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -197,6 +197,11 @@ class NavigationController {
     // ContentBrowserClient::GetNavigationUIData.
     std::unique_ptr<NavigationUIData> navigation_ui_data;
 
+    // Time at which the input leading to this navigation occurred. This field
+    // is set for links clicked by the user; the embedder is recommended to set
+    // it for navigations it initiates.
+    base::TimeTicks input_start;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

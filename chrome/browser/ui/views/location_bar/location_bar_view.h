@@ -339,7 +339,9 @@ class LocationBarView : public LocationBar,
   GURL GetDestinationURL() const override;
   WindowOpenDisposition GetWindowOpenDisposition() const override;
   ui::PageTransition GetPageTransition() const override;
+  base::TimeTicks GetMatchSelectionTimestamp() const override;
   void AcceptInput() override;
+  void AcceptInput(base::TimeTicks match_selection_timestamp) override;
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;

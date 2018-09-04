@@ -1238,18 +1238,21 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (model()->popup_model()->SelectedLineHasTabMatch() &&
           model()->popup_model()->selected_line_state() ==
               OmniboxPopupModel::TAB_SWITCH) {
-        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                               event.time_stamp());
       } else {
         if (alt || (shift && command)) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                               false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB, false,
+                               event.time_stamp());
         } else if (command) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                               false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB, false,
+                               event.time_stamp());
         } else if (shift) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW, false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW, false,
+                               event.time_stamp());
         } else {
-          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false,
+                               event.time_stamp());
         }
       }
       return true;
@@ -1377,7 +1380,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
             model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
                 OmniboxPopupModel::TAB_SWITCH) {
-          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                                 event.time_stamp());
           return true;
         }
       }

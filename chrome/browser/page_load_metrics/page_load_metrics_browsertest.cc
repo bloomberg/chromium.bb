@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -1874,6 +1875,26 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToNavigationLinkClick, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToFirstContentfulPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  ui_test_utils::SendToOmniboxAndSubmit(
+      location_bar, embedded_test_server()->GetURL("/title1.html").spec(),
+      base::TimeTicks::Now());
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);

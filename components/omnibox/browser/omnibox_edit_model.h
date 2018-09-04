@@ -193,7 +193,9 @@ class OmniboxEditModel {
   bool CanPasteAndGo(const base::string16& text) const;
 
   // Navigates to the destination last supplied to CanPasteAndGo.
-  void PasteAndGo(const base::string16& text);
+  void PasteAndGo(
+      const base::string16& text,
+      base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Returns true if |text| classifies as a Search rather than a URL.
   bool ClassifiesAsSearch(const base::string16& text) const;
@@ -203,8 +205,10 @@ class OmniboxEditModel {
   // it indicates the input is being accepted as part of a drop operation and
   // the transition should be treated as LINK (so that it won't trigger the
   // URL to be autocompleted).
-  void AcceptInput(WindowOpenDisposition disposition,
-                   bool for_drop);
+  void AcceptInput(
+      WindowOpenDisposition disposition,
+      bool for_drop,
+      base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Asks the browser to load the item at |index|, with the given properties.
   // OpenMatch() needs to know the original text that drove this action.  If
@@ -226,7 +230,8 @@ class OmniboxEditModel {
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
                  const base::string16& pasted_text,
-                 size_t index);
+                 size_t index,
+                 base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   OmniboxFocusState focus_state() const { return focus_state_; }
   bool has_focus() const { return focus_state_ != OMNIBOX_FOCUS_NONE; }

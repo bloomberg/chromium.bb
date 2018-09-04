@@ -46,7 +46,7 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
     text = OmniboxView::SanitizeTextForPaste(text);
     OmniboxEditModel* model = location_bar_->GetOmniboxView()->model();
     if (model->CanPasteAndGo(text))
-      model->PasteAndGo(text);
+      model->PasteAndGo(text, event.time_stamp());
   }
 
   IconLabelBubbleView::OnMousePressed(event);

@@ -246,14 +246,15 @@ void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
                                const base::string16& pasted_text,
-                               size_t selected_line) {
+                               size_t selected_line,
+                               base::TimeTicks match_selection_timestamp) {
   // It may be unsafe to modify the contents of the field.
   if (ShouldIgnoreUserInputDueToPendingVoiceSearch()) {
     return;
   }
 
   OmniboxView::OpenMatch(match, disposition, alternate_nav_url, pasted_text,
-                         selected_line);
+                         selected_line, match_selection_timestamp);
 }
 
 base::string16 OmniboxViewIOS::GetText() const {
@@ -1007,5 +1008,6 @@ void OmniboxViewIOS::OnSelectedMatchForOpening(
     const GURL& alternate_nav_url,
     const base::string16& pasted_text,
     size_t index) {
-  this->OpenMatch(match, disposition, alternate_nav_url, pasted_text, index);
+  this->OpenMatch(match, disposition, alternate_nav_url, pasted_text, index,
+                  base::TimeTicks());
 }
