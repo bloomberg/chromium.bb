@@ -19,7 +19,9 @@ test("cronet_test") {
     "cronet_quic_test.mm",
     "cronet_test_base.h",
     "cronet_test_base.mm",
-    "get_stream_engine.mm",
+
+    # Use native stream engine instead (https://crbug.com/874542)
+    # "get_stream_engine.mm",
     "start_cronet.h",
     "start_cronet.mm",
   ]
@@ -30,7 +32,7 @@ test("cronet_test") {
     "//components/cronet/ios:cronet_framework+link",
     "//components/cronet/native/test:cronet_native_tests",
     "//components/cronet/test:test_support",
-    "//components/grpc_support:bidirectional_stream_unittest",
+    "//components/grpc_support:bidirectional_stream_test",
     "//net",
     "//net:simple_quic_tools",
     "//net:test_support",
