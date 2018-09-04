@@ -280,12 +280,14 @@ bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
 
   D3D11_VIDEO_DECODER_CONFIG config = {};
   hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
+  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.GetDecoderConfigStatus", SUCCEEDED(hr));
   if (FAILED(hr))
     return false;
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device->CreateVideoDecoder(&desc, &config,
                                         video_decoder.GetAddressOf());
+  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.CreateDecoderStatus", !!video_decoder);
   return !!video_decoder;
 }
 
