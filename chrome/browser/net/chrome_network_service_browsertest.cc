@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   EXPECT_EQ(kCookieValue, cookies[0].Value());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // The cookies.size() ASSERT is failing flakily on the Win7 bots.
 // See https://crbug.com/868667
 #define MAYBE_EncryptedCookies DISABLED_EncryptedCookies
