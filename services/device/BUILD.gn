@@ -27,6 +27,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//services/device/bluetooth",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
@@ -109,6 +110,7 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
+    "//services/device/bluetooth:tests",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
     "//services/device/geolocation:test_support",

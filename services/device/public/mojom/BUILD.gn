@@ -9,6 +9,7 @@ mojom("mojom") {
   sources = [
     "battery_monitor.mojom",
     "battery_status.mojom",
+    "bluetooth_system.mojom",
     "fingerprint.mojom",
     "geolocation.mojom",
     "geolocation_config.mojom",

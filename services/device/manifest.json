@@ -8,6 +8,7 @@
     "service_manager:connector": {
       "provides": {
         "device:battery_monitor": [ "device.mojom.BatteryMonitor" ],
+        "device:bluetooth_system": [ "device.mojom.BluetoothSystemFactory" ],
         "device:fingerprint": [ "device.mojom.Fingerprint" ],
         "device:generic_sensor": [ "device.mojom.SensorProvider" ],
         "device:geolocation": [ "device.mojom.GeolocationContext" ],

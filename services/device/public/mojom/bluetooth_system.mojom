@@ -1,0 +1,26 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.mojom;
+
+// Factory to get an instance of the BluetoothSystem interface.
+interface BluetoothSystemFactory {
+  Create(BluetoothSystem& system, BluetoothSystemClient system_client);
+};
+
+// High level interface targeted towards UI level components that:
+//  - Show the BT Radio state and allow users to change it.
+//  - Show a list of nearby, connected and paired BT Devices.
+//  - Start and stop BT scans.
+//  - Connect to and pair with BT devices.
+//
+// This interface is implemented only on Chrome OS and lives in the Device
+// Service.
+interface BluetoothSystem {
+};
+
+// Interface used by clients of BluetoothSystem to get notified of events
+// like Bluetooth State changes.
+interface BluetoothSystemClient {
+};
