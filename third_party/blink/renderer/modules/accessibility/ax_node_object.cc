@@ -2711,8 +2711,10 @@ String AXNodeObject::NativeTextAlternative(
         return text_alternative;
       }
     }
+  }
 
-    // Also check for aria-placeholder.
+  // Also check for aria-placeholder.
+  if (IsTextControl()) {
     name_from = kAXNameFromPlaceholder;
     if (name_sources) {
       name_sources->push_back(
