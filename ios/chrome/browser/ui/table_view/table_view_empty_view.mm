@@ -31,14 +31,16 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
 }
 
 @interface TableViewEmptyView ()
-// The message that will be displayed.
+// The message that will be displayed and the label that will display it.
 @property(nonatomic, copy) NSAttributedString* message;
+@property(nonatomic, strong) UILabel* messageLabel;
 // The image that will be displayed.
 @property(nonatomic, strong) UIImage* image;
 @end
 
 @implementation TableViewEmptyView
 @synthesize message = _message;
+@synthesize messageLabel = _messageLabel;
 @synthesize image = _image;
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -63,6 +65,18 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   return self;
 }
 
+#pragma mark - Accessors
+
+- (NSString*)messageAccessibilityLabel {
+  return self.messageLabel.accessibilityLabel;
+}
+
+- (void)setMessageAccessibilityLabel:(NSString*)label {
+  if ([self.messageAccessibilityLabel isEqualToString:label])
+    return;
+  self.messageLabel.accessibilityLabel = label;
+}
+
 #pragma mark - Public
 
 + (NSString*)accessibilityIdentifier {
@@ -83,6 +97,8 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   UILabel* messageLabel = [[UILabel alloc] init];
   messageLabel.numberOfLines = 0;
   messageLabel.attributedText = self.message;
+  messageLabel.accessibilityLabel = self.message.string;
+  self.messageLabel = messageLabel;
 
   // Vertical stack view that holds the image and message.
   UIStackView* verticalStack = [[UIStackView alloc]
