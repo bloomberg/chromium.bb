@@ -12,7 +12,6 @@
 
 namespace net {
 
-
 class SynchronousHostResolver {
  public:
   static int Resolve(const std::string& host, AddressList* addresses);
