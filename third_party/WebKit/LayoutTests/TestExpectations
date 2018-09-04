@@ -2709,10 +2709,10 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/mask-image/mask-image-url-image-hash.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image-hash.html [ Failure ]
 crbug.com/626703 external/wpt/hr-time/unload-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
@@ -2957,7 +2957,7 @@ crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-circle-004.htm
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-circle-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-003.svg [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/test-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/test-mask.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-004.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-recursion-002.svg [ Failure ]
