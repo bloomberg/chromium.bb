@@ -86,6 +86,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void LaunchArcKioskApp(const AccountId& account_id);
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
+  void FocusOobeDialog();
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);
@@ -145,6 +146,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetAddUserButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   void SetShowGuestButtonForGaiaScreen(bool can_show) override;
+  void FocusLoginShelf(bool reverse) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();

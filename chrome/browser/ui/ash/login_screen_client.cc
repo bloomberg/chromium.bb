@@ -124,6 +124,11 @@ void LoginScreenClient::FocusLockScreenApps(bool reverse) {
     login_screen_->HandleFocusLeavingLockScreenApps(reverse);
 }
 
+void LoginScreenClient::FocusOobeDialog() {
+  if (delegate_)
+    delegate_->HandleFocusOobeDialog();
+}
+
 void LoginScreenClient::ShowGaiaSignin(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {

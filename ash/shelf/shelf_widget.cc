@@ -265,6 +265,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = delegate_view_;
   params.parent = shelf_container;
+
   Init(params);
 
   // The shelf should not take focus when initially shown.

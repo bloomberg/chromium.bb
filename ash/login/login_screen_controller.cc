@@ -4,6 +4,7 @@
 
 #include "ash/login/login_screen_controller.h"
 
+#include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -15,6 +16,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -436,6 +438,21 @@ void LoginScreenController::SetShowGuestButtonForGaiaScreen(bool can_show) {
       ->SetShowGuestButtonForGaiaScreen(can_show);
 }
 
+void LoginScreenController::FocusLoginShelf(bool reverse) {
+  Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
+  // Tell the focus direction to the status area or the shelf so they can focus
+  // the correct child view.
+  if (reverse) {
+    shelf->GetStatusAreaWidget()
+        ->status_area_widget_delegate()
+        ->set_default_last_focusable_child(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
+  } else {
+    shelf->shelf_widget()->set_default_last_focusable_child(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  }
+}
+
 void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
@@ -457,6 +474,10 @@ void LoginScreenController::ShowResetScreen() {
 
 void LoginScreenController::ShowAccountAccessHelpApp() {
   login_screen_client_->ShowAccountAccessHelpApp();
+}
+
+void LoginScreenController::FocusOobeDialog() {
+  login_screen_client_->FocusOobeDialog();
 }
 
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,

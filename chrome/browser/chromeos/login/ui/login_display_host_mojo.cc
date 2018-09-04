@@ -404,6 +404,13 @@ bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {
   return false;
 }
 
+void LoginDisplayHostMojo::HandleFocusOobeDialog() {
+  if (!dialog_->IsVisible())
+    return;
+
+  dialog_->GetWebContents()->Focus();
+}
+
 void LoginDisplayHostMojo::HandleLoginAsGuest() {
   existing_user_controller_->Login(UserContext(user_manager::USER_TYPE_GUEST,
                                                user_manager::GuestAccountId()),
