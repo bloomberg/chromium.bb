@@ -1295,6 +1295,8 @@ class VEAClient : public VEAClientBase {
   // time delay from input of each VideoFrame (VEA::Encode()) to output of the
   // corresponding BitstreamBuffer (VEA::Client::BitstreamBufferReady()).
   std::vector<base::TimeDelta> encode_latencies_;
+  // The 0-based indices of frames that we force as key frames.
+  std::queue<size_t> keyframe_indices_;
 
   // Ids for output BitstreamBuffers.
   typedef std::map<int32_t, base::SharedMemory*> IdToSHM;
@@ -1320,20 +1322,11 @@ class VEAClient : public VEAClientBase {
   // Frames since last bitrate verification.
   unsigned int num_frames_since_last_check_;
 
-  // True if received a keyframe while processing current bitstream buffer.
-  bool seen_keyframe_in_this_buffer_;
-
   // True if we are to save the encoded stream to a file.
   bool save_to_file_;
 
   // Request a keyframe every keyframe_period_ frames.
   const unsigned int keyframe_period_;
-
-  // Number of keyframes requested by now.
-  unsigned int num_keyframes_requested_;
-
-  // Next keyframe expected before next_keyframe_at_ + kMaxKeyframeDelay.
-  unsigned int next_keyframe_at_;
 
   // True if we are asking encoder for a particular bitrate.
   bool force_bitrate_;
@@ -1415,11 +1408,8 @@ VEAClient::VEAClient(TestStream* test_stream,
       num_frames_submitted_to_encoder_(0),
       num_encoded_frames_(0),
       num_frames_since_last_check_(0),
-      seen_keyframe_in_this_buffer_(false),
       save_to_file_(save_to_file),
       keyframe_period_(keyframe_period),
-      num_keyframes_requested_(0),
-      next_keyframe_at_(0),
       force_bitrate_(force_bitrate),
       current_requested_bitrate_(0),
       current_framerate_(0),
@@ -1705,9 +1695,6 @@ void VEAClient::BitstreamBufferReady(
     }
   }
 
-  EXPECT_EQ(metadata.key_frame, seen_keyframe_in_this_buffer_);
-  seen_keyframe_in_this_buffer_ = false;
-
   FeedEncoderWithOutput(shm);
 }
 
@@ -1822,12 +1809,6 @@ void VEAClient::FeedEncoderWithOneInput() {
   frame_timestamps_.push(video_frame->timestamp());
   pos_in_input_stream_ += static_cast<off_t>(test_stream_->aligned_buffer_size);
 
-  bool force_keyframe = false;
-  if (keyframe_period_ && input_id % keyframe_period_ == 0) {
-    force_keyframe = true;
-    ++num_keyframes_requested_;
-  }
-
   if (input_id == 0) {
     first_frame_start_time_ = base::TimeTicks::Now();
   }
@@ -1837,6 +1818,12 @@ void VEAClient::FeedEncoderWithOneInput() {
     encode_start_time_.push_back(base::TimeTicks::Now());
   }
 
+  bool force_keyframe = (keyframe_period_ && input_id % keyframe_period_ == 0);
+  if (force_keyframe) {
+    // Because we increase |num_frames_submitted_to_encoder_| after calling
+    // Encode(), the value here is actually 0-based frame index.
+    keyframe_indices_.push(num_frames_submitted_to_encoder_);
+  }
   encoder_->Encode(video_frame, force_keyframe);
   ++num_frames_submitted_to_encoder_;
   if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
@@ -1895,17 +1882,18 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
   // earlier than we requested one (in time), and not later than
   // kMaxKeyframeDelay frames after the frame, for which we requested
   // it, comes back encoded.
-  if (keyframe) {
-    if (num_keyframes_requested_ > 0) {
-      --num_keyframes_requested_;
-      next_keyframe_at_ += keyframe_period_;
+  if (!keyframe_indices_.empty()) {
+    // Convert to 0-based index for encoded frame.
+    const unsigned int frame_index = num_encoded_frames_ - 1;
+    if (keyframe) {
+      EXPECT_LE(frame_index, keyframe_indices_.front() + kMaxKeyframeDelay);
+      keyframe_indices_.pop();
+    } else {
+      EXPECT_LT(frame_index, keyframe_indices_.front() + kMaxKeyframeDelay);
     }
-    seen_keyframe_in_this_buffer_ = true;
   }
-  EXPECT_EQ(test_stream_->visible_size, visible_size);
 
-  if (num_keyframes_requested_ > 0)
-    EXPECT_LE(num_encoded_frames_, next_keyframe_at_ + kMaxKeyframeDelay);
+  EXPECT_EQ(test_stream_->visible_size, visible_size);
 
   if (num_encoded_frames_ == num_frames_to_encode_ / 2) {
     VerifyStreamProperties();
@@ -2034,14 +2022,6 @@ void VEAClient::VerifyStreamProperties() {
     EXPECT_NEAR(bitrate, current_requested_bitrate_,
                 kBitrateTolerance * current_requested_bitrate_);
   }
-
-  // All requested keyframes should've been provided. Allow the last requested
-  // frame to remain undelivered if we haven't reached the maximum frame number
-  // by which it should have arrived.
-  if (num_encoded_frames_ < next_keyframe_at_ + kMaxKeyframeDelay)
-    EXPECT_LE(num_keyframes_requested_, 1UL);
-  else
-    EXPECT_EQ(0UL, num_keyframes_requested_);
 }
 
 void VEAClient::WriteIvfFileHeader() {
