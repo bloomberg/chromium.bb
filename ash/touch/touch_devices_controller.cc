@@ -52,20 +52,8 @@ PrefService* GetActivePrefService() {
 }  // namespace
 
 // static
-void TouchDevicesController::RegisterLocalStatePrefs(
-    PrefRegistrySimple* registry,
-    bool for_test) {
-  // TODO(jamescook|xiyuan): move ownership to ash once user session info could
-  // distinguish owner and non-owner (http://crbug.com/857103).
-  if (for_test)
-    registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
-  else
-    registry->RegisterForeignPref(prefs::kOwnerTapToClickEnabled);
-}
-
-// static
-void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
-                                                  bool for_test) {
+void TouchDevicesController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kTapDraggingEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
@@ -73,16 +61,6 @@ void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterBooleanPref(prefs::kTouchpadEnabled, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kTouchscreenEnabled,
                                 PrefRegistry::PUBLIC);
-
-  // TODO(jamescook|xiyuan): move ownership to ash once user session info could
-  // distinguish owner and non-owner (http://crbug.com/857103).
-  if (for_test) {
-    registry->RegisterBooleanPref(
-        prefs::kTapToClickEnabled, true,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  } else {
-    registry->RegisterForeignPref(prefs::kTapToClickEnabled);
-  }
 }
 
 TouchDevicesController::TouchDevicesController() {
@@ -155,8 +133,6 @@ void TouchDevicesController::OnUserSessionAdded(const AccountId& account_id) {
   uma_record_callback_ = base::BindOnce([](PrefService* prefs) {
     UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started",
                           prefs->GetBoolean(prefs::kTapDraggingEnabled));
-    UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started",
-                          prefs->GetBoolean(prefs::kTapToClickEnabled));
   });
 }
 
@@ -181,10 +157,6 @@ void TouchDevicesController::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(&TouchDevicesController::UpdateTapDraggingEnabled,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
-      prefs::kTapToClickEnabled,
-      base::BindRepeating(&TouchDevicesController::UpdateTapToClickEnabled,
-                          base::Unretained(this)));
-  pref_change_registrar_->Add(
       prefs::kTouchpadEnabled,
       base::BindRepeating(&TouchDevicesController::UpdateTouchpadEnabled,
                           base::Unretained(this)));
@@ -194,7 +166,6 @@ void TouchDevicesController::ObservePrefs(PrefService* prefs) {
                           base::Unretained(this)));
   // Load current state.
   UpdateTapDraggingEnabled();
-  UpdateTapToClickEnabled();
   UpdateTouchpadEnabled();
   UpdateTouchscreenEnabled();
 }
@@ -214,23 +185,6 @@ void TouchDevicesController::UpdateTapDraggingEnabled() {
     return;  // Happens in tests.
 
   GetInputDeviceControllerClient()->SetTapDragging(enabled);
-}
-
-void TouchDevicesController::UpdateTapToClickEnabled() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled = prefs->GetBoolean(prefs::kTapToClickEnabled);
-
-  if (tap_to_click_enabled_ == enabled)
-    return;
-
-  tap_to_click_enabled_ = enabled;
-
-  UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
-
-  if (!GetInputDeviceControllerClient())
-    return;  // Happens in tests.
-
-  GetInputDeviceControllerClient()->SetTapToClick(enabled);
 }
 
 void TouchDevicesController::UpdateTouchpadEnabled() {

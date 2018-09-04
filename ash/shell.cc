@@ -256,7 +256,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
-  TouchDevicesController::RegisterProfilePrefs(registry, for_test);
+  TouchDevicesController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
 }
 
@@ -404,7 +404,6 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
-  TouchDevicesController::RegisterLocalStatePrefs(registry, for_test);
   // Note: DisplayPrefs are registered in chrome in AshShellInit::RegisterPrefs
   // (see comment there for details).
   if (for_test)
