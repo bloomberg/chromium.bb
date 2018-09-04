@@ -3268,8 +3268,8 @@ bool WebMediaPlayerImpl::IsInPictureInPicture() const {
 }
 
 void WebMediaPlayerImpl::MaybeSetContainerName() {
-  // MSE does not provide container information.
-  if (chunk_demuxer_)
+  // MSE nor MediaPlayerRenderer provide container information.
+  if (chunk_demuxer_ || using_media_player_renderer_)
     return;
 
   // Pipeline startup failed before even getting a demuxer setup.
