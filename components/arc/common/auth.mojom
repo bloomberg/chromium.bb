@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 17
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -170,7 +170,6 @@ enum MetricsType {
 };
 
 // The necessary information for Android to sign in and provision itself.
-// Next ordinal value: 6.
 struct AccountInfo {
   // Name of account, used to map to existing Android account.
   [MinVersion=9] string? account_name@4;
@@ -190,9 +189,6 @@ struct AccountInfo {
 
   // Whether the account is managed from Chrome OS.
   bool is_managed@2;
-
-  // Whether this account is a Chrome OS Secondary Account.
-  [MinVersion=16] bool is_secondary_account@5;
 };
 
 // Next Method ID: 12.
@@ -213,11 +209,7 @@ interface AuthHost {
   // Asynchronously requests an authorization code, as well as the account
   // information. If |initial_signin| is true then that means request is for
   // initial signin flow. Otherwise it is used for reauthorization flow.
-  // Optionally, an |account_name| can be provided to fetch |AccountInfo| for
-  // Secondary Accounts in Chrome OS Account Manager. Absence of |account_name|
-  // will default to the Device Account in Chrome OS.
-  [MinVersion=5] RequestAccountInfo@7([MinVersion=11] bool initial_signin,
-                                      [MinVersion=16] string? account_name);
+  [MinVersion=5] RequestAccountInfo@7([MinVersion=11] bool initial_signin);
 
   // Reports metrics to Chrome to be recorded in UMA.
   [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);
@@ -233,7 +225,7 @@ interface AuthHost {
       SupervisionChangeStatus status);
 };
 
-// Next Method ID: 5
+// Next Method ID: 3
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -251,13 +243,4 @@ interface AuthInstance {
   [MinVersion=5] OnAccountInfoReady@1(
       AccountInfo? account_info, [MinVersion=10] ArcSignInStatus status);
 
-  // A notification that a Secondary Account has been updated or inserted in
-  // Chrome OS Account Manager. This API is guaranteed to be idempotent.
-  // Note: This notification is guaranteed to be called at least once for every
-  // Secondary Account in Chrome OS Account Manager at startup.
-  [MinVersion=15] OnSecondaryAccountUpserted@3(string account_name);
-
-  // A notification that a Secondary Account has been removed from Chrome OS
-  // Account Manager. This API is guaranteed to be idempotent.
-  [MinVersion=15] OnSecondaryAccountRemoved@4(string account_name);
 };
