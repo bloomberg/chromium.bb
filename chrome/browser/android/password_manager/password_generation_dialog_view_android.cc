@@ -54,8 +54,7 @@ void PasswordGenerationDialogViewAndroid::PasswordAccepted(
 void PasswordGenerationDialogViewAndroid::PasswordRejected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  // TODO(ioanap): Send message to controller. This will probably be used
-  // mainly for metrics.
+  controller_->GeneratedPasswordRejected();
 }
 
 // static

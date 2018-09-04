@@ -80,6 +80,14 @@ class PasswordAccessoryController
           autofill::password_generation::PasswordGenerationUIData>& ui_data,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver);
 
+  // Notifies the controller that the generated password has potentially
+  // changed. Currently only used for recording metrics.
+  void MaybeGeneratedPasswordChanged(const base::string16& changed_password);
+
+  // Notifies the controller that the generated password was deleted. Used for
+  // recording metrics.
+  void GeneratedPasswordDeleted();
+
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
   void OnFilledIntoFocusedField(autofill::FillingStatus status);
@@ -154,6 +162,10 @@ class PasswordAccessoryController
   // Data allowing to cache favicons and favicon-related requests.
   struct FaviconRequestData;
 
+  // Created when generation is requested the user. Used for recording metrics
+  // for the lifetime of the generated password.
+  class GeneratedPasswordMetricsRecorder;
+
   // Required for construction via |CreateForWebContents|:
   explicit PasswordAccessoryController(content::WebContents* contents);
   friend class content::WebContentsUserData<PasswordAccessoryController>;
@@ -219,6 +231,13 @@ class PasswordAccessoryController
 
   // The favicon service used to make retrieve icons for a given origin.
   favicon::FaviconService* favicon_service_;
+
+  // Used during the lifetime of a generated password to record metrics.
+  // The lifetime of a generated password starts when a user requests generation
+  // and ends when the password is rejected, deleted or when another password
+  // is generated.
+  std::unique_ptr<GeneratedPasswordMetricsRecorder>
+      generated_password_metrics_recorder_;
 
   base::WeakPtrFactory<PasswordAccessoryController> weak_factory_;
 
