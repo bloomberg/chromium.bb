@@ -6,12 +6,7 @@ include_rules = [
   "+components/metrics",
   "+components/policy",
   "+components/security_state",
-
-  # Autofill depends on //services/identity/public/cpp for its core Google
-  # identity dependencies, but depends on this isolated file for recording
-  # some browser-specific signin metrics.
-  "+components/signin/core/browser/signin_metrics.h",
-
+  "+components/signin/core/browser",
   "+components/sync",
   "+components/variations",
   "+components/version_info",

@@ -51,6 +51,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::string CountryCodeForCurrentTimezone() const override;
   void ClearAllLocalData() override;
   bool IsDataLoaded() const override;
+  bool IsSyncFeatureEnabled() const override;
+  std::string GetActiveSignedInAccountId() const override;
 
   // Unique to TestPersonalDataManager:
 
@@ -106,6 +108,12 @@ class TestPersonalDataManager : public PersonalDataManager {
     payments_customer_data_ = std::move(customer_data);
   }
 
+  void SetSyncFeatureEnabled(bool enabled) { sync_feature_enabled_ = enabled; }
+
+  void SetActiveAccountId(const std::string& account_id) {
+    account_id_ = account_id;
+  }
+
  private:
   std::string timezone_country_code_;
   std::string default_country_code_;
@@ -115,6 +123,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_profile_enabled_;
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;
+  bool sync_feature_enabled_;
+  std::string account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };

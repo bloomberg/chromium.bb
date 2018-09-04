@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/account_info_getter.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -68,7 +69,8 @@ extern const char kFrecencyFieldTrialLimitParam[];
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUISequence,
-                            public syncer::SyncServiceObserver {
+                            public syncer::SyncServiceObserver,
+                            public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
   ~PersonalDataManager() override;
@@ -107,6 +109,10 @@ class PersonalDataManager : public KeyedService,
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncShutdown(syncer::SyncService* sync) override;
+
+  // AccountInfoGetter:
+  std::string GetActiveSignedInAccountId() const override;
+  bool IsSyncFeatureEnabled() const override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

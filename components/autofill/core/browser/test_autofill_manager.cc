@@ -25,7 +25,8 @@ TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
       url_loader_factory_(driver->GetURLLoaderFactory()),
       client_(client) {
   set_payments_client(new payments::PaymentsClient(
-      url_loader_factory_, client->GetPrefs(), client->GetIdentityManager()));
+      url_loader_factory_, client->GetPrefs(), client->GetIdentityManager(),
+      personal_data));
 }
 
 TestAutofillManager::TestAutofillManager(

@@ -102,6 +102,11 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
 const base::Feature kAutofillExpandedPopupViews{
     "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, gets payment identity from sync service instead of
+// identity manager.
+const base::Feature kAutofillGetPaymentsIdentityFromSync{
+    "AutofillGetPaymentsIdentityFromSync", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Autofill Local Card Migration will show result dialogs.
 const base::Feature kAutofillLocalCardMigrationShowFeedback{
     "AutofillLocalCardMigrationShowFeedback",

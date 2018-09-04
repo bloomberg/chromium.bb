@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace autofill {
@@ -13,8 +14,12 @@ namespace payments {
 TestPaymentsClient::TestPaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
     PrefService* pref_service,
-    identity::IdentityManager* identity_manager)
-    : PaymentsClient(url_loader_factory_, pref_service, identity_manager) {}
+    identity::IdentityManager* identity_manager,
+    PersonalDataManager* personal_data_manager)
+    : PaymentsClient(url_loader_factory_,
+                     pref_service,
+                     identity_manager,
+                     personal_data_manager) {}
 
 TestPaymentsClient::~TestPaymentsClient() {}
 

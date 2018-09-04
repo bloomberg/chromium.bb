@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/account_info_getter.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -224,6 +225,13 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
 
   request_dict->Set("active_chrome_experiments",
                     std::move(active_chrome_experiments));
+}
+
+bool ShouldUseActiveSignedInAccount() {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillEnableAccountWalletStorage) ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillGetPaymentsIdentityFromSync);
 }
 
 class UnmaskCardRequest : public PaymentsRequest {
@@ -618,10 +626,12 @@ PaymentsClient::PaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
+    AccountInfoGetter* account_info_getter,
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
+      account_info_getter_(account_info_getter),
       is_off_the_record_(is_off_the_record),
       has_retried_authorization_(false),
       weak_ptr_factory_(this) {}
@@ -834,20 +844,25 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
   if (!invalidate_old && token_fetcher_)
     return;
 
+  DCHECK(account_info_getter_);
+
   OAuth2TokenService::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
+  std::string account_id =
+      ShouldUseActiveSignedInAccount()
+          ? account_info_getter_->GetActiveSignedInAccountId()
+          : identity_manager_->GetPrimaryAccountInfo().account_id;
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
-    identity_manager_->RemoveAccessTokenFromCache(
-        identity_manager_->GetPrimaryAccountInfo().account_id, payments_scopes,
-        access_token_);
+    identity_manager_->RemoveAccessTokenFromCache(account_id, payments_scopes,
+                                                  access_token_);
   }
   access_token_.clear();
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      kTokenFetchId, identity_manager_, payments_scopes,
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
+      account_id, kTokenFetchId, payments_scopes,
       base::BindOnce(&PaymentsClient::AccessTokenFetchFinished,
                      base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {
