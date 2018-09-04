@@ -136,9 +136,8 @@ SignedExchangeHandler::SignedExchangeHandler(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
 
-  if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
-          content_type, &version_) ||
-      !IsSupportedSignedExchangeVersion(version_)) {
+  version_ = signed_exchange_utils::GetSignedExchangeVersion(content_type);
+  if (!IsSupportedSignedExchangeVersion(version_)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         base::StringPrintf("Unsupported version of the content type. Currentry "

@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_error.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
@@ -43,7 +45,15 @@ bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
     const network::ResourceResponseHead& head);
 
-}  // namespace  signed_exchange_utils
+// Extracts the signed exchange version [1] from |content_type|, and converts it
+// to SignedExchanveVersion. Returns nullopt if the mime type is not a variant
+// of application/signed-exchange. Returns SignedExchangeVersion::kUnknown if an
+// unsupported signed exchange version is found.
+// [1] https://wicg.github.io/webpackage/loading.html#signed-exchange-version
+CONTENT_EXPORT base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
+    const std::string& content_type);
+
+}  // namespace signed_exchange_utils
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_UTILS_H_

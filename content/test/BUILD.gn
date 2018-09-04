@@ -1625,6 +1625,7 @@ test("content_unittests") {
     "../browser/web_package/signed_exchange_prologue_unittest.cc",
     "../browser/web_package/signed_exchange_signature_header_field_unittest.cc",
     "../browser/web_package/signed_exchange_signature_verifier_unittest.cc",
+    "../browser/web_package/signed_exchange_utils_unittest.cc",
     "../browser/webrtc/webrtc_internals_message_handler_unittest.cc",
     "../browser/webrtc/webrtc_internals_unittest.cc",
     "../browser/websockets/websocket_manager_unittest.cc",
