@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -17,13 +18,13 @@ namespace translate {
 
 // TranslateAcceptLanguages tracks the value of the "Accept-Language" HTTP
 // header.
-class TranslateAcceptLanguages {
+class TranslateAcceptLanguages : public KeyedService {
  public:
   // |accept_languages_pref| is the path to the preference storing the accept
   // languages.
   TranslateAcceptLanguages(PrefService* prefs,
                            const char* accept_languages_pref);
-  virtual ~TranslateAcceptLanguages();
+  ~TranslateAcceptLanguages() override;
 
   // Returns true if |language| is available as Accept-Languages. |language|
   // will be converted if it has the synonym of accept language.

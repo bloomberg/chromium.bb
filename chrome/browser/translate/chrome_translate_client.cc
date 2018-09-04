@@ -192,10 +192,8 @@ void ChromeTranslateClient::GetTranslateLanguages(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
-  PrefService* prefs = original_profile->GetPrefs();
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      CreateTranslatePrefs(prefs);
+      CreateTranslatePrefs(profile->GetPrefs());
   if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
     std::string auto_translate_language =
         translate::TranslateManager::GetAutoTargetLanguage(
@@ -271,15 +269,12 @@ PrefService* ChromeTranslateClient::GetPrefs() {
   DCHECK(web_contents());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return profile->GetOriginalProfile()->GetPrefs();
+  return profile->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::GetTranslatePrefs() {
-  DCHECK(web_contents());
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return CreateTranslatePrefs(profile->GetPrefs());
+  return CreateTranslatePrefs(GetPrefs());
 }
 
 translate::TranslateAcceptLanguages*
