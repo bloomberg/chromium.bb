@@ -16,7 +16,6 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -24,6 +23,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/redundant_credentials_cleaner.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -38,7 +38,7 @@ void StartDeletingBlacklistedDuplicates(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs) {
   // The object will delete itself once the credentials are retrieved.
-  new password_manager::BlacklistedDuplicatesCleaner(std::move(store), prefs);
+  new password_manager::RedundantCredentialsCleaner(std::move(store), prefs);
 }
 
 // Return true if

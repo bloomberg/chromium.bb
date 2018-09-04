@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
+#include "components/password_manager/core/browser/redundant_credentials_cleaner.h"
 
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -16,11 +16,11 @@
 
 namespace password_manager {
 
-class BlacklistedDuplicatesCleanerCleanerTest : public ::testing::Test {
+class RedundantCredentialsCleanerTest : public ::testing::Test {
  public:
-  BlacklistedDuplicatesCleanerCleanerTest() = default;
+  RedundantCredentialsCleanerTest() = default;
 
-  ~BlacklistedDuplicatesCleanerCleanerTest() override = default;
+  ~RedundantCredentialsCleanerTest() override = default;
 
  protected:
   TestPasswordStore* store() { return store_.get(); }
@@ -38,10 +38,10 @@ class BlacklistedDuplicatesCleanerCleanerTest : public ::testing::Test {
       base::MakeRefCounted<TestPasswordStore>();
   TestingPrefServiceSimple prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleanerCleanerTest);
+  DISALLOW_COPY_AND_ASSIGN(RedundantCredentialsCleanerTest);
 };
 
-TEST_F(BlacklistedDuplicatesCleanerCleanerTest, RemoveBlacklistedDuplicates) {
+TEST_F(RedundantCredentialsCleanerTest, RemoveBlacklistedDuplicates) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   ASSERT_TRUE(
       store()->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
