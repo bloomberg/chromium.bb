@@ -197,11 +197,11 @@ CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
 CORE_EXPORT NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace&,
                                               const ComputedStyle&);
 
-CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
-                                      const ComputedStyle&);
+CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
+                                               const NGLayoutInputNode);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
-                                      const NGLayoutInputNode);
+                                      const ComputedStyle&);
 
 CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
                                               const ComputedStyle&);

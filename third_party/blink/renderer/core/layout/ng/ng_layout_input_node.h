@@ -71,6 +71,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsListItem() const;
   bool IsListMarker() const;
   bool ListMarkerOccupiesWholeLine() const;
+  bool IsTableCell() const;
   bool IsAnonymousBlock() const;
 
   // If the node is a quirky container for margin collapsing, see:
@@ -97,6 +98,9 @@ class CORE_EXPORT NGLayoutInputNode {
                      base::Optional<LayoutUnit>* computed_inline_size,
                      base::Optional<LayoutUnit>* computed_block_size,
                      NGLogicalSize* aspect_ratio) const;
+
+  LayoutUnit IntrinsicPaddingBlockStart() const;
+  LayoutUnit IntrinsicPaddingBlockEnd() const;
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
