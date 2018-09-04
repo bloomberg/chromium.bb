@@ -535,7 +535,7 @@ void BackgroundFetchDelegateImpl::PauseDownload(
 
   JobDetails& job_details = job_details_iter->second;
   for (auto& download_guid : job_details.current_download_guids)
-    download_service_->PauseDownload(download_guid);
+    GetDownloadService()->PauseDownload(download_guid);
 
   // TODO(delphick): Mark overall download job as paused so that future
   // downloads are not started until resume. (Initially not a worry because only
