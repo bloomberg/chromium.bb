@@ -611,8 +611,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     image = info.image->GetImage(
         geometry.ImageClient(), geometry.ImageDocument(), geometry.ImageStyle(),
         FloatSize(geometry.TileSize()));
-    interpolation_quality_context.emplace(
-        context, geometry.ImageStyle().GetInterpolationQuality());
+    interpolation_quality_context.emplace(context,
+                                          geometry.ImageInterpolationQuality());
 
     if (bg_layer.MaskSourceType() == EMaskSourceType::kLuminance)
       context.SetColorFilter(kColorFilterLuminanceToAlpha);

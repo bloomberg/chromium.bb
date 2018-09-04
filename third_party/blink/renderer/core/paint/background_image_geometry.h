@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -87,6 +88,7 @@ class BackgroundImageGeometry {
   const ImageResourceObserver& ImageClient() const;
   const Document& ImageDocument() const;
   const ComputedStyle& ImageStyle() const;
+  InterpolationQuality ImageInterpolationQuality() const;
 
  private:
   void SetSpaceSize(const LayoutSize& repeat_spacing) {
@@ -144,14 +146,15 @@ class BackgroundImageGeometry {
                              const LayoutSize&,
                              const LayoutSize&);
 
-  // The box_ is the source for the Document and StyleRef for
-  // background properties. It also the image client unless
-  // painting the view background.
+  // |box_| is the source for the Document. In most cases it also provides the
+  // background properties (see |positioning_box_| for exceptions.) It's also
+  // the image client unless painting the view background.
   const LayoutBoxModelObject& box_;
 
-  // The positioning box is the source of geometric information
-  // for positioning and sizing the background. We have some problems here
-  // with currentColor. See crbug.com/848860.
+  // The positioning box is the source of geometric information for positioning
+  // and sizing the background. It also provides the background properties if
+  // painting the view background or a table-cell using its container's
+  // (row's/column's) background.
   const LayoutBoxModelObject& positioning_box_;
 
   // When painting table cells or the view, the positioning area
