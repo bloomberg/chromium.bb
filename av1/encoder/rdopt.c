@@ -9171,6 +9171,22 @@ static INLINE int is_single_newmv_valid(HandleInterModeArgs *args,
   return 1;
 }
 
+static int get_drl_refmv_count(const MACROBLOCK *const x,
+                               const MV_REFERENCE_FRAME *ref_frame,
+                               PREDICTION_MODE mode) {
+  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const int8_t ref_frame_type = av1_ref_frame_type(ref_frame);
+  const int has_nearmv = have_nearmv_in_inter_mode(mode) ? 1 : 0;
+  const int ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
+  const int only_newmv = (mode == NEWMV || mode == NEW_NEWMV);
+  const int has_drl =
+      (has_nearmv && ref_mv_count > 2) || (only_newmv && ref_mv_count > 1);
+  const int ref_set =
+      has_drl ? AOMMIN(MAX_REF_MV_SERCH, ref_mv_count - has_nearmv) : 1;
+
+  return ref_set;
+}
+
 static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
@@ -9235,12 +9251,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   // TODO(jingning): This should be deprecated shortly.
   const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
-  const int ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
-  const int only_newmv = (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV);
-  const int has_drl =
-      (has_nearmv && ref_mv_count > 2) || (only_newmv && ref_mv_count > 1);
-  const int ref_set =
-      has_drl ? AOMMIN(MAX_REF_MV_SERCH, ref_mv_count - has_nearmv) : 1;
+  const int ref_set = get_drl_refmv_count(x, mbmi->ref_frame, this_mode);
 
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
     if (cpi->sf.reduce_inter_modes && ref_mv_idx > 0) {
@@ -10922,16 +10933,7 @@ static void collect_single_states(MACROBLOCK *x,
   const PREDICTION_MODE this_mode = mbmi->mode;
   const int dir = ref_frame <= GOLDEN_FRAME ? 0 : 1;
   const int mode_offset = INTER_OFFSET(this_mode);
-
-  const int8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  const int has_nearmv = have_nearmv_in_inter_mode(this_mode) ? 1 : 0;
-  const int ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
-  const int only_newmv = (this_mode == NEWMV || this_mode == NEW_NEWMV);
-  const int has_drl =
-      (has_nearmv && ref_mv_count > 2) || (only_newmv && ref_mv_count > 1);
-  const int ref_set =
-      has_drl ? AOMMIN(MAX_REF_MV_SERCH, ref_mv_count - has_nearmv) : 1;
+  const int ref_set = get_drl_refmv_count(x, mbmi->ref_frame, this_mode);
 
   // Simple rd
   int64_t simple_rd = search_state->simple_rd[this_mode][0][ref_frame];
@@ -10975,15 +10977,14 @@ static void analyze_single_states(const AV1_COMP *cpi,
       int64_t best_rd;
       SingleInterModeState(*state)[FWD_REFS];
 
-      // Find the best simple rd of all modes
+      // Prune the unlikely reference frames within the same mode
       state = search_state->single_state[dir];
-      best_rd = INT64_MAX;
       for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        if (state[mode][0].rd < best_rd) best_rd = state[mode][0].rd;
-      }
-      // Prune the unlikely reference frames
-      for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        for (i = 0; i < search_state->single_state_cnt[dir][mode]; ++i) {
+        // single_state is sorted by simple rd. Use the first element of
+        // each mode to eliminate the reference frames with substantially
+        // larger rd within the same mode.
+        best_rd = state[mode][0].rd;
+        for (i = 1; i < search_state->single_state_cnt[dir][mode]; ++i) {
           if (state[mode][i].rd != INT64_MAX &&
               (state[mode][i].rd >> 1) > best_rd) {
             state[mode][i].valid = 0;
@@ -10991,15 +10992,13 @@ static void analyze_single_states(const AV1_COMP *cpi,
         }
       }
 
-      // Find the best modelled rd of all modes
       state = search_state->single_state_modelled[dir];
-      best_rd = INT64_MAX;
       for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        if (state[mode][0].rd < best_rd) best_rd = state[mode][0].rd;
-      }
-      // Prune the unlikely reference frames
-      for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        for (i = 0; i < search_state->single_state_modelled_cnt[dir][mode];
+        // single_state_modelled is sorted by modelled rd. Use the first
+        // element of each mode to eliminate the reference frames with
+        // substantially larger rd within the same mode.
+        best_rd = state[mode][0].rd;
+        for (i = 1; i < search_state->single_state_modelled_cnt[dir][mode];
              ++i) {
           if (state[mode][i].rd != INT64_MAX &&
               (state[mode][i].rd >> 1) > best_rd) {
@@ -11092,72 +11091,65 @@ static int compound_skip_get_candidates(
 static int compound_skip_by_single_states(
     const AV1_COMP *cpi, const InterModeSearchState *search_state,
     const PREDICTION_MODE this_mode, const MV_REFERENCE_FRAME ref_frame,
-    const MV_REFERENCE_FRAME second_ref_frame) {
-  const int refs[2] = { ref_frame, second_ref_frame };
-  const int mode0 = compound_ref0_mode(this_mode);
-  const int mode0_offset = INTER_OFFSET(mode0);
-  const int mode0_dir = refs[0] <= GOLDEN_FRAME ? 0 : 1;
-  const int mode1 = compound_ref1_mode(this_mode);
-  const int mode1_offset = INTER_OFFSET(mode1);
-  const int mode1_dir = refs[1] <= GOLDEN_FRAME ? 0 : 1;
-  const int candidates0 =
-      compound_skip_get_candidates(cpi, search_state, mode0_dir, mode0);
-  const int candidates1 =
-      compound_skip_get_candidates(cpi, search_state, mode1_dir, mode1);
-  int ref0_searched = 0;
-  int ref1_searched = 0;
-  int i;
-  const MV_REFERENCE_FRAME *ref0_order =
-      search_state->single_rd_order[mode0_dir][mode0_offset];
-  const MV_REFERENCE_FRAME *ref1_order =
-      search_state->single_rd_order[mode1_dir][mode1_offset];
+    const MV_REFERENCE_FRAME second_ref_frame, const MACROBLOCK *x) {
+  const MV_REFERENCE_FRAME refs[2] = { ref_frame, second_ref_frame };
+  const int mode[2] = { compound_ref0_mode(this_mode),
+                        compound_ref1_mode(this_mode) };
+  const int mode_offset[2] = { INTER_OFFSET(mode[0]), INTER_OFFSET(mode[1]) };
+  const int mode_dir[2] = { refs[0] <= GOLDEN_FRAME ? 0 : 1,
+                            refs[1] <= GOLDEN_FRAME ? 0 : 1 };
+  int ref_searched[2] = { 0, 0 };
+  int ref_mv_match[2] = { 1, 1 };
+  int i, j;
 
-  for (i = 0; i < search_state->single_state_cnt[mode0_dir][mode0_offset];
-       ++i) {
-    if (search_state->single_state[mode0_dir][mode0_offset][i].ref_frame ==
-        refs[0]) {
-      ref0_searched = 1;
-      break;
-    }
-  }
-  for (i = 0; i < search_state->single_state_cnt[mode1_dir][mode1_offset];
-       ++i) {
-    if (search_state->single_state[mode1_dir][mode1_offset][i].ref_frame ==
-        refs[1]) {
-      ref1_searched = 1;
-      break;
+  for (i = 0; i < 2; ++i) {
+    const SingleInterModeState *state =
+        search_state->single_state[mode_dir[i]][mode_offset[i]];
+    const int state_cnt =
+        search_state->single_state_cnt[mode_dir[i]][mode_offset[i]];
+    for (j = 0; j < state_cnt; ++j) {
+      if (state[j].ref_frame == refs[i]) {
+        ref_searched[i] = 1;
+        break;
+      }
     }
   }
 
-  if (mode0_dir != mode1_dir) {
-    // Bi-directional prediction
-    if (ref0_searched) {
+  const int ref_set = get_drl_refmv_count(x, refs, this_mode);
+  for (i = 0; i < 2; ++i) {
+    if (mode[i] == NEARESTMV || mode[i] == NEARMV) {
+      const MV_REFERENCE_FRAME single_refs[2] = { refs[i], NONE_FRAME };
+      int idential = 1;
+      for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ref_mv_idx++) {
+        int_mv single_mv;
+        int_mv comp_mv;
+        get_this_mv(&single_mv, mode[i], 0, ref_mv_idx, single_refs,
+                    x->mbmi_ext);
+        get_this_mv(&comp_mv, this_mode, i, ref_mv_idx, refs, x->mbmi_ext);
+
+        idential &= (single_mv.as_int == comp_mv.as_int);
+        if (!idential) {
+          ref_mv_match[i] = 0;
+          break;
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < 2; ++i) {
+    if (ref_searched[i] && ref_mv_match[i]) {
+      const int candidates =
+          compound_skip_get_candidates(cpi, search_state, mode_dir[i], mode[i]);
+      const MV_REFERENCE_FRAME *ref_order =
+          search_state->single_rd_order[mode_dir[i]][mode_offset[i]];
       int match = 0;
-      for (i = 0; i < candidates0; i++) {
-        if (refs[0] == ref0_order[i]) {
+      for (j = 0; j < candidates; ++j) {
+        if (refs[i] == ref_order[j]) {
           match = 1;
           break;
         }
       }
       if (!match) return 1;
-    }
-
-    // Only GLOBALMV is the same as single mode
-    // NEWMV should be similar because it has motion search
-    if (ref1_searched && (mode1 == NEWMV || mode1 == GLOBALMV)) {
-      int match = 0;
-      for (i = 0; i < candidates1; i++) {
-        if (refs[1] == ref1_order[i]) {
-          match = 1;
-          break;
-        }
-      }
-      if (!match) return 1;
-    }
-  } else {
-    // Uni-directional prediction
-    if (ref0_searched && ref1_searched) {
-      if (ref0_order[0] != refs[0] && ref1_order[0] != refs[1]) return 1;
     }
   }
 
@@ -11266,12 +11258,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         ref_frame_skip_mask, &search_state);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
-    if (sf->prune_comp_search_by_single_result > 0 &&
-        second_ref_frame > INTRA_FRAME) {
-      if (compound_skip_by_single_states(cpi, &search_state, this_mode,
-                                         ref_frame, second_ref_frame))
-        continue;
-    }
 
     if (ref_frame == INTRA_FRAME) {
       if (sf->skip_intra_in_interframe && search_state.skip_intra_modes)
@@ -11292,6 +11278,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (search_state.best_rd < search_state.mode_threshold[mode_index])
       continue;
+
+    if (sf->prune_comp_search_by_single_result > 0 &&
+        second_ref_frame > INTRA_FRAME) {
+      if (compound_skip_by_single_states(cpi, &search_state, this_mode,
+                                         ref_frame, second_ref_frame, x))
+        continue;
+    }
 
     const int comp_pred = second_ref_frame > INTRA_FRAME;
     const int ref_frame_cost = comp_pred
