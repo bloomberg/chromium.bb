@@ -63,8 +63,16 @@ bool ShouldRenderTitleArea(
 // |properties| is the properties supplied during window creation.
 RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  // If a specific display was requested, use it.
-  const int64_t display_id = GetInitialDisplayId(*properties);
+  // If a specific display was requested, use it. If no display was requested,
+  // choose one based on the requested initial bounds.
+  int64_t display_id = GetInitialDisplayId(*properties);
+  gfx::Rect requested_bounds;
+  if (display_id == display::kInvalidDisplayId &&
+      GetInitialBounds(*properties, &requested_bounds)) {
+    display_id =
+        display::Screen::GetScreen()->GetDisplayMatching(requested_bounds).id();
+  }
+
   if (display_id != display::kInvalidDisplayId) {
     for (RootWindowController* root_window_controller :
          RootWindowController::root_window_controllers()) {
@@ -74,6 +82,7 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
       }
     }
   }
+
   return RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
