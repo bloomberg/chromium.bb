@@ -1477,7 +1477,10 @@ void LayoutInline::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
   if (IsInLayoutNGInlineFormattingContext()) {
+    // TODO(yosin): Once we implement dirty line optimization, we should
+    // get rid of |SetAncestorLineBoxDirty()|.
     SetAncestorLineBoxDirty();
+    NGPaintFragment::MarkLineBoxesDirtyFor(*child);
     return;
   }
   MutableLineBoxes()->DirtyLinesFromChangedChild(

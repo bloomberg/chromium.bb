@@ -456,4 +456,28 @@ TEST_F(NGPaintFragmentTest, FlippedBlock) {
   EXPECT_EQ(LayoutRect(180, 40, 10, 30), text3.VisualRect());
 }
 
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line "
+      "3<br></div>");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_FALSE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line "
+      "3<br></div>");
+  Element& target = *GetDocument().getElementById("target");
+  ToText(*target.firstChild()).setData("abc");
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_FALSE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
 }  // namespace blink
