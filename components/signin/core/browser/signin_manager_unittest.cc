@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -508,9 +507,9 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email));
-    dict->SetString("email", base::UTF8ToUTF16(email));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    dict->SetString("account_id", email);
+    dict->SetString("email", email);
+    dict->SetString("gaia", gaia_id);
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();
@@ -538,9 +537,9 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email));
-    dict->SetString("email", base::UTF8ToUTF16(email));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    dict->SetString("account_id", email);
+    dict->SetString("email", email);
+    dict->SetString("gaia", gaia_id);
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();
@@ -568,9 +567,9 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", base::UTF8ToUTF16(email));
-    dict->SetString("email", base::UTF8ToUTF16(email));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    dict->SetString("account_id", email);
+    dict->SetString("email", email);
+    dict->SetString("gaia", gaia_id);
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();

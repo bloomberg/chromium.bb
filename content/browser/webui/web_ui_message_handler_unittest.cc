@@ -14,10 +14,13 @@ namespace content {
 
 TEST(WebUIMessageHandlerTest, ExtractIntegerValue) {
   base::ListValue list;
-  int value, zero_value = 0, neg_value = -1234, pos_value = 1234;
-  base::string16 zero_string(base::UTF8ToUTF16("0"));
-  base::string16 neg_string(base::UTF8ToUTF16("-1234"));
-  base::string16 pos_string(base::UTF8ToUTF16("1234"));
+  int value;
+  constexpr int zero_value = 0;
+  constexpr int neg_value = -1234;
+  constexpr int pos_value = 1234;
+  static const char zero_string[] = "0";
+  static const char neg_string[] = "-1234";
+  static const char pos_string[] = "1234";
 
   list.AppendInteger(zero_value);
   EXPECT_TRUE(WebUIMessageHandler::ExtractIntegerValue(&list, &value));
@@ -51,10 +54,13 @@ TEST(WebUIMessageHandlerTest, ExtractIntegerValue) {
 
 TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
   base::ListValue list;
-  double value, zero_value = 0.0, neg_value = -1234.5, pos_value = 1234.5;
-  base::string16 zero_string(base::UTF8ToUTF16("0"));
-  base::string16 neg_string(base::UTF8ToUTF16("-1234.5"));
-  base::string16 pos_string(base::UTF8ToUTF16("1234.5"));
+  double value;
+  constexpr double zero_value = 0.0;
+  constexpr double neg_value = -1234.5;
+  constexpr double pos_value = 1234.5;
+  static const char zero_string[] = "0";
+  static const char neg_string[] = "-1234.5";
+  static const char pos_string[] = "1234.5";
 
   list.AppendDouble(zero_value);
   EXPECT_TRUE(WebUIMessageHandler::ExtractDoubleValue(&list, &value));
@@ -88,19 +94,16 @@ TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
 
 TEST(WebUIMessageHandlerTest, ExtractStringValue) {
   base::ListValue list;
-  base::string16 in_string(base::UTF8ToUTF16(
-      "The facts, though interesting, are irrelevant."));
+  static const char in_string[] =
+      "The facts, though interesting, are irrelevant.";
   list.AppendString(in_string);
   base::string16 out_string = WebUIMessageHandler::ExtractStringValue(&list);
-  EXPECT_EQ(in_string, out_string);
+  EXPECT_EQ(base::ASCIIToUTF16(in_string), out_string);
 }
 
 class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
-  TestWebUIMessageHandler()
-      : on_javascript_allowed_calls_(0), on_javascript_disallowed_calls_(0) {
-    set_web_ui(&test_web_ui_);
-  }
+  TestWebUIMessageHandler() { set_web_ui(&test_web_ui_); }
 
   ~TestWebUIMessageHandler() override {
     // The test handler unusually owns its own TestWebUI, so we make sure to
@@ -121,8 +124,8 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
   void OnJavascriptAllowed() override { ++on_javascript_allowed_calls_; }
   void OnJavascriptDisallowed() override { ++on_javascript_disallowed_calls_; }
 
-  int on_javascript_allowed_calls_;
-  int on_javascript_disallowed_calls_;
+  int on_javascript_allowed_calls_ = 0;
+  int on_javascript_disallowed_calls_ = 0;
 };
 
 TEST(WebUIMessageHandlerTest, AllowAndDisallowJavascript) {
