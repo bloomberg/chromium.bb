@@ -50,6 +50,8 @@ component("startup_tracing") {
     "common/trace_startup_config.h",
     "common/trace_to_console.cc",
     "common/trace_to_console.h",
+    "common/tracing_sampler_profiler.cc",
+    "common/tracing_sampler_profiler.h",
     "common/tracing_switches.cc",
     "common/tracing_switches.h",
     "tracing_export.h",
@@ -68,9 +70,11 @@ source_set("unit_tests") {
   sources = [
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
+    "common/tracing_sampler_profiler_unittest.cc",
   ]
 
   deps = [
+    ":startup_tracing",
     ":tracing",
     "//base/test:test_support",
     "//ipc",
