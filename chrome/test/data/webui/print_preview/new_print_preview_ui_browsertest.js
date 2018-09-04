@@ -250,6 +250,32 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
   this.runMochaTest(select_behavior_test.TestNames.CallProcessSelectChange);
 });
 
+PrintPreviewBaseSettingsSectionTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/settings_section.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'base_settings_section_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return base_settings_section_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewBaseSettingsSectionTest', 'ManagedShowsEnterpriseIcon',
+    function() {
+      this.runMochaTest(
+          base_settings_section_test.TestNames.ManagedShowsEnterpriseIcon);
+    });
+
 PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
