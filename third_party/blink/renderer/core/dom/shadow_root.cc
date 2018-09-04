@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_shadow_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -135,7 +135,7 @@ void ShadowRoot::SetInnerHTMLFromString(const String& markup,
 void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                               ExceptionState& exception_state) {
   String html =
-      TrustedHTML::GetString(stringOrHtml, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(stringOrHtml, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetInnerHTMLFromString(html, exception_state);
   }

@@ -145,9 +145,7 @@
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -1638,7 +1636,7 @@ void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedHTML& stringOrHTML,
                            ExceptionState& exception_state) {
   String valueString =
-      TrustedHTML::GetString(stringOrHTML, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(stringOrHTML, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
@@ -1647,28 +1645,20 @@ void Element::setAttribute(const QualifiedName& name,
 void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScriptURL& stringOrURL,
                            ExceptionState& exception_state) {
-  DCHECK(stringOrURL.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  if (stringOrURL.IsString() && GetDocument().RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedScriptURL` assignment.");
-    return;
+  String valueString = GetStringFromTrustedScriptURL(
+      stringOrURL, &GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    setAttribute(name, AtomicString(valueString));
   }
-
-  String valueString = stringOrURL.IsString()
-                           ? stringOrURL.GetAsString()
-                           : stringOrURL.GetAsTrustedScriptURL()->toString();
-
-  setAttribute(name, AtomicString(valueString));
 }
 
 void Element::setAttribute(const QualifiedName& name,
                            const USVStringOrTrustedURL& stringOrURL,
                            ExceptionState& exception_state) {
-  String url =
-      TrustedURL::GetString(stringOrURL, &GetDocument(), exception_state);
+  String valueString =
+      GetStringFromTrustedURL(stringOrURL, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
-    setAttribute(name, AtomicString(url));
+    setAttribute(name, AtomicString(valueString));
   }
 }
 
@@ -3524,7 +3514,7 @@ void Element::SetInnerHTMLFromString(const String& html) {
 void Element::setInnerHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
   String html =
-      TrustedHTML::GetString(string_or_html, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetInnerHTMLFromString(html, exception_state);
   }
@@ -3572,7 +3562,7 @@ void Element::SetOuterHTMLFromString(const String& html,
 void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
   String html =
-      TrustedHTML::GetString(string_or_html, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetOuterHTMLFromString(html, exception_state);
   }
@@ -3723,7 +3713,7 @@ void Element::insertAdjacentHTML(const String& where,
                                  const StringOrTrustedHTML& string_or_html,
                                  ExceptionState& exception_state) {
   String markup =
-      TrustedHTML::GetString(string_or_html, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     insertAdjacentHTML(where, markup, exception_state);
   }

@@ -101,7 +101,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
@@ -1557,7 +1557,7 @@ DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
   if (!exception_state.HadException()) {
     return openFromString(executionContext, current_window, entered_window, url,
                           target, features, exception_state);
@@ -1607,7 +1607,7 @@ DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
                                 LocalDOMWindow* calling_window,
                                 LocalDOMWindow* entered_window,
                                 ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
   if (!exception_state.HadException()) {
     return openFromString(url, frame_name, window_features_string,
                           calling_window, entered_window, exception_state);
