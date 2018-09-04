@@ -112,12 +112,12 @@ a {
 }
 
 #error-information-button {
-  padding-left: 0.5em;
   content: -webkit-image-set(
           url(../../resources/default_100_percent/neterror/help_outline.png) 1x,
           url(../../resources/default_200_percent/neterror/help_outline.png) 2x);
-  width: 24px;
   height: 24px;
+  vertical-align: -.15em;
+  width: 24px;
 }
 
 .use-popup-container#error-information-popup-container
@@ -134,22 +134,32 @@ a {
 }
 
 .use-popup-container#error-information-popup-container
+  #error-information-popup-content > p {
+  margin-bottom: 11px;
+  margin-inline-start: 20px;
+}
+
+.use-popup-container#error-information-popup-container #suggestions-list ul {
+  margin-inline-start: 15px;
+}
+
+.use-popup-container#error-information-popup-container
   #error-information-popup-box {
   background-color: white;
   left: 5%;
+  padding-bottom: 15px;
+  padding-top: 15px;
   position: fixed;
   width: 90%;
   z-index: 101;
 }
 
-.use-popup-container#error-information-popup-container
-  #error-information-popup-content {
-  padding: 0.5em;
+.use-popup-container#error-information-popup-container div.error-code {
+  margin-inline-start: 20px;
 }
 
-.use-popup-container#error-information-popup-container
-  #error-information-popup-content {
-  padding: 0.5em;
+.use-popup-container#error-information-popup-container #suggestions-list p {
+  margin-inline-start: 20px;
 }
 
 :not(.use-popup-container)#error-information-popup-container
@@ -158,8 +168,10 @@ a {
 }
 
 #error-information-popup-close {
-  margin-right: 2em;
-  text-align: right;
+  margin-bottom: 0px;
+  margin-inline-end: 35px;
+  margin-top: 15px;
+  text-align: end;
 }
 
 .link-button {
@@ -389,17 +401,24 @@ div.offline-content-suggestion {
   border-color: rgb(241, 243, 244);
   border-radius: 12px;
   border-style: solid;
-  border-width: 2px;
+  border-width: 1px;
   padding: 12px;
   text-align: center;
 }
 
-.offline-content-summary-images {
-  padding-bottom: 12px;
-  transform: translateX(22.5px);
+.offline-content-summary-image-truncate {
+  width: 45px;
 }
 
-.offline-content-summary-images > img {
+.offline-content-summary-images {
+  direction: ltr;
+  display: flex;
+  margin-top: 10px;
+  justify-content: center;
+  padding-bottom: 12px;
+}
+
+.offline-content-summary-images img {
   background: rgb(241, 243, 244);
   border-radius: 50%;
   box-shadow:
@@ -409,20 +428,8 @@ div.offline-content-suggestion {
   width: 32px;
 }
 
-img#music-note {
-  transform: translateX(-15px);
-}
-
-img#video {
-  transform: translateX(-30px);
-}
-
-img#image {
-  transform: translateX(-45px);
-}
-
 .offline-content-summary-description {
-  border-top: 2px solid rgb(241, 243, 244);
+  border-top: 1px solid rgb(241, 243, 244);
   padding-top: 12px;
 }
 

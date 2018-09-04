@@ -65,10 +65,18 @@
         <div id="offline-content-list" hidden></div>
         <div id="offline-content-summary" onclick="launchDownloadsPage()" hidden>
           <div class="offline-content-summary-images">
-            <img id="earth" src="offline_content/earth.svg">
-            <img id="music-note" src="offline_content/music-note.svg">
-            <img id="video" src="offline_content/video.svg">
-            <img id="image" src="offline_content/image.svg">
+            <div class="offline-content-summary-image-truncate">
+              <img id="earth" src="offline_content/earth.svg">
+            </div>
+            <div class="offline-content-summary-image-truncate">
+              <img id="music-note" src="offline_content/music-note.svg">
+            </div>
+            <div class="offline-content-summary-image-truncate">
+              <img id="video" src="offline_content/video.svg">
+            </div>
+            <div>
+              <img id="image" src="offline_content/image.svg">
+            </div>
           </div>
           <div class="offline-content-summary-description"
               jsselect="offlineContentSummary" jscontent="description">
