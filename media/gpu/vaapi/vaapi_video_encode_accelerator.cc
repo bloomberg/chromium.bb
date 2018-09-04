@@ -626,6 +626,10 @@ void VaapiVideoEncodeAccelerator::FlushTask() {
   EncodePendingInputs();
 }
 
+bool VaapiVideoEncodeAccelerator::IsFlushSupported() {
+  return true;
+}
+
 void VaapiVideoEncodeAccelerator::Destroy() {
   DVLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());

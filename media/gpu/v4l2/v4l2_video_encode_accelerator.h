@@ -55,6 +55,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
                                        uint32_t framerate) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
+  bool IsFlushSupported() override;
 
  private:
   // Auto-destroy reference for BitstreamBuffer, for tracking buffers passed to
@@ -290,6 +291,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
+
+  // Indicates whether the V4L2 device supports flush.
+  // This is set in Initialize().
+  bool is_flush_supported_;
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;

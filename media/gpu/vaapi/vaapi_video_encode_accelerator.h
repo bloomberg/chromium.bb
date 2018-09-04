@@ -45,6 +45,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
       uint32_t framerate) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
+  bool IsFlushSupported() override;
 
  private:
   class H264Accelerator;

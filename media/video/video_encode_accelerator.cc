@@ -87,6 +87,10 @@ void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   std::move(flush_callback).Run(false);
 }
 
+bool VideoEncodeAccelerator::IsFlushSupported() {
+  return false;
+}
+
 void VideoEncodeAccelerator::RequestEncodingParametersChange(
     const VideoBitrateAllocation& bitrate_allocation,
     uint32_t framerate) {
