@@ -82,7 +82,7 @@ public class ChildProcessLauncherHelperTest {
 
         // Start the Helper service.
         class HelperConnection implements ServiceConnection {
-            Messenger mMessenger = null;
+            Messenger mMessenger;
 
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {

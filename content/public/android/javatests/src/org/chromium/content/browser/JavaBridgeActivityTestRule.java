@@ -27,7 +27,7 @@ import java.lang.annotation.Annotation;
 public class JavaBridgeActivityTestRule
         extends ContentShellActivityTestRule implements SetUpTestRule<JavaBridgeActivityTestRule> {
     private TestCallbackHelperContainer mTestCallbackHelperContainer;
-    private boolean mSetup = false;
+    private boolean mSetup;
 
     public static class Controller {
         private static final int RESULT_WAIT_TIME = 5000;

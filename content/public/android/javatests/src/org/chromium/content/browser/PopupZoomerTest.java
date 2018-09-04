@@ -41,7 +41,7 @@ public class PopupZoomerTest {
 
     private static class CustomCanvasPopupZoomer extends PopupZoomer {
         Canvas mCanvas;
-        long mPendingDraws = 0;
+        long mPendingDraws;
 
         CustomCanvasPopupZoomer(Context context, ViewGroup containerView, Canvas c) {
             super(context, containerView, null, null);

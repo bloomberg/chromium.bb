@@ -98,7 +98,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // A flag to determine if we should get readback view from WindowAndroid.
     // The readback view could be the ContainerView, which WindowAndroid has no control on that.
     // Embedders should set this properly to use the correct view for readback.
-    private static boolean sShouldGetReadbackViewFromWindowAndroid = false;
+    private static boolean sShouldGetReadbackViewFromWindowAndroid;
 
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<SelectionPopupControllerImpl> INSTANCE =

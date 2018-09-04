@@ -268,7 +268,7 @@ public class WebServer {
         void handleRequest(HTTPRequest request, OutputStream stream);
     }
 
-    private RequestHandler mRequestHandler = null;
+    private RequestHandler mRequestHandler;
 
     /** Sets the request handler. */
     public void setRequestHandler(RequestHandler handler) {

@@ -39,13 +39,13 @@ public class TouchInputStrategy implements InputStrategyInterface {
     /**
      * Indicates that the events received should be treated as part of an active remote gesture.
      */
-    private boolean mInRemoteGesture = false;
+    private boolean mInRemoteGesture;
 
     /**
      * Indicates whether MotionEvents and gestures should be acted upon or ignored.  This flag is
      * set when we believe that the current sequence of events is not something we should remote.
      */
-    private boolean mIgnoreTouchEvents = false;
+    private boolean mIgnoreTouchEvents;
 
     private final RenderData mRenderData;
     private final InputEventSender mInjector;

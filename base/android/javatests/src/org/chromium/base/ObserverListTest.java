@@ -28,7 +28,7 @@ public class ObserverListTest {
 
     private static class Foo implements Observer {
         private final int mScalar;
-        private int mTotal = 0;
+        private int mTotal;
 
         Foo(int scalar) {
             mScalar = scalar;

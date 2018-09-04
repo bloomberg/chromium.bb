@@ -27,7 +27,7 @@ public class MojoTestRule extends ExternalResource {
         int INITIALIZE = 1;
     }
 
-    private static boolean sIsCoreInitialized = false;
+    private static boolean sIsCoreInitialized;
     private final boolean mShouldInitCore;
     private long mTestEnvironmentPointer;
 

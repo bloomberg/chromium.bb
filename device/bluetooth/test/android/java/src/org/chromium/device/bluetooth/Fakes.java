@@ -522,11 +522,11 @@ class Fakes {
     static class FakeBluetoothGatt extends Wrappers.BluetoothGattWrapper {
         final FakeBluetoothDevice mDevice;
         final ArrayList<Wrappers.BluetoothGattServiceWrapper> mServices;
-        boolean mReadCharacteristicWillFailSynchronouslyOnce = false;
-        boolean mSetCharacteristicNotificationWillFailSynchronouslyOnce = false;
-        boolean mWriteCharacteristicWillFailSynchronouslyOnce = false;
-        boolean mReadDescriptorWillFailSynchronouslyOnce = false;
-        boolean mWriteDescriptorWillFailSynchronouslyOnce = false;
+        boolean mReadCharacteristicWillFailSynchronouslyOnce;
+        boolean mSetCharacteristicNotificationWillFailSynchronouslyOnce;
+        boolean mWriteCharacteristicWillFailSynchronouslyOnce;
+        boolean mReadDescriptorWillFailSynchronouslyOnce;
+        boolean mWriteDescriptorWillFailSynchronouslyOnce;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
             super(null, null);

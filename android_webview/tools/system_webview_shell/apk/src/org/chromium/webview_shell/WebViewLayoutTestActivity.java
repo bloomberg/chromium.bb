@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
-
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
@@ -33,8 +32,8 @@ public class WebViewLayoutTestActivity extends Activity {
     private static final String TEST_FINISHED_SENTINEL = "TEST FINISHED";
 
     private WebView mWebView;
-    private boolean mFinished = false;
-    private boolean mGrantPermission = false;
+    private boolean mFinished;
+    private boolean mGrantPermission;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -271,7 +271,7 @@ public class MinidumpUploaderImplTest {
     private MinidumpUploaderImpl createCallableListMinidumpUploader(
             final List<MinidumpUploadCallableCreator> callables, final boolean userPermitted) {
         return new TestMinidumpUploaderImpl(mTestRule.getExistingCacheDir(), null) {
-            private int mIndex = 0;
+            private int mIndex;
 
             @Override
             public MinidumpUploadCallable createMinidumpUploadCallable(

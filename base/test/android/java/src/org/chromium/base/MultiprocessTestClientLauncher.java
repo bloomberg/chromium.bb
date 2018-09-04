@@ -118,7 +118,7 @@ public final class MultiprocessTestClientLauncher {
     @GuardedBy("mConnectedLock")
     private boolean mConnected;
 
-    private IChildProcessService mService = null;
+    private IChildProcessService mService;
     private int mPid;
     private ITestController mTestController;
 
