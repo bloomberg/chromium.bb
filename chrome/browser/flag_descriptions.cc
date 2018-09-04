@@ -1826,6 +1826,10 @@ const char kSyncSupportSecondaryAccountDescription[] =
     "a signed-in account that has not been chosen as Chrome's primary account. "
     "This only has an effect if sync-standalone-transport is also enabled.";
 
+const char kSyncUSSAutofillProfileName[] = "Enable USS for autofill profile";
+const char kSyncUSSAutofillProfileDescription[] =
+    "Enables the new implementation of autofill profile sync";
+
 const char kSyncUSSAutofillWalletDataName[] =
     "Enable USS for autofill wallet data";
 const char kSyncUSSAutofillWalletDataDescription[] =
