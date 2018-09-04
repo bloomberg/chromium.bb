@@ -384,7 +384,7 @@ public class MediaUrlResolverTest {
             void recordResultHistogram(int result) {
             }
         };
-        resolver.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        resolver.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         ShadowApplication.runBackgroundTasks();
 
         return delegate;
