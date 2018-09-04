@@ -73,24 +73,6 @@ const DIRECTORY = {
 };
 
 /**
- * Opens two file manager windows.
- * @return {Promise} Promise fulfilled with an array containing two window IDs.
- */
-function openWindows() {
-  return Promise.all([
-    openNewWindow(null, RootPath.DRIVE),
-    openNewWindow(null, RootPath.DRIVE)
-  ]).then(function(windowIds) {
-    return Promise.all([
-      remoteCall.waitForElement(windowIds[0], '#detail-table'),
-      remoteCall.waitForElement(windowIds[1], '#detail-table')
-    ]).then(function() {
-      return windowIds;
-    });
-  });
-}
-
-/**
  * Expands tree item on the directory tree by clicking expand icon.
  * @param {string} windowId Target windowId.
  * @param {Object} directory Directory whose tree item should be expanded.
@@ -318,72 +300,68 @@ testcase.traverseFolderShortcuts = function() {
  * directories and selected navigation items are correct.
  */
 testcase.addRemoveFolderShortcuts = function() {
-  var windowId1;
-  var windowId2;
+  let windowId1;
+  let windowId2;
+
+  function openFilesAppOnDrive() {
+    let windowId;
+    return new Promise(function(resolve) {
+      return openNewWindow(null, RootPath.DRIVE, resolve);
+    }).then(function(newWindowId) {
+      windowId = newWindowId;
+      return remoteCall.waitForElement(windowId, '#file-list');
+    }).then(function() {
+      return remoteCall.waitForFiles(windowId, DIRECTORY.Drive.contents);
+    }).then(function() {
+      return windowId;
+    });
+  }
+
   StepsRunner.run([
-    // Set up each window.
+    // Add entries to Drive.
     function() {
       addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
     },
+    // Open one Files app window on Drive.
     function(result) {
       chrome.test.assertTrue(result);
-      openWindows().then(this.next);
+      openFilesAppOnDrive().then(this.next);
     },
-    function(windowIds) {
-      windowId1 = windowIds[0];
-      windowId2 = windowIds[1];
-      expandDirectoryTree(windowId1).then(this.next);
+    // Open another Files app window on Drive.
+    function(windowId) {
+      windowId1 = windowId;
+      openFilesAppOnDrive().then(this.next);
     },
-    function() {
-      expandDirectoryTree(windowId2).then(this.next);
-    },
-    function() {
-      remoteCall.waitForFiles(windowId1, DIRECTORY.Drive.contents).
-          then(this.next);
-    },
-    function() {
-      remoteCall.waitForFiles(windowId2, DIRECTORY.Drive.contents).
-          then(this.next);
-    },
-
-    // Create shortcut to D
-    function() {
+    // Create a shortcut to D.
+    function(windowId) {
+      windowId2 = windowId;
       createShortcut(windowId1, DIRECTORY.D).then(this.next);
     },
-
-    // Click D.
-    // Current directory should be D.
-    // Shortcut to D should be selected.
+    // Click the shortcut to D.
     function() {
       clickShortcut(windowId1, DIRECTORY.D).then(this.next);
     },
+    // Check: current directory and selection should be D.
     function() {
       expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-
-    // Create shortcut to A in another window.
+    // Create a shortcut to A from the other window.
     function() {
       createShortcut(windowId2, DIRECTORY.A).then(this.next);
     },
-
-    // The index of shortcut to D is changed.
-    // Current directory should remain D.
-    // Shortcut to D should keep selected.
+    // Check: current directory and selection should still be D.
     function() {
       expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-
-    // Remove shortcut to D in another window.
+    // Remove shortcut to D from the other window.
     function() {
       removeShortcut(windowId2, DIRECTORY.D).then(this.next);
     },
-
-    // Directory D in the directory tree should be selected.
+    // Check: directory D in the directory tree should be selected.
     function() {
-      remoteCall.waitForElement(windowId1, TREEITEM_D + '[selected]').
-          then(this.next);
+      const selection = TREEITEM_D + '[selected]';
+      remoteCall.waitForElement(windowId1, selection).then(this.next);
     },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     }
