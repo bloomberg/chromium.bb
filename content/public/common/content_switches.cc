@@ -81,6 +81,9 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 const char kDisableBackgroundingOccludedWindowsForTesting[] =
     "disable-backgrounding-occluded-windows";
 
+// Disable Background Fetch.
+const char kDisableBackgroundFetch[] = "disable-background-fetch";
+
 // Disable task throttling of timer tasks from background pages.
 const char kDisableBackgroundTimerThrottling[] =
     "disable-background-timer-throttling";

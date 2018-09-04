@@ -572,4 +572,8 @@ void WebRuntimeFeatures::EnableHrefTranslate(bool enable) {
   RuntimeEnabledFeatures::SetHrefTranslateEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
+  RuntimeEnabledFeatures::SetBackgroundFetchEnabled(enable);
+}
+
 }  // namespace blink
