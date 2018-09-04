@@ -376,6 +376,14 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->exclusive_access_bubble();
   }
 
+  bool IsTopControlsSlideBehaviorEnabled() const override {
+    return browser_view_->IsTopControlsSlideBehaviorEnabled();
+  }
+
+  float GetTopControlsSlideBehaviorShownRatio() const override {
+    return browser_view_->GetTopControlsSlideBehaviorShownRatio();
+  }
+
  private:
   BrowserView* browser_view_;
 
@@ -435,6 +443,10 @@ const char BrowserView::kViewClassName[] = "BrowserView";
 BrowserView::BrowserView() : views::ClientView(nullptr, nullptr) {}
 
 BrowserView::~BrowserView() {
+  // Destroy the top controls slide controller first as it depends on the
+  // tabstrip model and the browser frame.
+  top_controls_slide_controller_.reset();
+
   // All the tabs should have been destroyed already. If we were closed by the
   // OS with some tabs than the NativeBrowserFrame should have destroyed them.
   DCHECK_EQ(0, browser_->tab_strip_model()->count());
@@ -643,6 +655,18 @@ WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+bool BrowserView::IsTopControlsSlideBehaviorEnabled() const {
+  return top_controls_slide_controller_ &&
+         top_controls_slide_controller_->IsEnabled();
+}
+
+float BrowserView::GetTopControlsSlideBehaviorShownRatio() const {
+  if (top_controls_slide_controller_)
+    return top_controls_slide_controller_->GetShownRatio();
+
+  return 1.f;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindow implementation:
 
@@ -742,6 +766,31 @@ gfx::NativeWindow BrowserView::GetNativeWindow() const {
   // While the browser destruction is going on, the widget can already be gone,
   // but utility functions like FindBrowserWithWindow will still call this.
   return GetWidget() ? GetWidget()->GetNativeWindow() : nullptr;
+}
+
+void BrowserView::SetTopControlsShownRatio(content::WebContents* web_contents,
+                                           float ratio) {
+  if (top_controls_slide_controller_)
+    top_controls_slide_controller_->SetShownRatio(web_contents, ratio);
+}
+
+int BrowserView::GetTopControlsHeight() const {
+  if (top_controls_slide_controller_ &&
+      top_controls_slide_controller_->IsEnabled()) {
+    return top_container_->bounds().height();
+  }
+
+  // If the top controls slide feature is disabled, we must give the renderers
+  // a value of 0, so as they don't get confused thinking that they need to move
+  // the top controls first before the pages start scrolling.
+  return 0.f;
+}
+
+void BrowserView::SetTopControlsGestureScrollInProgress(bool in_progress) {
+  if (top_controls_slide_controller_) {
+    top_controls_slide_controller_->SetTopControlsGestureScrollInProgress(
+        in_progress);
+  }
 }
 
 StatusBubble* BrowserView::GetStatusBubble() {
@@ -2313,6 +2362,13 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 }
 
 void BrowserView::InitViews() {
+  // TopControlsSlideController must be initialized here in InitViews() rather
+  // than Init() as it depends on the browser frame being ready.
+  if (IsBrowserTypeNormal()) {
+    DCHECK(frame_);
+    top_controls_slide_controller_ = CreateTopControlsSlideController(this);
+  }
+
   GetWidget()->AddObserver(this);
 
   // Stow a pointer to this object onto the window handle so that we can get at
@@ -2614,6 +2670,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (in_process_fullscreen_)
     return;
   in_process_fullscreen_ = true;
+
+  if (top_controls_slide_controller_)
+    top_controls_slide_controller_->OnBrowserFullscreenStateWillChange(
+        fullscreen);
 
   // Reduce jankiness during the following position changes by:
   //   * Hiding the window until it's in the final position

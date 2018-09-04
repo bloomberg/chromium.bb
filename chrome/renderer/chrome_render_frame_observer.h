@@ -83,11 +83,9 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void RequestReloadImageForContextNode() override;
   void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
   void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override;
-#if defined(OS_ANDROID)
   void UpdateBrowserControlsState(content::BrowserControlsState constraints,
                                   content::BrowserControlsState current,
                                   bool animate) override;
-#endif
 
   void OnRenderFrameObserverRequest(
       chrome::mojom::ChromeRenderFrameAssociatedRequest request);

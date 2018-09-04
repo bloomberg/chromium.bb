@@ -39,6 +39,13 @@
 -BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
 -BrowserNonClientFrameViewAshTest.TopViewInset/*
 
+# Touch gestures don't work in webcontents. https://crbug.com/866991.
+-TopControlsSlideControllerTest.TestScrollingPage
+-TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
+-TopControlsSlideControllerTest.TestClosingATab
+-TopControlsSlideControllerTest.TestFocusEditableElements
+-TopControlsSlideControllerTest.DisplayRotation
+
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.*
 

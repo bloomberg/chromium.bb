@@ -114,6 +114,24 @@ class BrowserWindow : public ui::BaseWindow {
   //////////////////////////////////////////////////////////////////////////////
   // Browser specific methods:
 
+  // Sets the shown |ratio| of the browser's top controls (a.k.a. top-chrome) as
+  // a result of gesture scrolling in |web_contents|.
+  virtual void SetTopControlsShownRatio(content::WebContents* web_contents,
+                                        float ratio) = 0;
+
+  // Returns the height of the browser's top controls. This height doesn't
+  // change with the current shown ratio above. Renderers will call this to
+  // calculate the top-chrome shown ratio from the gesture scroll offset.
+  //
+  // Note: This should always return 0 if hiding top-chrome with page gesture
+  // scrolls is disabled. This is needed so the renderer scrolls the page
+  // immediately rather than changing the shown ratio, thinking that top-chrome
+  // and the page's top edge are moving.
+  virtual int GetTopControlsHeight() const = 0;
+
+  // Propagates to the browser that gesture scrolling has changed state.
+  virtual void SetTopControlsGestureScrollInProgress(bool in_progress) = 0;
+
   // Return the status bubble associated with the frame
   virtual StatusBubble* GetStatusBubble() = 0;
 

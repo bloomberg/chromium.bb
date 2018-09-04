@@ -3608,6 +3608,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // DCHECK_IS_CONFIGURABLE
 
 #if defined(OS_CHROMEOS)
+    {"slide-top-chrome-with-page-scrolls",
+     flag_descriptions::kSlideTopChromeWithPageScrollsName,
+     flag_descriptions::kSlideTopChromeWithPageScrollsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kSlideTopChromeWithPageScrolls)},
     {"sys-internals", flag_descriptions::kSysInternalsName,
      flag_descriptions::kSysInternalsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSysInternals)},

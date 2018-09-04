@@ -260,6 +260,9 @@ bool WebContentsDelegate::DoBrowserControlsShrinkBlinkSize() const {
   return false;
 }
 
+void WebContentsDelegate::SetTopControlsGestureScrollInProgress(
+    bool in_progress) {}
+
 gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
                                                      const gfx::Size&) {
   return gfx::Size();

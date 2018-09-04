@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -149,6 +150,10 @@ class BrowserView : public BrowserWindow,
   Browser* browser() { return browser_.get(); }
   const Browser* browser() const { return browser_.get(); }
 
+  const TopControlsSlideController* top_controls_slide_controller() const {
+    return top_controls_slide_controller_.get();
+  }
+
   // Initializes (or re-initializes) the status bubble.  We try to only create
   // the bubble once and re-use it for the life of the browser, but certain
   // events (such as changing enabling/disabling Aero on Win) can force a need
@@ -180,6 +185,9 @@ class BrowserView : public BrowserWindow,
 
   // Container for the tabstrip, toolbar, etc.
   TopContainerView* top_container() { return top_container_; }
+
+  // Container for the web contents.
+  views::View* contents_container() { return contents_container_; }
 
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
@@ -252,6 +260,14 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
+  // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
+  // allowed to slide up and down with the gesture scrolls on the current tab's
+  // page.
+  bool IsTopControlsSlideBehaviorEnabled() const;
+
+  // Returns the current shown ratio of the top browser controls.
+  float GetTopControlsSlideBehaviorShownRatio() const;
+
   // See ImmersiveModeController for description.
   ImmersiveModeController* immersive_mode_controller() const {
     return immersive_mode_controller_.get();
@@ -289,6 +305,10 @@ class BrowserView : public BrowserWindow,
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override;
   gfx::NativeWindow GetNativeWindow() const override;
+  void SetTopControlsShownRatio(content::WebContents* web_contents,
+                                float ratio) override;
+  int GetTopControlsHeight() const override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
   void BookmarkBarStateChanged(
@@ -774,6 +794,9 @@ class BrowserView : public BrowserWindow,
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
   bool force_location_bar_focus_ = false;
+
+  // This is non-null on Chrome OS only.
+  std::unique_ptr<TopControlsSlideController> top_controls_slide_controller_;
 
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 

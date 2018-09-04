@@ -2084,6 +2084,20 @@ ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
   return last_committed_source_id_;
 }
 
+void WebContentsImpl::SetTopControlsShownRatio(float ratio) {
+  if (delegate_)
+    delegate_->SetTopControlsShownRatio(this, ratio);
+}
+
+int WebContentsImpl::GetTopControlsHeight() const {
+  return delegate_ ? delegate_->GetTopControlsHeight() : 0;
+}
+
+void WebContentsImpl::SetTopControlsGestureScrollInProgress(bool in_progress) {
+  if (delegate_)
+    delegate_->SetTopControlsGestureScrollInProgress(in_progress);
+}
+
 void WebContentsImpl::RenderWidgetCreated(
     RenderWidgetHostImpl* render_widget_host) {
   created_widgets_.insert(render_widget_host);

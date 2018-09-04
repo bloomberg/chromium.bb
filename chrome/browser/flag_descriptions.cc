@@ -3460,6 +3460,12 @@ const char kShowTouchHudDescription[] =
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
 
+const char kSlideTopChromeWithPageScrollsName[] =
+    "Slide top-chrome with page scrolls";
+const char kSlideTopChromeWithPageScrollsDescription[] =
+    "If enabled, page scrolls in tablet mode will also scroll the top-chrome"
+    " UI.";
+
 const char kSmartTextSelectionName[] = "Smart Text Selection";
 const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "

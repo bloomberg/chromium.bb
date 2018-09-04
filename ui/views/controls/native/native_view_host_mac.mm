@@ -204,6 +204,11 @@ void NativeViewHostMac::SetFocus() {
     [[host_->native_view() window] makeFirstResponder:host_->native_view()];
 }
 
+gfx::NativeView NativeViewHostMac::GetNativeViewContainer() const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::NativeViewAccessible NativeViewHostMac::GetNativeViewAccessible() {
   return nullptr;
 }

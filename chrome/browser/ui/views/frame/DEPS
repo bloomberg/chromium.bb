@@ -6,4 +6,7 @@ specific_include_rules = {
   "browser_frame_ash\.*": [
     "+ash",
   ],
+  "top_controls_slide_controller_chromeos_browsertest.cc": [
+    "+cc/base/math_util.h",
+  ],
 }

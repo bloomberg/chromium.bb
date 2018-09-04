@@ -827,6 +827,15 @@ uint32_t RenderWidgetHostViewAura::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
+bool RenderWidgetHostViewAura::DoBrowserControlsShrinkBlinkSize() const {
+  return !top_controls_gesture_scroll_in_progress_ &&
+         top_controls_shown_ratio_ > 0;
+}
+
+float RenderWidgetHostViewAura::GetTopControlsHeight() const {
+  return host()->delegate() ? host()->delegate()->GetTopControlsHeight() : 0;
+}
+
 void RenderWidgetHostViewAura::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
@@ -961,6 +970,17 @@ void RenderWidgetHostViewAura::DidOverscroll(
 void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
+  const blink::WebInputEvent::Type event_type = event.GetType();
+  if (event_type == blink::WebGestureEvent::kGestureScrollBegin ||
+      event_type == blink::WebGestureEvent::kGestureScrollEnd) {
+    top_controls_gesture_scroll_in_progress_ =
+        event_type == blink::WebGestureEvent::kGestureScrollBegin;
+    if (host()->delegate()) {
+      host()->delegate()->SetTopControlsGestureScrollInProgress(
+          top_controls_gesture_scroll_in_progress_);
+    }
+  }
+
   if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
         event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
@@ -971,7 +991,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
     // action would complete at the end of the active fling progress which
     // causes noticeable delay in cases that the fling velocity is large.
     // https://crbug.com/797855
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+    if (event_type == blink::WebInputEvent::kGestureScrollUpdate &&
         event.data.scroll_update.inertial_phase ==
             blink::WebGestureEvent::kMomentumPhase &&
         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
@@ -2047,6 +2067,18 @@ bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
   return host()->SynchronizeVisualProperties();
 }
 
+void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
+    const cc::RenderFrameMetadata& metadata) {
+  DCHECK(window_);
+
+  top_controls_shown_ratio_ = metadata.top_controls_shown_ratio;
+  if (host()->delegate())
+    host()->delegate()->SetTopControlsShownRatio(top_controls_shown_ratio_);
+
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              metadata.local_surface_id);
+}
+
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   if (!window_)
     return nullptr;
@@ -2449,10 +2481,8 @@ viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewAura::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      base::IgnoreResult(
-          &RenderWidgetHostViewAura::SynchronizeVisualProperties),
-      weak_ptr_factory_.GetWeakPtr(), cc::DeadlinePolicy::UseDefaultDeadline(),
-      metadata.local_surface_id);
+      &RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete,
+      weak_ptr_factory_.GetWeakPtr(), metadata);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 

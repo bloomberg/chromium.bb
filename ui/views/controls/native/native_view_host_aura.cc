@@ -212,6 +212,10 @@ void NativeViewHostAura::SetFocus() {
     client->FocusWindow(window);
 }
 
+gfx::NativeView NativeViewHostAura::GetNativeViewContainer() const {
+  return clipping_window_.get();
+}
+
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
   return NULL;
 }

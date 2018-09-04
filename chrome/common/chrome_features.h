@@ -374,7 +374,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSupervisedUserCommittedInterstitials;
 
 #if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSysInternals;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSlideTopChromeWithPageScrolls;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSysInternals;
 #endif
 
 #if !defined(OS_ANDROID)
