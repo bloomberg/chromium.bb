@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -69,7 +70,8 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
   }
 
   void StartDecoding() {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::WILL_BLOCK);
 
     // Re-check the filesize since the file may be modified after downloaded.
     int64_t filesize;
