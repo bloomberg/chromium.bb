@@ -11,7 +11,6 @@ import collections
 import inspect
 import os
 import unittest
-import warnings
 
 from chromite.cbuildbot import binhost
 from chromite.lib import config_lib
@@ -61,7 +60,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
   def tearDown(self):
     if self.complaints:
-      warnings.warn('\n' + '\n'.join(self.complaints))
+      logging.warn('\n' + '\n'.join(self.complaints))
     if self.fatal_complaints:
       self.assertFalse(self.fatal_complaints, '\n'.join(self.fatal_complaints))
 
