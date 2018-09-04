@@ -1,0 +1,15 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "host",
+      "path/to/project"
+    ],
+    "name": "build"
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]

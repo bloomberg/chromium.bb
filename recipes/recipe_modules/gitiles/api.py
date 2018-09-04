@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import base64
+import urlparse
 
 from recipe_engine import recipe_api
 
@@ -200,3 +201,40 @@ class Gitiles(recipe_api.RecipeApi):
       ex = self.m.step.StepFailure(step_name)
       ex.gitiles_skipped_files = stat['names']
       raise ex
+
+  def parse_repo_url(self, repo_url):
+    """Returns (host, project) pair.
+
+    Returns (None, None) if repo_url is not recognized.
+    """
+    return parse_repo_url(repo_url)
+
+
+def parse_http_host_and_path(url):
+  # Copied from https://chromium.googlesource.com/infra/luci/recipes-py/+/809e57935211b3fcb802f74a7844d4f36eff6b87/recipe_modules/buildbucket/util.py
+  parsed = urlparse.urlparse(url)
+  if not parsed.scheme:
+    parsed = urlparse.urlparse('https://' + url)
+  if (parsed.scheme in ('http', 'https') and
+      not parsed.params and
+      not parsed.query and
+      not parsed.fragment):
+    return parsed.netloc, parsed.path
+  return None, None
+
+
+def parse_repo_url(repo_url):
+  """Returns (host, project) pair.
+
+  Returns (None, None) if repo_url is not recognized.
+  """
+  # Adapted from https://chromium.googlesource.com/infra/luci/recipes-py/+/809e57935211b3fcb802f74a7844d4f36eff6b87/recipe_modules/buildbucket/util.py
+  host, project = parse_http_host_and_path(repo_url)
+  if not host or not project or '+' in project.split('/'):
+    return None, None
+  project = project.strip('/')
+  if project.startswith('a/'):
+    project = project[len('a/'):]
+  if project.endswith('.git'):
+    project = project[:-len('.git')]
+  return host, project
