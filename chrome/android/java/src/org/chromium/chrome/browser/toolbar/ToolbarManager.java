@@ -887,6 +887,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
                 Tab currentTab = tabModelSelector.getCurrentTab();
                 maybeShowDuetHelpBubble(currentTab);
+
+                // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
+                mLocationBar.getContainerView().setAccessibilityTraversalBefore(
+                        R.id.bottom_toolbar);
             }
 
             onNativeLibraryReady();
