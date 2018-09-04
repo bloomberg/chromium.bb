@@ -174,6 +174,13 @@ class Cache(object):
     self._added = []
     self._used = []
 
+  def __nonzero__(self):
+    """A cache is always True.
+
+    Otherwise it falls back to __len__, which is surprising.
+    """
+    return True
+
   def __len__(self):
     """Returns the number of entries in the cache."""
     raise NotImplementedError()

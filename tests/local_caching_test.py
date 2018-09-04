@@ -202,6 +202,12 @@ class CacheTestMixin(object):
     self._add_one_item(cache, 101)
     self.assertEqual([], cache.trim())
 
+  def test_true(self):
+    cache = self.get_cache(_get_policies())
+    self.assertEqual(0, len(cache))
+    # Even if empty, it's still "True".
+    self.assertTrue(bool(cache))
+
 
 class ContentAddressedCacheTestMixin(CacheTestMixin):
   """Add testing for the ContentAddressedCache interface."""
