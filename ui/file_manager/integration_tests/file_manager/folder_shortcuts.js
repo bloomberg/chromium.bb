@@ -249,88 +249,70 @@ function clickShortcut(windowId, directory) {
  * Creates some shortcuts and traverse them and some other directories.
  */
 testcase.traverseFolderShortcuts = function() {
-  var windowId;
+  let windowId;
+
   StepsRunner.run([
-    // Set up each window.
+    // Open Files app on Drive.
     function() {
-      addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], FOLDER_ENTRY_SET);
     },
-    function(result) {
-      chrome.test.assertTrue(result);
-      openNewWindow(null, RootPath.DRIVE).then(this.next);
-    },
-    function(inWindowId) {
-      windowId = inWindowId;
-      remoteCall.waitForElement(windowId, '#detail-table').then(this.next);
-    },
-    function() {
+    // Expand the directory tree.
+    function(results) {
+      windowId = results.windowId;
       expandDirectoryTree(windowId).then(this.next);
     },
-    function() {
-      remoteCall.waitForFiles(windowId, DIRECTORY.Drive.contents).
-          then(this.next);
-    },
-
-    // Create shortcut to D
+    // Create a shortcut to directory D.
     function() {
       createShortcut(windowId, DIRECTORY.D).then(this.next);
     },
-
-    // Create sortcut to C
+    // Navigate to directory B.
     function() {
       navigateToDirectory(windowId, DIRECTORY.B).then(this.next);
     },
+    // Create a shortcut to directory C.
     function() {
       createShortcut(windowId, DIRECTORY.C).then(this.next);
     },
-
-    // Click shortcut to drive.
-    // Current directory should be Drive root.
-    // Shortcut to Drive root should be selected.
+    // Click the Drive root (My Drive) shortcut.
     function() {
       clickShortcut(windowId, DIRECTORY.Drive).then(this.next);
     },
+    // Check: current directory and selection should be the Drive root.
     function() {
       expectSelection(
           windowId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
     },
-    // Press Ctrl+3 to select 3d shortcut.
+    // Send Ctrl+3 key to file-list to select 3rd shortcut.
     function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', windowId, ['#file-list', '3', '3', true, false, false],
-          this.next);
+      const key = ['#file-list', '3', '3', true, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key, this.next);
     },
-    // Current directory should be D.
+    // Check: current directory and selection should be D.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-    // Press UP to select shortcut (above D).
-    // Current directory should remain D.
-    // But Shortcut to C should be selected.
+    // Send UpArrow key to directory tree to select the shortcut above D.
     function() {
-      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'ArrowUp', 'Up', false, false, false], this.next);
+      const key = ['#directory-tree', 'ArrowUp', 'Up', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key, this.next);
     },
-    // Current directory should remain D.
+    // Check: current directory should be D, with shortcut C selected.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.D, DIRECTORY.C).then(this.next);
     },
-    // Press Enter to change the directory to C.
-    // Then current directory should change to C.
+    // Send Enter key to the directory tree to change to directory C.
     function() {
-      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'Enter', 'Enter', false, false, false],
-           this.next);
+      const key = ['#directory-tree', 'Enter', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key, this.next);
     },
-
-    // Current directory should be C.
+    // Check: current directory and selection should be C.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.C, DIRECTORY.C).then(this.next);
     },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     }
