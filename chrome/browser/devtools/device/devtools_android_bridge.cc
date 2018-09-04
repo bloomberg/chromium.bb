@@ -331,8 +331,7 @@ static std::set<net::HostPortPair> ParseTargetDiscoveryPreferenceValue(
 }
 
 static scoped_refptr<TCPDeviceProvider> CreateTCPDeviceProvider(
-    const base::ListValue* targetDiscoveryConfig,
-    Profile* profile) {
+    const base::ListValue* targetDiscoveryConfig) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::set<net::HostPortPair> targets =
       ParseTargetDiscoveryPreferenceValue(targetDiscoveryConfig);
@@ -353,7 +352,7 @@ static scoped_refptr<TCPDeviceProvider> CreateTCPDeviceProvider(
   }
   if (targets.empty())
     return nullptr;
-  return new TCPDeviceProvider(targets, profile);
+  return new TCPDeviceProvider(targets);
 }
 
 void DevToolsAndroidBridge::CreateDeviceProviders() {
@@ -363,8 +362,7 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
       service->GetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled)
           ? service->GetList(prefs::kDevToolsTCPDiscoveryConfig)
           : nullptr;
-  scoped_refptr<TCPDeviceProvider> provider =
-      CreateTCPDeviceProvider(targets, profile_);
+  scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider(targets);
   if (tcp_provider_callback_)
     tcp_provider_callback_.Run(provider);
 
@@ -372,7 +370,7 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
     device_providers.push_back(provider);
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  device_providers.push_back(new CastDeviceProvider(profile_));
+  device_providers.push_back(new CastDeviceProvider());
 #endif
 
   device_providers.push_back(new AdbDeviceProvider());
