@@ -283,12 +283,12 @@ public class LocationBarLayout extends FrameLayout
                 UiUtils.hideKeyboard(mUrlBar);
                 final String urlText = mUrlCoordinator.getTextWithAutocomplete();
                 if (mNativeInitialized) {
-                    findMatchAndLoadUrl(urlText);
+                    findMatchAndLoadUrl(urlText, event.getEventTime());
                 } else {
                     mDeferredNativeRunnables.add(new Runnable() {
                         @Override
                         public void run() {
-                            findMatchAndLoadUrl(urlText);
+                            findMatchAndLoadUrl(urlText, event.getEventTime());
                         }
                     });
                 }
@@ -314,7 +314,7 @@ public class LocationBarLayout extends FrameLayout
             return false;
         }
 
-        private void findMatchAndLoadUrl(String urlText) {
+        private void findMatchAndLoadUrl(String urlText, long inputStart) {
             int suggestionMatchPosition;
             OmniboxSuggestion suggestionMatch;
             boolean skipOutOfBoundsCheck = false;
@@ -350,7 +350,8 @@ public class LocationBarLayout extends FrameLayout
 
             String suggestionMatchUrl = updateSuggestionUrlIfNeeded(suggestionMatch,
                         suggestionMatchPosition, skipOutOfBoundsCheck);
-            loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestionMatchPosition, suggestionMatch);
+            loadUrlFromOmniboxMatch(
+                    suggestionMatchUrl, suggestionMatchPosition, suggestionMatch, inputStart);
         }
     }
 
@@ -1325,6 +1326,8 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionList.setAdapter(mSuggestionListAdapter);
         mSuggestionList.setClipToPadding(false);
         mSuggestionListAdapter.setSuggestionDelegate(new OmniboxSuggestionDelegate() {
+            private long mLastActionUpTimestamp;
+
             @Override
             public void onSelection(OmniboxSuggestion suggestion, int position) {
                 if (mShowCachedZeroSuggestResults && !mNativeInitialized) {
@@ -1338,7 +1341,8 @@ public class LocationBarLayout extends FrameLayout
                 }
                 String suggestionMatchUrl = updateSuggestionUrlIfNeeded(
                         suggestion, position, false);
-                loadUrlFromOmniboxMatch(suggestionMatchUrl, position, suggestion);
+                loadUrlFromOmniboxMatch(
+                        suggestionMatchUrl, position, suggestion, mLastActionUpTimestamp);
                 hideSuggestions();
                 UiUtils.hideKeyboard(mUrlBar);
             }
@@ -1378,6 +1382,11 @@ public class LocationBarLayout extends FrameLayout
             @Override
             public void onGestureDown() {
                 stopAutocomplete(false);
+            }
+
+            @Override
+            public void onGestureUp(long timestamp) {
+                mLastActionUpTimestamp = timestamp;
             }
 
             @Override
@@ -1559,7 +1568,7 @@ public class LocationBarLayout extends FrameLayout
         String queryUrl = TemplateUrlService.getInstance().getUrlForSearchQuery(query);
 
         if (!TextUtils.isEmpty(queryUrl)) {
-            loadUrl(queryUrl, PageTransition.GENERATED);
+            loadUrl(queryUrl, PageTransition.GENERATED, 0);
         } else {
             setSearchQuery(query);
         }
@@ -1838,7 +1847,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     private void loadUrlFromOmniboxMatch(
-            String url, int matchPosition, OmniboxSuggestion suggestion) {
+            String url, int matchPosition, OmniboxSuggestion suggestion, long inputStart) {
         // loadUrl modifies AutocompleteController's state clearing the native
         // AutocompleteResults needed by onSuggestionsSelected. Therefore,
         // loadUrl should should be invoked last.
@@ -1880,19 +1889,19 @@ public class LocationBarLayout extends FrameLayout
 
             transition = PageTransition.LINK;
         }
-        loadUrl(url, transition);
+        loadUrl(url, transition, inputStart);
     }
 
     @Override
     public void loadUrlFromVoice(String url) {
-        loadUrl(url, PageTransition.TYPED);
+        loadUrl(url, PageTransition.TYPED, 0);
     }
 
     /**
      * Load the url given with the given transition. Exposed for child classes to overwrite as
      * necessary.
      */
-    protected void loadUrl(String url, int transition) {
+    protected void loadUrl(String url, int transition, long inputStart) {
         Tab currentTab = getCurrentTab();
 
         // The code of the rest of this class ensures that this can't be called until the native
@@ -1914,6 +1923,9 @@ public class LocationBarLayout extends FrameLayout
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
+            if (inputStart != 0) {
+                loadUrlParams.setInputStartTimestamp(inputStart);
+            }
 
             // If the bottom sheet exists, route the navigation through it instead of the tab.
             if (mBottomSheet != null) {

@@ -273,6 +273,9 @@ class SuggestionView extends ViewGroup {
         // Whenever the suggestion dropdown is touched, we dispatch onGestureDown which is
         // used to let autocomplete controller know that it should stop updating suggestions.
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) mSuggestionDelegate.onGestureDown();
+        if (ev.getActionMasked() == MotionEvent.ACTION_UP) {
+            mSuggestionDelegate.onGestureUp(ev.getEventTime());
+        }
         return super.dispatchTouchEvent(ev);
     }
 

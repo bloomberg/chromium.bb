@@ -566,7 +566,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     jboolean is_renderer_initiated,
     jboolean should_replace_current_entry,
     jboolean has_user_gesture,
-    jboolean should_clear_history_list) {
+    jboolean should_clear_history_list,
+    jlong input_start_timestamp) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -629,6 +630,10 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     load_params.should_replace_current_entry = should_replace_current_entry;
     load_params.has_user_gesture = has_user_gesture;
     load_params.should_clear_history_list = should_clear_history_list;
+    if (input_start_timestamp != 0) {
+      load_params.input_start =
+          base::TimeTicks::FromUptimeMillis(input_start_timestamp);
+    }
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;
