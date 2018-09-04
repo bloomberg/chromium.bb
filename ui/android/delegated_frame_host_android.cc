@@ -512,7 +512,6 @@ void DelegatedFrameHostAndroid::DidNavigate() {
     return;
 
   first_local_surface_id_after_navigation_ = pending_local_surface_id_;
-  received_frame_after_navigation_ = false;
 }
 
 }  // namespace ui

@@ -238,7 +238,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
-  bool received_frame_after_navigation_ = false;
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>
       pending_first_frame_requests_;
