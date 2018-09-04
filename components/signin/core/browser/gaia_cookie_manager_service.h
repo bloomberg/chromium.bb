@@ -14,6 +14,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -97,6 +98,12 @@ class GaiaCookieManagerService : public KeyedService,
     // GoogleServiceAuthError::AuthErrorNone() then the merge succeeded.
     virtual void OnAddAccountToCookieCompleted(
         const std::string& account_id,
+        const GoogleServiceAuthError& error) {}
+
+    // Called whenever setting cookies is completed. If |error| is equal to
+    // GoogleServiceAuthError::AuthErrorNone() then the call succeeded although
+    // there still might be some cookies that failed to be set.
+    virtual void OnSetAccountsInCookieCompleted(
         const GoogleServiceAuthError& error) {}
 
     // Called whenever a logout is completed. If |error| is equal to
@@ -239,6 +246,9 @@ class GaiaCookieManagerService : public KeyedService,
   void SignalComplete(const std::string& account_id,
                       const GoogleServiceAuthError& error);
 
+  // Call observers when setting accounts in cookie completes.
+  void SignalSetAccountsComplete(const GoogleServiceAuthError& error);
+
   // Returns true of there are pending log ins or outs.
   bool is_running() const { return requests_.size() > 0; }
 
@@ -296,6 +306,14 @@ class GaiaCookieManagerService : public KeyedService,
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
+
+  // Final call in the Setting accounts in cookie procedure.
+  void OnSetAccountsFinished(const GoogleServiceAuthError& error);
+
+  // Callback for CookieManager::SetCanonicalCookie.
+  void OnCookieSet(const std::string& cookie_name,
+                   const std::string& cookie_domain,
+                   bool success);
 
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(const std::string& account_id,
@@ -360,6 +378,10 @@ class GaiaCookieManagerService : public KeyedService,
   // The access token that can be used to prime the UberToken fetch.
   std::string access_token_;
 
+  // List of pairs (cookie name and cookie domain) that have to be set in
+  // cookie jar.
+  std::set<std::pair<std::string, std::string>> cookies_to_set_;
+
   // Connection to the CookieManager that signals when the GAIA cookies change.
   mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
 
@@ -390,6 +412,8 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Counter for list account requests.
   int list_accounts_request_counter_;
+
+  base::WeakPtrFactory<GaiaCookieManagerService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

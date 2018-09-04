@@ -648,6 +648,20 @@ bool AccountReconcilor::IsTokenServiceReady() {
 #endif
 }
 
+void AccountReconcilor::OnSetAccountsInCookieCompleted(
+    const GoogleServiceAuthError& error) {
+  VLOG(1) << "AccountReconcilor::OnSetAccountsInCookieCompleted: "
+          << "Error was " << error.ToString();
+  if (is_reconcile_started_) {
+    if (error.state() != GoogleServiceAuthError::State::NONE &&
+        !error_during_last_reconcile_.IsPersistentError()) {
+      error_during_last_reconcile_ = error;
+    }
+    CalculateIfReconcileIsDone();
+    ScheduleStartReconcileIfChromeAccountsChanged();
+  }
+}
+
 void AccountReconcilor::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
