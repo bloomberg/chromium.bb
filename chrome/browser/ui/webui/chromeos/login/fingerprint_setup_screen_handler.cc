@@ -60,10 +60,7 @@ FingerprintSetupScreenHandler::FingerprintSetupScreenHandler()
   fp_service_->AddFingerprintObserver(std::move(observer));
 }
 
-FingerprintSetupScreenHandler::~FingerprintSetupScreenHandler() {
-  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetInteger(
-      prefs::kQuickUnlockFingerprintRecord, enrolled_finger_count_);
-}
+FingerprintSetupScreenHandler::~FingerprintSetupScreenHandler() = default;
 
 void FingerprintSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -137,6 +134,11 @@ void FingerprintSetupScreenHandler::OnEnrollScanDone(
     ++enrolled_finger_count_;
     CallJS("enableAddAnotherFinger",
            enrolled_finger_count_ < kMaxAllowedFingerprints);
+
+    // Update the number of registered fingers, it's fine to override because
+    // this is the first time user log in and have no finger registered.
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetInteger(
+        prefs::kQuickUnlockFingerprintRecord, enrolled_finger_count_);
   }
 }
 
