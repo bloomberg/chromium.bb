@@ -441,8 +441,8 @@ const base::Feature kTopDocumentIsolation{"top-document-isolation",
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first
 // event’s ACK is not canceled.
-const base::Feature kTouchpadAsyncPinchEvents{
-    "TouchpadAsyncPinchEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experimental simple user-activation model where the user gesture state is
 // tracked through a frame-based state instead of the gesture tokens we use
