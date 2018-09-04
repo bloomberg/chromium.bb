@@ -69,7 +69,8 @@ testcase.fileDisplayDrive = function() {
 testcase.fileDisplayDriveOffline = function() {
   var appId;
 
-  const driveFiles = [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos];
+  const driveFiles =
+      [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos, ENTRIES.testDocument];
 
   StepsRunner.run([
     // Open Files app on Drive with the given test files.
@@ -102,7 +103,7 @@ testcase.fileDisplayDriveOffline = function() {
     },
     // Check: these files should have 'available offline' CSS style.
     function(elements) {
-      chrome.test.assertEq(2, elements.length);
+      chrome.test.assertEq(3, elements.length);
 
       function checkRenderedInAvailableOfflineStyle(element, fileName) {
         chrome.test.assertEq(0, element.text.indexOf(fileName));
@@ -112,8 +113,11 @@ testcase.fileDisplayDriveOffline = function() {
       // Directories are shown as 'available offline'.
       checkRenderedInAvailableOfflineStyle(elements[0], 'photos');
 
+      // Hosted documents are shown as 'available offline'.
+      checkRenderedInAvailableOfflineStyle(elements[1], 'Test Document.gdoc');
+
       // Pinned files are shown as 'available offline'.
-      checkRenderedInAvailableOfflineStyle(elements[1], 'pinned');
+      checkRenderedInAvailableOfflineStyle(elements[2], 'pinned');
 
       this.next();
     },
