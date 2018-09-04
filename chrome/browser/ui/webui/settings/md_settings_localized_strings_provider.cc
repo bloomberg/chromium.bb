@@ -2659,6 +2659,11 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,
           GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
   html_source->AddString(
+      "multideviceNoHostText",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_NO_ELIGIBLE_HOSTS,
+          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+  html_source->AddString(
       "multideviceSmartLockItemSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY,

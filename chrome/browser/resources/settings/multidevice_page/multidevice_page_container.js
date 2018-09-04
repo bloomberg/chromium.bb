@@ -75,8 +75,6 @@ Polymer({
     return !newData.hostDeviceName === noHostModes.includes(newData.mode);
   },
 
-  // TODO(jordynass): Delete the check for an eligible host when the no host
-  // mode is added in accordance with the mocks.
   /**
    * @return {boolean}
    * @private
@@ -84,8 +82,6 @@ Polymer({
   computeDoesChromebookSupportMultiDeviceFeatures: function() {
     return !!this.pageContentData &&
         this.isFeatureSupported(
-            settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE) &&
-        this.pageContentData.mode !=
-        settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
+            settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE);
   },
 });

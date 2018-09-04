@@ -29,8 +29,8 @@
         <div id="multidevice-item"
             class="settings-box two-line"
             on-click="handleItemClick_"
-            actionable$="[[isHostSet]]">
-          <template is="dom-if" if="[[isHostSet]]" restamp>
+            actionable$="[[doesClickOpenSubpage_(pageContentData)]]">
+          <template is="dom-if" if="[[isHostSet(pageContentData)]]" restamp>
             <iron-icon icon=
                 "[[getIconName(MultiDeviceFeature.BETTER_TOGETHER_SUITE)]]">
             </iron-icon>
@@ -42,13 +42,19 @@
                 inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
             </div>
           </div>
-          <template is="dom-if" if="[[isHostSet]]" restamp>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="[[getLabelText_(pageContentData)]]"
-                  aria-describedby="mutltideviceSubLabel"></button>
-            </paper-icon-button-light>
+          <template is="dom-if"
+              if="[[shouldShowSeparatorAndSubpageArrow_(pageContentData)]]"
+              restamp>
+            <template is="dom-if"
+                if="[[doesClickOpenSubpage_(pageContentData)]]"
+                restamp>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-label="[[getLabelText_(pageContentData)]]"
+                    aria-describedby="mutltideviceSubLabel"></button>
+              </paper-icon-button-light>
+            </template>
+            <div class="separator"></div>
           </template>
-          <div class="separator"></div>
           <template is="dom-if"
               if="[[shouldShowButton_(pageContentData)]]"
               restamp>
