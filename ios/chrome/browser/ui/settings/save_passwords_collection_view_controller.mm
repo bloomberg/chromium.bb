@@ -763,6 +763,7 @@ blacklistedFormItemWithText:(NSString*)text
           password_manager::features::kPasswordExport)) {
     [self setExportPasswordsButtonEnabled:NO];
   }
+  [self setSearchPasswordsItemEnabled:NO];
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
@@ -775,6 +776,7 @@ blacklistedFormItemWithText:(NSString*)text
       [self setExportPasswordsButtonEnabled:YES];
     }
   }
+  [self setSearchPasswordsItemEnabled:YES];
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -1047,6 +1049,25 @@ blacklistedFormItemWithText:(NSString*)text
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];
+}
+
+// Sets the search passwords item's enabled status to |enabled| and
+// reconfigures the corresponding cell.
+- (void)setSearchPasswordsItemEnabled:(BOOL)enabled {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  if (![model hasItemForItemType:ItemTypeSearchBox
+               sectionIdentifier:SectionIdentifierSearchPasswordsBox]) {
+    return;
+  }
+  NSIndexPath* itemPath =
+      [model indexPathForItemType:ItemTypeSearchBox
+                sectionIdentifier:SectionIdentifierSearchPasswordsBox];
+  SettingsSearchItem* searchItem =
+      base::mac::ObjCCastStrict<SettingsSearchItem>(
+          [model itemAtIndexPath:itemPath]);
+  [searchItem setEnabled:enabled];
+  [self reconfigureCellsForItems:@[ searchItem ]];
 }
 
 #pragma mark - Testing

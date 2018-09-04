@@ -106,6 +106,11 @@ GREYElementInteraction* GetInteractionForPasswordDetailItem(
                                @"PasswordDetailsCollectionViewController")];
 }
 
+// Matcher for a UITextField inside a SettingsSearchCell.
+id<GREYMatcher> SearchTextField() {
+  return grey_accessibilityID(@"SettingsSearchCellTextField");
+}
+
 id<GREYMatcher> SiteHeader() {
   return grey_allOf(
       grey_accessibilityLabel(
@@ -337,6 +342,38 @@ void SaveExamplePasswordForm() {
   example.origin = GURL("https://example.com");
   example.signon_realm = example.origin.spec();
   SaveToPasswordStore(example);
+}
+
+// Saves two example forms in the store.
+void SaveExamplePasswordForms() {
+  PasswordForm example1;
+  example1.username_value = base::ASCIIToUTF16("user1");
+  example1.password_value = base::ASCIIToUTF16("password1");
+  example1.origin = GURL("https://example11.com");
+  example1.signon_realm = example1.origin.spec();
+  SaveToPasswordStore(example1);
+
+  PasswordForm example2;
+  example2.username_value = base::ASCIIToUTF16("user2");
+  example2.password_value = base::ASCIIToUTF16("password2");
+  example2.origin = GURL("https://example12.com");
+  example2.signon_realm = example2.origin.spec();
+  SaveToPasswordStore(example2);
+}
+
+// Saves two example blacklisted forms in the store.
+void SaveExampleBlacklistedForms() {
+  PasswordForm blacklisted1;
+  blacklisted1.origin = GURL("https://exclude1.com");
+  blacklisted1.signon_realm = blacklisted1.origin.spec();
+  blacklisted1.blacklisted_by_user = true;
+  SaveToPasswordStore(blacklisted1);
+
+  PasswordForm blacklisted2;
+  blacklisted2.origin = GURL("https://exclude2.com");
+  blacklisted2.signon_realm = blacklisted2.origin.spec();
+  blacklisted2.blacklisted_by_user = true;
+  SaveToPasswordStore(blacklisted2);
 }
 
 // Removes all credentials stored.
@@ -1578,6 +1615,87 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                    IDS_IOS_EXPORT_PASSWORDS)]
       assertWithMatcher:grey_not(grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled))];
+}
+
+// Test that user can type text in search field and that it filters out the
+// passwords and blacklisted items.
+- (void)testSearchPasswords {
+  SaveExamplePasswordForms();
+  SaveExampleBlacklistedForms();
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"exclude1.com")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"exclude2.com")
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      performAction:grey_typeText(@"2")];
+
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"exclude1.com")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"exclude2.com")
+      assertWithMatcher:grey_notNil()];
+}
+
+// Test that user can't search passwords while in edit mode.
+- (void)testCantSearchPasswordsWhileInEditMode {
+  SaveExamplePasswordForms();
+
+  OpenPasswordSettings();
+  TapEdit();
+
+  // Verify search bar is disabled.
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      assertWithMatcher:grey_not(grey_enabled())];
+}
+
+// Test that the user can edit a password that is part of search results.
+- (void)testCanEditPasswordsFromASearch {
+  SaveExamplePasswordForms();
+  OpenPasswordSettings();
+
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      performAction:grey_typeText(@"2")];
+
+  TapEdit();
+
+  // Select password entry to be edited.
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      performAction:grey_tap()];
+
+  // Delete it
+  [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
+      performAction:grey_tap()];
+
+  // Filter results in nothing.
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      assertWithMatcher:grey_nil()];
+
+  // Get out of edit mode.
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Remove filter search term.
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      performAction:grey_clearText()];
+
+  // Only password 1 should show.
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      assertWithMatcher:grey_nil()];
 }
 
 @end
