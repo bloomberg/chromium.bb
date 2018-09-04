@@ -56,7 +56,10 @@ Polymer({
     },
 
     /** @private {boolean} */
-    showPasswordPromptDialog_: {type: Boolean, value: false},
+    showPasswordPromptDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
@@ -80,7 +83,7 @@ Polymer({
    * @private
    */
   getMultiDeviceItemLabelBlockCssClass_: function() {
-    return this.isHostSet ? 'middle' : 'start';
+    return this.isHostSet() ? 'middle' : 'start';
   },
 
   /**
@@ -98,6 +101,8 @@ Polymer({
    */
   getSubLabelInnerHtml_: function() {
     switch (this.pageContentData.mode) {
+      case settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS:
+        return this.i18nAdvanced('multideviceNoHostText');
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18nAdvanced('multideviceSetupSummary');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
@@ -132,8 +137,11 @@ Polymer({
    * @private
    */
   shouldShowButton_: function() {
-    return this.pageContentData.mode !==
-        settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+    return [
+      settings.MultiDeviceSettingsMode.NO_HOST_SET,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+    ].includes(this.pageContentData.mode);
   },
 
   /**
@@ -145,10 +153,27 @@ Polymer({
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
+  /**
+   * Whether to show the separator bar and, if the state calls for a chevron
+   * (a.k.a. subpage arrow) routing to the subpage, the chevron.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSeparatorAndSubpageArrow_: function() {
+    return this.pageContentData.mode !==
+        settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  doesClickOpenSubpage_: function() {
+    return this.isHostSet();
+  },
+
   /** @private */
   handleItemClick_: function() {
-    if (!this.isHostSet)
-      return;
     settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
   },
 

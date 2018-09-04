@@ -23,15 +23,6 @@ const MultiDeviceFeatureBehaviorImpl = {
       type: Object,
       value: settings.MultiDeviceFeature,
     },
-
-    /**
-     * Whether a host phone has been set by the user (not necessarily verified).
-     * @type {boolean}
-     */
-    isHostSet: {
-      type: Boolean,
-      computed: 'computeIsHostSet(pageContentData)',
-    },
   },
 
   /**
@@ -150,8 +141,11 @@ const MultiDeviceFeatureBehaviorImpl = {
     }
   },
 
-  /** @private */
-  computeIsHostSet: function() {
+  /**
+   * Whether a host phone has been set by the user (not necessarily verified).
+   * @return {boolean}
+   */
+  isHostSet: function() {
     return [
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
