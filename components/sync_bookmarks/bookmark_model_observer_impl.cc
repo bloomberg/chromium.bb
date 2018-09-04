@@ -31,12 +31,12 @@ BookmarkModelObserverImpl::~BookmarkModelObserverImpl() = default;
 void BookmarkModelObserverImpl::BookmarkModelLoaded(
     bookmarks::BookmarkModel* model,
     bool ids_reassigned) {
-  // This class ins't responsible for any loading-related logic.
+  // This class isn't responsible for any loading-related logic.
 }
 
 void BookmarkModelObserverImpl::BookmarkModelBeingDeleted(
     bookmarks::BookmarkModel* model) {
-  NOTIMPLEMENTED();
+  // This class isn't responsible for any deletion-related logic.
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeMoved(
