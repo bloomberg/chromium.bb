@@ -39,7 +39,6 @@ Polymer({
     authToken_: {
       type: String,
       value: '',
-      observer: 'authTokenChanged_',
     },
 
     /**
