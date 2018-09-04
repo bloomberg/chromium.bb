@@ -16,10 +16,6 @@ const TREEITEM_C = TREEITEM_B + '[entry-label="C"] ';
 const TREEITEM_D = TREEITEM_DRIVE + ' [entry-label="D"] ';
 const TREEITEM_E = TREEITEM_D + '[entry-label="E"] ';
 
-const EXPAND_ICON = '> .tree-row > .expand-icon';
-const ITEM_ICON = '> .tree-row > .item-icon';
-const EXPANDED_SUBTREE = '> .tree-children[expanded]';
-
 /**
  * Entry set used for the folder shortcut tests.
  * @type {Array<TestEntryInfo>}
@@ -35,7 +31,7 @@ const FOLDER_ENTRY_SET = [
 
 /**
  * Constants for each folder.
- * @type {Array<Object>}
+ * @type {Object}
  */
 const DIRECTORY = {
   Drive: {
@@ -96,25 +92,24 @@ function openWindows() {
 
 /**
  * Expands tree item on the directory tree by clicking expand icon.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} directory Directory whose tree item should be expanded.
  * @return {Promise} Promise fulfilled on success.
  */
 function expandTreeItem(windowId, directory) {
-  return remoteCall.waitForElement(
-      windowId, directory.treeItem + EXPAND_ICON).then(function() {
-    return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, [directory.treeItem + EXPAND_ICON]);
+  const expand = directory.treeItem + '> .tree-row > .expand-icon';
+  return remoteCall.waitForElement(windowId, expand).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId, [expand]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElement(windowId,
-                                     directory.treeItem + EXPANDED_SUBTREE);
+    const expandedSubtree = directory.treeItem + '> .tree-children[expanded]';
+    return remoteCall.waitForElement(windowId, expandedSubtree);
   });
 }
 
 /**
  * Expands whole directory tree.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @return {Promise} Promise fulfilled on success.
  */
 function expandDirectoryTree(windowId) {
@@ -129,15 +124,14 @@ function expandDirectoryTree(windowId) {
 
 /**
  * Makes |directory| the current directory.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} directory Directory which should be a current directory.
  * @return {Promise} Promise fulfilled on success.
  */
 function navigateToDirectory(windowId, directory) {
-  return remoteCall.waitForElement(
-      windowId, directory.treeItem + ITEM_ICON).then(function() {
-    return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, [directory.treeItem + ITEM_ICON]);
+  const icon = directory.treeItem + '> .tree-row > .item-icon';
+  return remoteCall.waitForElement(windowId, icon).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId, [icon]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForFiles(windowId, directory.contents);
@@ -147,7 +141,7 @@ function navigateToDirectory(windowId, directory) {
 /**
  * Creates folder shortcut to |directory|.
  * The current directory must be a parent of the |directory|.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} directory Directory of shortcut to be created.
  * @return {Promise} Promise fulfilled on success.
  */
@@ -180,7 +174,7 @@ function createShortcut(windowId, directory) {
 /**
  * Removes folder shortcut to |directory|.
  * The current directory must be a parent of the |directory|.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} directory Directory of shortcut ot be removed.
  * @return {Promise} Promise fullfilled on success.
  */
@@ -218,7 +212,7 @@ function removeShortcut(windowId, directory) {
 /**
  * Waits until the current directory become |currentDir| and folder shortcut to
  * |shortcutDir| is selected.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} currentDir Directory which should be a current directory.
  * @param {Object} shortcutDir Directory whose shortcut should be selected.
  * @return {Promise} Promise fullfilled on success.
@@ -233,7 +227,7 @@ function expectSelection(windowId, currentDir, shortcutDir) {
 
 /**
  * Clicks folder shortcut to |directory|.
- * @param {string} windowId ID of target window.
+ * @param {string} windowId Target windowId.
  * @param {Object} directory Directory whose shortcut will be clicked.
  * @return {Promise} Promise fullfilled with result of fakeMouseClick.
  */
