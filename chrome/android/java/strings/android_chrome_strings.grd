@@ -670,12 +670,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH_SUGGESTIONS_SUMMARY" desc="Summary for search and url suggestions.">
         Use a prediction service to show related queries and popular websites as you type in the address bar
       </message>
-      <message name="IDS_SEARCH_SITE_SUGGESTIONS_TITLE" desc="Title for search and site suggestions.">
-        Search and site suggestions
-      </message>
-      <message name="IDS_SEARCH_SITE_SUGGESTIONS_SUMMARY" desc="Summary for search and site suggestions.">
-        Use prediction services to suggest search terms and websites
-      </message>
       <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_TITLE" desc="Title for checkbox that controls whether details of possible security incidents will be sent to Google.">
         Security incidents
       </message>

@@ -2406,21 +2406,6 @@
             ]
         }
     ],
-    "NTPArticleSuggestionsExpandableHeader": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NTPArticleSuggestionsExpandableHeader"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPBirthdayFeatures": [
         {
             "platforms": [

@@ -2366,12 +2366,6 @@ const char kEnableContentSuggestionsNewFaviconServerDescription[] =
     "If enabled, the content suggestions (on the NTP) will get favicons from a "
     "new favicon server.";
 
-const char kEnableContentSuggestionsSettingsName[] =
-    "Show content suggestions settings.";
-const char kEnableContentSuggestionsSettingsDescription[] =
-    "If enabled, the content suggestions settings will be available from the "
-    "main settings menu.";
-
 const char kEnableContentSuggestionsThumbnailDominantColorName[] =
     "Use content suggestions thumbnail dominant color.";
 const char kEnableContentSuggestionsThumbnailDominantColorDescription[] =
@@ -2404,12 +2398,6 @@ const char kEnableOmniboxClipboardProviderName[] =
 const char kEnableOmniboxClipboardProviderDescription[] =
     "Provide a suggestion of the URL stored in the clipboard (if any) upon "
     "focus in the omnibox.";
-
-const char kEnableNtpArticleSuggestionsExpandableHeaderName[] =
-    "Show article suggestions expandable header on New Tab Page";
-const char kEnableNtpArticleSuggestionsExpandableHeaderDescription[] =
-    "If enabled, the article suggestions content on New Tab Page can be "
-    "toggled shown or hidden by clicking the expandable header.";
 
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";

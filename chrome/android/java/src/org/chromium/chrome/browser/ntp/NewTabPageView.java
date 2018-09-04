@@ -17,14 +17,12 @@ import android.widget.FrameLayout;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
@@ -40,6 +38,8 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  */
 public class NewTabPageView extends FrameLayout {
     private static final String TAG = "NewTabPageView";
+
+    private final int mScrollToSuggestionsOffset;
 
     private NewTabPageRecyclerView mRecyclerView;
 
@@ -92,6 +92,9 @@ public class NewTabPageView extends FrameLayout {
      */
     public NewTabPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        mScrollToSuggestionsOffset =
+                getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
 
         mRecyclerView = new NewTabPageRecyclerView(getContext());
 
@@ -327,7 +330,7 @@ public class NewTabPageView extends FrameLayout {
                 @Override
                 public void onPageLoadFinished(Tab tab) {
                     mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                            scrollPosition, getScrollToSuggestionsOffset());
+                            scrollPosition, mScrollToSuggestionsOffset);
                     mTab.removeObserver(this);
                 }
             });
@@ -335,7 +338,7 @@ public class NewTabPageView extends FrameLayout {
         }
 
         mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                scrollPosition, getScrollToSuggestionsOffset());
+                scrollPosition, mScrollToSuggestionsOffset);
     }
 
     /**
@@ -345,46 +348,7 @@ public class NewTabPageView extends FrameLayout {
      */
     private int getSuggestionsScrollPosition() {
         // Header always exists.
-        if (ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)) {
-            return mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
-        }
-
-        // Only articles are visible. Headers are not present.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)) {
-            return mRecyclerView.getNewTabPageAdapter().getFirstSnippetPosition();
-        }
-
-        // With Simplified NTP not enabled, bookmarks/downloads and their headers are added to the
-        // NTP if they're not empty.
-        int scrollPosition = mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
-        return scrollPosition == RecyclerView.NO_POSITION
-                ? mRecyclerView.getNewTabPageAdapter().getFirstSnippetPosition()
-                : scrollPosition;
-    }
-
-    private int getScrollToSuggestionsOffset() {
-        int offset = getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
-
-        if (needsExtraOffset()) {
-            offset += getResources().getDimensionPixelSize(
-                              R.dimen.content_suggestions_card_modern_margin)
-                    / 2;
-        }
-        return offset;
-    }
-
-    /**
-     * Checks if extra offset needs to be added for aesthetic reasons.
-     * @return True if modern is enabled (and space exists between each suggestion card) and no
-     *         header is showing.
-     */
-    private boolean needsExtraOffset() {
-        return SuggestionsConfig.useModernLayout()
-                && !ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
-                && mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition()
-                == RecyclerView.NO_POSITION;
+        return mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
     }
 
     /**

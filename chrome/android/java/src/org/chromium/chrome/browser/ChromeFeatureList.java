@@ -182,7 +182,6 @@ public abstract class ChromeFeatureList {
             "ContentSuggestionsNotifications";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
             "ContentSuggestionsScrollToLoad";
-    public static final String CONTENT_SUGGESTIONS_SETTINGS = "ContentSuggestionsSettings";
     public static final String CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR =
             "ContentSuggestionsThumbnailDominantColor";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
@@ -242,8 +241,6 @@ public abstract class ChromeFeatureList {
 
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
     public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";
-    public static final String NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER =
-            "NTPArticleSuggestionsExpandableHeader";
     public static final String NTP_BUTTON = "NTPButton";
     public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";

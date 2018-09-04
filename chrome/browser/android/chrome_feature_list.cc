@@ -92,7 +92,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeModernFullRoll,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
-    &kContentSuggestionsSettings,
     &kContentSuggestionsThumbnailDominantColor,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
@@ -150,7 +149,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsSingleAppUiSkip,
     &language::kExplicitLanguageAsk,
     &media::kCafMediaRouterImpl,
-    &ntp_snippets::kArticleSuggestionsExpandableHeader,
     &ntp_snippets::kArticleSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
@@ -251,9 +249,6 @@ const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kContentSuggestionsSettings{
-    "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsThumbnailDominantColor{
     "ContentSuggestionsThumbnailDominantColor",

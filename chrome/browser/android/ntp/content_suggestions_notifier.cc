@@ -35,8 +35,6 @@ bool IsAutoOptOutEnabled() {
 
 bool ContentSuggestionsNotifier::ShouldSendNotifications(PrefService* prefs) {
   // Notifications are blocked when the suggested articles list is hidden.
-  // The user can hide the list when kArticleSuggestionsExpandableHeader feature
-  // is enabled.
   if (!prefs->GetBoolean(ntp_snippets::prefs::kArticlesListVisible)) {
     return false;
   }

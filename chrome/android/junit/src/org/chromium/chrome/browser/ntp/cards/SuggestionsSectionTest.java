@@ -47,7 +47,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
@@ -64,8 +63,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -84,7 +81,6 @@ import java.util.TreeSet;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@DisableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
 public class SuggestionsSectionTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -335,7 +331,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testExpandableHeaderNoSuggestions() {
         // Set to the collapsed state initially.
         when(mPrefServiceBridge.getBoolean(eq(EXPANDABLE_HEADER_PREF))).thenReturn(false);
@@ -366,7 +361,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testExpandableHeaderWithSuggestions() {
         // Set to the expanded state initially.
         when(mPrefServiceBridge.getBoolean(eq(EXPANDABLE_HEADER_PREF))).thenReturn(true);
