@@ -141,38 +141,6 @@ imageset("tabstrip_new_tab_pressed_legacy") {
   ]
 }
 
-imageset("tabstrip_tab_close") {
-  sources = [
-    "tabstrip_tab_close.imageset/Contents.json",
-    "tabstrip_tab_close.imageset/tabstrip_tab_close@2x~ipad.png",
-    "tabstrip_tab_close.imageset/tabstrip_tab_close~ipad.png",
-  ]
-}
-
-imageset("tabstrip_tab_close_incognito") {
-  sources = [
-    "tabstrip_tab_close_incognito.imageset/Contents.json",
-    "tabstrip_tab_close_incognito.imageset/tabstrip_tab_close_incognito@2x~ipad.png",
-    "tabstrip_tab_close_incognito.imageset/tabstrip_tab_close_incognito~ipad.png",
-  ]
-}
-
-imageset("tabstrip_tab_close_incognito_pressed") {
-  sources = [
-    "tabstrip_tab_close_incognito_pressed.imageset/Contents.json",
-    "tabstrip_tab_close_incognito_pressed.imageset/tabstrip_tab_close_incognito_pressed@2x~ipad.png",
-    "tabstrip_tab_close_incognito_pressed.imageset/tabstrip_tab_close_incognito_pressed~ipad.png",
-  ]
-}
-
-imageset("tabstrip_tab_close_pressed") {
-  sources = [
-    "tabstrip_tab_close_pressed.imageset/Contents.json",
-    "tabstrip_tab_close_pressed.imageset/tabstrip_tab_close_pressed@2x~ipad.png",
-    "tabstrip_tab_close_pressed.imageset/tabstrip_tab_close_pressed~ipad.png",
-  ]
-}
-
 imageset("tabstrip_tab_close_legacy") {
   sources = [
     "tabstrip_tab_close_legacy.imageset/Contents.json",
