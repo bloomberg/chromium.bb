@@ -16589,6 +16589,7 @@ Called by update_net_error_codes.py.-->
       label="ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO"/>
   <int value="1272"
       label="FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER"/>
+  <int value="1273" label="AUTOTESTPRIVATE_SETCROSTINIENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">

@@ -174,5 +174,10 @@ namespace autotestPrivate {
     // crostini is not already installed.
     // |callback|: Called when the operation has completed.
     static void runCrostiniInstaller(VoidCallback callback);
+
+    // Enable/disable Crostini in preferences.
+    // |enabled|: Enable Crostini.
+    // |callback|: Called when the operation has completed.
+    static void setCrostiniEnabled(boolean enabled, VoidCallback callback);
   };
 };
