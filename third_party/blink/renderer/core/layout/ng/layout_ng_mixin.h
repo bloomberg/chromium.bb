@@ -78,10 +78,6 @@ class LayoutNGMixin : public Base {
       scoped_refptr<const NGPhysicalFragment>,
       NGPhysicalOffset) final;
 
-  void DirtyLinesFromChangedChild(
-      LayoutObject* child,
-      MarkingBehavior marking_behaviour = kMarkContainerChain) final;
-
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
