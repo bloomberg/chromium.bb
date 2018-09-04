@@ -5,9 +5,13 @@
 #ifndef COMPONENTS_FEED_CONTENT_FEED_OFFLINE_HOST_H_
 #define COMPONENTS_FEED_CONTENT_FEED_OFFLINE_HOST_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 
@@ -33,6 +37,32 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
                   offline_pages::PrefetchService* prefetch_service,
                   FeedSchedulerHost* feed_scheduler_host);
   ~FeedOfflineHost() override;
+
+  // Synchronously returns the offline id of the given page. The host will only
+  // have knowledge of the page if it had previously returned status about it
+  // through GetOfflineState() or as a notification. Otherwise the caller will
+  // receive a false negative. Additionally, since the host tracks pages by
+  // hashing, there's also a small chance that the host erroneously returns an
+  // id for a page that is not offlined.
+  base::Optional<int64_t> GetOfflineId(std::string url);
+
+  // Asynchronously fetches offline status for the given URLs. Any pages that
+  // are currently offlined will be remembered by the FeedOfflineHost.
+  void GetOfflineStatus(
+      std::vector<std::string> urls,
+      base::OnceCallback<void(const std::vector<std::string>&)> callback);
+
+  // Should be called from Feed any time the user manually removes articles or
+  // groupings of articles. Propagates the signal to Prefetch.
+  void OnContentRemoved(std::vector<std::string> urls);
+
+  // Should be called from Feed any time new articles are fetched.
+  void OnNewContentReceived();
+
+  // Should be called from Feed side any time there are no active surfaces
+  // displaying articles and listening to our notifications. This signal is used
+  // to clear local tracking of offlined items.
+  void OnNoListeners();
 
   // offline_pages::SuggestionsProvider:
   void GetCurrentArticleSuggestions(

@@ -19,16 +19,13 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.concurrent.Executors;
 
-/**
- * Holds singleton {@link FeedProcessScope} and some of the scope's host implementations.
- */
+/** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
+    private static FeedOfflineIndicator sFeedOfflineIndicator;
 
-    /**
-     * @return The shared {@link FeedProcessScope} instance.
-     */
+    /** @return The shared {@link FeedProcessScope} instance. */
     public static FeedProcessScope getFeedProcessScope() {
         if (sFeedProcessScope == null) {
             initialize();
@@ -36,18 +33,24 @@ public class FeedProcessScopeFactory {
         return sFeedProcessScope;
     }
 
-    /**
-     * @return The {@link FeedSchedulerBridge} that was given to the {@link FeedProcessScope}.
-     */
-    public static FeedScheduler getFeedSchedulerBridge() {
+    /** @return The {@link FeedScheduler} that was given to the {@link FeedProcessScope}. */
+    public static FeedScheduler getFeedScheduler() {
         if (sFeedScheduler == null) {
             initialize();
         }
         return sFeedScheduler;
     }
 
+    /** @return The {@link FeedOfflineIndicator} that was given to the {@link FeedProcessScope}. */
+    public static FeedOfflineIndicator getFeedOfflineIndicator() {
+        if (sFeedOfflineIndicator == null) {
+            initialize();
+        }
+        return sFeedOfflineIndicator;
+    }
+
     private static void initialize() {
-        assert sFeedScheduler == null && sFeedProcessScope == null;
+        assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null;
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         Configuration configHostApi = createConfiguration();
 
@@ -64,6 +67,9 @@ public class FeedProcessScopeFactory {
                         .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
+
+        // TODO(skym): Pass on the KnownContentApi when the FeedProcessScope provides one.
+        sFeedOfflineIndicator = new FeedOfflineBridge(profile, null);
     }
 
     private static Configuration createConfiguration() {
@@ -76,16 +82,16 @@ public class FeedProcessScopeFactory {
     }
 
     /**
-     * Creates a {@link FeedProcessScope} using the provided {@link FeedScheduler} and
-     * {@link NetworkClient}. Call {@link #clearFeedProcessScopeForTesting()} to reset the
-     * FeedProcessScope after testing is complete.
+     * Creates a {@link FeedProcessScope} using the provided host implementations. Call {@link
+     * #clearFeedProcessScopeForTesting()} to reset the FeedProcessScope after testing is complete.
      *
      * @param feedScheduler A {@link FeedScheduler} to use for testing.
      * @param networkClient A {@link NetworkClient} to use for testing.
+     * @param feedOfflineIndicator A {@link FeedOfflineIndicator} to use for testing.
      */
     @VisibleForTesting
-    static void createFeedProcessScopeForTesting(
-            FeedScheduler feedScheduler, NetworkClient networkClient) {
+    static void createFeedProcessScopeForTesting(FeedScheduler feedScheduler,
+            NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator) {
         Configuration configHostApi = createConfiguration();
         FeedAppLifecycleListener lifecycleListener =
                 new FeedAppLifecycleListener(new ThreadUtils());
@@ -96,6 +102,7 @@ public class FeedProcessScopeFactory {
                                             lifecycleListener, DebugBehavior.SILENT,
                                             ContextUtils.getApplicationContext())
                                     .build();
+        sFeedOfflineIndicator = feedOfflineIndicator;
     }
 
     /** Resets the FeedProcessScope after testing is complete. */
@@ -105,7 +112,10 @@ public class FeedProcessScopeFactory {
             sFeedScheduler.destroy();
             sFeedScheduler = null;
         }
-
+        if (sFeedOfflineIndicator != null) {
+            sFeedOfflineIndicator.destroy();
+            sFeedOfflineIndicator = null;
+        }
         sFeedProcessScope = null;
     }
 }

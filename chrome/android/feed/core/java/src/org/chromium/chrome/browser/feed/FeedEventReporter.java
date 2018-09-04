@@ -4,17 +4,13 @@
 
 package org.chromium.chrome.browser.feed;
 
-/**
- * Provides static entry points to send notifications to Feed.
- */
+/** Provides static entry points to send notifications to Feed. */
 public final class FeedEventReporter {
-    // Not meant to be instantiated.
+    /** Not meant to be instantiated. */
     private FeedEventReporter() {}
 
-    /*
-     * Should be called when the browser is foregrounded.
-     */
+    /** Should be called when the browser is foregrounded. */
     public static void onBrowserForegrounded() {
-        FeedProcessScopeFactory.getFeedSchedulerBridge().onForegrounded();
+        FeedProcessScopeFactory.getFeedScheduler().onForegrounded();
     }
 }

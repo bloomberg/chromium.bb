@@ -36,7 +36,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
         mNativeBridge = nativeInit(profile);
     }
 
-    /** Cleans up the native half of this bridge. */
     @Override
     public void destroy() {
         assert mNativeBridge != 0;

@@ -63,7 +63,7 @@ public class FeedRefreshTask extends NativeBackgroundTask {
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        FeedProcessScopeFactory.getFeedSchedulerBridge().onFixedTimer(() -> {
+        FeedProcessScopeFactory.getFeedScheduler().onFixedTimer(() -> {
             // Regardless of success, mark ourselves as completed.
             callback.taskFinished(false);
         });
@@ -84,6 +84,6 @@ public class FeedRefreshTask extends NativeBackgroundTask {
     @Override
     public void reschedule(Context context) {
         ThreadUtils.runOnUiThread(
-                () -> { FeedProcessScopeFactory.getFeedSchedulerBridge().onTaskReschedule(); });
+                () -> { FeedProcessScopeFactory.getFeedScheduler().onTaskReschedule(); });
     }
 }
