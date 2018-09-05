@@ -34,10 +34,8 @@ class UrlPattern {
              proto::AnchorType anchor_left,
              proto::AnchorType anchor_right);
 
-  // The following constructors create UrlPattern from one of the UrlRule
-  // representations. The passed in |rule| must outlive the created instance.
+  // The passed in |rule| must outlive the created instance.
   explicit UrlPattern(const flat::UrlRule& rule);
-  explicit UrlPattern(const proto::UrlRule& rule);
 
   ~UrlPattern();
 
