@@ -125,7 +125,7 @@ function navigateToDirectory(appId, directory) {
 
 /**
  * Creates a folder shortcut to |directory| using the context menu. Note the
- * current directory should be a parent of the given |directory|.
+ * current directory must be a parent of the given |directory|.
  *
  * @param {string} appId Files app windowId.
  * @param {Object} directory Directory of shortcut to be created.
@@ -215,12 +215,14 @@ function expectSelection(appId, currentDir, shortcutDir) {
  *
  * @param {string} appId Files app windowId.
  * @param {Object} directory Directory whose shortcut will be clicked.
- * @return {Promise} Promise fulfilled with result of fakeMouseClick.
+ * @return {Promise} Promise fulfilled on success.
  */
 function clickShortcut(appId, directory) {
   const shortcut = directory.navItem;
   return remoteCall.waitForElement(appId, shortcut).then(function() {
     return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [shortcut]);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
   });
 }
 
@@ -259,8 +261,7 @@ testcase.traverseFolderShortcuts = function() {
     },
     // Check: current directory and selection should be the Drive root.
     function() {
-      expectSelection(
-          appId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
+      expectSelection(appId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
     },
     // Send Ctrl+3 key to file-list to select 3rd shortcut.
     function() {
