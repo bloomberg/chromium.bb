@@ -22,6 +22,36 @@ const uint16_t kStunBindingResponse = 0x0102;
 const uint16_t kStunBindingError = 0x0111;
 const uint32_t kStunMagicCookie = 0x2112A442;
 
+FakeP2PSocketDelegate::FakeP2PSocketDelegate() = default;
+FakeP2PSocketDelegate::~FakeP2PSocketDelegate() {
+  CHECK(destroyed_sockets_.empty());
+}
+
+void FakeP2PSocketDelegate::DestroySocket(P2PSocket* socket) {
+  destroyed_sockets_.insert(socket);
+}
+
+void FakeP2PSocketDelegate::DumpPacket(base::span<const uint8_t> data,
+                                       bool incoming) {}
+
+void FakeP2PSocketDelegate::AddAcceptedConnection(
+    std::unique_ptr<P2PSocket> accepted) {
+  accepted_.push_back(std::move(accepted));
+}
+
+void FakeP2PSocketDelegate::ExpectDestroyed(P2PSocket* socket) {
+  auto erased = destroyed_sockets_.erase(socket);
+  CHECK(erased);
+}
+
+std::unique_ptr<P2PSocket> FakeP2PSocketDelegate::pop_accepted_socket() {
+  if (accepted_.empty())
+    return nullptr;
+  auto result = std::move(accepted_.front());
+  accepted_.pop_front();
+  return result;
+}
+
 FakeSocket::FakeSocket(std::string* written_data)
     : read_pending_(false),
       input_pos_(0),

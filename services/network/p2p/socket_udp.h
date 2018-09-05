@@ -39,13 +39,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
   typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>(
       net::NetLog* net_log)>
       DatagramServerSocketFactory;
-  P2PSocketUdp(P2PSocketManager* socket_manager,
+  P2PSocketUdp(Delegate* delegate,
                mojom::P2PSocketClientPtr client,
                mojom::P2PSocketRequest socket,
                P2PMessageThrottler* throttler,
                net::NetLog* net_log,
                const DatagramServerSocketFactory& socket_factory);
-  P2PSocketUdp(P2PSocketManager* socket_manager,
+  P2PSocketUdp(Delegate* delegate,
                mojom::P2PSocketClientPtr client,
                mojom::P2PSocketRequest socket,
                P2PMessageThrottler* throttler,
@@ -53,15 +53,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
   ~P2PSocketUdp() override;
 
   // P2PSocket overrides.
-  bool Init(const net::IPEndPoint& local_address,
+  void Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
             const P2PHostAndIPEndPoint& remote_address) override;
 
   // mojom::P2PSocket implementation:
-  void AcceptIncomingTcpConnection(const net::IPEndPoint& remote_address,
-                                   mojom::P2PSocketClientPtr client,
-                                   mojom::P2PSocketRequest socket) override;
   void Send(const std::vector<int8_t>& data,
             const P2PPacketInfo& packet_info,
             const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -88,8 +85,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
     uint64_t id;
     const net::NetworkTrafficAnnotationTag traffic_annotation;
   };
-
-  void OnError();
 
   void DoRead();
   void OnRecv(int result);
