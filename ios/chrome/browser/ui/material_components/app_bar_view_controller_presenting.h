@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class MDCAppBarViewController;
+@class ChromeAppBarViewController;
 
 // An object conforming to this protocol is capable of creating and managing an
 // MDCAppBar. Typically, UIViewControllers can implement this protocol to
@@ -16,7 +16,7 @@
 
 // The installed app bar view controller, if any.
 @property(nonatomic, readonly, strong)
-    MDCAppBarViewController* appBarViewController;
+    ChromeAppBarViewController* appBarViewController;
 
 @end
 
