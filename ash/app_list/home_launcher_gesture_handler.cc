@@ -6,6 +6,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -13,6 +14,9 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/aura_constants.h"
@@ -70,8 +74,7 @@ bool CanProcessWindow(aura::Window* window,
   if (Shell::Get()->window_selector_controller()->IsSelecting())
     return false;
 
-  wm::WindowState* state = wm::GetWindowState(window);
-  return state->CanMaximize() && state->CanResize();
+  return true;
 }
 
 // Find the transform that will convert |src| to |dst|.
@@ -82,34 +85,28 @@ gfx::Transform CalculateTransform(const gfx::RectF& src,
                         dst.y() - src.y());
 }
 
-// Get the target offscreen bounds of |window|. These bounds will be used to
-// calculate the transform which will move |window| out and offscreen. The width
-// will be a ratio of the work area, and the height will maintain the aspect
-// ratio.
-gfx::RectF GetOffscreenBounds(aura::Window* window) {
-  gfx::RectF bounds = gfx::RectF(window->GetTargetBounds());
-  gfx::RectF work_area =
-      gfx::RectF(screen_util::GetDisplayWorkAreaBoundsInParent(window));
-  float aspect_ratio = bounds.width() / bounds.height();
-  work_area.set_x(((1.f - kWidthRatio) / 2.f) * work_area.width() +
-                  work_area.x());
-  work_area.set_width(kWidthRatio * work_area.width());
-  work_area.set_height(work_area.width() / aspect_ratio);
-  work_area.set_y(work_area.y() - work_area.height());
-  return work_area;
+// Get the target offscreen workspace bounds.
+gfx::RectF GetOffscreenWorkspaceBounds(const gfx::RectF& work_area) {
+  gfx::RectF new_work_area;
+  new_work_area.set_x(((1.f - kWidthRatio) / 2.f) * work_area.width() +
+                      work_area.x());
+  new_work_area.set_width(kWidthRatio * work_area.width());
+  new_work_area.set_height(kWidthRatio * work_area.height());
+  new_work_area.set_y(work_area.y() - work_area.height());
+  return new_work_area;
 }
 
-// Get the target bounds of a transient descendant of the window we are hiding.
-// It should maintain the same ratios to the main window.
-gfx::RectF GetTransientDescendantBounds(aura::Window* transient_descendant,
-                                        const gfx::RectF& src,
-                                        const gfx::RectF& dst) {
-  gfx::RectF bounds = gfx::RectF(transient_descendant->GetTargetBounds());
-  float ratio = dst.width() / src.width();
+// Get the target bounds of a window. It should maintain the same ratios
+// relative the work area.
+gfx::RectF GetOffscreenWindowBounds(aura::Window* window,
+                                    const gfx::RectF& src_work_area,
+                                    const gfx::RectF& dst_work_area) {
+  gfx::RectF bounds = gfx::RectF(window->GetTargetBounds());
+  float ratio = dst_work_area.width() / src_work_area.width();
 
   gfx::RectF dst_bounds;
-  dst_bounds.set_x(bounds.x() * ratio + dst.x());
-  dst_bounds.set_y(bounds.y() * ratio + dst.y());
+  dst_bounds.set_x(bounds.x() * ratio + dst_work_area.x());
+  dst_bounds.set_y(bounds.y() * ratio + dst_work_area.y());
   dst_bounds.set_width(bounds.width() * ratio);
   dst_bounds.set_height(bounds.height() * ratio);
   return dst_bounds;
@@ -130,6 +127,18 @@ void UpdateSettings(ui::ScopedLayerAnimationSettings* settings) {
   settings->SetTweenType(gfx::Tween::LINEAR);
   settings->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+}
+
+// Returns the window of the widget which contains the workspace backdrop. May
+// be nullptr if the backdrop is not shown.
+aura::Window* GetBackdropWindow(aura::Window* window) {
+  WorkspaceLayoutManager* layout_manager =
+      RootWindowController::ForWindow(window->GetRootWindow())
+          ->workspace_controller()
+          ->layout_manager();
+  return layout_manager
+             ? layout_manager->backdrop_controller()->backdrop_window()
+             : nullptr;
 }
 
 // Helper class to perform window state changes without animations. Used to hide
@@ -194,14 +203,35 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
     window_->layer()->SetOpacity(1.f);
   }
 
-  const gfx::RectF& current_bounds = gfx::RectF(window_->GetTargetBounds());
-  const gfx::RectF& target_bounds = GetOffscreenBounds(window_);
+  const gfx::RectF work_area =
+      gfx::RectF(screen_util::GetDisplayWorkAreaBoundsInParent(window_));
+  const gfx::RectF target_work_area = GetOffscreenWorkspaceBounds(work_area);
   // Calculate the values for the main window.
+  const gfx::RectF& current_bounds = gfx::RectF(window_->GetTargetBounds());
   window_values_.initial_opacity = window_->layer()->opacity();
   window_values_.initial_transform = window_->transform();
   window_values_.target_opacity = 0.f;
-  window_values_.target_transform =
-      CalculateTransform(current_bounds, target_bounds);
+  window_values_.target_transform = CalculateTransform(
+      current_bounds,
+      GetOffscreenWindowBounds(window_, work_area, target_work_area));
+
+  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  if (backdrop_window) {
+    // Store the values needed to transform the backdrop. The backdrop actually
+    // covers the area behind the shelf as well, so initially transform it to be
+    // sized to the work area. Without the transform tweak, there is an extra
+    // shelf sized black area under |window_|.
+    backdrop_values_ = base::make_optional(WindowValues());
+    backdrop_values_->initial_opacity = 1.f;
+    backdrop_values_->initial_transform = gfx::Transform(
+        1.f, 0.f, 0.f,
+        work_area.height() /
+            static_cast<float>(backdrop_window->bounds().height()),
+        0.f, 0.f);
+    backdrop_values_->target_opacity = 0.f;
+    backdrop_values_->target_transform = CalculateTransform(
+        gfx::RectF(backdrop_window->bounds()), target_work_area);
+  }
 
   // Calculate the values for any transient descendants.
   transient_descendants_values_.clear();
@@ -215,7 +245,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
     values.target_opacity = 0.f;
     values.target_transform = CalculateTransform(
         gfx::RectF(window->GetTargetBounds()),
-        GetTransientDescendantBounds(window, current_bounds, target_bounds));
+        GetOffscreenWindowBounds(window, work_area, target_work_area));
     window->AddObserver(this);
     transient_descendants_values_[window] = values;
   }
@@ -314,6 +344,14 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   DCHECK(last_event_location_);
   DCHECK(window_);
 
+  // Update the backdrop first as the backdrop controller listens for some state
+  // changes like minimizing below which may also alter the backdrop.
+  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  if (backdrop_window) {
+    backdrop_window->SetTransform(gfx::Transform());
+    backdrop_window->layer()->SetOpacity(1.f);
+  }
+
   if (GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5) {
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview. Minimize in reverse order to preserve mru ordering.
@@ -367,6 +405,11 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
     window->SetTransform(transform);
   };
 
+  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  if (backdrop_window && backdrop_values_) {
+    update_windows_helper(progress, animate, backdrop_window,
+                          *backdrop_values_);
+  }
   for (const auto& descendant : transient_descendants_values_) {
     update_windows_helper(progress, animate, descendant.first,
                           descendant.second);
@@ -391,6 +434,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
+  backdrop_values_ = base::nullopt;
   last_event_location_ = base::nullopt;
   mode_ = Mode::kNone;
 

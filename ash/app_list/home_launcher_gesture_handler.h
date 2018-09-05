@@ -90,6 +90,10 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Original and target transform and opacity of |window_|.
   WindowValues window_values_;
 
+  // Original and target transform and opacity of the backdrop window. Empty if
+  // there is no backdrop on mouse pressed.
+  base::Optional<WindowValues> backdrop_values_;
+
   // Tracks the transient descendants of |window_| and their initial and target
   // opacities and transforms.
   std::map<aura::Window*, WindowValues> transient_descendants_values_;
