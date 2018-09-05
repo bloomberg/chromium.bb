@@ -185,11 +185,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
         window_style_(window_style) {}
   ~WmNativeWidgetAura() override = default;
 
-  void SetHeaderHeight(int height) {
-    if (custom_frame_view_)
-      custom_frame_view_->SetHeaderHeight({height});
-  }
-
   void set_cursor(const ui::Cursor& cursor) { cursor_ = cursor; }
 
   // views::NativeWidgetAura:
@@ -199,13 +194,16 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     if (remove_standard_frame_)
       return new EmptyDraggableNonClientFrameView();
     aura::Window* window = GetNativeView();
-    immersive_delegate_ =
-        std::make_unique<ImmersiveFullscreenControllerDelegateMus>(GetWidget(),
-                                                                   window);
+
+    if (!enable_immersive_) {
+      immersive_delegate_ =
+          std::make_unique<ImmersiveFullscreenControllerDelegateMus>(
+              GetWidget(), window);
+    }
+
     // See description for details on ownership.
-    custom_frame_view_ =
-        new NonClientFrameViewAsh(GetWidget(), immersive_delegate_.get(),
-                                  enable_immersive_, window_style_);
+    custom_frame_view_ = new NonClientFrameViewAsh(
+        GetWidget(), immersive_delegate_.get(), window_style_);
 
     // Only the header actually paints any content. So the rest of the region is
     // marked as transparent content (see below in NonClientFrameController()
@@ -366,11 +364,6 @@ gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
 // static
 int NonClientFrameController::GetMaxTitleBarButtonWidth() {
   return GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).width() * 3;
-}
-
-void NonClientFrameController::SetClientArea(const gfx::Insets& insets) {
-  static_cast<WmNativeWidgetAura*>(widget_->native_widget())
-      ->SetHeaderHeight(insets.top());
 }
 
 void NonClientFrameController::StoreCursor(const ui::Cursor& cursor) {

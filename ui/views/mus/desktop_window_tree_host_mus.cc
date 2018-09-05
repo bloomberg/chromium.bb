@@ -43,7 +43,7 @@ namespace views {
 namespace {
 
 // As the window manager renderers the non-client decorations this class does
-// very little but honor the client area insets from the window manager.
+// very little but honor kTopViewInset.
 class ClientSideNonClientFrameView : public NonClientFrameView,
                                      public aura::WindowObserver {
  public:
@@ -58,11 +58,11 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
   ~ClientSideNonClientFrameView() override {}
 
  private:
-  // Returns the default values of client area insets from the window manager.
-  static gfx::Insets GetDefaultWindowManagerInsets(bool is_maximized) {
-    const WindowManagerFrameValues& values =
-        WindowManagerFrameValues::instance();
-    return is_maximized ? values.maximized_insets : values.normal_insets;
+  gfx::Insets GetClientInsets() const {
+    const int top_inset =
+        widget_->GetNativeWindow()->GetRootWindow()->GetProperty(
+            aura::client::kTopViewInset);
+    return gfx::Insets(top_inset, 0, 0, 0);
   }
 
   // View:
@@ -75,7 +75,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     gfx::Rect result(GetLocalBounds());
     if (widget_->IsFullscreen())
       return result;
-    result.Inset(GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    result.Inset(GetClientInsets());
     return result;
   }
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -83,12 +83,9 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     if (widget_->IsFullscreen())
       return client_bounds;
 
-    const gfx::Insets insets(
-        GetDefaultWindowManagerInsets(widget_->IsMaximized()));
-    return gfx::Rect(client_bounds.x() - insets.left(),
-                     client_bounds.y() - insets.top(),
-                     client_bounds.width() + insets.width(),
-                     client_bounds.height() + insets.height());
+    gfx::Rect outset_bounds = client_bounds;
+    outset_bounds.Inset(-GetClientInsets());
+    return outset_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
@@ -136,17 +133,9 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    // Do a re-layout on state changes which affect GetBoundsForClientView().
-    // The associated bounds change would also cause a re-layout, but there may
-    // not be a bounds change or it may come from the server before the state is
-    // updated.
-    if (key == aura::client::kShowStateKey) {
-      if (GetBoundsForClientView() != widget_->client_view()->bounds() &&
-          window->GetProperty(aura::client::kShowStateKey) !=
-              ui::SHOW_STATE_MINIMIZED) {
-        InvalidateLayout();
-        widget_->GetRootView()->Layout();
-      }
+    if (key == aura::client::kTopViewInset) {
+      InvalidateLayout();
+      widget_->GetRootView()->Layout();
     }
   }
 

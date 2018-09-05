@@ -55,6 +55,17 @@ const string kHideCaptionButtonsInTabletMode_Property =
 const string kHideShelfWhenFullscreen_Property =
   "ash:hide-shelf-when-fullscreen";
 
+// See ash::kImmseriveImpliedByFullscreen.
+const string kImmersiveImpliedByFullscreen_Property =
+  "ash:immersive-implied-by-fullscreen";
+
+// See ash::kImmseriveIsActive.
+const string kImmersiveIsActive_Property = "ash:immersive-is-active";
+
+// See ash::kImmseriveTopContainerBoundsInScreen.
+const string kImmersiveTopContainerBoundsInScreen_Property =
+    "ash:immersive-top-container-bounds-in-screen";
+
 // If true, the window is the target window for the tab-dragged window. The
 // key is used by overview to show a highlight indication to indicate which
 // overview window the dragged tabs will merge into when the user releases the
@@ -92,3 +103,7 @@ const string kRestoreBoundsOverride_Property =
 // mode window manager.
 const string kRestoreWindowStateTypeOverride_Property  =
   "ash:restore-window-state-type-override";
+
+// The height of the window header, i.e. the inset between the frame and client
+// view.
+const string kTopViewInset_Property = "ash:top-view-inset";

@@ -52,7 +52,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   explicit NonClientFrameViewAsh(
       views::Widget* frame,
       ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
-      bool control_immersive = true,
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
       std::unique_ptr<CaptionButtonModel> model = nullptr);
   ~NonClientFrameViewAsh() override;

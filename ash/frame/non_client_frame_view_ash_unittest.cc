@@ -61,7 +61,7 @@ class NonClientFrameViewAshTestWidgetDelegate
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     non_client_frame_view_ =
-        new NonClientFrameViewAsh(widget, nullptr, true, window_style_);
+        new NonClientFrameViewAsh(widget, nullptr, window_style_);
     return non_client_frame_view_;
   }
 

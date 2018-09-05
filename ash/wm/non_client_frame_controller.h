@@ -72,8 +72,6 @@ class ASH_EXPORT NonClientFrameController
 
   aura::Window* window() { return window_; }
 
-  void SetClientArea(const gfx::Insets& insets);
-
   // Stores |cursor| as this window's active cursor. It does not actually update
   // the active cursor by calling into CursorManager, but will update the return
   // value provided by the associated window's aura::WindowDelegate::GetCursor.

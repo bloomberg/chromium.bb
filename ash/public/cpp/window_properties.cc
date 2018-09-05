@@ -83,6 +83,16 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kImmersiveImpliedByFullscreen,
+      mojom::kImmersiveImpliedByFullscreen_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kImmersiveIsActive, mojom::kImmersiveIsActive_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterRectProperty(
+      kImmersiveTopContainerBoundsInScreen,
+      mojom::kImmersiveTopContainerBoundsInScreen_Property);
+  property_converter->RegisterPrimitiveProperty(
       kIsDeferredTabDraggingTargetWindowKey,
       mojom::kIsDeferredTabDraggingTargetWindow_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -102,6 +112,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kShelfItemTypeKey, ws::mojom::WindowManager::kShelfItemType_Property,
       base::BindRepeating(&IsValidShelfItemType));
+  property_converter->RegisterPrimitiveProperty(
+      aura::client::kTopViewInset, mojom::kTopViewInset_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kWindowStateTypeKey, mojom::kWindowStateType_Property,
       base::BindRepeating(&IsValidWindowStateType));

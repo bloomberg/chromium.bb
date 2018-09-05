@@ -71,6 +71,10 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == aura::client::kTitleShownKey) {
     root_window->SetProperty(aura::client::kTitleShownKey,
                              window->GetProperty(aura::client::kTitleShownKey));
+  } else if (key == aura::client::kTopViewInset) {
+    root_window->SetProperty(aura::client::kTopViewInset,
+                             window->GetProperty(aura::client::kTopViewInset));
+
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
   } else if (key == kFrameBackButtonStateKey) {
@@ -103,6 +107,16 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     root_window->SetProperty(
         kHideCaptionButtonsInTabletModeKey,
         window->GetProperty(kHideCaptionButtonsInTabletModeKey));
+  } else if (key == kImmersiveImpliedByFullscreen) {
+    root_window->SetProperty(
+        kImmersiveImpliedByFullscreen,
+        window->GetProperty(kImmersiveImpliedByFullscreen));
+  } else if (key == kImmersiveIsActive) {
+    root_window->SetProperty(kImmersiveIsActive,
+                             window->GetProperty(kImmersiveIsActive));
+  } else if (key == kImmersiveTopContainerBoundsInScreen) {
+    MirrorOwnedProperty(window, root_window,
+                        kImmersiveTopContainerBoundsInScreen);
   }
 }
 

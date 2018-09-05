@@ -54,9 +54,6 @@
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
 
-# Null immersive_fullscreen_controller_.
--ChromeNativeAppWindowViewsAuraAshBrowserTest.*
-
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
 # See https://crbug.com/838974

@@ -155,6 +155,11 @@ class ASH_EXPORT HeaderView : public views::View,
   // Has this instance been set as the ImmersiveFullscreenControllerDelegate?
   bool is_immersive_delegate_ = true;
 
+  // True if a layer should be used for the immersive mode reveal. Some code
+  // needs HeaderView to always paint to a layer instead of only during
+  // immersive reveal (see WmNativeWidgetAura).
+  bool add_layer_for_immersive_ = false;
+
   bool did_layout_ = false;
 
   // False to skip painting. Used for overview mode to hide the header.

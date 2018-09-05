@@ -17,6 +17,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"
@@ -312,7 +313,10 @@ FrameCaptionButton* HeaderView::GetBackButton() {
 
 void HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
-  SetPaintToLayer();
+
+  add_layer_for_immersive_ = !layer();
+  if (add_layer_for_immersive_)
+    SetPaintToLayer();
   // AppWindow may call this before being added to the widget.
   // https://crbug.com/825260.
   if (layer()->parent()) {
@@ -324,20 +328,26 @@ void HeaderView::OnImmersiveRevealStarted() {
 
 void HeaderView::OnImmersiveRevealEnded() {
   fullscreen_visible_fraction_ = 0;
-  DestroyLayer();
+  if (add_layer_for_immersive_)
+    DestroyLayer();
   parent()->Layout();
 }
 
 void HeaderView::OnImmersiveFullscreenEntered() {
   in_immersive_mode_ = true;
+  parent()->InvalidateLayout();
+  // The frame may not have been created yet (during window initialization).
+  if (target_widget_ && target_widget_->non_client_view()->frame_view())
+    target_widget_->non_client_view()->Layout();
 }
 
 void HeaderView::OnImmersiveFullscreenExited() {
   in_immersive_mode_ = false;
   fullscreen_visible_fraction_ = 0;
-  DestroyLayer();
+  if (add_layer_for_immersive_)
+    DestroyLayer();
   parent()->InvalidateLayout();
-  if (target_widget_)
+  if (target_widget_ && target_widget_->non_client_view()->frame_view())
     target_widget_->non_client_view()->Layout();
 }
 
