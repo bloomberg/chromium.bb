@@ -43,7 +43,6 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;
   void Detach() override;
-  void Wait(WaitCallback callback) override;
 
   // fuchsia::ui::viewsv1::ViewProvider implementation.
   void CreateView(
@@ -53,6 +52,11 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
 
  private:
   explicit ComponentControllerImpl(WebContentRunner* runner);
+
+  // Registers the termination reason for this Component and requests its
+  // termination from the parent WebContentRunner.
+  void RequestTermination(int termination_exit_code,
+                          fuchsia::sys::TerminationReason reason);
 
   // Binds |this| to a Runner::StartComponent() call. Returns false on failure
   // (e.g. when the URL in |startup_info| is invalid).
@@ -75,9 +79,12 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>
       view_provider_binding_;
 
-  std::vector<WaitCallback> termination_wait_callbacks_;
+  // Termination reason and exit-code to be reported via the
+  // sys::ComponentController::OnTerminated event.
+  fuchsia::sys::TerminationReason termination_reason_ =
+      fuchsia::sys::TerminationReason::UNKNOWN;
+  int termination_exit_code_ = 0;
 
-  bool did_terminate_abnormally_ = false;
   bool view_is_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentControllerImpl);
